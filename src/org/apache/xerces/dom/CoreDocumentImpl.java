@@ -1950,17 +1950,18 @@ public class CoreDocumentImpl
     }
 
     /**
-     * NON-DOM: Xerces-specific constructor. "localName" is passed in, so we don't need
-     * to create a new String for it.
+     * NON-DOM: a factory method used by the Xerces DOM parser 
+     * to create an element.
      * 
      * @param namespaceURI The namespace URI of the element to
      *                     create.
      * @param qualifiedName The qualified name of the element type to
      *                      instantiate.
-     * @param localName     The local name of the element to instantiate.
+     * @param localpart  The local name of the attribute to instantiate.
+     *
      * @return Element A new Element object with the following attributes:
-     * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
-     *                      name contains an invalid character.
+     * @exception DOMException INVALID_CHARACTER_ERR: Raised if the specified
+     *                   name contains an invalid character.
      */
     public Element createElementNS(String namespaceURI, String qualifiedName,
                                    String localpart)
@@ -1998,21 +1999,22 @@ public class CoreDocumentImpl
     }
 
     /**
-     * Xerces-specific constructor. "localName" is passed in, so we don't need
-     * to create a new String for it.
+     * NON-DOM: a factory method used by the Xerces DOM parser 
+     * to create an element.
      *
      * @param namespaceURI  The namespace URI of the attribute to
      *                      create. When it is null or an empty string,
      *                      this method behaves like createAttribute.
      * @param qualifiedName The qualified name of the attribute to
      *                      instantiate.
-     * @param localName     The local name of the attribute to instantiate.
+     * @param localpart     The local name of the attribute to instantiate.
+     *
      * @return Attr         A new Attr object.
      * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
                             name contains an invalid character.
      */
     public Attr createAttributeNS(String namespaceURI, String qualifiedName,
-                                  String localName)
+                                  String localpart)
         throws DOMException
     {
         return new AttrNSImpl(this, namespaceURI, qualifiedName, localName);
