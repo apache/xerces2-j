@@ -236,7 +236,13 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    public void startEntity(String name, String publicId, String systemId, 
                            String encoding) throws SAXException {
       XMLEntityDecl  entityDecl = new XMLEntityDecl();
-      entityDecl.setValues(name,publicId,systemId, null, null, false);
+      boolean isPE = name.startsWith("%");
+      entityDecl.setValues(name,publicId,systemId, null, null, isPE);
+      int entityIndex = getEntityDeclIndex(name);
+      if (entityIndex == -1) {
+        entityIndex = createEntityDecl();
+        setEntityDecl(entityIndex, entityDecl);
+      }
       fEntityDeclTab.put( name, entityDecl );
 
 
@@ -552,6 +558,15 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
     */
    public void internalEntityDecl(String name, XMLString text)
    throws SAXException {
+       XMLEntityDecl  entityDecl = new XMLEntityDecl();
+       boolean isPE = name.startsWith("%");
+
+       entityDecl.setValues(name,null,null, null, null, isPE);
+       int entityIndex = getEntityDeclIndex(name);
+       if (entityIndex == -1) {
+         entityIndex = createEntityDecl();
+         setEntityDecl(entityIndex, entityDecl);
+       }
    } // internalEntityDecl
 
    /**
@@ -568,6 +583,14 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
     */
    public void externalEntityDecl(String name, String publicId, String systemId)
    throws SAXException {
+       XMLEntityDecl  entityDecl = new XMLEntityDecl();
+       boolean isPE = name.startsWith("%");
+       entityDecl.setValues(name,publicId,systemId, null, null, isPE);
+       int entityIndex = getEntityDeclIndex(name);
+       if (entityIndex == -1) {
+         entityIndex = createEntityDecl();
+         setEntityDecl(entityIndex, entityDecl);
+       }
    } // externalEntityDecl
 
    /**
@@ -584,6 +607,14 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
     */
    public void unparsedEntityDecl(String name, String publicId, String systemId, String notation)
    throws SAXException {
+       XMLEntityDecl  entityDecl = new XMLEntityDecl();
+       boolean isPE = name.startsWith("%");
+       entityDecl.setValues(name,publicId,systemId, null, notation, isPE);
+       int entityIndex = getEntityDeclIndex(name);
+       if (entityIndex == -1) {
+         entityIndex = createEntityDecl();
+         setEntityDecl(entityIndex, entityDecl);
+       }
    } // unparsedEntityDecl
 
    /**
@@ -599,6 +630,13 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
     */
    public void notationDecl(String name, String publicId, String systemId)
    throws SAXException {
+       XMLNotationDecl  notationDecl = new XMLNotationDecl();
+       notationDecl.setValues(name,publicId,systemId);
+       int notationIndex = getNotationDeclIndex(name);
+       if (notationIndex == -1) {
+         notationIndex = createNotationDecl();
+         setNotationDecl(notationIndex, notationDecl);
+       }
    } // notationDecl
 
    /**

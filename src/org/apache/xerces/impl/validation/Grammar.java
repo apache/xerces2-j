@@ -138,6 +138,23 @@ public class Grammar {
    private Object fContentSpecValue[][] = new Object[INITIAL_CHUNK_COUNT][];
    private Object fContentSpecOtherValue[][] = new Object[INITIAL_CHUNK_COUNT][];
 
+   // Entities Tables1
+   private int fEntityCount = 0;
+   private String fEntityName[][] = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fEntityValue = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fEntityPublicId = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fEntitySystemId = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fEntityBaseSystemId = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fEntityNotation = new String[INITIAL_CHUNK_COUNT][];
+   private byte[][] fEntityIsPE = new byte[INITIAL_CHUNK_COUNT][];
+
+   //Notation Tables
+   private int fNotationCount = 0;
+   private String fNotationName[][] = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fNotationPublicId = new String[INITIAL_CHUNK_COUNT][];
+   private String[][] fNotationSystemId = new String[INITIAL_CHUNK_COUNT][];
+
+
    // scope mapping tables
    private Hash1int2stringTable fScopeElementUriLocalpartHash = new Hash1int2stringTable();
 
@@ -733,7 +750,18 @@ public class Grammar {
     * @return 
     */
    public int getEntityDeclIndex(String entityDeclName) {
-      throw new RuntimeException("implement Grammar#getEntityDeclIndex(String):int");
+       if (entityDeclName == null) {
+           return -1;
+       }
+       for (int i=0; i<fEntityCount; i++) {
+           int chunk = i >> CHUNK_SHIFT;
+           int index = i & CHUNK_MASK;
+           if ( fEntityName[chunk][index] == entityDeclName || entityDeclName.equals(fEntityName[chunk][index]) ) {
+               return i;
+           }
+       }
+
+       return -1;
    } // getEntityDeclIndex
 
    /**
@@ -745,7 +773,20 @@ public class Grammar {
     * @return 
     */
    public boolean getEntityDecl(int entityDeclIndex, XMLEntityDecl entityDecl) {
-      throw new RuntimeException("implement Grammar#getEntityDecl(int,XMLEntityDecl):boolean");
+       if (entityDeclIndex < 0 || entityDeclIndex >= fEntityCount) {
+           return false;
+       }
+       int chunk = entityDeclIndex >> CHUNK_SHIFT;
+       int index = entityDeclIndex & CHUNK_MASK;
+
+       entityDecl.setValues(fEntityName[chunk][index],
+                            fEntityPublicId[chunk][index],
+                            fEntitySystemId[chunk][index],
+                            fEntityBaseSystemId[chunk][index],
+                            fEntityNotation[chunk][index],
+                            fEntityIsPE[chunk][index] == 0 ? false : true );
+
+       return true;
    } // getEntityDecl
 
    /**
@@ -773,10 +814,21 @@ public class Grammar {
     * 
     * @param notationDeclName 
     * 
-    * @return 
+    * @return the index if found a notation with the name, otherwise -1.
     */
    public int getNotationDeclIndex(String notationDeclName) {
-      throw new RuntimeException("implement Grammar#getNotationDeclIndex(String):int");
+       if (notationDeclName == null) {
+           return -1;
+       }
+       for (int i=0; i<fNotationCount; i++) {
+           int chunk = i >> CHUNK_SHIFT;
+           int index = i & CHUNK_MASK;
+           if ( fNotationName[chunk][index] == notationDeclName || notationDeclName.equals(fNotationName[chunk][index]) ) {
+               return i;
+           }
+       }
+
+       return -1;
    } // getNotationDeclIndex
 
    /**
@@ -788,7 +840,18 @@ public class Grammar {
     * @return 
     */
    public boolean getNotationDecl(int notationDeclIndex, XMLNotationDecl notationDecl) {
-      throw new RuntimeException("implement Grammar#getNotationDecl(int,XMLNotationDecl):boolean");
+       if (notationDeclIndex < 0 || notationDeclIndex >= fNotationCount) {
+           return false;
+       }
+       int chunk = notationDeclIndex >> CHUNK_SHIFT;
+       int index = notationDeclIndex & CHUNK_MASK;
+
+       notationDecl.setValues(fNotationName[chunk][index], 
+                              fNotationPublicId[chunk][index],
+                              fNotationSystemId[chunk][index]);
+
+       return true;
+
    } // getNotationDecl
 
 
@@ -981,11 +1044,52 @@ public class Grammar {
       int   chunk = contentSpecIndex >> CHUNK_SHIFT;
       int   index = contentSpecIndex & CHUNK_MASK;
 
-      //System.out.println("idx spec = " + contentSpecIndex );
-                         
       fContentSpecType[chunk][index]       = contentSpec.type;
       fContentSpecValue[chunk][index]      = contentSpec.value;
       fContentSpecOtherValue[chunk][index] = contentSpec.otherValue;
+   }
+
+
+   protected int createEntityDecl() {
+       int chunk = fEntityCount >> CHUNK_SHIFT;
+       int index = fEntityCount & CHUNK_MASK;
+
+      ensureEntityDeclCapacity(chunk);
+      fEntityIsPE[chunk][index] = 0;
+
+      return fEntityCount++;
+   }
+
+   protected void setEntityDecl(int entityDeclIndex, XMLEntityDecl entityDecl) {
+       int chunk = fEntityCount >> CHUNK_SHIFT;
+       int index = fEntityCount & CHUNK_MASK;
+
+       fEntityName[chunk][index] = entityDecl.name;
+       fEntityValue[chunk][index] = null;
+       fEntityPublicId[chunk][index] = entityDecl.publicId;
+       fEntitySystemId[chunk][index] = entityDecl.systemId;
+       fEntityBaseSystemId[chunk][index] = entityDecl.baseSystemId;
+       fEntityNotation[chunk][index] = entityDecl.notation;
+       fEntityIsPE[chunk][index] = entityDecl.isPE ? (byte)1 : (byte)0;
+   }
+   
+
+   protected int createNotationDecl() {
+       int chunk = fNotationCount >> CHUNK_SHIFT;
+       int index = fNotationCount & CHUNK_MASK;
+
+       ensureNotationDeclCapacity(chunk);
+
+       return fNotationCount++;
+   }
+
+   protected void setNotationDecl(int notationDeclIndex, XMLNotationDecl notationDecl) {
+       int chunk = fNotationCount >> CHUNK_SHIFT;
+       int index = fNotationCount & CHUNK_MASK;
+
+       fNotationName[chunk][index] = notationDecl.name;
+       fNotationPublicId[chunk][index] = notationDecl.publicId;
+       fNotationSystemId[chunk][index] = notationDecl.systemId;
    }
 
    protected void setTargetNameSpace( String targetNamespace ){
@@ -1358,6 +1462,47 @@ public class Grammar {
       fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
       return true;
    }
+   
+   private boolean ensureEntityDeclCapacity(int chunk) {
+      try {
+         return fEntityName[chunk][0] == null;
+      } catch (ArrayIndexOutOfBoundsException ex) {
+          fEntityName = resize(fEntityName, fEntityName.length * 2);
+          fEntityValue = resize(fEntityValue, fEntityValue.length * 2);
+          fEntityPublicId = resize(fEntityPublicId, fEntityPublicId.length * 2);
+          fEntitySystemId = resize(fEntitySystemId, fEntitySystemId.length * 2);
+          fEntityBaseSystemId = resize(fEntityBaseSystemId, fEntityBaseSystemId.length * 2);
+          fEntityNotation = resize(fEntityNotation, fEntityNotation.length * 2);
+          fEntityIsPE = resize(fEntityIsPE, fEntityIsPE.length * 2);
+      } catch (NullPointerException ex) {
+         // ignore
+      }
+      fEntityName[chunk] = new String[CHUNK_SIZE];
+      fEntityValue[chunk] = new String[CHUNK_SIZE];
+      fEntityPublicId[chunk] = new String[CHUNK_SIZE];
+      fEntitySystemId[chunk] = new String[CHUNK_SIZE];
+      fEntityBaseSystemId[chunk] = new String[CHUNK_SIZE];
+      fEntityNotation[chunk] = new String[CHUNK_SIZE];
+      fEntityIsPE[chunk] = new byte[CHUNK_SIZE];
+      return true;
+   }
+   
+
+   private boolean ensureNotationDeclCapacity(int chunk) {
+      try {
+         return fNotationName[chunk][0] == null;
+      } catch (ArrayIndexOutOfBoundsException ex) {
+          fNotationName = resize(fNotationName, fNotationName.length * 2);
+          fNotationPublicId = resize(fNotationPublicId, fNotationPublicId.length * 2);
+          fNotationSystemId = resize(fNotationSystemId, fNotationSystemId.length * 2);
+      } catch (NullPointerException ex) {
+         // ignore
+      }
+      fNotationName[chunk] = new String[CHUNK_SIZE];
+      fNotationPublicId[chunk] = new String[CHUNK_SIZE];
+      fNotationSystemId[chunk] = new String[CHUNK_SIZE];
+      return true;
+   }
 
    private boolean ensureContentSpecCapacity(int chunk) {
       try {
@@ -1378,6 +1523,12 @@ public class Grammar {
 
    // resize initial chunk
 
+   private byte[][] resize(byte array[][], int newsize) {
+      byte newarray[][] = new byte[newsize][];
+      System.arraycopy(array, 0, newarray, 0, array.length);
+      return newarray;
+   }
+   
    private short[][] resize(short array[][], int newsize) {
       short newarray[][] = new short[newsize][];
       System.arraycopy(array, 0, newarray, 0, array.length);
