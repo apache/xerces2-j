@@ -366,6 +366,13 @@ public final class XMLDTDScanner {
      * more generic task of scanning the DTD-specific XML grammar.
      */
     public interface EventHandler {
+
+        /** Start of DTD. */
+        public void startDTD() throws Exception;
+
+        /** End of DTD. */
+        public void endDTD() throws Exception;
+
         /**
          * Determine whether a string is a valid XML version number
          *  
@@ -455,36 +462,36 @@ public final class XMLDTDScanner {
                              int attType, int enumeration, 
                              int attDefaultType, int attDefaultValue) throws Exception;
         /**
-         * create an XMLContentSpec.Node for a leaf
+         * create an XMLContentSpec for a leaf
          *
          * @param nameIndex StringPool handle to the name (Element) for the node
-         * @return handle to the newly create XMLContentSpec.Node
+         * @return handle to the newly create XMLContentSpec
          * @exception java.lang.Exception
          */
         public int addUniqueLeafNode(int nameIndex) throws Exception;
         /**
-         * Create an XMLContentSpec.Node for a single non-leaf
+         * Create an XMLContentSpec for a single non-leaf
          * 
-         * @param nodeType the type of XMLContentSpec.Node to create - from XMLContentSpec.CONTENTSPECNODE_*
-         * @param nodeValue handle to an XMLContentSpec.Node
-         * @return handle to the newly create XMLContentSpec.Node
+         * @param nodeType the type of XMLContentSpec to create - from XMLContentSpec.CONTENTSPECNODE_*
+         * @param nodeValue handle to an XMLContentSpec
+         * @return handle to the newly create XMLContentSpec
          * @exception java.lang.Exception
          */
         public int addContentSpecNode(int nodeType, int nodeValue) throws Exception;
         /**
-         * Create an XMLContentSpec.Node for a two child leaf
+         * Create an XMLContentSpec for a two child leaf
          *
-         * @param nodeType the type of XMLContentSpec.Node to create - from XMLContentSpec.CONTENTSPECNODE_*
-         * @param leftNodeIndex handle to an XMLContentSpec.Node
-         * @param rightNodeIndex handle to an XMLContentSpec.Node
-         * @return handle to the newly create XMLContentSpec.Node
+         * @param nodeType the type of XMLContentSpec to create - from XMLContentSpec.CONTENTSPECNODE_*
+         * @param leftNodeIndex handle to an XMLContentSpec
+         * @param rightNodeIndex handle to an XMLContentSpec
+         * @return handle to the newly create XMLContentSpec
          * @exception java.lang.Exception
          */
         public int addContentSpecNode(int nodeType, int leftNodeIndex, int rightNodeIndex) throws Exception;
         /**
-         * Create a string representation of an XMLContentSpec.Node tree
+         * Create a string representation of an XMLContentSpec tree
          * 
-         * @param handle to an XMLContentSpec.Node
+         * @param handle to an XMLContentSpec
          * @return String representation of the content spec tree
          * @exception java.lang.Exception
          */

@@ -131,7 +131,7 @@ public class DatatypeContentModel implements XMLContentModel
             System.out.println("Checking content of datatype");
             String strTmp = fStringPool.toString(elementTypeIndex);
             int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-            XMLContentSpec.Node csn = new XMLContentSpec.Node();
+            XMLContentSpec csn = new XMLContentSpec();
             fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
             String contentSpecString = fStringPool.toString(csn.value);
             System.out.println
@@ -157,7 +157,7 @@ public class DatatypeContentModel implements XMLContentModel
 */
         try { // REVISIT - integrate w/ error handling
             XMLContentSpec cs = fValidator.getContentSpec(fChild);
-            XMLContentSpec.Node csn = new XMLContentSpec.Node();
+            XMLContentSpec csn = new XMLContentSpec();
             cs.getNode(cs.getHandle(), csn);
             String type = fStringPool.toString(csn.value);
             DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);

@@ -57,6 +57,8 @@
 
 package org.apache.xerces.framework;
 
+import org.apache.xerces.utils.StringPool;
+
 /**
  * ContentSpec really exists to aid the parser classes in implementing
  * access to the grammar.
@@ -109,58 +111,366 @@ package org.apache.xerces.framework;
  *
  * @version $Id$
  */
-
-public interface XMLContentSpec {
-    /**
-     * return this ContentSpec as a string
-     *
-     * @return the content spec as a string
-     */
-    public String toString();
-    /**
-     * return the type of this ContentSpec
-     *
-     * @return The string pool handle for the type of this ContentSpec
-     */
-    public int getType();
-    /**
-     * get this ContentSpec's handle
-     *
-     * @return handle for this ContentSpec
-     */
-    public int getHandle();
-    /**
-     * fill in XMLContentSpec.Node node with the information for
-     * ContentSpec in handle
-     * 
-     * @param handle ContentSpec handle
-     * @param node result XMLContentSpec.Node
-     */
-    public void getNode(int handle, XMLContentSpec.Node node);
+public class XMLContentSpec {
 
     //
-    // node type
+    // Constants
     //
-    // Note: The #PCDATA leaf in a MIXED content spec is indicated by a type
-    //       of CONTENTSPECNODE_LEAF and an value of -1.
-    //
-    public static final int
-        CONTENTSPECNODE_LEAF           = 0,            // Name or #PCDATA (-1)
-        CONTENTSPECNODE_ZERO_OR_ONE    = 1,            // '?'
-        CONTENTSPECNODE_ZERO_OR_MORE   = 2,            // '*'
-        CONTENTSPECNODE_ONE_OR_MORE    = 3,            // '+'
-        CONTENTSPECNODE_CHOICE         = 4,            // '|'
-        CONTENTSPECNODE_SEQ            = 5;            // ','
+
+    /** 
+     * Name or #PCDATA. Leaf nodes that represent parsed character
+     * data (#PCDATA) have values of -1.
+     */
+    public static final int CONTENTSPECNODE_LEAF = 0;
+
+    /** Represents a zero or one occurence count, '?'. */
+    public static final int CONTENTSPECNODE_ZERO_OR_ONE = 1;
+
+    /** Represents a zero or more occurence count, '*'. */
+    public static final int CONTENTSPECNODE_ZERO_OR_MORE = 2;
+    
+    /** Represents a one or more occurence count, '+'. */
+    public static final int CONTENTSPECNODE_ONE_OR_MORE = 3;
+    
+    /** Represents choice, '|'. */
+    public static final int CONTENTSPECNODE_CHOICE = 4;
+    
+    /** Represents sequence, ','. */
+    public static final int CONTENTSPECNODE_SEQ = 5;
 
     //
-    // Node record
+    // Data
     //
-    public final class Node {
-        //
-        // Public instance variables - filled in on each call to getNode().
-        //
-        public int type;                    // node type (see above)
-        public int value;                   // leaf index, single child for unary ops, left child for binary ops.
-        public int otherValue;              // right child for binary ops
+
+    /** 
+     * The content spec node type. 
+     *
+     * @see CONTENTSPECNODE_LEAF
+     * @see CONTENTSPECNODE_ZERO_OR_ONE
+     * @see CONTENTSPECNODE_ZERO_OR_MORE
+     * @see CONTENTSPECNODE_ONE_OR_MORE
+     * @see CONTENTSPECNODE_CHOICE
+     * @see CONTENTSPECNODE_SEQ
+     */
+    public int type;
+
+    /**
+     * The "left hand" value of the content spec node.
+     * // leaf index, single child for unary ops, left child for binary ops.
+     */
+    public int value;
+
+    /**
+     * The "right hand" value of the content spec node.
+     * // right child for binary ops
+     */
+    public int otherValue;
+
+    //
+    // Constructors
+    //
+
+    /** Default constructor. */
+    public XMLContentSpec() {
+        clear();
     }
-}
+
+    /** Constructs a content spec with the specified values. */
+    public XMLContentSpec(int type, int value, int otherValue) {
+        setValues(type, value, otherValue);
+    }
+
+    /** 
+     * Constructs a content spec from the values in the specified content spec.
+     */
+    public XMLContentSpec(XMLContentSpec contentSpec) {
+        setValues(contentSpec);
+    }
+
+    /**
+     * Constructs a content spec from the values specified by the given
+     * content spec provider and identifier.
+     */
+    public XMLContentSpec(XMLContentSpec.Provider provider,
+                          int contentSpecIndex) {
+        setValues(provider, contentSpecIndex);
+    }
+
+    //
+    // Public methods
+    //
+
+    /** Clears the values. */
+    public void clear() {
+        type = -1;
+        value = -1;
+        otherValue = -1;
+    }
+
+    /** Sets the values. */
+    public void setValues(int type, int value, int otherValue) {
+        this.type = type;
+        this.value = value;
+        this.otherValue = otherValue;
+    }
+    
+    /** Sets the values of the specified content spec. */
+    public void setValues(XMLContentSpec contentSpec) {
+        type = contentSpec.type;
+        value = contentSpec.value;
+        otherValue = contentSpec.otherValue;
+    }
+
+    /**
+     * Sets the values from the values specified by the given content spec
+     * provider and identifier. If the specified content spec cannot be
+     * provided, the values of this content spec are cleared.
+     */
+    public void setValues(XMLContentSpec.Provider provider,
+                          int contentSpecIndex) {
+        if (!provider.getContentSpec(contentSpecIndex, this)) {
+            clear();
+        }
+    }
+
+    //
+    // Public static methods
+    //
+
+    /** 
+     * Returns a string representation of the specified content spec 
+     * identifier in the form of a DTD element content model.
+     * <p>
+     * <strong>Note:</strong> This method is not namespace aware.
+     */
+    public static String toString(XMLContentSpec.Provider provider, 
+                                  StringPool stringPool, 
+                                  int contentSpecIndex) {
+
+        // lookup content spec node
+        XMLContentSpec contentSpec = new XMLContentSpec();
+        if (provider.getContentSpec(contentSpecIndex, contentSpec)) {
+
+            // build string
+            StringBuffer str = new StringBuffer();
+            switch (contentSpec.type) {
+                case XMLContentSpec.CONTENTSPECNODE_LEAF: {
+                    str.append('(');
+                    if (contentSpec.value == -1) {
+                        str.append("#PCDATA");
+                    }
+                    else {
+                        str.append(stringPool.toString(contentSpec.value));
+                    }
+                    str.append(')');
+                    break;
+                }
+                case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
+                    /***
+                    // TODO
+                    chunk = value >> CHUNK_SHIFT;
+                    index = value & CHUNK_MASK;
+                    if (fNodeType[chunk][index] == XMLContentSpecNode.CONTENTSPECNODE_LEAF) {
+                        value = fNodeValue[chunk][index];
+                        sb.append("(" + (value == -1 ? "#PCDATA" : fStringPool.toString(value)) + ")?");
+                    } else
+                        appendContentSpecNode(contentSpecIndex, sb, true);
+                    /***/
+                    break;
+                }
+                case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
+                    /***
+                    // TODO
+                    chunk = value >> CHUNK_SHIFT;
+                    index = value & CHUNK_MASK;
+                    if (fNodeType[chunk][index] == XMLContentSpecNode.CONTENTSPECNODE_LEAF) {
+                        value = fNodeValue[chunk][index];
+                        sb.append("(" + (value == -1 ? "#PCDATA" : fStringPool.toString(value)) + ")*");
+                    } else
+                        appendContentSpecNode(contentSpecIndex, sb, true);
+                    /***/
+                    break;
+                }
+                case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
+                    /***
+                    // TODO
+                    int index = contentSpec
+                    provider.getContentSpec(contentSpec.value, contentSpec);
+                    chunk = value >> CHUNK_SHIFT;
+                    index = value & CHUNK_MASK;
+                    if (fNodeType[chunk][index] == XMLContentSpecNode.CONTENTSPECNODE_LEAF) {
+                        value = fNodeValue[chunk][index];
+                        str.append('(');
+                        if (contentSpec.value == -1) {
+                            str.append("#PCDATA");
+                        }
+                        else {
+                            str.append(stringPool.toString(contentSpec.value));
+                        }
+                        str.append(')');
+                    } else
+                        appendContentSpec(provider, stringPool,
+                                          contentSpec, str, true);
+                    /***/
+                    break;
+                }
+                case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+                case XMLContentSpec.CONTENTSPECNODE_SEQ: {
+                    appendContentSpec(provider, stringPool,
+                                      contentSpec, str, true);
+                    break;
+                }
+                default: {
+                    return null;
+                }
+
+            } // switch type
+
+            // return string
+            return str.toString();
+        }
+
+        // not found
+        return null;
+
+    } // toString(XMLContentSpec.Provider):String
+
+    //
+    // Object methods
+    //
+
+    /** Returns a hash code for this node. */
+    public int hashCode() {
+        return type << 16 | 
+               value << 8 |
+               otherValue;
+    }
+
+    /** Returns true if the two objects are equal. */
+    public boolean equals(Object object) {
+        if (object != null && object instanceof XMLContentSpec) {
+            XMLContentSpec contentSpec = (XMLContentSpec)object;
+            return type == contentSpec.type &&
+                   value == contentSpec.value &&
+                   otherValue == contentSpec.otherValue;
+        }
+        return false;
+    }
+
+    //
+    // Private static methods
+    //
+
+    /**
+     * Appends more information to the current string buffer.
+     * <p>
+     * <strong>Note:</strong> This method does <em>not</em> preserve the
+     * contents of the content spec node.
+     */
+    private static void appendContentSpec(XMLContentSpec.Provider provider,
+                                          StringPool stringPool,
+                                          XMLContentSpec contentSpec, 
+                                          StringBuffer str, 
+                                          boolean parens) {
+
+        switch (contentSpec.type) {
+            case XMLContentSpec.CONTENTSPECNODE_LEAF: {
+                if (contentSpec.value == -1) {
+                    str.append("#PCDATA");
+                }
+                else {
+                    str.append(stringPool.toString(contentSpec.value));
+                }
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
+                provider.getContentSpec(contentSpec.value, contentSpec);
+                appendContentSpec(provider, stringPool, 
+                                  contentSpec, str, true);
+                str.append('?');
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
+                provider.getContentSpec(contentSpec.value, contentSpec);
+                appendContentSpec(provider, stringPool,
+                                  contentSpec, str, true);
+                str.append('*');
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
+                provider.getContentSpec(contentSpec.value, contentSpec);
+                appendContentSpec(provider, stringPool,
+                                  contentSpec, str, true);
+                str.append('+');
+                break;
+            }
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE:
+            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
+                if (parens) {
+                    str.append('(');
+                }
+                int type = contentSpec.type;
+                int otherValue = contentSpec.otherValue;
+                provider.getContentSpec(contentSpec.value, contentSpec);
+                appendContentSpec(provider, stringPool,
+                                  contentSpec, str, contentSpec.type != type);
+                if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
+                    str.append('|');
+                }
+                else {
+                    str.append(',');
+                }
+                /***
+                // REVISIT: Do we need this? -Ac
+                if (++index == CHUNK_SIZE) {
+                    chunk++;
+                    index = 0;
+                }
+                /***/
+                provider.getContentSpec(otherValue, contentSpec);
+                appendContentSpec(provider, stringPool,
+                                  contentSpec, str, true);
+                if (parens) {
+                    str.append(')');
+                }
+                break;
+            }
+
+        } // switch type
+
+    } // appendContentSpec(XMLContentSpec.Provider,StringPool,XMLContentSpec,StringBuffer,boolean)
+
+    //
+    // Interfaces
+    //
+
+    /**
+     * Provides a means for walking the structure built out of 
+     * content spec "nodes". The user of this provider interface is
+     * responsible for knowing what the content spec node values
+     * "mean". If those values refer to content spec identifiers,
+     * then the user can call back into the provider to get the
+     * next content spec node in the structure.
+     */
+    public interface Provider {
+
+        //
+        // XMLContentSpec.Provider methods
+        //
+
+        /**
+         * Fills in the provided content spec structure with content spec
+         * information for a unique identifier.
+         *
+         * @param contentSpecIndex The content spec identifier. All content
+         *                         spec "nodes" have a unique identifier.
+         * @param contentSpec      The content spec struct to fill in with
+         *                         the information.
+         *
+         * @return Returns true if the contentSpecIndex was found.
+         */
+        public boolean getContentSpec(int contentSpecIndex, XMLContentSpec contentSpec);
+
+    } // interface Provider
+
+} // class XMLContentSpec

@@ -123,7 +123,7 @@ public class SimpleContentModel
      * @parma secondChildIndex The second child index.
      * @param cmOp The content model operator.
      *
-     * @see XMLContentSpec.Node
+     * @see XMLContentSpec
      */
     public SimpleContentModel(QName firstChild, QName secondChild, int cmOp)
     {

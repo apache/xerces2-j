@@ -2170,7 +2170,7 @@ public class TraverseSchema {
         if (count > 1) {
 
             // create and initialize singletons
-            XMLContentSpec.Node choice = new XMLContentSpec.Node();
+            XMLContentSpec choice = new XMLContentSpec();
 
             choice.type = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             choice.value = -1;
@@ -2192,7 +2192,7 @@ public class TraverseSchema {
 
     /** Builds the all model. */
     private int buildAllModel(int src[], int offset,
-                              XMLContentSpec.Node choice) throws Exception {
+                              XMLContentSpec choice) throws Exception {
 
         // swap last two places
         if (src.length - offset == 2) {

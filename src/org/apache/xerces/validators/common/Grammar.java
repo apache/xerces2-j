@@ -66,7 +66,8 @@ import org.w3c.dom.Document;
 /**
  * @version $Id$
  */
-public class Grammar {
+public class Grammar
+    implements XMLContentSpec.Provider {
 
     //
     // Constants
@@ -179,7 +180,7 @@ public class Grammar {
         int index = contentSpecIndex & CHUNK_MASK;
 
        
-        XMLContentSpec.Node  contentSpecNode   = new XMLContentSpec.Node();         
+        XMLContentSpec  contentSpecNode   = new XMLContentSpec();         
 
         int  hContentSpecNode = contentSpec.getHandle();
 
@@ -287,7 +288,7 @@ public class Grammar {
         int   index = contentSpecIndex & CHUNK_MASK;
         
         fContentSpecType[chunk][index]         = contentSpec.getType();
-        XMLContentSpec.Node  contentSpecNode   = new XMLContentSpec.Node(); 
+        XMLContentSpec  contentSpecNode   = new XMLContentSpec(); 
 
         int  hContentSpecNode = contentSpec.getHandle();
 

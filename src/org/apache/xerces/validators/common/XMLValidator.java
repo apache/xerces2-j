@@ -1817,7 +1817,7 @@ public final class XMLValidator
 
     /** Protected for access by ContentSpecImpl. */
     protected void getContentSpecNode(int contentSpecIndex, 
-                                      XMLContentSpec.Node csn) {
+                                      XMLContentSpec csn) {
 
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
@@ -1834,7 +1834,7 @@ public final class XMLValidator
             csn.otherValue = -1;
         }
 
-    } // getContentSpecNode(int,XMLContentSpec.Node)
+    } // getContentSpecNode(int,XMLContentSpec)
 
     /** Returns a string representation of a content spec. */
     protected String getContentSpecAsString(int elementIndex) {
@@ -2046,7 +2046,7 @@ public final class XMLValidator
         //  This will tell us what kind of node it is, which tells us what
         //  kind of model we will try to create.
         //
-        XMLContentSpec.Node specNode = new XMLContentSpec.Node();
+        XMLContentSpec specNode = new XMLContentSpec();
         int contentSpecIndex = getContentSpecHandle(elementIndex);
         getContentSpecNode(contentSpecIndex, specNode);
 
@@ -2072,8 +2072,8 @@ public final class XMLValidator
             //  Lets see if both of the children are leafs. If so, then it
             //  it has to be a simple content model
             //
-            XMLContentSpec.Node specLeft = new XMLContentSpec.Node();
-            XMLContentSpec.Node specRight = new XMLContentSpec.Node();
+            XMLContentSpec specLeft = new XMLContentSpec();
+            XMLContentSpec specRight = new XMLContentSpec();
             getContentSpecNode(specNode.value, specLeft);
             getContentSpecNode(specNode.otherValue, specRight);
 
@@ -2096,7 +2096,7 @@ public final class XMLValidator
             //  its a repetition of a single element, so we can do a simple
             //  content model for that.
             //
-            XMLContentSpec.Node specLeft = new XMLContentSpec.Node();
+            XMLContentSpec specLeft = new XMLContentSpec();
             getContentSpecNode(specNode.value, specLeft);
 
             if (specLeft.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
@@ -2152,7 +2152,7 @@ public final class XMLValidator
             //  Just create a mixel content model object. This type of
             //  content model is optimized for mixed content validation.
             //
-            XMLContentSpec.Node specNode = new XMLContentSpec.Node();
+            XMLContentSpec specNode = new XMLContentSpec();
             int contentSpecIndex = getContentSpecHandle(elementIndex);
             makeContentList(contentSpecIndex, specNode);
             cmRet = new MixedContentModel(fCount, fContentList);
@@ -2194,7 +2194,7 @@ public final class XMLValidator
      * We also count the non-epsilon leaf nodes, which is an important value
      * that is used in a number of places later.
      */
-    private CMNode buildSyntaxTree(int startNode, XMLContentSpec.Node specNode) 
+    private CMNode buildSyntaxTree(int startNode, XMLContentSpec specNode) 
         throws CMException {
 
                 //****DEBUG****
@@ -2266,10 +2266,10 @@ public final class XMLValidator
         // And return our new node for this level
         return nodeRet;
 
-    } // buildSyntaxTree(int,XMLContentSpec.Node):CMNode
+    } // buildSyntaxTree(int,XMLContentSpec):CMNode
 
     /** Makes a content list. */
-    private void makeContentList(int startNode, XMLContentSpec.Node specNode) 
+    private void makeContentList(int startNode, XMLContentSpec specNode) 
         throws CMException {
 
                 //****DEBUG****
@@ -2309,11 +2309,11 @@ public final class XMLValidator
             break;
         }
 
-    } // makeContentList(int,XMLContentSpec.Node)
+    } // makeContentList(int,XMLContentSpec)
 
     /** Builds a content list. */
     private int buildContentList(int startNode, int count, 
-                                 XMLContentSpec.Node specNode) 
+                                 XMLContentSpec specNode) 
         throws CMException {
 
                 //****DEBUG****
@@ -2358,7 +2358,7 @@ public final class XMLValidator
         // And return our accumlated new count
         return count;
 
-    } // buildContentList(int,int,XMLContentSpec.Node):int
+    } // buildContentList(int,int,XMLContentSpec):int
 
     // initialization
 
@@ -3446,7 +3446,7 @@ public final class XMLValidator
                 System.out.println("Checking content of datatype");
                 String strTmp = fStringPool.toString(elementTypeIndex);
                 int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-                XMLContentSpec.Node csn = new XMLContentSpec.Node();
+                XMLContentSpec csn = new XMLContentSpec();
                 fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
                 String contentSpecString = fStringPool.toString(csn.value);
                 System.out.println
@@ -3471,7 +3471,7 @@ public final class XMLValidator
             }
             try { // REVISIT - integrate w/ error handling
                 int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-                XMLContentSpec.Node csn = new XMLContentSpec.Node();
+                XMLContentSpec csn = new XMLContentSpec();
                 fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
                 String type = fStringPool.toString(csn.value);
                 DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
@@ -3708,10 +3708,10 @@ public final class XMLValidator
         }
 
         /** 
-         * Fills in the XMLContentSpec.Node with the information
+         * Fills in the XMLContentSpec with the information
          * associated with the specified handle. 
          */
-        public void getNode(int handle, XMLContentSpec.Node node) {
+        public void getNode(int handle, XMLContentSpec node) {
             getContentSpecNode(handle, node);
         }
 
