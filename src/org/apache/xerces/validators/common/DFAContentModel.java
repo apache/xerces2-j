@@ -422,14 +422,9 @@ public class DFAContentModel
 
     private boolean isEqual(QName name1, QName name2) {
         if (name1 != null && name2 != null) {
-            // REVISIT: should be better named, name1 should be nameInContentModel, 
-            //            name2 should be nameOfChild
-            if (name1.localpart == -1) {
-                return name1.uri == name2.uri;
-            }
-            else 
-                return name1.localpart == name2.localpart &&
-                       name1.uri == name2.uri;
+                
+            return name1.localpart == name2.localpart &&
+                name1.uri == name2.uri;
 
         }
         return false;

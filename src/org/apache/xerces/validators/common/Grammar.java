@@ -645,7 +645,8 @@ implements XMLContentSpec.Provider {
         CMNode nodeRet = null;
         getContentSpec(startNode, contentSpec);
         if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-            nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
+            //nodeRet = new CMAny(contentSpec.type, -1, fLeafCount++);
+            nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);
         }
         else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             nodeRet = new CMAny(contentSpec.type, contentSpec.otherValue, fLeafCount++);

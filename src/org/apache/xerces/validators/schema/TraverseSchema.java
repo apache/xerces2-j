@@ -1524,20 +1524,20 @@ public class TraverseSchema implements
                         }
                         String uri = (String)tokens.elementAt(0);
                         int uriIndex = fStringPool.addSymbol(uri);
-                        int leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, -1, uriIndex, false);
-                        int valueIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, leafIndex, -1, false);
+                        int leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, uriIndex, false);
+                        int valueIndex = leafIndex;
                         int count = tokens.size();
                         if (count > 1) {
                             uri = (String)tokens.elementAt(1);
                             uriIndex = fStringPool.addSymbol(uri);
-                            leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, -1, uriIndex, false);
-                            int otherValueIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, leafIndex, -1, false);
+                            leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, uriIndex, false);
+                            int otherValueIndex = leafIndex;
                             int choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, valueIndex, otherValueIndex, false);
                             for (int i = 2; i < count; i++) {
                                 uri = (String)tokens.elementAt(i);
                                 uriIndex = fStringPool.addSymbol(uri);
-                                leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, -1, uriIndex, false);
-                                otherValueIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, leafIndex, -1, false);
+                                leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, uriIndex, false);
+                                otherValueIndex = leafIndex;
                                 choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, choiceIndex, otherValueIndex, false);
                             }
                             anyIndex = choiceIndex;
