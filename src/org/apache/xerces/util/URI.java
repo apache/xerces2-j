@@ -514,13 +514,20 @@ import java.io.Serializable;
       }
     }
 
-    // two slashes means generic URI syntax, so we get the authority
+    // Two slashes means we may have authority, but definitely means we're either
+    // matching net_path or abs_path. These two productions are ambiguous in that
+    // every net_path is an abs_path. RFC 2396 resolves this ambiguity by applying
+    // a greedy left most matching rule. Try matching net_path first, and if that
+    // fails we don't have authority so then attempt to match abs_path.
+    //
+    // net_path = "//" authority [ abs_path ]
+    // abs_path = "/"  path_segments
     if (((index+1) < uriSpecLen) &&
         (uriSpec.charAt(index) == '/' && uriSpec.charAt(index+1) == '/')) {
       index += 2;
       int startPos = index;
 
-      // get authority - everything up to path, query or fragment
+      // Authority will be everything up to path, query or fragment
       char testChar = '\0';
       while (index < uriSpecLen) {
         testChar = uriSpec.charAt(index);
@@ -530,10 +537,15 @@ import java.io.Serializable;
         index++;
       }
 
-      // if we found authority, parse it out, otherwise we set the
-      // host to empty string
+      // Attempt to parse authority. If the section is an empty string
+      // this is a valid server based authority, so set the host to this
+      // value.
       if (index > startPos) {
-        initializeAuthority(uriSpec.substring(startPos, index));
+        // If we didn't find authority we need to back up. Attempt to
+        // match against abs_path next.
+        if (!initializeAuthority(uriSpec.substring(startPos, index))) {
+          index = startPos - 2;
+        }
       }
       else {
         m_host = "";
@@ -694,15 +706,15 @@ import java.io.Serializable;
   }
 
  /**
-  * Initialize the authority (userinfo, host and port) for this
-  * URI from a URI string spec.
+  * Initialize the authority (either server or registry based)
+  * for this URI from a URI string spec.
   *
   * @param p_uriSpec the URI specification (cannot be null)
-  *
-  * @exception MalformedURIException if p_uriSpec violates syntax rules
+  * 
+  * @return true if the given string matched server or registry
+  * based authority
   */
-  private void initializeAuthority(String p_uriSpec)
-                 throws MalformedURIException {
+  private boolean initializeAuthority(String p_uriSpec) {
     
     int index = 0;
     int start = 0;
@@ -711,7 +723,7 @@ import java.io.Serializable;
     char testChar = '\0';
     String userinfo = null;
 
-    // userinfo is everything up @
+    // userinfo is everything up to @
     if (p_uriSpec.indexOf('@', start) != -1) {
       while (index < end) {
         testChar = p_uriSpec.charAt(index);
@@ -759,25 +771,86 @@ import java.io.Serializable;
         }
         String portStr = p_uriSpec.substring(start, index);
         if (portStr.length() > 0) {
-          for (int i = 0; i < portStr.length(); i++) {
+          // REVISIT: Remove this code.
+          /** for (int i = 0; i < portStr.length(); i++) {
             if (!isDigit(portStr.charAt(i))) {
               throw new MalformedURIException(
                    portStr +
                    " is invalid. Port should only contain digits!");
             }
-          }
+          }**/
+          // REVISIT: Remove this code.
+          // Store port value as string instead of integer.
           try {
             port = Integer.parseInt(portStr);
+            if (port == -1) --port;
           }
           catch (NumberFormatException nfe) {
-            // can't happen
+            port = -2;
           }
         }
       }
     }
-    setHost(host);
-    setPort(port);
-    setUserinfo(userinfo);
+    
+    if (isValidServerAuthority(host, port, userinfo)) {
+      m_host = host;
+      m_port = port;
+      m_userinfo = userinfo;
+      return true;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Determines whether the components host, port, and user info
+   * are valid as a server authority.
+   * 
+   * @param host the host component of authority
+   * @param port the port number component of authority
+   * @param userinfo the user info component of authority
+   * 
+   * @return true if the given host, port, and userinfo compose
+   * a valid server authority
+   */
+  private boolean isValidServerAuthority(String host, int port, String userinfo) {
+    
+    // Check if the host is well formed.
+    if (!isWellFormedAddress(host)) {
+      return false;
+    }
+    
+    // Check that port is well formed if it exists.
+    // REVISIT: There's no restriction on port value ranges, but
+    // perform the same check as in setPort to be consistent. Pass
+    // in a string to this method instead of an integer.
+    if (port < -1 || port > 65535) {
+      return false;
+    }
+    
+    // Check that userinfo is well formed if it exists.
+    if (userinfo != null) {
+      // Userinfo can contain alphanumerics, mark characters, escaped
+      // and ';',':','&','=','+','$',','
+      int index = 0;
+      int end = userinfo.length();
+      char testChar = '\0';
+      while (index < end) {
+        testChar = userinfo.charAt(index);
+        if (testChar == '%') {
+          if (index+2 >= end ||
+            !isHex(userinfo.charAt(index+1)) ||
+            !isHex(userinfo.charAt(index+2))) {
+            return false;
+          }
+        }
+        else if (!isUserinfoCharacter(testChar)) {
+          return false;
+        }
+        ++index;
+      }
+    }
+    return true;
   }
 
  /**
