@@ -218,21 +218,6 @@ public class DocumentImpl
         // clone node
         DocumentImpl newdoc = (DocumentImpl)super.cloneNode(deep);
 
-        /*
-        // set doctype and root element
-        Node child = newdoc.getFirstChild();
-        while (child != null) {
-            short type = child.getNodeType();
-            if (type == Node.DOCUMENT_TYPE_NODE) {
-                newdoc.docType = (DocumentTypeImpl)child;
-            }
-            else if (type == Node.ELEMENT_NODE) {
-                newdoc.docElement = (ElementImpl)child;
-            }
-            child = child.getNextSibling();
-        }
-        */
-
         // REVISIT: What to do about identifiers that are cloned? -Ac
         //newdoc.identifiers = (Hashtable)identifiers.clone(); // WRONG!
         newdoc.identifiers = null;
@@ -845,7 +830,7 @@ public class DocumentImpl
 	if (parent != null) {
 	    parent.removeChild(source);
 	}
-	((NodeImpl)source).ownerDocument = this;
+	((NodeImpl)source).setOwnerDocument(this);
     }
 
     // identifier maintenence
