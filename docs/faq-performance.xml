@@ -23,8 +23,9 @@
       <p>
 	The parser configuration may affect the performance of the parser.
 	For example, if you are interested in evaluating the parser performance
-	with DTDs use the <code>DTDConfiguration</code> (<em>Note</em>: you can 
-	build Xerces with DTD-only support using <em>dtdjars</em> build target).
+	with DTDs you may want to use the <code>DTDConfiguration</code> 
+	(<em>Note</em>: you can build Xerces with DTD-only support using 
+	<em>dtdjars</em> build target).
       </p>
     </a>
   </faq>
