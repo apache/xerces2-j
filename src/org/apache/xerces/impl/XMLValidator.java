@@ -258,10 +258,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     private boolean DEBUG_ATTRIBUTES;
     private boolean DEBUG_ELEMENT_CHILDREN;
 
-    /** to check for duplicate ID or ANNOTATION attribute declare in ATTLIST*/
+    /** to check for duplicate ID or ANNOTATION attribute declare in ATTLIST, and misc VCs*/
 
     private Hashtable fTableOfIDAttributeNames;
     private Hashtable fTableOfNOTATIONAttributeNames;
+    private Hashtable fNotationEnumVals;
 
 
     //
@@ -1196,6 +1197,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             //  VC: One Notaion Per Element Type, should check if there is a duplicate NOTATION attribute 
 
             if (type.equals("NOTATION")) {
+                // VC: Notation Attributes:
+                //     all notation names in the (attribute) declaration must be declared.
+                for (int i=0; i<enumeration.length; i++) {
+                    fNotationEnumVals.put(enumeration[i], attributeName);
+                }
+                
                 if (fTableOfNOTATIONAttributeNames.containsKey( elementName ) == false) {
                     fTableOfNOTATIONAttributeNames.put( elementName, attributeName);
                 } else {
@@ -1475,7 +1482,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             fValENTITY.initialize(fCurrentGrammar);//Initialize ENTITY, ENTITIES validators 
             fValENTITIES.initialize(fCurrentGrammar);
 
-
+            // VC : Notation Declared. for external entity declaration [Production 76].
             Enumeration entities = fNDataDeclNotations.keys();
             while (entities.hasMoreElements()) {
                 String entity = (String) entities.nextElement();
@@ -1487,9 +1494,23 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
+
+            // VC: Notation Attributes:
+            //     all notation names in the (attribute) declaration must be declared.
+            Enumeration notationVals = fNotationEnumVals.keys();
+            while (notationVals.hasMoreElements()) {
+                String notation = (String) notationVals.nextElement();
+                String attributeName = (String) fNotationEnumVals.get(notation);
+                if (fCurrentGrammar.getNotationDeclIndex(notation) == -1) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_NOTATION_NOT_DECLARED_FOR_NOTATIONTYPE_ATTRIBUTE",
+                                               new Object[]{attributeName, notation},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+            
             fTableOfIDAttributeNames = null;//should be safe to release these references
             fTableOfNOTATIONAttributeNames = null;
-
         }
 
         // call handlers
@@ -2503,6 +2524,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fValID.initialize(fTableOfIDs);
         fValIDRef.initialize(fTableOfIDs);
         fValIDRefs.initialize(fTableOfIDs);
+
+        if (fNotationEnumVals == null) {
+            fNotationEnumVals = new Hashtable(); 
+        }
+        fNotationEnumVals.clear();
 
         if (fValidation) {
             fTableOfIDAttributeNames = new Hashtable();
