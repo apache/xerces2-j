@@ -77,6 +77,10 @@ public class XMLAttributeDecl {
 
     public DatatypeValidator datatypeValidator;
 
+    // Att types, e.g. ID, IDREF, NOTATION, NMTOKEN, 
+
+    public int type;
+
     // values
 
     public String defaultType;
@@ -102,11 +106,13 @@ public class XMLAttributeDecl {
     public void clear() {
         name.clear();
         datatypeValidator = null;
+	type = -1;
     }
 
     public void setValues(XMLAttributeDecl attributeDecl) {
         name.setValues(attributeDecl.name);
         datatypeValidator = attributeDecl.datatypeValidator;
+	type = attributeDecl.type;
 	defaultType = attributeDecl.defaultType;
 	defaultValue = attributeDecl.defaultValue;
     }
