@@ -112,6 +112,7 @@ import org.w3c.dom.Text;
 import org.w3c.dom.ls.DOMBuilderFilter;
 import org.w3c.dom.traversal.NodeFilter;
 
+import java.util.Locale;
 import java.util.Stack;
 
 /**
@@ -458,6 +459,17 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
 
     } // reset()
+
+    /**
+     * Set the locale to use for messages.
+     *
+     * @param locale The locale object to use for localization of messages.
+     *
+     */
+    public void setLocale(Locale locale) {
+        fConfiguration.setLocale(locale);
+
+    } // setLocale(Locale)
 
     //
     // XMLDocumentHandler methods
