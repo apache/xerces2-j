@@ -61,7 +61,7 @@ package dom;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
-import org.w3c.dom.DOMImplementationRegistry;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMBuilder;
 import org.w3c.dom.ls.DOMImplementationLS;
