@@ -109,6 +109,11 @@ public class SubstitutionGroupHandler {
             return exemplar;
         }
 
+        // if the exemplar is not a global element decl, then it's not possible
+        // to be substituted by another element.
+        if (!exemplar.isGlobal())
+            return null;
+
         // if the decl blocks substitution, return false
         if ((exemplar.fBlock & SchemaSymbols.SUBSTITUTION) != 0)
             return null;
@@ -132,7 +137,7 @@ public class SubstitutionGroupHandler {
 
     // 3.3.6 Substitution Group OK (Transitive)
     // check whether element can substitute exemplar
-    public boolean substitutionGroupOK(XSElementDecl element, XSElementDecl exemplar, short blockingConstraint) {
+    protected boolean substitutionGroupOK(XSElementDecl element, XSElementDecl exemplar, short blockingConstraint) {
         // For an element declaration (call it D) together with a blocking constraint (a subset of {substitution, extension, restriction}, the value of a {disallowed substitutions}) to be validly substitutable for another element declaration (call it C) all of the following must be true:
         // 1 The blocking constraint does not contain substitution.
         if ((blockingConstraint & SchemaSymbols.SUBSTITUTION) != 0)
@@ -154,14 +159,6 @@ public class SubstitutionGroupHandler {
         if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE)
             blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
 
-        // REVISIT: there is a potential infinite loop introcuded by
-        //          circular substitutionGroup. if A sub B, B sub C, and C
-        //          sub B again. Then we can't check whether A sub D, because
-        //          we'll get an infinite loop when trying to get A's
-        //          {substitution group affiliation} recursively.
-        //          To solve it, we need to keep track of all element decls
-        //          in the chain, and if we see the same decl again, just
-        //          stop the loop, and return false. -SG
         // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
         XSElementDecl subGroup = element.fSubGroup;
         while (subGroup != null && subGroup != exemplar) {
@@ -185,6 +182,17 @@ public class SubstitutionGroupHandler {
             return false;
 
         return true;
+    }
+
+    // check whether element is in exemplar's substitution group
+    public boolean inSubstitutionGroup(XSElementDecl element, XSElementDecl exemplar) {
+        // [Definition:]  Every element declaration in the {element declarations} of a schema defines a substitution group, a subset of those {element declarations}, as follows:
+        // 1 The element declaration itself is in the group;
+        // 2 The group is closed with respect to {substitution group affiliation}, that is, if any element declaration in the {element declarations} has a {substitution group affiliation} in the group, then it is also in the group itself.
+        while (element != null && element != exemplar) {
+            element = element.fSubGroup;
+        }
+        return (element != null);
     }
 
 } // class SubstitutionGroupHandler
