@@ -58,16 +58,6 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.IOException;
-
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLDocumentScanner;
-import org.apache.xerces.impl.XMLDTDScanner;
-import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.XMLInputSource;
-
-import org.apache.xerces.util.SymbolTable;
-
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -75,10 +65,7 @@ import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 /**
  * This is the base class for all XML document parsers. XMLDocumentParser
@@ -103,15 +90,6 @@ public abstract class AbstractXMLDocumentParser
 
     // state
 
-    /** 
-     * True if a parse is in progress. This state is needed because
-     * some features/properties cannot be set while parsing (e.g.
-     * validation and namespaces).
-     */
-    protected boolean fParseInProgress = false;
-
-    // state
-
     /** True if inside DTD. */
     protected boolean fInDTD;
 
@@ -123,17 +101,12 @@ public abstract class AbstractXMLDocumentParser
      * Constructs a document parser using the default symbol table
      * and grammar pool.
      */
-    protected AbstractXMLDocumentParser() {
-    } // <init>()
-
-    /**
-     * Constructs a document parser using the specified symbol table
-     * and a default grammar pool.
-     *
-     */
-    protected AbstractXMLDocumentParser(SymbolTable symbolTable) {
-        super(symbolTable);
-    } // <init>(SymbolTable)
+    protected AbstractXMLDocumentParser(ParserConfiguration config) {
+        super(config);
+        config.setDocumentHandler(this);
+        config.setDTDHandler(this);
+        config.setDTDContentModelHandler(this);
+    } // <init>(ParserConfiguration)
 
     //
     // XMLDocumentHandler methods

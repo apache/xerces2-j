@@ -280,25 +280,24 @@ public class StandardParserConfiguration
             fEntityManager.setEntityHandler(fScanner);
             fEntityManager.startDocumentEntity(new XMLInputSource(source));
             fScanner.scanDocument(true);
-            fParseInProgress = false;
         } 
         catch (SAXException ex) {
-            fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
         } 
         catch (IOException ex) {
-            fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw ex;
         } 
         catch (Exception ex) {
-            fParseInProgress = false;
             if (PRINT_EXCEPTION_STACK_TRACE)
                 ex.printStackTrace();
             throw new org.xml.sax.SAXException(ex);
+        }
+        finally {
+            fParseInProgress = false;
         }
 
     } // parse(InputSource)
