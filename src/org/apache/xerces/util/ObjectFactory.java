@@ -181,6 +181,7 @@ public class ObjectFactory {
                 debugPrintln("found in " + propertiesFilename + ", value=" + factoryClassName);
                 return newInstance(factoryClassName, cl, true);
             }
+            fis.close();
         } catch (Exception x) {
             // assert(x instanceof FileNotFoundException
             //        || x instanceof SecurityException)
