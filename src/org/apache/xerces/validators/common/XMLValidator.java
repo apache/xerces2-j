@@ -891,6 +891,7 @@ public final class XMLValidator
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
                 int childCount = peekChildCount();
                 int result = checkContent(elementIndex, childCount, peekChildren());
+System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
                 if (result != -1) {
                     int majorCode = result != childCount ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
                     reportRecoverableXMLError(majorCode,
@@ -3151,7 +3152,7 @@ public final class XMLValidator
                         }
                         
                         if (fValidating && !seeXsi) {
-                            schemaCandidateURIs.add( fStringPool.toString(uri) );
+                            schemaCandidateURIs.addElement( fStringPool.toString(uri) );
                         }
                     }
                 }
