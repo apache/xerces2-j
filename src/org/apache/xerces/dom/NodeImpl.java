@@ -190,10 +190,6 @@ public abstract class NodeImpl
      */
     public void setNodeValue(String x) 
         throws DOMException {
-        if (readOnly()) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                   "DOM001 Modification not allowed");
-        }
         // Default behavior is to do nothing, overridden in some subclasses
     }
 
