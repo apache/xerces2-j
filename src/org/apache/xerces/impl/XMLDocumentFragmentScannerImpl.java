@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -88,7 +88,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * This class is responsible for scanning the structure and content
- * of document fragments. The scanner acts as the source for the 
+ * of document fragments. The scanner acts as the source for the
  * document information which is communicated to the document handler.
  * <p>
  * This component requires the following features and properties from the
@@ -156,21 +156,21 @@ public class XMLDocumentFragmentScannerImpl
     // feature identifiers
 
     /** Feature identifier: namespaces. */
-    protected static final String NAMESPACES = 
+    protected static final String NAMESPACES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
     /** Feature identifier: notify built-in refereces. */
     protected static final String NOTIFY_BUILTIN_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
-    
+
     // recognized features and properties
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACES, 
-        VALIDATION, 
+        NAMESPACES,
+        VALIDATION,
         NOTIFY_BUILTIN_REFS,
-        NOTIFY_CHAR_REFS, 
+        NOTIFY_CHAR_REFS,
     };
 
     /** Recognized properties. */
@@ -214,7 +214,7 @@ public class XMLDocumentFragmentScannerImpl
 
     /** has external dtd */
     protected boolean fHasExternalDTD;
-    
+
     /** Standalone. */
     protected boolean fStandalone;
 
@@ -298,8 +298,8 @@ public class XMLDocumentFragmentScannerImpl
     // XMLDocumentScanner methods
     //
 
-    /** 
-     * Sets the input source. 
+    /**
+     * Sets the input source.
      *
      * @param inputSource The input source.
      *
@@ -311,7 +311,7 @@ public class XMLDocumentFragmentScannerImpl
         fDocumentSystemId = fEntityManager.expandSystemId(inputSource.getSystemId());
     } // setInputSource(XMLInputSource)
 
-    /** 
+    /**
      * Scans a document.
      *
      * @param complete True if the scanner should scan the document
@@ -324,7 +324,7 @@ public class XMLDocumentFragmentScannerImpl
      *
      * @returns True if there is more to scan, false otherwise.
      */
-    public boolean scanDocument(boolean complete) 
+    public boolean scanDocument(boolean complete)
         throws IOException, XNIException {
 
         // keep dispatching "events"
@@ -348,13 +348,13 @@ public class XMLDocumentFragmentScannerImpl
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
      * component.
-     * 
+     *
      * @param componentManager The component manager.
      *
      * @throws SAXException Thrown by component on initialization error.
      *                      For example, if a feature or property is
      *                      required for the operation of the component, the
-     *                      component manager may throw a 
+     *                      component manager may throw a
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
@@ -396,7 +396,7 @@ public class XMLDocumentFragmentScannerImpl
         // setup dispatcher
         setScannerState(SCANNER_STATE_CONTENT);
         setDispatcher(fContentDispatcher);
-        
+
     } // reset(XMLComponentManager)
 
     /**
@@ -410,11 +410,11 @@ public class XMLDocumentFragmentScannerImpl
 
     /**
      * Sets the state of a feature. This method is called by the component
-     * manager any time after reset when a feature changes state. 
+     * manager any time after reset when a feature changes state.
      * <p>
      * <strong>Note:</strong> Components should silently ignore features
      * that do not affect the operation of the component.
-     * 
+     *
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
      *
@@ -427,7 +427,7 @@ public class XMLDocumentFragmentScannerImpl
         throws XMLConfigurationException {
 
         super.setFeature(featureId, state);
-            
+
         // Xerces properties
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
@@ -444,16 +444,16 @@ public class XMLDocumentFragmentScannerImpl
      * are recognized by this component.
      */
     public String[] getRecognizedProperties() {
-        return RECOGNIZED_PROPERTIES;
+        return (String[])(RECOGNIZED_PROPERTIES.clone());
     } // getRecognizedProperties():String[]
 
     /**
      * Sets the value of a property. This method is called by the component
-     * manager any time after reset when a property changes value. 
+     * manager any time after reset when a property changes value.
      * <p>
      * <strong>Note:</strong> Components should silently ignore properties
      * that do not affect the operation of the component.
-     * 
+     *
      * @param propertyId The property identifier.
      * @param value      The value of the property.
      *
@@ -464,7 +464,7 @@ public class XMLDocumentFragmentScannerImpl
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
-        
+
         super.setProperty(propertyId, value);
 
         // Xerces properties
@@ -484,8 +484,8 @@ public class XMLDocumentFragmentScannerImpl
 
     /**
      * setDocumentHandler
-     * 
-     * @param documentHandler 
+     *
+     * @param documentHandler
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
@@ -499,7 +499,7 @@ public class XMLDocumentFragmentScannerImpl
      * This method notifies of the start of an entity. The DTD has the
      * pseudo-name of "[dtd]" parameter entity names start with '%'; and
      * general entities are just specified by their name.
-     * 
+     *
      * @param name     The name of the entity.
      * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
@@ -510,7 +510,7 @@ public class XMLDocumentFragmentScannerImpl
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
+    public void startEntity(String name,
                             XMLResourceIdentifier identifier,
                             String encoding) throws XNIException {
 
@@ -535,9 +535,9 @@ public class XMLDocumentFragmentScannerImpl
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" parameter entity names start with '%'; and general entities 
+     * of "[dtd]" parameter entity names start with '%'; and general entities
      * are just specified by their name.
-     * 
+     *
      * @param name The name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -564,7 +564,7 @@ public class XMLDocumentFragmentScannerImpl
                 fDocumentHandler.endGeneralEntity(name, null);
             }
         }
-        
+
     } // endEntity(String)
 
     //
@@ -598,7 +598,7 @@ public class XMLDocumentFragmentScannerImpl
      *                         be scanned instead of an XML
      *                         declaration.
      */
-    protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl) 
+    protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl)
         throws IOException, XNIException {
 
         // scan decl
@@ -633,13 +633,13 @@ public class XMLDocumentFragmentScannerImpl
 
     /**
      * Scans a processing data. This is needed to handle the situation
-     * where a document starts with a processing instruction whose 
+     * where a document starts with a processing instruction whose
      * target name <em>starts with</em> "xml". (e.g. xmlfoo)
      *
      * @param target The PI target
      * @param data The string to fill in with the data
      */
-    protected void scanPIData(String target, XMLString data) 
+    protected void scanPIData(String target, XMLString data)
         throws IOException, XNIException {
 
         super.scanPIData(target, data);
@@ -672,8 +672,8 @@ public class XMLDocumentFragmentScannerImpl
         }
 
     } // scanComment()
-    
-    /** 
+
+    /**
      * Scans a start element. This method will handle the binding of
      * namespace information and notifying the handler of the start
      * of the element.
@@ -681,7 +681,7 @@ public class XMLDocumentFragmentScannerImpl
      * <pre>
      * [44] EmptyElemTag ::= '&lt;' Name (S Attribute)* S? '/>'
      * [40] STag ::= '&lt;' Name (S Attribute)* S? '>'
-     * </pre> 
+     * </pre>
      * <p>
      * <strong>Note:</strong> This method assumes that the leading
      * '&lt;' character has been consumed.
@@ -694,7 +694,7 @@ public class XMLDocumentFragmentScannerImpl
      * @returns True if element is empty. (i.e. It matches
      *          production [44].
      */
-    protected boolean scanStartElement() 
+    protected boolean scanStartElement()
         throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElement()");
 
@@ -707,6 +707,8 @@ public class XMLDocumentFragmentScannerImpl
             fElementQName.setValues(null, name, name, null);
         }
         String rawname = fElementQName.rawname;
+
+	      //if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElement() " + rawname );
 
         // push element stack
         fCurrentElement = fElementStack.pushElement(fElementQName);
@@ -746,7 +748,15 @@ public class XMLDocumentFragmentScannerImpl
         if (fDocumentHandler != null) {
             if (empty) {
                 fDocumentHandler.emptyElement(fElementQName, fAttributes, null);
-                handleEndElement(fElementQName, true);
+                //decrease the markup depth..
+                fMarkupDepth--;
+                // check that this element was opened in the same entity
+                if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+                    reportFatalError("ElementEntityMismatch",
+                                     new Object[]{fCurrentElement.rawname});
+                }
+                //pop the element off the stack..
+                fElementStack.popElement(fElementQName);
             }
             else {
                 fDocumentHandler.startElement(fElementQName, fAttributes, null);
@@ -758,14 +768,14 @@ public class XMLDocumentFragmentScannerImpl
 
     } // scanStartElement():boolean
 
-    /** 
+    /**
      * Scans an attribute.
      * <p>
      * <pre>
      * [41] Attribute ::= Name Eq AttValue
-     * </pre> 
+     * </pre>
      * <p>
-     * <strong>Note:</strong> This method assumes that the next 
+     * <strong>Note:</strong> This method assumes that the next
      * character on the stream is the first character of the attribute
      * name.
      * <p>
@@ -775,7 +785,7 @@ public class XMLDocumentFragmentScannerImpl
      *
      * @param attributes The attributes list for the scanned attribute.
      */
-    protected void scanAttribute(XMLAttributes attributes) 
+    protected void scanAttribute(XMLAttributes attributes)
         throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanAttribute()");
 
@@ -792,8 +802,7 @@ public class XMLDocumentFragmentScannerImpl
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
             reportFatalError("EqRequiredInAttribute",
-                             new Object[]{fCurrentElement.rawname,
-                                          fAttributeQName.rawname});
+                             new Object[]{fAttributeQName.rawname});
         }
         fEntityScanner.skipSpaces();
 
@@ -808,7 +817,7 @@ public class XMLDocumentFragmentScannerImpl
                                           fAttributeQName.rawname});
         }
         //REVISIT: one more case needs to be included: external PE and standalone is no
-        boolean isVC =  fHasExternalDTD && !fStandalone;        
+        boolean isVC =  fHasExternalDTD && !fStandalone;
         scanAttributeValue(fString, fString2,
                            fAttributeQName.rawname, attributes,
                            oldLen, isVC);
@@ -872,8 +881,8 @@ public class XMLDocumentFragmentScannerImpl
     } // scanContent():int
 
 
-    /** 
-     * Scans a CDATA section. 
+    /**
+     * Scans a CDATA section.
      * <p>
      * <strong>Note:</strong> This method uses the fString and
      * fStringBuffer variables.
@@ -883,9 +892,9 @@ public class XMLDocumentFragmentScannerImpl
      *
      * @return True if CDATA is completely scanned.
      */
-    protected boolean scanCDATASection(boolean complete) 
+    protected boolean scanCDATASection(boolean complete)
         throws IOException, XNIException {
-        
+
         // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.startCDATA(null);
@@ -965,16 +974,22 @@ public class XMLDocumentFragmentScannerImpl
     protected int scanEndElement() throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
 
-        // name
-        if (fNamespaces) {
-            if (!fEntityScanner.scanQName(fElementQName)) {
-                fElementQName.clear();
-            }
+        fElementStack.popElement(fElementQName) ;
+
+        // Take advantage of the fact that next string _should_ be "fElementQName.rawName",
+        //In scanners most of the time is consumed on checks done for XML characters, we can
+        // optimize on it and avoid the checks done for endElement,
+        //we will also avoid symbol table lookup - neeraj.bajaj@sun.com
+
+        // this should work both for namespace processing true or false...
+
+        //REVISIT: if the string is not the same as expected.. we need to do better error handling..
+        //We can skip this for now... In any case if the string doesn't match -- document is not well formed.
+        if ( ! fEntityScanner.scanEndElementName( fElementQName.rawname ) ) {
+            reportFatalError("ETagRequired",
+                             new Object[]{ fElementQName.rawname });
         }
-        else {
-            String name = fEntityScanner.scanName();
-            fElementQName.setValues(null, name, name, null);
-        }
+
 
         // end
         fEntityScanner.skipSpaces();
@@ -982,12 +997,23 @@ public class XMLDocumentFragmentScannerImpl
             reportFatalError("ETagUnterminated",
                              new Object[]{fElementQName.rawname});
         }
+
+        //we have increased the depth for two markup "<" characters
+        fMarkupDepth--;
         fMarkupDepth--;
 
-        // handle end element
-        int depth = handleEndElement(fElementQName, false);
-        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanEndElement(): "+depth);
-        return depth;
+        // check that this element was opened in the same entity
+        if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+            reportFatalError("ElementEntityMismatch",
+                             new Object[]{fCurrentElement.rawname});
+        }
+
+        // call handler
+        if (fDocumentHandler != null ) {
+            fDocumentHandler.endElement(fElementQName, null);
+        }
+
+        return fMarkupDepth;
 
     } // scanEndElement():int
 
@@ -998,7 +1024,7 @@ public class XMLDocumentFragmentScannerImpl
      * [66] CharRef ::= '&#' [0-9]+ ';' | '&#x' [0-9a-fA-F]+ ';'
      * </pre>
      */
-    protected void scanCharReference() 
+    protected void scanCharReference()
         throws IOException, XNIException {
 
         fStringBuffer2.clear();
@@ -1065,10 +1091,10 @@ public class XMLDocumentFragmentScannerImpl
                 //REVISIT: one more case needs to be included: external PE and standalone is no
                 if ( fHasExternalDTD && !fStandalone) {
                     if (fValidation)
-                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared", 
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,"EntityNotDeclared",
                                                     new Object[]{name}, XMLErrorReporter.SEVERITY_ERROR);
                 }
-                else 
+                else
                     reportFatalError("EntityNotDeclared", new Object[]{name});
             }
             fEntityManager.startEntity(name, false);
@@ -1078,9 +1104,9 @@ public class XMLDocumentFragmentScannerImpl
 
     // utility methods
 
-    /** 
+    /**
      * Calls document handler with a single character resulting from
-     * built-in entity resolution. 
+     * built-in entity resolution.
      *
      * @param c
      * @param entity built-in name
@@ -1090,18 +1116,18 @@ public class XMLDocumentFragmentScannerImpl
             if (fNotifyBuiltInRefs) {
                 fDocumentHandler.startGeneralEntity(entity, null, null, null);
             }
-            
+
             fSingleChar[0] = c;
             fString.setValues(fSingleChar, 0, 1);
             fDocumentHandler.characters(fString, null);
-            
+
             if (fNotifyBuiltInRefs) {
                 fDocumentHandler.endGeneralEntity(entity, null);
             }
         }
     } // handleCharacter(char)
 
-    /** 
+    /**
      * Handles the end element. This method will make sure that
      * the end element name matches the current element and notify
      * the handler about the end of the element and the end of any
@@ -1118,7 +1144,7 @@ public class XMLDocumentFragmentScannerImpl
      *                      upon notification.
      *
      */
-    protected int handleEndElement(QName element, boolean isEmpty) 
+    protected int handleEndElement(QName element, boolean isEmpty)
         throws XNIException {
 
         fMarkupDepth--;
@@ -1127,6 +1153,9 @@ public class XMLDocumentFragmentScannerImpl
             reportFatalError("ElementEntityMismatch",
                              new Object[]{fCurrentElement.rawname});
         }
+
+        /** PERFCHANGES-OFF
+
         // make sure the elements match
         QName startElement = fQName;
         fElementStack.popElement(startElement);
@@ -1139,7 +1168,9 @@ public class XMLDocumentFragmentScannerImpl
         if (fNamespaces) {
             element.uri = startElement.uri;
         }
-        
+
+          PERFCHANGES-OFF */
+
         // call handler
         if (fDocumentHandler != null && !isEmpty) {
             fDocumentHandler.endElement(element, null);
@@ -1266,13 +1297,13 @@ public class XMLDocumentFragmentScannerImpl
         // Public methods
         //
 
-        /** 
-         * Pushes an element on the stack. 
+        /**
+         * Pushes an element on the stack.
          * <p>
          * <strong>Note:</strong> The QName values are copied into the
          * stack. In other words, the caller does <em>not</em> orphan
          * the element to the stack. Also, the QName object returned
-         * is <em>not</em> orphaned to the caller. It should be 
+         * is <em>not</em> orphaned to the caller. It should be
          * considered read-only.
          *
          * @param element The element to push onto the stack.
@@ -1292,7 +1323,7 @@ public class XMLDocumentFragmentScannerImpl
             return fElements[fSize++];
         } // pushElement(QName):QName
 
-        /** 
+        /**
          * Pops an element off of the stack by setting the values of
          * the specified QName.
          * <p>
@@ -1311,7 +1342,7 @@ public class XMLDocumentFragmentScannerImpl
 
     } // class ElementStack
 
-    /** 
+    /**
      * This interface defines an XML "event" dispatching model. Classes
      * that implement this interface are responsible for scanning parts
      * of the XML document and dispatching callbacks.
@@ -1324,19 +1355,19 @@ public class XMLDocumentFragmentScannerImpl
         // Dispatcher methods
         //
 
-        /** 
+        /**
          * Dispatch an XML "event".
          *
          * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
+         *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this 
+         * @returns True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
          * @throws XNIException Thrown on parse error.
          */
-        public boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete)
             throws IOException, XNIException;
 
     } // interface Dispatcher
@@ -1354,19 +1385,19 @@ public class XMLDocumentFragmentScannerImpl
         // Dispatcher methods
         //
 
-        /** 
+        /**
          * Dispatch an XML "event".
          *
          * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
+         *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this 
+         * @returns True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
          * @throws XNIException Thrown on parse error.
          */
-        public boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete)
             throws IOException, XNIException {
 
             try {
@@ -1463,12 +1494,12 @@ public class XMLDocumentFragmentScannerImpl
                         case SCANNER_STATE_COMMENT: {
                             scanComment();
                             setScannerState(SCANNER_STATE_CONTENT);
-                            break;  
+                            break;
                         }
                         case SCANNER_STATE_PI: {
                             scanPI();
                             setScannerState(SCANNER_STATE_CONTENT);
-                            break;  
+                            break;
                         }
                         case SCANNER_STATE_CDATA: {
                             scanCDATASection(complete);
@@ -1506,12 +1537,14 @@ public class XMLDocumentFragmentScannerImpl
                                     String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
                                     scanPIData(target, fString);
                                 }
-                
+
                                 // standard text declaration
                                 else {
                                     scanXMLDeclOrTextDecl(true);
                                 }
                             }
+                            // now that we've straightened out the readers, we can read in chunks:
+                            fEntityManager.fCurrentEntity.mayReadChunks = true;
                             setScannerState(SCANNER_STATE_CONTENT);
                             break;
                         }
@@ -1529,7 +1562,7 @@ public class XMLDocumentFragmentScannerImpl
                     }
                 } while (complete || again);
             }
-    
+
             // premature end of file
             catch (EOFException e) {
                 endOfFileHook(e);
@@ -1549,20 +1582,20 @@ public class XMLDocumentFragmentScannerImpl
         // NOTE: These hook methods are added so that the full document
         //       scanner can share the majority of code with this class.
 
-        /** 
+        /**
          * Scan for DOCTYPE hook. This method is a hook for subclasses
-         * to add code to handle scanning for a the "DOCTYPE" string 
+         * to add code to handle scanning for a the "DOCTYPE" string
          * after the string "<!" has been scanned.
-         * 
+         *
          * @returns True if the "DOCTYPE" was scanned; false if "DOCTYPE"
          *          was not scanned.
          */
-        protected boolean scanForDoctypeHook() 
+        protected boolean scanForDoctypeHook()
             throws IOException, XNIException {
             return false;
         } // scanForDoctypeHook():boolean
 
-        /** 
+        /**
          * Element depth iz zero. This methos is a hook for subclasses
          * to add code to handle when the element depth hits zero. When
          * scanning a document fragment, an element depth of zero is
@@ -1571,7 +1604,7 @@ public class XMLDocumentFragmentScannerImpl
          * the document after the end of the document's root element.
          *
          * @returns True if the caller should stop and return true which
-         *          allows the scanner to switch to a new scanning 
+         *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
          */
@@ -1588,7 +1621,7 @@ public class XMLDocumentFragmentScannerImpl
          * the scanner must handle the root element specially.
          *
          * @returns True if the caller should stop and return true which
-         *          allows the scanner to switch to a new scanning 
+         *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
          */
@@ -1604,7 +1637,7 @@ public class XMLDocumentFragmentScannerImpl
          * However, when scanning a full XML document, an end of file
          * is always premature.
          */
-        protected void endOfFileHook(EOFException e) 
+        protected void endOfFileHook(EOFException e)
             throws IOException, XNIException {
 
             // NOTE: An end of file is only only an error if we were

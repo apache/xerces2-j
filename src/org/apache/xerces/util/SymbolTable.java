@@ -93,17 +93,26 @@ public class SymbolTable {
     //
 
     /** Default table size. */
-    protected static final int TABLE_SIZE = 101;
+    protected static final int TABLE_SIZE = 173;
 
     //
     // Data
     //
+
+    protected int entries;
 
     /** Buckets. */
     protected Entry[] fBuckets = null;
 
     // actual table size
     protected int fTableSize;
+
+    //no. of entries in table
+    protected int count ;
+
+    static final float loadFactor = .75f ;
+
+    protected int threshold ;
 
     //
     // Constructors
@@ -118,6 +127,7 @@ public class SymbolTable {
     public SymbolTable(int tableSize) {
         fTableSize = tableSize;
         fBuckets = new Entry[fTableSize];
+        threshold = (int)(tableSize * loadFactor) ;
     }
 
     //
@@ -148,9 +158,17 @@ public class SymbolTable {
             }
         }
 
+        /**
+        if(count > threshold){
+            rehash();
+            bucket = hash(symbol) % fTableSize ;
+        }
+        */
+
         // create new entry
         Entry entry = new Entry(symbol, fBuckets[bucket]);
         fBuckets[bucket] = entry;
+        count++ ;
         return entry.symbol;
 
     } // addSymbol(String):String
@@ -179,10 +197,16 @@ public class SymbolTable {
                 return entry.symbol;
             }
         }
-
+        /**
+        if(count > threshold){
+            rehash();
+            bucket = hash(buffer, offset, length) % fTableSize ;
+        }
+        */
         // add new entry
         Entry entry = new Entry(buffer, offset, length, fBuckets[bucket]);
         fBuckets[bucket] = entry;
+        count++ ;
         return entry.symbol;
 
     } // addSymbol(char[],int,int):String
@@ -205,6 +229,15 @@ public class SymbolTable {
         return code & 0x7FFFFFF;
 
     } // hash(String):int
+
+    //rearrange the table.. it will be done only once...
+
+    //REVISIT: implement this function..
+    public void rehash(){
+
+        //REVISIT:
+
+    }//rehash()
 
     /**
      * Returns a hashcode value for the specified symbol information.
@@ -305,6 +338,9 @@ public class SymbolTable {
 
         /** The next entry. */
         public Entry next;
+
+        //hashValue
+        public int hash ;
 
         //
         // Constructors
