@@ -775,6 +775,12 @@ public class StandardParserConfiguration
             if (property.equals(Constants.DTD_SCANNER_PROPERTY)) {
                 return;
             }
+            if (property.equals(Constants.SCHEMA_LOCATION)) {
+                return;
+            }
+            if (property.equals(Constants.SCHEMA_NONS_LOCATION)) {
+                return;
+            }
         }
 
         //
