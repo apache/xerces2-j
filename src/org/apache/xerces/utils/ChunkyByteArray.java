@@ -169,6 +169,13 @@ public final class ChunkyByteArray extends InputStream {
             return fData[chunk][index];
         }
         catch (NullPointerException ex) {
+            // ignore -- let fill create new chunk
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            // current chunk array is not big enough; resize
+            byte newdata[][] = new byte[fData.length * 2][];
+            System.arraycopy(fData, 0, newdata, 0, fData.length);
+            fData = newdata;
         }
         if (index == 0) {
             fill();
