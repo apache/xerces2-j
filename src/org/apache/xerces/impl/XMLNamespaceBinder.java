@@ -811,14 +811,18 @@ public class XMLNamespaceBinder
         for (int i = 0; i < attrCount - 1; i++) {
             String alocalpart = attributes.getLocalName(i);
             String auri = attributes.getURI(i);
+            String arawName = attributes.getQName(i);
             for (int j = i + 1; j < attrCount; j++) {
                 String blocalpart = attributes.getLocalName(j);
                 String buri = attributes.getURI(j);
+                String brawName = attributes.getQName(j);
                 if (alocalpart == blocalpart && auri == buri) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                               "AttributeNSNotUnique",
-                                               new Object[]{element.rawname,alocalpart, auri},
-                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    if ((arawName == brawName) ||  (!arawName.startsWith("xmlns") && !brawName.startsWith("xmlns"))) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "AttributeNSNotUnique",
+                                                   new Object[]{element.rawname,alocalpart, auri},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                 }
             }
         }
