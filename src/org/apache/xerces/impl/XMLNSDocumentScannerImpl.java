@@ -161,13 +161,13 @@ extends XMLDocumentScannerImpl {
     protected boolean scanStartElement()
     throws IOException, XNIException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElementNS()");
-        String rawname = null;
 
         // Note: namespace processing is on by default
         fEntityScanner.scanQName(fElementQName);
+        // REVISIT - [Q] Why do we need this temp variable? -- mrglavas
+        String rawname = fElementQName.rawname;
         if (fBindNamespaces) {
             fNamespaceContext.pushContext();
-            rawname = fElementQName.rawname;
             if (fScannerState == SCANNER_STATE_ROOT_ELEMENT) {
                 if (fPerformValidation) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
