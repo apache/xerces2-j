@@ -58,11 +58,8 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * Describes a constraining facet.
- * TODO: how should we represent enumerations and patterns?
- * Currently the implementation will expose each enumeration/pattern as an
- * XSObject.
- * TODO: we should also expose actual values
+ * Describes a constraining facet. Enumeration and pattern facets are exposed
+ * via XSMultiValueFacet interface.
  */
 public interface XSFacet extends XSObject{
     /**

@@ -69,10 +69,10 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.impl.xs.psvi.StringList;
-import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.psvi.XSAnnotation;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSFacet;
+import org.apache.xerces.impl.xs.psvi.XSMultiValueFacet;
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
@@ -257,15 +257,34 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private Vector fPattern;
     private Vector fPatternStr;
     private Vector fEnumeration;
+    private StringList fLexicalPattern;
+    private StringList fLexicalEnumeration;
     private Object fMaxInclusive;
     private Object fMaxExclusive;
     private Object fMinExclusive;
     private Object fMinInclusive;
     
+    // annotations for constraining facets
+    public XSAnnotation lengthAnnotation;
+    public XSAnnotation minLengthAnnotation;
+    public XSAnnotation maxLengthAnnotation;
+    public XSAnnotation whiteSpaceAnnotation;
+    public XSAnnotation totalDigitsAnnotation;
+    public XSAnnotation fractionDigitsAnnotation;
+    public XSObjectList patternAnnotations;
+    public XSObjectList enumerationAnnotations;
+    public XSAnnotation maxInclusiveAnnotation;
+    public XSAnnotation maxExclusiveAnnotation;
+    public XSAnnotation minInclusiveAnnotation;
+    public XSAnnotation minExclusiveAnnotation;
+    
     // facets as objects
     private XSObjectListImpl fFacets;
+    
+    // enumeration and pattern facets
+    private XSObjectListImpl fMultiValueFacets;
 
-    // optional annotations
+    // simpleType annotations
     private XSObjectList fAnnotations = null;
 
     private short fPatternType = SPECIAL_PATTERN_NONE;
@@ -671,6 +690,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"length", fTypeName});
             } else {
                 fLength = facets.length;
+                lengthAnnotation = facets.lengthAnnotation;
                 fFacetsDefined |= FACET_LENGTH;
                 if ((fixedFacet & FACET_LENGTH) != 0)
                     fFixedFacet |= FACET_LENGTH;
@@ -682,6 +702,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"minLength", fTypeName});
             } else {
                 fMinLength = facets.minLength;
+                minLengthAnnotation = facets.minLengthAnnotation;
                 fFacetsDefined |= FACET_MINLENGTH;
                 if ((fixedFacet & FACET_MINLENGTH) != 0)
                     fFixedFacet |= FACET_MINLENGTH;
@@ -693,6 +714,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"maxLength", fTypeName});
             } else {
                 fMaxLength = facets.maxLength;
+                maxLengthAnnotation = facets.maxLengthAnnotation;
                 fFacetsDefined |= FACET_MAXLENGTH;
                 if ((fixedFacet & FACET_MAXLENGTH) != 0)
                     fFixedFacet |= FACET_MAXLENGTH;
@@ -730,6 +752,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 Vector enumVals = facets.enumeration;
                 Vector enumNSDecls = facets.enumNSDecls;
                 ValidationContextImpl ctx = new ValidationContextImpl(context);
+                enumerationAnnotations = facets.enumAnnotations;
                 for (int i = 0; i < enumVals.size(); i++) {
                     if (enumNSDecls != null)
                         ctx.setNSContext((NamespaceContext)enumNSDecls.elementAt(i));
@@ -751,6 +774,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"whiteSpace", fTypeName});
             } else {
                 fWhiteSpace = facets.whiteSpace;
+                whiteSpaceAnnotation = facets.whiteSpaceAnnotation;
                 fFacetsDefined |= FACET_WHITESPACE;
                 if ((fixedFacet & FACET_WHITESPACE) != 0)
                     fFixedFacet |= FACET_WHITESPACE;
@@ -763,6 +787,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if ((allowedFacet & FACET_MAXINCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"maxInclusive", fTypeName});
             } else {
+                maxInclusiveAnnotation = facets.maxInclusiveAnnotation;
                 try {
                     fMaxInclusive = getActualValue(facets.maxInclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MAXINCLUSIVE;
@@ -802,6 +827,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if ((allowedFacet & FACET_MAXEXCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"maxExclusive", fTypeName});
             } else {
+                maxExclusiveAnnotation = facets.maxExclusiveAnnotation;
                 try {
                     fMaxExclusive = getActualValue(facets.maxExclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MAXEXCLUSIVE;
@@ -840,6 +866,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if ((allowedFacet & FACET_MINEXCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"minExclusive", fTypeName});
             } else {
+                minExclusiveAnnotation = facets.minExclusiveAnnotation;
                 try {
                     fMinExclusive = getActualValue(facets.minExclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MINEXCLUSIVE;
@@ -878,6 +905,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if ((allowedFacet & FACET_MININCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"minInclusive", fTypeName});
             } else {
+                minInclusiveAnnotation = facets.minInclusiveAnnotation;
                 try {
                     fMinInclusive = getActualValue(facets.minInclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MININCLUSIVE;
@@ -916,6 +944,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             if ((allowedFacet & FACET_TOTALDIGITS) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"totalDigits", fTypeName});
             } else {
+                totalDigitsAnnotation = facets.totalDigitsAnnotation;
                 fTotalDigits = facets.totalDigits;
                 fFacetsDefined |= FACET_TOTALDIGITS;
                 if ((fixedFacet & FACET_TOTALDIGITS) != 0)
@@ -928,6 +957,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"fractionDigits", fTypeName});
             } else {
                 fFractionDigits = facets.fractionDigits;
+                fractionDigitsAnnotation = facets.fractionDigitsAnnotation;
                 fFacetsDefined |= FACET_FRACTIONDIGITS;
                 if ((fixedFacet & FACET_FRACTIONDIGITS) != 0)
                     fFixedFacet |= FACET_FRACTIONDIGITS;
@@ -1284,16 +1314,19 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if ( (fFacetsDefined & FACET_LENGTH) == 0  && (fBase.fFacetsDefined & FACET_LENGTH) != 0 ) {
             fFacetsDefined |= FACET_LENGTH;
             fLength = fBase.fLength;
+            lengthAnnotation = fBase.lengthAnnotation;
         }
         // inherit minLength
         if ( (fFacetsDefined & FACET_MINLENGTH) == 0 && (fBase.fFacetsDefined & FACET_MINLENGTH) != 0 ) {
             fFacetsDefined |= FACET_MINLENGTH;
             fMinLength = fBase.fMinLength;
+            minLengthAnnotation = fBase.minLengthAnnotation;
         }
         // inherit maxLength
         if ((fFacetsDefined & FACET_MAXLENGTH) == 0 &&  (fBase.fFacetsDefined & FACET_MAXLENGTH) != 0 ) {
             fFacetsDefined |= FACET_MAXLENGTH;
             fMaxLength = fBase.fMaxLength;
+            maxLengthAnnotation = fBase.maxLengthAnnotation;
         }
         // inherit pattern
         if ( (fBase.fFacetsDefined & FACET_PATTERN) != 0 ) {
@@ -1313,47 +1346,55 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         if ( (fFacetsDefined & FACET_WHITESPACE) == 0 &&  (fBase.fFacetsDefined & FACET_WHITESPACE) != 0 ) {
             fFacetsDefined |= FACET_WHITESPACE;
             fWhiteSpace = fBase.fWhiteSpace;
+            whiteSpaceAnnotation = fBase.whiteSpaceAnnotation;
         }
         // inherit enumeration
         if ((fFacetsDefined & FACET_ENUMERATION) == 0 && (fBase.fFacetsDefined & FACET_ENUMERATION) != 0) {
             fFacetsDefined |= FACET_ENUMERATION;
             fEnumeration = fBase.fEnumeration;
+            enumerationAnnotations = fBase.enumerationAnnotations;
         }
         // inherit maxExclusive
         if ((( fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) &&
             !((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && !((fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
             fFacetsDefined |= FACET_MAXEXCLUSIVE;
             fMaxExclusive = fBase.fMaxExclusive;
+            maxExclusiveAnnotation = fBase.maxExclusiveAnnotation;
         }
         // inherit maxInclusive
         if ((( fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0) &&
             !((fFacetsDefined & FACET_MAXEXCLUSIVE) != 0) && !((fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
             fFacetsDefined |= FACET_MAXINCLUSIVE;
             fMaxInclusive = fBase.fMaxInclusive;
+            maxInclusiveAnnotation = fBase.maxInclusiveAnnotation;
         }
         // inherit minExclusive
         if ((( fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0) &&
             !((fFacetsDefined & FACET_MINEXCLUSIVE) != 0) && !((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
             fFacetsDefined |= FACET_MINEXCLUSIVE;
             fMinExclusive = fBase.fMinExclusive;
+            minExclusiveAnnotation = fBase.minExclusiveAnnotation;
         }
         // inherit minExclusive
         if ((( fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0) &&
             !((fFacetsDefined & FACET_MINEXCLUSIVE) != 0) && !((fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
             fFacetsDefined |= FACET_MININCLUSIVE;
             fMinInclusive = fBase.fMinInclusive;
+            minInclusiveAnnotation = fBase.minInclusiveAnnotation;
         }
         // inherit totalDigits
         if ((( fBase.fFacetsDefined & FACET_TOTALDIGITS) != 0) &&
             !((fFacetsDefined & FACET_TOTALDIGITS) != 0)) {
             fFacetsDefined |= FACET_TOTALDIGITS;
             fTotalDigits = fBase.fTotalDigits;
+            totalDigitsAnnotation = fBase.totalDigitsAnnotation;
         }
         // inherit fractionDigits
         if ((( fBase.fFacetsDefined & FACET_FRACTIONDIGITS) != 0)
             && !((fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
             fFacetsDefined |= FACET_FRACTIONDIGITS;
             fFractionDigits = fBase.fFractionDigits;
+            fractionDigitsAnnotation = fBase.fractionDigitsAnnotation;
         }
         //inherit tokeytype
         if ((fPatternType == SPECIAL_PATTERN_NONE ) && (fBase.fPatternType != SPECIAL_PATTERN_NONE)) {
@@ -1882,47 +1923,48 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public StringList getLexicalEnumeration() {
-        if (fEnumeration == null)
-            return null;
-
-        // REVISIT: fEnumeration should be of type StringListImpl
-        int size = fEnumeration.size();
-        String[] strs = new String[size];
-        for (int i = 0; i < size; i++)
-            strs[i] = fEnumeration.elementAt(i).toString();
-        return new StringListImpl(strs, size);
+        if (fLexicalEnumeration == null){
+            if (fEnumeration == null)
+                return null;
+            int size = fEnumeration.size();
+            String[] strs = new String[size];
+            for (int i = 0; i < size; i++)
+                strs[i] = fEnumeration.elementAt(i).toString();
+            fLexicalEnumeration = new StringListImpl(strs, size);
+        }
+        return fLexicalEnumeration;
     }
 
     public StringList getLexicalPattern() {
         if (fPatternType == SPECIAL_PATTERN_NONE && fPatternStr == null)
             return null;
-
-        // REVISIT: fPattern should be of type StringListImpl
-        int size = fPatternStr == null ? 0 : fPatternStr.size();
-        String[] strs;
-        if (fPatternType == SPECIAL_PATTERN_NMTOKEN) {
-            strs = new String[size+1];
-            strs[size] = "\\c+";
+        if (fLexicalPattern == null){
+            int size = fPatternStr == null ? 0 : fPatternStr.size();
+            String[] strs;
+            if (fPatternType == SPECIAL_PATTERN_NMTOKEN) {
+                strs = new String[size+1];
+                strs[size] = "\\c+";
+            }
+            else if (fPatternType == SPECIAL_PATTERN_NAME) {
+                strs = new String[size+1];
+                strs[size] = "\\i\\c*";
+            }
+            else if (fPatternType == SPECIAL_PATTERN_NCNAME) {
+                strs = new String[size+2];
+                strs[size] = "\\i\\c*";
+                strs[size+1] = "[\\i-[:]][\\c-[:]]*";
+            }
+            else {
+                strs = new String[size];
+            }
+            for (int i = 0; i < size; i++)
+                strs[i] = (String)fPatternStr.elementAt(i);
+            fLexicalPattern = new StringListImpl(strs, size);
         }
-        else if (fPatternType == SPECIAL_PATTERN_NAME) {
-            strs = new String[size+1];
-            strs[size] = "\\i\\c*";
-        }
-        else if (fPatternType == SPECIAL_PATTERN_NCNAME) {
-            strs = new String[size+2];
-            strs[size] = "\\i\\c*";
-            strs[size+1] = "[\\i-[:]][\\c-[:]]*";
-        }
-        else {
-            strs = new String[size];
-        }
-        for (int i = 0; i < size; i++)
-            strs[i] = (String)fPatternStr.elementAt(i);
-        return new StringListImpl(strs, size);
+        return fLexicalPattern;
     }
 
     public XSObjectList getAnnotations() {
-        // REVISIT: SCAPI: to implement
         return fAnnotations;
     }
 
@@ -2291,10 +2333,24 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         fPattern = null;
         fPatternStr = null;
         fEnumeration = null;
+        fLexicalPattern = null;
+        fLexicalEnumeration = null;
         fMaxInclusive = null;
         fMaxExclusive = null;
         fMinExclusive = null;
         fMinInclusive = null;
+        lengthAnnotation = null;
+        minLengthAnnotation = null;
+        maxLengthAnnotation = null;
+        whiteSpaceAnnotation = null;
+        totalDigitsAnnotation = null;
+        fractionDigitsAnnotation = null;
+        patternAnnotations = null;
+        enumerationAnnotations = null;
+        maxInclusiveAnnotation = null;
+        maxExclusiveAnnotation = null;
+        minInclusiveAnnotation = null;
+        minExclusiveAnnotation = null;
 
         fPatternType = SPECIAL_PATTERN_NONE;
         fAnnotations = null;
@@ -2321,90 +2377,132 @@ public class XSSimpleTypeDecl implements XSSimpleType {
      * @see org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition#getFacets()
      */
     public XSObjectList getFacets() {
-        if (fFacets != null){
-            return fFacets;
-        }
-        int pattern = 0;
-        int enum = 0;
-        if (fPatternStr != null){
-          pattern = fPatternStr.size();  
-        }
-        if (fEnumeration != null){
-            enum = fEnumeration.size();
-        }
-        int count = 12 + pattern + enum;
-                
-        XSFacetImpl[] facets = new XSFacetImpl[count];
+        if (fFacets == null && fFacetsDefined != 0) {
 
-        count = 0;
-        if ((fFacetsDefined & FACET_WHITESPACE) != 0){ 
-            facets[count] = new XSFacetImpl(FACET_WHITESPACE,
-            WS_FACET_STRING[fWhiteSpace] ,(fFixedFacet & FACET_WHITESPACE) != 0, null);
-            count++;             
-        }
-        if (fLength != -1){
-            facets[count] = new XSFacetImpl(FACET_LENGTH,
-            Integer.toString(fLength) ,(fFixedFacet & FACET_LENGTH) != 0, null);
-            count++; 
-        }
-        if (fMinLength != -1){
-            facets[count] = new XSFacetImpl(FACET_MINLENGTH,
-            Integer.toString(fMinLength) ,(fFixedFacet & FACET_MINLENGTH) != 0, null);
-            count++; 
-        }
-        if (fMaxLength != -1){
-            facets[count] = new XSFacetImpl(FACET_MAXLENGTH,
-            Integer.toString(fMaxLength) ,(fFixedFacet & FACET_MAXLENGTH) != 0, null);
-            count++;
-        }
-        if (fTotalDigits != -1){
-            facets[count] = new XSFacetImpl(FACET_TOTALDIGITS,
-            Integer.toString(fTotalDigits) ,(fFixedFacet & FACET_TOTALDIGITS) != 0, null);
-            count++;
-        }
-        if (fFractionDigits != -1){
-            facets[count] = new XSFacetImpl(FACET_FRACTIONDIGITS,
-            Integer.toString(fFractionDigits) ,(fFixedFacet & FACET_FRACTIONDIGITS) != 0, null);
-            count++;
-        }
-        if (fPatternStr != null){
-            for (int i = 0; i < pattern; i++){
-                facets[count] = new XSFacetImpl(FACET_PATTERN, 
-                fPatternStr.elementAt(i).toString(), false, null);
+            XSFacetImpl[] facets = new XSFacetImpl[10];
+            int count = 0;
+            if ((fFacetsDefined & FACET_WHITESPACE) != 0) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_WHITESPACE,
+                        WS_FACET_STRING[fWhiteSpace],
+                        (fFixedFacet & FACET_WHITESPACE) != 0,
+                        whiteSpaceAnnotation);
                 count++;
             }
-        }
-        if (fEnumeration !=null){
-            for (int i = 0; i < enum; i++){
-                facets[count] = new XSFacetImpl(FACET_ENUMERATION, 
-                fEnumeration.elementAt(i).toString(), false, null);
+            if (fLength != -1) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_LENGTH,
+                        Integer.toString(fLength),
+                        (fFixedFacet & FACET_LENGTH) != 0,
+                        lengthAnnotation);
                 count++;
             }
+            if (fMinLength != -1) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_MINLENGTH,
+                        Integer.toString(fMinLength),
+                        (fFixedFacet & FACET_MINLENGTH) != 0,
+                        minLengthAnnotation);
+                count++;
+            }
+            if (fMaxLength != -1) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_MAXLENGTH,
+                        Integer.toString(fMaxLength),
+                        (fFixedFacet & FACET_MAXLENGTH) != 0,
+                        maxLengthAnnotation);
+                count++;
+            }
+            if (fTotalDigits != -1) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_TOTALDIGITS,
+                        Integer.toString(fTotalDigits),
+                        (fFixedFacet & FACET_TOTALDIGITS) != 0,
+                        totalDigitsAnnotation);
+                count++;
+            }
+            if (fFractionDigits != -1) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_FRACTIONDIGITS,
+                        Integer.toString(fFractionDigits),
+                        (fFixedFacet & FACET_FRACTIONDIGITS) != 0,
+                        fractionDigitsAnnotation);
+                count++;
+            }
+            if (fMaxInclusive != null) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_MAXINCLUSIVE,
+                        fMaxInclusive.toString(),
+                        (fFixedFacet & FACET_MAXINCLUSIVE) != 0,
+                        maxInclusiveAnnotation);
+                count++;
+            }
+            if (fMaxExclusive != null) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_MAXEXCLUSIVE,
+                        fMaxExclusive.toString(),
+                        (fFixedFacet & FACET_MAXEXCLUSIVE) != 0,
+                        maxExclusiveAnnotation);
+                count++;
+            }
+            if (fMinExclusive != null) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_MINEXCLUSIVE,
+                        fMinExclusive.toString(),
+                        (fFixedFacet & FACET_MINEXCLUSIVE) != 0,
+                        minExclusiveAnnotation);
+                count++;
+            }
+            if (fMinInclusive != null) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_MININCLUSIVE,
+                        fMinInclusive.toString(),
+                        (fFixedFacet & FACET_MININCLUSIVE) != 0,
+                        minInclusiveAnnotation);
+                count++;
+            }
+            fFacets = new XSObjectListImpl(facets, count);
         }
-        if (fMaxInclusive != null){
-            facets[count] = new XSFacetImpl(FACET_MAXINCLUSIVE,
-            fMaxInclusive.toString() ,(fFixedFacet & FACET_MAXINCLUSIVE) != 0, null);
-            count++;
-        }
-        if (fMaxExclusive != null){
-            facets[count] = new XSFacetImpl(FACET_MAXEXCLUSIVE,
-            fMaxExclusive.toString() ,(fFixedFacet & FACET_MAXEXCLUSIVE) != 0, null);
-            count++;
-        }
-        if (fMinExclusive != null){
-            facets[count] = new XSFacetImpl(FACET_MINEXCLUSIVE,
-            fMinExclusive.toString() ,(fFixedFacet & FACET_MINEXCLUSIVE) != 0, null);
-            count++;
-        }
-        if (fMinInclusive !=  null){
-            facets[count] = new XSFacetImpl(FACET_MININCLUSIVE,
-            fMinInclusive.toString() ,(fFixedFacet & FACET_MININCLUSIVE) != 0, null);
-            count++;
-        }
-        fFacets = new XSObjectListImpl(facets, count);
         return fFacets;
     }
     
+    public XSObjectList getMultiValueFacets(){
+        if (fMultiValueFacets == null
+            && (fFacetsDefined & FACET_ENUMERATION) != 0
+            || (fFacetsDefined & FACET_PATTERN) != 0) {
+
+            XSMVFacetImpl[] facets = new XSMVFacetImpl[2];
+            int count = 0;
+            if (fPatternStr != null) {
+                facets[count] =
+                    new XSMVFacetImpl(
+                        FACET_PATTERN,
+                        this.getLexicalPattern(),
+                        patternAnnotations);
+                count++;
+            }
+            if (fEnumeration != null) {
+                facets[count] =
+                    new XSMVFacetImpl(
+                        FACET_ENUMERATION,
+                        this.getLexicalEnumeration(),
+                        enumerationAnnotations);
+                count++;
+            }
+            fMultiValueFacets = new XSObjectListImpl(facets, count);
+        }
+        return fMultiValueFacets;
+    }
     
     private static final class XSFacetImpl implements XSFacet {
         final short kind;
@@ -2422,8 +2520,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
          * @see org.apache.xerces.impl.xs.psvi.XSFacet#getAnnotation()
          */
         public XSAnnotation getAnnotation() {
-            // TODO: implement annotation support
-            return null;
+            return annotation;
         }
 
         /* (non-Javadoc)
@@ -2477,6 +2574,71 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
 
     }
+    
+    private static final class XSMVFacetImpl implements XSMultiValueFacet {
+        final short kind;
+        XSObjectList annotations;
+        StringList values;
+
+        public XSMVFacetImpl(short kind, StringList values, XSObjectList annotations) {
+            this.kind = kind;
+            this.values = values;
+            this.annotations = annotations;
+        }
+ 
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getFacetKind()
+         */
+        public short getFacetKind() {
+            return kind;
+        }
+
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSMultiValueFacet#getAnnotations()
+         */
+        public XSObjectList getAnnotations() {
+            return annotations;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSMultiValueFacet#getLexicalFacetValues()
+         */
+        public StringList getLexicalFacetValues() {
+            return values;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getName()
+         */
+        public String getName() {
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespace()
+         */
+        public String getNamespace() {
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+         */
+        public XSNamespaceItem getNamespaceItem() {
+            // REVISIT: implement
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getType()
+         */
+        public short getType() {
+            return XSConstants.MULTIVALUE_FACET;
+        }
+    }
+
 
 } // class XSSimpleTypeDecl
 

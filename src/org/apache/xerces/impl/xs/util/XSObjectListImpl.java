@@ -69,10 +69,19 @@ import org.apache.xerces.impl.xs.psvi.XSObjectList;
  */
 public class XSObjectListImpl implements XSObjectList {
 
+    private final int DEFAULT_SIZE = 4;
+
     // The array to hold all data
     private XSObject[] fArray = null;
     // Number of elements in this list
     private int fLength = 0;
+    
+
+
+    public XSObjectListImpl(){
+        fArray = new XSObject[DEFAULT_SIZE];
+        fLength = 0;
+    }
 
     /**
      * Construct an XSObjectList implementation
@@ -115,6 +124,18 @@ public class XSObjectListImpl implements XSObjectList {
         }
         fArray = null;
         fLength = 0;
+    }
+    
+    public void add (XSObject object){
+       if (fLength == fArray.length){  
+           XSObject[] temp = new XSObject[fLength + 4];
+           System.arraycopy(fArray, 0, temp, 0, fLength);
+           fArray = temp;
+       }
+       fArray[fLength++]=object;
+    }
+    public void add (int index, XSObject object){
+        fArray [index] = object;
     }
 
 } // class XSObjectList

@@ -249,7 +249,14 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     public XSObjectList getAnnotations();
     /** 
      * @return list of constraining facets.
+     * This method must not be used to retrieve 
+     * values for <code>enumeration</code> and <code>pattern</code> facets.
      */
     public XSObjectList getFacets();
+    
+    /** 
+     * @return list of enumeration and pattern facets.
+     */
+    public XSObjectList getMultiValueFacets();
 
 }

@@ -59,6 +59,9 @@ package org.apache.xerces.impl.dv;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+
 /**
  * The class used to pass all facets to {@link XSSimpleType#applyFacets}.
  *
@@ -135,4 +138,34 @@ public class XSFacets {
      * value of minExclusive facet.
      */
     public String minExclusive;
+    
+    
+   
+    public XSAnnotation lengthAnnotation;
+    public XSAnnotation minLengthAnnotation;
+    public XSAnnotation maxLengthAnnotation;
+    public XSAnnotation whiteSpaceAnnotation;
+    public XSAnnotation totalDigitsAnnotation;
+    public XSAnnotation fractionDigitsAnnotation;
+    public XSObjectList patternAnnotations;
+    public XSObjectList enumAnnotations;
+    public XSAnnotation maxInclusiveAnnotation;
+    public XSAnnotation maxExclusiveAnnotation;
+    public XSAnnotation minInclusiveAnnotation;
+    public XSAnnotation minExclusiveAnnotation;
+    
+    public void reset(){
+        lengthAnnotation = null;
+        minLengthAnnotation = null;
+        maxLengthAnnotation = null;
+        whiteSpaceAnnotation = null;
+        totalDigitsAnnotation = null;
+        fractionDigitsAnnotation = null;
+        patternAnnotations = null;
+        enumAnnotations = null;
+        maxInclusiveAnnotation = null;
+        maxExclusiveAnnotation = null;
+        minInclusiveAnnotation = null;
+        minExclusiveAnnotation = null;
+    }
 }

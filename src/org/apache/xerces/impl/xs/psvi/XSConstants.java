@@ -112,9 +112,15 @@ public interface XSConstants {
      */
     public static final short ANNOTATION                = 12;
     /**
-     * The object describes a facet.
+     * The object describes a constraining facet.
      */
-    public static final short FACET                = 13;
+    public static final short FACET                     = 13;
+    
+    /**
+     * The object describes enumeration/pattern facets.
+     */
+    public static final short MULTIVALUE_FACET           = 14;
+
 
     // Derivation constants
     /**

@@ -75,6 +75,7 @@ import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -133,7 +134,6 @@ abstract class XSDAbstractTraverser {
     }
 
     // traverse the annotation declaration
-    // REVISIT: store annotation information for PSVI
     // REVISIT: how to pass the parentAttrs? as DOM attributes?
     //          as name/value pairs (string)? in parsed form?
     // @return XSAnnotationImpl object
@@ -225,14 +225,16 @@ abstract class XSDAbstractTraverser {
                              XSDocumentInfo schemaDoc) {
 
         short facetsPresent = 0 ;
-        short facetsFixed = 0; // facets that have fixed="true"
-
+        short facetsFixed = 0; // facets that have fixed="true"        
         String facet;
         boolean hasQName = containsQName(baseValidator);
-        Vector enumData = new Vector();
-        Vector enumNSDecls = hasQName ? new Vector() : null;
+        Vector enumData = null;
+        XSObjectListImpl enumAnnotations = null;
+        XSObjectListImpl patternAnnotations = null;
+        Vector enumNSDecls = hasQName ? new Vector() : null;       
         int currentFacet = 0;
-        while (content != null) {
+        xsFacets.reset();
+        while (content != null) {           
             // General Attribute Checking
             Object[] attrs = null;
             facet = DOMUtil.getLocalName(content);
@@ -258,17 +260,21 @@ abstract class XSDAbstractTraverser {
                     // restore to the normal namespace context
                     schemaDoc.fValidationContext.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 }
-
+                if (enumData == null){
+                    enumData = new Vector();
+                    enumAnnotations = new XSObjectListImpl();
+                }
                 enumData.addElement(enumVal);
+                enumAnnotations.add(null);
                 if (hasQName)
                     enumNSDecls.addElement(nsDecls);
                 Element child = DOMUtil.getFirstChildElement( content );
 
                 if (child != null) {
                      // traverse annotation if any
+                     
                      if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                         // REVISIT:  change API to provide a receptacle for these
-                         traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                         enumAnnotations.add(enumAnnotations.getLength()-1,traverseAnnotationDecl(child, attrs, false, schemaDoc));
                          child = DOMUtil.getNextSiblingElement(child);
                      }
                      if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -291,8 +297,7 @@ abstract class XSDAbstractTraverser {
                     if (child != null) {
                          // traverse annotation if any
                          if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                             // REVISIT:  change API to provide for these
-                             traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                             patternAnnotations.add(traverseAnnotationDecl(child, attrs, false, schemaDoc));
                              child = DOMUtil.getNextSiblingElement(child);
                          }
                          if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -385,8 +390,41 @@ abstract class XSDAbstractTraverser {
                 if (child != null) {
                     // traverse annotation if any
                     if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        // REVISIT:  change API to provide for these
-                        traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                        XSAnnotationImpl annotation = traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                        switch (currentFacet) {
+                            case XSSimpleType.FACET_MINLENGTH:
+                                xsFacets.minLengthAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_MAXLENGTH:
+                                xsFacets.maxLengthAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_MAXEXCLUSIVE:
+                                xsFacets.maxExclusiveAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_MAXINCLUSIVE:
+                                xsFacets.maxInclusiveAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_MINEXCLUSIVE:
+                                xsFacets.minExclusiveAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_MININCLUSIVE:
+                                xsFacets.minInclusiveAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_TOTALDIGITS:
+                                xsFacets.totalDigitsAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_FRACTIONDIGITS:
+                                xsFacets.fractionDigitsAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_WHITESPACE:
+                                xsFacets.whiteSpaceAnnotation = annotation;
+                                break;
+                            case XSSimpleType.FACET_LENGTH:
+                                xsFacets.lengthAnnotation = annotation;
+                                break;
+                        }
+                        
+                        
                         child = DOMUtil.getNextSiblingElement(child);
                     }
                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -397,10 +435,11 @@ abstract class XSDAbstractTraverser {
             fAttrChecker.returnAttrArray (attrs, schemaDoc);
             content = DOMUtil.getNextSiblingElement(content);
         }
-        if (enumData.size() > 0) {
+        if (enumData !=null) {
             facetsPresent |= XSSimpleType.FACET_ENUMERATION;
             xsFacets.enumeration = enumData;
             xsFacets.enumNSDecls = enumNSDecls;
+            xsFacets.enumAnnotations = enumAnnotations;
         }
         if (fPattern.length() != 0) {
             facetsPresent |= XSSimpleType.FACET_PATTERN;
@@ -416,6 +455,7 @@ abstract class XSDAbstractTraverser {
         fi.fFixedFacets = facetsFixed;
         return fi;
     }
+
 
     // return whether QName/NOTATION is part of the given type
     private boolean containsQName(XSSimpleType type) {
