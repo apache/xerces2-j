@@ -1,6 +1,6 @@
 // LexicalHandler.java - optional handler for lexical parse events.
 // Public Domain: no warranty.
-// $Id: LexicalHandler.java,v 1.3 2000/01/28 16:38:26 david Exp $
+// $Id: LexicalHandler.java,v 1.4 2000/02/25 14:55:59 david Exp $
 
 package org.xml.sax.ext;
 
@@ -18,6 +18,11 @@ import org.xml.sax.SAXException;
  * lexical information about an XML document, such as comments
  * and CDATA section boundaries; XML readers are not required to 
  * support this handler.</p>
+ *
+ * <p>The events in the lexical handler apply to the entire document,
+ * not just to the document element, and all lexical handler events
+ * must appear between the content handler's startDocument and
+ * endDocument events.</p>
  *
  * <p>To set the LexicalHandler for an XML reader, use the
  * {@link org.xml.sax.XMLReader#setProperty setProperty} method
@@ -46,6 +51,10 @@ public interface LexicalHandler
      * unless otherwise indicated by a {@link #startEntity startEntity}
      * event.</p>
      *
+     * <p>Note that the start/endDTD events will appear within
+     * the start/endDocument events from ContentHandler and
+     * before the first startElement event.</p>
+     *
      * @param name The document type name.
      * @param publicId The declared public identifier for the
      *        external DTD subset, or null if none was declared.
@@ -72,10 +81,13 @@ public interface LexicalHandler
 
 
     /**
-     * Report the beginning of an entity.
+     * Report the beginning of an entity in content.
      *
-     * <p>The start and end of the document entity are not reported.
-     * The start and end of the external DTD subset are reported
+     * <p><strong>NOTE:</entity> entity references in attribute
+     * values -- and the start and end of the document entity --
+     * are never reported.</p>
+     *
+     * <p>The start and end of the external DTD subset are reported
      * using the pseudo-name "[dtd]".  All other events must be
      * properly nested within start/end entity events.</p>
      *

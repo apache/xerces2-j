@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: Attributes.java,v 1.2 2000/01/21 15:13:13 david Exp $
+// $Id: Attributes.java,v 1.3 2000/02/25 12:06:05 david Exp $
 
 
 package org.xml.sax;
@@ -28,10 +28,10 @@ package org.xml.sax;
  * <p>The list will not contain attributes that were declared
  * #IMPLIED but not specified in the start tag.  It will also not
  * contain attributes used as Namespace declarations (xmlns*) unless
- * the http://xml.org/sax/features/raw-names feature is set to
+ * the http://xml.org/sax/features/namespace-prefixes feature is set to
  * true (it is false by default).</p>
  *
- * <p>If the raw-names feature is false, access by raw XML 1.0
+ * <p>If the namespace-prefixes feature is false, access by raw XML 1.0
  * may not be available; if the http://xml.org/sax/features/namespaces
  * feature is false, access by Namespace-qualified names may not
  * be available.</p>

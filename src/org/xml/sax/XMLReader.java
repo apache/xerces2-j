@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the Public Domain.
 
-// $Id: XMLReader.java,v 1.2 2000/01/22 16:28:07 david Exp $
+// $Id: XMLReader.java,v 1.3 2000/02/25 14:57:01 david Exp $
 
 package org.xml.sax;
 
@@ -69,7 +69,7 @@ public interface XMLReader
      *
      * <p>All XMLReaders are required to recognize the
      * http://xml.org/sax/features/namespaces and the
-     * http://xml.org/sax/features/raw-names feature names.</p>
+     * http://xml.org/sax/features/namespace-prefixes feature names.</p>
      *
      * <p>Some feature values may be available only in specific
      * contexts, such as before, during, or after a parse.</p>
@@ -125,7 +125,7 @@ public interface XMLReader
      *
      * <p>All XMLReaders are required to support setting
      * http://xml.org/sax/features/namespaces to true and
-     * http://xml.org/sax/features/raw-names to false.</p>
+     * http://xml.org/sax/features/namespace-prefixes to false.</p>
      *
      * <p>Some feature values may be immutable or mutable only 
      * in specific contexts, such as before, during, or after 

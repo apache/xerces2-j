@@ -9,7 +9,8 @@ TARGETS=\
 	ParserAdapter.class\
 	ParserFactory.class\
 	XMLFilterImpl.class\
-	XMLReaderAdapter.class
+	XMLReaderAdapter.class\
+	XMLReaderFactory.class
 
 DIRS =
 

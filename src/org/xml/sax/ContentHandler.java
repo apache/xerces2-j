@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: ContentHandler.java,v 1.2 2000/01/21 15:15:38 david Exp $
+// $Id: ContentHandler.java,v 1.3 2000/02/25 14:55:41 david Exp $
 
 package org.xml.sax;
 
@@ -174,7 +174,7 @@ public interface ContentHandler
      *
      * <p>Any or all of these may be provided, depending on the
      * values of the http://xml.org/sax/features/namespaces
-     * and the http://xml.org/sax/features/raw-names 
+     * and the http://xml.org/sax/features/namespace-prefixes
      * properties:</p>
      *
      * <ul>
@@ -182,8 +182,8 @@ public interface ContentHandler
      * the namespaces property is true (the default), and are
      * optional when the namespaces property is false (if one is
      * specified, both must be);</li>
-     * <li>the raw name is required when the raw-names property
-     * is true, and is optional when the raw-names property
+     * <li>the raw name is required when the namespace-prefixes property
+     * is true, and is optional when the namespace-prefixes property
      * is false (the default).</li>
      * </ul>
      *
@@ -192,7 +192,7 @@ public interface ContentHandler
      * #IMPLIED attributes will be omitted.  The attribute list
      * will contain attributes used for Namespace declarations
      * (xmlns* attributes) only if the
-     * http://xml.org/sax/features/raw-names property is true
+     * http://xml.org/sax/features/namespace-prefixes property is true
      * (it is false by default, and support for a true value is
      * optional).</p>
      *

@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: ParserAdapter.java,v 1.3 2000/01/26 13:24:40 david Exp $
+// $Id: ParserAdapter.java,v 1.4 2000/02/25 14:56:26 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -64,6 +64,51 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     /**
      * Construct a new parser adapter.
      *
+     * <p>Use the "org.xml.sax.parser" property to locate the
+     * embedded SAX1 driver.</p>
+     *
+     * @exception org.xml.sax.SAXException If the embedded driver
+     *            cannot be instantiated or if the
+     *            org.xml.sax.parser property is not specified.
+     */
+    public ParserAdapter ()
+      throws SAXException
+    {
+	super();
+
+	String driver = System.getProperty("org.xml.sax.parser");
+
+	try {
+	    setup(ParserFactory.makeParser());
+	} catch (ClassNotFoundException e1) {
+	    throw new
+		SAXException("Cannot find SAX1 driver class " +
+			     driver, e1);
+	} catch (IllegalAccessException e2) {
+	    throw new
+		SAXException("SAX1 driver class " +
+			     driver +
+			     " found but cannot be loaded", e2);
+	} catch (InstantiationException e3) {
+	    throw new
+		SAXException("SAX1 driver class " +
+			     driver +
+			     " loaded but cannot be instantiated", e3);
+	} catch (ClassCastException e4) {
+	    throw new
+		SAXException("SAX1 driver class " +
+			     driver +
+			     " does not implement org.xml.sax.Parser");
+	} catch (NullPointerException e5) {
+	    throw new 
+		SAXException("System property org.xml.sax.parser not specified");
+	}
+    }
+
+
+    /**
+     * Construct a new parser adapter.
+     *
      * <p>Note that the embedded parser cannot be changed once the
      * adapter is created; to embed a different parser, allocate
      * a new ParserAdapter.</p>
@@ -110,7 +155,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     //
     private final static String FEATURES = "http://xml.org/sax/features/";
     private final static String NAMESPACES = FEATURES + "namespaces";
-    private final static String RAW_NAMES = FEATURES + "raw-names";
+    private final static String NAMESPACE_PREFIXES = FEATURES + "namespace-prefixes";
     private final static String VALIDATION = FEATURES + "validation";
     private final static String EXTERNAL_GENERAL =
 	FEATURES + "external-general-entities";
@@ -121,7 +166,8 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     /**
      * Set a feature for the parser.
      *
-     * <p>The only features supported are namespaces and raw_names.</p>
+     * <p>The only features supported are namespaces and 
+     * namespace-prefixes.</p>
      *
      * @param name The feature name, as a complete URI.
      * @param state The requested feature state.
@@ -137,13 +183,13 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	if (name.equals(NAMESPACES)) {
 	    checkNotParsing("feature", name);
 	    namespaces = state;
-	    if (!namespaces && !raw_names) {
-		raw_names = true;
+	    if (!namespaces && !prefixes) {
+		prefixes = true;
 	    }
-	} else if (name.equals(RAW_NAMES)) {
+	} else if (name.equals(NAMESPACE_PREFIXES)) {
 	    checkNotParsing("feature", name);
-	    raw_names = state;
-	    if (!raw_names && !namespaces) {
+	    prefixes = state;
+	    if (!prefixes && !namespaces) {
 		namespaces = true;
 	    }
 	} else if (name.equals(VALIDATION) ||
@@ -159,7 +205,8 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     /**
      * Check a parser feature.
      *
-     * <p>The only features supported are namespaces and raw-names.</p>
+     * <p>The only features supported are namespaces and 
+     * namespace-prefixes.</p>
      *
      * @param name The feature name, as a complete URI.
      * @return The current feature state.
@@ -174,8 +221,8 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     {
 	if (name.equals(NAMESPACES)) {
 	    return namespaces;
-	} else if (name.equals(RAW_NAMES)) {
-	    return raw_names;
+	} else if (name.equals(NAMESPACE_PREFIXES)) {
+	    return prefixes;
 	} else if (name.equals(VALIDATION) ||
 		   name.equals(EXTERNAL_GENERAL) ||
 		   name.equals(EXTERNAL_PARAMETER)) {
@@ -361,7 +408,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	}
 	setupParser();
 	parsing = true;
-	parser.parse(systemId);
+	try {
+	    parser.parse(systemId);
+	} finally {
+	    parsing = false;
+	}
 	parsing = false;
     }
 
@@ -385,7 +436,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 	}
 	setupParser();
 	parsing = true;
-	parser.parse(input);
+	try {
+	    parser.parse(input);
+	} finally {
+	    parsing = false;
+	}
 	parsing = false;
     }
 
@@ -498,7 +553,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 		}
 				// We may still have to add this to
 				// the list.
-		if (raw_names) {
+		if (prefixes) {
 		    atts.addAttribute("", "", attRawName.intern(),
 				      type, value);
 		}
@@ -745,7 +800,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
 				// Features
     private boolean namespaces = true;
-    private boolean raw_names = false;
+    private boolean prefixes = false;
 
 				// Properties
 

@@ -2,7 +2,7 @@
 // Written by David Megginson, sax@megginson.com
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: XMLReaderAdapter.java,v 1.2 2000/01/22 16:28:23 david Exp $
+// $Id: XMLReaderAdapter.java,v 1.3 2000/02/25 14:57:16 david Exp $
 
 package org.xml.sax.helpers;
 
@@ -35,7 +35,7 @@ import org.xml.sax.SAXNotSupportedException;
  *
  * <p>This class wraps a SAX2 XMLReader and makes it act as a SAX1
  * Parser.  The XMLReader must support a true value for the
- * http://xml.org/sax/features/raw-names property or parsing will fail
+ * http://xml.org/sax/features/namespace-prefixes property or parsing will fail
  * with a SAXException; if the XMLReader supports a false value
  * for the http://xml.org/sax/features/namespaces property, that will
  * also be used to improve efficiency.</p>
@@ -59,6 +59,23 @@ public class XMLReaderAdapter implements Parser, ContentHandler
     /**
      * Create a new adapter.
      *
+     * <p>Use the "org.xml.sax.driver" property to locate the SAX2
+     * driver to embed.</p>
+     *
+     * @exception org.xml.sax.SAXException If the embedded driver
+     *            cannot be instantiated or if the
+     *            org.xml.sax.driver property is not specified.
+     */
+    public XMLReaderAdapter ()
+      throws SAXException
+    {
+	setup(XMLReaderFactory.createXMLReader());
+    }
+
+
+    /**
+     * Create a new adapter.
+     *
      * <p>Create a new adapter, wrapped around a SAX2 XMLReader.
      * The adapter will make the XMLReader act like a SAX1
      * Parser.</p>
@@ -67,6 +84,12 @@ public class XMLReaderAdapter implements Parser, ContentHandler
      * @exception java.lang.NullPointerException If the argument is null.
      */
     public XMLReaderAdapter (XMLReader xmlReader)
+    {
+	setup(xmlReader);
+    }
+
+
+    private void setup (XMLReader xmlReader)
     {
 	if (xmlReader == null) {
 	    throw new NullPointerException("XMLReader must not be null");
@@ -154,7 +177,7 @@ public class XMLReaderAdapter implements Parser, ContentHandler
      *
      * <p>This method will throw an exception if the embedded
      * XMLReader does not support the 
-     * http://xml.org/sax/features/raw-names property.</p>
+     * http://xml.org/sax/features/namespace-prefixes property.</p>
      *
      * @param systemId The absolute URL of the document.
      * @exception java.io.IOException If there is a problem reading
@@ -177,7 +200,7 @@ public class XMLReaderAdapter implements Parser, ContentHandler
      *
      * <p>This method will throw an exception if the embedded
      * XMLReader does not support the 
-     * http://xml.org/sax/features/raw-names property.</p>
+     * http://xml.org/sax/features/namespace-prefixes property.</p>
      *
      * @param input An input source for the document.
      * @exception java.io.IOException If there is a problem reading
@@ -201,7 +224,7 @@ public class XMLReaderAdapter implements Parser, ContentHandler
     private void setupXMLReader ()
 	throws SAXException
     {
-	xmlReader.setFeature("http://xml.org/sax/features/raw-names", true);
+	xmlReader.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
 	try {
 	    xmlReader.setFeature("http://xml.org/sax/features/namespaces",
 	                         false);
