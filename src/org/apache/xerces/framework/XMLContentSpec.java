@@ -273,11 +273,14 @@ public class XMLContentSpec {
 
         // lookup content spec node
         XMLContentSpec contentSpec = new XMLContentSpec();
+       
         if (provider.getContentSpec(contentSpecIndex, contentSpec)) {
 
             // build string
             StringBuffer str = new StringBuffer();
-            switch (contentSpec.type) {
+            int    parentContentSpecType = contentSpec.type;
+            int    nextContentSpec;
+            switch (parentContentSpecType) {
                 case XMLContentSpec.CONTENTSPECNODE_LEAF: {
                     str.append('(');
                     if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
@@ -297,20 +300,32 @@ public class XMLContentSpec {
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
                     provider.getContentSpec(contentSpec.value, contentSpec);
-                    if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    nextContentSpec = contentSpec.type;
+
+                    if (nextContentSpec == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                         str.append('(');
                         str.append(stringPool.toString(contentSpec.value));
                         str.append(')');
-                    }
-                    else {
-                        appendContentSpec(provider, stringPool, contentSpec, str, true);
+                    } else if( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                            nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                            nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                        str.append('(' );
+                        appendContentSpec(provider, stringPool, contentSpec, str, 
+                                                                 true, parentContentSpecType );
+                        str.append(')');
+
+                    } else {
+                        appendContentSpec(provider, stringPool, contentSpec, str, 
+                                                                 true, parentContentSpecType );
                     }
                     str.append('?');
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
                     provider.getContentSpec(contentSpec.value, contentSpec);
-                    if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    nextContentSpec = contentSpec.type;
+
+                    if ( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                         str.append('(');
                         if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                             str.append("#PCDATA");
@@ -322,19 +337,29 @@ public class XMLContentSpec {
                             str.append("##any");
                         }
                         else {
-                            str.append(stringPool.toString(contentSpec.value));
+                             appendContentSpec(provider, stringPool, contentSpec, str, 
+                                                    true, parentContentSpecType );
                         }
                         str.append(')');
-                    }
-                    else {
-                        appendContentSpec(provider, stringPool, contentSpec, str, true);
+
+                    } else if( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                        nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                        nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                        str.append('(' );
+                        appendContentSpec(provider, stringPool, contentSpec, str, 
+                                                            true, parentContentSpecType );
+                        str.append(')');
+                    } else {
+                        str.append(stringPool.toString(contentSpec.value));
                     }
                     str.append('*');
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
                     provider.getContentSpec(contentSpec.value, contentSpec);
-                    if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    nextContentSpec = contentSpec.type;
+
+                    if ( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                         str.append('(');
                         if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                             str.append("#PCDATA");
@@ -349,9 +374,16 @@ public class XMLContentSpec {
                             str.append(stringPool.toString(contentSpec.value));
                         }
                         str.append(')');
-                    }
-                    else {
-                        appendContentSpec(provider, stringPool, contentSpec, str, true);
+                    } else if( nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                        nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                        nextContentSpec == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                        str.append('(' );
+                        appendContentSpec(provider, stringPool, contentSpec, str, 
+                                                      true, parentContentSpecType );
+                        str.append(')');
+                    } else {
+                        appendContentSpec(provider, stringPool, contentSpec, str,
+                                                            true, parentContentSpecType);
                     }
                     str.append('+');
                     break;
@@ -359,7 +391,7 @@ public class XMLContentSpec {
                 case XMLContentSpec.CONTENTSPECNODE_CHOICE:
                 case XMLContentSpec.CONTENTSPECNODE_SEQ: {
                     appendContentSpec(provider, stringPool,
-                                      contentSpec, str, true);
+                                      contentSpec, str, true, parentContentSpecType );
                     break;
                 }
                 case XMLContentSpec.CONTENTSPECNODE_ANY: {
@@ -430,9 +462,11 @@ public class XMLContentSpec {
                                           StringPool stringPool,
                                           XMLContentSpec contentSpec, 
                                           StringBuffer str, 
-                                          boolean parens) {
+                                          boolean parens,
+                                          int     parentContentSpecType ) {
 
-        switch (contentSpec.type) {
+        int thisContentSpec = contentSpec.type;
+        switch (thisContentSpec) {
             case XMLContentSpec.CONTENTSPECNODE_LEAF: {
                 if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                     str.append("#PCDATA");
@@ -449,23 +483,56 @@ public class XMLContentSpec {
                 break;
             }
             case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE: {
-                provider.getContentSpec(contentSpec.value, contentSpec);
-                appendContentSpec(provider, stringPool, 
-                                  contentSpec, str, true);
+                if( parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE  ||
+                    parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE ||
+                    parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                    provider.getContentSpec(contentSpec.value, contentSpec);
+                    str.append('(');
+                    appendContentSpec(provider, stringPool, 
+                                      contentSpec, str, true, thisContentSpec );
+                    str.append(')');
+
+                } 
+                else {
+                    provider.getContentSpec(contentSpec.value, contentSpec);
+                    appendContentSpec(provider, stringPool, 
+                                      contentSpec, str, true, thisContentSpec );
+                }
                 str.append('?');
                 break;
             }
             case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: {
-                provider.getContentSpec(contentSpec.value, contentSpec);
-                appendContentSpec(provider, stringPool,
-                                  contentSpec, str, true);
+                if( parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE ||
+                   parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE ||
+                   parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+                   provider.getContentSpec(contentSpec.value, contentSpec);
+                   str.append('(');
+                   appendContentSpec(provider, stringPool,
+                                      contentSpec, str, true, thisContentSpec);
+                   str.append(')' );
+                } else{
+                    provider.getContentSpec(contentSpec.value, contentSpec);
+                    appendContentSpec(provider, stringPool,
+                                     contentSpec, str, true, thisContentSpec);
+                }
                 str.append('*');
                 break;
             }
             case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
-                provider.getContentSpec(contentSpec.value, contentSpec);
-                appendContentSpec(provider, stringPool,
-                                  contentSpec, str, true);
+                if( parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE   ||
+                    parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE  ||
+                    parentContentSpecType == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE ) {
+
+                  str.append('(');
+                  provider.getContentSpec(contentSpec.value, contentSpec);
+                  appendContentSpec(provider, stringPool,
+                                    contentSpec, str, true, thisContentSpec);
+                  str.append(')' );
+                } else {
+                    provider.getContentSpec(contentSpec.value, contentSpec);
+                    appendContentSpec(provider, stringPool,
+                                   contentSpec, str, true, thisContentSpec);
+                }
                 str.append('+');
                 break;
             }
@@ -478,7 +545,7 @@ public class XMLContentSpec {
                 int otherValue = contentSpec.otherValue;
                 provider.getContentSpec(contentSpec.value, contentSpec);
                 appendContentSpec(provider, stringPool,
-                                  contentSpec, str, contentSpec.type != type);
+                           contentSpec, str, contentSpec.type != type, thisContentSpec);
                 if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
                     str.append('|');
                 }
@@ -494,7 +561,7 @@ public class XMLContentSpec {
                 /***/
                 provider.getContentSpec(otherValue, contentSpec);
                 appendContentSpec(provider, stringPool,
-                                  contentSpec, str, true);
+                                  contentSpec, str, true, thisContentSpec);
                 if (parens) {
                     str.append(')');
                 }
