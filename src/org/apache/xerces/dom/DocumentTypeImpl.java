@@ -233,6 +233,17 @@ public class DocumentTypeImpl
 
     } // cloneNode(boolean):Node
 
+    /**
+     * NON-DOM
+     * set the ownerDocument of this node and its children
+     */
+    void setOwnerDocument(DocumentImpl doc) {
+        super.setOwnerDocument(doc);
+        entities.setOwnerDocument(doc);
+        notations.setOwnerDocument(doc);
+        elements.setOwnerDocument(doc);
+    }
+
     //
     // DocumentType methods
     //
