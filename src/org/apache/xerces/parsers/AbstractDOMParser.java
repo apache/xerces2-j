@@ -1197,7 +1197,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             System.out.println("==>endGeneralEntity: ("+name+")");
         }
         if (!fDeferNodeExpansion) {
-            setCharacterData(true);                
+            setCharacterData(true); 
+
+            if (fDocumentType != null) {
+                // get current entity declaration
+                NamedNodeMap entities = fDocumentType.getEntities();
+                fCurrentEntityDecl = (EntityImpl) entities.getNamedItem(name);
+            }
             if (fCurrentEntityDecl != null) {            
                 if (fCurrentEntityDecl != null && fCurrentEntityDecl.getFirstChild() == null) {
                     fCurrentEntityDecl.setReadOnly(false, true);
@@ -1248,6 +1254,24 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             }
         }
         else {
+
+            if (fDocumentTypeIndex != -1) {
+                // find corresponding Entity decl
+                int node = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                while (node != -1) {
+                    short nodeType = fDeferredDocumentImpl.getNodeType(node, false);
+                    if (nodeType == Node.ENTITY_NODE) {
+                        String nodeName =
+                            fDeferredDocumentImpl.getNodeName(node, false);
+                        if (nodeName.equals(name)) {
+                            fDeferredEntityDecl = node;
+                            break;
+                        }
+                    }
+                    node = fDeferredDocumentImpl.getRealPrevSibling(node, false);
+                }
+            }
+
             if (fDeferredEntityDecl != -1) {
                int prevIndex = -1;
                int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
