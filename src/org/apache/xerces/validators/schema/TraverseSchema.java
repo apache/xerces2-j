@@ -134,7 +134,6 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
 public class TraverseSchema implements
                             NamespacesScope.NamespacesHandler{
 
-
     //CONSTANTS
     private static final int TOP_LEVEL_SCOPE = -1;
 
@@ -245,6 +244,7 @@ public class TraverseSchema implements
     private String fTargetNSURIString = "";
     private NamespacesScope fNamespacesScope = null;
     private String fCurrentSchemaURL = "";
+    private Stack fSchemaURLStack = new Stack();
 
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private XMLAttributeDecl fTemp2AttributeDecl = new XMLAttributeDecl();
@@ -1035,7 +1035,6 @@ public class TraverseSchema implements
 
 
     private void traverseInclude(Element includeDecl) throws Exception {
-
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
         Hashtable attrValues = generalCheck(includeDecl, scope);
@@ -1048,12 +1047,15 @@ public class TraverseSchema implements
             return;
         }
         String location = locationAttr.getValue();
-
         // expand it before passing it to the parser
         InputSource source = null;
-        if (fEntityResolver != null) {
+
+        // If fEntityResolver is not null and is not the default, only then use it - Gopal Sharma, Sun Microsystems Inc.
+        if ( (fEntityResolver != null) &&
+             !(fEntityResolver.getClass().getName().equals("org.apache.xerces.validators.common.XMLValidator$Resolver")) ) {
             source = fEntityResolver.resolveEntity("", location);
         }
+
         if (source == null) {
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
@@ -1147,6 +1149,7 @@ public class TraverseSchema implements
                     fCurrentSchemaInfo = fSchemaInfoListRoot;
                 }
                 fSchemaRootElement = root;
+                fSchemaURLStack.push(fCurrentSchemaURL);
                 fCurrentSchemaURL = location;
                 traverseIncludedSchemaHeader(root);
                 //
@@ -1166,6 +1169,7 @@ public class TraverseSchema implements
                 // there must always be a previous element!
                 fCurrentSchemaInfo = fCurrentSchemaInfo.getPrev();
                 fCurrentSchemaInfo.restore();
+                fCurrentSchemaURL = (String)fSchemaURLStack.pop();
             }
 
         }
@@ -2016,7 +2020,9 @@ public class TraverseSchema implements
                                           +targetNSURI+"' from what is declared '"+namespaceString+"'.");
              }
              else {
+                 location = fCurrentSchemaURL;
                  TraverseSchema impSchema = new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location, fEntityResolver, fFullConstraintChecking, fGeneralAttrCheck, fUnparsedExternalSchemas, fExternalNoNamespaceSchema);
+                 fCurrentSchemaURL = (String)fSchemaURLStack.pop();
                  Enumeration ics = impSchema.fIdentityConstraints.keys();
                  while(ics.hasMoreElements()) {
                     Object icsKey = ics.nextElement();
@@ -2034,9 +2040,13 @@ public class TraverseSchema implements
     private Element openImportedSchema(String location) throws Exception {
         // expand it before passing it to the parser
         InputSource source = null;
-        if (fEntityResolver != null) {
+
+        // If fEntityResolver is not null and is not the default, only then use it - Gopal Sharma, Sun Microsystems Inc.
+        if ( (fEntityResolver != null) &&
+             !(fEntityResolver.getClass().getName().equals("org.apache.xerces.validators.common.XMLValidator$Resolver")) ) {
             source = fEntityResolver.resolveEntity("", location);
         }
+
         if (source == null) {
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
@@ -2115,6 +2125,8 @@ public class TraverseSchema implements
          if(root != null) {
             fImportLocations.addElement((Object)location);
         }
+        fSchemaURLStack.push(fCurrentSchemaURL);
+        fCurrentSchemaURL = location;
         return root;
     } // openImportedSchema
 
