@@ -58,6 +58,8 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Enumeration;
 
@@ -72,6 +74,10 @@ import java.util.Enumeration;
 public class StringValidator implements InternalDatatypeValidator {
 	
     private Locale fLocale = null;
+    Hashtable facetData = null;
+    StringValidator fBaseValidator = null;
+    int fMaxLength = 0;
+    boolean fIsMaxLength = false;
 	
 	/**
      * validate that a string is a W3C string type
@@ -86,7 +92,23 @@ public class StringValidator implements InternalDatatypeValidator {
      */
 
 	public void validate(String content) throws InvalidDatatypeValueException {
-        // just say yes
+
+        if (facetData == null)return;
+
+        Enumeration eee = facetData.keys();
+        while(eee.hasMoreElements()) {
+            String key = (String)eee.nextElement();
+            if (key.equals(DatatypeValidator.ENUMERATION)) {
+                Vector value = (Vector)facetData.get(key);
+                String vvv = value.toString();
+                if (!value.contains(content)) 
+                    throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+vvv);
+            }
+            else if (key.equals(DatatypeValidator.MAXLENGTH)) {
+                if (fIsMaxLength && content.length() > fMaxLength)
+                    throw new InvalidDatatypeValueException("Value '"+content+"' with length '"+content.length()+"' exceeds maximum length of "+fMaxLength+".");
+            }
+        }
 	}
 			
 	public void validate(int contentIndex) throws InvalidDatatypeValueException {
@@ -98,6 +120,15 @@ public class StringValidator implements InternalDatatypeValidator {
             if (key.equals(DatatypeValidator.LENGTH)) {
             } else if (key.equals(DatatypeValidator.MINLENGTH)) {
             } else if (key.equals(DatatypeValidator.MAXLENGTH)) {
+                int vvv;
+                String value = (String)facetData.get(key);
+                try {
+                    vvv = Integer.parseInt(value);
+                } catch(NumberFormatException nfe) {
+                    throw new IllegalFacetValueException("maxLength value '"+value+"' is invalid.");
+                }
+                fMaxLength = vvv;
+                fIsMaxLength = true;
             } else if (key.equals(DatatypeValidator.MAXINCLUSIVE)) {
             } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
             } else if (key.equals(DatatypeValidator.MININCLUSIVE)) {
@@ -114,6 +145,7 @@ public class StringValidator implements InternalDatatypeValidator {
 	}
 
 	public void setBasetype(DatatypeValidator base) {
+        fBaseValidator = (StringValidator) base;
 	}
 
     /**
