@@ -2019,7 +2019,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     }
                 }
                 try {
-                    if (isAlistAttribute) {
+                    if (isAlistAttribute == true) {
+                        //System.out.println("values = >>" + value + "<<" );
                         fValIDRefs.validate(value, null );
                     } else {
                         fValIDRef.validate(value, null );
@@ -2065,10 +2066,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     }
                 }
                 try {
-                    if (isAlistAttribute) {
-                        fValNMTOKEN.validate( value, null );
-                    } else {
+                    if (isAlistAttribute == true ) {
                         fValNMTOKENS.validate( value, null );
+                    } else {
+                        fValNMTOKEN.validate( value, null );
                     }
                 } catch (InvalidDatatypeValueException ex) {
 
