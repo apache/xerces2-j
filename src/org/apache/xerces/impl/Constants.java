@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -288,6 +288,9 @@ public final class Constants {
 
     /** Input buffer size property ("input-buffer-size"). */
     public static final String BUFFER_SIZE_PROPERTY = "input-buffer-size";
+
+    /** Security manager property ("security-manager"). */
+    public static final String SECURITY_MANAGER_PROPERTY = "security-manager";
 
     /** Entity resolver property ("internal/entity-resolver"). */
     public static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
