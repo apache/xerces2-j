@@ -229,6 +229,9 @@ public class XSDHandler {
     // map between <redefine> elements and the XSDocumentInfo
     // objects that correspond to the documents being redefined.
     private Hashtable fRedefine2XSDMap = new Hashtable();
+    
+    // map between <redefine> elements and the namespace support
+    private Hashtable fRedefine2NSSupport = new Hashtable();
 
     // these objects store a mapping between the names of redefining
     // groups/attributeGroups and the groups/AttributeGroups which
@@ -702,6 +705,10 @@ public class XSDHandler {
                 // yet).
                 Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
+                // store the namespace decls of the redefine element
+                if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
+                    fRedefine2NSSupport.put(child, new SchemaNamespaceSupport(currSchemaInfo.fNamespaceSupport));
+                }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // schemaLocation is required on <include> and <redefine>
                 if (schemaHint == null) {
@@ -935,6 +942,8 @@ public class XSDHandler {
                 String componentType = DOMUtil.getLocalName(globalComp);
                 // includes and imports will not show up here!
                 if (DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
+                    // use the namespace decls for the redefine, instead of for the parent <schema>
+                    currSchemaDoc.backupNSSupport((SchemaNamespaceSupport)fRedefine2NSSupport.get(globalComp));
                     for (Element redefinedComp = DOMUtil.getFirstVisibleChildElement(globalComp);
                         redefinedComp != null;
                         redefinedComp = DOMUtil.getNextVisibleSiblingElement(redefinedComp)) {
@@ -961,6 +970,7 @@ public class XSDHandler {
                             reportSchemaError("src-redefine", new Object [] {componentType}, redefinedComp);
                         }
                     } // end march through <redefine> children
+                    currSchemaDoc.restoreNSSupport();
                 }
                 else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                     fAttributeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
@@ -1156,9 +1166,14 @@ public class XSDHandler {
         // hide the element node before traversing it
         DOMUtil.setHidden(decl);
 
+        SchemaNamespaceSupport nsSupport = null;
+        // if the parent is <redefine> use the namespace delcs for it.
+        Element parent = DOMUtil.getParent(decl);
+        if (DOMUtil.getLocalName(parent).equals(SchemaSymbols.ELT_REDEFINE))
+            nsSupport = (SchemaNamespaceSupport)fRedefine2NSSupport.get(parent);
         // back up the current SchemaNamespaceSupport, because we need to provide
         // a fresh one to the traverseGlobal methods.
-        schemaWithDecl.backupNSSupport();
+        schemaWithDecl.backupNSSupport(nsSupport);
 
         // traverse the referenced global component
         switch (declType) {
@@ -1433,6 +1448,7 @@ public class XSDHandler {
         fDoc2SystemId.clear();
         fDoc2XSDocumentMap.clear();
         fRedefine2XSDMap.clear();
+        fRedefine2NSSupport.clear();
         fAllTNSs.removeAllElements();
         fImportMap.clear();
         fRoot = null;

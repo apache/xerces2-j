@@ -157,12 +157,18 @@ class XSDocumentInfo {
         }
     }
 
-    void backupNSSupport() {
+    // backup the current ns support, and use the one passed-in.
+    // if no ns support is passed-in, use the one for <schema> element
+    void backupNSSupport(SchemaNamespaceSupport nsSupport) {
         SchemaNamespaceSupportStack.push(fNamespaceSupport);
-        fNamespaceSupport = new SchemaNamespaceSupport(fNamespaceSupportRoot);
+        if (nsSupport == null)
+            nsSupport = fNamespaceSupportRoot;
+        fNamespaceSupport = new SchemaNamespaceSupport(nsSupport);
 
         // bind "xml" prefix to "http://www.w3.org/XML/1998/namespace"
         // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
+        // REVISIT: shouldn't this work be done whenever a namespace support
+        // object is constructed?
         fNamespaceSupport.declarePrefix(fSymbolTable.addSymbol("xml"), fSymbolTable.addSymbol("http://www.w3.org/XML/1998/namespace"));
 
         fValidationContext.setNamespaceSupport(fNamespaceSupport);
