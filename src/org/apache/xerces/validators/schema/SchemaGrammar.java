@@ -361,6 +361,8 @@ public class SchemaGrammar extends Grammar{
              fScopeDefinedByElement= resize(fScopeDefinedByElement, fScopeDefinedByElement.length * 2);
              fFromAnotherSchemaURI = resize(fFromAnotherSchemaURI, fFromAnotherSchemaURI.length *2);
              fComplexTypeInfo =      resize(fComplexTypeInfo, fComplexTypeInfo.length *2);
+             fElementDeclDefaultType = resize(fElementDeclDefaultType,fElementDeclDefaultType.length*2);
+             fElementDeclDefaultValue = resize(fElementDeclDefaultValue,fElementDeclDefaultValue.length*2);
         }
         catch (NullPointerException ex) {
             // ignore
