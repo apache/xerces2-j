@@ -2,7 +2,7 @@
 /*
  * The Apache Software License, Version 1.1
  * 
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2000 The Apache Software Foundation.  All rights 
  * reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -70,12 +70,57 @@ import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xerces.dom.NotationImpl;
+import java.lang.reflect.*;
 
 
 public class DOMMemTest {
 
+    /**
+     * version 3.0 01/25/99
+     * 
+     * @return boolean
+     * @param node java.lang.Object
+     * @param mNameIndex int
+     * @param signatureIndex int
+     * @param parameters java.lang.Object[]
+     * @param code short
+     *
+     * @author Philip W. Davis
+     */
+    public static boolean DOMExceptionsTest(Object node,
+					    String methodName,
+					    Class[] methodSignature,
+					    Object[] parameters,
+					    short code)
+    {
+	boolean asExpected = false;
+	Method method;
+
+	try {
+	    method = node.getClass().getMethod(methodName,methodSignature);
+	    method.invoke(node, parameters);
+	} catch(InvocationTargetException exc) {
+	    Throwable realE = exc.getTargetException(); 
+	    if(realE instanceof DOMException) {
+		asExpected = (((DOMException)realE).code== code);
+		if(!asExpected)
+		    System.out.println("Wrong DOMException(" +
+				       ((DOMException)realE).code + ")");
+	    } else {
+		System.out.println("Wrong Exception (" + code + ")");
+	    }
+	    if(!asExpected) {
+		System.out.println("Expected DOMException (" +
+				   code + ") not thrown");
+	    }
+	} catch(Exception exc) {
+	    System.out.println("test invocation failure (" + exc + ")");
+	}
+	return (asExpected);
+    }
+
     public static void main(String argv[])
-{
+    {
     System.out.print("DOM Memory Test.\n");
 
     //
@@ -102,7 +147,7 @@ public class DOMMemTest {
         Text  text = doc.createTextNode("Doc02TextNode");
         Comment comment = doc.createComment("Doc02Comment");
         CDATASection  cdataSec = doc.createCDATASection("Doc02CDataSection");
-        DocumentType  docType = doc.getImplementation().createDocumentType("Doc02DocumentType", null, null, null);
+        DocumentType  docType = doc.getImplementation().createDocumentType("Doc02DocumentType", null, null);
         Notation notation = ((DocumentImpl) doc).createNotation("Doc02Notation");
         ProcessingInstruction pi = doc.createProcessingInstruction("Doc02PITarget",
                                     "Doc02PIData");
@@ -157,7 +202,7 @@ public class DOMMemTest {
     
     {
         Document doc = new DocumentImpl();
-        DocumentType  docType = doc.getImplementation().createDocumentType("Doc02DocumentType", null, null, null);
+        DocumentType  docType = doc.getImplementation().createDocumentType("Doc02DocumentType", null, null);
     }
     
 
@@ -426,19 +471,10 @@ public class DOMMemTest {
     
     {
          Document        doc = new DocumentImpl();
-         try
-         {
-             Element el = doc.createElement("!@@ bad element name");
-             Assertion.assert(false);  // Exception above should prevent us reaching here.
-         }
-         catch ( DOMException e)
-         {
-             Assertion.assert(e.code == DOMException.INVALID_CHARACTER_ERR);
-         }
-         catch ( Exception e )
-         {
-             Assertion.assert(false);  // Wrong exception thrown.
-         }
+         Assertion.assert(DOMExceptionsTest(doc, "createElement",
+					  new Class[]{String.class},
+					  new Object[]{"!@@ bad element name"},
+					  DOMException.INVALID_CHARACTER_ERR));
     }
     
 
@@ -539,24 +575,64 @@ public class DOMMemTest {
         String qName = "foo:docName";
         String pubId = "pubId";
         String sysId = "http://sysId";
-        String intSubSet = "Internal subsets are not parsed by this call!";
         
-        DocumentType dt = impl.createDocumentType(qName, pubId, sysId, intSubSet);
+        DocumentType dt = impl.createDocumentType(qName, pubId, sysId);
         
         Assertion.assert(dt != null);
         Assertion.assert(dt.getNodeType() == Node.DOCUMENT_TYPE_NODE);
         Assertion.equals(dt.getNodeName(), qName);
+        Assertion.assert(dt.getNamespaceURI() == null);
+        Assertion.assert(dt.getPrefix() == null);
+        Assertion.assert(dt.getLocalName() == null);
         Assertion.equals(dt.getPublicId(), pubId);
         Assertion.equals(dt.getSystemId(), sysId);
-        Assertion.equals(dt.getInternalSubset(), intSubSet);
+        Assertion.assert(dt.getInternalSubset() == null);
+        Assertion.assert(dt.getOwnerDocument() == null);
         
         NamedNodeMap nnm = dt.getEntities();
         Assertion.assert(nnm.getLength() == 0);
         nnm = dt.getNotations();
         Assertion.assert(nnm.getLength() == 0);
+
+        //
+        // Qualified name without prefix should also work.
+        //
+        qName = "docName";
+        dt = impl.createDocumentType(qName, pubId, sysId);
+
+        Assertion.assert(dt != null);
+        Assertion.assert(dt.getNodeType() == Node.DOCUMENT_TYPE_NODE);
+        Assertion.equals(dt.getNodeName(), qName);
+        Assertion.assert(dt.getNamespaceURI() == null);
+        Assertion.assert(dt.getPrefix() == null);
+        Assertion.assert(dt.getLocalName() == null);
+        Assertion.equals(dt.getPublicId(), pubId);
+        Assertion.equals(dt.getSystemId(), sysId);
+        Assertion.assert(dt.getInternalSubset() == null);
+        Assertion.assert(dt.getOwnerDocument() == null);
+
+        // Creating a DocumentType with invalid or malformed qName should fail.
+        Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
+			new Class[]{String.class, String.class, String.class},
+			new Object[]{"<docName", pubId, sysId},
+			DOMException.INVALID_CHARACTER_ERR));     
+        Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
+			new Class[]{String.class, String.class, String.class},
+			new Object[]{":docName", pubId, sysId},
+			DOMException.NAMESPACE_ERR));     
+        Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
+			new Class[]{String.class, String.class, String.class},
+			new Object[]{"docName:", pubId, sysId},
+			DOMException.NAMESPACE_ERR));     
+        Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
+			new Class[]{String.class, String.class, String.class},
+			new Object[]{"<doc::Name", pubId, sysId},
+			DOMException.NAMESPACE_ERR));     
+        Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
+			new Class[]{String.class, String.class, String.class},
+			new Object[]{"<doc:N:ame", pubId, sysId},
+			DOMException.NAMESPACE_ERR));     
     }
-    
-    
 
     //
     //  DOMImplementation.CreateDocument
@@ -568,12 +644,14 @@ public class DOMMemTest {
         String qName = "foo:docName";
         String pubId = "pubId";
         String sysId = "http://sysId";
-        String intSubSet = "Internal subsets are not parsed by this call!";
         
-        DocumentType dt = impl.createDocumentType(qName, pubId, sysId, intSubSet);
+        DocumentType dt = impl.createDocumentType(qName, pubId, sysId);
         
         String docNSURI = "http://document.namespace";
         Document doc = impl.createDocument(docNSURI, qName, dt);
+
+        Assertion.assert(dt.getOwnerDocument() == doc);
+        Assertion.assert(doc.getOwnerDocument() == null);
 
         Assertion.assert(doc.getNodeType() == Node.DOCUMENT_NODE);
         Assertion.assert(doc.getDoctype() == dt);
@@ -594,25 +672,17 @@ public class DOMMemTest {
         //
         // Creating a second document with the same docType object should fail.
         //
-        try
-        {
-            Document doc2 = impl.createDocument(docNSURI, qName, dt);
-            Assertion.assert(false);  // should not reach here.
-        }
-        catch ( DOMException e)
-        {
-            Assertion.assert(e.code == DOMException.WRONG_DOCUMENT_ERR);
-        }
-        catch ( Exception e )
-        {
-            Assertion.assert(false);  // Wrong exception thrown.
-        }
+        Assertion.assert(DOMExceptionsTest(impl, "createDocument",
+					   new Class[]{String.class,
+						       String.class,
+						       DocumentType.class},
+					   new Object[]{docNSURI, qName, dt},
+					   DOMException.WRONG_DOCUMENT_ERR));
+
+        // Namespace tests of createDocument are covered by createElementNS below
     }
     
     
-
-
-
     //
     //  CreateElementNS methods
     //
@@ -626,8 +696,7 @@ public class DOMMemTest {
         String qName = "foo:docName";
         String pubId = "pubId";
         String sysId = "http://sysId";
-        String intSubSet = "Internal subsets are not parsed by this call!";
-        DocumentType dt = impl.createDocumentType(qName, pubId, sysId, intSubSet);
+        DocumentType dt = impl.createDocumentType(qName, pubId, sysId);
         
         String docNSURI = "http://document.namespace";
 	Document doc = impl.createDocument(docNSURI, qName, dt);
@@ -663,26 +732,121 @@ public class DOMMemTest {
         Assertion.equals(elc.getTagName(), "elc");
 
         // Badly formed qualified name
-	try {
-	  doc.createElementNS("http://nsa", "a:a:a");
-	} catch (Exception e) {
-	  Assertion.assert(e instanceof DOMException
-			   && ((DOMException)e).code == DOMException.NAMESPACE_ERR);
-	}
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "<a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", ":a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "a:"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "a::a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "a:a:a"},
+				      DOMException.NAMESPACE_ERR));
 
-        // Prefix == xml, namespace != http://www.w3.org/XML/1998/namespace
-	try {
-	  doc.createElementNS("http://nsa", "xml:a");
-	} catch (Exception e) {
-	  Assertion.assert(e instanceof DOMException
-			   && ((DOMException)e).code == DOMException.NAMESPACE_ERR);
-	}
+        // xml:a must have namespaceURI == "http://www.w3.org/XML/1998/namespace"
+	String xmlURI = "http://www.w3.org/XML/1998/namespace";
+	Assertion.equals(doc.createElementNS(xmlURI, "xml:a").getNamespaceURI(), xmlURI);
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "xml:a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "xml:a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null, "xml:a"},
+				      DOMException.NAMESPACE_ERR));
 
-        // A couple of corner cases that should not fail.
-        Assertion.assert(doc.createElementNS("http://www.w3.org/XML/1998/namespace", "xml:a") != null);
-        Assertion.assert(doc.createElementNS("", "xml:a")      != null);
-        Assertion.assert(doc.createElementNS(null, "xml:a")    != null);
+        //unlike Attribute, xmlns (no different from foo) can have any namespaceURI for Element
+        Assertion.equals(doc.createElementNS("http://nsa", "xmlns").getNamespaceURI(), "http://nsa");
+        Assertion.equals(doc.createElementNS(xmlURI, "xmlns").getNamespaceURI(), xmlURI);
+        Assertion.equals(doc.createElementNS("", "xmlns").getNamespaceURI(), "");
+        Assertion.assert(doc.createElementNS(null, "xmlns").getNamespaceURI() == null);
 
+        //unlike Attribute, xmlns:a (no different from foo:a) can have any namespaceURI for Element
+        //except "" and null
+        Assertion.equals(doc.createElementNS("http://nsa", "xmlns:a").getNamespaceURI(), "http://nsa");
+        Assertion.equals(doc.createElementNS(xmlURI, "xmlns:a").getNamespaceURI(), xmlURI);
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "xmlns:a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null, "xmlns:a"},
+				      DOMException.NAMESPACE_ERR));
+
+        //In fact, any prefix != null should have a namespaceURI != 0 or != ""
+        Assertion.equals(doc.createElementNS("http://nsa", "foo:a").getNamespaceURI(), "http://nsa");
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "foo:a"},
+				      DOMException.NAMESPACE_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null, "foo:a"},
+				      DOMException.NAMESPACE_ERR));
+
+        //Change prefix
+        Element elem = doc.createElementNS("http://nsa", "foo:a");
+        elem.setPrefix("bar");
+        Assertion.equals(elem.getNodeName(), "bar:a");
+        Assertion.equals(elem.getNamespaceURI(), "http://nsa");
+        Assertion.equals(elem.getPrefix(), "bar");
+        Assertion.equals(elem.getLocalName(), "a");
+        Assertion.equals(elem.getTagName(), "bar:a");
+        //The spec does not prevent us from setting prefix to a node without prefix
+        elem = doc.createElementNS("http://nsa", "a");
+        Assertion.equals(elem.getPrefix(), null);
+        elem.setPrefix("bar");
+        Assertion.equals(elem.getNodeName(), "bar:a");
+        Assertion.equals(elem.getNamespaceURI(), "http://nsa");
+        Assertion.equals(elem.getPrefix(), "bar");
+        Assertion.equals(elem.getLocalName(), "a");
+        Assertion.equals(elem.getTagName(), "bar:a");
+        //Special case for xml:a where namespaceURI must be xmlURI
+        elem = doc.createElementNS(xmlURI, "foo:a");
+        elem.setPrefix("xml");
+        elem = doc.createElementNS("http://nsa", "foo:a");
+        Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
+					  new Class[]{String.class},
+					  new Object[]{"xml"},
+					  DOMException.NAMESPACE_ERR));
+        //However, there is no restriction on prefix xmlns
+        elem.setPrefix("xmlns");
+        //Also an element can not have a prefix with namespaceURI == null or ""
+        elem = doc.createElementNS(null, "a");
+        Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
+					  new Class[]{String.class},
+					  new Object[]{"foo"},
+					  DOMException.NAMESPACE_ERR));
+
+        elem = doc.createElementNS("", "a");
+        Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
+					  new Class[]{String.class},
+					  new Object[]{"foo"},
+					  DOMException.NAMESPACE_ERR));
+
+        //Only prefix of Element and Attribute can be changed
+        Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
+					  new Class[]{String.class},
+					  new Object[]{"foo"},
+					  DOMException.NAMESPACE_ERR));
+
+        //Prefix of readonly Element can not be changed.
+        //However, there is no way to create such Element for testing yet.
     }
     
 
@@ -701,8 +865,7 @@ public class DOMMemTest {
         String qName = "foo:docName";
         String pubId = "pubId";
         String sysId = "http://sysId";
-        String intSubSet = "Internal subsets are not parsed by this call!";
-        DocumentType dt = impl.createDocumentType(qName, pubId, sysId, intSubSet);
+        DocumentType dt = impl.createDocumentType(qName, pubId, sysId);
         
         String docNSURI = "http://document.namespace";
         Document doc = impl.createDocument(docNSURI, qName, dt);
@@ -720,19 +883,178 @@ public class DOMMemTest {
         Assertion.equals(attra.getPrefix(), "a");
         Assertion.equals(attra.getLocalName(), "attra");
         Assertion.equals(attra.getName(), "a:attra");
+        Assertion.assert(attra.getOwnerElement() == null);
 
         Assertion.equals(attrb.getNodeName(), "attrb");
         Assertion.equals(attrb.getNamespaceURI(), "http://nsb");
         Assertion.equals(attrb.getPrefix(), null);
         Assertion.equals(attrb.getLocalName(), "attrb");
         Assertion.equals(attrb.getName(), "attrb");
+        Assertion.assert(attrb.getOwnerElement() == null);
 
         Assertion.equals(attrc.getNodeName(), "attrc");
         Assertion.equals(attrc.getNamespaceURI(), null);
         Assertion.equals(attrc.getPrefix(), null);
         Assertion.equals(attrc.getLocalName(), "attrc");
         Assertion.equals(attrc.getName(), "attrc");
+        Assertion.assert(attrc.getOwnerElement() == null);
 
+
+        // Badly formed qualified name
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "<a"},
+				      DOMException.INVALID_CHARACTER_ERR));
+	Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", ":a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "a:"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "a::a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "a:a:a"},
+				      DOMException.NAMESPACE_ERR));
+
+        // xml:a must have namespaceURI == "http://www.w3.org/XML/1998/namespace"
+        String xmlURI = "http://www.w3.org/XML/1998/namespace";
+        Assertion.equals(doc.createAttributeNS(xmlURI, "xml:a").getNamespaceURI(), xmlURI);
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "xml:a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "xml:a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null,  "xml:a"},
+				      DOMException.NAMESPACE_ERR));
+
+        //unlike Element, xmlns must have namespaceURI == "http://www.w3.org/2000/xmlns/"
+        String xmlnsURI = "http://www.w3.org/2000/xmlns/";
+        Assertion.equals(doc.createAttributeNS(xmlnsURI, "xmlns").getNamespaceURI(), xmlnsURI);
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "xmlns"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{xmlURI, "xmlns"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "xmlns"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null,  "xmlns"},
+				      DOMException.NAMESPACE_ERR));
+
+        //unlike Element, xmlns:a must have namespaceURI == "http://www.w3.org/2000/xmlns/"
+        Assertion.equals(doc.createAttributeNS(xmlnsURI, "xmlns:a").getNamespaceURI(), xmlnsURI);
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"http://nsa", "xmlns:a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{xmlURI, "xmlns:a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "xmlns:a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null,  "xmlns:a"},
+				      DOMException.NAMESPACE_ERR));
+
+        //In fact, any prefix != null should have a namespaceURI != 0 or != ""
+        Assertion.equals(doc.createAttributeNS("http://nsa", "foo:a").getNamespaceURI(), "http://nsa");
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{"", "foo:a"},
+				      DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
+				      new Class[]{String.class, String.class},
+				      new Object[]{null,  "foo:a"},
+				      DOMException.NAMESPACE_ERR));
+
+        //Change prefix
+        Attr attr = doc.createAttributeNS("http://nsa", "foo:a");
+        attr.setPrefix("bar");
+        Assertion.equals(attr.getNodeName(), "bar:a");
+        Assertion.equals(attr.getNamespaceURI(), "http://nsa");
+        Assertion.equals(attr.getPrefix(), "bar");
+        Assertion.equals(attr.getLocalName(), "a");
+        Assertion.equals(attr.getName(), "bar:a");
+        //The spec does not prevent us from setting prefix to a node without prefix
+        attr = doc.createAttributeNS("http://nsa", "a");
+        Assertion.equals(attr.getPrefix(), "");
+        attr.setPrefix("bar");
+        Assertion.equals(attr.getNodeName(), "bar:a");
+        Assertion.equals(attr.getNamespaceURI(), "http://nsa");
+        Assertion.equals(attr.getPrefix(), "bar");
+        Assertion.equals(attr.getLocalName(), "a");
+        Assertion.equals(attr.getName(), "bar:a");
+        //Special case for xml:a where namespaceURI must be xmlURI
+        attr = doc.createAttributeNS(xmlURI, "foo:a");
+        attr.setPrefix("xml");
+        attr = doc.createAttributeNS("http://nsa", "foo:a");
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"xml"},
+					   DOMException.NAMESPACE_ERR));
+        //Special case for xmlns:a where namespaceURI must be xmlURI
+        attr = doc.createAttributeNS(xmlnsURI, "foo:a");
+        attr.setPrefix("xmlns");
+        attr = doc.createAttributeNS("http://nsa", "foo:a");
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"xmlns"},
+					   DOMException.NAMESPACE_ERR));
+        //Special case for xmlns where no prefix can be set
+        attr = doc.createAttributeNS(xmlnsURI, "xmlns");
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"xml"},
+					   DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"foo"},
+					   DOMException.NAMESPACE_ERR));
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"xmlns"},
+					   DOMException.NAMESPACE_ERR));
+        //Also an attribute can not have a prefix with namespaceURI == null or ""
+        attr = doc.createAttributeNS(null, "a");
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"foo"},
+					   DOMException.NAMESPACE_ERR));
+        attr = doc.createAttributeNS("", "a");
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"foo"},
+					   DOMException.NAMESPACE_ERR));
+        
+        //Only prefix of Element and Attribute can be changed
+        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
+					   new Class[]{String.class},
+					   new Object[]{"foo"},
+					   DOMException.NAMESPACE_ERR));
+
+        //Prefix of readonly Attribute can not be changed.
+        //However, there is no way to create such DOM_Attribute for testing yet.
     }
     
 
@@ -749,8 +1071,7 @@ public class DOMMemTest {
         String qName = "foo:docName";
         String pubId = "pubId";
         String sysId = "http://sysId";
-        String intSubSet = "Internal subsets are not parsed by this call!";
-        DocumentType dt = impl.createDocumentType(qName, pubId, sysId, intSubSet);
+        DocumentType dt = impl.createDocumentType(qName, pubId, sysId);
         
         String docNSURI = "http://document.namespace";
 	Document doc = impl.createDocument(docNSURI, qName, dt);
@@ -853,6 +1174,64 @@ public class DOMMemTest {
         ela.appendChild(elc);
         Assertion.assert(nl.getLength() == 6);
         Assertion.assert(nla.getLength() == 1);
+    }
+
+
+   //
+    // Attributes and NamedNodeMaps.
+    //
+    {
+
+        // Set up an initial (root element only) document.
+        // 
+        DOMImplementation impl = DOMImplementationImpl.getDOMImplementation();
+        
+        String qName = "foo:docName";
+        String pubId = "pubId";
+        String sysId = "http://sysId";
+        DocumentType dt = impl.createDocumentType(qName, pubId, sysId);
+        
+        String docNSURI = "http://document.namespace";
+        Document doc = impl.createDocument(docNSURI, qName, dt);
+        Element rootEl = doc.getDocumentElement();
+
+        //
+        // Create a set of attributes and hang them on the root element.
+        //
+        Attr attra = doc.createAttributeNS("http://nsa", "a:attra");  
+        rootEl.setAttributeNodeNS(attra);
+        Attr attrb = doc.createAttributeNS("http://nsb", "attrb");   
+        rootEl.setAttributeNodeNS(attrb);
+        Attr attrc = doc.createAttributeNS("",           "attrc");  
+        rootEl.setAttributeNodeNS(attrc);
+        Attr attrd = doc.createAttributeNS("http://nsa", "d:attra");
+        rootEl.setAttributeNodeNS(attrd);
+        Attr attre = doc.createAttributeNS("http://nse", "attrb");   
+        rootEl.setAttributeNodeNS(attre);
+
+        //
+        // Check that the attribute nodes were created with the correct properties.
+        //
+        Assertion.equals(attra.getNodeName(), "a:attra");
+        Assertion.equals(attra.getNamespaceURI(), "http://nsa");
+        Assertion.equals(attra.getLocalName(), "attra");
+        Assertion.equals(attra.getName(), "a:attra");
+        Assertion.assert(attra.getNodeType() == Node.ATTRIBUTE_NODE);
+        Assertion.equals(attra.getNodeValue(), "");
+        Assertion.equals(attra.getPrefix(), "a");
+        Assertion.assert(attra.getSpecified() == true);
+        Assertion.equals(attra.getValue(), "");
+        Assertion.assert(attra.getOwnerElement() == null);
+
+        // Test methods of NamedNodeMap
+        NamedNodeMap nnm = rootEl.getAttributes();
+        Assertion.assert(nnm.getLength() == 4);
+        Assertion.assert(nnm.getNamedItemNS("http://nsa", "attra") == attrd);
+        Assertion.assert(nnm.getNamedItemNS("http://nsb", "attrb") == attrb);
+        Assertion.assert(nnm.getNamedItemNS("http://nse", "attrb") == attre);
+        Assertion.assert(nnm.getNamedItemNS("", "attrc") == attrc);
+        Assertion.assert(nnm.getNamedItemNS("", "attra") == null);
+        Assertion.assert(nnm.getNamedItemNS("http://nsa", "attrb") == null);
     }
     };
 }    
