@@ -699,10 +699,10 @@ public final class XMLDTDScanner {
      * @exception java.lang.Exception
      */
     public void endOfInput(int entityNameIndex, boolean moreToFollow) throws Exception {
-	//REVISIT, why are we doing this?
+        //REVISIT, why are we doing this?
         moreToFollow = fReaderId != fExternalSubsetReader;
 
-//	System.out.println("current Scanner state " + getScannerState() +","+ fScannerState + moreToFollow);
+//      System.out.println("current Scanner state " + getScannerState() +","+ fScannerState + moreToFollow);
         switch (fScannerState) {
         case SCANNER_STATE_INVALID:
             throw new RuntimeException("FWK004 XMLDTDScanner.endOfInput: cannot happen: 2"+"\n2");
@@ -1031,8 +1031,8 @@ public final class XMLDTDScanner {
         //System.out.println("  scanExternalSubset: "+scanExternalSubset);
         if (scanExternalSubset) {
             ((DefaultEntityHandler) fEntityHandler).startReadingFromExternalSubset( fStringPool.toString(publicId),
-										    fStringPool.toString(systemId),
-										    markupDepth());
+                                                                                    fStringPool.toString(systemId),
+                                                                                    markupDepth());
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
         }
         fGrammarResolver.putGrammar("", fDTDGrammar);
@@ -1322,7 +1322,7 @@ public final class XMLDTDScanner {
                         }
                     } else if (fEntityReader.skippedString(element_string)) {
                         scanElementDecl();
-		    }
+                    }
                     else if (fEntityReader.skippedString(attlist_string))
                         scanAttlistDecl();
                     else if (fEntityReader.skippedString(entity_string))
@@ -2080,6 +2080,18 @@ public final class XMLDTDScanner {
                 return -1;
             }
             fDTDGrammar.addNameToEnumeration(enumIndex, elementType, attrName, nameIndex, isNotationType);
+            /*****/
+            if (isNotationType && !((DefaultEntityHandler)fEntityHandler).isNotationDeclared(nameIndex)) {
+                Object[] args = { fStringPool.toString(elementType),
+                    fStringPool.toString(attrName),
+                    fStringPool.toString(nameIndex) };
+                    ((DefaultEntityHandler)fEntityHandler).addRequiredNotation(nameIndex,
+                                                       fErrorReporter.getLocator(),
+                                                       XMLMessages.MSG_NOTATION_NOT_DECLARED_FOR_NOTATIONTYPE_ATTRIBUTE,
+                                                       XMLMessages.VC_NOTATION_DECLARED,
+                                                       args);
+            }
+            /*****/
             checkForPEReference(false);
             if (!fEntityReader.lookingAtChar('|', true)) {
                 fDTDGrammar.endEnumeration(enumIndex);
@@ -2424,9 +2436,9 @@ public final class XMLDTDScanner {
                 //a hack by Eric
                 //REVISIT
                 fDTDGrammar.addExternalPEDecl(entityName, fPubidLiteral, fSystemLiteral);
-		int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalPEDecl(entityName, 
-											    fPubidLiteral, 
-											    fSystemLiteral, true);
+                int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalPEDecl(entityName, 
+                                                                                            fPubidLiteral, 
+                                                                                            fSystemLiteral, true);
             }
         } else {
             boolean single;
@@ -2475,12 +2487,12 @@ public final class XMLDTDScanner {
                     decreaseMarkupDepth();
                     fDTDGrammar.endEntityDecl();
 
-		    //a hack by Eric
-		    //REVISIT
+                    //a hack by Eric
+                    //REVISIT
                     fDTDGrammar.addExternalEntityDecl(entityName, fPubidLiteral, fSystemLiteral);
-		    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalEntityDecl(entityName, 
-										fPubidLiteral, 
-										fSystemLiteral, true);
+                    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addExternalEntityDecl(entityName, 
+                                                                                fPubidLiteral, 
+                                                                                fSystemLiteral, true);
 
                 } else {
                     if (!fEntityReader.lookingAtSpace(true)) {
@@ -2512,14 +2524,14 @@ public final class XMLDTDScanner {
                     }
                     decreaseMarkupDepth();
                     fDTDGrammar.endEntityDecl();
-		    
-		    //a hack by Eric
-		    //REVISIT
+                    
+                    //a hack by Eric
+                    //REVISIT
                     fDTDGrammar.addUnparsedEntityDecl(entityName, fPubidLiteral, fSystemLiteral, notationName);
-		    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addUnparsedEntityDecl(entityName, 
-												    fPubidLiteral, 
-												    fSystemLiteral, 
-												    notationName, false);
+                    int entityIndex = ((DefaultEntityHandler) fEntityHandler).addUnparsedEntityDecl(entityName, 
+                                                                                                    fPubidLiteral, 
+                                                                                                    fSystemLiteral, 
+                                                                                                    notationName, false);
                 }
             }
         }
