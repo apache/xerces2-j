@@ -325,13 +325,12 @@ public class XMLEntityScanner implements XMLLocator {
         while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
             if (++fCurrentEntity.position == fCurrentEntity.count) {
                 int length = fCurrentEntity.position - offset;
-                if (length == fBufferSize) {
+                if (length == fCurrentEntity.ch.length) {
                     // bad luck we have to resize our buffer
-                    char[] tmp = new char[fBufferSize * 2];
+                    char[] tmp = new char[fCurrentEntity.ch.length << 1];
                     System.arraycopy(fCurrentEntity.ch, offset,
                                      tmp, 0, length);
                     fCurrentEntity.ch = tmp;
-                    fBufferSize *= 2;
                 }
                 else {
                     System.arraycopy(fCurrentEntity.ch, offset,
@@ -408,13 +407,12 @@ public class XMLEntityScanner implements XMLLocator {
             while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     int length = fCurrentEntity.position - offset;
-                    if (length == fBufferSize) {
+                    if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fBufferSize * 2];
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
                         System.arraycopy(fCurrentEntity.ch, offset,
                                          tmp, 0, length);
                         fCurrentEntity.ch = tmp;
-                        fBufferSize *= 2;
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -492,13 +490,12 @@ public class XMLEntityScanner implements XMLLocator {
             while (XMLChar.isNCName(fCurrentEntity.ch[fCurrentEntity.position])) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     int length = fCurrentEntity.position - offset;
-                    if (length == fBufferSize) {
+                    if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fBufferSize * 2];
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
                         System.arraycopy(fCurrentEntity.ch, offset,
                                          tmp, 0, length);
                         fCurrentEntity.ch = tmp;
-                        fBufferSize *= 2;
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -593,13 +590,12 @@ public class XMLEntityScanner implements XMLLocator {
                 }
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     int length = fCurrentEntity.position - offset;
-                    if (length == fBufferSize) {
+                    if (length == fCurrentEntity.ch.length) {
                         // bad luck we have to resize our buffer
-                        char[] tmp = new char[fBufferSize * 2];
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
                         System.arraycopy(fCurrentEntity.ch, offset,
                                          tmp, 0, length);
                         fCurrentEntity.ch = tmp;
-                        fBufferSize *= 2;
                     }
                     else {
                         System.arraycopy(fCurrentEntity.ch, offset,
@@ -1597,6 +1593,16 @@ public class XMLEntityScanner implements XMLLocator {
 
     // set buffer size:
     public void setBufferSize(int size) {
+        // REVISIT: Buffer size passed to entity scanner 
+        // was not being kept in synch with the actual size
+        // of the buffers in each scanned entity. If any
+        // of the buffers were actually resized, it was possible
+        // that the parser would throw an ArrayIndexOutOfBoundsException
+        // for documents which contained names which are longer than
+        // the current buffer size. Conceivably the buffer size passed
+        // to entity scanner could be used to determine a minimum size
+        // for resizing, if doubling its size is smaller than this
+        // minimum. -- mrglavas 
         fBufferSize = size;
     }
 
