@@ -7,6 +7,24 @@
   </desc>
   <changes>
    <update>
+    <note> Added an interface, XMLResourceIdentifier, for
+        describing the physical location of XML resources (external
+        entities, schemas etc.) for use in grammar caching and entity
+        resolution.  Updated XMLEntityResolver, XMLLocator,
+        XMLDocumentHandler, XMLDocumentFragmentHandler, and
+        XMLDTDHandler to use this new interface instead of unwieldy
+        lists of Strings in various callbacks.
+    </note>
+    <submitter name="Neil Graham"/>
+   </update>
+   <add>
+        <note> Added interfaces to support grammar caching
+        facilities in the
+        <code>org.apache.xerces.xni.grammars</code> package.
+        </note>
+    <submitter name="Neil Graham"/>
+    </add>
+   <update>
     <note>
      Updated Xerces Native Interface to add augmentations to
      document fragment handler, DTD handler, and the DTD content
