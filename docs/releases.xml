@@ -2,6 +2,18 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+  <s2 title='December 06, 2000'>
+         <ul>
+           <li>Bug fix release</li>
+           <li>Fixed Memory leak bug was reported by Tosiki IGA where parser runs out of memory [ericye]</li>
+           <li>Rampant object creation even when not validating fix patch send by Elena Litani[Elena Litani]</li>
+           <li>ListDatatypeValidator enumeration bug fix by Elena Litani[Elena Litani]</li>
+           <li>Optimization in validator to only instantiate objects needed in the case of DTD vs. Schemas[jeffreyr]</li>
+           <li>Fixed misc. Schema Structures miscelaneous bugs since last release [ericye]</li>
+           <li>Fixed DOM misc. bugs and other patches since last release [lehors]</li>
+           <li>Miscelaneous DOM patches by Lynn Monson [Lynn Monson]</li>
+        </ul>
+  </s2>
   <s2 title='November 22, 2000'>
         <ul>
            <li>DOM 2 Recommendation release support update[lehors]</li>

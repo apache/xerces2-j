@@ -36,8 +36,8 @@ MV = mv
 #
 # Define the version strings
 #
-PRODUCTVERSION = 1_2_2
-PRODUCTVERSION_DOT = 1.2.2
+PRODUCTVERSION = 1_2_3
+PRODUCTVERSION_DOT = 1.2.3
 PRODUCTNAME = Xerces
 
 #define the jar file names
