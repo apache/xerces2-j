@@ -623,7 +623,6 @@ public class MIME2Java {
         s_enchash.put("EBCDIC-CP-AR2",   "CP918");
 
 	    // Add support for Cp1252 and its friends
-        s_enchash.put("CP1252",   "Cp1252");
         s_enchash.put("WINDOWS-1250",   "Cp1250");
         s_enchash.put("WINDOWS-1251",   "Cp1251");
         s_enchash.put("WINDOWS-1252",   "Cp1252");
@@ -633,9 +632,6 @@ public class MIME2Java {
         s_enchash.put("WINDOWS-1256",   "Cp1256");
         s_enchash.put("WINDOWS-1257",   "Cp1257");
         s_enchash.put("WINDOWS-1258",   "Cp1258");
-	    // Add support for two Thai encodings.
-        s_enchash.put("CP874",   "Cp874");
-        s_enchash.put("TIS620",   "TIS620");
         s_enchash.put("TIS-620",   "TIS620");
                                                 // j:CNS11643 -> EUC-TW?
         s_enchash.put("ISO-2022-CN",    "ISO2022CN");
@@ -733,7 +729,6 @@ public class MIME2Java {
 	// Add support for Cp1252 and friends
 	// Since this code page should be written out in mixed case,
 	// there is no need to reverse the function.
-        s_revhash.put("Cp1252", "Cp1252");
         s_revhash.put("Cp1250", "WINDOWS-1250");
         s_revhash.put("Cp1251", "WINDOWS-1251");
         s_revhash.put("Cp1252", "WINDOWS-1252");
@@ -743,9 +738,6 @@ public class MIME2Java {
         s_revhash.put("Cp1256", "WINDOWS-1256");
         s_revhash.put("Cp1257", "WINDOWS-1257");
         s_revhash.put("Cp1258", "WINDOWS-1258");
-	// Add support for two Thai encodings.
-        s_revhash.put("Cp874", "Cp874");
-        s_revhash.put("TIS620", "TIS620");
         s_revhash.put("TIS620", "TIS-620");
         s_revhash.put("ISO2022CN",  "ISO-2022-CN");
         s_revhash.put("JIS0201",    "X0201");
