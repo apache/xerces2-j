@@ -209,6 +209,9 @@ public class XMLDocumentFragmentScannerImpl
     /** Scanner state. */
     protected int fScannerState;
 
+    /** SubScanner state: inside scanContent method. */
+    protected boolean fInScanContent = false;
+
     /** has external dtd */
     protected boolean fHasExternalDTD;
     
@@ -541,6 +544,13 @@ public class XMLDocumentFragmentScannerImpl
      */
     public void endEntity(String name) throws XNIException {
 
+        // flush possible pending output buffer - see scanContent
+        if (fInScanContent && fStringBuffer.length != 0
+            && fDocumentHandler != null) {
+            fDocumentHandler.characters(fStringBuffer, null);
+            fStringBuffer.length = 0; // make sure we know it's been flushed
+        }
+
         super.endEntity(name);
 
         // make sure markup is properly balanced
@@ -834,6 +844,10 @@ public class XMLDocumentFragmentScannerImpl
         if (c == ']' && fString.length == 0) {
             fStringBuffer.clear();
             fStringBuffer.append((char)fEntityScanner.scanChar());
+            // remember where we are in case we get an endEntity before we
+            // could flush the buffer out - this happens when we're parsing an
+            // entity which ends with a ]
+            fInScanContent = true;
             //
             // We work on a single character basis to handle cases such as:
             // ']]]>' which we might otherwise miss.
@@ -847,9 +861,10 @@ public class XMLDocumentFragmentScannerImpl
                     reportFatalError("CDEndInContent", null);
                 }
             }
-            if (fDocumentHandler != null) {
+            if (fDocumentHandler != null && fStringBuffer.length != 0) {
                 fDocumentHandler.characters(fStringBuffer, null);
             }
+            fInScanContent = false;
             c = -1;
         }
         return c;
