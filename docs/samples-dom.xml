@@ -78,13 +78,6 @@
     <tr><td>-p name</td><td>Select parser wrapper by name.</td></tr>
     <tr><td>-x number</td><td>Select number of repetitions.</td></tr>
     <tr><td>-n  | -N</td><td>Turn on/off namespace processing.</td></tr>
-    <tr>
-     <td>-np | -NP</td>
-     <td>
-      Turn on/off namespace prefixes.<br/>
-      <strong>NOTE:</strong> Requires use of -n.
-     </td>
-    </tr>
     <tr><td>-v  | -V</td><td>Turn on/off validation.</td></tr>
     <tr>
      <td>-s  | -S</td>
