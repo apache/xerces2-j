@@ -1490,8 +1490,8 @@ public class SchemaValidator
                 currDecl = currUse.fAttrDecl;
             } else {
                 // which means it matches a wildcard
-                // skip it if it's skip
-                if (attrWildcard.fType == XSWildcardDecl.WILDCARD_SKIP)
+                // skip it if processContents is skip
+                if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP)
                     continue;
                 // now get the grammar and attribute decl
                 SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempQName.uri);

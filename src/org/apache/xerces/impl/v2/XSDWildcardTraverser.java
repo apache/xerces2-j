@@ -185,17 +185,16 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null)
         {
-            if (child.equals(SchemaSymbols.ELT_ANNOTATION)) {
+            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
 
             if (child != null) {
-                Object[] args = new Object [] { "wildcard", child.getLocalName()};
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "WildcardContentRestricted",
-                                               args,
-                                               XMLErrorReporter.SEVERITY_ERROR);
+                                           "s4s-elt-must-match",
+                                           new Object[]{"wildcard", "(annotation?)"},
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
         }
 

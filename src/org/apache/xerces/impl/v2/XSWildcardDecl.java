@@ -390,9 +390,9 @@ public class XSWildcardDecl  extends XSElementDecl {
             ret = SchemaSymbols.ATTVAL_TWOPOUNDOTHER + ":uri=" + fNamespaceList[0];
             break;
         case WILDCARD_LIST:
-            ret = "namespace:uri=";
-            for (int i = 0; i < fNamespaceList.length; i++)
-                ret += fNamespaceList[i] + ",";
+            ret = "namespace:uri=" + fNamespaceList[0];
+            for (int i = 1; i < fNamespaceList.length; i++)
+                ret += "," + fNamespaceList[i];
             break;
         }
 

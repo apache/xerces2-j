@@ -126,7 +126,8 @@ class XSDocumentInfo {
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-            if(fTargetNamespace.length() == 0) fTargetNamespace = null;
+            if(fTargetNamespace != null && fTargetNamespace.length() == 0)
+                fTargetNamespace = null;
             if (fTargetNamespace != null)
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 

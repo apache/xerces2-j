@@ -103,20 +103,14 @@ public class XSParticleDecl {
             // 1. do we output "element[1-1]" or just "element"?
             // 2. do we output "element[3-3]" or "elment[3]"?
             // 3. how to output "unbounded"?
-            /*if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
-                    fMinOccurs == 1 && fMaxOccurs == 1)) {
+            if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
+                  fMinOccurs == 1 && fMaxOccurs == 1)) {
                 fBuffer.append("[" + fMinOccurs);
                 if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
-                    fBuffer.append("-INF");
+                    fBuffer.append("-UNBOUNDED");
                 else if (fMinOccurs != fMaxOccurs)
                     fBuffer.append("-" + fMaxOccurs);
                 fBuffer.append("]");
-            }*/
-            if (!(fMinOccurs == 0 && fMaxOccurs == 0)) {
-                if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
-                    fBuffer.append("[" + fMinOccurs + "-UNBOUNDED]");
-                else
-                    fBuffer.append("[" + fMinOccurs + "-" + fMaxOccurs + "]");
             }
         }
         return fBuffer.toString();
@@ -140,19 +134,21 @@ public class XSParticleDecl {
         case PARTICLE_CHOICE:
         case PARTICLE_SEQUENCE:
         case PARTICLE_ALL:
-            if (fType == PARTICLE_ALL)
-                fBuffer.append("all(");
-            else
-                fBuffer.append('(');
-            fBuffer.append(fValue.toString());
-            if (fOtherValue != null) {
+            if (fOtherValue == null) {
+                fBuffer.append(fValue.toString());
+            } else {
+                if (fType == PARTICLE_ALL)
+                    fBuffer.append("all(");
+                else
+                    fBuffer.append('(');
+                fBuffer.append(fValue.toString());
                 if (fType == PARTICLE_CHOICE)
                     fBuffer.append('|');
                 else
                     fBuffer.append(',');
                 fBuffer.append(fOtherValue.toString());
+                fBuffer.append(')');
             }
-            fBuffer.append(')');
             break;
         }
     }

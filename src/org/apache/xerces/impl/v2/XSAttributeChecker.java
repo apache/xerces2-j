@@ -592,7 +592,7 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_PUBLIC, allAttrs[ATT_PUBLIC_R]);
         // system = anyURI
         attrList.put(SchemaSymbols.ATT_SYSTEM, allAttrs[ATT_SYSTEM_N]);
-        oneEle = new OneElement (attrList);        
+        oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_NOTATION, oneEle);
 
 
@@ -1005,7 +1005,7 @@ public class XSAttributeChecker {
         // get desired attribute list of this element
         OneElement oneEle = (OneElement)eleAttrsMap.get(elName);
         if (oneEle == null) {
-            
+
             reportSchemaError ("s4s-elt-invalid", new Object[] {elName});
             return null;
         }
@@ -1348,7 +1348,7 @@ public class XSAttributeChecker {
                     while (tokens.hasMoreTokens()) {
                         token = tokens.nextToken();
                         if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                            tempNamespace = fSchemaHandler.EMPTY_STRING;
+                            tempNamespace = null;
                         } else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
                             tempNamespace = schemaDoc.fTargetNamespace;
                         } else {
