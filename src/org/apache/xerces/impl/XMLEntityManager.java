@@ -1213,7 +1213,7 @@ public class XMLEntityManager
         }
 
         // try to use a Java reader
-        String javaEncoding = EncodingMap.getIANA2JavaMapping(encoding);
+        String javaEncoding = EncodingMap.getIANA2JavaMapping(ENCODING);
         if (javaEncoding == null) {
             javaEncoding = encoding;
         }
