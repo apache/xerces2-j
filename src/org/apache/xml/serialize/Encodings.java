@@ -74,7 +74,7 @@ import java.io.UnsupportedEncodingException;
  * @version $Id$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
-class Encodings
+public class Encodings
 {
 
 

@@ -71,7 +71,7 @@ import java.io.IOException;
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
-class IndentPrinter
+public class IndentPrinter
     extends Printer
 {
 

@@ -70,7 +70,7 @@ import java.util.Hashtable;
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see BaseMarkupSerializer
  */
-class ElementState
+public class ElementState
 {
 
 
