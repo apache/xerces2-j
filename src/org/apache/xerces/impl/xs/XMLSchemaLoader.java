@@ -57,47 +57,64 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.xni.parser.XMLComponent;
-import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLGrammarLoader;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.apache.xerces.xni.grammars.Grammar;
-import org.xml.sax.InputSource;
-
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.xs.models.CMBuilder;
-import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.util.DefaultErrorHandler;
-
-import java.util.Locale;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Hashtable;
+import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.Vector;
+
+import org.apache.xerces.dom.DOMErrorImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom.DOMStringListImpl;
+import org.apache.xerces.dom3.DOMConfiguration;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMStringList;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.CMNodeFactory;
+import org.apache.xerces.impl.xs.traversers.XSDHandler;
+import org.apache.xerces.util.DOMErrorHandlerWrapper;
+import org.apache.xerces.util.DefaultErrorHandler;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XMLGrammarLoader;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.XSGrammar;
+import org.apache.xerces.xni.parser.XMLComponent;
+import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xs.DOMInputList;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSLoader;
+import org.apache.xerces.xs.XSModel;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.ls.DOMInput;
+import org.xml.sax.InputSource;
 
 /**
- * This class implements XMLGrammarLoader.  It is designed to interact
- * either with a proxy for a user application which wants to preparse schemas,
- * or with our own Schema validator.  It is hoped that none of these "external"
- * classes will therefore need to communicate directly
+ * This class implements xni.grammars.XMLGrammarLoader.
+ * It also serves as implementation of xs.XSLoader interface and DOMConfiguration interface.
+ * 
+ * This class is designed to interact either with a proxy for a user application 
+ * which wants to preparse schemas, or with our own Schema validator.  
+ * It is hoped that none of these "external" classes will therefore need to communicate directly
  * with XSDHandler in future.
  * <p>This class only knows how to make XSDHandler do its thing.
  * The caller must ensure that all its properties (schemaLocation, JAXPSchemaSource
@@ -107,7 +124,9 @@ import org.apache.xerces.impl.xs.models.CMNodeFactory;
  * @version $Id$
  */
 
-public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent {
+public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
+                                        // XML Component API 
+                                        XSLoader, DOMConfiguration {
 
     // Feature identifiers:
 
@@ -210,6 +229,10 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent {
     private CMBuilder fCMBuilder;
     // boolean that tells whether we've tested the JAXP property.
     private boolean fJAXPProcessed = false;
+    
+    private DOMStringList fRecognizedParameters = null;
+	/** DOM L3 error handler */
+	private DOMErrorHandlerWrapper fErrorHandler = null;
 
 
     // containers
@@ -978,8 +1001,276 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent {
 			}
 		}
 	}
-	
-	
+		
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSLoader#getConfig()
+     */
+    public DOMConfiguration getConfig() {
+        return this;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSLoader#load(org.w3c.dom.ls.DOMInput)
+     */
+    public XSModel load(DOMInput is) {
+        try {
+            Grammar g = loadGrammar(dom2xmlInputSource(is));
+            return ((XSGrammar) g).toXSModel();
+        } catch (Exception e) {
+            if (fErrorHandler != null) {
+                DOMErrorImpl error = new DOMErrorImpl();
+                error.fException = e;
+                error.fMessage = e.getMessage();
+                error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                fErrorHandler.getErrorHandler().handleError(error);
+            }
+            return null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSLoader#loadInputList(org.apache.xerces.xs.DOMInputList)
+     */
+    public XSModel loadInputList(DOMInputList is) {
+        int length = is.getLength();
+        if (length == 0) {
+            return null;
+        }
+        SchemaGrammar[] gs = new SchemaGrammar[length];
+        for (int i = 0; i < length; i++) {
+            try {
+                gs[i] = (SchemaGrammar) loadGrammar(dom2xmlInputSource(is.item(i)));
+            } catch (Exception e) {
+                if (fErrorHandler != null) {
+                    DOMErrorImpl error = new DOMErrorImpl();
+                    error.fException = e;
+                    error.fMessage = e.getMessage();
+                    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                    fErrorHandler.getErrorHandler().handleError(error);
+                }
+                return null;
+            }
+        }
+        return new XSModelImpl(gs);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSLoader#loadURI(java.lang.String)
+     */
+    public XSModel loadURI(String uri) {
+    	try {
+			Grammar g = loadGrammar(new XMLInputSource(null, uri, null));
+			return ((XSGrammar)g).toXSModel();
+    	}
+    	catch (Exception e){
+			if (fErrorHandler != null) {
+				DOMErrorImpl error = new DOMErrorImpl();
+				error.fException = e;
+				error.fMessage = e.getMessage();
+				error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+				fErrorHandler.getErrorHandler().handleError(error);
+			}
+    		return null;
+    	}
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSLoader#loadURIList(org.apache.xerces.xs.StringList)
+     */
+    public XSModel loadURIList(StringList uriList) {
+        int length = uriList.getLength();
+        if (length == 0) {
+            return null;
+        }
+        SchemaGrammar[] gs = new SchemaGrammar[length];
+        for (int i = 0; i < length; i++) {
+            try {
+                gs[i] =
+                    (SchemaGrammar) loadGrammar(new XMLInputSource(null, uriList.item(i), null));
+            } catch (Exception e) {
+                if (fErrorHandler != null) {
+                    DOMErrorImpl error = new DOMErrorImpl();
+                    error.fException = e;
+                    error.fMessage = e.getMessage();
+                    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                    fErrorHandler.getErrorHandler().handleError(error);
+                }
+                return null;
+            }
+        }
+        return new XSModelImpl(gs);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.dom3.DOMConfiguration#canSetParameter(java.lang.String, java.lang.Object)
+     */
+    public boolean canSetParameter(String name, Object value) {
+		if(value instanceof Boolean){
+			boolean state = ((Boolean)value).booleanValue();
+			if (name.equals(Constants.DOM_VALIDATE) ||
+			    name.equals(SCHEMA_FULL_CHECKING) ||
+			    name.equals(CONTINUE_AFTER_FATAL_ERROR) ||
+			    name.equals(ALLOW_JAVA_ENCODINGS) ||
+			    name.equals(STANDARD_URI_CONFORMANT_FEATURE)){
+			    	return true;
+
+			}
+			return false;			
+		}
+		if (name.equals(Constants.DOM_ERROR_HANDLER)||
+		    name.equals(SYMBOL_TABLE) ||
+			name.equals(ERROR_REPORTER) ||
+			name.equals(ERROR_HANDLER) ||
+			name.equals(ENTITY_RESOLVER) ||
+			name.equals(XMLGRAMMAR_POOL) ||
+			name.equals(SCHEMA_LOCATION) ||
+			name.equals(SCHEMA_NONS_LOCATION) ||
+			name.equals(JAXP_SCHEMA_SOURCE)){
+				return true;
+		}
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.dom3.DOMConfiguration#getParameter(java.lang.String)
+     */
+    public Object getParameter(String name) throws DOMException {
+		if (name.equals(Constants.DOM_ERROR_HANDLER)){
+			if (fErrorHandler != null){
+				return fErrorHandler.getErrorHandler();
+			}
+		}
+        try {
+            boolean feature = getFeature(name);
+            return (feature) ? Boolean.TRUE : Boolean.FALSE;
+        } catch (Exception e) {
+            Object property;
+            try {
+                property = getProperty(name);
+                return property;
+            } catch (Exception ex) {
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "FEATURE_NOT_SUPPORTED",
+                        new Object[] { name });
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.dom3.DOMConfiguration#getParameterNames()
+     */
+    public DOMStringList getParameterNames() {
+        if (fRecognizedParameters == null){
+        	Vector v = new Vector();
+			v.add("validate");
+			v.add(SYMBOL_TABLE);
+			v.add(ERROR_REPORTER);
+			v.add(ERROR_HANDLER);
+			v.add(ENTITY_RESOLVER);
+			v.add(XMLGRAMMAR_POOL);
+			v.add(SCHEMA_LOCATION);
+			v.add(SCHEMA_NONS_LOCATION);
+			v.add(JAXP_SCHEMA_SOURCE);
+			v.add(SCHEMA_FULL_CHECKING);
+			v.add(CONTINUE_AFTER_FATAL_ERROR);
+			v.add(ALLOW_JAVA_ENCODINGS);
+			v.add(STANDARD_URI_CONFORMANT_FEATURE);
+        	fRecognizedParameters = new DOMStringListImpl(v);      	
+        }
+        return fRecognizedParameters;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.dom3.DOMConfiguration#setParameter(java.lang.String, java.lang.Object)
+     */
+    public void setParameter(String name, Object value) throws DOMException {
+        if (value instanceof Boolean) {
+            boolean state = ((Boolean) value).booleanValue();
+            if (name.equals("validate") && state) {
+                return;
+            }
+            try {
+                setFeature(name, state);
+            } catch (Exception e) {
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "FEATURE_NOT_SUPPORTED",
+                        new Object[] { name });
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+            }
+            return;
+        }
+        if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+            if (value instanceof DOMErrorHandler) {
+                try {
+                    fErrorHandler = new DOMErrorHandlerWrapper((DOMErrorHandler) value);
+                    setErrorHandler(fErrorHandler);
+                } catch (XMLConfigurationException e) {
+                }
+            } else {
+                // REVISIT: type mismatch
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "FEATURE_NOT_SUPPORTED",
+                        new Object[] { name });
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+            }
+            return;
+
+        }
+
+        try {
+            setProperty(name, value);
+        } catch (Exception ex) {
+
+            String msg =
+                DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "FEATURE_NOT_SUPPORTED",
+                    new Object[] { name });
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+
+        }
+
+    }
+    
+	private XMLInputSource dom2xmlInputSource(DOMInput is) {
+		// need to wrap the DOMInput with an XMLInputSource
+		XMLInputSource xis = null;
+		// if there is a string data, use a StringReader
+		// according to DOM, we need to treat such data as "UTF-16".
+		if (is.getStringData() != null) {
+			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+									 is.getBaseURI(), new StringReader(is.getStringData()),
+									 "UTF-16");
+		}
+		// check whether there is a Reader
+		// according to DOM, we need to treat such reader as "UTF-16".
+		else if (is.getCharacterStream() != null) {
+			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+									 is.getBaseURI(), is.getCharacterStream(),
+									 "UTF-16");
+		}
+		// check whether there is an InputStream
+		else if (is.getByteStream() != null) {
+			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+									 is.getBaseURI(), is.getByteStream(),
+									 is.getEncoding());
+		}
+		// otherwise, just use the public/system/base Ids
+		else {
+			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+									 is.getBaseURI());
+		}
+
+		return xis;
+	}
 
 } // XMLGrammarLoader
 

@@ -62,6 +62,7 @@ import java.util.StringTokenizer;
 import org.apache.xerces.dom3.DOMImplementationList;
 import org.apache.xerces.dom3.DOMImplementationSource;
 import org.apache.xerces.dom3.bootstrap.DOMImplementationListImpl;
+import org.apache.xerces.impl.xs.XSImplementationImpl;
 import org.w3c.dom.DOMImplementation;
 
 /**
@@ -102,6 +103,12 @@ public class DOMImplementationSourceImpl
         if (testImpl(impl, features)) {
             return impl;
         }
+		// if not try the XSImplementation
+		impl = XSImplementationImpl.getDOMImplementation();
+		if (testImpl(impl, features)) {
+			return impl;
+		}
+        
         return null;
     }
     
@@ -119,22 +126,27 @@ public class DOMImplementationSourceImpl
      *   features.
      */
     public DOMImplementationList getDOMImplementationList(String features) {
-		// first check whether the CoreDOMImplementation would do
-		DOMImplementation impl = CoreDOMImplementationImpl.getDOMImplementation();
+        // first check whether the CoreDOMImplementation would do
+        DOMImplementation impl = CoreDOMImplementationImpl.getDOMImplementation();
         DOMImplementationListImpl list = new DOMImplementationListImpl();
-		if (testImpl(impl, features)) {
-            list.add(impl);			
-		}
-		impl = DOMImplementationImpl.getDOMImplementation();
-		if (testImpl(impl, features)) {
-			list.add(impl);
-		}
-		impl = PSVIDOMImplementationImpl.getDOMImplementation();
-		if (testImpl(impl, features)) {
-			list.add(impl);
-		}
-		return list;
-	}
+        if (testImpl(impl, features)) {
+            list.add(impl);
+        }
+        impl = DOMImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            list.add(impl);
+        }
+        impl = PSVIDOMImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            list.add(impl);
+        }
+
+        impl = XSImplementationImpl.getDOMImplementation();
+        if (testImpl(impl, features)) {
+            list.add(impl);
+        }
+        return list;
+    }
 
     boolean testImpl(DOMImplementation impl, String features) {
        

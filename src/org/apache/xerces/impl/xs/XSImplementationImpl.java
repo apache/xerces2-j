@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,33 +49,31 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2003, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.dom;
+package org.apache.xerces.impl.xs;
 
-import org.w3c.dom.DOMException;
+import org.apache.xerces.dom.CoreDOMImplementationImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.xs.StringList;
+import org.apache.xerces.xs.XSException;
+import org.apache.xerces.xs.XSImplementation;
+import org.apache.xerces.xs.XSLoader;
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
+
 
 /**
- * The DOMImplementation class is description of a particular
- * implementation of the Document Object Model. As such its data is
- * static, shared by all instances of this implementation.
- * <P>
- * The DOM API requires that it be a real object rather than static
- * methods. However, there's nothing that says it can't be a singleton,
- * so that's how I've implemented it.
- *
- * @version $Id$
- * @since  PR-DOM-Level-1-19980818.
+ * Implements XSImplementation interface that allows one to retrieve an instance of <code>XSLoader</code>. 
+ * This interface should be implemented on the same object that implements 
+ * DOMImplementation.
  */
-public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
+public class XSImplementationImpl extends CoreDOMImplementationImpl 
+ 								  implements XSImplementation {
 
     //
     // Data
@@ -84,7 +82,7 @@ public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
     // static
 
     /** Dom implementation singleton. */
-    static PSVIDOMImplementationImpl singleton = new PSVIDOMImplementationImpl();
+    static XSImplementationImpl singleton = new XSImplementationImpl();
 
     //
     // Public methods
@@ -115,44 +113,40 @@ public class PSVIDOMImplementationImpl extends CoreDOMImplementationImpl {
      * feature and version.
      */
     public boolean hasFeature(String feature, String version) {
-        return super.hasFeature(feature, version) ||
-               feature.equalsIgnoreCase("psvi");
+    	
+        return (feature.equalsIgnoreCase("XS-Loader") && (version == null || version.equals("1.0")) ||
+		super.hasFeature(feature, version));
     } // hasFeature(String,String):boolean
     
-    /**
-     * Introduced in DOM Level 2. <p>
-     * 
-     * Creates an XML Document object of the specified type with its document
-     * element.
-     *
-     * @param namespaceURI     The namespace URI of the document
-     *                         element to create, or null. 
-     * @param qualifiedName    The qualified name of the document
-     *                         element to create. 
-     * @param doctype          The type of document to be created or null.<p>
-     *
-     *                         When doctype is not null, its
-     *                         Node.ownerDocument attribute is set to
-     *                         the document being created.
-     * @return Document        A new Document object.
-     * @throws DOMException    WRONG_DOCUMENT_ERR: Raised if doctype has
-     *                         already been used with a different document.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public Document           createDocument(String namespaceURI, 
-                                             String qualifiedName, 
-                                             DocumentType doctype)
-                                             throws DOMException
-    {
-    	if (doctype != null && doctype.getOwnerDocument() != null) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                   "DOM005 Wrong document");
-        }
-        DocumentImpl doc = new PSVIDocumentImpl(doctype);
-        Element e = doc.createElementNS( namespaceURI, qualifiedName);
-        doc.appendChild(e);
-        return doc;
-    }
-    
 
-} // class DOMImplementationImpl
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSImplementation#createXSLoader(org.apache.xerces.xs.StringList)
+     */
+    public XSLoader createXSLoader(StringList versions) throws XSException {
+    	XSLoader loader = new XMLSchemaLoader();
+    	if (versions == null){
+			return loader;
+    	}
+    	for (int i=0; i<versions.getLength();i++){
+    		if (!versions.item(i).equals("1.0")){
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"FEATURE_NOT_SUPPORTED",
+						new Object[] { versions.item(i) });
+				throw new XSException(XSException.NOT_SUPPORTED_ERR, msg);
+    		}
+    	}
+    	return loader;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.xs.XSImplementation#getRecognizedVersions()
+     */
+    public StringList getRecognizedVersions() {
+        StringListImpl list = new StringListImpl(new String[]{"1.0"}, 1);
+        return null;
+    }
+
+} // class XSImplementationImpl
