@@ -65,7 +65,7 @@ class EventReporter implements EventListener
     boolean silent=false; // Toggle this to mask reports you don't care about
     int count=0;
     String[] phasename={"?","CAPTURING","AT_TARGET","BUBBLING","?"};
-
+    String[] attrChange={"?","MODIFICATION","ADDITION","REMOVAL"};
 
     public void on()
     {
@@ -108,6 +108,8 @@ class EventReporter implements EventListener
                 System.out.println("\tprevValue='"+me.getPrevValue()+"'");
             if(me.getNewValue()!=null)
                 System.out.println("\tnewValue='"+me.getNewValue()+"'");
+            if(me.getType().equals("DOMAttrModified"))
+                System.out.println("\tattrChange='"+attrChange[me.getAttrChange()]+"'");
         }
     }
 }
