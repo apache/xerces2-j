@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -88,10 +88,13 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
-    public ListDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+    public ListDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                    boolean derivedByList, XMLErrorReporter reporter) {
         fErrorReporter = reporter;
-        fBaseValidator = base; // Set base type 
+        // REVISIT: need to use two fieds for base type and item type.
+        // REVISIT: when derivedByList is true, we should set anySimpleType
+        //          as the base type.
+        fBaseValidator = base; // Set base type
         try {
 
             if (facets != null) {
@@ -148,7 +151,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 )) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 )) {
                         throw new InvalidDatatypeFacetException(
-                                                               "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );
                     }
                     else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 )) {
                         throw new InvalidDatatypeFacetException(
@@ -166,8 +169,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
 
                 // check 4.3.5.c0 must: enumeration values from the value space of base
                 //REVISIT: we should try either to delay it till validate() or
-                //         store enumeration values in _value_space 
-                //         otherwise we end up creating and throwing objects  
+                //         store enumeration values in _value_space
+                //         otherwise we end up creating and throwing objects
                 if (base != null &&
                     (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
                     (fEnumeration != null)) {
@@ -191,7 +194,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
             }
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "DatatypeFacetError", new Object [] { ((Exception)e).getMessage()},
-                                       XMLErrorReporter.SEVERITY_ERROR);                    
+                                       XMLErrorReporter.SEVERITY_ERROR);
         }
     }
 
@@ -200,7 +203,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
 
     /**
      * validate that a string is a W3C string type
-     * 
+     *
      * @param content A string containing the content to be validated
      * @param list
      * @exception throws InvalidDatatypeException if the content is
@@ -214,14 +217,14 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
             //for state validators
         }
         else {
-            checkContentEnum( content, state , null); 
+            checkContentEnum( content, state , null);
         }
         return null;
     }
 
 
     /**
-     * 
+     *
      * @return                          A Hashtable containing the facets
      *         for this datatype.
      */
@@ -236,9 +239,9 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
         // <list> datatype
         StringTokenizer pList1 = new StringTokenizer( value1 );
         StringTokenizer pList2 = new StringTokenizer( value2 );
-        int numberOfTokens = pList1.countTokens();         
+        int numberOfTokens = pList1.countTokens();
         if (numberOfTokens < pList2.countTokens()) {
-            return -1; 
+            return -1;
         }
         else if (numberOfTokens > pList2.countTokens()) {
             return 1;
@@ -277,8 +280,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     /**
-     * validate that a content is valid against base datatype and facets (if any) 
-     * 
+     * validate that a content is valid against base datatype and facets (if any)
+     *
      * @param content A string containing the content to be validated
      * @param state used with IDREF(s) datatypes
      * @param enumeration enumeration facet
@@ -292,7 +295,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
         //a redesign of Datatypes might help to reduce complexity of this validation
 
         StringTokenizer parsedList = new StringTokenizer( content );
-        int numberOfTokens = parsedList.countTokens();         
+        int numberOfTokens = parsedList.countTokens();
         if (fBaseValidator instanceof ListDatatypeValidator) {
             //<simpleType name="fRestriction"><restriction base="fList">...</restriction></simpleType>
             try {
@@ -343,13 +346,13 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
             //<simpleType name="fList"><list itemType="float"/></simpleType>
 
             if (enumeration !=null) {
-                StringTokenizer eTokens = null; //temporary list of enumeration tokens 
+                StringTokenizer eTokens = null; //temporary list of enumeration tokens
                 StringTokenizer cTokens = null; //list of content tokens
                 String token= null;  //content token
                 String eToken= null; //enumeration token
                 boolean valid = true;
 
-                int eSize = enumeration.size(); 
+                int eSize = enumeration.size();
                 Vector enumTemp = new Vector(); //temporary vector to store enumeration token
                 enumTemp.setSize(1);
                 String currentEnumeration = null; //enum value: <enumeration value="1 2 3"/>
@@ -424,14 +427,14 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
     * @param enumeration facet
     *
     * @returns true if enumeration is subset of fEnumeration, false otherwise
-    */    
+    */
     private boolean verifyEnum (Vector enum) {
 
         /* REVISIT: won't work for list datatypes in some cases: */
         if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0) {
             for (Enumeration e = enum.elements() ; e.hasMoreElements() ;) {
                 if (fEnumeration.contains(e.nextElement()) == false) {
-                    return false;                             
+                    return false;
                 }
             }
         }

@@ -143,9 +143,10 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         fErrorReporter = reporter;
         if ( base !=null ) {
             fValidatorsSize = base.size();
-            fBaseValidators = new Vector(fValidatorsSize);
             fBaseValidators = base;
-
+            // REVISIT: should set anySimpleType as the base type
+            if (fValidatorsSize > 0)
+                fBaseValidator = (DatatypeValidator)base.elementAt(0);
         }
 
     }
@@ -184,7 +185,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     public int compare( String value1, String value2 ){
-        if (fBaseValidator != null) {
+        if (fBaseValidator instanceof UnionDatatypeValidator) {
             return this.fBaseValidator.compare(value1, value2);
         }
         //union datatype
@@ -261,7 +262,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         int index = -1; //number of validators
         boolean valid=false;
         DatatypeValidator currentDV = null;
-        if (fBaseValidator !=null) {  //restriction  of union datatype
+        if (fBaseValidator instanceof UnionDatatypeValidator) {  //restriction  of union datatype
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
                 if ( fRegex == null || fRegex.matches( content) == false )
                     throw new InvalidDatatypeValueException("Value '"+content+
