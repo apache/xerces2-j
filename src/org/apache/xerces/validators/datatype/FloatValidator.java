@@ -83,8 +83,7 @@ public class FloatValidator implements DatatypeValidator {
 	boolean fIsMinExclusive = false;
 	float fEnumValues[] = null;
 	boolean fHasEnums = false;
-        Object fBaseValidator = null;
-	//RealValidator fBaseValidator = null;
+	RealValidator fBaseValidator = null;
 	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 	private Locale fLocale = null;
 	
@@ -229,6 +228,14 @@ public class FloatValidator implements DatatypeValidator {
     public void setBasetype(String base) {
 	    //fBaseValidator = (RealValidator) base;
     }
+
+
+    public void setBasetype(DatatypeValidator base) {
+          //fBaseValidator = (RealValidator) base;
+  }
+
+
+
 
     /*
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
