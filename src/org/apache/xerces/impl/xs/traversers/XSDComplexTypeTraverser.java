@@ -128,9 +128,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     private static final boolean DEBUG=false;
 
-    private static XSParticleDecl fErrorContent=null;
-    private static XSWildcardDecl fErrorWildcard=null;
-    
     private SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
 
     private class ComplexTypeRecoverableError extends Exception {
@@ -975,32 +972,34 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fParticle = getErrorContent();
         // REVISIT: do we need to remove all attribute uses already added into
         // the attribute group? maybe it's ok to leave them there. -SG
-        fAttrGrp.fAttributeWC = fErrorWildcard;
+        fAttrGrp.fAttributeWC = getErrorWildcard();
 
         return;
 
     }
 
-    private static synchronized XSParticleDecl getErrorContent() {
-        if (fErrorContent==null) {
-            fErrorWildcard = new XSWildcardDecl();
-            fErrorWildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
-            XSParticleDecl particle = new XSParticleDecl();
-            particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
-            particle.fValue = fErrorWildcard;
-            particle.fMinOccurs = 0;
-            particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-            XSModelGroupImpl group = new XSModelGroupImpl();
-            group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
-            group.fParticleCount = 1;
-            group.fParticles = new XSParticleDecl[1];
-            group.fParticles[0] = particle;
-            fErrorContent = new XSParticleDecl();
-            fErrorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-            fErrorContent.fValue = group;
-        }
+    private XSParticleDecl getErrorContent() {
+        XSParticleDecl particle = new XSParticleDecl();
+        particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
+        particle.fValue = getErrorWildcard();
+        particle.fMinOccurs = 0;
+        particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+        XSModelGroupImpl group = new XSModelGroupImpl();
+        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+        group.fParticleCount = 1;
+        group.fParticles = new XSParticleDecl[1];
+        group.fParticles[0] = particle;
+        XSParticleDecl errorContent = new XSParticleDecl();
+        errorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+        errorContent.fValue = group;
 
-        return fErrorContent;
+        return errorContent;
+    }
+
+    private XSWildcardDecl getErrorWildcard() {
+        XSWildcardDecl errorWildcard = new XSWildcardDecl();
+        errorWildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
+        return errorWildcard;
     }
 
     private void contentBackup() {
