@@ -278,7 +278,8 @@ Copyright:
     <echo message="Building docs for ${parser.Name} ${parser.Version} ..." />
     <java fork="yes"
           classpath="${java.class.path}:${doc.generator.package}:./tools/xalan.jar"
-          classname="${doc.generator}">
+          classname="${doc.generator}"
+          failOnError="yes">
       <arg value="targetDirectory=${build.docs}"/>
       <arg value="${build.dir}/xdocs/docs-book.xml"/>
       <arg value="${build.dir}/xdocs/style"/>
@@ -550,25 +551,29 @@ Copyright:
     <echo message="Running sax.Counter ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
-          classname="sax.Counter">
+          classname="sax.Counter"
+          failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running sax.Writer ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
-          classname="sax.Writer">
+          classname="sax.Writer"
+          failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Counter ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
-          classname="dom.Counter">
+          classname="dom.Counter"
+          failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <echo message="Running dom.Writer ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
-          classname="dom.Writer">
+          classname="dom.Writer"
+          failOnError="yes">
        <arg value="${data.dir}/personal.xml"/>
     </java>
     <!--
@@ -583,27 +588,32 @@ Copyright:
     <java fork="yes"
           classpath="${build.dir}/classes"
           classname="dom.traversal.IteratorView"
+          failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeWalkerView ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
           classname="dom.traversal.TreeWalkerView"
+          failOnError="yes"
           args="${data.dir}/personal.xml"/>
     <echo message="Running TreeViewer ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
           classname="dom.TreeViewer"
+          failOnError="yes"
           args="${data.dir}/personal.xml"/>
      -->
     <echo message="Running dom.mem.Test ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
-          classname="dom.mem.Test">
+          classname="dom.mem.Test"
+          failOnError="yes">
     </java>
     <echo message="Running dom.DTest ..." />
     <java fork="yes"
           classpath="${build.dir}/classes"
-          classname="dom.DTest">
+          classname="dom.DTest"
+          failOnError="yes">
     </java>
   </target>
 

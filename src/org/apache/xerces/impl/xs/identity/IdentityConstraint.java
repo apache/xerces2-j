@@ -193,7 +193,7 @@ public abstract class IdentityConstraint {
 
     static final Field[] resize(Field[] oldArray, int newSize) {
         Field[] newArray = new Field[newSize];
-        System.arraycopy(oldArray, 0, newArray, 0, newSize);
+        System.arraycopy(oldArray, 0, newArray, 0, oldArray.length);
         return newArray;
     }
 

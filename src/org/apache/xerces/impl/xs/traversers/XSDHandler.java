@@ -86,6 +86,8 @@ import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.XMLLocator;
 
+import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
+
 import org.apache.xerces.impl.xs.dom.DOMParser;
 import org.apache.xerces.impl.xs.dom.ElementNSImpl;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
@@ -315,7 +317,8 @@ public class XSDHandler {
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
 
-    DOMParser fSchemaParser;
+    //DOMParser fSchemaParser;
+    SchemaParsingConfig fSchemaParser;
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -357,7 +360,8 @@ public class XSDHandler {
         // REVISIT: don't use SchemaConfiguration internally
         //          we will get stack overflaw because
         //          XMLSchemaValidator will be instantiating XSDHandler...
-        fSchemaParser = new DOMParser();
+        //fSchemaParser = new DOMParser();
+        fSchemaParser = new SchemaParsingConfig();
         fSchemaGrammarDescription = new SchemaGrammarDescription();
 
         createTraversers();

@@ -57,9 +57,12 @@
 
 package org.apache.xerces.util;
 
-import org.apache.xerces.dom.AttrImpl;
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.NodeImpl;
+//import org.apache.xerces.dom.AttrImpl;
+//import org.apache.xerces.dom.DocumentImpl;
+//import org.apache.xerces.dom.NodeImpl;
+
+import org.apache.xerces.impl.xs.opti.NodeImpl;
+import org.apache.xerces.impl.xs.opti.SchemaDOM;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -99,6 +102,7 @@ public class DOMUtil {
      * <p>
      * <em>Note:</em> This is an iterative implementation.
      */
+/*
     public static void copyInto(Node src, Node dest) throws DOMException {
 
         // get node factory
@@ -182,6 +186,7 @@ public class DOMUtil {
         }
 
     } // copyInto(Node,Node)
+*/
 
     /** Finds and returns the first child element node. */
     public static Element getFirstChildElement(Node parent) {
@@ -290,17 +295,33 @@ public class DOMUtil {
 
     // set this Node as being hidden
     public static void setHidden(Node node) {
-        ((NodeImpl)node).setReadOnly(true, false);
+        if (node instanceof NodeImpl) {
+            ((NodeImpl)node).setReadOnly(true, false);
+        }
+        else if (node instanceof SchemaDOM) {
+            ((SchemaDOM)node).setReadOnly(true, false);
+        }
     } // setHidden(node):void
 
     // set this Node as being visible
     public static void setVisible(Node node) {
-        ((NodeImpl)node).setReadOnly(false, false);
+        if (node instanceof NodeImpl) {
+            ((NodeImpl)node).setReadOnly(false, false);
+        }
+        else if (node instanceof SchemaDOM) {
+            ((SchemaDOM)node).setReadOnly(false, false);
+        }
     } // setVisible(node):void
 
     // is this node hidden?
     public static boolean isHidden(Node node) {
-        return ((NodeImpl)node).getReadOnly();
+        if (node instanceof NodeImpl) {
+            return ((NodeImpl)node).getReadOnly();
+        }
+        else if (node instanceof SchemaDOM) {
+            return ((SchemaDOM)node).getReadOnly();
+        }
+        return false;
     } // isHidden(Node):boolean
 
     /** Finds and returns the first child node with the given name. */

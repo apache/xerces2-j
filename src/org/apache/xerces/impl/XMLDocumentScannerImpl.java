@@ -587,7 +587,7 @@ public class XMLDocumentScannerImpl
                 reportFatalError("PrematureEOF", null);
                 throw e;
             }
-
+            fEntityManager.fCurrentEntity.mayReadChunks = true;
             // if no XMLDecl, then scan piece of prolog
             return true;
 
@@ -776,7 +776,7 @@ public class XMLDocumentScannerImpl
                             // REVISIT: Should there be a feature for
                             //          the "complete" parameter?
                             boolean completeDTD = true;
-                            boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD);
+                            boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD && fLoadExternalDTD);
                             if (!moreToScan) {
                                 // end doctype declaration
                                 if (!fEntityScanner.skipChar(']')) {

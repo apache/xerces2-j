@@ -230,7 +230,7 @@ public class SchemaDVFactoryImpl extends SchemaDVFactory {
         fBuiltInTypes.put(ANYSIMPLETYPE, anySimpleType);
         XSSimpleTypeDecl stringDV = new XSSimpleTypeDecl(anySimpleType, STRING, XSSimpleTypeDecl.DV_STRING, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, false );
         fBuiltInTypes.put(STRING, stringDV);
-        fBuiltInTypes.put(BOOLEAN, new XSSimpleTypeDecl(anySimpleType, STRING, XSSimpleTypeDecl.DV_BOOLEAN, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_FINITE, false));
+        fBuiltInTypes.put(BOOLEAN, new XSSimpleTypeDecl(anySimpleType, BOOLEAN, XSSimpleTypeDecl.DV_BOOLEAN, XSSimpleType.ORDERED_FALSE, false, XSSimpleType.CARDINALITY_FINITE, false));
         XSSimpleTypeDecl decimalDV = new XSSimpleTypeDecl(anySimpleType, DECIMAL, XSSimpleTypeDecl.DV_DECIMAL, XSSimpleType.ORDERED_TOTAL, false, XSSimpleType.CARDINALITY_COUNTABLY_INFINITE, true);
         fBuiltInTypes.put(DECIMAL, decimalDV);
 
