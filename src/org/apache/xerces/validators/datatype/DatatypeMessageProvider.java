@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -63,7 +63,7 @@ import java.util.ResourceBundle;
 import org.apache.xerces.utils.XMLMessageProvider;
 
 /**
- * 
+ *
  * @author Jeffrey Rodriguez
  * @version $Id$
  */
@@ -138,7 +138,7 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
     // Major Codes
     //
     private static int counter = 0;
-    public static final int 
+    public static final int
     MSG_BAD_MAJORCODE  = counter++,              //  majorCode parameter to createMessage was out of bounds
     MSG_FORMAT_FAILURE = counter++,             //  exception thrown during messageFormat call
     NOT_BOOLEAN        = counter++,
@@ -175,20 +175,20 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
     MSG_NONE = 0;
 
     public static final String[] fgMessageKeys = {
-        "BadMajorCode",                 
-        "FormatFailed",                 
-        "NotBoolean",                           
-        "NotDecimal",                   
-        "NotFloat",                     
-        "NotDouble",                     
-        "InvalidEnumValue",            
-        "OutOfBounds",                  
-        "NotAnEnumValue",               
-        "FractionDigitsLargerThanTotalDigits",     
-        "TotalDigitsExceeded",            
-        "FractionDigitsExceeded",                
-        "IllegalFacetValue",            
-        "IllegalAnyURIFacet",           
+        "BadMajorCode",
+        "FormatFailed",
+        "NotBoolean",
+        "NotDecimal",
+        "NotFloat",
+        "NotDouble",
+        "InvalidEnumValue",
+        "OutOfBounds",
+        "NotAnEnumValue",
+        "FractionDigitsLargerThanTotalDigits",
+        "FractionDigitsExceeded",
+        "TotalDigitsExceeded",
+        "IllegalFacetValue",
+        "IllegalAnyURIFacet",
         "IllegalBooleanFacet",
         "IllegalBase64Facet",
         "IllegalDateTimeFacet",
