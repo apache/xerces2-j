@@ -116,7 +116,7 @@ public class SchemaValidator
     //
     // Constants
     //
-
+    private static final boolean DEBUG = false;
     // feature identifiers
 
     /** Feature identifier: validation. */
@@ -866,7 +866,9 @@ public class SchemaValidator
 
     /** Handle element. */
     void handleStartElement(QName element, XMLAttributes attributes) {
-
+        if (DEBUG) {
+            System.out.println("handleStartElement: " +element);
+        }
         // we receive prefix binding events before this one,
         // so at this point, the prefix bindings for this element is done,
         // and we need to push context when we receive another prefix binding.
@@ -936,18 +938,27 @@ public class SchemaValidator
         // if there is a content model, then get the decl from that
         if (fCurrentCM != null) {
             Object decl = fCurrentCM.oneTransition(element, fCurrCMState);
-            // it could be an element decl or a wildcard decl
+                        // it could be an element decl or a wildcard decl
             // REVISIT: is there a more effecient way than 'instanceof'
-            if (decl instanceof XSElementDecl) {
+            if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
+                       fDoValidation) {
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                //REVISIT: is it the only case we will have particle = null?
+                // 
+                if (ctype.fParticle != null) {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
+                } else {
+                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname,"mixed with no element content"});
+                }
+                
+                fCurrCMState[0] = XSCMValidator.SUBSEQUENT_ERROR;
+               
+           
+            } else if (decl instanceof XSElementDecl) {
                 fCurrentElemDecl = (XSElementDecl)decl;
             } else if (decl instanceof XSWildcardDecl) {
                 wildcard = (XSWildcardDecl)decl;
-            } else if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
-                       fDoValidation) {
-                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
-                fCurrCMState[0] = XSCMValidator.SUBSEQUENT_ERROR;
-            }
+            }  
         }
 
         // save the current content model state in the stack
@@ -1023,7 +1034,6 @@ public class SchemaValidator
                 fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
             }
         }
-
         // and get the initial content model state
         fCurrCMState = null;
         if (fCurrentCM != null)
@@ -1407,6 +1417,10 @@ public class SchemaValidator
 
     void processElementContent(QName element) {
         // REVISIT: fCurrentElemDecl: default value; ...
+        if (DEBUG) {
+          System.out.println("processElementContent:" +element);
+        }
+        
         if (fCurrentElemDecl != null &&
             fCurrentElemDecl.getConstraintType() == XSElementDecl.DEFAULT_VALUE) {
         }
@@ -1537,6 +1551,9 @@ public class SchemaValidator
                 ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                 // if the current state is a valid state, check whether
                 // it's one of the final states.
+                if (DEBUG) {                
+                  System.out.println(fCurrCMState);
+                }
                 if (fCurrCMState[0] >= 0 &&
                     !fCurrentCM.endContentModel(fCurrCMState)) {
                     reportSchemaError("cvc-complex-type.2.4.b", new Object[]{element.rawname, ctype.fParticle.toString()});

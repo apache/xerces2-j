@@ -100,29 +100,32 @@ public class CMBuilder {
             return null;
         }
 
-        XSCMValidator cmValidator = typeDecl.fCMValidator;
-
-        // If we have one, just return that. Otherwise, gotta create one
-        if (cmValidator != null)
-            return cmValidator;
+        XSCMValidator cmValidator = null;
 
         XSParticleDecl particle = typeDecl.fParticle;
+        
+        // This check is performed in XSComplexTypeDecl.
+        //if (cmValidator != null)
+        //    return cmValidator;
+        
+        if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED && 
+            particle == null) {
+            // create special content model for mixed with no element content
+            cmValidator = new XSMixedCM();
+        }
+        else {
+        
+        
         particle = expandParticleTree( (XSParticleDecl)particle);
         // REVISIT: should we expand?? or throw away the expanded tree??
         //typeDecl.fParticle
 
         // And create the content model according to the spec type
         if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-            //
-            //  Just create a mixel content model object. This type of
-            //  content model is optimized for mixed content validation.
-            //
-            //ChildrenList children = new ChildrenList();
-            //contentSpecTree(contentSpecIndex, contentSpec, children);
-            //contentModel = new MixedContentModel(children.qname,
-            //                                     children.type,
-            //                                     0, children.length,
-            //                                     false, isDTD());
+               //
+              // Create a child model as
+              // per the element-only case              
+            cmValidator = createChildModel(particle, true);        
         }
         else if (contentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
             //  This method will create an optimal model for the complexity
@@ -131,18 +134,82 @@ public class CMBuilder {
             //  create a SimpleListContentModel object. If its complex, it
             //  will create a DFAContentModel object.
             //
-            cmValidator = createChildModel(particle);
+            cmValidator = createChildModel(particle, false);
         }
         else {
             throw new RuntimeException("Unknown content type for a element decl "
                                        + "in getElementContentModelValidator() in Grammar class");
         }
-
+        }
         // Add the new model to the content model for this element
         typeDecl.fCMValidator = cmValidator;
 
         return cmValidator;
     }
+
+
+    private XSParticleDecl expandParticleTree( XSParticleDecl particle) {
+
+        // We may want to consider trying to combine this with buildSyntaxTree at some
+        // point (if possible)
+
+        //REVISIT: need access to grammar object
+        //if (!grammar.fDeferParticleExpantion) {
+        //    return particle;
+        //}
+        int maxOccurs = particle.fMaxOccurs;
+        int minOccurs = particle.fMinOccurs;
+        short type = particle.fType;
+        if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
+            (type == XSParticleDecl.PARTICLE_ELEMENT)) {
+
+            // When checking Unique Particle Attribution, rename leaf elements
+            //if (grammar.fUPAChecking) {
+            // REVISIT: implement
+            //}
+            
+            return expandContentModel(particle, minOccurs, maxOccurs);
+        }
+        else if (type == XSParticleDecl.PARTICLE_CHOICE ||
+                 type == XSParticleDecl.PARTICLE_ALL ||
+                 type == XSParticleDecl.PARTICLE_SEQUENCE) {
+
+            Object left = particle.fValue;
+            Object right = particle.fOtherValue;
+
+            //REVISIT: look at uri and switch grammar if necessary
+            left =  expandParticleTree( (XSParticleDecl)left);
+
+            if (right == null)
+                return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
+
+            right =  expandParticleTree( (XSParticleDecl)right);
+
+            // When checking Unique Particle Attribution, we always create new
+            // new node to store different name for different groups
+            //if (grammar.fUPAChecking) {
+            //REVISIT:
+            //contentSpecIndex = addContentSpecNode (type, left, right, false);
+            //}
+
+            particle.fValue = left;
+            particle.fOtherValue = right;
+            return expandContentModel((XSParticleDecl)particle, minOccurs, maxOccurs);
+        }
+        else {
+            // When checking Unique Particle Attribution, we have to rename
+            // uri even on zero_or_one, zero_or_more and one_or_more
+            //if (grammar.fUPAChecking)
+            //REVISIT:
+            //return addContentSpecNode (type,
+            //                           convertContentSpecTree(particle.fValue),
+            //                           convertContentSpecTree(particle.fOtherValue),
+            //                           false);
+        }
+        return particle;
+    }
+
+
 
     /**
      * When the element has a 'CONTENTTYPE_ELEMENT' model, this method is called to
@@ -154,7 +221,7 @@ public class CMBuilder {
      * @param fParticleIndex
      * @return
      */
-    public XSCMValidator createChildModel(XSParticleDecl particle) {
+    private XSCMValidator createChildModel(XSParticleDecl particle, boolean isMixed) {
 
         //
         //  Get the content spec node for the element we are working on.
@@ -166,7 +233,30 @@ public class CMBuilder {
         if (type == XSParticleDecl.PARTICLE_WILDCARD) {
             // let fall through to build a DFAContentModel
         }
+        else if (isMixed) {
+            if (type ==XSParticleDecl.PARTICLE_ALL) {
+                // REVISIT: 
+                // All the nodes under an ALL must be additional ALL nodes and
+                // ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
+                // We collapse the ELEMENTs into a single vector.
+                
+                
+            }
+            else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
+                 XSParticleDecl left = (XSParticleDecl)particle.fValue;
 
+
+                // An ALL node can appear under a ZERO_OR_ONE node.
+                if (type ==XSParticleDecl.PARTICLE_ALL) {
+                    // REVISIT: 
+                    //AllContentModel allContent = new AllContentModel(true,true);
+                    //gatherAllLeaves(zeroOrOneChildIndex, contentSpec,
+                    //                allContent);
+
+                }
+            }
+            // otherwise, let fall through to build a DFAContentModel
+        }
         else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
             //
             //  Check that the left value is not null, since any content model
@@ -182,6 +272,7 @@ public class CMBuilder {
             //  simple content model.
             //
             // pass element declaration
+            
             return new XSSimpleCM(type, (XSElementDecl)particle.fValue);
         }
         else if ((type == XSParticleDecl.PARTICLE_CHOICE)
@@ -240,70 +331,7 @@ public class CMBuilder {
         //REVISIT: add DFA Content Model
         fLeafCount = 0;
         CMNode node = buildSyntaxTree(particle);
-        return new XSDFACM(node, fLeafCount, false);
-    }
-
-
-    public XSParticleDecl expandParticleTree( XSParticleDecl particle) {
-
-        // We may want to consider trying to combine this with buildSyntaxTree at some
-        // point (if possible)
-
-        //REVISIT: need access to grammar object
-        //if (!grammar.fDeferParticleExpantion) {
-        //    return particle;
-        //}
-        int maxOccurs = particle.fMaxOccurs;
-        int minOccurs = particle.fMinOccurs;
-        short type = particle.fType;
-
-        if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
-            (type == XSParticleDecl.PARTICLE_ELEMENT)) {
-
-            // When checking Unique Particle Attribution, rename leaf elements
-            //if (grammar.fUPAChecking) {
-            // REVISIT: implement
-            //}
-
-            return expandContentModel(particle, minOccurs, maxOccurs);
-        }
-        else if (type == XSParticleDecl.PARTICLE_CHOICE ||
-                 type == XSParticleDecl.PARTICLE_ALL ||
-                 type == XSParticleDecl.PARTICLE_SEQUENCE) {
-
-            Object left = particle.fValue;
-            Object right = particle.fOtherValue;
-
-            //REVISIT: look at uri and switch grammar if necessary
-            left =  expandParticleTree( (XSParticleDecl)left);
-
-            if (right == null)
-                return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
-
-            right =  expandParticleTree( (XSParticleDecl)right);
-
-            // When checking Unique Particle Attribution, we always create new
-            // new node to store different name for different groups
-            //if (grammar.fUPAChecking) {
-            //REVISIT:
-            //contentSpecIndex = addContentSpecNode (type, left, right, false);
-            //}
-
-            particle.fValue = left;
-            particle.fOtherValue = right;
-            return expandContentModel((XSParticleDecl)particle, minOccurs, maxOccurs);
-        }
-        else {
-            // When checking Unique Particle Attribution, we have to rename
-            // uri even on zero_or_one, zero_or_more and one_or_more
-            //if (grammar.fUPAChecking)
-            //REVISIT:
-            //return addContentSpecNode (type,
-            //                           convertContentSpecTree(particle.fValue),
-            //                           convertContentSpecTree(particle.fOtherValue),
-            //                           false);
-        }
-        return particle;
+        return new XSDFACM(node, fLeafCount, isMixed);
     }
 
 

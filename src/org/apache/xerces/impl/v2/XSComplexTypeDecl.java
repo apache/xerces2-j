@@ -145,8 +145,6 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     public XSCMValidator getContentModel(CMBuilder cmBuilder) {
         if (fCMValidator != null)
             return fCMValidator;
-        if (fParticle == null || fParticle.fType == XSParticleDecl.PARTICLE_EMPTY)
-            return null;
         cmBuilder.getContentModel(this);
 
         return fCMValidator;

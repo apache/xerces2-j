@@ -5,19 +5,19 @@
  * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * RedifBufferibution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ * 1. RedifBuffeributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
+ * 2. RedifBuffeributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
- *    distribution.
+ *    difBufferibution.
  *
- * 3. The end-user documentation included with the redistribution,
+ * 3. The end-user documentation included with the redifBufferibution,
  *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
@@ -92,52 +92,55 @@ public class XSParticleDecl {
     // maximum occurrence of this particle
     public int fMaxOccurs = 1;
 
+
+    private final StringBuffer fBuffer = new StringBuffer();
+
     public String toString() {
-        // build string
-        StringBuffer str = new StringBuffer();
-        appendParticle(str);
-        return str.toString();
+        // build fBuffering
+        fBuffer.setLength(0);
+        appendParticle(fBuffer);
+        return fBuffer.toString();
     }
 
-    void appendParticle(StringBuffer str) {
+    void appendParticle(StringBuffer fBuffer) {
         switch (fType) {
         case PARTICLE_EMPTY:
             break;
         case PARTICLE_ELEMENT:
         case PARTICLE_WILDCARD:
-            str.append('(');
-            str.append(fValue.toString());
-            str.append(')');
+            fBuffer.append('(');
+            fBuffer.append(fValue.toString());
+            fBuffer.append(')');
             break;
         case PARTICLE_CHOICE:
         case PARTICLE_SEQUENCE:
         case PARTICLE_ALL:
             if (fType == PARTICLE_ALL)
-                str.append("all(");
+                fBuffer.append("all(");
             else
-                str.append('(');
-            str.append(fValue.toString());
+                fBuffer.append('(');
+            fBuffer.append(fValue.toString());
             if (fOtherValue != null) {
                 if (fType == PARTICLE_CHOICE)
-                    str.append('|');
+                    fBuffer.append('|');
                 else
-                    str.append(',');
+                    fBuffer.append(',');
             }
-            str.append(fOtherValue.toString());
-            str.append(')');
+            fBuffer.append(fOtherValue.toString());
+            fBuffer.append(')');
             break;
         case PARTICLE_ZERO_OR_ONE:
         case PARTICLE_ZERO_OR_MORE:
         case PARTICLE_ONE_OR_MORE:
-            str.append('(');
-            str.append(fValue.toString());
-            str.append(')');
+            fBuffer.append('(');
+            fBuffer.append(fValue.toString());
+            fBuffer.append(')');
             if (fType == PARTICLE_ZERO_OR_ONE)
-                str.append('?');
+                fBuffer.append('?');
             if (fType == PARTICLE_ZERO_OR_MORE)
-                str.append('*');
+                fBuffer.append('*');
             if (fType == PARTICLE_ONE_OR_MORE)
-                str.append('+');
+                fBuffer.append('+');
             break;
         }
     }

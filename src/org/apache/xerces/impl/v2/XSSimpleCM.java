@@ -173,6 +173,9 @@ implements XSCMValidator {
         if (state < 0 ) {
             return null;
         }
+
+
+        
         switch (fOperator) {
         case XSParticleDecl.PARTICLE_ELEMENT :
         case XSParticleDecl.PARTICLE_ZERO_OR_ONE :
@@ -239,6 +242,7 @@ implements XSCMValidator {
         default :
             throw new RuntimeException("ImplementationMessages.VAL_CST");
         }
+
         //if we reach here there was an error
         currentState[0] = XSCMValidator.FIRST_ERROR;
         return null;
@@ -254,6 +258,10 @@ implements XSCMValidator {
     public boolean endContentModel (int[] currentState){
         boolean isFinal =  false;
         int state = currentState[0];
+        
+        // restore content model state:
+        fState[0] = STATE_START;
+        
         // error
         if (state < 0) {
             return false;
@@ -274,11 +282,9 @@ implements XSCMValidator {
             throw new RuntimeException("ImplementationMessages.VAL_CST");
         }
 
-        // restore content model state:
-        fState[0] = STATE_START;
 
         return isFinal;
     }
 
 
-} // class SimpleContentModel
+} // class XSSimpleCM

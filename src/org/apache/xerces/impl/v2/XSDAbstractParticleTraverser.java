@@ -143,18 +143,24 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             left = temp;
         }
 
-        XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
-        XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
-        Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-        left.fMinOccurs = minAtt.intValue();
-        left.fMaxOccurs = maxAtt.intValue();
 
-        left = checkOccurrences(left,
-                                SchemaSymbols.ELT_ALL,
-                                (Element)allDecl.getParentNode(),
-                                allContextFlags,
-                                defaultVals.longValue());
+        // REVISIT: model group 
+        // Quick fix for the case that particle <all> does not have any children.
+        // For now we return null. In the future we might want to return model group decl.
+        if (left != null) {
 
+            XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+            XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+            Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+            left.fMinOccurs = minAtt.intValue();
+            left.fMaxOccurs = maxAtt.intValue();
+
+            left = checkOccurrences(left,
+                                    SchemaSymbols.ELT_ALL,
+                                    (Element)allDecl.getParentNode(),
+                                    allContextFlags,
+                                    defaultVals.longValue());
+        }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return left;
@@ -314,17 +320,22 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             left = temp;
         }
 
-        XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
-        XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
-        Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-        left.fMinOccurs = minAtt.intValue();
-        left.fMaxOccurs = maxAtt.intValue();
-        left = checkOccurrences(left,
-                                choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
-                                (Element)decl.getParentNode(),
-                                allContextFlags,
-                                defaultVals.longValue());
 
+        // REVISIT: model group 
+        // Quick fix for the case that particles <choice> | <sequence> do not have any children.
+        // For now we return null. In the future we might want to return model group decl.
+        if (left !=null) {
+            XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+            XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+            Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+            left.fMinOccurs = minAtt.intValue();
+            left.fMaxOccurs = maxAtt.intValue();
+            left = checkOccurrences(left,
+                                    choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
+                                    (Element)decl.getParentNode(),
+                                    allContextFlags,
+                                    defaultVals.longValue());
+        }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return left;
@@ -342,7 +353,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             //    fSchemaGrammar.getContentSpec(content.value, content);
             //}
 
-            return (particle.fType == XSParticleDecl.PARTICLE_ALL);
+            return(particle.fType == XSParticleDecl.PARTICLE_ALL);
         }
 
         return false;
