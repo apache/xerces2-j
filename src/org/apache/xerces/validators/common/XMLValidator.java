@@ -500,7 +500,7 @@ public final class XMLValidator
          fDynamicDisabledByValidation = true;
       }
       fValidating = fValidationEnabled;
-      if (fValidating) {      
+      if (fValidating) {
         initDataTypeValidators();
       }
     }
@@ -561,7 +561,7 @@ public final class XMLValidator
          fValidationEnabledByDynamic = true;
       }
       fValidating = fValidationEnabled;
-      if (fValidating) {      
+      if (fValidating) {
         initDataTypeValidators();
       }
     }
@@ -827,7 +827,6 @@ public final class XMLValidator
                        fStringBuffer.getChars(0, nLength , chars, 0);
                     }
                     fDatatypeBuffer.append(chars, offset, length);
-                    fDocumentHandler.characters(chars, offset, length);
 
                     // call all active identity constraints
                     int count = fMatcherStack.getMatcherCount();
@@ -839,6 +838,8 @@ public final class XMLValidator
                         }
                         matcher.characters(chars, offset, length);
                     }
+
+                    fDocumentHandler.characters(chars, offset, length);
                 }
                 fTrailing = (spaces > 1)?true:false;
                 fFirstChunk = false;
@@ -848,7 +849,6 @@ public final class XMLValidator
     }
 
        fFirstChunk = false;
-       fDocumentHandler.characters(chars, offset, length);
 
        // call all active identity constraints
        int count = fMatcherStack.getMatcherCount();
@@ -860,6 +860,8 @@ public final class XMLValidator
            }
            matcher.characters(chars, offset, length);
        }
+
+       fDocumentHandler.characters(chars, offset, length);
    }
 
    /** Process characters. */
@@ -893,7 +895,6 @@ public final class XMLValidator
             }
         }
       }
-      fDocumentHandler.characters(data);
 
       // call all active identity constraints
       int count = fMatcherStack.getMatcherCount();
@@ -911,6 +912,8 @@ public final class XMLValidator
               matcher.characters(chars, offset, length);
           }
       }
+
+      fDocumentHandler.characters(data);
    }
 
    /** Process whitespace. */
@@ -927,7 +930,6 @@ public final class XMLValidator
          if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
             charDataInContent();
          }
-         fDocumentHandler.characters(chars, offset, length);
 
          // call all active identity constraints
          int count = fMatcherStack.getMatcherCount();
@@ -939,6 +941,8 @@ public final class XMLValidator
              }
              matcher.characters(chars, offset, length);
          }
+
+         fDocumentHandler.characters(chars, offset, length);
       }
 
    } // processWhitespace(char[],int,int)
@@ -956,7 +960,6 @@ public final class XMLValidator
          if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
             charDataInContent();
          }
-         fDocumentHandler.characters(data);
 
          // call all active identity constraints
          int count = fMatcherStack.getMatcherCount();
@@ -974,6 +977,8 @@ public final class XMLValidator
                  matcher.characters(chars, offset, length);
              }
          }
+
+         fDocumentHandler.characters(data);
       }
 
    } // processWhitespace(int)
@@ -1594,12 +1599,6 @@ public final class XMLValidator
             fDatatypeBuffer.append(fCharRefData,0,1);
          }
       }
-      if (fSendCharDataAsCharArray) {
-         fDocumentHandler.characters(fCharRefData, 0, count);
-      } else {
-         int index = fStringPool.addString(new String(fCharRefData, 0, count));
-         fDocumentHandler.characters(index);
-      }
 
       // call all active identity constraints
       int matcherCount = fMatcherStack.getMatcherCount();
@@ -1612,6 +1611,12 @@ public final class XMLValidator
           matcher.characters(fCharRefData, 0, count);
       }
 
+      if (fSendCharDataAsCharArray) {
+         fDocumentHandler.characters(fCharRefData, 0, count);
+      } else {
+         int index = fStringPool.addString(new String(fCharRefData, 0, count));
+         fDocumentHandler.characters(index);
+      }
    } // callCharacters(int)
 
    /** Call processing instruction. */
@@ -2024,7 +2029,7 @@ public final class XMLValidator
     * registry table of fDataTypeReg.
     */
    private void initDataTypeValidators() {
-       
+
        if ( fGrammarResolver != null ) {
            fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
            fDataTypeReg.initializeDTDRegistry();
@@ -3536,7 +3541,7 @@ public final class XMLValidator
                }
             }
          }
-          
+
          if (DEBUG_PRINT_ATTRIBUTES) {
             String elementStr = fStringPool.toString(element.rawname);
             System.out.print("startElement: <" + elementStr);
@@ -3602,7 +3607,7 @@ public final class XMLValidator
                            int attributeType = attributeTypeName(fTempAttDecl);
                            attrList.setAttType(index, attributeType);
 
-                           
+
                             if (fGrammarIsDTDGrammar) {
                                   int normalizedValue = validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                   attrList.setAttValue(index, normalizedValue);
@@ -4026,7 +4031,7 @@ public final class XMLValidator
     * @param value This is already trimmed.
     */
    private int normalizeListAttribute(String value, int origIndex, String unTrimValue) {
-       
+
        //REVISIT: some code might be shared: see normalizeWhitespace()
        //
        fStringBuffer.setLength(0);
@@ -4447,7 +4452,7 @@ public final class XMLValidator
    implements AttributeValidator {
 
        //REVISIT: it looks like a redundant class
-       //         
+       //
 
       //
       // AttributeValidator methods
@@ -4514,7 +4519,7 @@ public final class XMLValidator
     */
    final class AttValidatorENUMERATION
    implements AttributeValidator {
-      
+
        //REVISIT: it looks like a redundant class.
        //         could be just a method. See also AttValidatorNOTATION
       //
