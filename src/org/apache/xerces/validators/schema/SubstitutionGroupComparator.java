@@ -293,7 +293,7 @@ public class SubstitutionGroupComparator {
         // then check whether there exists one elemet that is allowed by the wildcard
         int size = substitutionGroupQNames == null ? 0 : substitutionGroupQNames.size();
         for (int i = 0; i < size; i++) {
-            QName name = ((SchemaGrammar.OneSubGroup)substitutionGroupQNames.get(i)).name;
+            QName name = ((SchemaGrammar.OneSubGroup)substitutionGroupQNames.elementAt(i)).name;
             if (!wother && name.uri == wuri ||
                 //wother && name.uri != wuri && name.uri != fStringPool.EMPTY_STRING) { // ??? TODO
                 wother && name.uri != wuri) {

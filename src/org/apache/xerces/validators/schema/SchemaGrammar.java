@@ -310,7 +310,7 @@ public class SchemaGrammar extends Grammar{
         Vector substitutionGroupQNames = getElementDeclSubstitutionGroupQNames(elementDeclIndex);
         int size = substitutionGroupQNames == null ? 0 : substitutionGroupQNames.size();
         for (int i = 0; i < size; i++) {
-            OneSubGroup oneGroup = (OneSubGroup)substitutionGroupQNames.get(i);
+            OneSubGroup oneGroup = (OneSubGroup)substitutionGroupQNames.elementAt(i);
             SchemaGrammar sGrammar = oneGroup.grammar;
             int subElementIndex = oneGroup.eleIndex;
 
@@ -355,7 +355,7 @@ public class SchemaGrammar extends Grammar{
             int bsize = subSubGroup == null ? 0 : subSubGroup.size();
             for (i = 0; i < bsize; i++) {
                 // and add them to the list too
-                SubGroupBlockQName name = (SubGroupBlockQName)subSubGroup.get(i);
+                SubGroupBlockQName name = (SubGroupBlockQName)subSubGroup.elementAt(i);
                 oneName = new SubGroupBlockQName();
                 oneName.name = name.name;
                 // note that we need to append the dev/pdev method
@@ -396,7 +396,7 @@ public class SchemaGrammar extends Grammar{
         // now check it
         // 3 The set of all {derivation method}s involved in the derivation of D's {type definition} from C's {type definition} does not intersect with the union of the blocking constraint, C's {prohibited substitutions} (if C is complex, otherwise the empty set) and the {prohibited substitutions} (respectively the empty set) of any intermediate {type definition}s in the derivation of D's {type definition} from C's {type definition}.
         for (int i = 0; i < substitutionGroupQNamesBlock.size(); i++) {
-            SubGroupBlockQName oneName = (SubGroupBlockQName)substitutionGroupQNamesBlock.get(i);
+            SubGroupBlockQName oneName = (SubGroupBlockQName)substitutionGroupQNamesBlock.elementAt(i);
             if (((blockSet | oneName.pmethod) & oneName.method) == 0)
                 groups.addElement(oneName.name);
         }
