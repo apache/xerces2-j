@@ -112,9 +112,9 @@ public class XSDHandler {
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
     
-    /** Feature identifier: handle multiple imports. */
-    protected static final String HANDLE_MULTIPLE_IMPORTS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
     
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
@@ -271,7 +271,7 @@ public class XSDHandler {
     private boolean fValidateAnnotations = false;
     
     //handle multiple import feature
-    private boolean fHandleMultipleImports = false;
+    private boolean fHonourAllSchemaLocations = false;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -387,7 +387,7 @@ public class XSDHandler {
         // no namespace schema.
         if (referType != XSDDescription.CONTEXT_PREPARSE){
             // first try to find it in the bucket/pool, return if one is found
-            if(fHandleMultipleImports && referType == XSDDescription.CONTEXT_IMPORT && isExistingGrammar(desc)) {
+            if(fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT && isExistingGrammar(desc)) {
                 grammar = fGrammarBucket.getGrammar(desc.getTargetNamespace());
             }
             else {
@@ -676,7 +676,7 @@ public class XSDHandler {
                 referType == XSDDescription.CONTEXT_REDEFINE) {
             sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
         }
-        else if(fHandleMultipleImports && referType == XSDDescription.CONTEXT_IMPORT) {
+        else if(fHonourAllSchemaLocations && referType == XSDDescription.CONTEXT_IMPORT) {
             sg = findGrammar(desc);
             if(sg == null) {
                 sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
@@ -750,7 +750,7 @@ public class XSDHandler {
                 // if this namespace has not been imported by this document,
                 //  then import if multiple imports support is enabled.
                 if(currSchemaInfo.isAllowedNS(schemaNamespace)) {
-                    if(!fHandleMultipleImports)
+                    if(!fHonourAllSchemaLocations)
                         continue;
                 }
                 else  {
@@ -781,7 +781,7 @@ public class XSDHandler {
                 
                 // if a grammar with the same namespace and location exists (or being
                 // built), ignore this one (don't traverse it).
-                if ((!fHandleMultipleImports && findGrammar(fSchemaGrammarDescription) != null) || isExistingGrammar(fSchemaGrammarDescription))
+                if ((!fHonourAllSchemaLocations && findGrammar(fSchemaGrammarDescription) != null) || isExistingGrammar(fSchemaGrammarDescription))
                     continue;
                 newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child);
             }
@@ -1742,9 +1742,9 @@ public class XSDHandler {
         }
         
         try {
-            fHandleMultipleImports = componentManager.getFeature(HANDLE_MULTIPLE_IMPORTS);
+            fHonourAllSchemaLocations = componentManager.getFeature(HONOUR_ALL_SCHEMALOCATIONS);
         } catch (XMLConfigurationException e) {
-            fHandleMultipleImports = false;
+            fHonourAllSchemaLocations = false;
         }
 
         try {

@@ -143,9 +143,9 @@ public class XML11Configuration extends ParserConfigurationSettings
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
     
-    /** Feature identifier: handle multiple imports. */
-    protected static final String HANDLE_MULTIPLE_IMPORTS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
         
 	// feature identifiers
 
@@ -443,7 +443,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 				NAMESPACES,
                 NORMALIZE_DATA, SCHEMA_ELEMENT_DEFAULT, SCHEMA_AUGMENT_PSVI,
                 GENERATE_SYNTHETIC_ANNOTATIONS, VALIDATE_ANNOTATIONS,
-                HANDLE_MULTIPLE_IMPORTS,
+                HONOUR_ALL_SCHEMALOCATIONS,
             	// NOTE: These shouldn't really be here but since the XML Schema
             	//       validator is constructed dynamically, its recognized
             	//       features might not have been set and it would cause a
@@ -466,7 +466,7 @@ public class XML11Configuration extends ParserConfigurationSettings
 		fFeatures.put(SCHEMA_AUGMENT_PSVI, Boolean.TRUE);
         fFeatures.put(GENERATE_SYNTHETIC_ANNOTATIONS, Boolean.FALSE);
         fFeatures.put(VALIDATE_ANNOTATIONS, Boolean.FALSE);
-        fFeatures.put(HANDLE_MULTIPLE_IMPORTS, Boolean.FALSE);
+        fFeatures.put(HONOUR_ALL_SCHEMALOCATIONS, Boolean.FALSE);
 		fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
 
         // add default recognized properties

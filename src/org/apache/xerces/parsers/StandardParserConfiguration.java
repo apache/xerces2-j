@@ -99,9 +99,9 @@ public class StandardParserConfiguration
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
     
-    /** Feature identifier: handle multiple imports. */
-    protected static final String HANDLE_MULTIPLE_IMPORTS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
     // property identifiers
 
@@ -184,7 +184,7 @@ public class StandardParserConfiguration
             SCHEMA_AUGMENT_PSVI,
             GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS,
-            HANDLE_MULTIPLE_IMPORTS,
+            HONOUR_ALL_SCHEMALOCATIONS,
             // NOTE: These shouldn't really be here but since the XML Schema
             //       validator is constructed dynamically, its recognized
             //       features might not have been set and it would cause a
@@ -200,7 +200,7 @@ public class StandardParserConfiguration
         setFeature(SCHEMA_AUGMENT_PSVI, true);
         setFeature(GENERATE_SYNTHETIC_ANNOTATIONS, false);
         setFeature(VALIDATE_ANNOTATIONS, false);
-        setFeature(HANDLE_MULTIPLE_IMPORTS, false);
+        setFeature(HONOUR_ALL_SCHEMALOCATIONS, false);
 
         // add default recognized properties
     

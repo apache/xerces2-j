@@ -151,9 +151,9 @@ public class XMLSchemaValidator
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
     
-    /** Feature identifier: handle multiple imports. */
-    protected static final String HANDLE_MULTIPLE_IMPORTS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
 
     /** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
@@ -216,7 +216,7 @@ public class XMLSchemaValidator
             STANDARD_URI_CONFORMANT_FEATURE,
             GENERATE_SYNTHETIC_ANNOTATIONS,
             VALIDATE_ANNOTATIONS,
-            HANDLE_MULTIPLE_IMPORTS};
+            HONOUR_ALL_SCHEMALOCATIONS};
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = { null,

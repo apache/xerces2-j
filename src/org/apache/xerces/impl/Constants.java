@@ -122,8 +122,8 @@ public final class Constants {
     /** JAXP schemaSource property: when used internally may include DTD sources (DOM) */
     public static final String SCHEMA_SOURCE = "schemaSource";
     
-    /** Multiple imports feature */
-    public static final String HANDLE_MULTIPLE_IMPORTS_FEATURE = "handle-multiple-imports";
+    /** Honour all schemaLocations (multiple imports etc) feature */
+    public static final String HONOUR_ALL_SCHEMALOCATIONS_FEATURE = "honour-all-schemaLocations";
     
     /** JAXP schemaSource language: when used internally may include DTD namespace (DOM) */
     public static final String SCHEMA_LANGUAGE = "schemaLanguage";

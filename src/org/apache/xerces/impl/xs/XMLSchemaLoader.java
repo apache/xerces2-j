@@ -122,10 +122,9 @@ XSLoader, DOMConfiguration {
     protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
     
-    /** Feature identifier: handle multiple imports. */
-    protected static final String HANDLE_MULTIPLE_IMPORTS = 
-        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
-    
+    /** Feature identifier: honour all schemaLocations */
+    protected static final String HONOUR_ALL_SCHEMALOCATIONS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HONOUR_ALL_SCHEMALOCATIONS_FEATURE;
     
     protected static final String AUGMENT_PSVI = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
@@ -143,7 +142,7 @@ XSLoader, DOMConfiguration {
         DISALLOW_DOCTYPE,
         GENERATE_SYNTHETIC_ANNOTATIONS,
         VALIDATE_ANNOTATIONS,
-        HANDLE_MULTIPLE_IMPORTS
+        HONOUR_ALL_SCHEMALOCATIONS
     };
     
     // property identifiers
@@ -469,6 +468,22 @@ XSLoader, DOMConfiguration {
         return fUserEntityResolver;
     } // getEntityResolver():  XMLEntityResolver
     
+    /**
+     * 
+     * @param source[]  the locations of the entity which forms 
+     *                      the staring point of the grammars to be constructed
+     * @throws IOException  when a problem is encounted reading the entity
+     * @throws XNIException when a condition arises (such as a FatalErro) that requires parsing
+     *                          of the entity be terminated
+     */
+    //Notes: so far, we assume one grammar won't come from multiple sources--Jack
+    public void loadGrammar(XMLInputSource source[]) 
+    throws IOException, XNIException{
+        int numSource = source.length;
+        for(int i = 0; i < numSource; i++){
+            loadGrammar(source[i]);
+        }   
+    }
     
     /**
      * Returns a Grammar object by parsing the contents of the
@@ -1106,7 +1121,7 @@ XSLoader, DOMConfiguration {
                 name.equals(ALLOW_JAVA_ENCODINGS) ||
                 name.equals(STANDARD_URI_CONFORMANT_FEATURE) ||
                 name.equals(GENERATE_SYNTHETIC_ANNOTATIONS) ||
-                name.equals(HANDLE_MULTIPLE_IMPORTS)) {
+                name.equals(HONOUR_ALL_SCHEMALOCATIONS)) {
                 return true;
                 
             }
@@ -1181,7 +1196,7 @@ XSLoader, DOMConfiguration {
             v.add(STANDARD_URI_CONFORMANT_FEATURE);
             v.add(VALIDATE_ANNOTATIONS);
             v.add(GENERATE_SYNTHETIC_ANNOTATIONS);
-            v.add(HANDLE_MULTIPLE_IMPORTS);
+            v.add(HONOUR_ALL_SCHEMALOCATIONS);
             fRecognizedParameters = new DOMStringListImpl(v);      	
         }
         return fRecognizedParameters;
