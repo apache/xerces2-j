@@ -485,7 +485,7 @@ public class XMLChar {
      * @param c The character to check.
      */
     public static boolean isSpace(int c) {
-        return c < 0x10000 && (CHARS[c] & MASK_SPACE) != 0;
+        return c <= 0x20 && (CHARS[c] & MASK_SPACE) != 0;
     } // isSpace(int):boolean
 
     /**
