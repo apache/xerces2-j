@@ -1155,7 +1155,8 @@ public class XMLEntityManager
             }
             if (property.equals(Constants.BUFFER_SIZE_PROPERTY)) {
                 Integer bufferSize = (Integer)value;
-                if (bufferSize != null && bufferSize.intValue() > 0) {
+                if (bufferSize != null &&
+                    bufferSize.intValue() > DEFAULT_XMLDECL_BUFFER_SIZE) {
                     fBufferSize = bufferSize.intValue();
                 }
             }
