@@ -361,10 +361,10 @@ public class XMLEntityManager
     /**
      * startEntity
      * 
-     * @param entityName 
-     * @param parameter 
+     * @param entityName The name of the entity to start.
+     * @param literal    True if this entity is started within a literal value. 
      */
-    public void startEntity(String entityName) 
+    public void startEntity(String entityName, boolean literal) 
         throws IOException, SAXException {
 
         // was entity declared?
@@ -469,7 +469,7 @@ public class XMLEntityManager
         }
 
         // start the entity
-        startEntity(entityName, xmlInputSource);
+        startEntity(entityName, xmlInputSource, literal);
 
     } // startEntity(String)
 
@@ -480,7 +480,7 @@ public class XMLEntityManager
      */
     public void startDocumentEntity(XMLInputSource xmlInputSource) 
         throws IOException, SAXException {
-        startEntity("[xml]", xmlInputSource);
+        startEntity("[xml]", xmlInputSource, false);
     } // startDocumentEntity(XMLInputSource)
 
     /**
@@ -490,7 +490,7 @@ public class XMLEntityManager
      */
     public void startDTDEntity(XMLInputSource xmlInputSource)
         throws IOException, SAXException {
-        startEntity("[dtd]", xmlInputSource);
+        startEntity("[dtd]", xmlInputSource, false);
     } // startDTDEntity(XMLInputSource)
 
     /**
@@ -604,8 +604,8 @@ public class XMLEntityManager
     /**
      * Starts an entity. 
      */
-    protected void startEntity(String name, XMLInputSource xmlInputSource)
-        throws IOException, SAXException {
+    protected void startEntity(String name, XMLInputSource xmlInputSource, 
+                               boolean literal) throws IOException, SAXException {
 
         // get information
         final String publicId = xmlInputSource.getPublicId();
@@ -659,7 +659,8 @@ public class XMLEntityManager
             fEntityStack.push(fCurrentEntity);
         }
         fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
-                                           stream, reader, encoding);
+                                           stream, reader, encoding, 
+                                           literal);
 
         // call handler
         if (fEntityHandler != null) {
@@ -1176,6 +1177,11 @@ public class XMLEntityManager
         /** Auto-detected encoding. */
         public String encoding;
 
+        // status
+
+        /** True if in a literal.  */
+        public boolean literal;
+
         // buffer
 
         /** Character buffer. */
@@ -1194,14 +1200,15 @@ public class XMLEntityManager
         /** Constructs a scanned entity. */
         public ScannedEntity(String name, String publicId, String systemId,
                              InputStream stream, Reader reader, 
-                             String encoding) {
+                             String encoding, boolean literal) {
             super(name);
             this.publicId = publicId;
             this.systemId = systemId;
             this.stream = stream;
             this.reader = reader;
             this.encoding = encoding;
-        } // <init>(Reader,String,String,String)
+            this.literal = literal;
+        } // <init>(String,String,String,InputStream,Reader,String,boolean)
 
         //
         // Entity methods
@@ -1587,6 +1594,8 @@ public class XMLEntityManager
          * @throws SAXException Thrown by entity handler to signal an error
          *                      when the end of an entity is reached.
          */
+        private char[] fOneChar = new char[1];
+        private boolean fNewline;
         public int scanContent(XMLString content) 
             throws IOException, SAXException {
     
@@ -1603,12 +1612,33 @@ public class XMLEntityManager
                 System.out.println();
             }
 
+            /***
+            // handle newline
+            if (fNewline) {
+                fNewline = false;
+                int c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (c == '\r') {
+                    skipChar('\n');
+                    fOneChar[0] = '\n';
+                    content.setValues(fOneChar, 0, 1);
+                    return -1;
+                }
+                else if (c == '\n') {
+                    skipChar('\r');
+                    fOneChar[0] = '\n';
+                    content.setValues(fOneChar, 0, 1);
+                    return -1;
+                }
+            }
+            /***/
+
             // REVISIT: Use AndyH trick for grabbing longest runs of
             //          content characters. -Ac
             int offset = fCurrentEntity.position;
+            int c = -1;
             while (fCurrentEntity.position < fCurrentEntity.count) {
-                char c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if (c == '<' || c == '&') {
+                c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (!XMLChar.isContent(c)) {
                     fCurrentEntity.position--;
                     break;
                 }
@@ -1617,9 +1647,18 @@ public class XMLEntityManager
             content.setValues(fCurrentEntity.ch, offset, length);
     
             // return next character
-            int c = -1;
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
+                /***
+                if (c == '\r' || c == '\n') {
+                    fNewline = true;
+                    c = '\n';
+                }
+                /***/
+                if (c == '\r') {
+                    c = -1;
+                }
+                /***/
             }
             if (DEBUG_PRINT) {
                 System.out.print(")scanContent: ");
@@ -1680,7 +1719,8 @@ public class XMLEntityManager
             int offset = fCurrentEntity.position;
             while (fCurrentEntity.position < fCurrentEntity.count) {
                 char c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if (c == quote) {
+                if ((c == quote && !fCurrentEntity.literal) || 
+                    c == '&' || c == '%' || c == '<') {
                     fCurrentEntity.position--;
                     break;
                 }

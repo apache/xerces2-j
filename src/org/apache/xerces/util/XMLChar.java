@@ -103,6 +103,16 @@ public class XMLChar {
     /** Pubid character mask. */
     public static final int MASK_PUBID = 0x10;
     
+    /** 
+     * Content character mask. Special characters are those that can
+     * be considered the start of markup, such as '&lt;' and '&amp;'. 
+     * The various newline characters are considered special as well.
+     * All other valid XML characters can be considered content.
+     * <p>
+     * This is an optimization for the inner loop of character scanning.
+     */
+    public static final int MASK_CONTENT = 0x20;
+
     //
     // Static initialization
     //
@@ -270,14 +280,27 @@ public class XMLChar {
         };
 
         //
+        // SpecialChar ::= '<', '&', '\n', '\r'
+        //
+
+        int specialChar[] = {
+            '<', '&', '\n', '\r',
+        };
+
+        //
         // Initialize
         //
 
         // set valid characters
         for (int i = 0; i < charRange.length; i += 2) {
             for (int j = charRange[i]; j <= charRange[i + 1]; j++) {
-                CHARS[j] |= MASK_VALID;
+                CHARS[j] |= MASK_VALID | MASK_CONTENT;
             }
+        }
+
+        // remove special characters
+        for (int i = 0; i < specialChar.length; i++) {
+            CHARS[specialChar[i]] = (byte)(CHARS[specialChar[i]] & ~MASK_CONTENT);
         }
 
         // set space characters
@@ -353,7 +376,7 @@ public class XMLChar {
     public static boolean isValid(int c) {
         return (c < 0x10000 && (CHARS[c] & MASK_VALID) != 0) ||
                (c >= 0x10000 && c <= 0x10FFFF);
-    }
+    } // isValid(int):boolean
 
     /**
      * Returns true if the specified character is invalid.
@@ -362,7 +385,17 @@ public class XMLChar {
      */
     public static boolean isInvalid(int c) {
         return !isValid(c);
-    }
+    } // isInvalid(int):boolean
+
+    /**
+     * Returns true if the specified character can be considered content.
+     *
+     * @param c The character to check.
+     */
+    public static boolean isContent(int c) {
+        return (c < 0x10000 && (CHARS[c] & MASK_CONTENT) != 0) ||
+               (c >= 0x10000 && c <= 0x10FFFF);
+    } // isContent(int):boolean
 
     /**
      * Returns true if the specified character is a space character
@@ -371,9 +404,8 @@ public class XMLChar {
      * @param c The character to check.
      */
     public static boolean isSpace(int c) {
-        
         return c < 0x10000 && (CHARS[c] & MASK_SPACE) != 0;
-    }
+    } // isSpace(int):boolean
 
     /**
      * Returns true if the specified character is a valid name start
@@ -384,7 +416,7 @@ public class XMLChar {
      */
     public static boolean isNameStart(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_NAME_START) != 0;
-    }
+    } // isNameStart(int):boolean
 
     /**
      * Returns true if the specified character is a valid name
@@ -395,7 +427,7 @@ public class XMLChar {
      */
     public static boolean isName(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_NAME) != 0;
-    }
+    } // isName(int):boolean
 
      /**
      * Returns true if the specified character is a valid Pubid
@@ -406,6 +438,6 @@ public class XMLChar {
      */
     public static boolean isPubid(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_PUBID) != 0;
-    }
+    } // isPubid(int):boolean
 
 } // class XMLChar

@@ -1071,7 +1071,7 @@ public class XMLDocumentScanner
         
         // start general entity
         else {
-            fEntityManager.startEntity(name);
+            fEntityManager.startEntity(name, false);
         }
 
     } // scanEntityReference()
