@@ -1190,6 +1190,10 @@ public class XMLSchemaValidator
         // clear things in substitution group handler
         fSubGroupHandler.reset();
 
+	//REVISIT: we are passing externalSchema and noNamespaceExternalSchema locations to XSDHandler , where
+	//it stores namespace and location values.. now we are doing the same in XMLSchemaValidator, 
+	//we can pass the refernce of fLocationPairs and noNamespaceLocationPairs -nb
+	
         // reset schema handler and all traversal objects
         fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
                              fEntityResolver, fSymbolTable,
@@ -1597,8 +1601,15 @@ public class XMLSchemaValidator
             // thus we will not validate in the case dynamic feature is on or we found dtd grammar
             fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
 
+            
+            //store the external schema locations, these locations will be set at root element, so any other
+            // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we 
+            // choose to take first location hint available for a particular namespace.
+
+            storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
+            
             // parse schemas specified via schema location properties
-            parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
+            //parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
         }
 
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
@@ -2132,34 +2143,26 @@ public class XMLSchemaValidator
 	//this is the function where logic of retrieving grammar is written , parser first tries to get the grammar from
 	//the local pool, if not in local pool, it gives chance to application to be able to retrieve the grammar, then it 
 	//tries to parse the grammar using location hints from the give namespace.
-	SchemaGrammar findSchemaGrammar(short contextType , String namespace , QName enclosingElement, QName triggeringComponet, XMLAttributes attributes ){
-		
-		SchemaGrammar grammar = null ;
-		
+	SchemaGrammar findSchemaGrammar(short contextType , String namespace , QName enclosingElement, QName triggeringComponet, XMLAttributes attributes ){		
+		SchemaGrammar grammar = null ;		
 		//get the grammar from local pool...
-            	grammar = fGrammarBucket.getGrammar(namespace);
-            	
+            	grammar = fGrammarBucket.getGrammar(namespace);            	
             	if( grammar == null){
             		// give a chance to application to be able to retreive the grammar.
-            		grammar = getSchemaGrammarFromAppl( contextType , namespace , enclosingElement , triggeringComponet , attributes);  
-            		
+            		grammar = getSchemaGrammarFromAppl( contextType , namespace , enclosingElement , triggeringComponet , attributes);              		
             		if(grammar == null){
 				// try to parse the grammar using location hints from that namespace..            		
             			grammar = parseSchema(namespace , contextType);
             		}
             		else{
-            			return grammar ;
-            		
-            		}            		
-            	
+            			return grammar ;            		
+            		}            		            	
             	}
             	else{
 			return grammar ;            	            		
-            	}
-		
-		return grammar ;		
-	
-	
+            	}		
+		return grammar ;				
+                
 	}//findSchemaGrammar
 	
 	// give a chance to application to be able to retreive the grammar.
