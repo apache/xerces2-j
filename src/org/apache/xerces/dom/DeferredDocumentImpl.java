@@ -758,7 +758,6 @@ public class DeferredDocumentImpl
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
         int type = clearChunkIndex(fNodeType, chunk, index);
-        clearChunkIndex(fNodeParent, chunk, index);
 
         // create new node
         DeferredNode node = null;
@@ -1294,6 +1293,14 @@ public class DeferredDocumentImpl
 
         if (syncData()) {
             synchronizeData();
+            /*
+             * when we have elements with IDs this method is being recursively
+             * called from synchronizeData, in which case we've already gone
+             * through the following and we can now simply stop here.
+             */
+            if (!syncChildren()) {
+                return;
+            }
         }
 
         // no need to sync in the future
