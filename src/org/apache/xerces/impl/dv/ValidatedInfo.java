@@ -93,4 +93,13 @@ public class ValidatedInfo {
      */
     public XSSimpleType[] memberTypes;
 
+    /**
+     * reset the state of this object
+     */
+    public void reset() {
+        this.normalizedValue = null;
+        this.actualValue = null;
+        this.memberType = null;
+        this.memberTypes = null;
+    }
 }
