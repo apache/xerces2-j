@@ -107,6 +107,8 @@ public abstract class AbstractDOMParser
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
         "http://apache.org/xml/features/dom/include-ignorable-whitespace";
 
+    private static final boolean DEBUG_ENTITY_REF = false;
+    
     //
     // Data
     //
@@ -564,8 +566,16 @@ public abstract class AbstractDOMParser
             int entityLength = attributes.getEntityLength(attrIndex, i);
 
             // is this entity not in this text?
-            //  
-            if ( text.getNodeValue().length() == 0 || entityOffset > textOffset + textLength) {
+            // 
+
+            if (DEBUG_ENTITY_REF) {
+                System.out.println("==>"+textString);
+                System.out.println(i+". &"+entityName+";");
+            }
+            // is this entity not in this text?
+            // 
+            int tempLength= text.getNodeValue().length();
+            if ( tempLength == 0 || entityOffset >= textOffset +  tempLength) {
                 break;
             }
          
@@ -573,6 +583,10 @@ public abstract class AbstractDOMParser
             // text node that was passed into this method
             Text text1 = text.splitText(entityOffset - textOffset);
             Text text2 = text1.splitText(entityLength);
+
+            if (DEBUG_ENTITY_REF) {
+                System.out.println(text.getNodeValue()+"->"+text1.getNodeValue()+"->"+text2.getNodeValue());
+            }
 
             // create entity reference
             EntityReference entityRef = fDocument.createEntityReference(entityName);
