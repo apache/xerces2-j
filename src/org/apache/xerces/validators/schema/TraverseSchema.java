@@ -5049,15 +5049,12 @@ public class TraverseSchema implements
         }
       }
 
-      if (tempType != null && tempType == bType)
-        return;
-
       for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
+        if (bType != null && tempType.typeName.equals(bType.typeName))
+          break;
         if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
           throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
         }
-        if (bType != null && tempType.typeName.equals(bType.typeName))
-          break;
       }
 
       if(tempType == null && !(bType == null && base.datatypeValidator == null)) {
