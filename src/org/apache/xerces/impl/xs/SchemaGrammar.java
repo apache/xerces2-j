@@ -568,7 +568,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 
         public XSAttributeGroupDecl getAttrGrp() {
             XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
+            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
             XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
             attrGrp.fAttributeWC = wildcard;
             return attrGrp;
@@ -576,7 +576,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 
         public XSWildcard getAttributeWildcard() {
             XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
+            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
             return wildcard;
         }
 
@@ -584,7 +584,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
             // the wildcard used in anyType (content and attribute)
             // the spec will change strict to skip for anyType
             XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
+            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
             // the particle for the content wildcard
             XSParticleDecl particleW = new XSParticleDecl();
             particleW.fMinOccurs = 0;
