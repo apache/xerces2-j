@@ -71,7 +71,8 @@ import org.w3c.dom.DOMException;
  * The qualified name is the node name, and we store localName which is also
  * used in all queries. On the other hand we recompute the prefix when
  * necessary.
- *
+ * @author Elena litani, IBM
+ * @author Neeraj Bajaj, Sun Microsystems
  * @version $Id$
  */
 public class ElementNSImpl
@@ -375,16 +376,17 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
+        //Absolute base URI is computed according to XML Base (http://www.w3.org/TR/xmlbase/#granularity)
 
+        //1.  the base URI specified by an xml:base attribute on the element, if one exists
 
-        String baseURI = this.ownerNode.getBaseURI();
         if (attributes != null) {
             Attr attrNode = (Attr)attributes.getNamedItemNS("http://www.w3.org/XML/1998/namespace", "base");
             if (attrNode != null) {
                 String uri =  attrNode.getNodeValue();
                 if (uri.length() != 0 ) {// attribute value is always empty string
                     try {
-                       uri = new URI(new URI(baseURI), uri).toString();
+                       uri = new URI(uri).toString();
                     }
                     catch (org.apache.xerces.util.URI.MalformedURIException e){
                         // REVISIT: what should happen in this case?
@@ -394,7 +396,38 @@ public class ElementNSImpl
                 }
             }
         }
-        return baseURI;
+
+        //2.the base URI of the element's parent element within the document or external entity,
+        //if one exists
+        String parentElementBaseURI = this.parentNode().getBaseURI() ;
+        //base URI of parent element is not null
+        if(parentElementBaseURI != null){
+            try {
+                //return valid absolute base URI
+               return new URI(parentElementBaseURI).toString();
+            }
+            catch (org.apache.xerces.util.URI.MalformedURIException e){
+                // REVISIT: what should happen in this case?
+                return null;
+            }
+        }
+        //3. the base URI of the document entity or external entity containing the element
+
+        String baseURI = this.ownerNode.getBaseURI();
+
+        if(baseURI != null){
+            try {
+                //return valid absolute base URI
+               return new URI(baseURI).toString();
+            }
+            catch (org.apache.xerces.util.URI.MalformedURIException e){
+                // REVISIT: what should happen in this case?
+                return null;
+            }
+        }
+
+        return null;
+
     }
 
 
