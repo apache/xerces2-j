@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -88,19 +88,26 @@ public class XMLAttributeDecl {
     public static final int TYPE_ANY_LOCAL = 10;
     public static final int TYPE_ANY_LIST = 11;
 
-    // default type
-
-    public static final int DEFAULT_TYPE_IMPLIED = 0;
-    public static final int DEFAULT_TYPE_FIXED = 1;
+    // default types in DTD
+    public static final int DEFAULT_TYPE_IMPLIED = 1;
     public static final int DEFAULT_TYPE_REQUIRED = 2;
-    public static final int DEFAULT_TYPE_DEFAULT = 3;
-    public static final int DEFAULT_TYPE_PROHIBITED = 7;
-    public static final int DEFAULT_TYPE_REQUIRED_AND_FIXED = 8;	// for when global schema attr has use=fixed and local ref has use=required.
+    public static final int DEFAULT_TYPE_PROHIBITED = 4;
+    public static final int DEFAULT_TYPE_DEFAULT = 8;
+    public static final int DEFAULT_TYPE_FIXED = 16;
+    public static final int DEFAULT_TYPE_REQUIRED_AND_FIXED = DEFAULT_TYPE_REQUIRED | DEFAULT_TYPE_FIXED;
+
+    // "use" of Schema attributes
+    public static final int USE_TYPE_OPTIONAL = DEFAULT_TYPE_IMPLIED;
+    public static final int USE_TYPE_REQUIRED = DEFAULT_TYPE_REQUIRED;
+    public static final int USE_TYPE_PROHIBITED = DEFAULT_TYPE_PROHIBITED;
+    // value constraints of Schema attributes
+    public static final int VALUE_CONSTRAINT_DEFAULT = DEFAULT_TYPE_DEFAULT;
+    public static final int VALUE_CONSTRAINT_FIXED = DEFAULT_TYPE_FIXED;
 
     // schema: attribte wildcard processContents property, share the defaultType field
-    public static final int PROCESSCONTENTS_STRICT = 4;
-    public static final int PROCESSCONTENTS_LAX = 5;
-    public static final int PROCESSCONTENTS_SKIP = 6;
+    public static final int PROCESSCONTENTS_STRICT = 10001;
+    public static final int PROCESSCONTENTS_LAX = 10002;
+    public static final int PROCESSCONTENTS_SKIP = 10003;
 
 
     //
@@ -115,7 +122,7 @@ public class XMLAttributeDecl {
 
     public DatatypeValidator datatypeValidator;
 
-    // Att types, e.g. ID, IDREF, NOTATION, NMTOKEN, 
+    // Att types, e.g. ID, IDREF, NOTATION, NMTOKEN,
 
     public int type;
 
@@ -124,6 +131,9 @@ public class XMLAttributeDecl {
     // values
     public int enumeration;
 
+    // For DTD, this variable stores "#IMPLIED", "#REQUIRED" and "#FIXED" etc.
+    // For Schema, this variable stored the options among "use", "default" and "fixed"
+    //    via binary '|'
     public int defaultType;
 
     public String defaultValue;

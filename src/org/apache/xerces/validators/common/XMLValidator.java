@@ -2013,13 +2013,13 @@ public final class XMLValidator
          }
 
          boolean specified = false;
-         boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-         boolean prohibited = attDefType == XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
-         boolean requiredAndFixed = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED_AND_FIXED;
+         boolean required = (attDefType & XMLAttributeDecl.DEFAULT_TYPE_REQUIRED) > 0;
+         boolean prohibited = (attDefType & XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED) > 0;
+         boolean fixed = (attDefType & XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0;
 
          if (firstCheck != -1) {
             boolean cdata = attType == fCDATASymbol;
-            if (!cdata || required || prohibited || attValue != -1 || requiredAndFixed) {
+            if (!cdata || required || prohibited || attValue != -1) {
                int i = attrList.getFirstAttr(firstCheck);
                while (i != -1 && (lastCheck == -1 || i <= lastCheck)) {
 
@@ -2037,7 +2037,7 @@ public final class XMLValidator
 								args,
 								XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                		}
-                     if (validationEnabled && (attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED || requiredAndFixed)) {
+                     if (validationEnabled && fixed) {
                         int alistValue = attrList.getAttValue(i);
                         if (alistValue != attValue &&
                             !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {
@@ -2062,7 +2062,7 @@ public final class XMLValidator
          }
 
          if (!specified) {
-            if (required || requiredAndFixed) {
+            if (required) {
                if (validationEnabled) {
                   Object[] args = { fStringPool.toString(elementNameIndex),
                      fStringPool.toString(attName)};
@@ -2168,7 +2168,7 @@ public final class XMLValidator
             attValue = fStringPool.addSymbol(fTempAttDecl.defaultValue);
          }
          boolean specified = false;
-         boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+         boolean required = (attDefType & XMLAttributeDecl.DEFAULT_TYPE_REQUIRED)>0;
 
 
          /****
@@ -2187,7 +2187,7 @@ public final class XMLValidator
 
                   if ( attrList.getAttrName(i) == fTempAttDecl.name.rawname ) {
 
-                     if (validationEnabled && attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) {
+                     if (validationEnabled && (attDefType & XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) {
                         int alistValue = attrList.getAttValue(i);
                         if (alistValue != attValue &&
                             !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {

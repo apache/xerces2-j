@@ -4,6 +4,8 @@
 <s1 title="Releases">
   <s2 title='TBD'>
     <ul>
+        <li>Implemented Schema PR changes to the syntax of &lt;attribute&gt; 
+            declarations [Ted Han (than@ghx.com)/Neil Graham]</li>
         <li>Added French resource bundle for regex package [Jean-Claude Dufourd, Laurent Foret/Neil Graham]</li>
         <li>Added support for Schema &quot;final&quot; attribute [Neil Graham]</li>
     </ul>

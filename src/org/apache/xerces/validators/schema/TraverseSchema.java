@@ -1758,6 +1758,16 @@ public class TraverseSchema implements
         else if (list && content!=null) { // report error - must not have any children!
             if (!baseTypeQNameProperty.equals("")) {
                 content = checkContent(simpleTypeDecl, content, true);
+            }
+            else {
+                reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
+                        new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                //REVISIT: should we return?
+            }
+        }
+        else if (union && content!=null) { //report error - must not have any children!
+             if (!baseTypeQNameProperty.equals("")) {
+                content = checkContent(simpleTypeDecl, content, true);
                 if (content!=null) {
                     reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
                                             new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
@@ -3425,17 +3435,20 @@ public class TraverseSchema implements
         return index;
     }
 
+
     /**
      * Traverses Schema attribute declaration.
      *   
      *       <attribute 
-     *         form = qualified | unqualified 
+     *         default = string
+     *         fixed = string
+     *         form = (qualified | unqualified)
      *         id = ID 
      *         name = NCName 
      *         ref = QName 
      *         type = QName 
-     *         use = default | fixed | optional | prohibited | required 
-     *         value = string>
+     *         use = (optional | prohibited | required) : optional
+     *         {any attributes with non-schema namespace ...}>
      *         Content: (annotation? , simpleType?)
      *       <attribute/>
      * 
@@ -3446,143 +3459,243 @@ public class TraverseSchema implements
 	 * @param referredTo:  true iff traverseAttributeDecl was called because 
 	 *		of encountering a ``ref''property (used
 	 *		to suppress error-reporting).
-     * @return 
+     * @return 0 if the attribute schema is validated successfully, otherwise -1
      * @exception Exception
      */
     private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo, boolean referredTo ) throws Exception {
+
+        ////// Get declared fields of the attribute
+        String defaultStr   = attrDecl.getAttribute(SchemaSymbols.ATT_DEFAULT);
+        String fixedStr     = attrDecl.getAttribute(SchemaSymbols.ATT_FIXED);
+        String formStr      = attrDecl.getAttribute(SchemaSymbols.ATT_FORM);//form attribute
         String attNameStr    = attrDecl.getAttribute(SchemaSymbols.ATT_NAME);
-        int attName          = fStringPool.addSymbol(attNameStr);// attribute name
-        String isQName       = attrDecl.getAttribute(SchemaSymbols.ATT_FORM);//form attribute
-		boolean isAttrTopLevel = isTopLevel(attrDecl);
+        String refStr       = attrDecl.getAttribute(SchemaSymbols.ATT_REF);
+        String datatypeStr  = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+        String useStr       = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
+        Element simpleTypeChild = findAttributeSimpleType(attrDecl);
+
+        ////// define attribute declaration Schema components
+        int attName;        // attribute name indexed in the string pool
+        int uriIndex;       // indexed for target namespace uri
+        QName attQName;     // QName combining attName and uriIndex
 		
-        DatatypeValidator dv = null;
         // attribute type
-        int attType          = -1;
+        int attType;
         boolean attIsList    = false;
         int dataTypeSymbol   = -1;
-
-        String ref       = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
-        String datatype  = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
-		// various tests if 'ref' is present:
-		if(!ref.equals("")) {
-			if(isAttrTopLevel)
-				// REVISIT:  localize 
-   	    	    reportGenericSchemaError ( "An attribute with \"ref\" present must not have <schema> as its parent");
-			if(!attNameStr.equals(""))
-				// REVISIT:  localize 
-   	    	    reportGenericSchemaError ( "Attribute " + attNameStr + " cannot refer to another attribute, but it refers to " + ref);
-			if(!datatype.equals(""))
-				// REVISIT:  localize 
-       	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a type");
-        	if(!attrDecl.getAttribute(SchemaSymbols.ATT_FORM).equals(""))
-				// REVISIT:  localize 
-       	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a \"form\" property");
-        	if(!attrDecl.getAttribute(SchemaSymbols.ATT_VALUE).equals(""))
-				// REVISIT:  localize 
-       	        reportGenericSchemaError ( "Attribute with reference " + ref + " cannot also contain a value");
-		}
-		Element simpleTypeChild = findAttributeSimpleType(attrDecl);
-
         String localpart = null;
 
-        String  use      = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
-        boolean prohibited = use.equals(SchemaSymbols.ATTVAL_PROHIBITED);
-        boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
+        // validator
+        DatatypeValidator dv;
 
-		if (!ref.equals("")) {
-            if(simpleTypeChild != null)
-				// REVISIT:  localize 
-       	        reportGenericSchemaError ( "an attribute with ref present cannot contain a simpleType");
-            String prefix = "";
-            localpart = ref;
-            int colonptr = ref.indexOf(":");
-            if ( colonptr > 0) {
-                prefix = ref.substring(0,colonptr);
-                localpart = ref.substring(colonptr+1);
+        // value constraints and use type
+        int attValueAndUseType = 0;
+        int attValueConstraint = -1;   // indexed value in a string pool
+
+        ////// Check W3C's PR-Structure 3.2.3
+        // --- Constraints on XML Representations of Attribute Declarations
+        boolean isAttrTopLevel = isTopLevel(attrDecl);
+        boolean isOptional = false;
+        boolean isProhibited = false;
+        boolean isRequired = false;
+
+        StringBuffer errorContext = new StringBuffer(30);
+        errorContext.append(" -- ");
+        if(typeInfo == null) {
+            errorContext.append("(global attribute) ");
+		}
+        else if(typeInfo.typeName == null) {
+            errorContext.append("(local attribute) ");
+        }
+        else {
+            errorContext.append("(attribute) ").append(typeInfo.typeName).append("/");
+        }
+        errorContext.append(attNameStr).append(' ').append(refStr);
+
+        if(useStr.equals("") || useStr.equals(SchemaSymbols.ATTVAL_OPTIONAL)) {
+            attValueAndUseType |= XMLAttributeDecl.USE_TYPE_OPTIONAL;
+            isOptional = true;
+        }
+        else if(useStr.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
+            attValueAndUseType |= XMLAttributeDecl.USE_TYPE_PROHIBITED;
+            isProhibited = true;
+        }
+        else if(useStr.equals(SchemaSymbols.ATTVAL_REQUIRED)) {
+            attValueAndUseType |= XMLAttributeDecl.USE_TYPE_REQUIRED;
+            isRequired = true;
+        }
+        else {
+            reportGenericSchemaError("An attribute cannot declare \"" +
+                SchemaSymbols.ATT_USE + "\" as \"" + useStr + "\"" + errorContext);
+        }
+
+        if(defaultStr.length() > 0 && fixedStr.length() > 0) {
+            reportGenericSchemaError("\"" + SchemaSymbols.ATT_DEFAULT +
+                "\" and \"" + SchemaSymbols.ATT_FIXED +
+                "\" cannot be both present" + errorContext);
+        }
+        else if(defaultStr.length() > 0 && !isOptional) {
+            reportGenericSchemaError("If both \"" + SchemaSymbols.ATT_DEFAULT +
+                "\" and \"" + SchemaSymbols.ATT_USE + "\" " +
+                "are present for an attribute declaration, \"" +
+                SchemaSymbols.ATT_USE + "\" can only be \"" +
+                SchemaSymbols.ATTVAL_OPTIONAL + "\", not \"" + useStr + "\"." + errorContext);
+        }
+        else if(!isAttrTopLevel) {
+            if((refStr.length() == 0) == (attNameStr.length() == 0)) {
+                reportGenericSchemaError("When the attribute's parent is not <schema> , one of \"" +
+                    SchemaSymbols.ATT_REF + "\" and \""  + SchemaSymbols.ATT_NAME +
+                    "\" should be declared, but not both."+ errorContext);
+                return -1;
             }
+            else if((refStr.length() > 0) && (simpleTypeChild != null || formStr.length() > 0 || datatypeStr.length() > 0)) {
+                reportGenericSchemaError("When the attribute's parent is not <schema> and \"" +
+                    SchemaSymbols.ATT_REF + "\" is present, " +
+                    "all of <" + SchemaSymbols.ELT_SIMPLETYPE + ">, " +
+                    SchemaSymbols.ATT_FORM + " and "  + SchemaSymbols.ATT_TYPE +
+                    " must be absent."+ errorContext);
+            }
+        }
+
+        if(datatypeStr.length() > 0 && simpleTypeChild != null) {
+            reportGenericSchemaError("\"" + SchemaSymbols.ATT_TYPE + "\" and <" +
+                SchemaSymbols.ELT_SIMPLETYPE + "> cannot both be present"+ errorContext);
+        }
+
+        ////// Check W3C's PR-Structure 3.2.2
+        // --- XML Representation of Attribute Declaration Schema Components
+
+        // check case-dependent attribute declaration schema components
+        if (isAttrTopLevel) {
+            //// global attributes
+            // set name component
+            attName  = fStringPool.addSymbol(attNameStr);
+            if(fTargetNSURIString.length() == 0) {
+                uriIndex = StringPool.EMPTY_STRING;
+            }
+            else {
+                uriIndex = fTargetNSURI;
+            }
+            attQName = new QName(-1,attName,attName,uriIndex);
+
+        }
+        else if(refStr.length() == 0) {
+            //// local attributes
+            // set name component
+            attName  = fStringPool.addSymbol(attNameStr);
+            if((formStr.length() > 0 && formStr.equals(SchemaSymbols.ATTVAL_QUALIFIED)) ||
+                (formStr.length() == 0 && fAttributeDefaultQualified)) {
+                uriIndex = fTargetNSURI;
+            }
+            else {
+                uriIndex = StringPool.EMPTY_STRING;
+            }
+            attQName = new QName(-1,attName,attName,uriIndex);
+        }
+        else {
+            //// locally referenced global attributes
+            String prefix;
+            int colonptr = refStr.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = refStr.substring(0,colonptr);
+                localpart = refStr.substring(colonptr+1);
+            }
+            else {
+                prefix = "";
+                localpart = refStr;
+            }
+
             String uriStr = resolvePrefixToURI(prefix);
 
             if (!uriStr.equals(fTargetNSURIString)) {
                 addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
-
-                return -1;
+                return 0;
             }
 
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
             if (referredAttribute != null) { 
-				if (typeInfo != null) {
 					// don't need to traverse ref'd attribute if we're global; just make sure it's there...
                	 	traverseAttributeDecl(referredAttribute, typeInfo, true);
-					// this nasty hack needed to ``override'' the "use" on the 
-					// global attribute with that on the ref'ing attribute.
+
+                // this nasty hack needed to ``override'' the
+                // global attribute with "use" and "fixed" on the ref'ing attribute
+                if(!isOptional || fixedStr.length() > 0) {
 					int referredAttName = fStringPool.addSymbol(referredAttribute.getAttribute(SchemaSymbols.ATT_NAME));
-        			int uriIndex = StringPool.EMPTY_STRING;
+                    uriIndex = StringPool.EMPTY_STRING;
         			if ( fTargetNSURIString.length() > 0) {
                     	uriIndex = fTargetNSURI;
         			}
         			QName referredAttQName = new QName(-1,referredAttName,referredAttName,uriIndex);
-					if (prohibited) {
+
 	                	int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
 						XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
 						fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
-						referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
-						fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+
+                    boolean updated = false;
+
+                    int useDigits =   XMLAttributeDecl.USE_TYPE_OPTIONAL |
+                                      XMLAttributeDecl.USE_TYPE_PROHIBITED |
+                                      XMLAttributeDecl.USE_TYPE_REQUIRED;
+
+                    int valueDigits = XMLAttributeDecl.VALUE_CONSTRAINT_DEFAULT |
+                                      XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
+
+                    if(!isOptional &&
+                       (referredAttrDecl.defaultType & useDigits) !=
+                       (attValueAndUseType & useDigits))
+                    {
+                        referredAttrDecl.defaultType ^= useDigits;
+                        referredAttrDecl.defaultType |= (attValueAndUseType & useDigits);
+                        updated = true;
 					}
-					else if (required) {
-						int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
-						XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
-						fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
-						// now two cases:  if it's othre than fixed, no problem, just overwrite.  
-						// but if it is *it* fixed, specs demand attr be treated as both fixed and required. 
-						if(referredAttrDecl.defaultType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) 
-							referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED_AND_FIXED;
-						else
-							referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-						fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+
+                    if(fixedStr.length() > 0) {
+                        if((referredAttrDecl.defaultType & XMLAttributeDecl.VALUE_CONSTRAINT_FIXED) == 0) {
+                            referredAttrDecl.defaultType ^= useDigits;
+                            referredAttrDecl.defaultType |= XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
+                            referredAttrDecl.defaultValue = fStringPool.toString(attValueConstraint);
+                            updated = true;
 					}
+                        else if(!fixedStr.equals(referredAttrDecl.defaultValue))
+                        {
+                            reportGenericSchemaError ( "Global and local declarations have different \"" +
+                                SchemaSymbols.ATT_FIXED + "\" values."+ errorContext);
             	}
 			}
-            else {
 
-                if (fAttributeDeclRegistry.get(localpart) != null) {
+                    if(updated) {
+                        fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+                    }
+                }
+			}
+            else if (fAttributeDeclRegistry.get(localpart) != null) {
                     addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
                 }
-                else 
+            else {
                     // REVISIT: Localize
-                    reportGenericSchemaError ( "Couldn't find top level attribute " + ref);
+                reportGenericSchemaError ( "Couldn't find top level attribute " + refStr + errorContext);
             }
-            return -1;
-        } else if (attNameStr.equals(""))
-			// REVISIT:  localize 
-       	    reportGenericSchemaError ( "An attribute must have a ref or a name!");
+            return 0;
+            }
 
-        if (datatype.equals("")) {
+        // validation of attribute type is same for each case of declaration
             if (simpleTypeChild != null) { 
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = traverseSimpleTypeDecl(simpleTypeChild);
                 localpart = fStringPool.toString(dataTypeSymbol);
-            } 
-            else {
-                attType        = XMLAttributeDecl.TYPE_SIMPLE;
-                localpart      = "string";
-                dataTypeSymbol = fStringPool.addSymbol(localpart);
-            }
-            localpart = fStringPool.toString(dataTypeSymbol);
-
             dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-
-        } else {
-			if(simpleTypeChild != null && !referredTo)
-            	reportGenericSchemaError("Attribute declarations may not contain both a type and a simpleType declaration");
-
-            String prefix = "";
-            localpart = datatype;
-            dataTypeSymbol = fStringPool.addSymbol(localpart);
-
-            int  colonptr = datatype.indexOf(":");
+        }
+        else if (datatypeStr.length() != 0) {
+            dataTypeSymbol = fStringPool.addSymbol(datatypeStr);
+            String prefix;
+            int  colonptr = datatypeStr.indexOf(":");
             if ( colonptr > 0) {
-                prefix = datatype.substring(0,colonptr);
-                localpart = datatype.substring(colonptr+1);
+                prefix = datatypeStr.substring(0,colonptr);
+                localpart = datatypeStr.substring(colonptr+1);
+            }
+            else {
+                prefix = "";
+                localpart = datatypeStr;
             }
             String typeURI = resolvePrefixToURI(prefix);
 
@@ -3620,12 +3733,12 @@ public class TraverseSchema implements
                             dv = getDatatypeValidator(typeURI, localpart);
                         }else if (!referredTo) {
                             // REVISIT: Localize
-                            reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+localpart+")");
+                            reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+localpart+")"+ errorContext);
                         }
                     }
                 }
             } else { //isn't of the schema for schemas namespace...
-
+                attType = XMLAttributeDecl.TYPE_SIMPLE;
                 // check if the type is from the same Schema
 
                 dv = getDatatypeValidator(typeURI, localpart);
@@ -3636,93 +3749,45 @@ public class TraverseSchema implements
                         dv = getDatatypeValidator(typeURI, localpart);
                     }else if (!referredTo) {
                         // REVISIT: Localize
-                        reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+ localpart+")");
+                        reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+ localpart+")"+ errorContext);
                     }
                 }
-
-                attType = XMLAttributeDecl.TYPE_SIMPLE;
             }
-
-        }
-
-
-        // attribute default type
-        int attDefaultType = -1;
-        int attDefaultValue = -1;
-
-        if (dv == null && !referredTo) {
-            // REVISIT: Localize
-            reportGenericSchemaError("could not resolve the type or get a null validator for datatype : " 
-                                     + fStringPool.toString(dataTypeSymbol));
-        }
-
-        String fixed = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
-		if (isAttrTopLevel) {
-            if (!fixed.equals("")) {
-				if((required || prohibited
-						|| use.equals(SchemaSymbols.ATTVAL_OPTIONAL)) && !referredTo) 
-            		// REVISIT: Localize
-            		reportGenericSchemaError("Globally-declared attributes containing values must have \"use\" set to \"FIXED\" or \"DEFAULT\", not " +
-						use);
-				else if (use.equals("") && !referredTo) 
-            		// REVISIT: Localize
-					reportGenericSchemaError("Globally-declared attributes containing values MUST have \"use\" present and set to \"FIXED\" or \"DEFAULT\"");
-            	else if (use.equals(SchemaSymbols.ATTVAL_FIXED))	{
-                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
-                   	attDefaultValue = fStringPool.addString(fixed);
 				} 
 				else {
-                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
-                   	attDefaultValue = fStringPool.addString(fixed);
-				}
+            attType        = XMLAttributeDecl.TYPE_SIMPLE;
+            localpart      = "string";
+            dataTypeSymbol = fStringPool.addSymbol(localpart);
+            dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+        } // if(...Type)
+
+        // validation of data constraint is same for each case of declaration
+        if(defaultStr.length() > 0) {
+            attValueAndUseType |= XMLAttributeDecl.VALUE_CONSTRAINT_DEFAULT;
+            attValueConstraint = fStringPool.addString(defaultStr);
 			}
-			else { // no value and we're at top level.
-            	if (!use.equals("") && !referredTo)	
-            		// REVISIT: Localize
-					reportGenericSchemaError("Globally-declared attributes containing no value may not have \"use\" present");
-            	else 
-               		attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
-			}
-		} 
-		else { // not at top-level...
-			// case where "ref" present taken care of above.
-            if (!fixed.equals("")) {
-				if(required || prohibited
-						|| use.equals(SchemaSymbols.ATTVAL_OPTIONAL)) 
-            		reportGenericSchemaError("Locally-declared attributes containing values must have \"use\" set to \"FIXED\" or \"DEFAULT\", not " +
-						use);
-				else if (use.equals("")) 
-            		// REVISIT: Localize
-					reportGenericSchemaError("Locally-declared attributes containing values MUST have \"use\" present and set to \"FIXED\" or \"DEFAULT\"");
-            	else if (use.equals(SchemaSymbols.ATTVAL_FIXED))	{
-                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
-                   	attDefaultValue = fStringPool.addString(fixed);
-				} 
-				else {
-                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
-                   	attDefaultValue = fStringPool.addString(fixed);
-				}
-			}
-			else { // no value and we're not at top level.
-				if(required) 
-                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-				else if (prohibited)  
-                   	attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
-				// no other case is defined by the specs, so treat as implied...
-            	else 
-               		attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
-			}
+        else if(fixedStr.length() > 0) {
+            attValueAndUseType |= XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
+            attValueConstraint = fStringPool.addString(fixedStr);
 		}
 
+        ////// Check W3C's PR-Structure 3.2.6
+        // --- Constraints on Attribute Declaration Schema Components
         // check default value is valid for the datatype.  
-        if (attType == XMLAttributeDecl.TYPE_SIMPLE && attDefaultValue != -1) {
+        if (attType == XMLAttributeDecl.TYPE_SIMPLE && attValueConstraint != -1) {
             try { 
-                if (dv != null) 
+                if (dv != null) {
+                    if(defaultStr.length() > 0) {
                     //REVISIT
-                    dv.validate(fStringPool.toString(attDefaultValue), null);
+                        dv.validate(defaultStr, null);
+                    }
+                    else {
+                        dv.validate(fixedStr, null);
+                    }
+                }
                 else if (!referredTo)
                     reportSchemaError(SchemaMessageProvider.NoValidatorFor,
-                            new Object [] { datatype });
+                            new Object [] { datatypeStr });
             } catch (InvalidDatatypeValueException idve) {
 				if (!referredTo) 
                 	reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
@@ -3733,36 +3798,24 @@ public class TraverseSchema implements
             }
         }
 
-        /***/
-        // REVISIT: I don't think this code is right. The attribute
-        //          should take on the target namespace of the grammar
-        //          if present. -Ac
-        int uriIndex = StringPool.EMPTY_STRING;
-        // refer to 4.3.1 in "XML Schema Part 1: Structures"
-        if ( fTargetNSURIString.length() > 0) {
-                if ( isAttrTopLevel || 
-                		(( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED)) &&
-                        ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-                         fAttributeDefaultQualified ))) 
-                    uriIndex = fTargetNSURI;
+        // check the coexistence of ID and value constraint
+        if (dv != null && dv instanceof org.apache.xerces.validators.datatype.IDDatatypeValidator && attValueConstraint != -1)
+        {
+            reportGenericSchemaError("If type definition is or is derived from ID ," +
+                "there must not be a value constraint" + errorContext);
         }
-        /***
-        int uriIndex = fTargetNSURI;
-        /***/
 
-        QName attQName = new QName(-1,attName,attName,uriIndex);
-        if ( DEBUGGING )
-            System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
 
+        ////// every contraints were matched.  Now register the attribute declaration
         //put the top-levels in the attribute decl registry.
         if (isAttrTopLevel) {
             fTempAttributeDecl.datatypeValidator = dv;
             fTempAttributeDecl.name.setValues(attQName);
             fTempAttributeDecl.type = attType;
-            fTempAttributeDecl.defaultType = attDefaultType;
+            fTempAttributeDecl.defaultType = attValueAndUseType;
             fTempAttributeDecl.list = attIsList;
-            if (attDefaultValue != -1 ) {
-                fTempAttributeDecl.defaultValue = new String(fStringPool.toString(attDefaultValue));
+            if (attValueConstraint != -1 ) {
+                fTempAttributeDecl.defaultValue = fStringPool.toString(attValueConstraint);
             }
             fAttributeDeclRegistry.put(attNameStr, new XMLAttributeDecl(fTempAttributeDecl));
         }
@@ -3771,24 +3824,27 @@ public class TraverseSchema implements
         if (typeInfo != null) {
             fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                       attQName, attType, 
-                                      dataTypeSymbol, attDefaultType, 
-                                      fStringPool.toString( attDefaultValue), dv, attIsList);
+                                      dataTypeSymbol, attValueAndUseType,
+                                      fStringPool.toString( attValueConstraint), dv, attIsList);
         }
-        return -1;
+
+        return 0;
     } // end of method traverseAttribute
 
     private int addAttributeDeclFromAnotherSchema( String name, String uriStr, ComplexTypeInfo typeInfo) throws Exception {
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
-            reportGenericSchemaError("!!Schema not found in #addAttributeDeclFromAnotherSchema, schema uri : " + uriStr);
+            reportGenericSchemaError( "no attribute named \"" + name
+                                      + "\" was defined in schema : " + uriStr);
             return -1;
         }
 
         Hashtable attrRegistry = aGrammar.getAttributeDeclRegistry();
         if (attrRegistry == null) {
             // REVISIT: Localize
-            reportGenericSchemaError("no attribute was defined in schema : " + uriStr);
+            reportGenericSchemaError( "no attribute named \"" + name
+                                      + "\" was defined in schema : " + uriStr);
             return -1;
         }
 
