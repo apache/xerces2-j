@@ -248,8 +248,23 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
     }
     public void callCharDataHandler(int offset, int length, boolean isWhitespace) throws Exception {
         int endOffset = offset + length;
+        boolean skiplf = false;
         while (offset < endOffset) {
             int ch = getChar(offset);
+            /***/
+            // fix for Bug23: Element Data not normalized...
+            if (skiplf) {
+                skiplf = false;
+                if (ch == 0x0A) {
+                    offset += fBytesPerChar;
+                    continue;
+                }
+            }
+            if (ch == 0x0D) {
+                skiplf = true;
+                ch = 0x0A;
+            }   
+            /***/
             appendCharData(ch);
             offset += fBytesPerChar;
         }
