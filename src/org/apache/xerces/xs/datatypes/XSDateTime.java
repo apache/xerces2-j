@@ -27,53 +27,75 @@ package org.apache.xerces.xs.datatypes;
  */
 public interface XSDateTime {
 	
-	/**
-	 * @return year
-	 */
-	public int getYear();
-	
-	/**
-	 * @return month
-	 */
-	public int getMonth();
-	
-	/**
-	 * @return day
-	 */
-	public int getDay();
-	
-	/**
-	 * @return hour
-	 */
-	public int getHour();
-	
-	/**
-	 * @return minutes
-	 */
-	public int getMinutes();
-	
-	/**
-	 * @return seconds
-	 */
-	public double getSeconds();
-	
-	/**
-	 * @return whether a timezone is specified
-	 */
-	public boolean hasTimeZone();
-	
-	/**
-	 * @return time hours
-	 */
-	public int getTimeZoneHours();
-	
-	/**
-	 * @return timezone minutes
-	 */
-	public int getTimeZoneMinutes();
+    /**
+     * @return years – can be negative for datetime;
+     *          returns 0 for duration types
+     */
+    public int getYears();
     
     /**
-     * @return original lexical value
+     * @return months – can be negative only for durations;
+     *                  For duration types, it returns years*12 + months
+     */
+    public int getMonths();
+    
+    /**
+     * @return days – cannot be negative;
+     *          returns 0 for duration types 
+     */
+    public int getDays();
+    
+    /**
+     * @return hours – cannot be negative;
+     *          returns 0 for duration types
+     */
+    public int getHours();
+    
+    /**
+     * @return minutes – cannot be negative;
+     *          returns 0 for duration types
+     */
+    public int getMinutes();
+    
+    /**
+     * @return seconds – can be negative only for durations;
+     *                   For duration types, it returns days*24*3600 + hours*3600 
+     *                                                  + minutes*60 + seconds 
+     */
+    public double getSeconds();
+    
+    /**
+     * @return boolean (true when timezone exists)
+     */
+    public boolean hasTimeZone();
+    
+    /**
+     * @return timezone hours (for GMT-xx:xx this will be negative),
+     *                          not valid for duration types
+     */
+    public int getTimeZoneHours();
+    
+    /**
+     * @return timezone minutes (for GMT-xx:xx this will be negative),
+     *                          not valid for duration types
+     */
+    public int getTimeZoneMinutes();
+    
+    /**
+     * @return the original lexical value
      */
     public String getLexicalValue();
+    
+    /**
+     * @return a new datetime object with normalized values
+     *         (has no effect on durations or objects already
+     *          normalized)
+     */
+    public XSDateTime normalize();
+    
+    /**
+     * @return whether a datetime object is normalized or not
+     *         (value is not useful for durations)
+     */
+    public boolean isNormalized();
 }

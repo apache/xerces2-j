@@ -569,6 +569,8 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		//          should consider reorganizing it.
 		//
 		
+        //save unnormalized values
+        saveUnnormalized(date);
 		//add minutes (from time zone)
 		int negate = -1;
 		
@@ -619,6 +621,18 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	
 	
 	/**
+     * @param date
+     */
+    private void saveUnnormalized(DateTimeData date) {
+        date.unNormYear = date.year;
+        date.unNormMonth = date.month;
+        date.unNormDay = date.day;
+        date.unNormHour = date.hour;
+        date.unNormMinute = date.minute;
+        date.unNormSecond = date.second;
+    }
+
+    /**
 	 * Resets object representation of date/time
 	 *
 	 * @param data   date/time object
@@ -803,7 +817,15 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		int year, month, day, hour, minute, utc;
 		double second;
 		int timezoneHr, timezoneMin;
-        String originalValue;
+        private String originalValue;
+        boolean normalized = false;
+        
+        int unNormYear;
+        int unNormMonth;
+        int unNormDay;
+        int unNormHour;
+        int unNormMinute;
+        double unNormSecond;
 		
 		// used for comparisons - to decide the 'interesting' portions of
 		// a date/time based data type.
@@ -818,7 +840,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			this.type = type;
 		}
 		public DateTimeData(int year, int month, int day, int hour, int minute,
-				double second, int utc, String originalValue, AbstractDateTimeDV type) {
+				double second, int utc, String originalValue, boolean normalized, AbstractDateTimeDV type) {
 			this.year = year;
 			this.month = month;
 			this.day = day;
@@ -840,65 +862,112 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			}
 			return canonical;
 		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getYear()
-		 */
-		public int getYear() {
-			return year;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getMonth()
-		 */
-		public int getMonth() {
-			return month;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getDay()
-		 */
-		public int getDay() {
-			return day;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getHour()
-		 */
-		public int getHour() {
-			return hour;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getMinutes()
-		 */
-		public int getMinutes() {
-			return minute;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getSeconds()
-		 */
-		public double getSeconds() {
-			return second;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#hasTimeZone()
-		 */
-		public boolean hasTimeZone() {
-			return utc != 0;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneHours()
-		 */
-		public int getTimeZoneHours() {
-			return timezoneHr;
-		}
-		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneMinutes()
-		 */
-		public int getTimeZoneMinutes() {
-			return timezoneMin;
-		}
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getYear()
+         */
+        public int getYears() {
+            if(type instanceof DurationDV)
+                return 0;
+            return normalized?year:unNormYear;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getMonth()
+         */
+        public int getMonths() {
+            if(type instanceof DurationDV) {
+                return year*12 + month;
+            }
+            return normalized?month:unNormMonth;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getDay()
+         */
+        public int getDays() {
+            if(type instanceof DurationDV)
+                return 0;
+            return normalized?day:unNormDay;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getHour()
+         */
+        public int getHours() {
+            if(type instanceof DurationDV)
+                return 0;
+            return normalized?hour:unNormHour;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getMinutes()
+         */
+        public int getMinutes() {
+            if(type instanceof DurationDV)
+                return 0;
+            return normalized?minute:unNormMinute;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getSeconds()
+         */
+        public double getSeconds() {
+            if(type instanceof DurationDV) {
+                return day*24*60*60 + hour*60*60 + minute*60 + second;
+            }
+            return normalized?second:unNormSecond;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#hasTimeZone()
+         */
+        public boolean hasTimeZone() {
+            return utc != 0;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneHours()
+         */
+        public int getTimeZoneHours() {
+            return timezoneHr;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneMinutes()
+         */
+        public int getTimeZoneMinutes() {
+            return timezoneMin;
+        }
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.datatypes.XSDateTime#getLexicalValue()
          */
         public String getLexicalValue() {
             return originalValue;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#normalize()
+         */
+        public XSDateTime normalize() {
+            if(!normalized) {
+                DateTimeData dt = (DateTimeData)this.clone();
+                dt.normalized = true;
+                return dt;
+            }
+            return this;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#isNormalized()
+         */
+        public boolean isNormalized() {
+            return normalized;
+        }
+        
+        public Object clone() {
+            DateTimeData dt = new DateTimeData(this.year, this.month, this.day, this.hour, 
+                    this.minute, this.second, this.utc, this.originalValue, this.normalized, this.type);
+            dt.canonical = this.canonical;
+            dt.position = position;
+            dt.timezoneHr = this.timezoneHr;
+            dt.timezoneMin = this.timezoneMin;
+            dt.unNormYear = this.unNormYear;
+            dt.unNormMonth = this.unNormMonth;
+            dt.unNormDay = this.unNormDay;
+            dt.unNormHour = this.unNormHour;
+            dt.unNormMinute = this.unNormMinute;
+            dt.unNormSecond = this.unNormSecond;
+            return dt;
         }
 	}
 }

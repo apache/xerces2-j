@@ -47,7 +47,7 @@ public interface ByteList {
     public boolean contains(byte item);
     
     /**
-     * Returns the <code>index</code>of the item in the collection. The index 
+     * Returns the <code>index</code>th item in the collection. The index 
      * starts at 0. 
      * @param index  index into the collection. 
      * @return  The <code>byte</code> at the <code>index</code>th 

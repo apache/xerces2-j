@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
+ * Copyright 1999-2002,2004, 2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,10 @@ public class DurationDV extends AbstractDateTimeDV {
     //
     // the dates are in format: {CCYY,MM,DD, H, S, M, MS, timezone}
     private final static DateTimeData[] DATETIMES= {
-        new DateTimeData(1696, 9, 1, 0, 0, 0, 'Z', null, null),
-        new DateTimeData(1697, 2, 1, 0, 0, 0, 'Z', null, null),
-        new DateTimeData(1903, 3, 1, 0, 0, 0, 'Z', null, null),
-        new DateTimeData(1903, 7, 1, 0, 0, 0, 'Z', null, null)};
+        new DateTimeData(1696, 9, 1, 0, 0, 0, 'Z', null, true, null),
+        new DateTimeData(1697, 2, 1, 0, 0, 0, 'Z', null, true, null),
+        new DateTimeData(1903, 3, 1, 0, 0, 0, 'Z', null, true, null),
+        new DateTimeData(1903, 7, 1, 0, 0, 0, 'Z', null, true, null)};
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
@@ -64,6 +64,7 @@ public class DurationDV extends AbstractDateTimeDV {
     protected DateTimeData parse(String str, int durationType) throws SchemaDateTimeException{
         int len = str.length();
         DateTimeData date= new DateTimeData(str, this);
+        date.normalized = true;
         
         int start = 0;
         char c=str.charAt(start++);
