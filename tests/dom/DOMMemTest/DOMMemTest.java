@@ -627,11 +627,11 @@ public class DOMMemTest {
         Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
 			new Class[]{String.class, String.class, String.class},
 			new Object[]{"<doc::Name", pubId, sysId},
-			DOMException.NAMESPACE_ERR));     
+			DOMException.INVALID_CHARACTER_ERR));     
         Assertion.assert(DOMExceptionsTest(impl, "createDocumentType",
 			new Class[]{String.class, String.class, String.class},
 			new Object[]{"<doc:N:ame", pubId, sysId},
-			DOMException.NAMESPACE_ERR));     
+			DOMException.INVALID_CHARACTER_ERR));     
     }
 
     //
@@ -707,7 +707,7 @@ public class DOMMemTest {
         //
         Element ela = doc.createElementNS("http://nsa", "a:ela");  // prefix and URI
         Element elb = doc.createElementNS("http://nsb", "elb");    //  URI, no prefix.
-        Element elc = doc.createElementNS("", "elc");              // No URI, no prefix.
+        Element elc = doc.createElementNS(null, "elc");              // No URI, no prefix.
 
         rootEl.appendChild(ela);
         rootEl.appendChild(elb);
@@ -726,7 +726,7 @@ public class DOMMemTest {
         Assertion.equals(elb.getTagName(), "elb");
 
         Assertion.equals(elc.getNodeName(), "elc");
-        Assertion.equals(elc.getNamespaceURI(), null);
+        Assertion.assert(elc.getNamespaceURI() == null);
         Assertion.assert(elc.getPrefix() ==  null);
         Assertion.equals(elc.getLocalName(), "elc");
         Assertion.equals(elc.getTagName(), "elc");
@@ -775,25 +775,17 @@ public class DOMMemTest {
         Assertion.equals(doc.createElementNS("", "xmlns").getNamespaceURI(), "");
         Assertion.assert(doc.createElementNS(null, "xmlns").getNamespaceURI() == null);
 
-        //unlike Attribute, xmlns:a (no different from foo:a) can have any namespaceURI for Element
-        //except "" and null
+        //unlike Attribute, xmlns:a (no different from foo:a) can have any
+	// namespaceURI for Element except null
         Assertion.equals(doc.createElementNS("http://nsa", "xmlns:a").getNamespaceURI(), "http://nsa");
         Assertion.equals(doc.createElementNS(xmlURI, "xmlns:a").getNamespaceURI(), xmlURI);
-	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
-				      new Class[]{String.class, String.class},
-				      new Object[]{"", "xmlns:a"},
-				      DOMException.NAMESPACE_ERR));
 	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{null, "xmlns:a"},
 				      DOMException.NAMESPACE_ERR));
 
-        //In fact, any prefix != null should have a namespaceURI != 0 or != ""
+        //In fact, any prefix != null should have a namespaceURI != null
         Assertion.equals(doc.createElementNS("http://nsa", "foo:a").getNamespaceURI(), "http://nsa");
-	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
-				      new Class[]{String.class, String.class},
-				      new Object[]{"", "foo:a"},
-				      DOMException.NAMESPACE_ERR));
 	Assertion.assert(DOMExceptionsTest(doc, "createElementNS",
 				      new Class[]{String.class, String.class},
 				      new Object[]{null, "foo:a"},
@@ -826,21 +818,15 @@ public class DOMMemTest {
 					  DOMException.NAMESPACE_ERR));
         //However, there is no restriction on prefix xmlns
         elem.setPrefix("xmlns");
-        //Also an element can not have a prefix with namespaceURI == null or ""
+        //Also an element can not have a prefix with namespaceURI == null
         elem = doc.createElementNS(null, "a");
         Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
 					  new Class[]{String.class},
 					  new Object[]{"foo"},
 					  DOMException.NAMESPACE_ERR));
 
-        elem = doc.createElementNS("", "a");
-        Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
-					  new Class[]{String.class},
-					  new Object[]{"foo"},
-					  DOMException.NAMESPACE_ERR));
-
         //Only prefix of Element and Attribute can be changed
-        Assertion.assert(DOMExceptionsTest(elem, "setPrefix",
+        Assertion.assert(DOMExceptionsTest(doc, "setPrefix",
 					  new Class[]{String.class},
 					  new Object[]{"foo"},
 					  DOMException.NAMESPACE_ERR));
@@ -876,7 +862,7 @@ public class DOMMemTest {
         //
         Attr attra = doc.createAttributeNS("http://nsa", "a:attra");       // prefix and URI
         Attr attrb = doc.createAttributeNS("http://nsb", "attrb");         //  URI, no prefix.
-        Attr attrc = doc.createAttributeNS("", "attrc");    // No URI, no prefix.
+        Attr attrc = doc.createAttributeNS(null, "attrc");    // No URI, no prefix.
 
         Assertion.equals(attra.getNodeName(), "a:attra");
         Assertion.equals(attra.getNamespaceURI(), "http://nsa");
@@ -893,8 +879,8 @@ public class DOMMemTest {
         Assertion.assert(attrb.getOwnerElement() == null);
 
         Assertion.equals(attrc.getNodeName(), "attrc");
-        Assertion.equals(attrc.getNamespaceURI(), null);
-        Assertion.equals(attrc.getPrefix(), null);
+        Assertion.assert(attrc.getNamespaceURI() == null);
+        Assertion.assert(attrc.getPrefix() == null);
         Assertion.equals(attrc.getLocalName(), "attrc");
         Assertion.equals(attrc.getName(), "attrc");
         Assertion.assert(attrc.getOwnerElement() == null);
@@ -977,7 +963,7 @@ public class DOMMemTest {
 				      new Object[]{null,  "xmlns:a"},
 				      DOMException.NAMESPACE_ERR));
 
-        //In fact, any prefix != null should have a namespaceURI != 0 or != ""
+        //In fact, any prefix != null should have a namespaceURI != null
         Assertion.equals(doc.createAttributeNS("http://nsa", "foo:a").getNamespaceURI(), "http://nsa");
         Assertion.assert(DOMExceptionsTest(doc, "createAttributeNS",
 				      new Class[]{String.class, String.class},
@@ -998,7 +984,7 @@ public class DOMMemTest {
         Assertion.equals(attr.getName(), "bar:a");
         //The spec does not prevent us from setting prefix to a node without prefix
         attr = doc.createAttributeNS("http://nsa", "a");
-        Assertion.equals(attr.getPrefix(), "");
+        Assertion.assert(attr.getPrefix() == null);
         attr.setPrefix("bar");
         Assertion.equals(attr.getNodeName(), "bar:a");
         Assertion.equals(attr.getNamespaceURI(), "http://nsa");
@@ -1035,13 +1021,8 @@ public class DOMMemTest {
 					   new Class[]{String.class},
 					   new Object[]{"xmlns"},
 					   DOMException.NAMESPACE_ERR));
-        //Also an attribute can not have a prefix with namespaceURI == null or ""
+        //Also an attribute can not have a prefix with namespaceURI == null
         attr = doc.createAttributeNS(null, "a");
-        Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
-					   new Class[]{String.class},
-					   new Object[]{"foo"},
-					   DOMException.NAMESPACE_ERR));
-        attr = doc.createAttributeNS("", "a");
         Assertion.assert(DOMExceptionsTest(attr, "setPrefix",
 					   new Class[]{String.class},
 					   new Object[]{"foo"},
@@ -1113,10 +1094,6 @@ public class DOMMemTest {
         //  Access with DOM Level 2 getElementsByTagNameNS
         //
 
-        nl = doc.getElementsByTagNameNS("", "elc");
-        Assertion.assert(nl.getLength() == 1);
-        Assertion.assert(nl.item(0) == elc);
-
         nl = doc.getElementsByTagNameNS(null, "elc");
         Assertion.assert(nl.getLength() == 1);
         Assertion.assert(nl.item(0) == elc);
@@ -1126,7 +1103,7 @@ public class DOMMemTest {
         Assertion.assert(nl.item(0) == ela);
         Assertion.assert(nl.item(1) == eld);
 
-        nl = doc.getElementsByTagNameNS("", "elb");
+        nl = doc.getElementsByTagNameNS(null, "elb");
         Assertion.assert(nl.getLength() == 0);
 
         nl = doc.getElementsByTagNameNS("http://nsb", "elb");
@@ -1202,7 +1179,7 @@ public class DOMMemTest {
         rootEl.setAttributeNodeNS(attra);
         Attr attrb = doc.createAttributeNS("http://nsb", "attrb");   
         rootEl.setAttributeNodeNS(attrb);
-        Attr attrc = doc.createAttributeNS("",           "attrc");  
+        Attr attrc = doc.createAttributeNS(null,           "attrc");  
         rootEl.setAttributeNodeNS(attrc);
         Attr attrd = doc.createAttributeNS("http://nsa", "d:attra");
         rootEl.setAttributeNodeNS(attrd);
@@ -1229,8 +1206,8 @@ public class DOMMemTest {
         Assertion.assert(nnm.getNamedItemNS("http://nsa", "attra") == attrd);
         Assertion.assert(nnm.getNamedItemNS("http://nsb", "attrb") == attrb);
         Assertion.assert(nnm.getNamedItemNS("http://nse", "attrb") == attre);
-        Assertion.assert(nnm.getNamedItemNS("", "attrc") == attrc);
-        Assertion.assert(nnm.getNamedItemNS("", "attra") == null);
+        Assertion.assert(nnm.getNamedItemNS(null, "attrc") == attrc);
+        Assertion.assert(nnm.getNamedItemNS(null, "attra") == null);
         Assertion.assert(nnm.getNamedItemNS("http://nsa", "attrb") == null);
     }
     };
