@@ -117,7 +117,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * @version $Id$
  */
 public class XMLEntityManager
-    implements XMLComponent {
+    implements XMLComponent, XMLEntityResolver {
 
     //
     // Constants
@@ -849,7 +849,6 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fEntityResolver = null;
         }
-
         // initialize state
         fStandalone = false;
         fEntities.clear();
