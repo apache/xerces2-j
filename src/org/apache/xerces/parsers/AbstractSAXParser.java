@@ -1823,10 +1823,12 @@ public abstract class AbstractSAXParser
 		int count = fNamespaceContext.getDeclaredPrefixCount();
 		if (count > 0) {
 			String prefix = null;
+            String uri = null;
 			for (int i = 0; i < count; i++) {
 				prefix = fNamespaceContext.getDeclaredPrefixAt(i);
+                uri = fNamespaceContext.getURI(prefix);
 				fContentHandler.startPrefixMapping(prefix, 
-                fNamespaceContext.getURI(prefix));
+                (uri == null)?"":uri);
 			}
 		}
 	}
