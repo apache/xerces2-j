@@ -6,6 +6,8 @@
 	<ul>
 	  <li>Removed final from XMLSerializer per request [andyc]</li>
 	  <li>Fixed identity constraint bugs (support still limited) [andyc]</li>
+	  <li>Changed parse method to close streams opened by parser even in
+	      event of error [andyc]</li>
 	</ul>
   </s2>
   <s2 title='January 31, 2001 (version 1.3.0)'>
