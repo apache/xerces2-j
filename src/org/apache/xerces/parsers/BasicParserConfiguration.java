@@ -202,11 +202,6 @@ public abstract class BasicParserConfiguration
     /** Components. */
     protected Vector fComponents;
 
-    // state
-
-    /** Set to true if initialization is needed. */
-    protected boolean fNeedInitialize;
-
     // handlers
 
     /** The document handler. */
@@ -224,6 +219,15 @@ public abstract class BasicParserConfiguration
 
     /** Default Constructor. */
     protected BasicParserConfiguration() {
+        this(null);
+    } // <init>()
+
+    /**
+     * Constructs a document parser using the specified symbol table
+     * and a default grammar pool.
+     *
+     */
+    protected BasicParserConfiguration(SymbolTable symbolTable) {
 
         // create a vector to hold all the components in use
         fComponents = new Vector();
@@ -256,43 +260,18 @@ public abstract class BasicParserConfiguration
         };
         addRecognizedProperties(recognizedProperties);
 
-        // set state
-        fNeedInitialize = true;
-
-    } // <init>()
-
-    /**
-     * Constructs a document parser using the specified symbol table
-     * and a default grammar pool.
-     *
-     */
-    protected BasicParserConfiguration(SymbolTable symbolTable) {
-        this();
-        fSymbolTable = symbolTable;
-        if (fSymbolTable != null) {
+        if (symbolTable == null) {
+            if (fSymbolTable == null) {
+                fSymbolTable = new SymbolTable();
+                fProperties.put(SYMBOL_TABLE, fSymbolTable);
+            }
+        }
+        else {
+            fSymbolTable = symbolTable;
             fProperties.put(SYMBOL_TABLE, fSymbolTable);
         }
+
     } // <init>(SymbolTable)
-
-    /**
-     * Initialize the parser with all the components specified via the
-     * properties plus any missing ones. This method MUST be called before
-     * parsing. It is not called from the constructor though, so that the
-     * application can pass in any components it wants by presetting the
-     * relevant property.
-     */
-    protected void initialize() {
-
-        // create and register missing components
-        if (fSymbolTable == null) {
-            fSymbolTable = new SymbolTable();
-            fProperties.put(SYMBOL_TABLE, fSymbolTable);
-        }
-
-        // initialization finished
-        fNeedInitialize = false;
-
-    } // initialize()
 
     /** 
      * Adds a component to the parser configuration. This method will

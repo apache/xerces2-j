@@ -267,10 +267,61 @@ public class StandardParserConfiguration
         };
         addRecognizedProperties(recognizedProperties);
 
-        // create missing components
-        fGrammarPool = grammarPool;
-        if (fGrammarPool != null) {
+        // create and register missing components
+        if (grammarPool == null) {
+            if (fGrammarPool == null) {
+                fGrammarPool = new GrammarPool();
+                fProperties.put(GRAMMAR_POOL, fGrammarPool);
+            }
+        }
+        else {
+            fGrammarPool = grammarPool;
             fProperties.put(GRAMMAR_POOL, fGrammarPool);
+        }
+
+        if (fEntityManager == null) {
+            fEntityManager = createEntityManager();
+            fProperties.put(ENTITY_MANAGER, fEntityManager);
+            addComponent(fEntityManager);
+            fLocator = (Locator)fEntityManager.getEntityScanner();
+        }
+
+        if (fErrorReporter == null) {
+            fErrorReporter =
+                createErrorReporter(fEntityManager.getEntityScanner());
+            fProperties.put(ERROR_REPORTER, fErrorReporter);
+            addComponent(fErrorReporter);
+        }
+
+        if (fScanner == null) {
+            fScanner = createDocumentScanner();
+            fProperties.put(DOCUMENT_SCANNER, fScanner);
+            addComponent(fScanner);
+        }
+
+        if (fDTDScanner == null) {
+            fDTDScanner = createDTDScanner();
+            fProperties.put(DTD_SCANNER, fDTDScanner);
+            addComponent(fDTDScanner);
+        }
+
+        if (fValidator == null) {
+            fValidator = createValidator();
+            fProperties.put(VALIDATOR, fValidator);
+            addComponent(fValidator);
+        }
+        
+        if (fDatatypeValidatorFactory == null) {
+            fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+            fProperties.put(DATATYPE_VALIDATOR_FACTORY,
+                            fDatatypeValidatorFactory);
+        }
+
+        // add message formatters
+        if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
+            XMLMessageFormatter xmft = new XMLMessageFormatter();
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
         }
 
         // set locale
@@ -332,9 +383,6 @@ public class StandardParserConfiguration
             // REVISIT - need to add new error message
             throw new SAXException("FWK005 parse may not be called while parsing.");
         }
-        if (fNeedInitialize) {
-            initialize();
-        }
         fParseInProgress = true;
 
         try {
@@ -368,71 +416,6 @@ public class StandardParserConfiguration
     // Protected methods
     //
     
-    // initialization
-
-    /**
-     * Initialize the parser with all the components specified via the
-     * properties plus any missing ones. This method MUST be called before
-     * parsing. It is not called from the constructor though, so that the
-     * application can pass in any components it wants by presetting the
-     * relevant property.
-     */
-    protected void initialize() {
-        super.initialize();
-
-        // create and register missing components
-        if (fErrorReporter == null) {
-            fErrorReporter =
-                createErrorReporter(fEntityManager.getEntityScanner());
-            fProperties.put(ERROR_REPORTER, fErrorReporter);
-            addComponent(fErrorReporter);
-        }
-
-        if (fEntityManager == null) {
-            fEntityManager = createEntityManager();
-            fProperties.put(ENTITY_MANAGER, fEntityManager);
-            addComponent(fEntityManager);
-            fLocator = (Locator)fEntityManager.getEntityScanner();
-        }
-
-        if (fGrammarPool == null) {
-            fGrammarPool = new GrammarPool();
-            fProperties.put(GRAMMAR_POOL, fGrammarPool);
-        }
-
-        if (fScanner == null) {
-            fScanner = createDocumentScanner();
-            fProperties.put(DOCUMENT_SCANNER, fScanner);
-            addComponent(fScanner);
-        }
-
-        if (fDTDScanner == null) {
-            fDTDScanner = createDTDScanner();
-            fProperties.put(DTD_SCANNER, fDTDScanner);
-            addComponent(fDTDScanner);
-        }
-
-        if (fValidator == null) {
-            fValidator = createValidator();
-            fProperties.put(VALIDATOR, fValidator);
-            addComponent(fValidator);
-        }
-        
-        if (fDatatypeValidatorFactory == null) {
-            fDatatypeValidatorFactory = createDatatypeValidatorFactory();
-            fProperties.put(DATATYPE_VALIDATOR_FACTORY,
-                            fDatatypeValidatorFactory);
-        }
-
-        // add message formatters
-        if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
-            XMLMessageFormatter xmft = new XMLMessageFormatter();
-            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
-            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
-        }
-
-    } // initialize()
-
     /** 
      * Reset all components before parsing. 
      *
