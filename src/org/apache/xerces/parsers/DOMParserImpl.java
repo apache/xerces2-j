@@ -17,6 +17,7 @@
 package org.apache.xerces.parsers;
 
 import java.io.StringReader;
+import java.util.Locale;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -160,6 +161,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING,
             Constants.DOM_INFOSET,
             Constants.DOM_NAMESPACE_DECLARATIONS,
+            Constants.DOM_SPLIT_CDATA,
             Constants.DOM_SUPPORTED_MEDIATYPES_ONLY,
             Constants.DOM_CERTIFIED,
             Constants.DOM_WELLFORMED,
@@ -194,6 +196,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         // set other default values
         fConfiguration.setFeature (Constants.DOM_CANONICAL_FORM, false);
         fConfiguration.setFeature (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
+        fConfiguration.setFeature (Constants.DOM_SPLIT_CDATA, true);
         fConfiguration.setFeature (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
         fConfiguration.setFeature (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS, true);
 
@@ -389,9 +392,10 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                     "org.apache.xerces.dom.PSVIDocumentImpl");
                 }
                 else {
-                    // Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING feature
+                    // Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING feature,
+                    // Constants.DOM_SPLIT_CDATA feature,
                     // or any Xerces feature
-                    fConfiguration.setFeature (name, state);
+                    fConfiguration.setFeature (name.toLowerCase(Locale.ENGLISH), state);
                 }
 
             }
@@ -617,8 +621,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         || name.equalsIgnoreCase (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
         || name.equalsIgnoreCase (Constants.DOM_CANONICAL_FORM)
         || name.equalsIgnoreCase (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
+        || name.equalsIgnoreCase (Constants.DOM_SPLIT_CDATA)
         || name.equalsIgnoreCase (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)) {
-            return (fConfiguration.getFeature (name))
+            return (fConfiguration.getFeature (name.toLowerCase(Locale.ENGLISH)))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
@@ -697,7 +702,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
             // Recognize Xerces features.
             try {
-                fConfiguration.getFeature (name);
+                fConfiguration.getFeature(name.toLowerCase(Locale.ENGLISH));
                 return true;
             }
             catch (XMLConfigurationException e) {
