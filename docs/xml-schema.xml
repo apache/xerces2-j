@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
 <s1 title="XML Schema">
-	<s2 title="Introduction">
-		<p>This package contains an implementation of the W3C XML 
-		Schema Language, a recommendation of the Worldwide Web Consortium
+    <s2 title="Introduction">
+        <p>This package contains an implementation of the W3C XML 
+        Schema Language, a recommendation of the Worldwide Web Consortium
         available in three parts:  
-		<jump href="http://www.w3.org/TR/XMLSchema-0">XML Schema:  Primer</jump>  and
-		<jump href="http://www.w3.org/TR/XMLSchema-1">XML Schema:  Structures</jump>  and
-		<jump href="http://www.w3.org/TR/XMLSchema-2">XML Schema:  Datatypes</jump>. 
+        <jump href="http://www.w3.org/TR/XMLSchema-0">XML Schema:  Primer</jump>  and
+        <jump href="http://www.w3.org/TR/XMLSchema-1">XML Schema:  Structures</jump>  and
+        <jump href="http://www.w3.org/TR/XMLSchema-2">XML Schema:  Datatypes</jump>. 
         We consider this implementation to be complete except for the
         limitations cited below.  The implementation has been
         extensively tested and known problem areas are set out below.
@@ -16,7 +16,7 @@
         others might arrive at a different interpretation.
         Please read this document before using this package.
         </p>
-	</s2>
+    </s2>
 
 <s2 title="XML Schema Programmer's Guide">
 <p>This section provides the following topics:</p>
@@ -24,12 +24,12 @@
 <ul>
 <li><jump href='#schema-limitations'>Limitations and known bugs</jump></li>
 <li><link idref='faq-xs'>How do I?</link> -- 
-	the most frequently asked questions
-	about XML Schema that include some sample code.</li>
+    the most frequently asked questions
+    about XML Schema that include some sample code.</li>
 </ul>
 </s2>
 <anchor name='schema-limitations'/>
-	<s2 title="Limitations">
+    <s2 title="Limitations">
         <ul>
             <li> Length, minLength, and maxLength facets are limited to the value 
             2147483647. Items larger than this limit will not be validated 
@@ -49,12 +49,13 @@
     <s2 title='Problem Areas/Known Bugs'>
         <ul>
             <li> For larger values of maxOccurs, an OutOfMemoryError may occur.
-      	    The workaround for this problem, if your application permits it, 
-      	    is to change the maxOccurs value to unbounded.</li>
+            The workaround for this problem, if your application permits it, 
+            is to change the maxOccurs value to unbounded.</li>
         </ul>
     </s2>
-	<s2 title="Other Notes">
-        <p> As of version 2.2.1, it is hoped that Xerces-J will always 
+    <s2 title="Other Notes">
+      <ul>
+        <li> As of version 2.2.1, it is hoped that Xerces-J will always 
         be able to parse the Schema for Schemas current at the time of the product's release.  As of version
         2.2.1, this implies inserting special logic to permit the presence of
         the built-in Schema datatypes in this particular schema; an
@@ -62,7 +63,13 @@
         will be modified so that the built-in types are no
         longer presented as global components.  Thus, anyone planning
         to rely on the Schema for Schemas should be aware that the
-        possibility exists that a change of this sort might be made in the future.  
-        </p>
-	</s2>
+        possibility exists that a change of this sort might be made in the future.</li>
+        <li> In the original XML Schema recommendation, the lexical space of
+        the simple type <code>gMonth</code> is <code>--MM--</code>. An erratum E2-12
+        changed that to <code>--MM</code>. For compatibility reasons, Xerces currently
+        supports both forms. To align with the recommendation, we have decided to
+        deprecate the old form, and plan to discontinue support for that form
+        in a future release. </li>
+      </ul>
+    </s2>
 </s1>
