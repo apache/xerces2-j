@@ -65,6 +65,7 @@ import  org.apache.xerces.validators.common.XMLAttributeDecl;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
+import  org.apache.xerces.validators.datatype.DatatypeValidatorRegistry;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
@@ -393,7 +394,8 @@ public class TraverseSchema implements
 
     private Element fSchemaRootElement;
 
-    private DatatypeValidatorRegistry fDatatypeRegistry = new DatatypeValidatorRegistry();
+    private DatatypeValidatorRegistry fDatatypeRegistry =
+                                             DatatypeValidatorRegistry.getDatatypeRegistry();
     private Hashtable fComplexTypeRegistry = new Hashtable();
 
     private int fAnonTypeCount =0;
@@ -601,7 +603,7 @@ public class TraverseSchema implements
 
         if( baseTypeQNameProperty!= null ) {
             basetype      = fStringPool.addSymbol( baseTypeQNameProperty );
-            baseValidator = fDatatypeRegistry.getValidatorFor( baseTypeQNameProperty );
+            baseValidator = fDatatypeRegistry.getDatatypeValidator( baseTypeQNameProperty );
             if (baseValidator == null) {
                 reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
                 new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
@@ -803,7 +805,7 @@ public class TraverseSchema implements
                     // if not found, 2 possibilities: 1: ComplexType in question has not been compiled yet;
                     //                                2: base is SimpleTYpe;
                     if (baseTypeInfo == null) {
-                        baseTypeValidator = fDatatypeRegistry.getValidatorFor(localpart);
+                        baseTypeValidator = fDatatypeRegistry.getDatatypeValidator(localpart);
                         if (baseTypeValidator == null) {
                             baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                             if (baseTypeNode != null) {
@@ -815,7 +817,7 @@ public class TraverseSchema implements
                                 baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                                 if (baseTypeNode != null) {
                                     baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
-                                    simpleTypeValidator = baseTypeValidator = fDatatypeRegistry.getValidatorFor(localpart);
+                                    simpleTypeValidator = baseTypeValidator = fDatatypeRegistry.getDatatypeValidator(localpart);
                                     if (simpleTypeValidator == null) {
                                         //TO DO: signal error here.
                                     }
@@ -941,7 +943,7 @@ public class TraverseSchema implements
         }
         else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
             //TO DO
-            if (fDatatypeRegistry.getValidatorFor(base) == null) // must be datatype
+            if (fDatatypeRegistry.getDatatypeValidator(base) == null) // must be datatype
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
                                           new Object [] { base }); //REVISIT check forward refs
             //handle datatypes
@@ -1412,7 +1414,7 @@ public class TraverseSchema implements
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
         if (attType == XMLAttributeDecl.TYPE_SIMPLE ) {
-            dv = fDatatypeRegistry.getValidatorFor(fStringPool.toString(enumeration));
+            dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(enumeration));
         }
 
         if (required) {
@@ -1445,7 +1447,7 @@ public class TraverseSchema implements
             if (attType == XMLAttributeDecl.TYPE_SIMPLE && attDefaultValue != -1) {
                 try { 
                     // REVISIT - integrate w/ error handling
-                    dv = fDatatypeRegistry.getValidatorFor(datatype);
+                    dv = fDatatypeRegistry.getDatatypeValidator(datatype);
                     if (dv != null) 
                         //REVISIT
                         dv.validate(fStringPool.toString(attDefaultValue), attIsList);
@@ -1736,7 +1738,7 @@ public class TraverseSchema implements
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
                 typeNameIndex = traverseSimpleTypeDecl(child);
-                dv = fDatatypeRegistry.getValidatorFor(fStringPool.toString(typeNameIndex));
+                dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
 
                 haveAnonType = true;
             } else if (type.equals("")) { // "ur-typed" leaf
@@ -1772,7 +1774,7 @@ public class TraverseSchema implements
             }
             typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
             if (typeInfo == null) {
-                dv = fDatatypeRegistry.getValidatorFor(localpart);
+                dv = fDatatypeRegistry.getDatatypeValidator(localpart);
                 if (dv == null) {
                     Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                     if (topleveltype != null) {
@@ -1784,7 +1786,7 @@ public class TraverseSchema implements
                         topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                         if (topleveltype != null) {
                             typeNameIndex = traverseSimpleTypeDecl( topleveltype );
-                            dv = fDatatypeRegistry.getValidatorFor(localpart);
+                            dv = fDatatypeRegistry.getDatatypeValidator(localpart);
                             //   TO DO:  the Default and fixed attribute handling should be here.
                         }
                         else {
@@ -2765,68 +2767,6 @@ public class TraverseSchema implements
             e.printStackTrace();
         }
     }
-
-    class DatatypeValidatorRegistry {
-        Hashtable fRegistry = new Hashtable();
-
-        String integerSubtypeTable[][] = {
-            { "non-negative-integer", SchemaSymbols.ELT_MININCLUSIVE , "0"},
-            { "positive-integer", SchemaSymbols.ELT_MININCLUSIVE, "1"},
-            { "non-positive-integer", SchemaSymbols.ELT_MAXINCLUSIVE, "0"},
-            { "negative-integer", SchemaSymbols.ELT_MAXINCLUSIVE, "-1"}
-        };
-
-        public DatatypeValidatorRegistry() {
-            initializeRegistry();
-        }
-
-        void initializeRegistry() {
-            Hashtable facets = null;
-            fRegistry.put("boolean", new BooleanValidator());
-            DatatypeValidator integerValidator = new IntegerValidator();
-            fRegistry.put("integer", integerValidator);
-            fRegistry.put("string", new StringValidator());
-            fRegistry.put("decimal", new DecimalValidator());
-            fRegistry.put("float", new FloatValidator());
-            fRegistry.put("double", new DoubleValidator());
-            //fRegistry.put("timeDuration", new TimeDurationValidator());
-            //fRegistry.put("timeInstant", new TimeInstantValidator());
-            fRegistry.put("binary", new BinaryValidator());
-            fRegistry.put("uri", new URIReferenceValidator());
-            //REVISIT - enable the below
-            //fRegistry.put("date", new DateValidator());
-            //fRegistry.put("timePeriod", new TimePeriodValidator());
-            //fRegistry.put("time", new TimeValidator());
-
-
-            DatatypeValidator v = null;
-            /*for (int i = 0; i < integerSubtypeTable.length; i++) {
-                v = new IntegerValidator();
-                facets = new Hashtable();
-                facets.put(integerSubtypeTable[i][1],integerSubtypeTable[i][2]);
-                v.setBasetype(integerValidator);
-                try {
-                    v.setFacets(facets);
-                } catch (IllegalFacetException ife) {
-                    System.out.println("Internal error initializing registry - Illegal facet: "+integerSubtypeTable[i][0]);
-                } catch (IllegalFacetValueException ifve) {
-                    System.out.println("Internal error initializing registry - Illegal facet value: "+integerSubtypeTable[i][0]);
-                } catch (UnknownFacetException ufe) {
-                    System.out.println("Internal error initializing registry - Unknown facet: "+integerSubtypeTable[i][0]);
-                }
-                fRegistry.put(integerSubtypeTable[i][0], v);
-            }*/
-        }
-
-        DatatypeValidator getValidatorFor(String type) {
-            return (DatatypeValidator) fRegistry.get(type);
-        }
-
-        void addValidator(String name, DatatypeValidator v) {
-            fRegistry.put(name,v);
-        }
-    }
-
 
     //Unit Test here
     public static void main(String args[] ) {
