@@ -234,7 +234,10 @@ public class DatatypeValidatorRegistry {
             ex.printStackTrace();
         } catch (UnknownFacetException ex) {
             ex.printStackTrace();
+        } catch (ConstrainException ex ) {
+            ex.printStackTrace();
         }
+
         return baseDatatype;
     }
 

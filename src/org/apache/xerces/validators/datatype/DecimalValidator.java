@@ -257,7 +257,7 @@ public class DecimalValidator implements DatatypeValidator {
 
     }
 
-    public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
     }
 
     public void setBasetype(String base) {

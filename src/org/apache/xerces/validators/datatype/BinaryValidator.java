@@ -94,7 +94,7 @@ public class BinaryValidator implements DatatypeValidator {
         // just say yes
     }
 
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
             if (key.equals( SchemaSymbols.ELT_LENGTH)) {

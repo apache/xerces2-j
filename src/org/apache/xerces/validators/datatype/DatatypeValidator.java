@@ -125,7 +125,8 @@ public interface DatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.IllegalFacetException
      * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
+    public void setFacets(Hashtable facets) throws UnknownFacetException, 
+        IllegalFacetException, IllegalFacetValueException,  ConstrainException; 
 
     /**
      * Name of base type as a string.

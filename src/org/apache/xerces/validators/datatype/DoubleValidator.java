@@ -145,7 +145,7 @@ public class DoubleValidator implements DatatypeValidator {
 	    return facetsAreConsistent;
 	}
 	
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
         //if (fBaseValidator != null)
           //  if (!fBaseValidator.ensureFacetsAreConsistent(facets))
             //    throw new IllegalFacetValueException(

@@ -97,7 +97,7 @@ public class QNameValidator implements DatatypeValidator {
      * @exception throws IllegalFacetException
      * @exception throws IllegalFacetValueException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
     }
 
     /**

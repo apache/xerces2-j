@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,62 +54,17 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
+ 
 package org.apache.xerces.validators.datatype;
 
-import java.util.Hashtable;
-import java.util.Locale;
-import org.apache.xerces.validators.schema.SchemaSymbols;
-
 /**
+ * ConstrainException
  *
- * URIValidator validates that XML content is a W3C uri type,
- * according to RFC 2396
- *
- * @author Ted Leung
- * @version Revision: %M% %I% %W% %Q%
  */
+public class ConstrainException
+    extends Exception {
 
-public class URIReferenceValidator implements DatatypeValidator {
-	
-    private Locale fLocale = null;
-	
-	/**
-     * validate that a string is a W3C uri type
-     *
-     * validate returns true or false depending on whether the string content is an
-     * instance of the W3C uri datatype
-     * 
-     * @param content A string containing the content to be validated
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *  not a W3C uri type
-     */
+    public ConstrainException() { super(); }
+    public ConstrainException(String msg) { super(msg); }
 
-	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
-        // just say yes
-	}
-			
-	public void validate(int contentIndex) throws InvalidDatatypeValueException {
-	}
-	
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-	}
-	
-	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
-	}
-
-	public void setBasetype(String base) {
-	}
-
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
-
-    public int compare( DatatypeValidator o1, DatatypeValidator o2){
-        return 0;
-    }
 }

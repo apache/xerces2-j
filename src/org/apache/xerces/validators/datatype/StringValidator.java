@@ -119,12 +119,17 @@ public class StringValidator implements DatatypeValidator {
 
 
     public void setFacets(Hashtable facets) throws UnknownFacetException,
-    IllegalFacetException, IllegalFacetValueException 
+    IllegalFacetException, IllegalFacetValueException, ConstrainException 
     {
         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
 
             if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                if((_facetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ){
+                    throw new ConstrainException(
+                    "It is an error for both length and minLength to be members of facets." );  
+                }
+
                 _facetsDefined += DatatypeValidator.FACET_LENGTH;
                 String lengthValue = (String)facets.get(key);
                 try {
@@ -132,7 +137,15 @@ public class StringValidator implements DatatypeValidator {
                 } catch (NumberFormatException nfe) {
                     throw new IllegalFacetValueException("Length value '"+lengthValue+"' is invalid.");
                 }
+                if( _length < 0 )
+                    throw new IllegalFacetValueException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
+
             } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
+                if( (_facetsDefined & DatatypeValidator.FACET_LENGTH ) != 0){
+                    throw new ConstrainException(
+                    "It is an error for both length and minLength to be members of facets." );  
+                }
+
                 _facetsDefined += DatatypeValidator.FACET_MINLENGTH;
                 String minLengthValue = (String)facets.get(key);
                 try {
@@ -190,6 +203,26 @@ public class StringValidator implements DatatypeValidator {
                 throw new IllegalFacetException();
             }
         }
+
+        if(((_facetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
+            if(((_facetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ){
+                  throw new ConstrainException(
+                   "It is an error for both length and maxLength to be members of facets." );  
+             }else if(((_facetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ){
+                  throw new ConstrainException(
+                   "It is an error for both length and minLength to be members of facets." );
+             }
+        }
+
+        if( ( (_facetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) &&
+            ( (_facetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) )
+        {
+            if( _minLength < _maxLength )
+            {
+                throw new ConstrainException( "Value of minLength = " + _minLength +
+                         "must be greater that the value of maxLength" + _maxLength );
+            }
+        }
     }
 
     public void setBasetype( String base) {
@@ -209,19 +242,19 @@ public class StringValidator implements DatatypeValidator {
 
     private void checkContent( String content )throws InvalidDatatypeValueException
     {
-        if ( (_facetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 1 ) {
+        if ( (_facetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
             if ( content.length() > _maxLength ) {
                 throw new InvalidDatatypeValueException("Value '"+content+
                                                         "' with length '"+content.length()+
                                                         "' exceeds maximum length of "+_maxLength+".");
             }
         }
-        if ( (_facetsDefined & DatatypeValidator.FACET_ENUMERATION) == 1 ) {
+        if ( (_facetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
             if ( _enumeration.contains( content ) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+_enumeration);
         }
 
-        if( (_facetsDefined & DatatypeValidator.FACET_PATTERN ) == 1 ) {
+        if( (_facetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             RegularExpression regex = new RegularExpression(_pattern, "X" );
             if( regex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+

@@ -94,13 +94,10 @@ public class BooleanValidator implements DatatypeValidator {
 	public void validate(int contentIndex) throws InvalidDatatypeValueException {
 	}
 	
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
 	    throw new IllegalFacetException(); // boolean supports no facets
 	}
 	
-	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-	    throw new IllegalFacetException(); // boolean supports no facets
-	}
 	
 	public void setBasetype(String base) {
 	}
