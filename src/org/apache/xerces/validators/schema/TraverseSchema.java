@@ -415,7 +415,9 @@ public class TraverseSchema implements
     private Stack fCurrentTypeNameStack = new Stack();
     private Hashtable fElementRecurseComplex = new Hashtable();
 
-    private boolean fDefaultQualified = false;
+    private boolean fElementDefaultQualified = false;
+    private boolean fAttributeDefaultQualified = false;
+
     private int fTargetNSURI;
     private String fTargetNSURIString = "";
     private NamespacesScope fNamespacesScope = null;
@@ -568,8 +570,17 @@ public class TraverseSchema implements
                                                     fStringPool.addSymbol("") );
         }
 
-        fDefaultQualified = 
+        fElementDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        fAttributeDefaultQualified = 
+            root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        
+        //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
+        if (fTargetNSURI == StringPool.EMPTY_STRING) {
+            fElementDefaultQualified = true;
+            fAttributeDefaultQualified = true;
+        }
+
 
         //fScopeCount++;
         fCurrentScope = -1;
@@ -781,7 +792,8 @@ public class TraverseSchema implements
                                          +targetNSURI+"'");
             }
             else {
-                boolean saveDefaultQualified = fDefaultQualified;
+                boolean saveElementDefaultQualified = fElementDefaultQualified;
+                boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
                 int saveScope = fCurrentScope;
                 String savedSchemaURL = fCurrentSchemaURL;
                 Element saveRoot = fSchemaRootElement;
@@ -790,7 +802,8 @@ public class TraverseSchema implements
                 traverseIncludedSchema(root);
                 fCurrentSchemaURL = savedSchemaURL;
                 fCurrentScope = saveScope;
-                fDefaultQualified = saveDefaultQualified;
+                fElementDefaultQualified = saveElementDefaultQualified;
+                fAttributeDefaultQualified = saveAttributeDefaultQualified;
                 fSchemaRootElement = saveRoot;
             }
 
@@ -827,8 +840,16 @@ public class TraverseSchema implements
                                                     fStringPool.addSymbol("") );
         }
 
-        fDefaultQualified = 
+        fElementDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        fAttributeDefaultQualified = 
+            root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+        
+        //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
+        if (fTargetNSURI == StringPool.EMPTY_STRING) {
+            fElementDefaultQualified = true;
+            fAttributeDefaultQualified = true;
+        }
 
         //fScopeCount++;
         fCurrentScope = -1;
@@ -1835,23 +1856,36 @@ public class TraverseSchema implements
                 reportSchemaError(SchemaMessageProvider.GenericError,
                                   new Object [] { "illegal value for minOccurs or maxOccurs : '" +e.getMessage()+ "' "});
             }
-            for (int i=0; i<(min-1); i++) {
-                index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
-                                                      index,
-                                                      leafIndex,
-                                                      false);
-
+            if (min==0) {
+                int optional = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
+                                                                 leafIndex,
+                                                                 -1,
+                                                                 false);
+                index = optional;
+                for (int i=0; i < (max-min-1); i++) {
+                    index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                              index,
+                                                              optional,
+                                                              false);
+                }
             }
-            if (max>min ) {
-                int optional = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-                                                             leafIndex,
-                                                             -1,
-                                                             false);
-                for (int i=0; i < (max-min); i++) {
+            else {
+                for (int i=0; i<(min-1); i++) {
                     index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
                                                           index,
-                                                          optional,
+                                                          leafIndex,
                                                           false);
+                }
+
+                int optional = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
+                                                                 leafIndex,
+                                                                 -1,
+                                                                 false);
+                for (int i=0; i < (max-min); i++) {
+                    index = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
+                                                              index,
+                                                              optional,
+                                                              false);
                 }
             }
         }
@@ -2083,7 +2117,7 @@ public class TraverseSchema implements
 
         int uriIndex = -1;
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fDefaultQualified || isTopLevel(attrDecl) ) {
+             fAttributeDefaultQualified || isTopLevel(attrDecl) ) {
             uriIndex = fTargetNSURI;
         }
 
@@ -2619,10 +2653,11 @@ public class TraverseSchema implements
         int enclosingScope = fCurrentScope;
 
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fDefaultQualified || isTopLevel(elementDecl) ) {
+             fElementDefaultQualified || isTopLevel(elementDecl) ) {
             uriIndex = fTargetNSURI;
             enclosingScope = TOP_LEVEL_SCOPE;
         }
+
 
         //There can never be two elements with the same name in the same scope.
         if (fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope) > -1) {
