@@ -206,13 +206,16 @@ public class DTDGrammar
     /** Attribute declaration name. */
     private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
 
+    // is this grammar immutable?  (fully constructed and not changeable)
+    private boolean fIsImmutable = false;
+
     /** 
      * Attribute declaration type.
      * @see XMLAttributeDecl
      */
     private short fAttributeDeclType[][] = new short[INITIAL_CHUNK_COUNT][];
 
-    /** Attribute declaratoin enumeration values. */
+    /** Attribute declaration enumeration values. */
     private String[] fAttributeDeclEnumeration[][] = new String[INITIAL_CHUNK_COUNT][][];
     private short fAttributeDeclDefaultType[][] = new short[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
@@ -334,10 +337,9 @@ public class DTDGrammar
     //
 
     /** Default constructor. */
-    public DTDGrammar(SymbolTable symbolTable) {
+    public DTDGrammar(SymbolTable symbolTable, XMLDTDDescription desc) {
         fSymbolTable = symbolTable;
-        // are there really situations in which this is a good idea???  - NG
-        fGrammarDescription = new XMLDTDDescription();
+        fGrammarDescription = desc;
     } // <init>(SymbolTable)
 
     // Grammar methods
@@ -868,28 +870,7 @@ public class DTDGrammar
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDTD(Augmentations augs) throws XNIException {
-
-        // REVISIT: What is this for? -Ac
-        /*
-        XMLElementDecl  elementDecl;
-        Enumeration     elements       = fElementDeclTab.elements();
-        int             elementDeclIdx = 0;
-        while( elements.hasMoreElements() == true ) {
-            elementDecl    = (XMLElementDecl) elements.nextElement();
-            elementDeclIdx = getElementDeclIndex( elementDecl.name );
-            System.out.println( "elementDeclIdx = " + elementDeclIndex );
-            if( elementDeclIndex != -1 ) {
-                elementDecl.contentModelValidator = this.getElementContentModelValidator(elementDeclIdx );
-            }
-            fCurrentElementIndex = createElementDecl();//create element decl
-            if ( DEBUG == true ) {
-                System.out.println(  "name = " + fElementDecl.name.localpart );
-                System.out.println(  "Type = " + fElementDecl.type );
-            }
-            setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
-        }
-        */
-
+        fIsImmutable = true;
     } // endDTD()
 
     // no-op methods
@@ -2038,6 +2019,10 @@ public class DTDGrammar
         fPrevNodeIndexStack[fDepth] = -1;
 
     } // initializeContentModelStack()
+
+    boolean isImmutable() {
+        return fIsImmutable;
+    }
 
     //
     // Private methods

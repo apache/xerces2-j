@@ -57,9 +57,8 @@
 
 package org.apache.xerces.impl.dtd;
 
-import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import java.util.Hashtable;
-import java.util.Enumeration;
 
 /**
 * This very simple class is the skeleton of what the DTDValidator could use
@@ -83,7 +82,14 @@ public class DTDGrammarBucket {
     //
 
     /** Grammars associated with element root name. */
-    protected Hashtable fGrammars = new Hashtable();
+    protected Hashtable fGrammars;
+
+    // the unique grammar from fGrammars (or that we're
+    // building) that is used in validation.
+    protected DTDGrammar fActiveGrammar;
+
+    // is the "active" grammar standalone?
+    protected boolean fIsStandalone;
 
     //
     // Constructors
@@ -91,6 +97,7 @@ public class DTDGrammarBucket {
 
     /** Default constructor. */
     public DTDGrammarBucket() {
+        fGrammars = new Hashtable();
     } // <init>()
 
     //
@@ -99,13 +106,42 @@ public class DTDGrammarBucket {
 
     /**
      * Puts the specified grammar into the grammar pool and associate it to
-     * a root element name.
+     * a root element name (this being internal, the lack of generality is irrelevant).
      * 
-     * @param rootElement Root element name.
      * @param grammar     The grammar.
      */
-    public void putGrammar(String rootElement, Grammar grammar) {
-        fGrammars.put(rootElement, grammar);
-    } // putGrammar(String,Grammar)
+    public void putGrammar(DTDGrammar grammar) {
+        XMLDTDDescription desc = (XMLDTDDescription)grammar.getGrammarDescription();
+        fGrammars.put(desc.getRootName(), grammar);
+    } // putGrammar(DTDGrammar)
 
+    // retrieve a DTDGrammar given an XMLDTDDescription
+    public DTDGrammar getGrammar(XMLGrammarDescription desc) {
+        return (DTDGrammar)fGrammars.get(((XMLDTDDescription)desc).getRootName());
+    } // putGrammar(DTDGrammar)
+
+    public void clear() {
+        fGrammars.clear();
+        fActiveGrammar = null;
+        fIsStandalone = false;
+    } // clear()
+
+    // is the active grammar standalone?  This must live here because
+    // at the time the validator discovers this we don't yet know
+    // what the active grammar should be (no info about root)
+    void setStandalone(boolean standalone) {
+        fIsStandalone = standalone;
+    }
+
+    boolean getStandalone() {
+        return fIsStandalone;
+    }
+
+    // set the "active" grammar:
+    void setActiveGrammar (DTDGrammar grammar) {
+        fActiveGrammar = grammar;
+    }
+    DTDGrammar getActiveGrammar () {
+        return fActiveGrammar;
+    }
 } // class DTDGrammarBucket

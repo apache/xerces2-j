@@ -58,6 +58,10 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
+import java.util.Vector;
 
 /*
  * All information specific to dTD grammars.  
@@ -66,60 +70,59 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
  * @version $Id$
  */
 
-public class XMLDTDDescription implements XMLGrammarDescription {
+public class XMLDTDDescription extends XMLResourceIdentifierImpl
+        implements XMLGrammarDescription {
 
     // Data
 
-    // basic information required by XMLGrammarDescription
-    protected String fBaseURI = null;
-    protected String fLiteralSystemId = null;
-    protected String fExpandedSystemId = null;
-    protected String fPublicId = null;
-
     // pieces of information needed to make this usable as a Grammar key
+    // if we know the root of this grammar, here's its name:
     protected String fRootName = null;
-    protected String fInternalSubset = null;
+
+    // if we don't know the root name, this stores all elements that
+    // could serve; fPossibleRoots and fRootName cannot both be non-null
+    protected Vector fPossibleRoots = null;
+
+    // Constructors:
+    public XMLDTDDescription(XMLResourceIdentifier id, String rootName) {
+        this.setValues(id.getPublicId(), id.getLiteralSystemId(),
+                id.getBaseSystemId(), id.getExpandedSystemId());
+        this.fRootName = rootName;
+        this.fPossibleRoots = null;
+    } // init(XMLResourceIdentifier, String)
 
     // XMLGrammarDescription methods
-
-    public String getPublicId() {
-        return fPublicId;
-    } // getPublicId():  String
-
-    // get base URI against wihch literal systemId is expanded
-    public String getBaseSystemId () {
-        return fBaseURI;
-    } // getBaseSystemId():  String
-
-    // get expanded systemId
-    public String getExpandedSystemId () {
-        return fExpandedSystemId;
-    } // getExpandedSystemId():  String
-
-    // get systemId as found in entity decl
-    public String getLiteralSystemId () {
-        return fLiteralSystemId;
-    } // getLiteralSystemId():  String
 
     public String getGrammarType () {
         return XMLGrammarDescription.XML_DTD;
     } // getGrammarType():  String
 
     // return the root name of this DTD
+    // returns null if root name is unknown
     public String getRootName() {
         return fRootName;
     } // getRootName():  String
 
-    // return the internal subset.  Entities should not be expanded;
-    // this is simply the raw string representation of the stuff
-    // between [ and ]>
-    public String getInternalSubset () {
-        return fInternalSubset;
-    } // getInternalSubset():  String
-    
+    // set the root name
+    public void setRootName(String rootName) {
+        fRootName = rootName;
+        fPossibleRoots = null;
+    }
+
+    // set possible roots
+    public void setPossibleRoots(Vector possibleRoots) {
+        fPossibleRoots = (Vector)possibleRoots.clone();
+    } 
+
     /**
      * Compares this grammar with the given grammar. Currently, we compare 
-     * the root element names.
+     * as follows:
+     * - if grammar type not equal return false immediately
+     * - try and find a common root name:
+     *    - if both have roots, use them
+     *    - else if one has a root, examine other's possible root's for a match;
+     *    - else try all combinations
+     *  - test fExpandedSystemId and fPublicId as above
      * 
      * @param desc The description of the grammar to be compared with
      * @return     True if they are equal, else false
@@ -128,19 +131,56 @@ public class XMLDTDDescription implements XMLGrammarDescription {
     	if (!getGrammarType().equals(desc.getGrammarType())) {
     	    return false;
     	}
-    	if (fRootName.equals(((XMLDTDDescription)desc).getRootName())) {
-    	    return true;
-    	}
-    	return false;
+        // assume it's a DTDDescription
+        XMLDTDDescription dtdDesc = (XMLDTDDescription)desc;
+        if(fRootName != null) {
+            if((dtdDesc.fRootName) != null && !dtdDesc.fRootName.equals(fRootName))
+                return false;
+            else if(dtdDesc.fPossibleRoots != null && !dtdDesc.fPossibleRoots.contains(fRootName)) 
+                return false;
+        } else if(fPossibleRoots != null) {
+            if(dtdDesc.fRootName != null && !fPossibleRoots.contains(dtdDesc.fRootName))
+                return false;
+            if(dtdDesc.fPossibleRoots == null)
+                return false;
+            boolean found = false;
+            for(int i = 0; i<fPossibleRoots.size(); i++) {
+                String root = (String)fPossibleRoots.elementAt(i);
+                found = dtdDesc.fPossibleRoots.contains(root);
+                if(found) break;
+            }
+            if(!found) return false;
+        }
+        // if we got this far we've got a root match... try other two fields,
+        // since so many different DTD's have roots in common:
+        if(fExpandedSystemId != null) {
+            if(!fExpandedSystemId.equals(dtdDesc.fExpandedSystemId)) 
+                return false;
+        } 
+        else if(dtdDesc.fExpandedSystemId != null)
+            return false;
+        if(fPublicId != null) {
+            if(!fPublicId.equals(dtdDesc.fPublicId)) 
+                return false;
+        } 
+        else if(dtdDesc.fPublicId != null)
+            return false;
+    	return true;
     }
     
     /**
      * Returns the hash code of this grammar
-     * 
+     * Because our .equals method is so complex, we just return a very
+     * simple hash that might avoid calls to the equals method a bit...
      * @return The hash code
      */
     public int hashCode() {
-        return fRootName.hashCode();
+        if(fExpandedSystemId != null)
+            return fExpandedSystemId.hashCode();
+        if(fPublicId != null)
+            return fPublicId.hashCode();
+        // give up; hope .equals can handle it:
+        return 0;
     }
 } // class XMLDTDDescription
 

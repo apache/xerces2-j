@@ -66,6 +66,7 @@ import org.apache.xerces.impl.XMLDTDScannerImpl;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.dtd.XMLDTDValidator;
+import org.apache.xerces.impl.dtd.XMLDTDLoader;
 import org.apache.xerces.impl.XMLNamespaceBinder;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
@@ -187,6 +188,10 @@ public class DTDConfiguration
     protected static final String XMLGRAMMAR_POOL = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
     
+    /** Property identifier: DTD loader. */
+    protected static final String DTD_LOADER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_LOADER_PROPERTY;
+
     /** Property identifier: DTD validator. */
     protected static final String DTD_VALIDATOR = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_VALIDATOR_PROPERTY;
@@ -236,6 +241,9 @@ public class DTDConfiguration
 
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
+
+    /** DTD Loader . */
+    protected XMLDTDLoader fDTDLoader;
 
     /** DTD Validator. */
     protected XMLDTDValidator fDTDValidator;
@@ -332,6 +340,7 @@ public class DTDConfiguration
             ENTITY_MANAGER, 
             DOCUMENT_SCANNER,
             DTD_SCANNER,
+            DTD_LOADER,
             DTD_VALIDATOR,
             NAMESPACE_BINDER,
             XMLGRAMMAR_POOL,   
@@ -365,6 +374,14 @@ public class DTDConfiguration
             setProperty(DTD_SCANNER, fDTDScanner);
             if (fDTDScanner instanceof XMLComponent) {
                 addComponent((XMLComponent)fDTDScanner);
+            }
+        }
+
+        fDTDLoader = createDTDLoader();
+        if (fDTDLoader != null) {
+            setProperty(DTD_LOADER, fDTDLoader);
+            if (fDTDLoader instanceof XMLComponent) {
+                addComponent((XMLComponent)fDTDLoader);
             }
         }
 
@@ -632,12 +649,12 @@ public class DTDConfiguration
 
         // setup dtd pipeline
         if (fDTDScanner != null) {
-            if (fDTDValidator != null) {
-                fDTDScanner.setDTDHandler(fDTDValidator);
-                fDTDValidator.setDTDHandler(fDTDHandler);
+            if (fDTDLoader != null) {
+                fDTDScanner.setDTDHandler(fDTDLoader);
+                fDTDLoader.setDTDHandler(fDTDHandler);
                 
-                fDTDScanner.setDTDContentModelHandler(fDTDValidator);
-                fDTDValidator.setDTDContentModelHandler(fDTDContentModelHandler);
+                fDTDScanner.setDTDContentModelHandler(fDTDLoader);
+                fDTDLoader.setDTDContentModelHandler(fDTDContentModelHandler);
             }
             else {
                 fDTDScanner.setDTDHandler(fDTDHandler);
@@ -782,6 +799,11 @@ public class DTDConfiguration
     protected XMLDTDScanner createDTDScanner() {
         return new XMLDTDScannerImpl();
     } // createDTDScanner():XMLDTDScanner
+
+    /** Create a DTD loader . */
+    protected XMLDTDLoader createDTDLoader() {
+        return new XMLDTDLoader();
+    } // createDTDLoader():XMLDTDLoader
 
     /** Create a DTD validator. */
     protected XMLDTDValidator createDTDValidator() {
