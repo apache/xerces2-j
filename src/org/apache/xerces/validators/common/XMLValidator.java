@@ -2027,63 +2027,61 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
 
     }// parseSchemaLocaltion(String, Hashtable)
-    private void resolveSchemaGrammar( String loc, String uri) throws Exception{
+    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
 
         SchemaGrammar grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
 
-        DOMParser parser = new DOMParser() {
-            public void ignorableWhitespace(char ch[], int start, int length) {}
-            public void ignorableWhitespace(int dataIdx) {}
-        };
-        parser.setEntityResolver( new Resolver() );
-        parser.setErrorHandler(  new ErrorHandler() );
+        if (grammar == null) {
+            DOMParser parser = new DOMParser();
+            parser.setEntityResolver( new Resolver() );
+            parser.setErrorHandler(  new ErrorHandler() );
 
-        try {
-            parser.setFeature("http://xml.org/sax/features/validation", false);
-            parser.setFeature("http://xml.org/sax/features/namespaces", true);
-            parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
-        }catch(  org.xml.sax.SAXNotRecognizedException e ) {
-            e.printStackTrace();
-        }catch( org.xml.sax.SAXNotSupportedException e ) {
-            e.printStackTrace();
-        }
-
-        // expand it before passing it to the parser
-        loc = fEntityHandler.expandSystemId(loc);
-        try {
-            parser.parse( loc );
-        }catch( IOException e ) {
-            e.printStackTrace();
-        }catch( SAXException e ) {
-            //e.printStackTrace();
-            reportRecoverableXMLError(167, 144, e.getMessage() );
-        }
-
-        Document     document   = parser.getDocument(); //Our Grammar
-
-        TraverseSchema tst = null;
-        try {
-            if (DEBUG_SCHEMA_VALIDATION) {
-                System.out.println("I am geting the Schema Document");
+            try {
+                parser.setFeature("http://xml.org/sax/features/validation", false);
+                parser.setFeature("http://xml.org/sax/features/namespaces", true);
+                parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+            }catch(  org.xml.sax.SAXNotRecognizedException e ) {
+                e.printStackTrace();
+            }catch( org.xml.sax.SAXNotSupportedException e ) {
+                e.printStackTrace();
             }
 
-            Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
-            if (root == null) {
-                reportRecoverableXMLError(167, 144, "Can't get back Schema document's root element :" + loc); 
+            // expand it before passing it to the parser
+            loc = fEntityHandler.expandSystemId(loc);
+            try {
+                parser.parse( loc );
+            }catch( IOException e ) {
+                e.printStackTrace();
+            }catch( SAXException e ) {
+                //e.printStackTrace();
+                reportRecoverableXMLError(167, 144, e.getMessage() );
             }
-            else {
-                if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
-                    reportRecoverableXMLError(167,144, "Schema in " + loc + " has a different target namespace " + 
-                                       "from the one specified in the instance document :" + uri); 
+
+            Document     document   = parser.getDocument(); //Our Grammar
+
+            TraverseSchema tst = null;
+            try {
+                if (DEBUG_SCHEMA_VALIDATION) {
+                    System.out.println("I am geting the Schema Document");
                 }
-                if (grammar == null) {
+
+                Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
+                if (root == null) {
+                    reportRecoverableXMLError(167, 144, "Can't get back Schema document's root element :" + loc); 
+                }
+                else {
+                    if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
+                        reportRecoverableXMLError(167,144, "Schema in " + loc + " has a different target namespace " + 
+                                           "from the one specified in the instance document :" + uri); 
+                    }
                     grammar = new SchemaGrammar();
+                    grammar.setGrammarDocument(document);
+                    tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, loc);
                 }
-                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, loc);
             }
-        }
-        catch (Exception e) {
-            e.printStackTrace(System.err);
+            catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
         }
 
     }
