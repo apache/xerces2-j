@@ -150,6 +150,17 @@ public class XSAllCM implements XSCMValidator {
         return state;
     }
 
+    // convinient method: when error occurs, to find a matching decl
+    // from the candidate elements.
+    Object findMatchingDecl(QName elementName, SubstitutionGroupHandler subGroupHandler) {
+        Object matchingDecl = null;
+        for (int i = 0; i < fNumElements; i++) {
+            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
+            if (matchingDecl != null)
+                break;
+        }
+        return matchingDecl;
+    }
 
     /**
      * The method corresponds to one transition in the content model.
@@ -163,49 +174,27 @@ public class XSAllCM implements XSCMValidator {
         // error state
         if (currentState[0] < 0) {
             currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
-            Object matchingDecl = null;
-            for (int i = 0; i < fNumElements; i++) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
-                if (matchingDecl != null)
-                    break;
-            }
-            return matchingDecl;
+            return findMatchingDecl(elementName, subGroupHandler);
         }
 
         Object matchingDecl = null;
 
         for (int i = 0; i < fNumElements; i++) {
-
+            // we only try to look for a matching decl if we have not seen
+            // this element yet.
+            if (currentState[i+1] != STATE_START)
+                continue;
             matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
             if (matchingDecl != null) {
-
-                if (currentState[i+1] == STATE_START) {
-                    currentState[i+1] = STATE_VALID;
-                }
-                else if (currentState[i+1] == STATE_VALID) {
-                    // duplicate element
-                    currentState[i+1] = XSCMValidator.FIRST_ERROR;
-                    currentState[0] = XSCMValidator.FIRST_ERROR;
-                }
-                else if (currentState[i+1] == XSCMValidator.FIRST_ERROR) {
-                    currentState[i+1] = XSCMValidator.SUBSEQUENT_ERROR;
-                    currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
-                }
-
-                if (currentState[0] == STATE_START) {
-                    currentState[0] = STATE_VALID;
-                }
-
+                // found the decl, mark this element as "seen".
+                currentState[i+1] = STATE_VALID;
                 return matchingDecl;
             }
         }
 
-        if (currentState[0] == XSCMValidator.FIRST_ERROR)
-            currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
-        else if (currentState[0] == STATE_START || currentState[0] == STATE_VALID)
-            currentState[0] = XSCMValidator.FIRST_ERROR;
-
-        return null;
+        // couldn't find the decl, change to error state.
+        currentState[0] = XSCMValidator.FIRST_ERROR;
+        return findMatchingDecl(elementName, subGroupHandler);
     }
 
 
