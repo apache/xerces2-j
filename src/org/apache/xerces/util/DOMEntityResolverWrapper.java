@@ -125,18 +125,23 @@ public class DOMEntityResolverWrapper
                 Reader charStream = inputSource.getCharacterStream();
                 String encoding = inputSource.getEncoding();
                 String data = inputSource.getStringData();
+
+                /**
+                 * An LSParser looks at inputs specified in LSInput in
+                 * the following order: characterStream, byteStream,
+                 * stringData, systemId, publicId.
+                 */          
                 XMLInputSource xmlInputSource =
                     new XMLInputSource(publicId, systemId, baseSystemId);
-
+                
                 if (charStream != null) {
                     xmlInputSource.setCharacterStream(charStream);
                 }
-                if (byteStream != null) {
+                else if (byteStream != null) {
                     xmlInputSource.setByteStream((InputStream) byteStream);
                 }
-                if (data != null && data.length() != 0) {
-                    xmlInputSource.setCharacterStream(
-                        new StringReader(data));
+                else if (data != null && data.length() != 0) {
+                    xmlInputSource.setCharacterStream(new StringReader(data));
                 }
                 xmlInputSource.setEncoding(encoding);
                 return xmlInputSource;

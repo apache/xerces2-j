@@ -1219,30 +1219,38 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
 	private XMLInputSource dom2xmlInputSource(LSInput is) {
 		// need to wrap the LSInput with an XMLInputSource
 		XMLInputSource xis = null;
-		// if there is a string data, use a StringReader
-		// according to DOM, we need to treat such data as "UTF-16".
-		if (is.getStringData() != null) {
-			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
-									 is.getBaseURI(), new StringReader(is.getStringData()),
-									 "UTF-16");
-		}
+        
+		/**
+		 * An LSParser looks at inputs specified in LSInput in
+		 * the following order: characterStream, byteStream,
+		 * stringData, systemId, publicId. For consistency
+		 * have the same behaviour for XSLoader.
+		 */
+		
 		// check whether there is a Reader
 		// according to DOM, we need to treat such reader as "UTF-16".
-		else if (is.getCharacterStream() != null) {
-			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
-									 is.getBaseURI(), is.getCharacterStream(),
-									 "UTF-16");
+		if (is.getCharacterStream() != null) {
+		    xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+		                             is.getBaseURI(), is.getCharacterStream(),
+		                             "UTF-16");
 		}
 		// check whether there is an InputStream
 		else if (is.getByteStream() != null) {
-			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
-									 is.getBaseURI(), is.getByteStream(),
-									 is.getEncoding());
+		    xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+		                             is.getBaseURI(), is.getByteStream(),
+		                             is.getEncoding());
+		}
+		// if there is a string data, use a StringReader
+		// according to DOM, we need to treat such data as "UTF-16".
+		else if (is.getStringData() != null && is.getStringData().length() != 0) {
+		    xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+		                             is.getBaseURI(), new StringReader(is.getStringData()),
+		                             "UTF-16");
 		}
 		// otherwise, just use the public/system/base Ids
 		else {
-			xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
-									 is.getBaseURI());
+		    xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+		                             is.getBaseURI());
 		}
 
 		return xis;
