@@ -142,6 +142,10 @@ public class CMBuilder {
             cmValidator = createDFACM(particle);
         }
 
+        //now we are throught building content model and have passed sucessfully of the nodecount check
+        //if set by the application        
+        fNodeFactory.resetNodeCount() ;
+        
         // if the validator returned is null, it means there is nothing in
         // the content model, so we return the empty content model.
         if (cmValidator == null)

@@ -111,7 +111,7 @@ public class CMNodeFactory {
     }
     
     public void reset(XMLComponentManager componentManager){
-            fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         try {
             fSecurityManager = (SecurityManager)componentManager.getProperty(SECURITY_MANAGER);
             //we are setting the limit of number of nodes to 3times the maxOccur value..
@@ -122,19 +122,20 @@ public class CMNodeFactory {
         catch (XMLConfigurationException e) {
             fSecurityManager = null;
         }
+        
     }//reset()
     
-    public XSCMLeaf getCMLeafNode(int type, Object leaf, int id, int position) {
+    public CMNode getCMLeafNode(int type, Object leaf, int id, int position) {
         nodeCountCheck() ;
         return new XSCMLeaf(type, leaf, id, position) ;
     }
     
-    public XSCMUniOp getCMUniOpNode(int type, CMNode childNode) {
+    public CMNode getCMUniOpNode(int type, CMNode childNode) {
         nodeCountCheck();
         return new XSCMUniOp(type, childNode) ;
     }
     
-    public XSCMBinOp getCMBinOpNode(int type, CMNode leftNode, CMNode rightNode) {
+    public CMNode getCMBinOpNode(int type, CMNode leftNode, CMNode rightNode) {
         nodeCountCheck() ;
         return new XSCMBinOp(type, leftNode, rightNode) ;
     }
@@ -150,6 +151,10 @@ public class CMNodeFactory {
         
     }//nodeCountCheck()
 
+    //reset the node count
+    public void resetNodeCount(){
+        nodeCount = 0 ;
+    }
         /**
      * Sets the value of a property. This method is called by the component
      * manager any time after reset when a property changes value.
