@@ -261,27 +261,32 @@ public class XPath {
 
                 case XPath.Tokens.EXPRTOKEN_PERIOD: {
                     check(expectingStep);
-                    // build step
-                    Axis axis = new Axis(Axis.SELF);
-                    NodeTest nodeTest = new NodeTest(NodeTest.NODE);
-                    Step step = new Step(axis, nodeTest);
-                    stepsVector.addElement(step);
-                    
-                    if (stepsVector.size()==1/*this '.' is the first step in this path.*/
-                     && xtokens.hasMore()
-                     && xtokens.peekToken() == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
-                        
-                        // consume '//'
-                        xtokens.nextToken();    
-                        
+                    expectingStep=false;
+
+                    // unless this is the first step in this location path,
+                    // there's really no reason to keep them in LocationPath.
+                    // This amounts to shorten "a/././b/./c" to "a/b/c".
+                    // Also, the matcher fails to work correctly if XPath
+                    // has those redundant dots. 
+                    if (stepsVector.size()==0) {
                         // build step
-                        axis = new Axis(Axis.DESCENDANT);
-                        nodeTest = new NodeTest(NodeTest.NODE);
-                        step = new Step(axis, nodeTest);
+                        Axis axis = new Axis(Axis.SELF);
+                        NodeTest nodeTest = new NodeTest(NodeTest.NODE);
+                        Step step = new Step(axis, nodeTest);
                         stepsVector.addElement(step);
-                        expectingStep=true;
-                    } else {
-                        expectingStep=false;
+                        
+                        if( xtokens.hasMore()
+                         && xtokens.peekToken() == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
+                            // consume '//'
+                            xtokens.nextToken();    
+                            
+                            // build step
+                            axis = new Axis(Axis.DESCENDANT);
+                            nodeTest = new NodeTest(NodeTest.NODE);
+                            step = new Step(axis, nodeTest);
+                            stepsVector.addElement(step);
+                            expectingStep=true;
+                        }
                     }
                     break;
                 }
