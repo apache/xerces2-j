@@ -265,7 +265,9 @@ public final class XMLValidator
     private boolean fSendCharDataAsCharArray = false;
     private boolean fBufferDatatype = false;
     private StringBuffer fDatatypeBuffer = new StringBuffer();
+
     private QName fTempQName = new QName();
+    //REVISIT: eriye, use this temp QName whenever we can!!
 
     // symbols
 
@@ -1179,6 +1181,19 @@ public final class XMLValidator
         return fElementCount++;
 
     } // addElement(QName):int
+    
+    // a convenience method for TraverseSchema 
+    public int addElementDecl(QName elementDecl, int scopeDefined,
+                              int contentSpecType, int contentSpec, 
+                              boolean isExternal) {
+	int elementIndex = 
+	    addElementDecl(elementDecl,contentSpecType,contentSpec,isExternal);
+
+	fScope[elementIndex] = scopeDefined;
+	
+	return elementIndex;
+
+    }
 
     /** Adds an element declaration. */
     public int addElementDecl(QName elementDecl, 
@@ -1516,6 +1531,110 @@ public final class XMLValidator
 
     } // addAttDef(QName,QName,int,int,int,int,boolean):int
 
+    // REVISIT addAttDef a hack for TraverseSchema 
+    public int addAttDef(int attlistIndex, QName attributeDecl, 
+                         int attType, int enumeration, 
+                         int attDefaultType, int attDefaultValue, 
+                         boolean isExternal) throws Exception {
+
+        int attlistIndex = attlistIndex;
+
+        int dupID = -1;
+        int dupNotation = -1;
+        while (attlistIndex != -1) {
+            int attrChunk = attlistIndex >> CHUNK_SHIFT;
+            int attrIndex = attlistIndex & CHUNK_MASK;
+            // REVISIT: Validation. Attributes are also tuples.
+            if (fStringPool.equalNames(fAttName[attrChunk][attrIndex], attributeDecl.rawname)) {
+                if (fWarningOnDuplicateAttDef) {
+                    Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
+                                      fStringPool.toString(attributeDecl.rawname) };
+                    fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                               XMLMessages.XML_DOMAIN,
+                                               XMLMessages.MSG_DUPLICATE_ATTDEF,
+                                               XMLMessages.P53_DUPLICATE,
+                                               args,
+                                               XMLErrorReporter.ERRORTYPE_WARNING);
+                }
+                return -1;
+            }
+            if (fValidating) {
+                if (attType == fIDSymbol && fAttType[attrChunk][attrIndex] == fIDSymbol) {
+                    dupID = fAttName[attrChunk][attrIndex];
+                }
+                if (attType == fNOTATIONSymbol && fAttType[attrChunk][attrIndex] == fNOTATIONSymbol) {
+                    dupNotation = fAttName[attrChunk][attrIndex];
+                }
+            }
+            attlistIndex = fNextAttDef[attrChunk][attrIndex];
+        }
+        if (fValidating) {
+            if (dupID != -1) {
+                Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
+                                  fStringPool.toString(dupID),
+                                  fStringPool.toString(attributeDecl.rawname) };
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_MORE_THAN_ONE_ID_ATTRIBUTE,
+                                           XMLMessages.VC_ONE_ID_PER_ELEMENT_TYPE,
+                                           args,
+                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                return -1;
+            }
+            if (dupNotation != -1) {
+                Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
+                                  fStringPool.toString(dupNotation),
+                                  fStringPool.toString(attributeDecl.rawname) };
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE,
+                                           XMLMessages.VC_ONE_NOTATION_PER_ELEMENT_TYPE,
+                                           args,
+                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                return -1;
+            }
+        }
+        //
+        // save the fields
+        //
+        int chunk = fAttDefCount >> CHUNK_SHIFT;
+        int index = fAttDefCount & CHUNK_MASK;
+        ensureAttrCapacity(chunk);
+        fAttName[chunk][index] = attributeDecl.rawname;
+        fAttType[chunk][index] = attType;
+        fAttValidator[chunk][index] = getValidatorForAttType(attType);
+        fEnumeration[chunk][index] = enumeration;
+        fAttDefaultType[chunk][index] = attDefaultType;
+        fAttDefIsExternal[chunk][index] = (byte)(isExternal ? 1 : 0);
+        fAttValue[chunk][index] = attDefaultValue;
+        //
+        // add to the attr list for this element
+        //
+        int nextIndex = -1;
+        if (attDefaultValue != -1) {
+            nextIndex = fAttlistHead[elemChunk][elemIndex];
+            fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
+            if (nextIndex == -1) {
+                fAttlistTail[elemChunk][elemIndex] = fAttDefCount;
+            }
+        } else {
+            nextIndex = fAttlistTail[elemChunk][elemIndex];
+            fAttlistTail[elemChunk][elemIndex] = fAttDefCount;
+            if (nextIndex == -1) {
+                fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
+            }
+            else {
+                fNextAttDef[nextIndex >> CHUNK_SHIFT][nextIndex & CHUNK_MASK] = fAttDefCount;
+                nextIndex = -1;
+            }
+        }
+        fNextAttDef[chunk][index] = nextIndex;
+        
+	//return fAttDefCount++;
+	return attlistIndex;
+
+    } // addAttDef(QName,QName,int,int,int,int,boolean):int
+
     /** Copy attributes. */
     public void copyAtts(QName fromElement, QName toElement) {
 
@@ -1532,6 +1651,41 @@ public final class XMLValidator
         int chunk = fromElementIndex >> CHUNK_SHIFT;
         int index = fromElementIndex & CHUNK_MASK;
         int attDefIndex = fAttlistHead[chunk][index];
+        while (attDefIndex != -1) {
+            chunk = attDefIndex >> CHUNK_SHIFT;
+            index = attDefIndex & CHUNK_MASK;
+            try {
+                // REVISIT: Validation. Needs to be tuples.
+                int attName = fAttName[chunk][index];
+                fTempQName.setValues(-1, attName, attName, -1);
+                addAttDef(toElement, fTempQName, 
+                          fAttType[chunk][index],
+                          fEnumeration[chunk][index], 
+                          fAttDefaultType[chunk][index], 
+                          fAttValue[chunk][index], 
+                          fAttDefIsExternal[chunk][index] != 0);
+            } catch (Exception ex) {
+                // REVISIT: What should happen here?
+            }
+            attDefIndex = fNextAttDef[chunk][index];
+        }
+
+    } // copyAtts(QName,QName)
+
+    // a hack for traverseElementDecl in Traverse Schema
+    public void copyAttsForSchema(int fromAttDefIndex, QName toElement) {
+
+		//****DEBUG****
+		if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
+		//****DEBUG****
+
+        // REVISIT: Validation.
+        int toElementIndex = getDeclaration(toElement);
+        if (fromAttDefIndex == -1) {
+            return;
+        }
+        
+	int attDefIndex = fromAttDefIndex;
         while (attDefIndex != -1) {
             chunk = attDefIndex >> CHUNK_SHIFT;
             index = attDefIndex & CHUNK_MASK;
@@ -2509,6 +2663,10 @@ public final class XMLValidator
 	    switchNS(uri); //REVISIT: or this should be done before we come in.?? 
 	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
 	}*/
+   }
+
+   public int getDeclaration(int localpart, int scope) {
+	    return fNameScopeToIndex.get(qname.localpart, scope);
    }
 
 
