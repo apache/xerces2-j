@@ -105,6 +105,11 @@ public class ElementNSImpl
 
         int index = qualifiedName.indexOf(':');
         String prefix;
+
+        // DOM Level 3: namespace URI is never empty string.
+        this.namespaceURI = (namespaceURI !=null &&
+                             namespaceURI.length() == 0) ? null : namespaceURI;
+
         if (index < 0) {
             prefix = null;
             localName = qualifiedName;
@@ -114,7 +119,7 @@ public class ElementNSImpl
             localName = qualifiedName.substring(index+1);
         
             if (ownerDocument.errorChecking) {
-                if (namespaceURI == null
+                if (this.namespaceURI == null
                     || (localName.length() == 0)
                     || (localName.indexOf(':') >= 0)) {
                     throw new DOMException(DOMException.NAMESPACE_ERR, 
@@ -131,7 +136,6 @@ public class ElementNSImpl
                 }
             }
         }
-        this.namespaceURI = namespaceURI;
     }
 
     // when local name is known

@@ -256,6 +256,34 @@ implements EntityReference {
 
 
     /**
+     * NON-DOM: sets the node and its children value.     
+     * <P>
+     * Note: make sure that entity reference and its kids could be set readonly.
+     */
+    public void setReadOnly(boolean readOnly, boolean deep) {
+
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        if (deep) {
+
+            if (needsSyncChildren()) {
+                synchronizeChildren();
+            }
+            // Recursively set kids
+            for (ChildNode mykid = firstChild;
+                 mykid != null;
+                 mykid = mykid.nextSibling) {
+                     
+                mykid.setReadOnly(readOnly,true);
+                
+            }
+        }
+        isReadOnly(readOnly);
+    } // setReadOnly(boolean,boolean)
+
+
+    /**
      * Enable the synchronize method which may do cloning. This method is enabled
      * when the parser is done with an EntityReference.
     /***
