@@ -83,6 +83,7 @@ public class TimeDatatypeValidator extends DateTimeValidator {
      * 
      * @param str    The lexical representation of time object hh:mm:ss.sss
      *               with possible time zone Z or (-),(+)hh:mm
+     *               Pattern: "(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?")
      * @param date   uninitialized date object
      * @return normalized time representation
      * @exception Exception Invalid lexical representation
@@ -97,6 +98,10 @@ public class TimeDatatypeValidator extends DateTimeValidator {
         resetDateObj(date);
 
         // time
+        // initialize to default values
+        date[CY]=YEAR;
+        date[M]=MONTH;
+        date[D]=DAY;
         getTime(fStart, fEnd, date);
 
         //validate and normalize
@@ -118,6 +123,7 @@ public class TimeDatatypeValidator extends DateTimeValidator {
      * @param date   time object
      * @return lexical representation of time: hh:mm:ss.sss with an optional time zone sign
      */
+     
     protected String dateToString(int[] date) {
         message.setLength(0);
         message.append(date[h]);
@@ -130,7 +136,7 @@ public class TimeDatatypeValidator extends DateTimeValidator {
         message.append((char)date[utc]);
         return message.toString();
     }
-
+     
 
 }
 

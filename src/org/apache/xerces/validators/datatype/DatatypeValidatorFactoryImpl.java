@@ -175,7 +175,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fRegistry.put("anyURI",            new AnyURIDatatypeValidator());
                 fRegistry.put("QName",             new QNameDatatypeValidator()); 
                 fRegistry.put("duration",          new DurationDatatypeValidator());
-                               
+                fRegistry.put("gDay",              new DayDatatypeValidator()); 
+                fRegistry.put("time",              new TimeDatatypeValidator());
+
                 // need to check if the registry has been "DTD" initilized --ericye
                 // since we share the same instance of DTD attribute validators across the board,
                 // we couldn't afford call the initializeDTDRegistry more than one time.
@@ -281,10 +283,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);
 
                 facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createDatatypeValidator("time", new TimeDatatypeValidator(), facets, false);
-
-                facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
                 createDatatypeValidator("date", new DateDatatypeValidator(), facets, false);
                 
@@ -305,10 +303,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)--(Z)?");
                 createDatatypeValidator("gMonth", new MonthDatatypeValidator(), facets, false);
                 
-                facets = new Hashtable();
-                facets.put(SchemaSymbols.ELT_PATTERN,"---(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createDatatypeValidator("gDay", new DayDatatypeValidator(), facets, false);
-
 
                 fRegistryExpanded = true;
             } catch (InvalidDatatypeFacetException ex) {

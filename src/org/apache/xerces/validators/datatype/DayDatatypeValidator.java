@@ -84,12 +84,13 @@ public class DayDatatypeValidator extends DateTimeValidator {
     /**
      * Parses, validates and computes normalized version of gDay object
      * 
-     * @param str    The lexical representation of gDay object ---DD 
+     * @param str    The lexical representation of gDay object ---DD
      *               with possible time zone Z or (-),(+)hh:mm
+     *               Pattern: ---(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?
      * @param date   uninitialized date object
      * @return normalized date representation
      * @exception Exception Invalid lexical representation
-     */ 
+     */
     protected int[] parse(String str, int[] date) throws Exception{
 
         resetBuffer(str);
@@ -99,18 +100,21 @@ public class DayDatatypeValidator extends DateTimeValidator {
             date=new int[TOTAL_SIZE];
         }
         resetDateObj(date);
+        if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-' || fBuffer.charAt(2)!='-') {
+            throw new Exception ("Error in day parsing");
+        }
 
         //initialize values 
         date[CY]=YEAR;
-        date[D]=MONTH;
-
-        date[M]=parseInt(fStart+3,fStart+5);
+        date[M]=MONTH;
+        
+        date[D]=parseInt(fStart+3,fStart+5);
 
 
         if ( DAY_SIZE<fEnd ) {
             int sign = findUTCSign(DAY_SIZE, fEnd);
             if ( sign<0 ) {
-                throw new Exception ("Error in month parsing");
+                throw new Exception ("Error in day parsing");
             }
             else {
                 getTimeZone(date, sign);

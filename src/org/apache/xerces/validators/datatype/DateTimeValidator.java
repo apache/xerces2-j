@@ -219,7 +219,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
             }
         }// End Facet definition
-
+        
         // check 4.3.8.c1 error: maxInclusive + maxExclusive
         if ( fMaxExclusive!=null && fMaxInclusive != null ) {
             System.err.println( "[Error] It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." );
@@ -231,6 +231,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
         // check 4.3.7.c1 must: minInclusive <= maxInclusive
         int compare;
+        
         if ( fMaxInclusive != null && fMinInclusive !=null ) {
             compare = compareDates(fMinInclusive, fMaxInclusive, false);
             if ( compare == GREATER_THAN || compare == INDETERMINATE )
@@ -238,6 +239,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                                     + "'must be <= maxInclusive value ='" +
                                     dateToString(fMaxInclusive) + "'. " );
         }
+       
         // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
         if ( fMaxExclusive !=null && fMinExclusive !=null ) {
             compare = compareDates(fMinExclusive,fMaxExclusive, false);
@@ -246,9 +248,10 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                                     + "'must be <= maxExclusive value ='" +
                                     dateToString(fMaxExclusive) + "'. " );
         }
+         
         // check 4.3.9.c2 must: minExclusive < maxInclusive
         if ( fMaxInclusive != null && fMinExclusive !=null ) {
-            compare = compareDates(fMinExclusive, fMaxExclusive, true);
+            compare = compareDates(fMinExclusive, fMaxInclusive, true);
             if ( compare != LESS_THAN )
                 System.err.println( "[Error] minExclusive value ='" + dateToString(fMinExclusive) 
                                     + "'must be < maxInclusive value ='" +
@@ -283,7 +286,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                 }
             }
         }
-
+        
     }
     /**
      * Implemented by each subtype, calling appropriate function to parse
@@ -441,7 +444,8 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             normalize(fTempDate);
             c2 = compareOrder(date1, fTempDate);
 
-            if ( c1==LESS_THAN && c2==GREATER_THAN ) {
+            if ( (c1==LESS_THAN && c2==GREATER_THAN) ||
+                 (c1==GREATER_THAN && c2==LESS_THAN) ) {
                 return INDETERMINATE; 
             }
             //REVISIT: wait for clarification on this case from schema
@@ -451,24 +455,33 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
             //compare (date1 with time zone -14)<=date2 
             //
-            cloneDate(date2); //clones date1 value to global temporary storage: fTempDate
+            cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
 
             fTempDate[utc]='+';
+            if (DEBUG) {
+               System.out.println("fTempDate=" + dateToString(fTempDate));
+            }
             normalize(fTempDate);
             c1 = compareOrder(fTempDate, date2);
-
+            if (DEBUG) {
+                System.out.println("date=" + dateToString(date2));
+                System.out.println("fTempDate=" + dateToString(fTempDate));
+            }
             //compare (date1 with time zone +14)<=date2 
             //
-            cloneDate(date2); //clones date1 value to global temporary storage: fTempDate
+            cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
             fTempDate[utc]='-';
             normalize(fTempDate);
             c2 = compareOrder(fTempDate, date2);
-
-            if ( c1==LESS_THAN && c2==GREATER_THAN ) {
+            if (DEBUG) {
+               System.out.println("fTempDate=" + dateToString(fTempDate));
+            }
+            if ( (c1==LESS_THAN && c2==GREATER_THAN) ||
+                 (c1==GREATER_THAN && c2==LESS_THAN) ) {
                 return INDETERMINATE; 
             }
             //REVISIT: wait for clarification on this case from schema
@@ -626,14 +639,16 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @param sign
      * @return 
      */
-    protected void getTimeZone (int[] data, int sign) {
+    protected void getTimeZone (int[] data, int sign) throws Exception{
         data[utc]=fBuffer.charAt(sign);
         if ( fBuffer.charAt(sign) == 'Z' ) {
-            //REVISIT: error checking 
+            if (fEnd>(++sign)) {
+                throw new Exception("Error in parsing time zone");
+            }
+            return;
         }
         if ( sign<=(fEnd-3) ) {
-
-
+            
             //parse [hh]
             timeZone[hh]=parseInt(++sign, sign+2);
             if ( data[utc]=='-' ) {
@@ -651,6 +666,9 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                     //REVISIT: report an error
                 }
             }
+        }
+        else {
+            throw new Exception("Error in parsing time zone");
         }
         if ( DEBUG ) {
             System.out.println("time[hh]="+timeZone[hh] + " time[mm]=" +timeZone[mm]);
@@ -795,22 +813,26 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     protected  void normalize (int[] date) {
 
         //add minutes (from time zone)
+        int negate = 1;
+        if (date[utc]=='-') {
+            negate = -1;
+        }
         if ( DEBUG ) {
             System.out.println("==>date[m]"+date[m]);
             System.out.println("==>timeZone[mm]" +timeZone[mm]);
         }
-        int temp = date[m] + timeZone[mm];
-        date[m]= temp%60;
-        int carry = temp/60;
+        int temp = date[m] + negate*timeZone[mm];
+        int carry = fQuotient (temp, 60);
+        date[m]= mod(temp, 60, carry);
         //revisit? negative value
 
         if ( DEBUG ) {
             System.out.println("==>carry: " + carry);
         }
         //add hours
-        temp = date[h]+timeZone[hh] + carry;
-        date[h]=temp%24;
-        carry = temp/24;
+        temp = date[h] + negate*timeZone[hh] + carry;
+        carry = fQuotient(temp, 24);
+        date[h]=mod(temp, 24, carry);
         if ( DEBUG ) {
             System.out.println("==>date[h]"+date[h]);
             System.out.println("==>carry: " + carry);
@@ -901,19 +923,37 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     //
     // help function described in W3C PR Schema [E Adding durations to dateTimes]
     //    
+    protected int mod (int a, int b, int quotient) {
+        //modulo(a, b) = a - fQuotient(a,b)*b 
+        return (a - quotient*b) ;
+    }
+    
+    //
+    // help function described in W3C PR Schema [E Adding durations to dateTimes]
+    //
+    protected int fQuotient (int a, int b) {
+        
+        //fQuotient(a, b) = the greatest integer less than or equal to a/b 
+        return (int)Math.floor((float)a/b);
+    }
+
+    //
+    // help function described in W3C PR Schema [E Adding durations to dateTimes]
+    //    
     protected int modulo (int temp, int low, int high) {
-        return(((temp-low)%(high - low)+low)) ;
+        //modulo(a - low, high - low) + low 
+        int a = temp - low;
+        int b = high - low;
+        return (mod (a, b, fQuotient(a, b)) + low) ;
     }
 
     //
     // help function described in W3C PR Schema [E Adding durations to dateTimes]
     //
     protected int fQuotient (int temp, int low, int high) {
-        double value = (temp - low)/(high - low);
-        if ( value <0 ) {
-            return(int)Math.ceil(value); 
-        }
-        return(int)Math.floor(value);
+        //fQuotient(a - low, high - low) 
+  
+        return fQuotient(temp - low, high - low);
     }
 
 
