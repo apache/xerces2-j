@@ -1783,14 +1783,6 @@ public abstract class NodeImpl
             return false;
         }
 
-        if (getBaseURI() == null) {
-            if (((NodeImpl) arg).getBaseURI() != null) {
-                return false;
-            }
-        }
-        else if (!getBaseURI().equals(((NodeImpl) arg).getBaseURI())) {
-            return false;
-        }
 
         return true;
     }

@@ -262,6 +262,97 @@ public class DocumentTypeImpl
         throws DOMException {
         // no-op
     }
+    
+	/**
+	  * DOM Level 3 WD- Experimental.
+	  * Override inherited behavior from ParentNodeImpl to support deep equal.
+	  */
+    public boolean isEqualNode(Node arg) {
+        
+        if (!super.isEqualNode(arg)) {
+            return false;
+        }
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        DocumentTypeImpl argDocType = (DocumentTypeImpl) arg;
+
+        //test if the following string attributes are equal: publicId, 
+        //systemId, internalSubset.
+        if ((getPublicId() == null && argDocType.getPublicId() != null)
+            || (getPublicId() != null && argDocType.getPublicId() == null)
+            || (getSystemId() == null && argDocType.getSystemId() != null)
+            || (getSystemId() != null && argDocType.getSystemId() == null)
+            || (getInternalSubset() == null
+                && argDocType.getInternalSubset() != null)
+            || (getInternalSubset() != null
+                && argDocType.getInternalSubset() == null)) {
+            return false;
+        }
+
+        if (getPublicId() != null) {
+            if (!getPublicId().equals(argDocType.getPublicId())) {
+                return false;
+            }
+        }
+
+        if (getSystemId() != null) {
+            if (!getSystemId().equals(argDocType.getSystemId())) {
+                return false;
+            }
+        }
+
+        if (getInternalSubset() != null) {
+            if (!getInternalSubset().equals(argDocType.getInternalSubset())) {
+                return false;
+            }
+        }
+
+        //test if NamedNodeMaps entities and notations are equal
+        NamedNodeMapImpl argEntities = argDocType.entities;
+
+        if ((entities == null && argEntities != null)
+            || (entities != null && argEntities == null))
+            return false;
+
+        if (entities != null && argEntities != null) {
+            if (entities.getLength() != argEntities.getLength())
+                return false;
+
+            for (int index = 0; entities.item(index) != null; index++) {
+                Node entNode1 = entities.item(index);
+                Node entNode2 =
+                    argEntities.getNamedItem(entNode1.getNodeName());
+
+                if (!((NodeImpl) entNode1).isEqualNode((NodeImpl) entNode2))
+                    return false;
+            }
+        }
+
+        NamedNodeMapImpl argNotations = argDocType.notations;
+
+        if ((notations == null && argNotations != null)
+            || (notations != null && argNotations == null))
+            return false;
+
+        if (notations != null && argNotations != null) {
+            if (notations.getLength() != argNotations.getLength())
+                return false;
+
+            for (int index = 0; notations.item(index) != null; index++) {
+                Node noteNode1 = notations.item(index);
+                Node noteNode2 =
+                    argNotations.getNamedItem(noteNode1.getNodeName());
+
+                if (!((NodeImpl) noteNode1).isEqualNode((NodeImpl) noteNode2))
+                    return false;
+            }
+        }
+
+        return true;
+    } //end isEqualNode
+
 
     /**
      * NON-DOM
