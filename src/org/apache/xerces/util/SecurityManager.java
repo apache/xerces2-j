@@ -114,18 +114,17 @@ public final class SecurityManager {
         return entityExpansionLimit;
     }
     
-    //sets the limit of the number of nodes that should be allowed to create when building
-    //content model from maxOccurs attribute value specified in schema document, number of nodes 
-    //created depneds upon the type of content model and value of maxOccurs attribute.
+    //sets the limit of the number of content model nodes that may be created when building
+    // a grammar for a schema that contains maxOccurs attributes with values
+    // other than "unbounded"
     public void setMaxOccurNodeLimit(int limit){
         maxOccurLimit = limit ;
     }
     
     
-    //get the limit of the number of nodes that should be allowed to create when building
-    //content model from maxOccurs attribute value specified in schema document, number of nodes 
-    //created depneds upon the type of content model and value of maxOccurs attribute.
-    
+    //sets the limit of the number of content model nodes that may be created when building
+    // a grammar for a schema that contains maxOccurs attributes with values
+    // other than "unbounded" 
     public int getMaxOccurNodeLimit(){
         return maxOccurLimit ;    
     }
