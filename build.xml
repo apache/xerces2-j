@@ -22,9 +22,9 @@ Copyright:
     <property name='parser.Name' value='Xerces-J'/>
     <property name='parser.name' value='xerces-j'/>
     <property name='parser.shortname' value='xerces'/>
-    <property name='parser.Version' value='2.0.0 (beta3)'/>
-    <property name='parser.version' value='2.0.0.beta3'/>
-    <property name='parser_version' value='2_0_0_beta3'/>
+    <property name='parser.Version' value='2.0.0 (beta4)'/>
+    <property name='parser.version' value='2.0.0.beta4'/>
+    <property name='parser_version' value='2_0_0_beta4'/>
 
     <property name='oldjar.parser' value='xerces.jar'/>
     <property name='jar.apis' value='xmlParserAPIs.jar'/>
@@ -451,7 +451,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Prepares common parts of the binary distributions                                    -->
   <!-- =================================================================== -->
-  <target name="pack-bin-common" depends="javadocs, docs">
+  <target name="pack-bin-common" depends="javadocs, docs, sampjar">
 
     <echo message="Building the binary distribution files (zip,tar)"/>
     <delete dir="${distbin.dir}"/>
@@ -509,10 +509,12 @@ Copyright:
 
     <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
-         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
+         includes="${parser.shortname}-${parser_version}/**" 
+         excludes="*.class, **/${oldjar.parser}"/>
     <tar tarfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar" 
          basedir="${build.dir}"
-         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
+         includes="${parser.shortname}-${parser_version}/**" 
+         excludes="*.class, **/${oldjar.parser}"/>
     <gzip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar.gz"
           src="${build.dir}/${parser.Name}-bin.${parser.version}.tar" />
     <!-- as before, let's kill of the ungzip'd tarball! -->
@@ -526,16 +528,18 @@ Copyright:
   <target name="oldpack-bin" depends="pack-bin-common, oldjars">
     <copy file="${build.dir}/${oldjar.parser}" tofile="${distbin.dir}/${oldjar.parser}"/>
 
-    <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" 
+    <zip zipfile="${build.dir}/old${parser.Name}-bin.${parser.version}.zip" 
          basedir="${build.dir}"
-         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
-    <tar tarfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar" 
+         includes="${parser.shortname}-${parser_version}/**" 
+         excludes="*.class, **/${jar.parser}, **/${jar.apis}"/>
+    <tar tarfile="${build.dir}/old${parser.Name}-bin.${parser.version}.tar" 
          basedir="${build.dir}"
-         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
-    <gzip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar.gz"
-          src="${build.dir}/${parser.Name}-bin.${parser.version}.tar" />
+         includes="${parser.shortname}-${parser_version}/**" 
+         excludes="*.class, **/${jar.parser}, **/${jar.apis}"/>
+    <gzip zipfile="${build.dir}/old${parser.Name}-bin.${parser.version}.tar.gz"
+          src="${build.dir}/old${parser.Name}-bin.${parser.version}.tar" />
     <!-- as before, let's kill of the ungzip'd tarball! -->
-    <delete file="${build.dir}/${parser.Name}-bin.${parser.version}.tar"/>
+    <delete file="${build.dir}/old${parser.Name}-bin.${parser.version}.tar"/>
 
   </target>
 
@@ -620,7 +624,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Builds and packages tools, sources and binary distributions                -->
   <!-- =================================================================== -->
-  <target name="all" depends="pack-src, pack-bin, pack-tools">
+  <target name="all" depends="pack-bin, oldpack-bin, pack-src, pack-tools">
   </target>
 
   <!-- =================================================================== -->
