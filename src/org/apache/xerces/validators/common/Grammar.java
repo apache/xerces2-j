@@ -548,11 +548,13 @@ implements XMLContentSpec.Provider {
         //  for this element. So we create a DFAContentModel object. He
         //  encapsulates all of the work to create the DFA.
         //
-        int leafCount = countLeaves(contentSpecIndex);
+        
+	//int leafCount = countLeaves(contentSpecIndex);
 	fLeafCount = 0;
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
 
-	return new DFAContentModel(  cmn, leafCount);
+	// REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
+	return new DFAContentModel(  cmn, fLeafCount);
     }
 
     private void printSyntaxTree(CMNode cmn){
@@ -604,7 +606,7 @@ implements XMLContentSpec.Provider {
     }
 
     private int fLeafCount = 0;
-    private int fEpsilonIndex = -2;
+    private int fEpsilonIndex = -1;
     private final CMNode buildSyntaxTree(int startNode, XMLContentSpec contentSpec) throws CMException
     {
         // We will build a node at this level for the new tree
