@@ -130,7 +130,7 @@ Copyright:
   <!-- Creates the class package                                           -->
   <!-- =================================================================== -->
   <target name="package" depends="compile">
-    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}" includes="org/**"/>
+    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}" includes="org/**, javax/**"/>
   </target>
 
   <!-- =================================================================== -->
