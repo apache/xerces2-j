@@ -182,6 +182,7 @@ public final class XMLValidator
     private boolean fDynamicDisabledByValidation = false;
     private boolean fWarningOnDuplicateAttDef = false;
     private boolean fWarningOnUndeclaredElements = false;
+    private boolean fLoadDTDGrammar = true;
 
     // declarations
 
@@ -402,6 +403,21 @@ public final class XMLValidator
     /** Returns true if validation is dynamic. */
     public boolean getDynamicValidationEnabled() {
         return fDynamicValidation;
+    }
+
+    /** Sets fLoadDTDGrammar when validation is off **/
+    public void setLoadDTDGrammar(boolean loadDG){
+        if (fValidating) {
+            fLoadDTDGrammar = true;
+        }
+        else{
+            fLoadDTDGrammar = loadDG;
+        }
+    }
+
+    /** Returns fLoadDTDGrammar **/
+    public boolean getLoadDTDGrammar() {
+        return fLoadDTDGrammar;
     }
 
     /** Sets whether namespaces are enabled. */
@@ -1725,8 +1741,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //}
 
 
-
-            // initialize the grammar to be the default one, it definitely should be a DTD Grammar at this case;
+        if ( fLoadDTDGrammar ) 
+            // initialize the grammar to be the default one, 
+            // it definitely should be a DTD Grammar at this case;
             if (fGrammar == null) {
 
                 fGrammar = fGrammarResolver.getGrammar("");

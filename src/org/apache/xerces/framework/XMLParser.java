@@ -132,6 +132,7 @@ public abstract class XMLParser
         "http://apache.org/xml/features/validation/warn-on-undeclared-elemdef",
         "http://apache.org/xml/features/allow-java-encodings",
         "http://apache.org/xml/features/continue-after-fatal-error",
+        "http://apache.org/xml/features/load-DTDGrammar"
     };
 
     /** Properties recognized by this parser. */
@@ -591,6 +592,44 @@ public abstract class XMLParser
     protected boolean getValidationDynamic() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fValidator.getDynamicValidationEnabled();
+    }
+    /**
+     * Allows the parser to have the choice to load DTD grammar when 
+     * validation is off.
+     * <p>
+     * This method is the equivalent to the feature:
+     * <pre>
+     * http://apache.org/xml/features/load-DTDGrammar
+     * </pre>
+     *
+     * @param loadDTDGrammar True to turn on the feature; false to
+     *                turn off the feature.
+     *
+     * @see #getLoadDTDGrammar
+     * @see #setFeature
+     */
+    protected void setLoadDTDGrammar(boolean loadDTDGrammar) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            // REVISIT: Localize message
+            throw new SAXNotSupportedException("http://apache.org/xml/features/load-DTDGrammar: parse is in progress");
+        }
+        try {
+            fValidator.setLoadDTDGrammar(loadDTDGrammar);
+        }
+        catch (Exception ex) {
+            throw new SAXNotSupportedException(ex.getMessage());
+        }
+    }
+
+    /**
+     * Returns true if load DTD grammar is turned on in the XMLValiator.
+     *
+     * @see #setLoadDTDGrammar
+     */
+    protected boolean getLoadDTDGrammar() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        return fValidator.getLoadDTDGrammar();
     }
 
     /**
@@ -1115,6 +1154,14 @@ public abstract class XMLParser
                 throw new SAXNotSupportedException(featureId);
             }
             //
+            // http://apache.org/xml/features/validation/load-DTDGrammar
+            //
+            if (feature.equals("load-DTDGrammar")) {
+                setLoadDTDGrammar(state);
+                return;
+            }
+
+            //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
             if (feature.equals("validation/validate-datatypes")) {
@@ -1262,6 +1309,12 @@ public abstract class XMLParser
             if (feature.equals("validation/validate-content-models")) {
                 // REVISIT
                 throw new SAXNotRecognizedException(featureId);
+            }
+            //
+            // http://apache.org/xml/features/validation/load-DTDGrammar
+            //
+            if (feature.equals("load-DTDGrammar")) {
+                return getLoadDTDGrammar();
             }
             //
             // http://apache.org/xml/features/validation/validate-datatypes
