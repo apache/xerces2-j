@@ -142,4 +142,39 @@ public class QName {
         uri = null;
     } // clear()
 
+    //
+    // Object methods
+    //
+
+    /** Returns a string representation of this object. */
+    public String toString() {
+        StringBuffer str = new StringBuffer();
+        boolean comma = false;
+        if (prefix != null) {
+            str.append("prefix=\""+prefix+'"');
+            comma = true;
+        }
+        if (localpart != null) {
+            if (comma) {
+                str.append(',');
+            }
+            str.append("localpart=\""+localpart+'"');
+            comma = true;
+        }
+        if (rawname != null) {
+            if (comma) {
+                str.append(',');
+            }
+            str.append("rawname=\""+rawname+'"');
+            comma = true;
+        }
+        if (uri != null) {
+            if (comma) {
+                str.append(',');
+            }
+            str.append("uri=\""+uri+'"');
+        }
+        return str.toString();
+    }
+
 } // class QName

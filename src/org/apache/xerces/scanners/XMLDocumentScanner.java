@@ -119,6 +119,11 @@ public class XMLDocumentScanner
     /** Entity manager property id. */
     protected static final String ENTITY_MANAGER = "http://apache.org/xml/properties/internal/entity-manager";
 
+    // debugging
+
+    /** Debug. */
+    private static final boolean DEBUG = false;
+
     //
     // Data
     //
@@ -166,11 +171,11 @@ public class XMLDocumentScanner
     /** Element attributes. */
     private XMLAttributes fAttributes = new XMLAttributes();
 
+    /** String. */
+    private XMLString fString = new XMLString();
+
     /** String buffer. */
     private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
-
-    /** Content buffer. */
-    private XMLString fContent = new XMLString();
 
     //
     // Constructors
@@ -210,17 +215,25 @@ public class XMLDocumentScanner
 
     /** 
      * Scans a document.
+     * <p>
      * <pre>
      * [1] document ::= prolog element Misc*
      * </pre>
      */
     protected void scanDocument() throws IOException, SAXException {
+        if (DEBUG) System.out.println(">>> scanDocument()");
 
+        // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.startDocument();
         }
 
+        // scan document
         scanProlog();
+        if (fEntityScanner.scanChar() != '<') {
+            // REVISIT: report error
+            throw new SAXException("expected start of root element");
+        }
         scanElement();
         try {
             scanMisc();
@@ -229,25 +242,34 @@ public class XMLDocumentScanner
             // ignore; legal end of scanning
         }
 
+        // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.endDocument();
         }
 
+        if (DEBUG) System.out.println("<<< scanDocument()");
     } // scanDocument()
 
     /** 
      * Scans the prolog.
+     * <p>
      * <pre>
      * [22] prolog ::= XMLDecl? Misc* (doctypedecl Misc*)?
      * </pre> 
      */
     protected void scanProlog() throws IOException, SAXException {
+        if (DEBUG) System.out.println(">>> scanProlog()");
 
-        scanXMLDecl();
+        if (fEntityScanner.skipString("<?xml")) {
+            scanXMLDecl();
+        }
         scanMisc();
-        scanDoctypeDecl();
+        if (fEntityScanner.skipString("<!DOCTYPE")) {
+            scanDoctypeDecl();
+        }
         scanMisc();
 
+        if (DEBUG) System.out.println("<<< scanProlog()");
     } // scanProlog()
 
     /** 
@@ -271,7 +293,56 @@ public class XMLDocumentScanner
      * </pre> 
      */
     protected void scanMisc() throws IOException, SAXException {
-        // TODO
+        if (DEBUG) System.out.println(">>> scanMisc()");
+
+        while (true) {
+            fEntityScanner.skipSpaces();
+            /***
+            int c = fEntityScanner.scanChar();
+            if (c == '<') {
+                c = fEntityScanner.peekChar();
+                if (c == '?') {
+                    fEntityScanner.scanChar();
+                    scanPI();
+                    continue;
+                }
+                if (c == '!') {
+                    fEntityScanner.scanChar();
+                    c = fEntityScanner.scanChar();
+                    if (c != '-') {
+                        throw new SAXException("expected '-', found '"+(char)c+'\'');
+                    }
+                    c = fEntityScanner.scanChar();
+                    if (c != '-') {
+                        throw new SAXException("expected '-', found '"+(char)c+'\'');
+                    }
+                    scanComment();
+                    continue;
+                }
+                // REVISIT: Assuming that it's an element. -Ac
+                return;
+
+            }
+            throw new SAXException("expected '<', found '"+(char)c+'\'');
+            /***/
+            int c = fEntityScanner.peekChar();
+            if (c == '<') {
+                if (fEntityScanner.skipString("<?")) {
+                    scanPI();
+                    continue;
+                }
+                if (fEntityScanner.skipString("<!--")) {
+                    scanComment();
+                    continue;
+                }
+                break;
+            }
+            // REVISIT: report error
+            throw new SAXException("expected '<', found '"+(char)c+'\'');
+            /***/
+        }
+
+        if (DEBUG) System.out.println("<<< scanMisc()");
     } // scanMisc()
 
     /** 
@@ -281,7 +352,25 @@ public class XMLDocumentScanner
      * </pre> 
      */
     protected void scanComment() throws IOException, SAXException {
-        // TODO
+        if (DEBUG) System.out.println(">>> scanComment()");
+
+        // data
+        fStringBuffer.clear();
+        while (fEntityScanner.scanData("--", fString)) {
+            fStringBuffer.append(fString);
+        }
+        fStringBuffer.append(fString);
+        if (fEntityScanner.scanChar() != '>') {
+            // REVISIT: report error
+            throw new SAXException("comment cannot contain \"--\"");
+        }
+
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.comment(fStringBuffer);
+        }
+
+        if (DEBUG) System.out.println("<<< scanComment()");
     } // scanComment()
 
     /** 
@@ -289,10 +378,33 @@ public class XMLDocumentScanner
      * <pre>
      * [16] PI ::= '&lt;?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
      * [17] PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
-     * </pre> 
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> This method assumes that the leading
+     * "&lt;?" characters have been consumed. 
      */
     protected void scanPI() throws IOException, SAXException {
-        // TODO
+        if (DEBUG) System.out.println(">>> scanPI()");
+
+        // target
+        String target = fEntityScanner.scanName();
+
+        // data
+        XMLString data = fString;
+        if (fEntityScanner.scanData("?>", fString)) {
+            do {
+                fStringBuffer.append(fString);
+            } while (fEntityScanner.scanData("?>", fString));
+            fStringBuffer.append(fString);
+            data = fStringBuffer;
+        }
+
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.processingInstruction(target, data);
+        }
+
+        if (DEBUG) System.out.println("<<< scanPI()");
     } // scanPI()
 
     /** 
@@ -320,6 +432,7 @@ public class XMLDocumentScanner
      * '&lt;' character has been consumed.
      */
     protected void scanElement() throws IOException, SAXException {
+        if (DEBUG) System.out.println(">>> scanElement()");
 
         //
         // Start element
@@ -447,6 +560,7 @@ public class XMLDocumentScanner
             fNamespaceSupport.popContext();
         }
 
+        if (DEBUG) System.out.println("<<< scanElement()");
     } // scanElement()
 
     /** 
@@ -465,6 +579,7 @@ public class XMLDocumentScanner
      */
     protected void scanAttribute(XMLAttributes attributes) 
         throws IOException, SAXException {
+        if (DEBUG) System.out.println(">>> scanAttribute()");
 
         // name
         if (fNamespaces) {
@@ -486,23 +601,29 @@ public class XMLDocumentScanner
 
         // quote
         int oquote = fEntityScanner.scanChar();
-        if (oquote != '\'' || oquote != '"') {
+        if (oquote != '\'' && oquote != '"') {
             // REVISIT: report error
-            throw new SAXException("expected open quote");
+            throw new SAXException("expected open quote, found '"+(char)oquote+'\'');
         }
 
         // content
-        fStringBuffer.clear();
-        attributes.setAttribute(fAttrQName, "CDATA", fStringBuffer);
-        while (fEntityScanner.scanAttContent(oquote, fContent)) {
-            fStringBuffer.append(fContent);
-            /***
-            if (fEntityScanner.peekChar() == '&') {
-                // TODO: handle entities in value
-            }
-            /***/
+        final String CDATA = fSymbolTable.addSymbol("CDATA");
+        attributes.setAttribute(fAttrQName, CDATA, null);
+        XMLString value = fString;
+        if (fEntityScanner.scanAttContent(oquote, fString)) {
+            fStringBuffer.clear();
+            do {
+                fStringBuffer.append(fString);
+                /***
+                if (fEntityScanner.peekChar() == '&') {
+                    // TODO: handle entities in value
+                }
+                /***/
+            } while (fEntityScanner.scanAttContent(oquote, fString));
+            fStringBuffer.append(fString);
+            value = fStringBuffer;
         }
-        attributes.setValue(attributes.getLength() - 1, fStringBuffer);
+        attributes.setValue(attributes.getLength() - 1, value);
 
         // quote
         int cquote = fEntityScanner.scanChar();
@@ -511,6 +632,7 @@ public class XMLDocumentScanner
             throw new SAXException("expected close quote");
         }
 
+        if (DEBUG) System.out.println("<<< scanAttribute()");
     } // scanAttribute()
 
     /**
@@ -532,6 +654,7 @@ public class XMLDocumentScanner
      * </pre> 
      */
     protected void scanContent() throws IOException, SAXException {
+        // TODO
     } // scanContent()
 
     // utility methods
@@ -563,7 +686,12 @@ public class XMLDocumentScanner
         }
 
         // bind the element
-        element.uri = fNamespaceSupport.getURI(element.prefix);
+        String prefix = element.prefix != null
+                      ? element.prefix : "";
+        element.uri = fNamespaceSupport.getURI(prefix);
+        if (element.prefix == null && element.uri != null) {
+            element.prefix = fSymbolTable.addSymbol("");
+        }
         if (element.prefix != null && element.uri == null) {
             // REVISIT: report error
             throw new SAXException("element prefix \""+element.prefix+"\" not bound");

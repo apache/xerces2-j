@@ -138,7 +138,7 @@ public class XMLAttributes
         Attribute attribute = fAttributes[index];
         attribute.name.setValues(name);
         attribute.type = type;
-        attribute.value = value.toString();
+        attribute.value = value != null ? value.toString() : null;
 
         // return
         return index;
@@ -220,7 +220,7 @@ public class XMLAttributes
      * @param value 
      */
     public void setValue(int index, XMLString value) {
-        throw new RuntimeException("not implemented");
+        setValue(index, value != null ? value.toString() : null);
     } // setValue
 
     /**

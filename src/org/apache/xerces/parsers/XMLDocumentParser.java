@@ -141,6 +141,8 @@ public abstract class XMLDocumentParser
         fFeatures.put(SAX2_FEATURES_PREFIX+"validation", Boolean.FALSE);
 
         // create and register components
+        fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/symbol-table", 
+                        fSymbolTable);
         fGrammarPool = grammarPool;
         fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/grammar-pool",
                         fGrammarPool);
