@@ -1,7 +1,6 @@
 # Makefile for directory ./org/apache/xerces/validators/schema
 
 TARGETS=\
-	DatatypeContentModel.class\
 	SchemaGrammar.class\
 	SchemaMessageProvider.class\
 	SchemaSymbols.class \

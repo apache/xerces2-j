@@ -84,12 +84,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
-import org.apache.xerces.validators.dtd.DTDImporter;
 import org.apache.xerces.validators.schema.SchemaGrammar;
-//import org.apache.xerces.validators.schema.SchemaImporter;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
-//import org.apache.xerces.validators.schema.SchemaGrammarResolver;
-import org.apache.xerces.validators.schema.DatatypeContentModel;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 
 /**
@@ -258,8 +254,6 @@ public final class XMLValidator
     // state and stuff
 
     private boolean fScanningDTD = false;
-    private DTDImporter fDTDImporter = null;
-    //private SchemaImporter fSchemaImporter = null;
     private XMLDocumentScanner fDocumentScanner = null;
     private boolean fCalledStartDocument = false;
     private XMLDocumentHandler fDocumentHandler = null;
@@ -495,17 +489,21 @@ public final class XMLValidator
     /** Send end of input notification. */
     public void sendEndOfInputNotifications(int entityName, boolean moreToFollow) throws Exception {
         fDocumentScanner.endOfInput(entityName, moreToFollow);
+        /***
         if (fScanningDTD) {
             fDTDImporter.sendEndOfInputNotifications(entityName, moreToFollow);
         }
+        /***/
     }
 
     /** Send reader change notifications. */
     public void sendReaderChangeNotifications(XMLEntityHandler.EntityReader reader, int readerId) throws Exception {
         fDocumentScanner.readerChange(reader, readerId);
+        /***
         if (fScanningDTD) {
             fDTDImporter.sendReaderChangeNotifications(reader, readerId);
         }
+        /***/
     }
 
     /** External entity standalone check. */
