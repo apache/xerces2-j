@@ -84,7 +84,7 @@ public class XIncludeNamespaceSupport extends MultipleScopeNamespaceSupport {
      */
     public String getURIFromIncludeParent(String prefix) {
         int lastValidContext = fCurrentContext - 1;
-        while (!fValidContext[lastValidContext]) {
+        while (lastValidContext > 0 && !fValidContext[lastValidContext]) {
             lastValidContext--;
         }
         return getURI(prefix, lastValidContext);
