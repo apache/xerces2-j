@@ -100,14 +100,14 @@ public class AttrNSImpl
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
             this.prefix = null;
-            this.localName = null;
+            this.localName = qualifiedName;
         } 
         else {
             this.prefix = qualifiedName.substring(0, index); 
             this.localName = qualifiedName.substring(index+1);
         }
         
-    	if (!DocumentImpl.isXMLName(prefix)) {
+    	if (!DocumentImpl.isXMLName(qualifiedName)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
         }

@@ -101,7 +101,7 @@ public class ElementNSImpl
         int index = qualifiedName.indexOf(':');
         if (index < 0) {
             this.prefix = null;
-            this.localName = null;
+            this.localName = qualifiedName;
         } 
         else {
             this.prefix = qualifiedName.substring(0, index); 
