@@ -421,10 +421,13 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	AttrImpl newAttr = (AttrImpl)getOwnerDocument().createAttribute(name);
+    	AttrImpl newAttr = (AttrImpl)getAttributeNode(name);
+        if (newAttr == null) {
+            newAttr = getOwnerDocument().createAttribute(name);
+            attributes.setNamedItem(newAttr);
+            newAttr.owned = true;
+        }
     	newAttr.setNodeValue(value);
-    	attributes.setNamedItem(newAttr);
-    	newAttr.owned = true; // Set true AFTER adding -- or move in?????
 
     } // setAttribute(String,String)
  
