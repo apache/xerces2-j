@@ -29,6 +29,8 @@
            id='xni' source='xni.xml'/>
  <hidden title='XNI Design' id='xni-design' source='xni-design.xml'/>
  <hidden title='XNI API' id='xni-api' source='xni-api.xml'/>
+ <design title='Xerces Native Interface Design' 
+         id='design-xni' source='design-xni.xml'/>
  <hidden title='XNI Parser Configuration' 
          id='xni-config' source='xni-config.xml'/>
  <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>

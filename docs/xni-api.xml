@@ -1,5 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
 <s1 title='XNI API Documentation'>
- <p><strong>TODO</strong></p>
+ <s2 title='XNI Core'>
+  <p>Package <code>org.apache.xerces.xni</code>:</p>
+ </s2>
+ <s2 title='XNI Parser Configuration'>
+ </s2>
 </s1>

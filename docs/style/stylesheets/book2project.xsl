@@ -53,20 +53,40 @@
   </xsl:template>
 
   <xsl:template match="hidden">
-
     <process source="{@source}" producer="parser">
       <processor name="xslt">
         <parameter name="stylesheet" value="sbk:/style/stylesheets/any2project.xsl"/>
       </processor>
     </process>
-
     <xsl:call-template name="header">
       <xsl:with-param name="id"     select="@id"/>
       <xsl:with-param name="source" select="@source"/>
       <xsl:with-param name="label"  select="@title"/>
     </xsl:call-template>
-
     <create source="{@source}" target="{@id}.html" producer="parser" printer="html">
+      <processor name="xslt">
+        <parameter name="id" value="{@id}"/>
+        <parameter name="stylesheet" value="sbk:/style/stylesheets/document2html.xsl"/>
+      </processor>
+    </create>
+  </xsl:template>
+
+  <xsl:template match="design">
+    <process source="{@source}" producer="parser">
+      <processor name="xslt">
+        <parameter name="stylesheet" value="sbk:/style/stylesheets/any2project.xsl"/>
+      </processor>
+    </process>
+    <xsl:call-template name="header">
+      <xsl:with-param name="id"     select="@id"/>
+      <xsl:with-param name="source" select="@source"/>
+      <xsl:with-param name="label"  select="@title"/>
+    </xsl:call-template>
+    <create source="{@source}" target="{@id}.html" producer="parser" printer="html">
+      <processor name="xslt">
+        <parameter name="id" value="{@id}"/>
+        <parameter name="stylesheet" value="sbk:/style/stylesheets/design2document.xsl"/>
+      </processor>
       <processor name="xslt">
         <parameter name="id" value="{@id}"/>
         <parameter name="stylesheet" value="sbk:/style/stylesheets/document2html.xsl"/>

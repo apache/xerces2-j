@@ -7,7 +7,7 @@
 %externalEntity;
 
 <!ELEMENT book (resources?|document|hidden|faqs|releases|
-                external|separator|settings)+>
+                external|separator|settings|design)+>
 <!ATTLIST book title     CDATA #REQUIRED
                copyright CDATA #IMPLIED>
                
@@ -52,5 +52,10 @@
                    title  CDATA #REQUIRED
                    id     ID    #REQUIRED
                    source CDATA #REQUIRED>
+		   
+<!ELEMENT design EMPTY>
+<!ATTLIST design title  CDATA #REQUIRED
+                 id     ID    #REQUIRED
+                 source	CDATA #REQUIRED>
 
 <!-- CVS $Revision$ $Date$ -->
