@@ -1334,7 +1334,6 @@ public class SchemaValidator
             }
 
             // get the value constraint from use or decl
-            // REVISIT: don't quite understand the spec: which value constraint to use
             // 4 The item's ·actual value· must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
             if (currDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string

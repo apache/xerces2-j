@@ -88,6 +88,8 @@ abstract class XSDAbstractTraverser {
                                                              SchemaSymbols.ATTVAL_ANYTYPE,
                                                              SchemaSymbols.URI_SCHEMAFORSCHEMA);
 
+    protected static final String NO_NAME      = "(no name)";
+
     // Flags for checkOccurrences to indicate any special
     // restrictions on minOccurs and maxOccurs relating to "all".
     //    NOT_ALL_CONTEXT    - not processing an <all>
@@ -156,8 +158,8 @@ abstract class XSDAbstractTraverser {
     }
 
 
-    // 
-    // Traverse a set of attribute and attribute group elements 
+    //
+    // Traverse a set of attribute and attribute group elements
     // Needed by complexType and attributeGroup traversal
     //
     boolean traverseAttrsAndAttrGrps(Element firstAttr, XSAttributeGroupDecl attrGrp,
@@ -171,7 +173,7 @@ abstract class XSDAbstractTraverser {
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
             childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
-                tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child, 
+                tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
                               schemaDoc, grammar);
                 attrGrp.addAttributeUse(tempAttrUse);
             }
@@ -200,13 +202,18 @@ abstract class XSDAbstractTraverser {
                 // Error - the element is not an attribute, attributeGroup or anyAttr
                 return false;
             }
-        } 
+        }
 
         // Success
         return true;
 
     }
 
+    void reportSchemaError (String key, Object[] args) {
+        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                   key, args,
+                                   XMLErrorReporter.SEVERITY_ERROR);
+    }
 
     // REVISIT: is it how we want to handle error reporting?
     void reportGenericSchemaError (String error) {

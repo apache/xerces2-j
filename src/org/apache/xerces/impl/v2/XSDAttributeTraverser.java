@@ -116,9 +116,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             }
 
             if (child != null) {
-                reportGenericSchemaError("src-attribute.0: the content of an attribute information item with 'ref' must match (annotation?)");
+                reportSchemaError("src-attribute.3.2", new Object[]{refAtt});
             }
-
+            // for error reporting
+            nameAtt = refAtt.localpart;
         } else {
             attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false);
         }
@@ -149,13 +150,13 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // 1 default and fixed must not both be present.
         if (defaultAtt != null && fixedAtt != null) {
             // REVISIT:  localize
-            reportGenericSchemaError("src-attribute.1: 'default' and 'fixed' must not both be present in attribute declaration '" + nameAtt + "'");
+            reportSchemaError("src-attribute.1", new Object[]{nameAtt});
         }
 
         // 2 If default and use are both present, use must have the ·actual value· optional.
         if (consType == XSAttributeDecl.DEFAULT_VALUE &&
             useAtt != null && useAtt.intValue() != SchemaSymbols.USE_OPTIONAL) {
-            reportGenericSchemaError("src-attribute.2: 'default' is present in attribute '"+nameAtt+"', so 'use' must be 'optional'");
+            reportSchemaError("src-attribute.2", new Object[]{nameAtt});
         }
 
         // a-props-correct
@@ -163,12 +164,12 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (defaultAtt != null && attrUse != null) {
             // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
             if (!checkDefaultValid(attrUse)) {
-                reportGenericSchemaError ("a-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in attribute " + nameAtt);
+                reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt});
             }
 
             // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
             if (attribute.fType instanceof IDDatatypeValidator) {
-                reportGenericSchemaError ("a-props-correct.3: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- attribute " + nameAtt);
+                reportSchemaError ("a-props-correct.3", new Object[]{nameAtt});
             }
         }
 
@@ -273,6 +274,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (type instanceof DatatypeValidator)
                 attrType = (DatatypeValidator)type;
             else
+                // REVISIT: what should be the error code here
                 reportGenericSchemaError("the type for attribute '"+nameAtt+"' must be a simpleType");
         }
 
@@ -291,14 +293,15 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // required attributes
         if (nameAtt == null) {
             if (isGlobal)
-                reportGenericSchemaError("src-attribute.0: 'name' must be present in a global attribute declaration");
+                reportSchemaError("s4s-att-must-appear", new Object[]{NO_NAME, SchemaSymbols.ATT_NAME});
             else
-                reportGenericSchemaError("src-attribute.3.1: One of 'ref' or 'name' must be present in a local attribute declaration");
+                reportSchemaError("src-attribute.3.1", null);
+            nameAtt = NO_NAME;
         }
 
         // element
         if (child != null) {
-            reportGenericSchemaError("src-attribute.0: the content of an attribute information item must match (annotation?, (simpleType?))");
+            reportSchemaError("s4s-elt-must-match", new Object[]{nameAtt, "(annotation?, (simpleType?))"});
         }
 
         // Step 4: check 3.2.3 constraints
@@ -307,8 +310,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // 1 default and fixed must not both be present.
         if (defaultAtt != null && fixedAtt != null) {
-            // REVISIT:  localize
-            reportGenericSchemaError("src-attribute.1: 'default' and 'fixed' must not both be present in attribute declaration '" + nameAtt + "'");
+            reportSchemaError("src-attribute.1", new Object[]{nameAtt});
         }
 
         // 2 If default and use are both present, use must have the ·actual value· optional.
@@ -323,8 +325,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // 4 type and <simpleType> must not both be present.
         if (haveAnonType && (typeAtt != null)) {
-            reportGenericSchemaError( "src-attribute.3: Attribute '"+ nameAtt +
-                                      "' have both a type attribute and a simpleType child" );
+            reportSchemaError( "src-attribute.4", new Object[]{nameAtt});
         }
 
         // Step 5: check 3.2.6 constraints
@@ -336,14 +337,14 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
         if (attribute.fDefault != null) {
             if (!checkDefaultValid(attribute)) {
-                reportGenericSchemaError ("a-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in attribute " + nameAtt);
+                reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt});
             }
         }
 
         // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
         if (attribute.fDefault != null) {
             if (attrType instanceof IDDatatypeValidator) {
-                reportGenericSchemaError ("a-props-correct.3: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- attribute " + nameAtt);
+                reportSchemaError ("a-props-correct.3", new Object[]{nameAtt});
             }
         }
 
@@ -351,14 +352,14 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // The {name} of an attribute declaration must not match xmlns.
         if (nameAtt != null && nameAtt.equals(SchemaSymbols.XMLNS)) {
-            reportGenericSchemaError("no-xmlns: The {name} of an attribute declaration must not match 'xmlns'");
+            reportSchemaError("no-xmlns", null);
         }
 
         // no-xsi
 
         // The {target namespace} of an attribute declaration, whether local or top-level, must not match http://www.w3.org/2001/XMLSchema-instance (unless it is one of the four built-in declarations given in the next section).
         if (attribute.fTargetNamespace.equals(SchemaSymbols.OURI_XSI)) {
-            reportGenericSchemaError("no-xsi: The {target namespace} of an attribute declaration must not match " + SchemaSymbols.OURI_XSI);
+            reportSchemaError("no-xsi", new Object[]{SchemaSymbols.OURI_XSI});
         }
 
         return attribute;

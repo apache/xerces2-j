@@ -172,8 +172,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 child = DOMUtil.getNextSiblingElement(child);
             }
 
+            // Element Declaration Representation OK
+            // 2 If the item's parent is not <schema>, then all of the following must be true:
+            // 2.1 One of ref or name must be present, but not both.
+            // 2.2 If ref is present, then all of <complexType>, <simpleType>, <key>, <keyref>, <unique>, nillable, default, fixed, form, block and type must be absent, i.e. only minOccurs, maxOccurs, id are allowed in addition to ref, along with <annotation>.
             if (child != null) {
-                reportGenericSchemaError("src-element.0: the content of an element information item with 'ref' must match (annotation?)");
+                reportSchemaError("src-element.2.2", new Object[]{refAtt});
             }
         } else {
             element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
@@ -376,14 +380,15 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // required attributes
         if (nameAtt == null) {
             if (isGlobal)
-                reportGenericSchemaError("src-element.0: 'name' must be present in a global element declaration");
+                reportSchemaError("s4s-att-must-appear", new Object[]{NO_NAME, SchemaSymbols.ATT_NAME});
             else
-                reportGenericSchemaError("src-element.2.1: One of 'ref' or 'name' must be present in a local element declaration");
+                reportSchemaError("src-element.2.1", null);
+            nameAtt = NO_NAME;
         }
 
         // element
         if (child != null) {
-            reportGenericSchemaError("src-element.0: the content of an element information item must match (annotation?, (simpleType | complexType)?, (unique | key | keyref)*))");
+            reportSchemaError("s4s-elt-must-match", new Object[]{nameAtt, "(annotation?, (simpleType | complexType)?, (unique | key | keyref)*))"});
         }
 
         // Step 4: check 3.3.3 constraints
@@ -392,7 +397,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 1 default and fixed must not both be present.
         if (defaultAtt != null && fixedAtt != null) {
-            reportGenericSchemaError("src-element.1: 'default' and 'fixed' must not both be present in element declaration '" + nameAtt + "'");
+            reportSchemaError("src-element.1", new Object[]{nameAtt});
         }
 
         // 2 If the item's parent is not <schema>, then all of the following must be true:
@@ -404,8 +409,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 3 type and either <simpleType> or <complexType> are mutually exclusive.
         if (haveAnonType && (typeAtt != null)) {
-            reportGenericSchemaError( "src-element.3: Element '"+ nameAtt +
-                                      "' have both a type attribute and a annoymous type child" );
+            reportSchemaError("src-element.3", new Object[]{nameAtt});
         }
 
         // Step 5: check 3.3.6 constraints
@@ -417,14 +421,14 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // 2 If there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in Element Default Valid (Immediate) (§3.3.6).
         if (element.fDefault != null) {
             if (!checkDefaultValid(element)) {
-                reportGenericSchemaError ("e-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in element " + nameAtt);
+                reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault});
             }
         }
 
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
            if (!fSubGroupHandler.checkSubstitutionGroupOK(element)) {
-                reportGenericSchemaError ("e-props-correct.3: the {type definition} of element '"+nameAtt+"' must be validly derived from the {type definition} of the element '"+subGroupAtt.uri+","+subGroupAtt.localpart+"'");
+                reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart});
            }
         }
 
@@ -433,7 +437,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             if (elementType instanceof IDDatatypeValidator ||
                 elementType instanceof XSComplexTypeDecl &&
                 ((XSComplexTypeDecl)elementType).containsTypeID()) {
-                reportGenericSchemaError ("e-props-correct.4: if the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- element " + nameAtt);
+                reportSchemaError ("e-props-correct.4", new Object[]{element.fName});
             }
         }
 
@@ -473,10 +477,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                 //REVISIT: to implement
                 //if (!particleEmptiable(typeInfo.contentSpecHandle))
-                //    reportGenericSchemaError ("e-props-correct.2.2.2: for element " + nameStr + ", the {content type} is mixed, then the {content type}'s particle must be emptiable");
+                //    reportSchemaError ("cos-valid-default.2.2.2", new Object[]{element.fName});
             }
             else {
-                reportGenericSchemaError ("e-props-correct.2.1: element " + element.fName + " has a fixed or default value and must have a mixed or simple content model");
+                reportSchemaError ("cos-valid-default.2.1", new Object[]{element.fName});
             }
         }
 
