@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Locale;
 import org.apache.xerces.util.MessageFormatter;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 /**
  * A simple ASCII byte reader. This is an optimized reader for reading
@@ -111,7 +112,9 @@ public class ASCIIReader
     public int read() throws IOException {
         int b0 = fInputStream.read();
         if (b0 >= 0x80) {
-            throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0)}));
+            throw new MalformedByteSequenceException(fFormatter, 
+                fLocale, XMLMessageFormatter.XML_DOMAIN, 
+                "InvalidASCII", new Object [] {Integer.toString(b0)});
         }
         return b0;
     } // read():int
@@ -138,7 +141,9 @@ public class ASCIIReader
         for (int i = 0; i < count; i++) {
             int b0 = fBuffer[i];
             if (b0 < 0) {
-                throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0 & 0x0FF)}));
+                throw new MalformedByteSequenceException(fFormatter,
+                    fLocale, XMLMessageFormatter.XML_DOMAIN,
+                    "InvalidASCII", new Object [] {Integer.toString(b0 & 0x0FF)});
             }
             ch[offset + i] = (char)b0;
         }

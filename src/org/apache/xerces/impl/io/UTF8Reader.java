@@ -19,13 +19,14 @@ package org.apache.xerces.impl.io;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.UTFDataFormatException;
 
 import java.util.Locale;
 import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 /**
+ * <p>A UTF-8 reader.</p>
+ * 
  * @author Andy Clark, IBM
  *
  * @version $Id$
@@ -93,7 +94,7 @@ public class UTF8Reader
     public UTF8Reader(InputStream inputStream, MessageFormatter messageFormatter,
             Locale locale) {
         this(inputStream, DEFAULT_BUFFER_SIZE, messageFormatter, locale);
-    } // <init>(InputStream, MessageFormatter)
+    } // <init>(InputStream, MessageFormatter, Locale)
 
     /**
      * Constructs a UTF-8 reader from the specified input stream,
@@ -110,7 +111,7 @@ public class UTF8Reader
         fBuffer = new byte[size];
         fFormatter = messageFormatter;
         fLocale = locale;
-    } // <init>(InputStream,int, MessageFormatter)
+    } // <init>(InputStream, int, MessageFormatter, Locale)
 
     //
     // Reader methods
@@ -654,33 +655,36 @@ public class UTF8Reader
 
     /** Throws an exception for expected byte. */
     private void expectedByte(int position, int count)
-        throws UTFDataFormatException {
+        throws MalformedByteSequenceException {
 
-        String message = fFormatter.formatMessage(fLocale, "ExpectedByte",
-                new Object[] {Integer.toString(position), Integer.toString(count)});
-        throw new UTFDataFormatException(message);
+        throw new MalformedByteSequenceException(fFormatter,
+            fLocale,
+            XMLMessageFormatter.XML_DOMAIN,
+            "ExpectedByte",
+            new Object[] {Integer.toString(position), Integer.toString(count)});
 
-    } // expectedByte(int,int,int)
+    } // expectedByte(int,int)
 
     /** Throws an exception for invalid byte. */
     private void invalidByte(int position, int count, int c)
-        throws UTFDataFormatException {
+        throws MalformedByteSequenceException {
 
-        String message = fFormatter.formatMessage(fLocale, "InvalidByte",
-                new Object [] {Integer.toString(position), Integer.toString(count)});
-        throw new UTFDataFormatException(message);
+        throw new MalformedByteSequenceException(fFormatter,
+            fLocale,
+            XMLMessageFormatter.XML_DOMAIN,
+            "InvalidByte", 
+            new Object [] {Integer.toString(position), Integer.toString(count)});
 
-    } // invalidByte(int,int,int,int)
+    } // invalidByte(int,int,int)
 
     /** Throws an exception for invalid surrogate bits. */
-    private void invalidSurrogate(int uuuuu) throws UTFDataFormatException {
+    private void invalidSurrogate(int uuuuu) throws MalformedByteSequenceException {
 
-        StringBuffer str = new StringBuffer();
-        str.append("high surrogate bits in UTF-8 sequence must not exceed 0x10 but found 0x");
-
-        String message = fFormatter.formatMessage(fLocale, "InvalidHighSurrogate",
-                new Object[] {Integer.toHexString(uuuuu)});
-        throw new UTFDataFormatException(message);
+        throw new MalformedByteSequenceException(fFormatter,
+            fLocale,
+            XMLMessageFormatter.XML_DOMAIN,
+            "InvalidHighSurrogate", 
+            new Object[] {Integer.toHexString(uuuuu)});
 
     } // invalidSurrogate(int)
 
