@@ -190,6 +190,9 @@ public final class Constants {
     /** Schema full constraint checking ("validation/schema-full-checking"). */
     public static final String SCHEMA_FULL_CHECKING = "validation/schema-full-checking";
 
+    /** Augment Post-Schema-Validation-Infoset */
+    public static final String SCHEMA_AUGMENT_PSVI = "validation/schema/augment-psvi";
+
     /** Dynamic validation feature ("validation/dynamic"). */
     public static final String DYNAMIC_VALIDATION_FEATURE = "validation/dynamic";
 

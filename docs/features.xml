@@ -160,6 +160,18 @@ catch (SAXException e) {
    <see idref='validation.schema.normalized-value'/>
   </feature>
 
+  <feature name='http://apache.org/xml/features/validation/schema/augment-psvi'
+           id='validation.schema.augment-psvi'>
+   <true>Augment Post-Schema-Validation-Infoset.</true>
+   <false>Do not augment Post-Schema-Validation-Infoset.</false>
+   <default value='true'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <note> This feature can be turned off to improve parsing performance. 
+   </note>  
+   <see idref='validation'/>
+   <see idref='validation.schema'/> 
+  </feature>
+  
 
   <feature name='http://xml.org/sax/features/external-general-entities'
            id='external-general-entities'>
