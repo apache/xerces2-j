@@ -97,136 +97,111 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  *
  */
 
-// REVISIT: 
-// 1. "load-as-infoset" should be implemented
-// 2. why do we need so many fields in this class (why don't we use AbstractDomParser fields)
-// 3. implementation of setFeature method (we are going via switch several times)
-// 4. include-comments - I've defined a constant for DOM feature in Constants. 
-//    I don't think we need to define corresponding feature for Xerces parser 
-//    (with Xerces prefix).
-//    We probably should define all DOM Feature constants in Constants.java
-//  --el
- 
+
 public class DOMBuilderImpl
-    extends AbstractDOMParser implements DOMBuilder {
-    
+extends AbstractDOMParser implements DOMBuilder {
+
     //
     // Constants
     //
 
     // feature ids
 
+    // REVISIT:
+    // should we define all those as constants in impl.Constants?
+    //
+
     /** Feature id: namespace declarations. */
     protected static final String NAMESPACE_DECLARATIONS =
-        "namespace-declarations";
-        
+    "namespace-declarations";
+
     /** Feature id: validation. */
     protected static final String VALIDATION =
-        "validation";
-        
+    "validation";
+
     /** Feature id: external parameter entities. */
     protected static final String EXTERNAL_PARAMETER_ENTITIES =
-        "external-parameter-entities";
-        
+    "external-parameter-entities";
+
     /** Feature id: external general entities. */
     protected static final String EXTERNAL_GENERAL_ENTITIES =
-        "external-general-entities";
-        
+    "external-general-entities";
+
     /** Feature id: external dtd subset. */
     protected static final String EXTERNAL_DTD_SUBSET =
-        "external-dtd-subset";
-        
+    "external-dtd-subset";
+
     /** Feature id: validate if schema. */
     protected static final String VALIDATE_IF_SCHEMA =
-        "validate-if-schema";
-        
+    "validate-if-schema";
+
     /** Feature id: validate against dtd. */
     protected static final String VALIDATE_AGAINST_DTD =
-        "validate-against-dtd";  
-        
+    "validate-against-dtd";  
+
     /** Feature id: datatype normalization. */
     protected static final String DATATYPE_NORMALIZATION =
-        "datatype-normalization"; 
-        
+    "datatype-normalization"; 
+
     /** Feature id: create entity ref nodes. */
     protected static final String CREATE_ENTITY_REFERENCE_NODES =
-        "create-entity-ref-nodes"; 
-        
+    "create-entity-ref-nodes"; 
+
     /** Feature id: create entity nodes. */
     protected static final String CREATE_ENTITY_NODES =
-        "create-entity-nodes";
-           
+    "create-entity-nodes";
+
     /** Feature id: whitespace in element content. */
     protected static final String WHITESPACE_IN_ELEMENT_CONTENT =
-        "whitespace-in-element-content"; 
-    
+    "whitespace-in-element-content"; 
+
     /** Feature id: comments. */
     protected static final String COMMENTS =
-        "comments";  
-        
+    "comments";  
+
     /** Feature id: charset overrides xml encoding. */
     protected static final String CHARSET_OVERRIDES_XML_ENCODING =
-        "charset-overrides-xml-encoding";  
-        
+    "charset-overrides-xml-encoding";  
+
     /** Feature id: load as infoset. */
     protected static final String LOAD_AS_INFOSET =
-        "load-as-infoset";  
-        
+    "load-as-infoset";  
+
     /** Feature id: supported mediatypes only. */
     protected static final String SUPPORTED_MEDIATYPES_ONLY =
-        "supported-mediatypes-only";
-        
+    "supported-mediatypes-only";
+
     // SAX & Xerces feature ids
 
     /** Feature id: validation. */
     protected static final String VALIDATION_FEATURE =
-        Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE;
-        
+    Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE;
+
     /** Feature id: external parameter entities. */
     protected static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE =
-        Constants.SAX_FEATURE_PREFIX+Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
-        
+    Constants.SAX_FEATURE_PREFIX+Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+
     /** Feature id: external general entities. */
     protected static final String EXTERNAL_GENERAL_ENTITIES_FEATURE =
-        Constants.SAX_FEATURE_PREFIX+Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
-        
+    Constants.SAX_FEATURE_PREFIX+Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+
     /** Feature id: load external dtd. */
     protected static final String LOAD_EXTERNAL_DTD_FEATURE =
-        Constants.XERCES_FEATURE_PREFIX+Constants.LOAD_EXTERNAL_DTD_FEATURE;
-        
+    Constants.XERCES_FEATURE_PREFIX+Constants.LOAD_EXTERNAL_DTD_FEATURE;
+
+    /** XML Schema validation */
+    protected static final String XMLSCHEMA =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;    
+
+
+    /** Dynamic validation */
+    protected static final String DYNAMIC_VALIDATION = 
+    Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
     //
     // Data
     //
-    
-    // features
 
-    /** Namespace declarations. */
-    protected boolean fNamespaceDeclarations;
-    
-    /** Validate if schema */
-    protected boolean fValidateIfSchema;
-    
-    /** Validate against DTD */
-    protected boolean fValidateAgainstDTD;
-    
-    /** Datatype normalization */
-    protected boolean fDatatypeNormalization;
-    
-    /** Create entity nodes */
-    protected boolean fCreateEntityNodes;
-        
-    /** Whitespace in element content */
-    protected boolean fWhitespaceInElementContent;
-    
-    /** Charset overrides xml encoding */
-    protected boolean fCharsetOverridesXmlEncoding;
-    
-    /** Load as infoset */
-    protected boolean fLoadAsInfoset;
-    
-    /** Supported mediatypes only */
-    protected boolean fSupportedMediatypesOnly;
-    
+
     //
     // Constructors
     //
@@ -243,7 +218,7 @@ public class DOMBuilderImpl
      */
     public DOMBuilderImpl(XMLParserConfiguration config) {
         super(config);
-        
+
         // add recognized features
         final String[] domRecognizedFeatures = {
             NAMESPACE_DECLARATIONS,
@@ -256,22 +231,25 @@ public class DOMBuilderImpl
             LOAD_AS_INFOSET,
             SUPPORTED_MEDIATYPES_ONLY
         };
-        
+
         fConfiguration.addRecognizedFeatures(domRecognizedFeatures);
 
         // set default values
         fConfiguration.setFeature(NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature(VALIDATE_IF_SCHEMA, false);
         fConfiguration.setFeature(VALIDATE_AGAINST_DTD, false);
-        fConfiguration.setFeature(DATATYPE_NORMALIZATION, false);
         fConfiguration.setFeature(CREATE_ENTITY_NODES, true);
         fConfiguration.setFeature(WHITESPACE_IN_ELEMENT_CONTENT, true);
         fConfiguration.setFeature(CHARSET_OVERRIDES_XML_ENCODING, true);
         fConfiguration.setFeature(LOAD_AS_INFOSET, false);
         fConfiguration.setFeature(SUPPORTED_MEDIATYPES_ONLY, false);
-        
+
+
+        // datatype normalization if by default on in Xerces
+        fConfiguration.setFeature( NORMALIZE_DATA, false );
+
     } // <init>(XMLParserConfiguration)
-    
+
     /**
      * Constructs a DOM Builder using the specified symbol table.
      */
@@ -287,7 +265,7 @@ public class DOMBuilderImpl
     public DOMBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         this(new DTDXSParserConfiguration(symbolTable, grammarPool));
     }
-    
+
     /**
      * Resets the parser state.
      *
@@ -295,27 +273,10 @@ public class DOMBuilderImpl
      */
     public void reset() {
         super.reset();
-        try {
-            fNamespaceDeclarations = fConfiguration.getFeature(NAMESPACE_DECLARATIONS);
-            fValidateIfSchema = fConfiguration.getFeature(VALIDATE_IF_SCHEMA);
-            fValidateAgainstDTD = fConfiguration.getFeature(VALIDATE_AGAINST_DTD);
-            fDatatypeNormalization = fConfiguration.getFeature(DATATYPE_NORMALIZATION);
-            fWhitespaceInElementContent = fConfiguration.getFeature(WHITESPACE_IN_ELEMENT_CONTENT);
-            fCharsetOverridesXmlEncoding = fConfiguration.getFeature(CHARSET_OVERRIDES_XML_ENCODING);
-            fLoadAsInfoset = fConfiguration.getFeature(LOAD_AS_INFOSET);
-            fSupportedMediatypesOnly = fConfiguration.getFeature(SUPPORTED_MEDIATYPES_ONLY);
-        }
-        catch (XMLConfigurationException e) {
-            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR, e.getMessage());
-            }
-            else {
-                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, e.getMessage());
-            }
-        }
+
 
     } // reset() 
-    
+
     //
     // DOMBuilder methods
     //
@@ -337,11 +298,11 @@ public class DOMBuilderImpl
             }
         }
         catch (XMLConfigurationException e) {
-            
+
         }
         return domEntityResolver;
     }
-    
+
     /**
      * If a <code>DOMEntityResolver</code> has been specified, each time a 
      * reference to an external entity is encountered the 
@@ -352,10 +313,10 @@ public class DOMBuilderImpl
     public void setEntityResolver(DOMEntityResolver entityResolver) {
         try {
             fConfiguration.setProperty(ENTITY_RESOLVER, 
-                                        new DOMEntityResolverWrapper(entityResolver));
+                                       new DOMEntityResolverWrapper(entityResolver));
         }
         catch (XMLConfigurationException e) {
-            
+
         }
     }
 
@@ -374,18 +335,18 @@ public class DOMBuilderImpl
         DOMErrorHandler errorHandler = null;
         try {
             DOMErrorHandler domErrorHandler = 
-                (DOMErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
+            (DOMErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
             if (domErrorHandler != null && 
                 domErrorHandler instanceof DOMErrorHandlerWrapper) {
                 errorHandler = ((DOMErrorHandlerWrapper)domErrorHandler).getErrorHandler();
             }
         }
         catch (XMLConfigurationException e) {
-            
+
         }
         return errorHandler;
     }
-    
+
     /**
      *  In the event that an error is encountered in the XML document being 
      * parsed, the <code>DOMDcoumentBuilder</code> will call back to the 
@@ -403,7 +364,7 @@ public class DOMBuilderImpl
                                        new DOMErrorHandlerWrapper(errorHandler));
         }
         catch (XMLConfigurationException e) {
-            
+
         }
     }
 
@@ -419,7 +380,7 @@ public class DOMBuilderImpl
     public DOMBuilderFilter getFilter() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
-    
+
     /**
      *  When the application provides a filter, the parser will call out to 
      * the filter at the completion of the construction of each 
@@ -451,9 +412,22 @@ public class DOMBuilderImpl
      */
     public void setFeature(String name, boolean state) throws DOMException {
         try {
+            // REVISIT: we should not use canSetFeature here
             if (canSetFeature(name, state)) {
+
                 if (name.equals(VALIDATION)) {
                     fConfiguration.setFeature(VALIDATION_FEATURE, state);
+                }
+                else if (name.equals(VALIDATE_IF_SCHEMA)) {
+                    // insert XML Schema validator
+                    fConfiguration.setFeature(DYNAMIC_VALIDATION, state);
+                    fConfiguration.setFeature(XMLSCHEMA, state);
+                }
+                else if (name.equals(WHITESPACE_IN_ELEMENT_CONTENT)) {
+                    fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, state);             
+                }
+                else if (name.equals(DATATYPE_NORMALIZATION)) {
+                    fConfiguration.setFeature(NORMALIZE_DATA, state);
                 }
                 else if (name.equals(EXTERNAL_PARAMETER_ENTITIES)) {
                     fConfiguration.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE, state);
@@ -465,9 +439,11 @@ public class DOMBuilderImpl
                     fConfiguration.setFeature(LOAD_EXTERNAL_DTD_FEATURE, state);
                 }
                 else if (name.equals(COMMENTS)) {
+                    // REVISIT: this feature is not included in the list of features
+                    // supported by Xerces
                     fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, state);
                 }
-                else if(name.equals(CREATE_ENTITY_REFERENCE_NODES)) {
+                else if (name.equals(CREATE_ENTITY_REFERENCE_NODES)) {
                     fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, state);
                 }
                 else {
@@ -501,28 +477,27 @@ public class DOMBuilderImpl
      *   the feature itself is not changed.
      */
     public boolean canSetFeature(String name, boolean state) {
+        // REVISIT: this method is not implemented correctly
+        // we need to make sure that _name_ is the feature
+        // name defined in DOM spec, if not we need to return
+        // false
         if (name.equals(NAMESPACE_DECLARATIONS) && !state) {
             return false;
         }
-        else if(name.equals(VALIDATE_IF_SCHEMA) && state) {
+        else if (name.equals(VALIDATE_AGAINST_DTD) && state) {
             return false;
         }
-        else if(name.equals(VALIDATE_AGAINST_DTD) && state) {
+        else if (name.equals(CREATE_ENTITY_NODES) && !state) {
             return false;
         }
-        else if(name.equals(CREATE_ENTITY_NODES) && !state) {
+        else if (name.equals(LOAD_AS_INFOSET) && state) {
+            //REVISIT: this feature should be easily implemented in Xerces
             return false;
         }
-        else if(name.equals(WHITESPACE_IN_ELEMENT_CONTENT) && !state) {
+        else if (name.equals(SUPPORTED_MEDIATYPES_ONLY) && state) {
             return false;
         }
-        else if(name.equals(LOAD_AS_INFOSET) && state) {
-            return false;
-        }
-        else if(name.equals(SUPPORTED_MEDIATYPES_ONLY) && state) {
-            return false;
-        }
-        
+
         return true;
     }
 
@@ -555,8 +530,17 @@ public class DOMBuilderImpl
             else if (name.equals(COMMENTS)) {
                 return fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE);
             }
-            else if(name.equals(CREATE_ENTITY_REFERENCE_NODES)) {
+            else if (name.equals(CREATE_ENTITY_REFERENCE_NODES)) {
                 return fConfiguration.getFeature(CREATE_ENTITY_REF_NODES);
+            }
+            else if (name.equals(VALIDATE_IF_SCHEMA)) {
+                return fConfiguration.getFeature(DYNAMIC_VALIDATION);
+            }
+            else if (name.equals(WHITESPACE_IN_ELEMENT_CONTENT)) {
+                return fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE);             
+            }
+            else if (name.equals(DATATYPE_NORMALIZATION)) {
+                return fConfiguration.getFeature(NORMALIZE_DATA);
             }
             else {
                 return fConfiguration.getFeature(name);
@@ -571,7 +555,7 @@ public class DOMBuilderImpl
             }
         }
     }
-    
+
     /**
      * Parse an XML document from a location identified by an URI reference. 
      * If the URI contains a fragment identifier (see section 4.1 in ), the 
@@ -601,7 +585,7 @@ public class DOMBuilderImpl
             Exception ex = e.getException();
             throw ex;
         }
-                
+
         // close stream opened by the parser
         finally {
             try {
@@ -643,7 +627,7 @@ public class DOMBuilderImpl
      *   ErrorHandlers are not required to do so. 
      */
     public Document parse(DOMInputSource is) throws Exception {
-        
+
         try {
             // need to wrap the DOMInputSource with an XMLInputSource
             XMLInputSource xmlInputSource = dom2xmlInputSource(is);
@@ -653,10 +637,10 @@ public class DOMBuilderImpl
             Exception ex = e.getException();
             throw ex;
         }
-                
+
         return getDocument();
     }
-                          
+
     /**
      *  Parse an XML document or fragment from a resource identified by an 
      * <code>DOMInputSource</code> and insert the content into an existing 
@@ -681,7 +665,7 @@ public class DOMBuilderImpl
         // REVISIT: need to implement.
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
-    
+
     XMLInputSource dom2xmlInputSource(DOMInputSource is) {
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xis = null;
@@ -710,8 +694,8 @@ public class DOMBuilderImpl
             xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
                                      is.getBaseURI());
         }
-        
+
         return xis;
     }
-            
+
 } // class DOMBuilderImpl
