@@ -217,8 +217,15 @@ public class StringValidator implements DatatypeValidator {
             }
         }
         if ( (_facetsDefined & DatatypeValidator.FACET_ENUMERATION) == 1 ) {
-            if ( !_enumeration.contains( content ) )
+            if ( _enumeration.contains( content ) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+_enumeration);
+        }
+
+        if( (_facetsDefined & DatatypeValidator.FACET_PATTERN ) == 1 ) {
+            RegularExpression regex = new RegularExpression(_pattern, "X" );
+            if( regex.matches( content) == false )
+                throw new InvalidDatatypeValueException("Value'"+content+
+                              "does not match regular expression facet" + _pattern );
         }
     }
 }
