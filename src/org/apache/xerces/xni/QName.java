@@ -136,9 +136,10 @@ public class QName
     /** Returns the hashcode for this object. */
     public int hashCode() {
         if (uri != null) {
-            return uri.hashCode() + localpart.hashCode();
+            return uri.hashCode() + 
+                ((localpart != null) ? localpart.hashCode() : 0);
         }
-        return rawname.hashCode();
+        return (rawname != null) ? rawname.hashCode() : 0;
     } // hashCode():int
 
     /** Returns true if the two objects are equal. */
