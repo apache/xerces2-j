@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -86,7 +86,7 @@ import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
  *
  * @version $Id$
  */
-public class SimpleContentModel 
+public class SimpleContentModel
     implements XMLContentModel {
 
     //
@@ -120,7 +120,7 @@ public class SimpleContentModel
 
     /* this is the SubstitutionGroupComparator object */
     private SubstitutionGroupComparator comparator = null;
-    
+
     //
     // Constructors
     //
@@ -147,7 +147,7 @@ public class SimpleContentModel
      *
      * @see XMLContentSpec
      */
-    public SimpleContentModel(QName firstChild, QName secondChild, 
+    public SimpleContentModel(QName firstChild, QName secondChild,
                               int cmOp, boolean dtd) {
         //
         //  Store away the children and operation. This is all we need to
@@ -186,15 +186,15 @@ public class SimpleContentModel
     //
     // XMLContentModel methods
     //
-    
+
     /**
      * Check that the specified content is valid according to this
-     * content model. This method can also be called to do 'what if' 
+     * content model. This method can also be called to do 'what if'
      * testing of content models just to see if they would be valid.
      * <p>
-     * A value of -1 in the children array indicates a PCDATA node. All other 
+     * A value of -1 in the children array indicates a PCDATA node. All other
      * indexes will be positive and represent child elements. The count can be
-     * zero, since some elements have the EMPTY content model and that must be 
+     * zero, since some elements have the EMPTY content model and that must be
      * confirmed.
      *
      * @param children The children of this element.  Each integer is an index within
@@ -231,7 +231,7 @@ public class SimpleContentModel
                     }
                 }
                 else {
-                    if (children[offset].uri != fFirstChild.uri || 
+                    if (children[offset].uri != fFirstChild.uri ||
                         children[offset].localpart != fFirstChild.localpart)
                         return 0;
                 }
@@ -253,7 +253,7 @@ public class SimpleContentModel
                         }
                     }
                     else {
-                        if (children[offset].uri != fFirstChild.uri || 
+                        if (children[offset].uri != fFirstChild.uri ||
                          children[offset].localpart != fFirstChild.localpart)
                         return 0;
                     }
@@ -286,7 +286,7 @@ public class SimpleContentModel
                     else {
                         for (int index = 0; index < length; index++)
                         {
-                            if (children[offset + index].uri != fFirstChild.uri || 
+                            if (children[offset + index].uri != fFirstChild.uri ||
                                 children[offset + index].localpart != fFirstChild.localpart)
                                 return index;
                         }
@@ -317,7 +317,7 @@ public class SimpleContentModel
                 else {
                     for (int index = 0; index < length; index++)
                     {
-                        if (children[offset + index].uri != fFirstChild.uri || 
+                        if (children[offset + index].uri != fFirstChild.uri ||
                             children[offset + index].localpart != fFirstChild.localpart)
                             return index;
                     }
@@ -389,7 +389,7 @@ public class SimpleContentModel
         // We survived, so return success status
         return -1;
     }
-    
+
     public int validateContentSpecial(QName children[], int offset, int length) throws Exception{
 
         if (comparator==null) {
@@ -407,9 +407,9 @@ public class SimpleContentModel
                     return 0;
 
                 // If the 0th child is not the right kind, report an error at 0
-                if (children[offset].uri != fFirstChild.uri || 
+                if (children[offset].uri != fFirstChild.uri ||
                     children[offset].localpart != fFirstChild.localpart)
-                    if (!comparator.isEquivalentTo(children[offset], fFirstChild)) 
+                    if (!comparator.isEquivalentTo(children[offset], fFirstChild))
                         return 0;
 
                 // If more than one child, report an error at index 1
@@ -422,10 +422,10 @@ public class SimpleContentModel
                 //  If there is one child, make sure its the right type. If not,
                 //  then its an error at index 0.
                 //
-                if (length == 1 && 
-                    (children[offset].uri != fFirstChild.uri || 
+                if (length == 1 &&
+                    (children[offset].uri != fFirstChild.uri ||
                      children[offset].localpart != fFirstChild.localpart))
-                    if (!comparator.isEquivalentTo(children[offset], fFirstChild)) 
+                    if (!comparator.isEquivalentTo(children[offset], fFirstChild))
                         return 0;
 
                 //
@@ -447,9 +447,9 @@ public class SimpleContentModel
                 {
                     for (int index = 0; index < length; index++)
                     {
-                        if (children[offset + index].uri != fFirstChild.uri || 
+                        if (children[offset + index].uri != fFirstChild.uri ||
                             children[offset + index].localpart != fFirstChild.localpart)
-                            if (!comparator.isEquivalentTo(children[offset+index], fFirstChild)) 
+                            if (!comparator.isEquivalentTo(children[offset+index], fFirstChild))
                                 return index;
                     }
                 }
@@ -470,9 +470,9 @@ public class SimpleContentModel
                 //
                 for (int index = 0; index < length; index++)
                 {
-                    if (children[offset + index].uri != fFirstChild.uri || 
+                    if (children[offset + index].uri != fFirstChild.uri ||
                         children[offset + index].localpart != fFirstChild.localpart)
-                        if (!comparator.isEquivalentTo(children[offset+index], fFirstChild)) 
+                        if (!comparator.isEquivalentTo(children[offset+index], fFirstChild))
                             return index;
                 }
                 break;
@@ -488,8 +488,8 @@ public class SimpleContentModel
                 // If the zeroth element isn't one of our choices, error at 0
                 if ((children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart) &&
                     (children[offset].uri != fSecondChild.uri || children[offset].localpart != fSecondChild.localpart))
-                    if (   !comparator.isEquivalentTo(children[offset], fFirstChild) 
-                        && !comparator.isEquivalentTo(children[offset], fSecondChild) ) 
+                    if (   !comparator.isEquivalentTo(children[offset], fFirstChild)
+                        && !comparator.isEquivalentTo(children[offset], fSecondChild) )
                         return 0;
 
                 // If there is more than one element, then an error at 1
@@ -504,11 +504,11 @@ public class SimpleContentModel
                 //
                 if (length == 2) {
                     if (children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart)
-                        if (!comparator.isEquivalentTo(children[offset], fFirstChild)) 
+                        if (!comparator.isEquivalentTo(children[offset], fFirstChild))
                             return 0;
 
                     if (children[offset + 1].uri != fSecondChild.uri || children[offset + 1].localpart != fSecondChild.localpart)
-                        if (!comparator.isEquivalentTo(children[offset+1], fSecondChild)) 
+                        if (!comparator.isEquivalentTo(children[offset+1], fSecondChild))
                             return 1;
                 }
                 else {
@@ -554,26 +554,26 @@ public class SimpleContentModel
      *             and which will contain the output information if successful.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
-     *         that first failed before the insertion point. If the value 
+     *         that first failed before the insertion point. If the value
      *         returned is equal to the number of children, then the specified
      *         children are valid but additional content is required to reach a
      *         valid ending state.
      *
      * @see InsertableElementsInfo
      */
-    public int whatCanGoHere(boolean fullyValid, InsertableElementsInfo info) 
+    public int whatCanGoHere(boolean fullyValid, InsertableElementsInfo info)
         throws Exception {
 
         //
-        //  For this one, having the empty slot at the insertion point is 
+        //  For this one, having the empty slot at the insertion point is
         //  a problem. So lets compress the array down. We know that it has
         //  to have at least the empty slot at the insertion point.
         //
-        for (int index = info.insertAt; index < info.childCount; index++) {
+        for (int index = info.insertAt; index < info.childCount-1; index++) {
             info.curChildren[index].setValues(info.curChildren[index+1]);
         }
         info.childCount--;
-        
+
         //
         //  Check the validity of the existing contents. If this is less than
         //  the insert at point, then return failure index right now

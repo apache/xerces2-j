@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -78,14 +78,14 @@ import org.apache.xerces.validators.schema.SchemaGrammar;
  *
  * @version $Id$
  */
-public class MixedContentModel 
+public class MixedContentModel
     implements XMLContentModel {
 
 
     //
     // Data
     //
-    
+
     /** The count of possible children that we have to deal with. */
     private int fCount;
 
@@ -97,8 +97,8 @@ public class MixedContentModel
 
     /* this is the SubstitutionGroupComparator object */
     private SubstitutionGroupComparator comparator = null;
-    
-    /** 
+
+    /**
      * True if mixed content model is ordered. DTD mixed content models
      * are <em>always</em> unordered.
      */
@@ -169,7 +169,7 @@ public class MixedContentModel
         fDTD = dtd;
 
     } // <init>(QName[],int[],int,int,boolean,boolean)
-    
+
     // Unique Particle Attribution
     public void checkUniqueParticleAttribution(SchemaGrammar gram) {
         // rename back
@@ -184,15 +184,15 @@ public class MixedContentModel
     //
     // XMLContentModel methods
     //
-    
+
     /**
      * Check that the specified content is valid according to this
-     * content model. This method can also be called to do 'what if' 
+     * content model. This method can also be called to do 'what if'
      * testing of content models just to see if they would be valid.
      * <p>
-     * A value of -1 in the children array indicates a PCDATA node. All other 
+     * A value of -1 in the children array indicates a PCDATA node. All other
      * indexes will be positive and represent child elements. The count can be
-     * zero, since some elements have the EMPTY content model and that must be 
+     * zero, since some elements have the EMPTY content model and that must be
      * confirmed.
      *
      * @param children The children of this element.  Each integer is an index within
@@ -209,9 +209,9 @@ public class MixedContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(QName children[], int offset, int length) 
+    public int validateContent(QName children[], int offset, int length)
         throws Exception {
-        
+
         // must match order
         if (fOrdered) {
             int inIndex = 0;
@@ -250,7 +250,7 @@ public class MixedContentModel
                         return outIndex;
                     }
                 }
-                
+
                 // advance index
                 inIndex++;
             }
@@ -262,11 +262,11 @@ public class MixedContentModel
             {
                 // Get the current child out of the source index
                 final QName curChild = children[offset + outIndex];
-    
+
                 // If its PCDATA, then we just accept that
                 if (curChild.localpart == -1)
                     continue;
-    
+
                 // And try to find it in our list
                 int inIndex = 0;
                 for (; inIndex < fCount; inIndex++)
@@ -344,7 +344,7 @@ public class MixedContentModel
      *             and which will contain the output information if successful.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
-     *         that first failed before the insertion point. If the value 
+     *         that first failed before the insertion point. If the value
      *         returned is equal to the number of children, then the specified
      *         children are valid but additional content is required to reach a
      *         valid ending state.
@@ -355,11 +355,11 @@ public class MixedContentModel
                             , InsertableElementsInfo    info) throws Exception
     {
         //
-        //  For this one, having the empty slot at the insertion point is 
+        //  For this one, having the empty slot at the insertion point is
         //  a problem. So lets compress the array down. We know that it has
         //  to have at least the empty slot at the insertion point.
         //
-        for (int index = info.insertAt; index < info.childCount; index++)
+        for (int index = info.insertAt; index < info.childCount-1; index++)
             info.curChildren[index] = info.curChildren[index+1];
         info.childCount--;
 
