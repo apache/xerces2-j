@@ -2150,11 +2150,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     public void notationDecl(String name, XMLResourceIdentifier identifier,
                              Augmentations augs) throws XNIException {
 
-        // internal subset string
-        String publicId = identifier.getPublicId();
-        String literalSystemId = identifier.getLiteralSystemId();
-		if (fInDTD) {
-			if (fInternalSubset != null && !fInDTDExternalSubset) {
+       // internal subset string
+       String publicId = identifier.getPublicId();
+       String literalSystemId = identifier.getLiteralSystemId();
+       if (fInternalSubset != null && !fInDTDExternalSubset) {
 				fInternalSubset.append("<!NOTATION ");
 				fInternalSubset.append(name);
 				if (publicId != null) {
@@ -2170,9 +2169,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 					fInternalSubset.append(literalSystemId);
 				}
 				fInternalSubset.append("'>\n");
-			}
-			return;
-		}
+       }
 
         // NOTE: We only know how to create these nodes for the Xerces
         //       DOM implementation because DOM Level 2 does not specify 
