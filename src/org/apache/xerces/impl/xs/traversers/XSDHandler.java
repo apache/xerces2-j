@@ -77,7 +77,6 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.dom.ElementNSImpl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
@@ -1972,7 +1971,7 @@ public class XSDHandler {
      * no information can be retrieved from the element.
      */
     public SimpleLocator element2Locator(Element e) {
-        if (!(e instanceof ElementNSImpl || e instanceof ElementImpl))
+        if (!( e instanceof ElementImpl))
             return null;
         
         SimpleLocator l = new SimpleLocator();
@@ -1989,17 +1988,6 @@ public class XSDHandler {
             return false;
         if (e instanceof ElementImpl) {
             ElementImpl ele = (ElementImpl)e;
-            // get system id from document object
-            Document doc = ele.getOwnerDocument();
-            String sid = (String)fDoc2SystemId.get(doc);
-            // line/column numbers are stored in the element node
-            int line = ele.getLineNumber();
-            int column = ele.getColumnNumber();
-            l.setValues(sid, sid, line, column);
-            return true;
-        }
-        if (e instanceof ElementNSImpl) {
-            ElementNSImpl ele = (ElementNSImpl)e;
             // get system id from document object
             Document doc = ele.getOwnerDocument();
             String sid = (String)fDoc2SystemId.get(doc);
