@@ -558,7 +558,7 @@ public class XMLSerializer
                         _printer.printText( " SYSTEM " );
                         printDoctypeURL( _docTypeSystemId );
                     }
-                    
+
                     // If we accumulated any DTD contents while printing.
                     // this would be the place to print it.
                     if ( dtd != null && dtd.length() > 0 ) {
@@ -566,7 +566,7 @@ public class XMLSerializer
                         printText( dtd, true, true );
                         _printer.printText( ']' );
                     }
-                    
+
                     _printer.printText( ">" );
                     _printer.breakLine();
                 } else if ( dtd != null && dtd.length() > 0 ) {
@@ -742,23 +742,17 @@ public class XMLSerializer
             //Append only when the feature http://xml.org/sax/features/namespace-prefixes"
             //is TRUE
             if ( rawName.startsWith( "xmlns" ) ) {
-                indexColon = rawName.indexOf( ':' );
-
-                //is there a prefix
-                if ( indexColon != -1 && ( indexColon + 1 ) < rawName.length() )
-                    prefix = rawName.substring( indexColon + 1 );
-                else
-                    prefix = "";
-
-                startPrefixMapping( prefix, attrs.getValue( i ) );
-                //Remove it
-                attrsOnly.removeAttribute( i );
+                if (rawName.length() == 5) {
+                    startPrefixMapping( "", attrs.getValue( i ) );
+                    attrsOnly.removeAttribute( i );
+                } else if (rawName.charAt(5) == ':') {
+                    startPrefixMapping(rawName.substring(6), attrs.getValue(i));
+                    attrsOnly.removeAttribute( i );
+                }
             }
         }
         return attrsOnly;
     }
-
-
 }
 
 
