@@ -319,8 +319,6 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
         fAttributeDecl.simpleType     = fSimpleType;
         fAttributeDecl.setValues( fQName, fSimpleType, false );
 
-        System.out.println("ELement decl Indx = " + elementIndex );
-
         setAttributeDecl( elementIndex, fCurrentAttributeIndex,
                           fAttributeDecl );
 
