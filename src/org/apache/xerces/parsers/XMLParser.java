@@ -64,14 +64,9 @@ import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 /**
  * Base class of all XML-related parsers.
@@ -139,48 +134,6 @@ public abstract class XMLParser {
     //
 
     /**
-     * Parses the input source specified by the given system identifier.
-     * <p>
-     * This method is equivalent to the following:
-     * <pre>
-     *     parse(new InputSource(systemId));
-     * </pre>
-     *
-     * @param source The input source.
-     *
-     * @exception org.xml.sax.SAXException Throws exception on SAX error.
-     * @exception java.io.IOException Throws exception on i/o error.
-     */
-    public void parse(String systemId) throws SAXException, IOException {
-
-        // parse document
-        InputSource source = new InputSource(systemId);
-        try {
-            parse(source);
-        }
-
-        // close opened stream
-        finally {
-            try {
-                Reader reader = source.getCharacterStream();
-                if (reader != null) {
-                    reader.close();
-                }
-                else {
-                    InputStream is = source.getByteStream();
-                    if (is != null) {
-                        is.close();
-                    }
-                }
-            }
-            catch (IOException e) {
-                // ignore
-            }
-        }
-
-    } // parse(String)
-
-    /**
      * parse
      *
      * @param inputSource
@@ -188,207 +141,13 @@ public abstract class XMLParser {
      * @exception org.xml.sax.SAXException
      * @exception java.io.IOException
      */
-    public void parse(InputSource inputSource) 
-        throws SAXException, IOException {
+    public void parse(XMLInputSource inputSource) 
+        throws XNIException, IOException {
 
-        try {
-            reset();
-            fConfiguration.parse(inputSource);
-        }
-        catch (XNIException e) {
-            Exception ex = e.getException();
-            if (ex == null) {
-                throw new SAXException(e.getMessage());
-            }
-            if (ex instanceof SAXException) {
-                throw (SAXException)ex;
-            }
-            if (ex instanceof IOException) {
-                throw (IOException)ex;
-            }
-            throw new SAXException(ex);
-        }
+        reset();
+        fConfiguration.parse(inputSource);
 
-    } // parse(InputSource) 
-
-    /**
-     * Sets the resolver used to resolve external entities. The EntityResolver
-     * interface supports resolution of public and system identifiers.
-     *
-     * @param resolver The new entity resolver. Passing a null value will
-     *                 uninstall the currently installed resolver.
-     */
-    public void setEntityResolver(EntityResolver resolver) {
-
-        try {
-            setProperty(ENTITY_RESOLVER, resolver);
-        }
-        catch (SAXException e) {
-            // do nothing
-        }
-
-    } // setEntityResolver(EntityResolver)
-
-    /**
-     * Return the current entity resolver.
-     *
-     * @return The current entity resolver, or null if none
-     *         has been registered.
-     * @see #setEntityResolver
-     */
-    public EntityResolver getEntityResolver() {
-
-        EntityResolver entityResolver = null;
-        try {
-            entityResolver = (EntityResolver)getProperty(ENTITY_RESOLVER);
-        }
-        catch (SAXException e) {
-            // do nothing
-        }
-        return entityResolver;
-
-    } // getEntityResolver():EntityResolver
-
-    /**
-     * Allow an application to register an error event handler.
-     *
-     * <p>If the application does not register an error handler, all
-     * error events reported by the SAX parser will be silently
-     * ignored; however, normal processing may not continue.  It is
-     * highly recommended that all SAX applications implement an
-     * error handler to avoid unexpected bugs.</p>
-     *
-     * <p>Applications may register a new or different handler in the
-     * middle of a parse, and the SAX parser must begin using the new
-     * handler immediately.</p>
-     *
-     * @param errorHandler The error handler.
-     * @exception java.lang.NullPointerException If the handler 
-     *            argument is null.
-     * @see #getErrorHandler
-     */
-    public void setErrorHandler(ErrorHandler errorHandler) {
-
-        try {
-            setProperty(ERROR_HANDLER, errorHandler);
-        }
-        catch (SAXException e) {
-            // do nothing
-        }
-
-    } // setErrorHandler(ErrorHandler)
-
-    /**
-     * Return the current error handler.
-     *
-     * @return The current error handler, or null if none
-     *         has been registered.
-     * @see #setErrorHandler
-     */
-    public ErrorHandler getErrorHandler() {
-
-        ErrorHandler errorHandler = null;
-        try {
-            errorHandler = (ErrorHandler)getProperty(ERROR_HANDLER);
-        }
-        catch (SAXException e) {
-            // do nothing
-        }
-        return errorHandler;
-
-    } // getErrorHandler():ErrorHandler
-
-    /**
-     * Set the state of a feature.
-     *
-     * Set the state of any feature in a SAX2 parser.  The parser
-     * might not recognize the feature, and if it does recognize
-     * it, it might not be able to fulfill the request.
-     *
-     * @param featureId The unique identifier (URI) of the feature.
-     * @param state The requested state of the feature (true or false).
-     *
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested feature is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested feature is known, but the requested
-     *            state is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
-     */
-    public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        fConfiguration.setFeature(featureId, state);
-
-    } // setFeature(String,boolean)
-
-    /**
-     * setProperty
-     * 
-     * @param propertyId 
-     * @param value 
-     */
-    public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        fConfiguration.setProperty(propertyId, value);
-
-    } // setProperty(String,Object)
-
-    /**
-     * Set the locale to use for messages.
-     *
-     * @param locale The locale object to use for localization of messages.
-     *
-     * @exception SAXException An exception thrown if the parser does not
-     *                         support the specified locale.
-     *
-     * @see org.xml.sax.Parser
-     */
-    public void setLocale(Locale locale) throws SAXException {
-
-        fConfiguration.setLocale(locale);
-
-    } // setLocale(Locale)
-
-    //
-    // XMLComponentManager methods
-    //
-
-    /**
-     * Returns the state of a feature.
-     * 
-     * @param featureId The feature identifier.
-     * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
-     */
-    public boolean getFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        return fConfiguration.getFeature(featureId);
-
-    } // getFeature(String):boolean
-
-    /**
-     * Returns the value of a property.
-     * 
-     * @param propertyId The property identifier.
-     * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
-     */
-    public Object getProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        return fConfiguration.getProperty(propertyId);
-
-    } // getProperty(String):Object
+    } // parse(XMLInputSource) 
 
     //
     // Protected methods
@@ -397,7 +156,7 @@ public abstract class XMLParser {
     /**
      * reset all components before parsing
      */
-    protected void reset() throws SAXException {
+    protected void reset() throws XNIException {
     } // reset()
 
 } // class XMLParser

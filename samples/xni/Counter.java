@@ -64,13 +64,11 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
 
 /**
  * A sample XNI counter. The output of this program shows the time
@@ -93,7 +91,7 @@ import org.xml.sax.SAXParseException;
  */
 public class Counter
     extends XMLDocumentParser 
-    implements ErrorHandler {
+    implements XMLErrorHandler {
 
     //
     // Constants
@@ -102,21 +100,26 @@ public class Counter
     // feature ids
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
-    protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
+    protected static final String NAMESPACES_FEATURE_ID = 
+        "http://xml.org/sax/features/namespaces";
     
     /** Namespace prefixes feature id (http://xml.org/sax/features/namespace-prefixes). */
-    protected static final String NAMESPACE_PREFIXES_FEATURE_ID = "http://xml.org/sax/features/namespace-prefixes";
+    protected static final String NAMESPACE_PREFIXES_FEATURE_ID = 
+        "http://xml.org/sax/features/namespace-prefixes";
 
     /** Validation feature id (http://xml.org/sax/features/validation). */
-    protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
+    protected static final String VALIDATION_FEATURE_ID = 
+        "http://xml.org/sax/features/validation";
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
-    protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+    protected static final String SCHEMA_VALIDATION_FEATURE_ID = 
+        "http://apache.org/xml/features/validation/schema";
 
     // default settings
 
     /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
-    protected static final String DEFAULT_PARSER_CONFIG = "org.apache.xerces.parsers.StandardParserConfiguration";
+    protected static final String DEFAULT_PARSER_CONFIG = 
+        "org.apache.xerces.parsers.StandardParserConfiguration";
 
     /** Default repetition (1). */
     protected static final int DEFAULT_REPETITION = 1;
@@ -168,7 +171,7 @@ public class Counter
     /** Default constructor. */
     public Counter(XMLParserConfiguration configuration) {
         super(configuration);
-        setErrorHandler(this);
+        fConfiguration.setErrorHandler(this);
     } // <init>()
 
     //
@@ -250,7 +253,7 @@ public class Counter
             fAttributes += attrCount;
             for (int i = 0; i < attrCount; i++) {
                 fTagCharacters++; // space
-                fTagCharacters += attrs.getName(i).length();
+                fTagCharacters += attrs.getQName(i).length();
                 fTagCharacters++; // '='
                 fTagCharacters++; // open quote
                 fOtherCharacters += attrs.getValue(i).length();
@@ -273,7 +276,7 @@ public class Counter
             fAttributes += attrCount;
             for (int i = 0; i < attrCount; i++) {
                 fTagCharacters++; // space
-                fTagCharacters += attrs.getName(i).length();
+                fTagCharacters += attrs.getQName(i).length();
                 fTagCharacters++; // '='
                 fTagCharacters++; // open quote
                 fOtherCharacters += attrs.getValue(i).length();
@@ -312,31 +315,34 @@ public class Counter
     } // processingInstruction(String,XMLString)
 
     //
-    // ErrorHandler methods
+    // XMLErrorHandler methods
     //
 
     /** Warning. */
-    public void warning(SAXParseException ex) throws SAXException {
+    public void warning(String domain, String key, XMLParseException ex) 
+        throws XNIException {
         printError("Warning", ex);
-    } // warning(SAXParseException)
+    } // warning(String,String,XMLParseException)
 
     /** Error. */
-    public void error(SAXParseException ex) throws SAXException {
+    public void error(String domain, String key, XMLParseException ex) 
+        throws XNIException {
         printError("Error", ex);
-    } // error(SAXParseException)
+    } // error(String,String,XMLParseException)
 
     /** Fatal error. */
-    public void fatalError(SAXParseException ex) throws SAXException {
+    public void fatalError(String domain, String key, XMLParseException ex)
+        throws XNIException {
         printError("Fatal Error", ex);
         throw ex;
-    } // fatalError(SAXParseException)
+    } // fatalError(String,String,XMLParseException)
 
     //
     // Protected methods
     //
 
     /** Prints the error message. */
-    protected void printError(String type, SAXParseException ex) {
+    protected void printError(String type, XMLParseException ex) {
 
         System.err.print("[");
         System.err.print(type);
@@ -357,7 +363,7 @@ public class Counter
         System.err.println();
         System.err.flush();
 
-    } // printError(String,SAXParseException)
+    } // printError(String,XMLParseException)
 
     //
     // MAIN
@@ -492,39 +498,32 @@ public class Counter
                 parser = new Counter(parserConfig);
             }
             try {
-                parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
+                parserConfig.setFeature(NAMESPACES_FEATURE_ID, namespaces);
             }
-            catch (SAXException e) {
+            catch (XMLConfigurationException e) {
                 System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
             }
             try {
-                parser.setFeature(NAMESPACE_PREFIXES_FEATURE_ID, namespacePrefixes);
+                parserConfig.setFeature(VALIDATION_FEATURE_ID, validation);
             }
-            catch (SAXException e) {
-                System.err.println("warning: Parser does not support feature ("+NAMESPACE_PREFIXES_FEATURE_ID+")");
-            }
-            try {
-                parser.setFeature(VALIDATION_FEATURE_ID, validation);
-            }
-            catch (SAXException e) {
+            catch (XMLConfigurationException e) {
                 System.err.println("warning: Parser does not support feature ("+VALIDATION_FEATURE_ID+")");
             }
             try {
-                parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
+                parserConfig.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
             }
-            catch (SAXNotRecognizedException e) {
-                // ignore
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_SUPPORTED) {
+                    System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+                }
             }
-            catch (SAXNotSupportedException e) {
-                System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
-            }
-
+    
             // parse file
             try {
                 long timeBefore = System.currentTimeMillis();
                 long memoryBefore = Runtime.getRuntime().freeMemory();
                 for (int j = 0; j < repetition; j++) {
-                    parser.parse(arg);
+                    parser.parse(new XMLInputSource(null, arg, null));
                 }
                 long memoryAfter = Runtime.getRuntime().freeMemory();
                 long timeAfter = System.currentTimeMillis();
@@ -536,13 +535,13 @@ public class Counter
                                                memory, tagginess,
                                                repetition);
             }
-            catch (SAXParseException e) {
+            catch (XMLParseException e) {
                 // ignore
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
-                if (e instanceof SAXException) {
-                    e = ((SAXException)e).getException();
+                if (e instanceof XNIException) {
+                    e = ((XNIException)e).getException();
                 }
                 e.printStackTrace(System.err);
             }
@@ -568,6 +567,7 @@ public class Counter
         System.err.println("              NOTE: Requires use of -n.");
         System.err.println("  -v  | -V    Turn on/off validation.");
         System.err.println("  -s  | -S    Turn on/off Schema validation support.");
+        System.err.println("              NOTE: Not supported by all parser configurations.");
         System.err.println("  -m  | -M    Turn on/off memory usage report.");
         System.err.println("  -t  | -T    Turn on/off \"tagginess\" report.");
         System.err.println("  --rem text  Output user defined comment before next parse.");

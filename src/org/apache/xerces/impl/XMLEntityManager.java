@@ -86,12 +86,9 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * The entity manager handles the registration of general and parameter
@@ -211,7 +208,7 @@ public class XMLEntityManager
      * Entity resolver. This property identifier is:
      * http://apache.org/xml/properties/internal/entity-resolver
      */
-    protected EntityResolver fEntityResolver;
+    protected XMLEntityResolver fEntityResolver;
 
     /** 
      * Symbol table. This property identifier is:
@@ -488,42 +485,18 @@ public class XMLEntityManager
         // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-            InputSource inputSource;
-            try {
-                 inputSource = fEntityResolver.resolveEntity(publicId, systemId);
-            }
-            catch (SAXException e) {
-                throw new XNIException(e);
-            }
-            if (inputSource != null) {
-                xmlInputSource = new XMLInputSource(inputSource);
-                xmlInputSource.setBaseSystemId(baseSystemId);
-                String resolvedSystemId = inputSource.getSystemId();
-                if (resolvedSystemId == null) {
-                    resolvedSystemId = systemId;
-                }
-                String expandedSystemId =
-                    expandSystemId(resolvedSystemId, baseSystemId);
-                xmlInputSource.setExpandedSystemId(expandedSystemId);
-            }
+             xmlInputSource = fEntityResolver.resolveEntity(publicId, systemId, baseSystemId);
         }
 
         // do default resolution
         if (xmlInputSource == null) {
-
-            // create the input source
-            xmlInputSource = new XMLInputSource(systemId);
-            xmlInputSource.setPublicId(publicId);
-            xmlInputSource.setBaseSystemId(baseSystemId);
-            String expandedSystemId = expandSystemId(systemId, baseSystemId);
-            xmlInputSource.setExpandedSystemId(expandedSystemId);
+            xmlInputSource = new XMLInputSource(publicId, systemId, baseSystemId);
         }
 
         if (DEBUG_RESOLVER) {
             System.err.println("XMLEntityManager.resolveEntity(" + publicId + ")");
             System.err.println(" = " + xmlInputSource);
         }
-        
         
         return xmlInputSource;
 
@@ -638,7 +611,7 @@ public class XMLEntityManager
         else {
             InternalEntity internalEntity = (InternalEntity)entity;
             Reader reader = new StringReader(internalEntity.text);
-            xmlInputSource = new XMLInputSource(reader);
+            xmlInputSource = new XMLInputSource(null, null, null, reader, null);
         }
 
         // start the entity
@@ -700,7 +673,7 @@ public class XMLEntityManager
      *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager componentManager)
-        throws SAXException {
+        throws XMLConfigurationException {
 
         // sax features
         fValidation = componentManager.getFeature(VALIDATION);
@@ -711,7 +684,7 @@ public class XMLEntityManager
         fAllowJavaEncodings = componentManager.getFeature(ALLOW_JAVA_ENCODINGS);
 
         // xerces properties
-        fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
+        fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
@@ -767,7 +740,7 @@ public class XMLEntityManager
      *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         // xerces features
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
@@ -804,13 +777,13 @@ public class XMLEntityManager
      *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
             if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
-                fEntityResolver = (EntityResolver)value;
+                fEntityResolver = (XMLEntityResolver)value;
                 return;
             }
             if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
@@ -961,13 +934,9 @@ public class XMLEntityManager
         if (reader == null) {
             stream = xmlInputSource.getByteStream();
             if (stream == null) {
-                String expandedSystemId = xmlInputSource.getExpandedSystemId();
-                if (expandedSystemId == null) {
-                    expandedSystemId = expandSystemId(systemId, baseSystemId);
-                    if (baseSystemId == null) {
-                        baseSystemId = expandedSystemId;
-                    }
-                    xmlInputSource.setExpandedSystemId(expandedSystemId);
+                String expandedSystemId = expandSystemId(systemId, baseSystemId);
+                if (baseSystemId == null) {
+                    baseSystemId = expandedSystemId;
                 }
                 stream = new URL(expandedSystemId).openStream();
             }

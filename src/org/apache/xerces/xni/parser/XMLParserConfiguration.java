@@ -65,11 +65,6 @@ import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XNIException;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-
 /**
  * Represents a parser configuration. The parser configuration maintains
  * a table of recognized features and properties, assembles components
@@ -126,6 +121,8 @@ public interface XMLParserConfiguration
     // XMLParserConfiguration methods
     //
 
+    // parsing
+
     /**
      * Parse an XML document.
      * <p>
@@ -150,8 +147,10 @@ public interface XMLParserConfiguration
      *                         from a byte stream or character stream
      *                         supplied by the parser.
      */
-    public void parse(InputSource inputSource) 
+    public void parse(XMLInputSource inputSource) 
         throws XNIException, IOException;
+
+    // generic configuration
 
     /**
      * Allows a parser to add parser specific features to be recognized
@@ -169,26 +168,22 @@ public interface XMLParserConfiguration
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
      *
-     * @throws SAXNotRecognizedException Thrown if the feature is not
-     *                                   recognized by this configuration
-     *                                   or any of its components.
-     * @throws SAXNotSupportedException Thrown if the state is not supported.
+     * @throws XMLConfigurationException Thrown if there is a configuration
+     *                                   error.
      */
     public void setFeature(String featureId, boolean statek)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws XMLConfigurationException;
 
     /**
      * Returns the state of a feature.
      * 
      * @param featureId The feature identifier.
      * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
+     * @throws XMLConfigurationException Thrown if there is a configuration
+     *                                   error.
      */
     public boolean getFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws XMLConfigurationException;
 
     /**
      * Allows a parser to add parser specific properties to be recognized
@@ -206,26 +201,31 @@ public interface XMLParserConfiguration
      * @param propertyId The property identifier.
      * @param value      The value of the property.
      *
-     * @throws SAXNotRecognizedException Thrown if the property is not
-     *                                   recognized by this configuration
-     *                                   or any of its components.
-     * @throws SAXNotSupportedException Thrown if the value is not supported.
+     * @throws XMLConfigurationException Thrown if there is a configuration
+     *                                   error.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws XMLConfigurationException;
 
     /**
      * Returns the value of a property.
      * 
      * @param propertyId The property identifier.
      * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
+     * @throws XMLConfigurationException Thrown if there is a configuration
+     *                                   error.
      */
     public Object getProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws XMLConfigurationException;
+
+    // handlers
+
+    /**
+     * Sets the error handler.
+     *
+     * @param errorHandler The error resolver.
+     */
+    public void setErrorHandler(XMLErrorHandler errorHandler);
 
     /**
      * Sets the document handler to receive information about the document.
@@ -233,11 +233,6 @@ public interface XMLParserConfiguration
      * @param documentHandler The document handler.
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler);
-
-    // REVISIT: The XMLDTDHandler and XMLDTDContentModelHandler are to be
-    //          re-designed and merged together. At which point, these two
-    //          methods will probably be merged into a single registration
-    //          method. -Ac
 
     /**
      * Sets the DTD handler.
@@ -252,6 +247,15 @@ public interface XMLParserConfiguration
      * @param dtdContentModelHandler The DTD content model handler.
      */
     public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler);
+
+    // other settings
+
+    /**
+     * Sets the entity resolver.
+     *
+     * @param entityResolver The new entity resolver.
+     */
+    public void setEntityResolver(XMLEntityResolver entityResolver);
 
     /**
      * Set the locale to use for messages.

@@ -69,7 +69,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * A sample DOM counter. This sample program illustrates how to
- * traverse a DOM tree in order to information about the document.
+ * traverse a DOM tree in order to get information about the document.
  * The output of this program shows the time and count of elements,
  * attributes, ignorable whitespaces, and characters appearing in
  * the document. Three times are shown: the parse time, the first

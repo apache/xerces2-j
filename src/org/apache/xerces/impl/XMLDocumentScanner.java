@@ -78,10 +78,8 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
  * This class is responsible for scanning XML document structure
@@ -372,7 +370,7 @@ public class XMLDocumentScanner
      *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager componentManager)
-        throws SAXException {
+        throws XMLConfigurationException {
 
         super.reset(componentManager);
 
@@ -431,7 +429,7 @@ public class XMLDocumentScanner
      *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         super.setFeature(featureId, state);
             
@@ -474,7 +472,7 @@ public class XMLDocumentScanner
      *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
         
         super.setProperty(propertyId, value);
 

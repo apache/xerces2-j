@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,13 +96,14 @@ public class DOMParserSaveEncoding extends DOMParser {
             javaEncoding = "UTF8";
         return(javaEncoding);
     }
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId, 
+                            String baseSystemId,
                             String encoding) throws XNIException {
         if( encoding != null){
             setMimeEncoding( encoding);
         }
-        //REVISIT: 4th parameter should be baseSystemId
-        super.startEntity(name, publicId, systemId, systemId, encoding );
+        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
     }
 
 }

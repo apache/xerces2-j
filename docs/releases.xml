@@ -10,6 +10,15 @@
   <changes>
    <update>
     <note>
+     Removed SAX dependency from XNI framework. Now the only
+     dependence on external API such as SAX is in the implementation
+     of the AbstractSAXParser and DOMParser so that legacy code
+     doesn't break.
+    </note>
+    <submitter name='Andy Clark'/>
+   </update>
+   <update>
+    <note>
      Rewrote existing documentation, added XNI information, cleaned
      up stylesheets, and converted some docs to use custom DTDs.
     </note>

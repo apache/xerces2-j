@@ -70,13 +70,11 @@ import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
 
 /**
  * Provides a complete trace of XNI document and DTD events for 
@@ -89,7 +87,7 @@ import org.xml.sax.SAXParseException;
  */
 public class DocumentTracer 
     extends XMLDocumentParser
-    implements ErrorHandler {
+    implements XMLErrorHandler {
 
     //
     // Constants
@@ -98,21 +96,26 @@ public class DocumentTracer
     // feature ids
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
-    protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
+    protected static final String NAMESPACES_FEATURE_ID = 
+        "http://xml.org/sax/features/namespaces";
     
     /** Validation feature id (http://xml.org/sax/features/validation). */
-    protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
+    protected static final String VALIDATION_FEATURE_ID = 
+        "http://xml.org/sax/features/validation";
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
-    protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+    protected static final String SCHEMA_VALIDATION_FEATURE_ID = 
+        "http://apache.org/xml/features/validation/schema";
 
     /** Character ref notification feature id (http://apache.org/xml/features/scanner/notify-char-refs). */
-    protected static final String NOTIFY_CHAR_REFS_FEATURE_ID = "http://apache.org/xml/features/scanner/notify-char-refs";
+    protected static final String NOTIFY_CHAR_REFS_FEATURE_ID = 
+        "http://apache.org/xml/features/scanner/notify-char-refs";
 
     // default settings
 
     /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
-    protected static final String DEFAULT_PARSER_CONFIG = "org.apache.xerces.parsers.StandardParserConfiguration";
+    protected static final String DEFAULT_PARSER_CONFIG = 
+        "org.apache.xerces.parsers.StandardParserConfiguration";
 
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
@@ -152,7 +155,7 @@ public class DocumentTracer
     public DocumentTracer(XMLParserConfiguration config) {
         super(config);
         setOutput(new PrintWriter(System.out));
-        setErrorHandler(this);
+        fConfiguration.setErrorHandler(this);
     } // <init>(XMLParserConfiguration)
 
     //
@@ -722,7 +725,7 @@ public class DocumentTracer
     public void any() throws XNIException {
 
         printIndent();
-        fOut.print("any()");
+        fOut.println("any()");
         fOut.flush();
 
     } // any()
@@ -731,7 +734,7 @@ public class DocumentTracer
     public void empty() throws XNIException {
 
         printIndent();
-        fOut.print("empty()");
+        fOut.println("empty()");
         fOut.flush();
 
     } // empty()
@@ -840,24 +843,27 @@ public class DocumentTracer
     } // endContentModel()
 
     //
-    // ErrorHandler methods
+    // XMLErrorHandler methods
     //
 
     /** Warning. */
-    public void warning(SAXParseException ex) throws SAXException {
+    public void warning(String domain, String key, XMLParseException ex) 
+        throws XNIException {
         printError("Warning", ex);
-    } // warning(SAXParseException)
+    } // warning(String,String,XMLParseException)
 
     /** Error. */
-    public void error(SAXParseException ex) throws SAXException {
+    public void error(String domain, String key, XMLParseException ex) 
+        throws XNIException {
         printError("Error", ex);
-    } // error(SAXParseException)
+    } // error(String,String,XMLParseException)
 
     /** Fatal error. */
-    public void fatalError(SAXParseException ex) throws SAXException {
+    public void fatalError(String domain, String key, XMLParseException ex)
+        throws XNIException {
         printError("Fatal Error", ex);
         throw ex;
-    } // fatalError(SAXParseException)
+    } // fatalError(String,String,XMLParseException)
 
     //
     // Protected methods
@@ -1003,7 +1009,7 @@ public class DocumentTracer
     } // normalizeAndPrint(char)
 
     /** Prints the error message. */
-    protected void printError(String type, SAXParseException ex) {
+    protected void printError(String type, XMLParseException ex) {
 
         System.err.print("[");
         System.err.print(type);
@@ -1024,7 +1030,7 @@ public class DocumentTracer
         System.err.println();
         System.err.flush();
 
-    } // printError(String,SAXParseException)
+    } // printError(String,XMLParseException)
 
     /** Prints the indent. */
     protected void printIndent() {
@@ -1120,47 +1126,48 @@ public class DocumentTracer
                 parser = new DocumentTracer(parserConfig);
             }
             try {
-                parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
+                parserConfig.setFeature(NAMESPACES_FEATURE_ID, namespaces);
             }
-            catch (SAXException e) {
+            catch (XMLConfigurationException e) {
                 System.err.println("warning: Parser does not support feature ("+NAMESPACES_FEATURE_ID+")");
             }
             try {
-                parser.setFeature(VALIDATION_FEATURE_ID, validation);
+                parserConfig.setFeature(VALIDATION_FEATURE_ID, validation);
             }
-            catch (SAXException e) {
+            catch (XMLConfigurationException e) {
                 System.err.println("warning: Parser does not support feature ("+VALIDATION_FEATURE_ID+")");
             }
             try {
-                parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
+                parserConfig.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
             }
-            catch (SAXNotRecognizedException e) {
-                // ignore
-            }
-            catch (SAXNotSupportedException e) {
-                System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_SUPPORTED) {
+                    System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+                }
             }
             try {
-                parser.setFeature(NOTIFY_CHAR_REFS_FEATURE_ID, notifyCharRefs);
+                parserConfig.setFeature(NOTIFY_CHAR_REFS_FEATURE_ID, notifyCharRefs);
             }
-            catch (SAXNotRecognizedException e) {
-                e.printStackTrace();
-            }
-            catch (SAXNotSupportedException e) {
-                System.err.println("warning: Parser does not support feature ("+NOTIFY_CHAR_REFS_FEATURE_ID+")");
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                    e.printStackTrace();
+                }
+                else {
+                    System.err.println("warning: Parser does not support feature ("+NOTIFY_CHAR_REFS_FEATURE_ID+")");
+                }
             }
     
             // parse file
             try {
-                parser.parse(arg);
+                parser.parse(new XMLInputSource(null, arg, arg));
             }
-            catch (SAXParseException e) {
+            catch (XMLParseException e) {
                 // ignore
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
-                if (e instanceof SAXException) {
-                    e = ((SAXException)e).getException();
+                if (e instanceof XNIException) {
+                    e = ((XNIException)e).getException();
                 }
                 e.printStackTrace(System.err);
             }
@@ -1183,6 +1190,7 @@ public class DocumentTracer
         System.err.println("  -n | -N  Turn on/off namespace processing.");
         System.err.println("  -v | -V  Turn on/off validation.");
         System.err.println("  -s | -S  Turn on/off Schema validation support.");
+        System.err.println("           NOTE: Not supported by all parser configurations.");
         System.err.println("  -c | -C  Turn on/off character notifications");
         System.err.println("  -h       This help screen.");
         System.err.println();

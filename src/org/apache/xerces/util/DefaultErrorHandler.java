@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,9 +59,9 @@ package org.apache.xerces.util;
 
 import java.io.PrintWriter;
 
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLParseException;
 
 /**
  * Default error handler.
@@ -71,7 +71,7 @@ import org.xml.sax.SAXParseException;
  * @version $Id$
  */
 public class DefaultErrorHandler
-    implements ErrorHandler {
+    implements XMLErrorHandler {
 
     //
     // Data
@@ -105,27 +105,30 @@ public class DefaultErrorHandler
     //
 
     /** Warning. */
-    public void warning(SAXParseException ex) throws SAXException {
+    public void warning(String domain, String key, XMLParseException ex) 
+        throws XNIException {
         printError("Warning", ex);
-    } // warning(SAXParseException)
+    } // warning(XMLParseException)
 
     /** Error. */
-    public void error(SAXParseException ex) throws SAXException {
+    public void error(String domain, String key, XMLParseException ex)
+        throws XNIException {
         printError("Error", ex);
-    } // error(SAXParseException)
+    } // error(XMLParseException)
 
     /** Fatal error. */
-    public void fatalError(SAXParseException ex) throws SAXException {
+    public void fatalError(String domain, String key, XMLParseException ex)
+        throws XNIException {
         printError("Fatal Error", ex);
         throw ex;
-    } // fatalError(SAXParseException)
+    } // fatalError(XMLParseException)
 
     //
     // Private methods
     //
 
     /** Prints the error message. */
-    private void printError(String type, SAXParseException ex) {
+    private void printError(String type, XMLParseException ex) {
 
         fOut.print("[");
         fOut.print(type);

@@ -65,13 +65,11 @@ import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLLocator;
+import org.apache.xerces.xni.parser.XMLParseException;
 
 /**
  * This class is a common element of all parser configurations and is
@@ -179,10 +177,10 @@ public class XMLErrorReporter
     protected Hashtable fMessageFormatters;
 
     /** Error handler. */
-    protected ErrorHandler fErrorHandler;
+    protected XMLErrorHandler fErrorHandler;
 
     /** Document locator. */
-    protected Locator fLocator;
+    protected XMLLocator fLocator;
 
     /** Continue after fatal error feature. */
     protected boolean fContinueAfterFatalError;
@@ -193,14 +191,14 @@ public class XMLErrorReporter
      * "swallowed" silently. This is one of the most common "problems"
      * reported by users of the parser.
      */
-    protected ErrorHandler fDefaultErrorHandler;
+    protected XMLErrorHandler fDefaultErrorHandler;
 
     //
     // Constructors
     //
 
     /** Constructs an error reporter with a locator. */
-    public XMLErrorReporter(Locator locator) {
+    public XMLErrorReporter(XMLLocator locator) {
 
         // REVISIT: [Q] Should the locator be passed to the reportError
         //              method? Otherwise, there is no way for a parser
@@ -305,7 +303,7 @@ public class XMLErrorReporter
      * @see SEVERITY_ERROR
      * @see SEVERITY_FATAL_ERROR
      */
-    public void reportError(Locator location,
+    public void reportError(XMLLocator location,
                             String domain, String key, Object[] arguments, 
                             short severity) throws XNIException {
 
@@ -315,10 +313,16 @@ public class XMLErrorReporter
         // format error message and create parse exception
         MessageFormatter messageFormatter = getMessageFormatter(domain);
         String message = messageFormatter.formatMessage(fLocale, key, arguments);
-        SAXParseException spe = new SAXParseException(message, location);
+        XMLParseException parseException = 
+            new XMLParseException(location.getPublicId(),
+                                  location.getSystemId(),
+                                  location.getBaseSystemId(),
+                                  location.getLineNumber(),
+                                  location.getColumnNumber(),
+                                  message);
 
         // get error handler
-        ErrorHandler errorHandler = fErrorHandler;
+        XMLErrorHandler errorHandler = fErrorHandler;
         if (errorHandler == null) {
             if (fDefaultErrorHandler == null) {
                 fDefaultErrorHandler = new DefaultErrorHandler();
@@ -327,30 +331,25 @@ public class XMLErrorReporter
         }
 
         // call error handler
-        try {
-            switch (severity) {
-                case SEVERITY_WARNING: {
-                    errorHandler.warning(spe);
-                    break;
+        switch (severity) {
+            case SEVERITY_WARNING: {
+                errorHandler.warning(domain, key, parseException);
+                break;
+            }
+            case SEVERITY_ERROR: {
+                errorHandler.error(domain, key, parseException);
+                break;
+            }
+            case SEVERITY_FATAL_ERROR: {
+                errorHandler.fatalError(domain, key, parseException);
+                if (!fContinueAfterFatalError) {
+                    throw parseException;
                 }
-                case SEVERITY_ERROR: {
-                    errorHandler.error(spe);
-                    break;
-                }
-                case SEVERITY_FATAL_ERROR: {
-                    errorHandler.fatalError(spe);
-                    if (!fContinueAfterFatalError) {
-                        throw new XNIException(spe);
-                    }
-                    break;
-                }
+                break;
             }
         }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
 
-    } // reportError(Locator,String,String,Object[],short)
+    } // reportError(XMLLocator,String,String,Object[],short)
 
     //
     // XMLComponent methods
@@ -371,18 +370,18 @@ public class XMLErrorReporter
      *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager componentManager)
-        throws SAXException {
+        throws XNIException {
 
         // features
         try {
             fContinueAfterFatalError = componentManager.getFeature(CONTINUE_AFTER_FATAL_ERROR);
         }
-        catch (SAXException e) {
+        catch (XNIException e) {
             fContinueAfterFatalError = false;
         }
 
         // properties
-        fErrorHandler = (ErrorHandler)componentManager.getProperty(ERROR_HANDLER);
+        fErrorHandler = (XMLErrorHandler)componentManager.getProperty(ERROR_HANDLER);
 
     } // reset(XMLComponentManager)
 
@@ -411,7 +410,7 @@ public class XMLErrorReporter
      *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         //
         // Xerces features
@@ -456,7 +455,7 @@ public class XMLErrorReporter
      *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         //
         // Xerces properties
@@ -466,7 +465,7 @@ public class XMLErrorReporter
             String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
 
             if (property.equals(Constants.ERROR_HANDLER_PROPERTY)) {
-                fErrorHandler = (ErrorHandler)value;
+                fErrorHandler = (XMLErrorHandler)value;
             }
         }
 

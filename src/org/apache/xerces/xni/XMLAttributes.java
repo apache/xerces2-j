@@ -57,9 +57,6 @@
 
 package org.apache.xerces.xni;
 
-import org.xml.sax.AttributeList;
-import org.xml.sax.Attributes;
-
 /**
  * The XMLAttributes interface defines a collection of attributes for 
  * an element. In the parser, the document source would scan the entire
@@ -76,8 +73,7 @@ import org.xml.sax.Attributes;
  *
  * @version $Id$
  */
-public interface XMLAttributes
-    extends AttributeList, Attributes {
+public interface XMLAttributes {
 
     //
     // XMLAttributes methods
@@ -86,7 +82,7 @@ public interface XMLAttributes
     /**
      * Adds an attribute. 
      * <p>
-     * <strong>Note:</strogn> If an attribute of the same name already
+     * <strong>Note:</strong> If an attribute of the same name already
      * exists, the old values for the attribute are replaced by the new
      * values.
      * 
@@ -159,6 +155,20 @@ public interface XMLAttributes
     public void removeEntityAt(int attrIndex, int entityIndex);
 
     /**
+     * Returns the number of attributes in the list.
+     * <p>
+     * Once you know the number of attributes, you can iterate
+     * through the list.
+     *
+     * @see #getURI(int)
+     * @see #getLocalName(int)
+     * @see #getQName(int)
+     * @see #getType(int)
+     * @see #getValue(int)
+     */
+    public int getLength();
+
+    /**
      * Sets the name of the attribute at the specified index.
      * 
      * @param attrIndex The attribute index.
@@ -176,6 +186,45 @@ public interface XMLAttributes
     public void getName(int attrIndex, QName attrName);
 
     /**
+     * Look up an attribute's Namespace URI by index.
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The Namespace URI, or the empty string if none
+     *         is available, or null if the index is out of
+     *         range.
+     *
+     * @see #getLength
+     */
+    public String getURI(int index);
+    
+    /**
+     * Look up an attribute's local name by index.
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The local name, or the empty string if Namespace
+     *         processing is not being performed, or null
+     *         if the index is out of range.
+     *
+     * @see #getLength
+     */
+    public String getLocalName(int index);
+
+    /**
+     * Look up an attribute's XML 1.0 qualified name by index.
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The XML 1.0 qualified name, or the empty string
+     *         if none is available, or null if the index
+     *         is out of range.
+     *
+     * @see #getLength
+     */
+    public String getQName(int index);
+
+    /**
      * Sets the type of the attribute at the specified index.
      * 
      * @param attrIndex The attribute index.
@@ -191,12 +240,112 @@ public interface XMLAttributes
     public void setType(int attrIndex, String attrType);
 
     /**
+     * Look up an attribute's type by index.
+     * <p>
+     * The attribute type is one of the strings "CDATA", "ID",
+     * "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY", "ENTITIES",
+     * or "NOTATION" (always in upper case).
+     * <p>
+     * If the parser has not read a declaration for the attribute,
+     * or if the parser does not report attribute types, then it must
+     * return the value "CDATA" as stated in the XML 1.0 Recommentation
+     * (clause 3.3.3, "Attribute-Value Normalization").
+     * <p>
+     * For an enumerated attribute that is not a notation, the
+     * parser will report the type as "NMTOKEN".
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The attribute's type as a string, or null if the
+     *         index is out of range.
+     *
+     * @see #getLength
+     */
+    public String getType(int index);
+
+    /**
+     * Look up an attribute's type by XML 1.0 qualified name.
+     * <p>
+     * See {@link #getType(int) getType(int)} for a description
+     * of the possible types.
+     *
+     * @param qName The XML 1.0 qualified name.
+     *
+     * @return The attribute type as a string, or null if the
+     *         attribute is not in the list or if qualified names
+     *         are not available.
+     */
+    public String getType(String qName);
+
+    /**
+     * Look up an attribute's type by Namespace name.
+     * <p>
+     * See {@link #getType(int) getType(int)} for a description
+     * of the possible types.
+     *
+     * @param uri       The Namespace URI, or the empty String if the
+     *                  name has no Namespace URI.
+     * @param localName The local name of the attribute.
+     *
+     * @return The attribute type as a string, or null if the
+     *         attribute is not in the list or if Namespace
+     *         processing is not being performed.
+     */
+    public String getType(String uri, String localName);
+
+    /**
      * Sets the value of the attribute at the specified index.
      * 
      * @param attrIndex The attribute index.
      * @param attrValue The new attribute value.
      */
     public void setValue(int attrIndex, String attrValue);
+
+    /**
+     * Look up an attribute's value by index.
+     * <p>
+     * If the attribute value is a list of tokens (IDREFS,
+     * ENTITIES, or NMTOKENS), the tokens will be concatenated
+     * into a single string with each token separated by a
+     * single space.
+     *
+     * @param index The attribute index (zero-based).
+     *
+     * @return The attribute's value as a string, or null if the
+     *         index is out of range.
+     *
+     * @see #getLength
+     */
+    public String getValue(int index);
+
+    /**
+     * Look up an attribute's value by XML 1.0 qualified name.
+     * <p>
+     * See {@link #getValue(int) getValue(int)} for a description
+     * of the possible values.
+     *
+     * @param qName The XML 1.0 qualified name.
+     *
+     * @return The attribute value as a string, or null if the
+     *         attribute is not in the list or if qualified names
+     *         are not available.
+     */
+    public String getValue(String qName);
+
+    /**
+     * Look up an attribute's value by Namespace name.
+     * <p>
+     * See {@link #getValue(int) getValue(int)} for a description
+     * of the possible values.
+     *
+     * @param uri       The Namespace URI, or the empty String if the
+     *                  name has no Namespace URI.
+     * @param localName The local name of the attribute.
+     *
+     * @return The attribute value as a string, or null if the
+     *         attribute is not in the list.
+     */
+    public String getValue(String uri, String localName);
 
     /**
      * Sets the non-normalized value of the attribute at the specified
@@ -294,99 +443,26 @@ public interface XMLAttributes
      */
     public int getEntityLength(int attrIndex, int entityIndex);
 
-    //
-    // Attributes and AttributeList methods
-    //
-
-    // NOTE: The methods shared by both the SAX Attributes and
-    //       AttributeList interfaces must be repeated in this
-    //       interface due to a compiler bug in javac (JDK 1.1.8)
-    //       that thinks that the XMLAttributes#getLength():int 
-    //       method and other shared methods are ambiguous. 
-    //       Simply including this method prototypes explicitly
-    //       works around the problem. -Ac
+    /**
+     * Look up the index of an attribute by XML 1.0 qualified name.
+     *
+     * @param qName The qualified (prefixed) name.
+     *
+     * @return The index of the attribute, or -1 if it does not
+     *         appear in the list.
+     */
+    public int getIndex(String qName);
 
     /**
-     * Returns the number of attributes in the list.
-     * <p>
-     * Once you know the number of attributes, you can iterate
-     * through the list.
+     * Look up the index of an attribute by Namespace name.
      *
-     * @see #getURI(int)
-     * @see #getLocalName(int)
-     * @see #getQName(int)
-     * @see #getType(int)
-     * @see #getValue(int)
+     * @param uri       The Namespace URI, or the empty string if
+     *                  the name has no Namespace URI.
+     * @param localName The attribute's local name.
+     *
+     * @return The index of the attribute, or -1 if it does not
+     *         appear in the list.
      */
-    public int getLength();
-
-    /**
-     * Look up an attribute's type by index.
-     * <p>
-     * The attribute type is one of the strings "CDATA", "ID",
-     * "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY", "ENTITIES",
-     * or "NOTATION" (always in upper case).
-     * <p>
-     * If the parser has not read a declaration for the attribute,
-     * or if the parser does not report attribute types, then it must
-     * return the value "CDATA" as stated in the XML 1.0 Recommentation
-     * (clause 3.3.3, "Attribute-Value Normalization").
-     * <p>
-     * For an enumerated attribute that is not a notation, the
-     * parser will report the type as "NMTOKEN".
-     *
-     * @param index The attribute index (zero-based).
-     *
-     * @return The attribute's type as a string, or null if the
-     *         index is out of range.
-     *
-     * @see #getLength
-     */
-    public String getType(int index);
-
-    /**
-     * Look up an attribute's type by XML 1.0 qualified name.
-     * <p>
-     * See {@link #getType(int) getType(int)} for a description
-     * of the possible types.
-     *
-     * @param qName The XML 1.0 qualified name.
-     *
-     * @return The attribute type as a string, or null if the
-     *         attribute is not in the list or if qualified names
-     *         are not available.
-     */
-    public String getType(String qName);
-
-    /**
-     * Look up an attribute's value by index.
-     * <p>
-     * If the attribute value is a list of tokens (IDREFS,
-     * ENTITIES, or NMTOKENS), the tokens will be concatenated
-     * into a single string with each token separated by a
-     * single space.
-     *
-     * @param index The attribute index (zero-based).
-     *
-     * @return The attribute's value as a string, or null if the
-     *         index is out of range.
-     *
-     * @see #getLength
-     */
-    public String getValue(int index);
-
-    /**
-     * Look up an attribute's value by XML 1.0 qualified name.
-     * <p>
-     * See {@link #getValue(int) getValue(int)} for a description
-     * of the possible values.
-     *
-     * @param qName The XML 1.0 qualified name.
-     *
-     * @return The attribute value as a string, or null if the
-     *         attribute is not in the list or if qualified names
-     *         are not available.
-     */
-    public String getValue(String qName);
+    public int getIndex(String uri, String localPart);
 
 } // interface XMLAttributes

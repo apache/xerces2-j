@@ -79,8 +79,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
-import org.xml.sax.SAXException;
-
 /**
  * This is the base class of all DOM parsers. It implements the XNI 
  * callback methods to create the DOM tree. After a successful parse of
@@ -98,8 +96,28 @@ public abstract class AbstractDOMParser
     extends AbstractXMLDocumentParser {
 
     //
+    // Constants
+    //
+
+    /** Feature id: create entity ref nodes. */
+    protected static final String CREATE_ENTITY_REF_NODES =
+        "http://apache.org/xml/features/dom/create-entity-ref-nodes";
+
+    /** Feature id: include ignorable whitespace. */
+    protected static final String INCLUDE_IGNORABLE_WHITESPACE =
+        "http://apache.org/xml/features/dom/include-ignorable-whitespace";
+
+    //
     // Data
     //
+
+    // features
+
+    /** Create entity reference nodes. */
+    protected boolean fCreateEntityRefNodes;
+
+    /** Include ignorable whitespace. */
+    protected boolean fIncludeIgnorableWhitespace;
 
     // dom information
 
@@ -132,6 +150,18 @@ public abstract class AbstractDOMParser
     /** Default constructor. */
     protected AbstractDOMParser(XMLParserConfiguration config) {
         super(config);
+
+        // add recognized features
+        final String[] recognizedFeatures = {
+            CREATE_ENTITY_REF_NODES,
+            INCLUDE_IGNORABLE_WHITESPACE,
+        };
+        fConfiguration.addRecognizedFeatures(recognizedFeatures);
+
+        // set default values
+        fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, true);
+        fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
+
     } // <init>(XMLParserConfiguration)
 
     //
@@ -152,8 +182,12 @@ public abstract class AbstractDOMParser
      *
      * @throws SAXException Thrown on initialization error.
      */
-    public void reset() throws SAXException {
+    public void reset() throws XNIException {
         super.reset();
+
+        // get feature state
+        fCreateEntityRefNodes = fConfiguration.getFeature(CREATE_ENTITY_REF_NODES);
+        fIncludeIgnorableWhitespace = fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE);
 
         // reset dom information
         fDocument = null;
@@ -199,7 +233,7 @@ public abstract class AbstractDOMParser
                             String baseSystemId,
                             String encoding) throws XNIException {
 
-        if (fInDocument && !fInDTD) {
+        if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
             EntityReference entityRef = fDocument.createEntityReference(name);
             fCurrentNode.appendChild(entityRef);
             fCurrentNode = entityRef;
@@ -368,6 +402,11 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text) throws XNIException {
+
+        if (!fIncludeIgnorableWhitespace) {
+            return;
+        }
+
         if (fInCDATASection) {
             CDATASection cdataSection = (CDATASection)fCurrentNode;
             cdataSection.appendData(text.toString());
@@ -475,7 +514,7 @@ public abstract class AbstractDOMParser
      */
     public void endEntity(String name) throws XNIException {
 
-        if (fInDocument && !fInDTD) {
+        if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
             fCurrentNode = fCurrentNode.getParentNode();
         }
 

@@ -577,7 +577,7 @@ public class Counter
         System.err.println("  amount of characters (characters, ignorable whitespace, and tag characters)");
         System.err.println("  in the document.");
         System.err.println();
-        System.err.println("  Not all features are supported by different parser configurations.");
+        System.err.println("  Not all features are supported by different parsers.");
 
     } // printUsage()
 

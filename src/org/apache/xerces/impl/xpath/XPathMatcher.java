@@ -69,6 +69,7 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -229,7 +230,7 @@ public class XPathMatcher
      *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager componentManager) 
-        throws SAXException {
+        throws XNIException {
         
         // get symbol table
         SymbolTable symbols = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
@@ -282,7 +283,7 @@ public class XPathMatcher
      *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
     } // setFeature(String,boolean)
 
     /**
@@ -310,7 +311,7 @@ public class XPathMatcher
      *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
     } // setProperty(String,Object)
 
     //
@@ -913,14 +914,16 @@ public class XPathMatcher
                 final XPath xpath = new XPath(expr, null);
                 final XPathMatcher matcher = new XPathMatcher(xpath);
                 matcher.reset(new XMLComponentManager() {
-                    public boolean getFeature(String featureId) throws SAXNotRecognizedException, SAXNotSupportedException {
-                        throw new SAXNotSupportedException(featureId);
+                    public boolean getFeature(String featureId) throws XMLConfigurationException {
+                        short type = XMLConfigurationException.NOT_SUPPORTED;
+                        throw new XMLConfigurationException(type, featureId);
                     }
-                    public Object getProperty(String propertyId) throws SAXNotRecognizedException, SAXNotSupportedException {
+                    public Object getProperty(String propertyId) throws XMLConfigurationException {
                         if (propertyId.equals(SYMBOL_TABLE)) {
                             return symbols;
                         }
-                        throw new SAXNotSupportedException(propertyId);
+                        short type = XMLConfigurationException.NOT_SUPPORTED;
+                        throw new XMLConfigurationException(type, propertyId);
                     }
                 });
                 System.out.println("#### argv["+i+"]: \""+expr+"\" -> \""+xpath.toString()+'"');
@@ -945,7 +948,7 @@ public class XPathMatcher
                 };
                 final String uri = argv[++i];
                 System.out.println("#### argv["+i+"]: "+uri);
-                parser.parse(uri);
+                parser.parse(new org.apache.xerces.xni.parser.XMLInputSource(null, uri, null));
             }
         }
 

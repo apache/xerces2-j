@@ -62,8 +62,7 @@ import java.io.IOException;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
-
-import org.xml.sax.Locator;
+import org.apache.xerces.xni.parser.XMLLocator;
 
 /**
  * This class allows various parser scanners to scan basic XML constructs
@@ -84,7 +83,7 @@ import org.xml.sax.Locator;
  * @see XMLEntityManager
  */
 public abstract class XMLEntityScanner
-    implements Locator {
+    implements XMLLocator {
 
     //
     // Public methods

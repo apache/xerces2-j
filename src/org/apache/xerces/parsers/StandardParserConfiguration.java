@@ -65,7 +65,6 @@ import org.apache.xerces.impl.XMLDocumentScanner;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLDTDScanner;
 import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.XMLInputSource;
 import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
@@ -73,12 +72,11 @@ import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLLocator;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+//import org.xml.sax.Locator;
 
 /**
  * This is the "standard" parser configuration. It extends the basic
@@ -217,7 +215,7 @@ public class StandardParserConfiguration
     // state
 
     /** Locator */
-    protected Locator fLocator;
+    protected XMLLocator fLocator;
 
     /** 
      * True if a parse is in progress. This state is needed because
@@ -292,7 +290,7 @@ public class StandardParserConfiguration
         fEntityManager = createEntityManager();
         fProperties.put(ENTITY_MANAGER, fEntityManager);
         addComponent(fEntityManager);
-        fLocator = (Locator)fEntityManager.getEntityScanner();
+        fLocator = (XMLLocator)fEntityManager.getEntityScanner();
         fProperties.put(LOCATOR, fLocator);
 
         fErrorReporter = createErrorReporter(fEntityManager.getEntityScanner());
@@ -357,7 +355,7 @@ public class StandardParserConfiguration
                 fEntityManager = createEntityManager();
                 fProperties.put(ENTITY_MANAGER, fEntityManager);
                 addComponent(fEntityManager);
-                fLocator = (Locator)fEntityManager.getEntityScanner();
+                fLocator = (XMLLocator)fEntityManager.getEntityScanner();
             }
             fErrorReporter =
                 createErrorReporter(fEntityManager.getEntityScanner());
@@ -379,7 +377,7 @@ public class StandardParserConfiguration
      * @exception XNIException Throws exception on XNI error.
      * @exception java.io.IOException Throws exception on i/o error.
      */
-    public void parse(InputSource source) throws XNIException, IOException {
+    public void parse(XMLInputSource source) throws XNIException, IOException {
 
         if (fParseInProgress) {
             // REVISIT - need to add new error message
@@ -390,7 +388,7 @@ public class StandardParserConfiguration
         try {
             reset();
             fEntityManager.setEntityHandler(fScanner);
-            fEntityManager.startDocumentEntity(new XMLInputSource(source));
+            fEntityManager.startDocumentEntity(source);
             fScanner.scanDocument(true);
         } 
         catch (XNIException ex) {
@@ -423,7 +421,7 @@ public class StandardParserConfiguration
      *
      * @throws SAXException Thrown if an error occurs during initialization.
      */
-    protected void reset() throws SAXException {
+    protected void reset() throws XNIException {
 
         // configure the pipeline and initialize the components
         configurePipeline();
@@ -478,7 +476,7 @@ public class StandardParserConfiguration
      *            problem fulfilling the request.
      */
     protected void checkFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         //
         // Xerces Features
@@ -507,14 +505,16 @@ public class StandardParserConfiguration
             //
             if (feature.equals(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
                 // REVISIT
-                throw new SAXNotSupportedException(featureId);
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, featureId);
             }
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
             if (feature.equals(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
                 // REVISIT
-                throw new SAXNotSupportedException(featureId);
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, featureId);
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
@@ -533,7 +533,8 @@ public class StandardParserConfiguration
             // http://apache.org/xml/features/validation/default-attribute-values
             //
             if (feature.equals(Constants.VALIDATE_DATATYPES_FEATURE)) {
-                throw new SAXNotSupportedException(featureId);
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, featureId);
             }
         }
 
@@ -560,7 +561,7 @@ public class StandardParserConfiguration
      *            problem fulfilling the request.
      */
     protected void checkProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         //
         // Xerces Properties
@@ -589,9 +590,9 @@ public class StandardParserConfiguration
     } // createEntityManager():XMLEntityManager
 
     /** Creates an error reporter. */
-    protected XMLErrorReporter createErrorReporter(Locator locator) {
+    protected XMLErrorReporter createErrorReporter(XMLLocator locator) {
         return new XMLErrorReporter(locator);
-    } // createErrorReporter(Locator):XMLErrorReporter
+    } // createErrorReporter(XMLLocator):XMLErrorReporter
 
     /** Create a document scanner. */
     protected XMLDocumentScanner createDocumentScanner() {

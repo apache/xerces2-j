@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,9 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 
+import org.xml.sax.AttributeList;
+import org.xml.sax.Attributes;
+
 /**
  * The XMLAttributesImpl class is an implementation of the XMLAttributes
  * interface which defines a collection of attributes for an element. 
@@ -79,7 +82,7 @@ import org.apache.xerces.xni.XMLString;
  * @version $Id$
  */
 public class XMLAttributesImpl
-    implements XMLAttributes {
+    implements XMLAttributes, AttributeList, Attributes {
 
     //
     // Data

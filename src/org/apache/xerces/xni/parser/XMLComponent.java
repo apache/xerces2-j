@@ -57,10 +57,6 @@
 
 package org.apache.xerces.xni.parser;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-
 /**
  * The component interface defines methods that must be implemented
  * by components in a parser configuration. The component methods allow
@@ -87,10 +83,10 @@ public interface XMLComponent {
      * 
      * @param componentManager The component manager.
      *
-     * @throws SAXException Thrown by component on initialization error.
+     * @throws XNIException Thrown by component on initialization error.
      */
     public void reset(XMLComponentManager componentManager) 
-        throws SAXException;
+        throws XMLConfigurationException;
 
     /**
      * Returns a list of feature identifiers that are recognized by
@@ -109,13 +105,14 @@ public interface XMLComponent {
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
      *
-     * @throws SAXNotRecognizedException The component should not throw
-     *                                   this exception.
-     * @throws SAXNotSupportedException The component should not throw
-     *                                  this exception.
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws XMLConfigurationException;
 
     /**
      * Returns a list of property identifiers that are recognized by
@@ -134,12 +131,13 @@ public interface XMLComponent {
      * @param propertyId The property identifier.
      * @param value      The value of the property.
      *
-     * @throws SAXNotRecognizedException The component should not throw
-     *                                   this exception.
-     * @throws SAXNotSupportedException The component should not throw
-     *                                  this exception.
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException;
+       throws XMLConfigurationException;
 
 } // interface XMLComponent

@@ -71,10 +71,7 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 
 /**
  * This class is responsible for holding scanning methods common to
@@ -221,7 +218,7 @@ public abstract class XMLScanner
      *                      properties cannot be found.
      */
     public void reset(XMLComponentManager componentManager)
-        throws SAXException {
+        throws XMLConfigurationException {
 
         // Xerces properties
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -252,7 +249,7 @@ public abstract class XMLScanner
         try {
             fNotifyCharRefs = componentManager.getFeature(NOTIFY_CHAR_REFS);
         }
-        catch (SAXException e) {
+        catch (XMLConfigurationException e) {
             // ignore
         }
 
@@ -265,7 +262,7 @@ public abstract class XMLScanner
      * @param value 
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
         
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
@@ -289,7 +286,7 @@ public abstract class XMLScanner
      * Sets the feature of the scanner.
      */
     public void setFeature(String featureId, boolean value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
             
         if (VALIDATION.equals(featureId)) {
             fValidation = value;

@@ -57,21 +57,36 @@
 
 package org.apache.xerces.parsers;
 
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Hashtable;
+import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
+
+import org.apache.xerces.util.EntityResolverWrapper;
+import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xni.parser.XMLLocator;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
+import org.xml.sax.AttributeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.Parser;
@@ -169,6 +184,9 @@ public abstract class AbstractSAXParser
      */
     protected boolean fParseInProgress = false;
 
+    // temp vars
+    private final AttributesProxy fAttributesProxy = new AttributesProxy();
+
     //
     // Constructors
     //
@@ -216,9 +234,10 @@ public abstract class AbstractSAXParser
         // get the locator
         Locator locator = null;
         try {
-            locator = (Locator)fConfiguration.getProperty(LOCATOR);
+            XMLLocator xmlLocator = (XMLLocator)fConfiguration.getProperty(LOCATOR);
+            locator = new LocatorProxy(xmlLocator);
         }
-        catch (SAXException e) {
+        catch (XMLConfigurationException e) {
             // ignore
         }
 
@@ -315,7 +334,8 @@ public abstract class AbstractSAXParser
         try {
             // SAX1
             if (fDocumentHandler != null) {
-                fDocumentHandler.startElement(element.rawname, attributes);
+                fAttributesProxy.setAttributes(attributes);
+                fDocumentHandler.startElement(element.rawname, fAttributesProxy);
             }
     
             // SAX2
@@ -335,8 +355,9 @@ public abstract class AbstractSAXParser
     
                 String uri = element.uri != null ? element.uri : fEmptySymbol;
                 String localpart = fNamespaces ? element.localpart : fEmptySymbol;
-                fContentHandler.startElement(uri, localpart,
-                                             element.rawname, attributes);
+                fAttributesProxy.setAttributes(attributes);
+                fContentHandler.startElement(uri, localpart, element.rawname, 
+                                             fAttributesProxy);
             }
         }
         catch (SAXException e) {
@@ -860,6 +881,201 @@ public abstract class AbstractSAXParser
     //
 
     /**
+     * Parses the input source specified by the given system identifier.
+     * <p>
+     * This method is equivalent to the following:
+     * <pre>
+     *     parse(new InputSource(systemId));
+     * </pre>
+     *
+     * @param source The input source.
+     *
+     * @exception org.xml.sax.SAXException Throws exception on SAX error.
+     * @exception java.io.IOException Throws exception on i/o error.
+     */
+    public void parse(String systemId) throws SAXException, IOException {
+
+        // parse document
+        XMLInputSource source = new XMLInputSource(null, systemId, null);
+        try {
+            parse(source);
+        }
+
+        // close opened stream
+        finally {
+            try {
+                Reader reader = source.getCharacterStream();
+                if (reader != null) {
+                    reader.close();
+                }
+                else {
+                    InputStream is = source.getByteStream();
+                    if (is != null) {
+                        is.close();
+                    }
+                }
+            }
+            catch (IOException e) {
+                // ignore
+            }
+        }
+
+    } // parse(String)
+
+    /**
+     * parse
+     *
+     * @param inputSource
+     *
+     * @exception org.xml.sax.SAXException
+     * @exception java.io.IOException
+     */
+    public void parse(InputSource inputSource) 
+        throws SAXException, IOException {
+
+        try {
+            reset();
+            XMLInputSource xmlInputSource = 
+                new XMLInputSource(inputSource.getPublicId(),
+                                   inputSource.getSystemId(),
+                                   null);
+            xmlInputSource.setByteStream(inputSource.getByteStream());
+            xmlInputSource.setCharacterStream(inputSource.getCharacterStream());
+            xmlInputSource.setEncoding(inputSource.getEncoding());
+            fConfiguration.parse(xmlInputSource);
+        }
+        catch (XNIException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                throw new SAXException(e.getMessage());
+            }
+            if (ex instanceof SAXException) {
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
+
+    } // parse(InputSource) 
+
+    /**
+     * Sets the resolver used to resolve external entities. The EntityResolver
+     * interface supports resolution of public and system identifiers.
+     *
+     * @param resolver The new entity resolver. Passing a null value will
+     *                 uninstall the currently installed resolver.
+     */
+    public void setEntityResolver(EntityResolver resolver) {
+
+        try {
+            fConfiguration.setProperty(ENTITY_RESOLVER, 
+                                       new EntityResolverWrapper(resolver));
+        }
+        catch (XMLConfigurationException e) {
+            // do nothing
+        }
+
+    } // setEntityResolver(EntityResolver)
+
+    /**
+     * Return the current entity resolver.
+     *
+     * @return The current entity resolver, or null if none
+     *         has been registered.
+     * @see #setEntityResolver
+     */
+    public EntityResolver getEntityResolver() {
+
+        EntityResolver entityResolver = null;
+        try {
+            XMLEntityResolver xmlEntityResolver = 
+                (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
+            if (xmlEntityResolver != null &&
+                xmlEntityResolver instanceof EntityResolverWrapper) {
+                entityResolver = ((EntityResolverWrapper)xmlEntityResolver).getEntityResolver();
+            }
+        }
+        catch (XMLConfigurationException e) {
+            // do nothing
+        }
+        return entityResolver;
+
+    } // getEntityResolver():EntityResolver
+
+    /**
+     * Allow an application to register an error event handler.
+     *
+     * <p>If the application does not register an error handler, all
+     * error events reported by the SAX parser will be silently
+     * ignored; however, normal processing may not continue.  It is
+     * highly recommended that all SAX applications implement an
+     * error handler to avoid unexpected bugs.</p>
+     *
+     * <p>Applications may register a new or different handler in the
+     * middle of a parse, and the SAX parser must begin using the new
+     * handler immediately.</p>
+     *
+     * @param errorHandler The error handler.
+     * @exception java.lang.NullPointerException If the handler 
+     *            argument is null.
+     * @see #getErrorHandler
+     */
+    public void setErrorHandler(ErrorHandler errorHandler) {
+
+        try {
+            fConfiguration.setProperty(ERROR_HANDLER, 
+                                       new ErrorHandlerWrapper(errorHandler));
+        }
+        catch (XMLConfigurationException e) {
+            // do nothing
+        }
+
+    } // setErrorHandler(ErrorHandler)
+
+    /**
+     * Return the current error handler.
+     *
+     * @return The current error handler, or null if none
+     *         has been registered.
+     * @see #setErrorHandler
+     */
+    public ErrorHandler getErrorHandler() {
+
+        ErrorHandler errorHandler = null;
+        try {
+            XMLErrorHandler xmlErrorHandler = 
+                (XMLErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
+            if (xmlErrorHandler != null && 
+                xmlErrorHandler instanceof ErrorHandlerWrapper) {
+                errorHandler = ((ErrorHandlerWrapper)xmlErrorHandler).getErrorHandler();
+            }
+        }
+        catch (XMLConfigurationException e) {
+            // do nothing
+        }
+        return errorHandler;
+
+    } // getErrorHandler():ErrorHandler
+
+    /**
+     * Set the locale to use for messages.
+     *
+     * @param locale The locale object to use for localization of messages.
+     *
+     * @exception SAXException An exception thrown if the parser does not
+     *                         support the specified locale.
+     *
+     * @see org.xml.sax.Parser
+     */
+    public void setLocale(Locale locale) throws SAXException {
+
+        fConfiguration.setLocale(locale);
+
+    } // setLocale(Locale)
+
+    /**
      * Allow an application to register a DTD event handler.
      * <p>
      * If the application does not register a DTD handler, all DTD
@@ -908,12 +1124,13 @@ public abstract class AbstractSAXParser
     public void setDocumentHandler(DocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
         try {
-            Locator locator = (Locator)fConfiguration.getProperty(LOCATOR);
-            if (locator != null) {
+            XMLLocator xmlLocator = (XMLLocator)fConfiguration.getProperty(LOCATOR);
+            if (xmlLocator != null) {
+                Locator locator = new LocatorProxy(xmlLocator);
                 fDocumentHandler.setDocumentLocator(locator);
             }
         }
-        catch (SAXException e) {
+        catch (XMLConfigurationException e) {
             // do nothing
         }
     } // setDocumentHandler(DocumentHandler)
@@ -1044,10 +1261,21 @@ public abstract class AbstractSAXParser
         */
 
         //
-        // Perform default processing
+        // Default handling
         //
 
-        super.setFeature(featureId, state);
+        try {
+            fConfiguration.setFeature(featureId, state);
+        }
+        catch (XMLConfigurationException e) {
+            String message = e.getMessage();
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(message);
+            }
+            else {
+                throw new SAXNotSupportedException(message);
+            }
+        }
 
     } // setFeature(String,boolean)
 
@@ -1111,11 +1339,18 @@ public abstract class AbstractSAXParser
         }
         */
 
-        //
-        // Perform default processing
-        //
-
-        return super.getFeature(featureId);
+        try {
+            return fConfiguration.getFeature(featureId);
+        }
+        catch (XMLConfigurationException e) {
+            String message = e.getMessage();
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(message);
+            }
+            else {
+                throw new SAXNotSupportedException(message);
+            }
+        }
 
     } // getFeature(String):boolean
 
@@ -1223,7 +1458,18 @@ public abstract class AbstractSAXParser
         // Perform default processing
         //
 
-        super.setProperty(propertyId, value);
+        try {
+            fConfiguration.setProperty(propertyId, value);
+        }
+        catch (XMLConfigurationException e) {
+            String message = e.getMessage();
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(message);
+            }
+            else {
+                throw new SAXNotSupportedException(message);
+            }
+        }
 
     } // setProperty(String,Object)
 
@@ -1307,7 +1553,18 @@ public abstract class AbstractSAXParser
         // Perform default processing
         //
 
-        return super.getProperty(propertyId);
+        try {
+            return fConfiguration.getProperty(propertyId);
+        }
+        catch (XMLConfigurationException e) {
+            String message = e.getMessage();
+            if (e.getType() == XMLConfigurationException.NOT_RECOGNIZED) {
+                throw new SAXNotRecognizedException(message);
+            }
+            else {
+                throw new SAXNotSupportedException(message);
+            }
+        }
 
     } // getProperty(String):Object
 
@@ -1400,7 +1657,7 @@ public abstract class AbstractSAXParser
      *
      * @throws SAXException Thrown if an error occurs during initialization.
      */
-    public void reset() throws SAXException {
+    public void reset() throws XNIException {
         super.reset();
 
         // reset state
@@ -1416,5 +1673,126 @@ public abstract class AbstractSAXParser
         fXmlnsSymbol = symbolTable.addSymbol("xmlns");
 
     } // reset()
+
+    //
+    // Classes
+    //
+
+    protected static class LocatorProxy
+        implements Locator {
+        
+        //
+        // Data
+        //
+
+        /** XML locator. */
+        protected XMLLocator fLocator;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs an XML locator proxy. */
+        public LocatorProxy(XMLLocator locator) {
+            fLocator = locator;
+        }
+
+        //
+        // Locator methods
+        //
+
+        /** Public identifier. */
+        public String getPublicId() {
+            return fLocator.getPublicId();
+        }
+
+        /** System identifier. */
+        public String getSystemId() {
+            return fLocator.getSystemId();
+        }
+        /** Line number. */
+        public int getLineNumber() {
+            return fLocator.getLineNumber();
+        }
+
+        /** Column number. */
+        public int getColumnNumber() {
+            return fLocator.getColumnNumber();
+        }
+
+    } // class LocatorProxy
+
+    protected static final class AttributesProxy
+        implements AttributeList, Attributes {
+
+        //
+        // Data
+        //
+
+        /** XML attributes. */
+        protected XMLAttributes fAttributes;
+
+        //
+        // Public methods
+        //
+
+        /** Sets the XML attributes. */
+        public void setAttributes(XMLAttributes attributes) {
+            fAttributes = attributes;
+        } // setAttributes(XMLAttributes)
+
+        public int getLength() {
+            return fAttributes.getLength();
+        }
+
+        public String getName(int i) {
+            return fAttributes.getQName(i);
+        }
+
+        public String getQName(int index) {
+            return fAttributes.getQName(index);
+        }
+
+        public String getURI(int index) {
+            return fAttributes.getURI(index);
+        }
+
+        public String getLocalName(int index) {
+            return fAttributes.getLocalName(index);
+        }
+
+        public String getType(int i) {
+            return fAttributes.getType(i);
+        }
+
+        public String getType(String name) {
+            return fAttributes.getType(name);
+        }
+
+        public String getType(String uri, String localName) {
+            return fAttributes.getType(uri, localName);
+        }
+
+        public String getValue(int i) {
+            return fAttributes.getValue(i);
+        }
+
+        public String getValue(String name) {
+            return fAttributes.getValue(name);
+        }
+        
+        public String getValue(String uri, String localName) {
+            return fAttributes.getValue(uri, localName);
+        }
+
+        public int getIndex(String qName) {
+            return fAttributes.getIndex(qName);
+        }
+
+        public int getIndex(String uri, String localPart) {
+            return fAttributes.getIndex(uri, localPart);
+        }
+
+    } // class AttributesProxy
 
 } // class AbstractSAXParser

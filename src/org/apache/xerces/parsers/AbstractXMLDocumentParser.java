@@ -107,9 +107,12 @@ public abstract class AbstractXMLDocumentParser
      */
     protected AbstractXMLDocumentParser(XMLParserConfiguration config) {
         super(config);
+
+        // set handlers
         config.setDocumentHandler(this);
         config.setDTDHandler(this);
         config.setDTDContentModelHandler(this);
+
     } // <init>(XMLParserConfiguration)
 
     //
@@ -605,7 +608,7 @@ public abstract class AbstractXMLDocumentParser
     /**
      * reset all components before parsing
      */
-    protected void reset() throws SAXException {
+    protected void reset() throws XNIException {
         super.reset();
         fInDTD = false;
     } // reset()

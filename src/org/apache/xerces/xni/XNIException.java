@@ -107,10 +107,10 @@ public class XNIException
     /**
      * Constructs an XNI exception with a message and wrapped exception. 
      *
-     * @param exception The wrapped exception.
      * @param message The exception message.
+     * @param exception The wrapped exception.
      */
-    public XNIException(Exception exception, String message) {
+    public XNIException(String message, Exception exception) {
         super(message);
         fException = exception;
     } // <init>(Exception,String)

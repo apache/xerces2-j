@@ -90,10 +90,7 @@ import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -520,7 +517,7 @@ public class XMLValidator
      *                      SAXNotSupportedException.
      */
     public void reset(XMLComponentManager componentManager)
-        throws SAXException {
+        throws XMLConfigurationException {
 
 
         // clear grammars
@@ -587,7 +584,7 @@ public class XMLValidator
      *                                  this exception.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
     } // setFeature(String,boolean)
 
     /**
@@ -615,7 +612,7 @@ public class XMLValidator
      *                                  this exception.
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
     } // setProperty(String,Object)
 
     //
@@ -1793,7 +1790,7 @@ public class XMLValidator
             if (!cdata || required || attValue != null) {
                 int attrCount = attributes.getLength();
                 for (int i = 0; i < attrCount; i++) {
-                    if (attributes.getName(i) == attRawName) {
+                    if (attributes.getQName(i) == attRawName) {
                         specified = true;
                         break;
                     }
@@ -1832,7 +1829,7 @@ public class XMLValidator
         // 3. validate every attribute.
         int attrCount = attributes.getLength();
         for (int i = 0; i < attrCount; i++) {
-            String attrRawName = attributes.getName(i);
+            String attrRawName = attributes.getQName(i);
             boolean declared = false;
             if (fValidation) {
                 if (fStandaloneIsYes) {

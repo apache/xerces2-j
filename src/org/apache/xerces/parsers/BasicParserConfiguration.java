@@ -72,15 +72,13 @@ import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+//import org.xml.sax.Locator;
 
 /**
  * A very basic parser configuration. This configuration class can
@@ -348,7 +346,7 @@ public abstract class BasicParserConfiguration
      * @exception org.xml.sax.SAXException
      * @exception java.io.IOException
      */
-    public abstract void parse(InputSource inputSource) 
+    public abstract void parse(XMLInputSource inputSource) 
         throws XNIException, IOException;
 
 
@@ -371,9 +369,9 @@ public abstract class BasicParserConfiguration
      * @param resolver The new entity resolver. Passing a null value will
      *                 uninstall the currently installed resolver.
      */
-    public void setEntityResolver(EntityResolver resolver) {
+    public void setEntityResolver(XMLEntityResolver resolver) {
         fProperties.put(ENTITY_RESOLVER, resolver);
-    } // setEntityResolver(EntityResolver)
+    } // setEntityResolver(XMLEntityResolver)
 
     /**
      * Return the current entity resolver.
@@ -382,9 +380,9 @@ public abstract class BasicParserConfiguration
      *         has been registered.
      * @see #setEntityResolver
      */
-    public EntityResolver getEntityResolver() {
-        return (EntityResolver)fProperties.get(ENTITY_RESOLVER);
-    } // getEntityResolver():EntityResolver
+    public XMLEntityResolver getEntityResolver() {
+        return (XMLEntityResolver)fProperties.get(ENTITY_RESOLVER);
+    } // getEntityResolver():XMLEntityResolver
 
     /**
      * Allow an application to register an error event handler.
@@ -404,9 +402,9 @@ public abstract class BasicParserConfiguration
      *            argument is null.
      * @see #getErrorHandler
      */
-    public void setErrorHandler(ErrorHandler errorHandler) {
+    public void setErrorHandler(XMLErrorHandler errorHandler) {
         fProperties.put(ERROR_HANDLER, errorHandler);
-    } // setErrorHandler(ErrorHandler)
+    } // setErrorHandler(XMLErrorHandler)
 
     /**
      * Return the current error handler.
@@ -415,9 +413,9 @@ public abstract class BasicParserConfiguration
      *         has been registered.
      * @see #setErrorHandler
      */
-    public ErrorHandler getErrorHandler() {
-        return (ErrorHandler)fProperties.get(ERROR_HANDLER);
-    } // getErrorHandler():ErrorHandler
+    public XMLErrorHandler getErrorHandler() {
+        return (XMLErrorHandler)fProperties.get(ERROR_HANDLER);
+    } // getErrorHandler():XMLErrorHandler
 
     /**
      * Allows a parser to add parser specific features to be recognized
@@ -458,7 +456,7 @@ public abstract class BasicParserConfiguration
      *            problem fulfilling the request.
      */
     public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         checkFeature(featureId);
 
@@ -500,7 +498,7 @@ public abstract class BasicParserConfiguration
      * @param value 
      */
     public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         checkProperty(propertyId);
 
@@ -530,7 +528,7 @@ public abstract class BasicParserConfiguration
      *                                  supported.
      */
     public boolean getFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         checkFeature(featureId);
 
@@ -550,7 +548,7 @@ public abstract class BasicParserConfiguration
      *                                  supported.
      */
     public Object getProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         checkProperty(propertyId);
 
@@ -583,7 +581,7 @@ public abstract class BasicParserConfiguration
     /**
      * reset all components before parsing
      */
-    protected void reset() throws SAXException {
+    protected void reset() throws XNIException {
 
         // reset every component
         int count = fComponents.size();
@@ -609,11 +607,12 @@ public abstract class BasicParserConfiguration
      *            problem fulfilling the request.
      */
     protected void checkFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         // check feature
         if (!fRecognizedFeatures.contains(featureId)) {
-            throw new SAXNotRecognizedException(featureId);
+            short type = XMLConfigurationException.NOT_RECOGNIZED;
+            throw new XMLConfigurationException(type, featureId);
         }
 
     } // checkFeature(String)
@@ -633,7 +632,7 @@ public abstract class BasicParserConfiguration
      *            problem fulfilling the request.
      */
     protected void checkProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        throws XMLConfigurationException {
 
         // special cases
         if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
@@ -653,13 +652,15 @@ public abstract class BasicParserConfiguration
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
                 // in exactly which circumstances.
-                throw new SAXNotSupportedException(propertyId);
+                short type = XMLConfigurationException.NOT_SUPPORTED;
+                throw new XMLConfigurationException(type, propertyId);
             }
         }
 
         // check property
         if (!fRecognizedProperties.contains(propertyId)) {
-            throw new SAXNotRecognizedException(propertyId);
+            short type = XMLConfigurationException.NOT_RECOGNIZED;
+            throw new XMLConfigurationException(type, propertyId);
         }
 
     } // checkProperty(String)
