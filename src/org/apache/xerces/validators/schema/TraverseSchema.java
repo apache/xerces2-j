@@ -148,13 +148,15 @@ public class TraverseSchema implements
     // Flags for handleOccurrences to indicate any special
     // restrictions on minOccurs and maxOccurs relating to "all".
     //    NOT_ALL_CONTEXT    - not processing an <all>
-    //    PROCESSING_ALL     - processing an <element> in an <all>
+    //    PROCESSING_ALL_EL  - processing an <element> in an <all>
     //    GROUP_REF_WITH_ALL - processing <group> reference that contained <all>
     //    CHILD_OF_GROUP     - processing a child of a model group definition
+    //    PROCESSING_ALL_GP  - processing an <all> group itself
     private static final int NOT_ALL_CONTEXT    = 0;
-    private static final int PROCESSING_ALL     = 1;
+    private static final int PROCESSING_ALL_EL  = 1;
     private static final int GROUP_REF_WITH_ALL = 2;
     private static final int CHILD_OF_GROUP     = 4;
+    private static final int PROCESSING_ALL_GP  = 8;
 
     //debugging
     private static final boolean DEBUGGING = false;
@@ -4101,7 +4103,8 @@ public class TraverseSchema implements
            }
            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                index = handleOccurrences(traverseAll(complexContentChild),
-                                         complexContentChild, PROCESSING_ALL);
+                                         complexContentChild,
+                                         PROCESSING_ALL_GP);
                attrNode = XUtil.getNextSiblingElement(complexContentChild);
            }
            else if (isAttrOrAttrGroup(complexContentChild)) {
@@ -4197,7 +4200,7 @@ public class TraverseSchema implements
                    if (typeInfo.contentSpecHandle > -1 &&
                        (hasAllContent(typeInfo.contentSpecHandle) ||
                         hasAllContent(baseContentSpecHandle))) {
-                       throw new ComplexTypeRecoverableError("cos-all-limited:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition.");
+                       throw new ComplexTypeRecoverableError("cos-all-limited.1.2:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition.");
                    }
 
                    typeInfo.contentSpecHandle =
@@ -5452,13 +5455,15 @@ throws Exception {
                     particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();
         String maxOccurs =
                     particle.getAttribute(SchemaSymbols.ATT_MAXOCCURS).trim();
-        boolean processingAll   = ((allContextFlags & PROCESSING_ALL) != 0);
+        boolean processingAllEl = ((allContextFlags & PROCESSING_ALL_EL) != 0);
+        boolean processingAllGP = ((allContextFlags & PROCESSING_ALL_GP) != 0);
         boolean groupRefWithAll = ((allContextFlags & GROUP_REF_WITH_ALL) != 0);
         boolean isGroupChild    = ((allContextFlags & CHILD_OF_GROUP) != 0);
 
         // Neither minOccurs nor maxOccurs may be specified
         // for the child of a model group definition.
-        if (isGroupChild && (minOccurs.length() != 0 || maxOccurs.length() != 00 )) {
+        if (isGroupChild &&
+            (minOccurs.length() != 0 || maxOccurs.length() != 0)) {
             reportSchemaError(SchemaMessageProvider.MinMaxOnGroupChild, null);
             minOccurs = (maxOccurs = "1");
         }
@@ -5479,21 +5484,42 @@ throws Exception {
 
         // For the elements referenced in an <all>, minOccurs attribute
         // must be zero or one, and maxOccurs attribute must be one.
-        if (processingAll || groupRefWithAll) {
-            if ((groupRefWithAll || !minOccurs.equals("0")) &&
+        // For a complex type definition that contains an <all> or a
+        // reference a <group> whose model group is an all model group,
+        // minOccurs and maxOccurs must be one.
+        if (processingAllEl || groupRefWithAll || processingAllGP) {
+            if ((processingAllGP||groupRefWithAll||!minOccurs.equals("0")) &&
                  !minOccurs.equals("1")) {
-                int minMsg = processingAll ?
-                             SchemaMessageProvider.BadMinMaxForAll :
-                             SchemaMessageProvider.BadMinMaxForGroupWithAll;
+                int minMsg;
+
+                if (processingAllEl) {
+                    minMsg = SchemaMessageProvider.BadMinMaxForAllElem;
+                }
+                else if (processingAllGP) {
+                    minMsg = SchemaMessageProvider.BadMinMaxForAllGp;
+                }
+                else {
+                    minMsg = SchemaMessageProvider.BadMinMaxForGroupWithAll;
+                }
+
                 reportSchemaError(minMsg, new Object [] { "minOccurs",
                                                           minOccurs });
                 minOccurs = "1";
             }
 
             if (!maxOccurs.equals("1")) {
-                int maxMsg = processingAll ?
-                             SchemaMessageProvider.BadMinMaxForAll :
-                             SchemaMessageProvider.BadMinMaxForGroupWithAll;
+                int maxMsg;
+
+                if (processingAllEl) {
+                    maxMsg = SchemaMessageProvider.BadMinMaxForAllElem;
+                }
+                else if (processingAllGP) {
+                    maxMsg = SchemaMessageProvider.BadMinMaxForAllGp;
+                }
+                else {
+                    maxMsg = SchemaMessageProvider.BadMinMaxForGroupWithAll;
+                }
+
                 reportSchemaError(maxMsg, new Object [] { "maxOccurs",
                                                           maxOccurs });
                 maxOccurs = "1";
@@ -8372,7 +8398,7 @@ throws Exception {
                                            eltQName.uri,
                                            false);
 
-                index = handleOccurrences(index, child, PROCESSING_ALL);
+                index = handleOccurrences(index, child, PROCESSING_ALL_EL);
             }
             else {
                 reportSchemaError(SchemaMessageProvider.AllContentRestricted,
