@@ -468,7 +468,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         try {
             getVersion = doc.getClass().getMethod("getXmlVersion", new Class[]{});
             if(getVersion != null ) {
-                ver = (String)getVersion.invoke(doc, null);
+                ver = (String)getVersion.invoke(doc, (Object[]) null);
             }
         } catch (Exception e) {
             // no way to test the version...
@@ -674,7 +674,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         try {
             getVersion = fDocument.getClass().getMethod("getXmlVersion", new Class[] {});
             if (getVersion != null) {
-                ver = (String) getVersion.invoke(fDocument, null);
+                ver = (String) getVersion.invoke(fDocument, (Object[]) null);
             }
         } catch (Exception e) {
             //no way to test the version...
@@ -699,7 +699,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 Method getEncoding =
                     fDocument.getClass().getMethod("getInputEncoding", new Class[] {});
                 if (getEncoding != null) {
-                    encoding = (String) getEncoding.invoke(fDocument, null);
+                    encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
                 }
             } catch (Exception e) {
                 // ignore the exception
@@ -709,7 +709,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                     Method getEncoding =
                         fDocument.getClass().getMethod("getXmlEncoding", new Class[] {});
                     if (getEncoding != null) {
-                        encoding = (String) getEncoding.invoke(fDocument, null);
+                        encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
                     }
                 } catch (Exception e) {
                     // ignore the exception
@@ -873,7 +873,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             getXmlVersion =
                 fDocument.getClass().getMethod("getXmlVersion", new Class[] {});
             if (getXmlVersion != null) {
-                ver = (String) getXmlVersion.invoke(fDocument, null);
+                ver = (String) getXmlVersion.invoke(fDocument, (Object[]) null);
             }
         } catch (Exception e) {
             // no way to test the version...
@@ -895,7 +895,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             Method getEncoding =
                 fDocument.getClass().getMethod("getInputEncoding", new Class[] {});
             if (getEncoding != null) {
-                encoding = (String) getEncoding.invoke(fDocument, null);
+                encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
             }
         } catch (Exception e) {
             // ignore the exception
@@ -905,7 +905,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 Method getEncoding =
                     fDocument.getClass().getMethod("getXmlEncoding", new Class[] {});
                 if (getEncoding != null) {
-                    encoding = (String) getEncoding.invoke(fDocument, null);
+                    encoding = (String) getEncoding.invoke(fDocument, (Object[]) null);
                 }
             } catch (Exception e) {
                 // ignore the exception
@@ -1007,7 +1007,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             try {
                 versionChanged = document.getClass().getMethod("isXMLVersionChanged()", new Class[] {});
                 if (versionChanged != null) {
-                    verifyNames = ((Boolean)versionChanged.invoke(document, null)).booleanValue();
+                    verifyNames = ((Boolean)versionChanged.invoke(document, (Object[]) null)).booleanValue();
                 }
             } catch (Exception e) {
                 //no way to test the version...
