@@ -67,48 +67,56 @@ import java.util.Locale;
  * Note: there is no support for facets in this API, since we are trying to convince
  * W3C to remove facets from the data type spec.
  * 
- * @author Ted Leung
- * @author Kito D. Mann -- changed the MAXLENGTH and MINLENGTH as per 12/17 spec.
  * @author Jeffrey Rodriguez-
  */
 public interface DatatypeValidator {
 
     /**
-     * 
-     * validate that a string matches a datatype
-     * 
-     * validate returns true or false depending on whether the string content is an
-     * instance of the data type represented by this validator.
+     * Checks that "content" string is valid 
+     * datatype.
+     * If invalid a Datatype validation exception is thrown.
      * 
      * @param content A string containing the content to be validated
+     * @param derivedBylist
+     *                Flag which is true when type
+     *                is derived by list otherwise it
+     *                it is derived by extension.
+     *                
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
      * @exception InvalidDatatypeValueException
+     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content, boolean list) throws InvalidDatatypeValueException;
+    public void validate(String content, boolean derivedBylist ) throws InvalidDatatypeValueException;
 
     /**
      * set the facets for this datatype
-     *
+     * 
      * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other
-     *
-     * @param facets A hashtable where facet names are keys and facet values are stored
-     *        in the hashtable.  Usually facet values are strings, except for the 
-     *        enumeration facet.  The value for this facet is a Vector of strings, one
-     *        per enumeration value
-     *
+     * other.
+     * 
+     * @param facets A hashtable where facet name Symbols  are keys and facet values are stored
+     *               in the hashtable.  Usually facet values are strings, except for the
+     *               enumeration facet.  The value for this facet is a Vector of strings, one
+     *               per enumeration value
      * @exception throws UnknownFacetException
      * @exception throws IllegalFacetException
      * @exception throws IllegalFacetValueException
+     * @exception UnknownFacetException
+     * @exception IllegalFacetException
+     * @exception IllegalFacetValueException
+     * @see         org.apache.xerces.validators.schema.SchemaSymbols
+     * @see         org.apache.xerces.validators.datatype.IllegalFacetException
+     * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
      */
     public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
 
     /**
-     * set the base type for this datatype
-     *
-     * @param base the validator for this type's base type
-     *
+     * Name of base type as a string.
+     * A Native datatype has the string "native"  as its
+     * base type.
+     * 
+     * @param base   the validator for this type's base type
      */
     public void setBasetype(String base);
 
@@ -118,8 +126,14 @@ public interface DatatypeValidator {
     */
     public void setLocale(Locale locale);
 
-    // REVISIT
-
+    /**
+     * REVISIT
+     * Compares two Datatype for order
+     * 
+     * @param o1
+     * @param o2
+     * @return 
+     */
     public int compare( DatatypeValidator o1, DatatypeValidator o2);
 
 }
