@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.dv.xs;
 
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-
 /**
  * This is the base class of all date/time datatype validators.
  * It implements common code for parsing, validating and comparing datatypes.
@@ -257,24 +255,16 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
         //parse miliseconds
         if ( milisec != -1 ) {
-
-            if ( sign<0 ) {
-
-                //get all digits after "."
-                data[ms]=parseInt(buffer, milisec+1, end);
-                start = end;
-            }
-            else {
-
-                //get ms before UTC sign
-                data[ms]=parseInt(buffer, milisec+1,sign);
-                start = sign;
-            }
-
+            // The end of millisecond part is between . and
+            // either the end of the UTC sign
+            start = sign < 0 ? end : sign;
+            data[ms]=parseInt(buffer, milisec+1, start);
         }
 
         //parse UTC time zone (hh:mm)
         if ( sign>0 ) {
+            if (start != sign)
+                throw new RuntimeException("Error in parsing time zone" );
             getTimeZone(buffer, data, sign, end, timeZone);
         }
         else if (start != end) {
