@@ -2771,9 +2771,10 @@ public class TraverseSchema implements
 				// this nasty hack needed to ``override'' the "use" on the 
 				// global attribute with that on the ref'ing attribute.
 				int referredAttName = fStringPool.addSymbol(referredAttribute.getAttribute(SchemaSymbols.ATT_NAME));
-        		int uriIndex = -1;
-        		if ( fTargetNSURIString.length() > 0) 
-            		uriIndex = fTargetNSURI; 
+        		int uriIndex = StringPool.EMPTY_STRING;
+        		if ( fTargetNSURIString.length() > 0) {
+                    	uriIndex = fTargetNSURI;
+        		}
         		QName referredAttQName = new QName(-1,referredAttName,referredAttName,uriIndex);
 				if (prohibited) {
 	                int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
@@ -2991,15 +2992,11 @@ public class TraverseSchema implements
         int uriIndex = StringPool.EMPTY_STRING;
         // refer to 4.3.1 in "XML Schema Part 1: Structures"
         if ( fTargetNSURIString.length() > 0) {
-                if ( isAttrTopLevel) {
-                        uriIndex = fTargetNSURI;
-                }
-                else if ( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED)){
-                        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-                            fAttributeDefaultQualified ) {
-                                uriIndex = fTargetNSURI;
-                        }
-                }
+                if ( isAttrTopLevel || 
+                		(( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED)) &&
+                        ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                         fAttributeDefaultQualified ))) 
+                    uriIndex = fTargetNSURI;
         }
         /***
         int uriIndex = fTargetNSURI;
@@ -3377,7 +3374,7 @@ public class TraverseSchema implements
             QName eltName = new QName(prefix != null ? fStringPool.addSymbol(prefix) : -1,
                                       localpartIndex,
                                       fStringPool.addSymbol(ref),
-                                      uriString != null ? fStringPool.addSymbol(uriString) : -1);
+                                      uriString != null ? fStringPool.addSymbol(uriString) : StringPool.EMPTY_STRING);
 
             //if from another schema, just return the element QName
             if (! uriString.equals(fTargetNSURIString) ) {
@@ -3619,7 +3616,7 @@ public class TraverseSchema implements
                             if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
                                 //then we found a recursive element using complexType.
                                 // REVISIT: this will be broken when recursing happens between 2 schemas
-                                int uriInd = -1;
+                                int uriInd = StringPool.EMPTY_STRING;
                                 if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
                                      fElementDefaultQualified) {
                                     uriInd = fTargetNSURI;
@@ -3665,8 +3662,10 @@ public class TraverseSchema implements
         else {
             // if there is substitutionGroup affiliation and not type defition found for this element, 
             // then grab substitutionGroup affiliation's type and give it to this element
-            if ( typeInfo == null && dv == null ) typeInfo = substitutionGroupEltTypeInfo;
-            if ( typeInfo == null && dv == null ) dv = substitutionGroupEltDV;
+            if ( typeInfo == null && dv == null ) {
+				typeInfo = substitutionGroupEltTypeInfo;
+				dv = substitutionGroupEltDV;
+			}
         }
 
         if (typeInfo == null && dv==null) {
@@ -3704,7 +3703,7 @@ public class TraverseSchema implements
 
         int elementNameIndex     = fStringPool.addSymbol(name);
         int localpartIndex = elementNameIndex;
-        int uriIndex = -1;
+        int uriIndex = StringPool.EMPTY_STRING;
         int enclosingScope = fCurrentScope;
 
         //refer to 4.3.2 in "XML Schema Part 1: Structures"
@@ -3712,11 +3711,10 @@ public class TraverseSchema implements
             uriIndex = fTargetNSURI;
             enclosingScope = TOP_LEVEL_SCOPE;
         }
-        else if ( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED)){
-                if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-                   fElementDefaultQualified ) {
-                        uriIndex = fTargetNSURI;
-                }
+        else if ( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED) &&
+                	(( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                   		fElementDefaultQualified ))) {
+            uriIndex = fTargetNSURI;
         }
         
         //There can never be two elements with the same name and different type in the same scope.
