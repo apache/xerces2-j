@@ -13,7 +13,7 @@ TARGETS=\
         XMLDocumentSource.class\
         XMLString.class
 
-DIRS =
+DIRS = parser
 
 TOP = ../../../../..
 include $(TOP)/src/Makefile.incl
