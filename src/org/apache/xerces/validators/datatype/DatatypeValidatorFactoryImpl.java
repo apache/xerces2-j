@@ -275,6 +275,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDatatypeValidator("positiveInteger",
                                         getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
+
+                //REVISIT: it looks like patterns are expensive
+                //         should we rely on error reporting for date/times and not use pattern here?
                 facets = new Hashtable();
                 facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
                 createDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);

@@ -80,6 +80,8 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         {1903, 3, 1, 0, 0, 0, 0, 'Z'},
         {1903, 7, 1, 0, 0, 0, 0, 'Z'}};
 
+    private int[][] fDuration = new int[2][TOTAL_SIZE];
+
 
     public  DurationDatatypeValidator() throws InvalidDatatypeFacetException{
         super();
@@ -167,8 +169,6 @@ public class DurationDatatypeValidator extends DateTimeValidator {
                 throw new Exception();
             }
 
-
-
             fStart = end+1;
             end = indexOf (fStart, fEnd, 'H');
             if ( end!=-1 ) {
@@ -226,7 +226,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         //
 
         //add constA to both durations
-        short resultA, resultB, resultC, resultD = INDETERMINATE;
+        short resultA, resultB= INDETERMINATE;
 
         //try and see if the objects are equal
         resultA = compareOrder (date1, date2);
@@ -235,48 +235,46 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         }
 
         //long comparison algorithm is required
-        int[] tempA = addDuration (date1, 0);
-        int[] tempB = addDuration (date2, 0);
+        int[] tempA = addDuration (date1, 0, fDuration[0]);
+        int[] tempB = addDuration (date2, 0, fDuration[1]);
         resultA =  compareOrder(tempA, tempB);
         if ( resultA == INDETERMINATE ) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, 1);
-        tempB = addDuration(date2, 1);
+        tempA = addDuration(date1, 1, fDuration[0]);
+        tempB = addDuration(date2, 1, fDuration[1]);
         resultB =  compareOrder(tempA, tempB);
         if ( resultB == INDETERMINATE || resultA!=resultB ) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, 1);
-        tempB = addDuration(date2, 1);
-        resultC =  compareOrder(tempA, tempB);
-        if ( resultC == INDETERMINATE || resultC!=resultB ) {
+        tempA = addDuration(date1, 2, fDuration[0]);
+        tempB = addDuration(date2, 2, fDuration[1]);
+        resultB =  compareOrder(tempA, tempB);
+        if ( resultB == INDETERMINATE || resultA!=resultB ) {
             return INDETERMINATE;
         }
 
-        tempA = addDuration(date1, 1);
-        tempB = addDuration(date2, 1);
-        resultD =  compareOrder(tempA, tempB);
-        if ( resultD == INDETERMINATE || resultD!=resultC ) {
+        tempA = addDuration(date1, 3, fDuration[0]);
+        tempB = addDuration(date2, 3, fDuration[1]);
+        resultB =  compareOrder(tempA, tempB);
+        if ( resultB == INDETERMINATE || resultB!=resultA ) {
             return INDETERMINATE;
         }
 
 
-        return resultD;
+        return resultA;
     }
 
 
-    private int[] addDuration(int[] date, int index) {
+    private int[] addDuration(int[] date, int index, int[] duration) {
 
         //REVISIT: some code could be shared between normalize() and this method,
         //         however is it worth moving it? The structures are different...
         //
 
-        //REVISIT: take care about unnecessary obj creation
-        int[] duration=new int[TOTAL_SIZE];
-
+        resetDateObj(duration);
         //add months (may be modified additionaly below)
         int temp = DATETIMES[index][M] + date[M];
         duration[M] = modulo (temp, 1, 13);

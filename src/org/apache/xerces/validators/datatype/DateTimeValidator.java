@@ -292,7 +292,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @exception InvalidDatatypeValueException
      */
     public Object validate(String content, Object state) throws InvalidDatatypeValueException{
-        int[] date=new int[TOTAL_SIZE];
+        
         try {
             resetDateObj(fDateValue);
             parse(content, fDateValue);
