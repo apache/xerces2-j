@@ -586,12 +586,22 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             fJAXPProcessed = true;
             fGrammarBucket.putGrammar(loadSchema(fXSDDescription, xis, locationPairs));
             return ;
-        } else if (componentType != Object.class) {
-            // Not an Object[]
+        } else if ( (componentType != Object.class) &&
+                    (componentType != String.class) &&
+                    (componentType != File.class) &&
+                    (componentType != InputStream.class) &&
+                    (componentType != InputSource.class)
+                  ) {
+            // Not an Object[], String[], File[], InputStream[], InputSource[]
             throw new XMLConfigurationException(
-                XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
+                XMLConfigurationException.NOT_SUPPORTED, "\""+JAXP_SCHEMA_SOURCE+
+                "\" property cannot have an array of type {"+componentType.getName()+
+                "}. Possible types of the array supported are Object, String, File, "+
+                "InputStream, InputSource.");
         }
 
+        // JAXP spec. allow []s of type String, File, InputStream, 
+        // InputSource also, apart from [] of type Object.
         Object[] objArr = (Object[]) fJAXPSource;
         fJAXPProcessed = true;
         for (int i = 0; i < objArr.length; i++) {
@@ -653,7 +663,10 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             return new XMLInputSource(null, null, null, is, null);
         }
         throw new XMLConfigurationException(
-            XMLConfigurationException.NOT_SUPPORTED, JAXP_SCHEMA_SOURCE);
+            XMLConfigurationException.NOT_SUPPORTED, "\""+JAXP_SCHEMA_SOURCE+
+            "\" property cannot have a value of type {"+val.getClass().getName()+
+            "}. Possible types of the value supported are String, File, InputStream, "+
+            "InputSource OR an array of these types.");
     }
 
 
