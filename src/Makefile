@@ -240,6 +240,13 @@ package_src:
 	${MKDIR} ../source/src/org/apache/xerces/utils
 	${CP}  ../src/org/apache/xerces/utils/*.java                    ../source/src/org/apache/xerces/utils
 
+#-src/org/apache/xerces/utils/regex
+	${MKDIR} ../source/src//org/apache/xerces/utils/regex
+	${CP}  ../src/org/apache/xerces/utils/regex/*.java                    ../source/src/org/apache/xerces/utils/regex
+
+
+
+
 #-src/org/apache/xerces/validaters/common
 	${MKDIR} ../source/src/org/apache/xerces/validators/common
 	${CP}  ../src/org/apache/xerces/validators/common/*.java      ../source/src/org/apache/xerces/validators/common
