@@ -117,34 +117,23 @@ public class AttrNSImpl
     	                               "INVALID_CHARACTER_ERR");
         }
         
-        if (prefix != null && prefix.equals("xml")) {
-            
-            if (namespaceURI != null && !namespaceURI.equals("") 
-            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (prefix != null && prefix.equals("xmlns")) {
-            if (namespaceURI != null && !namespaceURI.equals("") )
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (prefix != null && (namespaceURI == null || namespaceURI.equals("")) ) 
-        {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
-    	
-    	// Unqualified attributes do not have namespaces as per NS spec.
-    	if (prefix == null) 
-    	    namespaceURI = null;
+	if (namespaceURI == null || namespaceURI.equals("")) {
+	    if (prefix != null && prefix.equals("xml")) {
+		namespaceURI = "http://www.w3.org/XML/1998/namespace";
+	    } else if (qualifiedName.equals("xmlns")) {
+		namespaceURI = "http://www.w3.org/2000/xmlns/";
+	    }
+	} else {
+	    if (prefix != null &&
+		((prefix.equals("xml")
+		  && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
+		 || prefix.equals("xmlns"))) {
+		throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+					   "NAMESPACE_ERR");
+	    }
+	}
     	
         syncData = true;
-        
     } 
 
     // for DeferredAttrImpl
