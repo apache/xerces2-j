@@ -530,28 +530,24 @@ public class XMLNamespaceBinder
         // bind the attributes
         for (int i = 0; i < length; i++) {
             attributes.getName(i, fAttributeQName);
-            String arawname = fAttributeQName.rawname;
             String aprefix = fAttributeQName.prefix != null 
                            ? fAttributeQName.prefix : fEmptySymbol;
+            String arawname = fAttributeQName.rawname;
             if (aprefix == fXmlSymbol) {
                 fAttributeQName.uri = fNamespaceSupport.getURI(fXmlSymbol);
                 attributes.setName(i, fAttributeQName);
             }
             else if (arawname != fXmlnsSymbol && !arawname.startsWith("xmlns:")) {
-                if (fAttributeQName.prefix != null) {
-                    fAttributeQName.uri = fNamespaceSupport.getURI(fAttributeQName.prefix);
+                if (aprefix != fEmptySymbol) {
+                    fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
                     if (fAttributeQName.uri == null) {
                         fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                    "AttributePrefixUnbound",
-                                                   new Object[]{fAttributeQName.prefix, fAttributeQName.rawname},
+                                                   new Object[]{aprefix, arawname},
                                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
+                    attributes.setName(i, fAttributeQName);
                 }
-                else {
-                    // attributes with no prefix get element's uri
-                    fAttributeQName.uri = element.uri;
-                }
-                attributes.setName(i, fAttributeQName);
             }
         }
 

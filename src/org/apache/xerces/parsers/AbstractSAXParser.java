@@ -102,6 +102,16 @@ public abstract class AbstractSAXParser
     // Constants
     //
 
+    // features
+
+    /** Feature identifier: namespaces. */
+    protected static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+
+    /** Feature identifier: namespace prefixes. */
+    protected static final String NAMESPACE_PREFIXES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
+
     // NOTE: The locator and symbol table properties are for internal
     //       use. -Ac
 
@@ -119,7 +129,11 @@ public abstract class AbstractSAXParser
 
     // features
 
-    boolean fNamespacePrefixes = false;
+    /** Namespaces. */
+    protected boolean fNamespaces;
+
+    /** Namespace prefixes. */
+    protected boolean fNamespacePrefixes = false;
 
     // parser handlers
 
@@ -164,19 +178,16 @@ public abstract class AbstractSAXParser
         super(config);
 
         final String[] recognizedFeatures = {
-            Constants.SAX_FEATURE_PREFIX +
-            Constants.NAMESPACE_PREFIXES_FEATURE,
-            Constants.SAX_FEATURE_PREFIX +
-            Constants.STRING_INTERNING_FEATURE
+            NAMESPACES,
+            NAMESPACE_PREFIXES,
+            Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE,
         };
         config.addRecognizedFeatures(recognizedFeatures);
 
         final String[] recognizedProperties = {
-            Constants.SAX_PROPERTY_PREFIX +
-            Constants.LEXICAL_HANDLER_PROPERTY,
-            Constants.SAX_PROPERTY_PREFIX +
-            Constants.DECLARATION_HANDLER_PROPERTY,
-            Constants.SAX_PROPERTY_PREFIX + Constants.DOM_NODE_PROPERTY
+            Constants.SAX_PROPERTY_PREFIX + Constants.LEXICAL_HANDLER_PROPERTY,
+            Constants.SAX_PROPERTY_PREFIX + Constants.DECLARATION_HANDLER_PROPERTY,
+            Constants.SAX_PROPERTY_PREFIX + Constants.DOM_NODE_PROPERTY,
         };
         config.addRecognizedProperties(recognizedProperties);
 
@@ -323,7 +334,8 @@ public abstract class AbstractSAXParser
                 }
     
                 String uri = element.uri != null ? element.uri : fEmptySymbol;
-                fContentHandler.startElement(uri, element.localpart,
+                String localpart = fNamespaces ? element.localpart : fEmptySymbol;
+                fContentHandler.startElement(uri, localpart,
                                              element.rawname, attributes);
             }
         }
@@ -415,7 +427,8 @@ public abstract class AbstractSAXParser
             // SAX2
             if (fContentHandler != null) {
                 String uri = element.uri != null ? element.uri : fEmptySymbol;
-                fContentHandler.endElement(uri, element.localpart,
+                String localpart = fNamespaces ? element.localpart : fEmptySymbol;
+                fContentHandler.endElement(uri, localpart,
                                            element.rawname);
             }
         }
@@ -981,6 +994,12 @@ public abstract class AbstractSAXParser
         if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
 
+            // http://xml.org/sax/features/namespaces
+            if (feature.equals(Constants.NAMESPACES_FEATURE)) {
+                fConfiguration.setFeature(featureId, state);
+                fNamespaces = state;
+                return;
+            }
             // http://xml.org/sax/features/namespace-prefixes
             //   controls the reporting of raw prefixed names and Namespace 
             //   declarations (xmlns* attributes): when this feature is false 
@@ -1386,6 +1405,10 @@ public abstract class AbstractSAXParser
 
         // reset state
         fInDTD = false;
+
+        // features
+        fNamespaces = fConfiguration.getFeature(NAMESPACES);
+        fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
 
         // save needed symbols
         SymbolTable symbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
