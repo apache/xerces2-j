@@ -2,8 +2,22 @@
 
 <s1 title="Releases">
 
-<s2 title='???, 2001 (version 1.4.4)'>
+<s2 title='November 13, 2001 (version 1.4.4)'>
 <ul>
+    <li>
+        JAXP fixes.  [Edwin Goie]
+    </li>
+    <li>
+        Parser now resolves the locations of schemas referenced by other
+        schemas relative to the schema doing the referencing rather than to
+        the instance document.  [Gopal Sharma/Neil Graham]
+    </li>
+    <li>
+        Changed HTML serializer so that, at user option, attributes with no
+        value may be represented as attr=&quot;&quot; instead of simply as
+        attr.  The default behaviour has not changed.  [Sandor Szago
+        (sszago@saba.com)/Neil Graham]
+    </li>
     <li>
         Fixed parser behavior: by default Xerces now exposes element and attribute values as defined
         by the Infoset.
