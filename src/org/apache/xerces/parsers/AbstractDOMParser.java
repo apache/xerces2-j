@@ -75,6 +75,7 @@ import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.PSVIAttrNSImpl;
+import org.apache.xerces.dom.PSVIDocumentImpl;
 import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.dom3.DOMError;
@@ -368,7 +369,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             documentClassName = DEFAULT_DOCUMENT_CLASS_NAME;
         }
         
-        if (!documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
+        if (!documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME) &&
+            !documentClassName.equals(PSVI_DOCUMENT_CLASS_NAME)) {
             // verify that this class exists and is of the right type
             try {
                 Class _class = ObjectFactory.findProviderClass (documentClassName,
@@ -782,22 +784,36 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 // set documentURI
                 fDocumentImpl.setDocumentURI (locator.getExpandedSystemId ());
             }
+            else if (fDocumentClassName.equals (PSVI_DOCUMENT_CLASS_NAME)) {
+                fDocument = new PSVIDocumentImpl();
+                fDocumentImpl = (CoreDocumentImpl)fDocument;
+                fStorePSVI = true;
+                // REVISIT: when DOM Level 3 is REC rely on Document.support
+                //          instead of specific class
+                // set DOM error checking off
+                fDocumentImpl.setStrictErrorChecking (false);
+                // set actual encoding
+                fDocumentImpl.setInputEncoding (encoding);
+                // set documentURI
+                fDocumentImpl.setDocumentURI (locator.getExpandedSystemId ());
+            }
             else {
                 // use specified document class
                 try {
+                    ClassLoader cl = ObjectFactory.findClassLoader();
                     Class documentClass = ObjectFactory.findProviderClass (fDocumentClassName,
-                    ObjectFactory.findClassLoader (), true);
+                        cl, true);
                     fDocument = (Document)documentClass.newInstance ();
                     
                     // if subclass of our own class that's cool too
                     Class defaultDocClass =
                     ObjectFactory.findProviderClass (CORE_DOCUMENT_CLASS_NAME,
-                    ObjectFactory.findClassLoader (), true);
+                        cl, true);
                     if (defaultDocClass.isAssignableFrom (documentClass)) {
                         fDocumentImpl = (CoreDocumentImpl)fDocument;
                         
                         Class psviDocClass = ObjectFactory.findProviderClass (PSVI_DOCUMENT_CLASS_NAME,
-                        ObjectFactory.findClassLoader (), true);
+                            cl, true);
                         if (psviDocClass.isAssignableFrom (documentClass)) {
                             fStorePSVI = true;
                         }
