@@ -2677,11 +2677,11 @@ public final class XMLValidator
     // content models
 
     /** Queries the content model for the specified element index. */
-    private XMLContentModel getElementContentModel(int elementIndex) {
+    private XMLContentModel getElementContentModel(int elementIndex) throws CMException {
         XMLContentModel contentModel = null;
         if ( elementIndex > -1) {
             if ( fGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
-                contentModel = fTempElementDecl.contentModelValidator;
+                contentModel = fGrammar.getElementContentModel(elementIndex);
             }
         }
         //return fGrammar.getElementContentModel(elementIndex);

@@ -83,10 +83,6 @@ implements XMLContentSpec.Provider {
     private static final int CHUNK_MASK = CHUNK_SIZE - 1;
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT)); // 2^10 = 1k
 
-    public static final int MIXEDCONTENT    = -10;
-    public static final int CHILDRENCONTENT = -11;
-    public static final int DATATYPECONTENT = -12;
-
     private static final int LIST_FLAG = 0x8000;
     private static final int LIST_MASK = ~LIST_FLAG;
 
@@ -221,6 +217,11 @@ implements XMLContentSpec.Provider {
         if (contentModel != null)
             return contentModel;
 
+        int contentType = fElementDeclType[chunk][index];
+        if (contentType == XMLElementDecl.TYPE_SIMPLE) {
+            return null;
+        }
+
         // Get the type of content this element has
 
         int contentSpecIndex = fElementDeclContentSpecIndex[chunk][index]; 
@@ -233,7 +234,7 @@ implements XMLContentSpec.Provider {
 
         // And create the content model according to the spec type
         
-        if ( contentSpec.type == MIXEDCONTENT ) {
+        if ( contentType == XMLElementDecl.TYPE_MIXED ) {
             //
             //  Just create a mixel content model object. This type of
             //  content model is optimized for mixed content validation.
@@ -251,7 +252,7 @@ implements XMLContentSpec.Provider {
                 ex.printStackTrace();
             }
 
-        } else if (contentSpec.type == CHILDRENCONTENT) {
+        } else if (contentType == XMLElementDecl.TYPE_CHILDREN) {
             //  This method will create an optimal model for the complexity
             //  of the element's defined model. If its simple, it will create
             //  a SimpleContentModel object. If its a simple list, it will
@@ -263,8 +264,6 @@ implements XMLContentSpec.Provider {
             }catch( CMException ex ) {
                  ex.printStackTrace();
             }
-        } else if (contentSpec.type == DATATYPECONTENT) {
-            // ?? What do we do here
         } else {
             throw new CMException(ImplementationMessages.VAL_CST);
         }
