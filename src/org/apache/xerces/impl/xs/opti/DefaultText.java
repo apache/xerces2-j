@@ -259,4 +259,16 @@ public class DefaultText extends NodeImpl implements Text {
     	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
     }
 
+    /** DOM Level 3 */
+    public boolean isWhitespaceInElementContent(){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    public String getWholeText(){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
+    
+    public Text replaceWholeText(String content) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
 }
