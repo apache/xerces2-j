@@ -58,7 +58,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Annotation schema component.
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSAnnotation extends XSObject {
     // TargetType

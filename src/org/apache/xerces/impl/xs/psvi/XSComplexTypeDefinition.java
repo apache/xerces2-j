@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Complex Type Definition schema component.
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSComplexTypeDefinition extends XSTypeDefinition {
     // Content Model Types

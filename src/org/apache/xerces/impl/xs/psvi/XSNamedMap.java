@@ -63,7 +63,7 @@ package org.apache.xerces.impl.xs.psvi;
  * name. Note that <code>XSNamedMap</code> does not inherit from 
  * <code>XSObjectList</code>. The <code>XSOBject</code>s in 
  * <code>XSNamedMap</code>s are not maintained in any particular order. 
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSNamedMap {
     /**

@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 /**
  *  The <code>StringList</code> is an ordered collection of 
  * <code>GenericString</code>. 
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface StringList {
     /**

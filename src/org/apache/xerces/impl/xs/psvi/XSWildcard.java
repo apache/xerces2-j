@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Wildcard schema component.
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSWildcard extends XSTerm {
     // Namespace Constraint

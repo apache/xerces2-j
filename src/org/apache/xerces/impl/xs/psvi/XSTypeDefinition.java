@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents a complex or simple type definition.
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSTypeDefinition extends XSObject {
     /**

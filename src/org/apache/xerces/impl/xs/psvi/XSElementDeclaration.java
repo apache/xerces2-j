@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * The interfaces represents the Element Declaration schema component. 
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSElementDeclaration extends XSTerm {
     /**

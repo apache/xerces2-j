@@ -58,7 +58,7 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents the Attribute Group Definition schema component
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSAttributeGroupDefinition extends XSObject {
     /**

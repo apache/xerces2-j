@@ -61,7 +61,7 @@ package org.apache.xerces.impl.xs.psvi;
  *  The <code>XSNamesaceItemList</code> interface provides the abstraction of 
  * an ordered collection of <code>XSNamespaceItem</code>s, without defining 
  * or constraining how this collection is implemented. 
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface XSNamespaceItemList {
     /**

@@ -61,7 +61,7 @@ import org.apache.xerces.impl.xs.psvi.*;
 
 /**
  * Represent a PSVI item for one element or one attribute information item.
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  * @author Elena Litani, IBM
  * @version $Id$
  */

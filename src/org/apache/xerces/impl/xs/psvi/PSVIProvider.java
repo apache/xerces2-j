@@ -69,7 +69,7 @@ import org.apache.xerces.xni.psvi.ElementPSVI;
  * handling the start and end of an element, applications may use the 
  * <code>PSVIProvider</code> to retrieve the PSVI related to that element 
  * and its attributes.
- * @deprecated The interface may be updated or replaced. 
+ * The interface may be updated or replaced. 
  */
 public interface PSVIProvider {
     /**
