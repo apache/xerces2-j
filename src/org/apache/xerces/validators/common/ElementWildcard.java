@@ -70,13 +70,6 @@ import org.apache.xerces.validators.schema.SchemaMessageProvider;
 public class ElementWildcard {
     private ElementWildcard(){}
 
-    private static StringPool fStringPool;
-    private static XMLErrorReporter fErrorReporter;
-    public static void setErrReporter (StringPool stringPool, XMLErrorReporter errorReporter) {
-        fStringPool = stringPool;
-        fErrorReporter = errorReporter;
-    }
-
     private static boolean uriInWildcard(QName qname, int wildcard, int wtype,
                                          SubstitutionGroupComparator comparator) {
         int type = wtype & 0x0f;
@@ -108,7 +101,7 @@ public class ElementWildcard {
                     // error occurs in comparator, do nothing here.
                 }
             } else {
-                //if (wildcard != uri && uri != fStringPool.EMPTY_STRING) // ???
+                //if (wildcard != uri && uri != StringPool.EMPTY_STRING) // ???
                 if (wildcard != qname.uri)
                     return true;
             }
@@ -196,39 +189,43 @@ public class ElementWildcard {
         boolean ret = conflic(type1, local1, uri1, type2, local2, uri2, comparator);
 
         try {
-        if (ret && fStringPool != null && fErrorReporter != null) {
-            String elements = getString (type1, local1, uri1, type2, local2, uri2);
-            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                       SchemaMessageProvider.SCHEMA_DOMAIN,
-                                       SchemaMessageProvider.GenericError,
-                                       SchemaMessageProvider.MSG_NONE,
-                                       new Object[]{elements},
-                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+        if (ret && comparator != null) {
+            String elements = getString (type1, local1, uri1,
+                                         type2, local2, uri2,
+                                         comparator.getStringPool());
+            XMLErrorReporter err = comparator.getErrorReporter();
+            err.reportError(err.getLocator(),
+                            SchemaMessageProvider.SCHEMA_DOMAIN,
+                            SchemaMessageProvider.GenericError,
+                            SchemaMessageProvider.MSG_NONE,
+                            new Object[]{elements},
+                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
         }
         } catch (Exception e) {
         }
 
         return ret;
     }
-    private static String eleString(int type, int local, int uri) {
+    private static String eleString(int type, int local, int uri, StringPool stringPool) {
         switch (type & 0x0f) {
         case XMLContentSpec.CONTENTSPECNODE_LEAF:
-            return fStringPool.toString(uri) + ":" + fStringPool.toString(local);
+            return stringPool.toString(uri) + ":" + stringPool.toString(local);
         case XMLContentSpec.CONTENTSPECNODE_ANY:
             return "##any:*";
         case XMLContentSpec.CONTENTSPECNODE_ANY_NS:
-            return  fStringPool.toString(uri) + ":*";
+            return  stringPool.toString(uri) + ":*";
         case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER:
-            return "##other(" + fStringPool.toString(uri) + "):*";
+            return "##other(" + stringPool.toString(uri) + "):*";
         }
 
         return "";
     }
 
     private static String getString(int type1, int local1, int uri1,
-                                   int type2, int local2, int uri2) {
-        return "cos-nonambig: (" + eleString(type1, local1, uri1) +
-               ") and (" + eleString(type2, local2, uri2) +
+                                    int type2, int local2, int uri2,
+                                    StringPool stringPool) {
+        return "cos-nonambig: (" + eleString(type1, local1, uri1, stringPool) +
+               ") and (" + eleString(type2, local2, uri2, stringPool) +
                ") violate the \"Unique Particle Attribution\" rule";
     }
 } // class ElementWildcard

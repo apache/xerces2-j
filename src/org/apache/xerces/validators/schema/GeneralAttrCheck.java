@@ -63,6 +63,8 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.datatype.*;
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.validators.common.Grammar;
 
 /**
  * Title:
@@ -699,7 +701,7 @@ public class GeneralAttrCheck {
         attrList = new Hashtable();
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
-        oneEle = new OneElement (attrList);
+        oneEle = new OneElement (attrList, false);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_APPINFO, oneEle);
 
         // for element "documentation" - local name
@@ -707,7 +709,7 @@ public class GeneralAttrCheck {
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         // xml:lang = language ???
-        oneEle = new OneElement (attrList);
+        oneEle = new OneElement (attrList, false);
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_DOCUMENTATION, oneEle);
 
         // for element "simpleType" - global
@@ -857,67 +859,6 @@ public class GeneralAttrCheck {
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_MININCLUSIVE, oneEle);
         // for element "minExclusive" - local name
         fEleAttrsMap.put(PRE_LOC_NAME+SchemaSymbols.ELT_MINEXCLUSIVE, oneEle);
-
-
-        // step 5: register all datatype validators for new types
-        Hashtable facets;
-        DatatypeValidator extraDV;
-        try {
-            // anyURI
-            extraDV = new AnyURIDatatypeValidator();
-            fExtraDVs[DT_ANYURI] = extraDV;
-
-            // boolean
-            extraDV = new BooleanDatatypeValidator();
-            fExtraDVs[DT_BOOLEAN] = extraDV;
-
-            // ID
-            extraDV = new IDDatatypeValidator();
-            fExtraDVs[DT_ID] = extraDV;
-
-            // nonNegtiveInteger
-            facets = new Hashtable();
-            facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
-            facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
-            extraDV = new DecimalDatatypeValidator(null, facets, false);
-            fExtraDVs[DT_NONNEGINT] = extraDV;
-
-            // QName
-            extraDV = new QNameDatatypeValidator();
-            fExtraDVs[DT_QNAME] = extraDV;
-
-            // string
-            extraDV = new StringDatatypeValidator();
-            fExtraDVs[DT_STRING] = extraDV;
-
-            // token
-            facets = new Hashtable();
-            facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            extraDV = new StringDatatypeValidator(null, facets, false);
-            fExtraDVs[DT_TOKEN] = extraDV;
-
-            // NCName
-            facets = new Hashtable();
-            facets.put(SchemaSymbols.ELT_PATTERN, "[\\i-[:]][\\c-[:]]*");
-            extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
-            fExtraDVs[DT_NCNAME] = extraDV;
-
-            // xpath = a subset of XPath expression
-            // facets = new Hashtable();
-            // facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)(/(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.))*(\\|(\\.//)?(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)(/(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.))*)*");
-            // extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
-            // fExtraDVs[DT_XPATH] = extraDV;
-            fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
-
-            // xpath = a subset of XPath expression
-            // facets = new Hashtable();
-            // facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*))))(\\|(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*)))))*");
-            // extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
-            // fExtraDVs[DT_XPATH1] = extraDV;
-            fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
-        } catch (InvalidDatatypeFacetException ide) {
-            // shouldn't be any problem
-        }
     }
 
     private Hashtable fIdDefs = new Hashtable();
@@ -925,13 +866,46 @@ public class GeneralAttrCheck {
     // used to store utility reference: error reproter. set via constructor.
     protected XMLErrorReporter fErrorReporter = null;
 
+    // used to store the list of simple type validators
+    protected DatatypeValidatorFactoryImpl fDatatypeRegistry;
+
     // used to store the mapping from processed element to attributes
-    protected Hashtable fProcessedElements = null;
+    protected Hashtable fProcessedElements = new Hashtable();
+
+    // used to store the mapping from processed element to attributes
+    protected Hashtable fNonSchemaAttrs = new Hashtable();
 
     // constructor. Sets fDVRegistry and fErrorReproter
-    public GeneralAttrCheck(XMLErrorReporter er) {
+    private GeneralAttrCheck() {}
+    public GeneralAttrCheck (XMLErrorReporter er, DatatypeValidatorFactoryImpl datatypeRegistry) {
         fErrorReporter = er;
-        fProcessedElements = new Hashtable();
+        fDatatypeRegistry = fDatatypeRegistry;
+        synchronized (getClass()) {
+            if (fExtraDVs[DT_ANYURI] == null) {
+                // step 5: register all datatype validators for new types
+                datatypeRegistry.expandRegistryToFullSchemaSet();
+                // anyURI
+                fExtraDVs[DT_ANYURI] = datatypeRegistry.getDatatypeValidator("anyURI");
+                // boolean
+                fExtraDVs[DT_BOOLEAN] = datatypeRegistry.getDatatypeValidator("boolean");
+                // ID
+                fExtraDVs[DT_ID] = datatypeRegistry.getDatatypeValidator("ID");
+                // nonNegtiveInteger
+                fExtraDVs[DT_NONNEGINT] = datatypeRegistry.getDatatypeValidator("nonNegativeInteger");
+                // QName
+                fExtraDVs[DT_QNAME] = datatypeRegistry.getDatatypeValidator("QName");
+                // string
+                fExtraDVs[DT_STRING] = datatypeRegistry.getDatatypeValidator("string");
+                // token
+                fExtraDVs[DT_TOKEN] = datatypeRegistry.getDatatypeValidator("token");
+                // NCName
+                fExtraDVs[DT_NCNAME] = datatypeRegistry.getDatatypeValidator("NCName");
+                // xpath = a subset of XPath expression
+                fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
+                // xpath = a subset of XPath expression
+                fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
+            }
+        }
     }
 
     // check whether the specified element conforms to the attributes restriction
@@ -952,12 +926,12 @@ public class GeneralAttrCheck {
         // LR_ for local + ref;
         String elName = element.getLocalName(), name;
         if (eleContext == ELE_CONTEXT_GLOBAL) {
-            name = PRE_GLOBAL + element.getLocalName();
+            name = PRE_GLOBAL + elName;
         } else {
             if (element.getAttributeNode(SchemaSymbols.ATT_REF) == null)
-                name = PRE_LOC_NAME + element.getLocalName();
+                name = PRE_LOC_NAME + elName;
             else
-                name = PRE_LOC_REF + element.getLocalName();
+                name = PRE_LOC_REF + elName;
         }
 
         // get desired attribute list of this element
@@ -976,15 +950,46 @@ public class GeneralAttrCheck {
         Attr sattr = null;
         int i = 0;
         while ((sattr = (Attr)attrs.item(i++)) != null) {
+            // get the attribute name/value
+            String attrName = sattr.getName();
+            String attrVal = sattr.getValue();
+
             // skip anything starts with x/X m/M l/L ???
             // simply put their values in the return hashtable
-            if (sattr.getName().toLowerCase().startsWith("xml")) {
-                attrValues.put(sattr.getName(), new Object[] {sattr.getValue(), Boolean.FALSE});
+            if (attrName.toLowerCase().startsWith("xml")) {
+                attrValues.put(attrName, new Object[] {sattr.getValue(), Boolean.FALSE});
+                continue;
+            }
+
+            // for attributes with namespace prefix
+            String attrURI = sattr.getNamespaceURI();
+            if (attrURI != null && attrURI.length() != 0) {
+                // attributes with schema namespace are not allowed
+                // and not allowed on "document" and "appInfo"
+                if (attrURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ||
+                    !oneEle.allowNonSchemaAttr) {
+                    reportSchemaError (SchemaMessageProvider.GenericError,
+                                       new Object[] {"Attribute '"+attrName+"' cannot appear in '"+elName+"'"});
+                } else {
+                    // for attributes from other namespace
+                    // store them in a list, and TRY to validate them after
+                    // schema traversal (because it's "lax")
+                    attrValues.put(attrName,
+                                   new Object[] {attrVal, Boolean.FALSE});
+                    String attrRName = attrURI + "," + sattr.getLocalName();
+                    Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
+                    if (values == null) {
+                        values = new Vector();
+                        values.addElement(attrVal);
+                        fNonSchemaAttrs.put(attrRName, values);
+                    } else {
+                        values.addElement(attrVal);
+                    }
+                }
                 continue;
             }
 
             // check whether this attribute is allowed
-            String attrName = sattr.getLocalName();
             OneAttr oneAttr = (OneAttr)attrList.get(attrName);
             if (oneAttr == null) {
                 reportSchemaError (SchemaMessageProvider.GenericError,
@@ -992,9 +997,7 @@ public class GeneralAttrCheck {
                 continue;
             }
 
-            // get the attribute valud, and check it against the datatype
-            String attrVal = sattr.getValue();
-
+            // check the value against the datatype
             try {
                 // no checking on string needs to be done here.
                 // no checking on xpath needs to be done here.
@@ -1221,6 +1224,98 @@ public class GeneralAttrCheck {
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
         }
     }
+
+    // validate attriubtes from non-schema namespaces
+    public void checkNonSchemaAttributes(GrammarResolver grammarResolver) throws Exception {
+        // for all attributes
+        Enumeration enum = fNonSchemaAttrs.keys();
+        while (enum.hasMoreElements()) {
+            // get name, uri, localpart
+            String attrRName = (String)enum.nextElement();
+            String attrURI = attrRName.substring(0,attrRName.indexOf(','));
+            String attrLocal = attrRName.substring(attrRName.indexOf(',')+1);
+            // find associated grammar
+            Grammar grammar = grammarResolver.getGrammar(attrURI);
+            if (grammar == null || !(grammar instanceof SchemaGrammar))
+                continue;
+            SchemaGrammar sGrammar = (SchemaGrammar)grammar;
+            // then get all top-level attributes from that grammar
+            Hashtable attrRegistry = sGrammar.getAttributeDeclRegistry();
+            if (attrRegistry == null)
+                continue;
+            // and get the datatype validator, if there is one
+            XMLAttributeDecl tempAttrDecl = (XMLAttributeDecl)attrRegistry.get(attrLocal);
+            if (tempAttrDecl == null)
+                continue;
+            DatatypeValidator dv = tempAttrDecl.datatypeValidator;
+            if (dv == null)
+                continue;
+
+            // get all values appeared with this attribute name
+            Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
+            String attrVal;
+            String attrName = (String)values.get(0);
+            // for each of the values
+            int count = values.size();
+            for (int i = 1; i < count; i++) {
+                // normalize it according to the whiteSpace facet
+                attrVal = normalize((String)values.get(i), dv.getWSFacet());
+                try {
+                    // and validate it using the DatatypeValidator
+                    dv.validate(attrVal,null);
+                } catch(InvalidDatatypeValueException ide) {
+                    reportSchemaError (SchemaMessageProvider.GenericError,
+                                       new Object[] {"Invalid attribute value '"+attrVal+"' for '"+
+                                       attrName + "': " + ide.getLocalizedMessage()});
+                }
+            }
+        }
+    }
+
+    // normalize the string according to the whiteSpace facet
+    private String normalize(String content, short ws) {
+        int len = content == null ? 0 : content.length();
+        if (len == 0 || ws == DatatypeValidator.PRESERVE)
+            return content;
+
+        StringBuffer sb = new StringBuffer();
+        if (ws == DatatypeValidator.REPLACE) {
+            char ch;
+            // when it's replace, just replace #x9, #xa, #xd by #x20
+            for (int i = 0; i < len; i++) {
+                ch = content.charAt(i);
+                if (ch != 0x9 && ch != 0xa && ch != 0xd)
+                    sb.append(ch);
+                else
+                    sb.append((char)0x20);
+            }
+        } else {
+            char ch;
+            int i;
+            boolean isLeading = true;
+            // when it's collapse
+            for (i = 0; i < len; i++) {
+                ch = content.charAt(i);
+                // append real characters, so we passed leading ws
+                if (ch != 0x9 && ch != 0xa && ch != 0xd && ch != 0x20) {
+                    sb.append(ch);
+                    isLeading = false;
+                } else {
+                    // for whitespaces, we skip all following ws
+                    for (; i < len-1; i++) {
+                        ch = content.charAt(i+1);
+                        if (ch != 0x9 && ch != 0xa && ch != 0xd && ch != 0x20)
+                            break;
+                    }
+                    // if it's not a leading or tailing ws, then append a space
+                    if (i < len - 1 && !isLeading)
+                        sb.append((char)0x20);
+                }
+            }
+        }
+
+        return sb.toString();
+    }
 }
 
 class OneAttr {
@@ -1246,8 +1341,14 @@ class OneElement {
     public Hashtable attrList;
     // the array of attributes that can appear in one element
     public Object[] attrArray;
+    // does this element allow attributes from non-schema namespace
+    public boolean allowNonSchemaAttr;
 
     public OneElement (Hashtable attrList) {
+        this(attrList, true);
+    }
+
+    public OneElement (Hashtable attrList, boolean allowNonSchemaAttr) {
         this.attrList = attrList;
 
         int count = attrList.size();
@@ -1255,5 +1356,7 @@ class OneElement {
         Enumeration enum = attrList.elements();
         for (int i = 0; i < count; i++)
             this.attrArray[i] = enum.nextElement();
+
+        this.allowNonSchemaAttr = allowNonSchemaAttr;
     }
 }

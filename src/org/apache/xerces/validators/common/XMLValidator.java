@@ -189,7 +189,19 @@ public final class XMLValidator
       }
    };
 
-   private Object[] fEntityValParam = null;
+   private  StateMessageDatatype fValidateEntity = new StateMessageDatatype() {
+      private Object fData;
+      public Object getDatatypeObject(){
+         return fData;
+      }
+      public int getDatatypeState(){
+         return ENTITYDatatypeValidator.ENTITY_VALIDATE;
+      }
+      public void setDatatypeObject( Object data ){
+         fData = data;
+      }
+   };
+
    //
    // Data
    //
@@ -398,7 +410,7 @@ public final class XMLValidator
       fEntityHandler = entityHandler;
       fDocumentScanner = documentScanner;
 
-      fEntityValParam = new Object[]{entityHandler, stringPool};
+      fValidateEntity.setDatatypeObject(new Object[]{entityHandler, stringPool});
       fValidateIDRef.setDatatypeObject(fIdREFDefs);
       fCheckIDRef.setDatatypeObject(new Object[]{fIdDefs, fIdREFDefs});
 
@@ -1884,7 +1896,7 @@ public final class XMLValidator
    private void resetCommon(StringPool stringPool) throws Exception {
 
       fStringPool = stringPool;
-      fEntityValParam[1] = stringPool;
+      fValidateEntity.setDatatypeObject(new Object[]{fEntityHandler, stringPool});
       fValidating = fValidationEnabled;
       fValidationEnabledByDynamic = false;
       fDynamicDisabledByValidation = false;
@@ -2269,7 +2281,6 @@ public final class XMLValidator
 
    /** Queries the content model for the specified element index. */
    private XMLContentModel getElementContentModel(int elementIndex) throws CMException {
-      ElementWildcard.setErrReporter(fStringPool, fErrorReporter);
       XMLContentModel contentModel = null;
       if ( elementIndex > -1) {
          if ( fGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
@@ -2710,8 +2721,9 @@ public final class XMLValidator
                //At this point we should expand the registry table.
                // pass parser's entity resolver (local Resolver), which also has reference to user's
                // entity resolver, and also can fall-back to entityhandler's expandSystemId()
-               GeneralAttrCheck generalAttrCheck = new GeneralAttrCheck(fErrorReporter);
+               GeneralAttrCheck generalAttrCheck = new GeneralAttrCheck(fErrorReporter, fDataTypeReg);
                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER, getSchemaFullCheckingEnabled(), generalAttrCheck);
+               generalAttrCheck.checkNonSchemaAttributes(fGrammarResolver);
 
                //allowing xsi:schemaLocation to appear on any element
                String targetNS =   root.getAttribute("targetNamespace");
@@ -2724,7 +2736,6 @@ public final class XMLValidator
                // by constructing all content models
                if (fSchemaValidationFullChecking) {
                   try {
-                    ElementWildcard.setErrReporter(fStringPool, fErrorReporter);
                     // get all grammar URIs
                     Enumeration grammarURIs = fGrammarResolver.nameSpaceKeys();
                     String grammarURI;
@@ -3745,9 +3756,9 @@ public final class XMLValidator
 
             try {
                if ( isAlistAttribute ) {
-                  fValENTITIES.validate( value, fEntityValParam );
+                  fValENTITIES.validate( value, fValidateEntity );
                } else {
-                  fValENTITY.validate( value, fEntityValParam );
+                  fValENTITY.validate( value, fValidateEntity );
                }
             } catch ( InvalidDatatypeValueException ex ) {
                if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
@@ -4329,7 +4340,7 @@ public final class XMLValidator
        } else if (dv instanceof IDREFDatatypeValidator) {
            dv.validate( content, fValidateIDRef );
        } else if (dv instanceof ENTITYDatatypeValidator) {
-           dv.validate( content, fEntityValParam);
+           dv.validate( content, fValidateEntity);
        } else if (!onlyVal3Types) {
            if (dv instanceof NOTATIONDatatypeValidator && content != null) {
                content = bindNotationURI(content);

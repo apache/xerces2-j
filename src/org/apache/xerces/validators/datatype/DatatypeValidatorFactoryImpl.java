@@ -140,7 +140,8 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createDTDDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
 
                 Hashtable facets = new Hashtable(2);
-                facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
+                facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN,
+                           AbstractStringValidator.SPECIAL_TOKEN_NMTOKEN);
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
                 createDTDDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
 
@@ -191,24 +192,29 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 }
                 Hashtable facets = new Hashtable (2);
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_REPLACE);
-                createSchemaDatatypeValidator("normalizedString", new StringDatatypeValidator(), facets, false);
+                createSchemaDatatypeValidator("normalizedString", getDatatypeValidator("string"), facets, false);
 
 
                 facets.clear();
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-                createSchemaDatatypeValidator("token", getDatatypeValidator("normalizedString"), facets, false);
+                createSchemaDatatypeValidator("token", getDatatypeValidator("string"), facets, false);
 
                 facets.clear();
+                facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
                 facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
-                createSchemaDatatypeValidator("language", getDatatypeValidator("token") , facets, false );
+                createSchemaDatatypeValidator("language", getDatatypeValidator("string") , facets, false );
 
                 facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN , "\\i\\c*" );
-                createSchemaDatatypeValidator("Name", getDatatypeValidator("token"), facets, false );
+                facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+                facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN,
+                           AbstractStringValidator.SPECIAL_TOKEN_NAME);
+                createSchemaDatatypeValidator("Name", getDatatypeValidator("string"), facets, false );
 
                 facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-                createSchemaDatatypeValidator("NCName", getDatatypeValidator("token"), facets, false );
+                facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
+                facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN,
+                           AbstractStringValidator.SPECIAL_TOKEN_NCNAME);
+                createSchemaDatatypeValidator("NCName", getDatatypeValidator("string"), facets, false );
 
                 facets.clear();
                 facets.put(SchemaSymbols.ELT_FRACTIONDIGITS, "0");
@@ -280,6 +286,11 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 createSchemaDatatypeValidator("positiveInteger",
                                               getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
+                // in the case of schema, ID/IDREF are of type NCNAME
+                ((IDDatatypeValidator)getDatatypeValidator("ID")).setTokenType(AbstractStringValidator.SPECIAL_TOKEN_IDNCNAME);
+                ((IDREFDatatypeValidator)getDatatypeValidator("IDREF")).setTokenType(AbstractStringValidator.SPECIAL_TOKEN_IDREFNCNAME);
+                // set the NCName validator into QName validator
+                QNameDatatypeValidator.setNCNameValidator(getDatatypeValidator("NCName"));
 
                 fRegistryExpanded = 2;
             }

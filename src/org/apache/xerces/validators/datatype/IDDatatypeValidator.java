@@ -73,22 +73,7 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * @version $Id$
  */
 public class IDDatatypeValidator extends StringDatatypeValidator {
-    private static StringDatatypeValidator  fgStrValidator  = null;
     private static Object                   fNullValue      = new Object();
-
-    static {
-        // make a string validator for NCName
-        if ( fgStrValidator == null ) {
-            Hashtable strFacets = new Hashtable();
-            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            try{            
-                fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
-            }
-            catch (Exception e){
-            }
-        }
-    }
 
     public IDDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -104,27 +89,18 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
         if ( derivedByList )
             return;
 
-        Vector enum = null;
-        if ( facets != null )
-            enum = (Vector)facets.get(SchemaSymbols.ELT_ENUMERATION);
-        if ( enum != null ) {
-            int i = 0;
-            try {
-                for ( ; i < enum.size(); i++ )
-                    fgStrValidator.validate((String)enum.elementAt(i), null);
-            }
-            catch ( Exception idve ) {
-                throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enum.elementAt(i) +
-                                                         "' must be from the value space of base.");
-            }
-        }
+        // the type is NAME by default
+        if (base != null)
+            setTokenType(((IDDatatypeValidator)base).fTokenType);
+        else
+            setTokenType(SPECIAL_TOKEN_IDNAME);
     }
 
     /**
      * return value of whiteSpace facet
      */
     public short getWSFacet() {
-        return fgStrValidator.getWSFacet();
+        return COLLAPSE;
     }
 
     /**
@@ -144,17 +120,6 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
         // use StringDatatypeValidator to validate content against facets
         super.validate(content, state);
-
-        // check if content is a valid NCName
-        try {
-            fgStrValidator.validate(content, null);
-        }
-        catch ( InvalidDatatypeValueException idve ) {
-            InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
-            error.setMinorCode(XMLMessages.MSG_ID_INVALID);
-            error.setMajorCode(XMLMessages.VC_ID);
-            throw error;
-        }
 
         if (state != null) {
             if ( !addId( content, (Hashtable)state) ) {

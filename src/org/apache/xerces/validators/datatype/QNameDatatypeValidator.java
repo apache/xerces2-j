@@ -77,11 +77,11 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * @version $Id$
  */
 public class QNameDatatypeValidator extends  AbstractStringValidator {
-    
+
 
     // for the NCName validator
     // REVISIT: synch issues?
-    private static StringDatatypeValidator  fgStrValidator  = null;
+    private static DatatypeValidator  fgStrValidator  = null;
 
     public QNameDatatypeValidator () throws InvalidDatatypeFacetException {
         this ( null, null, false ); // Native, No Facets defined, Restriction
@@ -90,15 +90,7 @@ public class QNameDatatypeValidator extends  AbstractStringValidator {
     public QNameDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                     boolean derivedByList ) throws InvalidDatatypeFacetException  {
 
-        
         super (base, facets, derivedByList);
-        // make a string validator for NCName
-        if ( fgStrValidator == null) {
-            Hashtable strFacets = new Hashtable();
-            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
-        }
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
@@ -108,7 +100,7 @@ public class QNameDatatypeValidator extends  AbstractStringValidator {
 
 
     protected void checkValueSpace (String content) throws InvalidDatatypeValueException {
-        
+
         // check 3.2.18.c0 must: "NCName:NCName"
         try {
             int posColon = content.indexOf(':');
@@ -125,5 +117,11 @@ public class QNameDatatypeValidator extends  AbstractStringValidator {
         Collator  collator  = Collator.getInstance( loc );
         return collator.compare( content, facetValue );
     }
-   
+
+    protected static void setNCNameValidator (DatatypeValidator dv) {
+        // make a string validator for NCName
+        if ( fgStrValidator == null) {
+            fgStrValidator = dv;
+        }
+    }
 }

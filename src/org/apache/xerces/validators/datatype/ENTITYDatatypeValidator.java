@@ -111,22 +111,8 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  * @see org.apache.xerces.validators.common.XMLValidator
  */
 public class ENTITYDatatypeValidator extends StringDatatypeValidator {
-    private static StringDatatypeValidator  fgStrValidator      = null;
 
-    static {
-        // make a string validator for NCName
-        if ( fgStrValidator == null) {
-            Hashtable strFacets = new Hashtable();
-            strFacets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_COLLAPSE);
-            strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            try{
-            
-            fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
-            }
-            catch (Exception e){
-            }
-        }
-    }
+    public static final  int                ENTITY_VALIDATE  = 0;
 
     public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -142,26 +128,14 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
         if ( derivedByList )
             return;
 
-        Vector enum = null;
-        if (facets != null)
-            enum = (Vector)facets.get(SchemaSymbols.ELT_ENUMERATION);
-        if (enum != null) {
-            int i = 0;
-            try {
-                for ( ; i < enum.size(); i++)
-                    fgStrValidator.validate((String)enum.elementAt(i), null);
-            } catch ( Exception idve ){
-                throw new InvalidDatatypeFacetException( "Value of enumeration = '" + enum.elementAt(i) +
-                                                         "' must be from the value space of base.");
-            }
-        }
+        setTokenType(SPECIAL_TOKEN_ENTITY);
     }
 
     /**
      * return value of whiteSpace facet
      */
     public short getWSFacet(){
-        return fgStrValidator.getWSFacet();
+        return COLLAPSE;
     }
 
     /**
@@ -184,18 +158,9 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
         // use StringDatatypeValidator to validate content against facets
         super.validate(content, state);
 
-        // check if content is a valid NCName
-        try {
-            fgStrValidator.validate(content, null);
-        } catch (InvalidDatatypeValueException idve) {
-            InvalidDatatypeValueException error =  new InvalidDatatypeValueException( "ID is not valid: " + content );
-            error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID);
-            error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
-            throw error;
-        }
-
-        if (state != null) {
-            Object[] params = (Object[]) state;
+        StateMessageDatatype message = (StateMessageDatatype) state;
+        if (message != null && message.getDatatypeState() == ENTITY_VALIDATE) {
+            Object[] params = (Object[])message.getDatatypeObject();
             DefaultEntityHandler entityHandler = (DefaultEntityHandler)params[0];
             StringPool stringPool = (StringPool)params[1];
 

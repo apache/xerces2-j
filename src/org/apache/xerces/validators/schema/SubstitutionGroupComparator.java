@@ -103,6 +103,14 @@ public class SubstitutionGroupComparator {
         fErrorReporter = errorReporter;
     }
 
+    public StringPool getStringPool() {
+        return fStringPool;
+    }
+
+    public XMLErrorReporter getErrorReporter () {
+        return fErrorReporter;
+    }
+
     //public methods
     public boolean isEquivalentTo(QName anElement, QName exemplar) throws Exception{
         if (anElement.localpart==exemplar.localpart && anElement.uri==exemplar.uri ) {
