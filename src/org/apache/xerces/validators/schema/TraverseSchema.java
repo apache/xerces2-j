@@ -1651,7 +1651,19 @@ public class TraverseSchema implements
        return baseValidator;
     }
 
-       
+    private void checkEnumerationRequiredNotation(String name, String type) throws Exception{
+        String localpart = type;
+        int colonptr = type.indexOf(":");
+        if ( colonptr > 0) {
+            localpart = type.substring(colonptr+1);
+        }
+        if (localpart.equals("NOTATION")) {        
+          reportGenericSchemaError("[enumeration-required-notation] It is an error for NOTATION to be used "+
+                                "directly in a schema in element/attribute '"+name+"'"); 
+        }
+
+    }
+
    // @used in traverseSimpleType
    // on return we need to pop the last simpleType name from 
    // the name stack
@@ -1688,7 +1700,8 @@ public class TraverseSchema implements
        return false;
     }
 
-
+    
+   
    /**
      * Traverse SimpleType declaration:
      * <simpleType
@@ -4126,7 +4139,9 @@ public class TraverseSchema implements
         Attr refAtt       = attrDecl.getAttributeNode(SchemaSymbols.ATT_REF);
         Attr datatypeAtt  = attrDecl.getAttributeNode(SchemaSymbols.ATT_TYPE);
         Attr useAtt       = attrDecl.getAttributeNode(SchemaSymbols.ATT_USE);
-
+        
+        checkEnumerationRequiredNotation(attNameStr, datatypeStr);
+        
         ////// define attribute declaration Schema components
         int attName;        // attribute name indexed in the string pool
         int uriIndex;       // indexed for target namespace uri
@@ -4855,7 +4870,9 @@ public class TraverseSchema implements
         String refStr = elementDecl.getAttribute(SchemaSymbols.ATT_REF);
         String substitutionGroupStr = elementDecl.getAttribute(SchemaSymbols.ATT_SUBSTITUTIONGROUP);
         String typeStr = elementDecl.getAttribute(SchemaSymbols.ATT_TYPE);
-
+        
+        checkEnumerationRequiredNotation(nameStr, typeStr);
+        
         if ( DEBUGGING )
             System.out.println("traversing element decl : " + nameStr );
 
