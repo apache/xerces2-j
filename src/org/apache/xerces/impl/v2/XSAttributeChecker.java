@@ -94,6 +94,15 @@ import org.apache.xerces.xni.QName;
 
 public class XSAttributeChecker {
 
+    // REVISIT: only local element and attribute are different from others.
+    //          it's possible to have either name or ref. all the others
+    //          are only allowed to have one of name or ref, or neither of them.
+    //          we'd better remove such checking to the traverser.
+    private static final String ELEMENT_N = "element_n";
+    private static final String ELEMENT_R = "element_r";
+    private static final String ATTRIBUTE_N = "attribute_n";
+    private static final String ATTRIBUTE_R = "attribute_r";
+
     public static       int ATTIDX_COUNT           = 0;
     public static final int ATTIDX_ABSTRACT        = ATTIDX_COUNT++;
     public static final int ATTIDX_AFORMDEFAULT    = ATTIDX_COUNT++;
@@ -154,8 +163,7 @@ public class XSAttributeChecker {
 
     // used to store the map from element name to attribute list
     protected static Hashtable fEleAttrsMapG = new Hashtable();
-    protected static Hashtable fEleAttrsMapN = new Hashtable();
-    protected static Hashtable fEleAttrsMapR = new Hashtable();
+    protected static Hashtable fEleAttrsMapL = new Hashtable();
 
     // used to initialize fEleAttrsMap
     // step 1: all possible data types
@@ -485,7 +493,7 @@ public class XSAttributeChecker {
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ATTRIBUTE, oneEle);
+        fEleAttrsMapL.put(ATTRIBUTE_N, oneEle);
 
         // for element "attribute" - local ref
         attrList = new Hashtable();
@@ -500,7 +508,7 @@ public class XSAttributeChecker {
         // use = (optional | prohibited | required) : optional
         attrList.put(SchemaSymbols.ATT_USE, allAttrs[ATT_USE_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapR.put(SchemaSymbols.ELT_ATTRIBUTE, oneEle);
+        fEleAttrsMapL.put(ATTRIBUTE_R, oneEle);
 
         // for element "element" - global
         attrList = new Hashtable();
@@ -550,7 +558,7 @@ public class XSAttributeChecker {
         // type = QName
         attrList.put(SchemaSymbols.ATT_TYPE, allAttrs[ATT_TYPE_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ELEMENT, oneEle);
+        fEleAttrsMapL.put(ELEMENT_N, oneEle);
 
         // for element "element" - local ref
         attrList = new Hashtable();
@@ -563,7 +571,7 @@ public class XSAttributeChecker {
         // ref = QName
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapR.put(SchemaSymbols.ELT_ELEMENT, oneEle);
+        fEleAttrsMapL.put(ELEMENT_R, oneEle);
 
         // for element "complexType" - global
         attrList = new Hashtable();
@@ -582,7 +590,7 @@ public class XSAttributeChecker {
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_COMPLEXTYPE, oneEle);
 
-        // for element "notation" - local name
+        // for element "notation" - global
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -596,39 +604,39 @@ public class XSAttributeChecker {
         fEleAttrsMapG.put(SchemaSymbols.ELT_NOTATION, oneEle);
 
 
-        // for element "complexType" - local name
+        // for element "complexType" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // mixed = boolean : false
         attrList.put(SchemaSymbols.ATT_MIXED, allAttrs[ATT_MIXED_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_COMPLEXTYPE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_COMPLEXTYPE, oneEle);
 
-        // for element "simpleContent" - local name
+        // for element "simpleContent" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_SIMPLECONTENT, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SIMPLECONTENT, oneEle);
 
-        // for element "restriction" - local name
+        // for element "restriction" - local
         attrList = new Hashtable();
         // base = QName
         attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_RESTRICTION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_RESTRICTION, oneEle);
 
-        // for element "extension" - local name
+        // for element "extension" - local
         attrList = new Hashtable();
         // base = QName
         attrList.put(SchemaSymbols.ATT_BASE, allAttrs[ATT_BASE_R]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_EXTENSION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_EXTENSION, oneEle);
 
         // for element "attributeGroup" - local ref
         attrList = new Hashtable();
@@ -637,9 +645,9 @@ public class XSAttributeChecker {
         // ref = QName
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapR.put(SchemaSymbols.ELT_ATTRIBUTEGROUP, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ATTRIBUTEGROUP, oneEle);
 
-        // for element "anyAttribute" - local name
+        // for element "anyAttribute" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -648,16 +656,16 @@ public class XSAttributeChecker {
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ANYATTRIBUTE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ANYATTRIBUTE, oneEle);
 
-        // for element "complexContent" - local name
+        // for element "complexContent" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // mixed = boolean
         attrList.put(SchemaSymbols.ATT_MIXED, allAttrs[ATT_MIXED_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_COMPLEXCONTENT, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_COMPLEXCONTENT, oneEle);
 
         // for element "attributeGroup" - global
         attrList = new Hashtable();
@@ -688,9 +696,9 @@ public class XSAttributeChecker {
         // ref = QName
         attrList.put(SchemaSymbols.ATT_REF, allAttrs[ATT_REF_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapR.put(SchemaSymbols.ELT_GROUP, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_GROUP, oneEle);
 
-        // for element "all" - local name
+        // for element "all" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -699,9 +707,9 @@ public class XSAttributeChecker {
         // minOccurs = (0 | 1) : 1
         attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS1_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ALL, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ALL, oneEle);
 
-        // for element "choice" - local name
+        // for element "choice" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -710,11 +718,11 @@ public class XSAttributeChecker {
         // minOccurs = nonNegativeInteger : 1
         attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_CHOICE, oneEle);
-        // for element "sequence" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_SEQUENCE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_CHOICE, oneEle);
+        // for element "sequence" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SEQUENCE, oneEle);
 
-        // for element "any" - local name
+        // for element "any" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -727,20 +735,20 @@ public class XSAttributeChecker {
         // processContents = (lax | skip | strict) : strict
         attrList.put(SchemaSymbols.ATT_PROCESSCONTENTS, allAttrs[ATT_PROCESS_C_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ANY, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ANY, oneEle);
 
-        // for element "unique" - local name
+        // for element "unique" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_UNIQUE, oneEle);
-        // for element "key" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_KEY, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_UNIQUE, oneEle);
+        // for element "key" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_KEY, oneEle);
 
-        // for element "keyref" - local name
+        // for element "keyref" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -749,25 +757,25 @@ public class XSAttributeChecker {
         // refer = QName
         attrList.put(SchemaSymbols.ATT_REFER, allAttrs[ATT_REFER_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_KEYREF, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_KEYREF, oneEle);
 
-        // for element "selector" - local name
+        // for element "selector" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // xpath = a subset of XPath expression
         attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_SELECTOR, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SELECTOR, oneEle);
 
-        // for element "field" - local name
+        // for element "field" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // xpath = a subset of XPath expression
         attrList.put(SchemaSymbols.ATT_XPATH, allAttrs[ATT_XPATH1_R]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_FIELD, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_FIELD, oneEle);
 
         // for element "annotation" - global
         attrList = new Hashtable();
@@ -775,25 +783,25 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_ANNOTATION, oneEle);
-        // for element "annotation" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ANNOTATION, oneEle);
+        // for element "annotation" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ANNOTATION, oneEle);
 
-        // for element "appinfo" - local name
+        // for element "appinfo" - local
         attrList = new Hashtable();
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         oneEle = new OneElement (attrList, false);
         fEleAttrsMapG.put(SchemaSymbols.ELT_APPINFO, oneEle);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_APPINFO, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_APPINFO, oneEle);
 
-        // for element "documentation" - local name
+        // for element "documentation" - local
         attrList = new Hashtable();
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
         // xml:lang = language ???
         oneEle = new OneElement (attrList, false);
         fEleAttrsMapG.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
 
         // for element "simpleType" - global
         attrList = new Hashtable();
@@ -806,35 +814,35 @@ public class XSAttributeChecker {
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_SIMPLETYPE, oneEle);
 
-        // for element "simpleType" - local name
+        // for element "simpleType" - local
         attrList = new Hashtable();
         // final = (#all | (list | union | restriction))
         attrList.put(SchemaSymbols.ATT_FINAL, allAttrs[ATT_FINAL1_N]);
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_SIMPLETYPE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_SIMPLETYPE, oneEle);
 
-        // for element "restriction" - local name
+        // for element "restriction" - local
         // already registered for complexType
 
-        // for element "list" - local name
+        // for element "list" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // itemType = QName
         attrList.put(SchemaSymbols.ATT_ITEMTYPE, allAttrs[ATT_ITEMTYPE_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_LIST, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_LIST, oneEle);
 
-        // for element "union" - local name
+        // for element "union" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // memberTypes = List of QName
         attrList.put(SchemaSymbols.ATT_MEMBERTYPES, allAttrs[ATT_MEMBER_T_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_UNION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_UNION, oneEle);
 
         // for element "schema" - global
         attrList = new Hashtable();
@@ -878,7 +886,7 @@ public class XSAttributeChecker {
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_IMPORT, oneEle);
 
-        // for element "length" - local name
+        // for element "length" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -887,35 +895,35 @@ public class XSAttributeChecker {
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_LENGTH, oneEle);
-        // for element "minLength" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_MINLENGTH, oneEle);
-        // for element "maxLength" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_MAXLENGTH, oneEle);
-        // for element "totalDigits" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_TOTALDIGITS, oneEle);
-        // for element "fractionDigits" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_FRACTIONDIGITS, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_LENGTH, oneEle);
+        // for element "minLength" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MINLENGTH, oneEle);
+        // for element "maxLength" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXLENGTH, oneEle);
+        // for element "totalDigits" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_TOTALDIGITS, oneEle);
+        // for element "fractionDigits" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_FRACTIONDIGITS, oneEle);
 
-        // for element "pattern" - local name
+        // for element "pattern" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // value = string
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_PATTERN, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_PATTERN, oneEle);
 
-        // for element "enumeration" - local name
+        // for element "enumeration" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
         // value = anySimpleType
         attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_STR_N]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_ENUMERATION, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_ENUMERATION, oneEle);
 
-        // for element "whiteSpace" - local name
+        // for element "whiteSpace" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -924,9 +932,9 @@ public class XSAttributeChecker {
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_WHITESPACE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_WHITESPACE, oneEle);
 
-        // for element "maxInclusive" - local name
+        // for element "maxInclusive" - local
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
@@ -935,13 +943,13 @@ public class XSAttributeChecker {
         // fixed = boolean : false
         attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
         oneEle = new OneElement (attrList);
-        fEleAttrsMapN.put(SchemaSymbols.ELT_MAXINCLUSIVE, oneEle);
-        // for element "maxExclusive" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_MAXEXCLUSIVE, oneEle);
-        // for element "minInclusive" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_MININCLUSIVE, oneEle);
-        // for element "minExclusive" - local name
-        fEleAttrsMapN.put(SchemaSymbols.ELT_MINEXCLUSIVE, oneEle);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXINCLUSIVE, oneEle);
+        // for element "maxExclusive" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MAXEXCLUSIVE, oneEle);
+        // for element "minInclusive" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MININCLUSIVE, oneEle);
+        // for element "minExclusive" - local
+        fEleAttrsMapL.put(SchemaSymbols.ELT_MINEXCLUSIVE, oneEle);
     }
 
     // used to resolver namespace prefixes
@@ -990,22 +998,34 @@ public class XSAttributeChecker {
             reportSchemaError("s4s-elt-schema-ns", new Object[] {elName});
         }
 
-        // Get the proper registry:
-        Hashtable eleAttrsMap = null;
-        if (isGlobal) {
-            eleAttrsMap = fEleAttrsMapG;
-        }
-        else {
-            if (DOMUtil.getAttr(element, SchemaSymbols.ATT_REF) != null)
-                eleAttrsMap = fEleAttrsMapR;
-            else
-                eleAttrsMap = fEleAttrsMapN;
+        Hashtable eleAttrsMap = fEleAttrsMapG;
+        String lookupName = elName;
+
+        // REVISIT: only local element and attribute are different from others.
+        //          it's possible to have either name or ref. all the others
+        //          are only allowed to have one of name or ref, or neither of them.
+        //          we'd better remove such checking to the traverser.
+        if (!isGlobal) {
+            eleAttrsMap = fEleAttrsMapL;
+            if (elName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                if (DOMUtil.getAttr(element, SchemaSymbols.ATT_REF) != null)
+                    lookupName = ELEMENT_R;
+                else
+                    lookupName = ELEMENT_N;
+            } else if (elName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                if (DOMUtil.getAttr(element, SchemaSymbols.ATT_REF) != null)
+                    lookupName = ATTRIBUTE_R;
+                else
+                    lookupName = ATTRIBUTE_N;
+            }
         }
 
         // get desired attribute list of this element
-        OneElement oneEle = (OneElement)eleAttrsMap.get(elName);
+        OneElement oneEle = (OneElement)eleAttrsMap.get(lookupName);
         if (oneEle == null) {
-
+            // should never gets here.
+            // when this method is called, the call already knows that
+            // the element can appear.
             reportSchemaError ("s4s-elt-invalid", new Object[] {elName});
             return null;
         }
