@@ -1905,25 +1905,25 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     public String getLexicalFacetValue(short facetName) {
         switch (facetName) {
         case FACET_LENGTH:
-            return Integer.toString(fLength);
+            return (fLength == -1)?null:Integer.toString(fLength);
         case FACET_MINLENGTH:
-            return Integer.toString(fMinLength);
+            return (fMinLength == -1)?null:Integer.toString(fMinLength);
         case FACET_MAXLENGTH:
-            return Integer.toString(fMaxLength);
+            return (fMaxLength == -1)?null:Integer.toString(fMaxLength);
         case FACET_WHITESPACE:
             return WS_FACET_STRING[fWhiteSpace];
         case FACET_MAXINCLUSIVE:
-            return fMaxInclusive.toString();
+            return (fMaxInclusive == null)?null:fMaxInclusive.toString();
         case FACET_MAXEXCLUSIVE:
-            return fMaxExclusive.toString();
+            return (fMaxExclusive == null)?null:fMaxExclusive.toString();
         case FACET_MINEXCLUSIVE:
-            return fMinExclusive.toString();
+            return (fMinExclusive == null)?null:fMinExclusive.toString();
         case FACET_MININCLUSIVE:
-            return fMinInclusive.toString();
+            return (fMinInclusive == null)?null:fMinInclusive.toString();
         case FACET_TOTALDIGITS:
-            return Integer.toString(fTotalDigits);
+            return (fTotalDigits == -1)?null:Integer.toString(fTotalDigits);
         case FACET_FRACTIONDIGITS:
-            return Integer.toString(fFractionDigits);
+            return (fFractionDigits == -1)?null:Integer.toString(fFractionDigits);
         }
         return null;
     }
