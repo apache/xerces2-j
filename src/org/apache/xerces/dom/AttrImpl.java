@@ -361,6 +361,7 @@ public class AttrImpl
                 ChildNode firstChild = (ChildNode) value;
                 firstChild.previousSibling = null;
                 firstChild.isFirstChild(false);
+                firstChild.ownerNode = ownerDocument;
             }
             // then remove ref to current value
             value = null;
