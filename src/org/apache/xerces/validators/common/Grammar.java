@@ -310,7 +310,6 @@ implements XMLContentSpec.Provider {
         fElementDeclContentSpecIndex[chunk][index] = -1;
         fElementDeclContentModelValidator[chunk][index] = null;
         fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
-        //System.out.println("*** createElementDecl: "+fElementDeclFirstAttributeDeclIndex[chunk][index]);
         fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
         return fElementDeclCount++;
     }
@@ -339,11 +338,10 @@ implements XMLContentSpec.Provider {
         int chunk = fContentSpecCount >> CHUNK_SHIFT;
         int index = fContentSpecCount & CHUNK_MASK;
 
-        if ( ensureContentSpecCapacity(chunk) == true ) { // create an ContentSpec
-            fContentSpecType[chunk][index]       = -1;
-            fContentSpecValue[chunk][index]      = -1;
-            fContentSpecOtherValue[chunk][index] = -1;
-        }
+        ensureContentSpecCapacity(chunk);
+        fContentSpecType[chunk][index]       = -1;
+        fContentSpecValue[chunk][index]      = -1;
+        fContentSpecOtherValue[chunk][index] = -1;
 
         return fContentSpecCount++;
     }
@@ -361,26 +359,23 @@ implements XMLContentSpec.Provider {
         int chunk = fAttributeDeclCount >> CHUNK_SHIFT;
         int index = fAttributeDeclCount & CHUNK_MASK;
 
-        if ( ensureAttributeDeclCapacity(chunk) == true ) { // create an AttributeDecl
-            fAttributeDeclName[chunk][index]                    = null;
-            fAttributeDeclType[chunk][index]                    = -1;
-            fAttributeDeclDefaultType[chunk][index]             = null; 
-            fAttributeDeclDatatypeValidator[chunk][index]       = null;
-            fAttributeDeclDefaultValue[chunk][index]            = null;
-            fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
-        }
+        ensureAttributeDeclCapacity(chunk);
+        fAttributeDeclName[chunk][index]                    = new QName();
+        fAttributeDeclType[chunk][index]                    = -1;
+        fAttributeDeclDefaultType[chunk][index]             = null; 
+        fAttributeDeclDatatypeValidator[chunk][index]       = null;
+        fAttributeDeclDefaultValue[chunk][index]            = null;
+        fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
         return fAttributeDeclCount++;
     }
 
 
     protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
-        //System.out.println("Grammar#setAttributeDecl: "+elementDeclIndex+", "+attributeDeclIndex);
 
         int attrChunk = attributeDeclIndex >> CHUNK_SHIFT;
         int attrIndex = attributeDeclIndex &  CHUNK_MASK; 
 
-        //System.out.println("attributeDecl.name="+attributeDecl.name);
-        fAttributeDeclName[attrChunk][attrIndex]  =  attributeDecl.name;
+        fAttributeDeclName[attrChunk][attrIndex].setValues(attributeDecl.name);
         fAttributeDeclType[attrChunk][attrIndex]  =  attributeDecl.type;
         fAttributeDeclDefaultType[attrChunk][attrIndex]  =  attributeDecl.defaultType;
         fAttributeDeclDatatypeValidator[attrChunk][attrIndex] =  attributeDecl.datatypeValidator;
@@ -410,8 +405,9 @@ implements XMLContentSpec.Provider {
             fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
         }
 
-        //printAttributes(elementDeclIndex);
     }
+
+    // debugging
 
     public void printAttributes(int elementDeclIndex) {
         int attributeDeclIndex = getFirstAttributeDeclIndex(elementDeclIndex);
@@ -429,6 +425,12 @@ implements XMLContentSpec.Provider {
         System.out.println(" ]");
     }
 
+    //
+    // Private methods
+    //
+
+    // debugging
+
     private void printAttribute(int attributeDeclIndex) {
         XMLAttributeDecl attributeDecl = new XMLAttributeDecl();
         if (getAttributeDecl(attributeDeclIndex, attributeDecl)) {
@@ -438,9 +440,7 @@ implements XMLContentSpec.Provider {
         }
     }
 
-    //
-    // Private methods
-    //
+    // content models
 
     //
     //  When the element has a 'CHILDREN' model, this method is called to
