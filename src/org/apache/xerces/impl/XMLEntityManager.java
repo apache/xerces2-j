@@ -970,7 +970,20 @@ public class XMLEntityManager
                         System.out.println("$$$ wrapping input stream in PushbackInputStream");
                     }
                     PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
-                    pbstream.unread(b4, 0, count);
+                    int offset = 0;
+                    // Special case UTF-8 files with BOM created by Microsoft
+                    // tools. It's more efficient to consume the BOM than make
+                    // the reader perform extra checks. -Ac
+                    if (count > 2 && encoding.equals("UTF-8")) {
+                        int b0 = b4[0] & 0xFF;
+                        int b1 = b4[1] & 0xFF;
+                        int b2 = b4[2] & 0xFF;
+                        if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
+                            offset = 3;
+                            count -= offset;
+                        }
+                    }
+                    pbstream.unread(b4, offset, count);
 
                     // REVISIT: Should save the original input stream instead of
                     //          the pushback input stream so that when we swap out
@@ -1067,12 +1080,25 @@ public class XMLEntityManager
             return "UTF-16";
         }
 
+        // default to UTF-8 if we don't have enough bytes to make a
+        // good determination of the encoding
+        if (count < 3) {
+            return "UTF-8";
+        }
+
+        // UTF-8 with a BOM
+        int b2 = b4[2] & 0xFF;
+        if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
+            return "UTF-8";
+        }
+
+        // default to UTF-8 if we don't have enough bytes to make a
+        // good determination of the encoding
         if (count < 4) {
             return "UTF-8";
         }
 
         // other encodings
-        int b2 = b4[2] & 0xFF;
         int b3 = b4[3] & 0xFF;
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
             // UCS-4, big endian (1234)
