@@ -783,6 +783,7 @@ public class EncodingMap {
         fIANA2JavaMap.put("CSKOI8R",          "KOI8_R");
         fIANA2JavaMap.put("US-ASCII",        "ASCII"); 
         fIANA2JavaMap.put("ISO-IR-6",        "ASCII");
+        fIANA2JavaMap.put("ANSI_X3.4-1968",        "ASCII");
         fIANA2JavaMap.put("ANSI_X3.4-1986",        "ASCII");
         fIANA2JavaMap.put("ISO_646.IRV:1991",        "ASCII");
         fIANA2JavaMap.put("ASCII",        "ASCII");
