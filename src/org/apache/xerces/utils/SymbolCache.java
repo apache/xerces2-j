@@ -102,7 +102,7 @@ public final class SymbolCache {
         try {
             entries[offset + SymbolCache.INDEX_OFFSET] = symbolHandle;
         } catch (ArrayIndexOutOfBoundsException ex) {
-            throw new RuntimeException("untested 1");
+            throw new RuntimeException("UTL003 untested 1");
         }
         return str;
     }
@@ -170,7 +170,7 @@ public final class SymbolCache {
                     }
                 } else {
                     entries = fCacheLines[entry];
-                    throw new RuntimeException("untested 2");
+                    throw new RuntimeException("UTL004 untested 2");
                 }
             }
             count = entries[0];

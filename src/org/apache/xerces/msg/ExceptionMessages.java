@@ -121,9 +121,17 @@ public class ExceptionMessages extends ListResourceBundle {
         { "RDR001", "untested 1" },
         { "RDR002", "cannot happen 7" },
         { "RDR003", "cannot happen 8" },
-        { "RDR004", "cannot happen 9" }
+        { "RDR004", "cannot happen 9" },
             
-        //org.apache.xerces.
+        //org.apache.xerces.utils
+
+        { "UTL001", "cannot happen 20" },
+        { "UTL002", "cannot happen 21" },
+        { "UTL003", "untested 1" },
+        { "UTL004", "untested 2" }
+
+        //org.apache.xerces.validators
+               
         
     };
     /** Returns the list resource bundle contents. */
