@@ -853,6 +853,7 @@ Copyright:
   <!--  Retreive the XML Conformance test suite from sourceforge           -->
   <!-- =================================================================== -->
   <target name="get-conftests" depends="init">
+    <mkdir dir="tests/conformance"/>
     <get src="http://prdownloads.sourceforge.net/xmlconf/utilities.jar" dest="tests/conformance/utilties.jar" verbose="true" usetimestamp="true"/>
     <cvspass cvsroot=":pserver:anonymous@cvs.xmlconf.sourceforge.net:/cvsroot/xmlconf" password=""/>
     <cvs cvsRoot=":pserver:anonymous@cvs.xmlconf.sourceforge.net:/cvsroot/xmlconf" package="xml" dest="tests/conformance"/>
