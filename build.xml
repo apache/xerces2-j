@@ -33,7 +33,8 @@ Copyright:
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
-    <property name="build.compiler" value="classic"/>
+    <!-- changed made to synchronize with a patch from Sam Ruby (<rubys@apache.org>) to Xerces1
+    <property name="build.compiler" value="classic"/> -->
     <property name="debug" value="off"/>
     <property name="optimize" value="on"/>
     <property name="deprecation" value="off"/>
