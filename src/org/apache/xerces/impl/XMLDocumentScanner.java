@@ -700,7 +700,7 @@ public class XMLDocumentScanner
         fAttributes.removeAllAttributes();
         do {
             // spaces
-            fEntityScanner.skipSpaces();
+            boolean sawSpace = fEntityScanner.skipSpaces();
 
             // end tag?
             int c = fEntityScanner.peekChar();
@@ -718,7 +718,7 @@ public class XMLDocumentScanner
                 empty = true;
                 break;
             }
-            else if (!XMLChar.isNameStart(c)) {
+            else if (!XMLChar.isNameStart(c) || !sawSpace) {
                 reportFatalError("ElementUnterminated", new Object[]{rawname});
             }
 
