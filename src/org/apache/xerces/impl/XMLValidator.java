@@ -1618,7 +1618,7 @@ public class XMLValidator
          if (!specified) {
             if (required) {
                if (fValidation) {
-                  Object[] args = { element.rawname,
+                  Object[] args = { element.localpart,
                                     attRawName};
                   fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                              "MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED", args,
@@ -1629,7 +1629,7 @@ public class XMLValidator
                if (fValidation && fStandaloneIsYes )
                   if ( ((DTDGrammar) fCurrentGrammar).getAttributeDeclIsExternal(attlistIndex)  ) {
 
-                     Object[] args = { element.rawname,
+                     Object[] args = { element.localpart,
                                        attRawName};
                      fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                 "MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED", args,
@@ -1671,7 +1671,7 @@ public class XMLValidator
                   if (fValidation) {
                       // REVISIT - cache the elem/attr tuple so that we only give
                       //  this error once for each unique occurrence
-                      Object[] args = { element.rawname,
+                      Object[] args = { element.localpart,
                                         attrRawName };
 
                               fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
@@ -1697,7 +1697,8 @@ public class XMLValidator
                                                                    fTempAttDecl.simpleType.type);
                   
                   if (!attrValue.equals(defaultValue) ) {
-                      Object[] args = { (element.rawname),
+                      Object[] args = { 
+                          (element.localpart),
                           (attrRawName),
                           (attrValue),
                           (defaultValue) };
