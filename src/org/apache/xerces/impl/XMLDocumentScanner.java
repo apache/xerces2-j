@@ -739,9 +739,9 @@ public class XMLDocumentScanner
         XMLString data = fString;
         if (fEntityScanner.scanData("?>", fString)) {
             fStringBuffer.clear();
-            while (fEntityScanner.scanData("?>", fString)) {
+            do {
                 fStringBuffer.append(fString);
-            }
+            } while (fEntityScanner.scanData("?>", fString));
             fStringBuffer.append(fString);
             data = fStringBuffer;
         }
@@ -1223,7 +1223,7 @@ public class XMLDocumentScanner
         }
 
         // start entity
-        fEntityManager.startGeneralEntity(name);
+        fEntityManager.startEntity(name);
 
     } // scanEntityReference()
 
