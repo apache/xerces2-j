@@ -161,13 +161,6 @@ public class SAXParser
 
     /** Default constructor. */
     public SAXParser() {
-        try {
-            //JR-defect 48 fix - turn on Namespaces
-            setNamespaces(true);
-        }
-        catch (Exception e) {
-            // ignore
-        }
         initHandlers(true, this, this);
     }
 

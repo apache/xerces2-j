@@ -178,6 +178,7 @@ public final class XMLValidator
 
     private boolean fValidationEnabled = false;
     private boolean fDynamicValidation = false;
+    private boolean fSchemaValidation = true;
     private boolean fValidationEnabledByDynamic = false;
     private boolean fDynamicDisabledByValidation = false;
     private boolean fWarningOnDuplicateAttDef = false;
@@ -365,6 +366,16 @@ public final class XMLValidator
     /** Returns true if validation is enabled. */
     public boolean getValidationEnabled() {
         return fValidationEnabled;
+    }
+
+    /** Sets whether Schema support is on/off. */
+    public void setSchemaValidationEnabled(boolean flag) {
+        fSchemaValidation = flag;
+    }
+
+    /** Returns true if Schema support is on. */
+    public boolean getSchemaValidationEnabled() {
+        return fSchemaValidation;
     }
 
     /** Sets whether validation is dynamic. */
@@ -1856,18 +1867,20 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     if (attPrefix == fNamespacesPrefix) {
                         int nsPrefix = attrList.getAttrLocalpart(index);
                         int uri = fStringPool.addSymbol(attrList.getAttValue(index));
-                        boolean seeXsi = false;
                         fNamespacesScope.setNamespaceForPrefix(nsPrefix, uri);
 
-                        String attrValue = fStringPool.toString(attrList.getAttValue(index));
+                        if (fValidating && fSchemaValidation) {
+                            boolean seeXsi = false;
+                            String attrValue = fStringPool.toString(attrList.getAttValue(index));
 
-                        if (attrValue.equals(SchemaSymbols.URI_XSI)) {
-                            fXsiPrefix = nsPrefix;
-                            seeXsi = true;
-                        }
-                        
-                        if (fValidating && !seeXsi) {
-                            schemaCandidateURIs.addElement( fStringPool.toString(uri) );
+                            if (attrValue.equals(SchemaSymbols.URI_XSI)) {
+                                fXsiPrefix = nsPrefix;
+                                seeXsi = true;
+                            }
+
+                            if (!seeXsi) {
+                                schemaCandidateURIs.addElement( fStringPool.toString(uri) );
+                            }
                         }
                     }
                 }
@@ -1875,7 +1888,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
 
             // if validating, walk through the list again to deal with "xsi:...."
-            if (fValidating) {
+            if (fValidating && fSchemaValidation) {
 
                 index = attrList.getFirstAttr(fAttrListHandle);
                 while (index != -1) {

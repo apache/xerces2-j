@@ -122,6 +122,7 @@ public class XMLParser implements XMLErrorReporter {
         "http://xml.org/sax/features/external-parameter-entities",
         "http://xml.org/sax/features/namespaces",
         // Xerces
+        "http://apache.org/xml/features/validation/schema",
         "http://apache.org/xml/features/validation/dynamic",
         "http://apache.org/xml/features/validation/default-attribute-values",
         "http://apache.org/xml/features/validation/validate-content-models",
@@ -135,7 +136,6 @@ public class XMLParser implements XMLErrorReporter {
     /** Properties recognized by this parser. */
     private static final String RECOGNIZED_PROPERTIES[] = {
         // SAX2 core
-        //"http://xml.org/sax/properties/namespace-sep",
         "http://xml.org/sax/properties/xml-string",
         // Xerces
     };
@@ -202,6 +202,13 @@ public class XMLParser implements XMLErrorReporter {
         fGrammarResolver = new GrammarResolverImpl();
         fScanner.setGrammarResolver(fGrammarResolver);
         fValidator.setGrammarResolver(fGrammarResolver);
+        try {
+            //JR-defect 48 fix - turn on Namespaces
+            setNamespaces(true);
+        }
+        catch (Exception e) {
+            // ignore
+        }
     }
 
     /**
@@ -512,6 +519,38 @@ public class XMLParser implements XMLErrorReporter {
     // Xerces features
 
     /**
+     * Allows the user to turn Schema support on/off.
+     * <p>
+     * This method is equivalent to the feature:
+     * <pre>
+     * http://apache.org/xml/features/validation/schema
+     * </pre>
+     *
+     * @param schema True to turn on Schema support; false to turn it off.
+     *
+     * @see #getValidationSchema
+     * @see #setFeature
+     */
+    protected void setValidationSchema(boolean schema) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            // REVISIT: Localize message
+            throw new SAXNotSupportedException("http://apache.org/xml/features/validation/schema: parse is in progress");
+        }
+        fValidator.setSchemaValidationEnabled(schema);
+    }
+
+    /**
+     * Returns true if Schema support is turned on.
+     *
+     * @see #setValidationSchema
+     */
+    protected boolean getValidationSchema() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        return fValidator.getSchemaValidationEnabled();
+    }
+
+    /**
      * Allows the parser to validate a document only when it contains a
      * grammar. Validation is turned on/off based on each document
      * instance, automatically.
@@ -530,6 +569,7 @@ public class XMLParser implements XMLErrorReporter {
     protected void setValidationDynamic(boolean dynamic) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
+            // REVISIT: Localize message
             throw new SAXNotSupportedException("http://apache.org/xml/features/validation/dynamic: parse is in progress");
         }
         try {
@@ -1041,6 +1081,14 @@ public class XMLParser implements XMLErrorReporter {
         else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
             String feature = featureId.substring(XERCES_FEATURES_PREFIX.length());
             //
+            // http://apache.org/xml/features/validation/schema
+            //   Lets the user turn Schema validation support on/off.
+            //
+            if (feature.equals("validation/schema")) {
+                setValidationSchema(state);
+                return;
+            }
+            //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
             //   contains a grammar. Validation is turned on/off based
@@ -1183,6 +1231,13 @@ public class XMLParser implements XMLErrorReporter {
 
         else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
             String feature = featureId.substring(XERCES_FEATURES_PREFIX.length());
+            //
+            // http://apache.org/xml/features/validation/schema
+            //   Lets the user turn Schema validation support on/off.
+            //
+            if (feature.equals("validation/schema")) {
+                return getValidationSchema();
+            }
             //
             // http://apache.org/xml/features/validation/dynamic
             //   Allows the parser to validate a document only when it
