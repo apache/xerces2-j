@@ -132,180 +132,16 @@ extends StandardParserConfiguration {
 
     /** Document scanner that does namespace binding. */
     protected XMLNSDocumentScannerImpl fNamespaceScanner;
+
+    /** Default Xerces implementation of scanner */
     protected XMLDocumentScannerImpl fNonNSScanner;
 
+    /** DTD Validator that binds namespaces */
     protected XMLNSDTDValidator fNSDTDValidator;
-
-    protected static final String XMLSCHEMA_VALIDATION = 
-    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
-
     
-    /** Default constructor. */
-    public IntegratedParserConfiguration() {
-        this(null, null, null);
-    } // <init>()
     
-
-    public IntegratedParserConfiguration(SymbolTable symbolTable,
-                                       XMLGrammarPool grammarPool) {
-        this(symbolTable, grammarPool, null);
-    } // <init>(SymbolTable,XMLGrammarPool)
-
-    /**
-     * Constructs a parser configuration using the specified symbol table,
-     * grammar pool, and parent settings.
-     * <p>
-     * <strong>REVISIT:</strong> 
-     * Grammar pool will be updated when the new validation engine is
-     * implemented.
-     *
-     * @param symbolTable    The symbol table to use.
-     * @param grammarPool    The grammar pool to use.
-     * @param parentSettings The parent settings.
-     */
-    public IntegratedParserConfiguration(SymbolTable symbolTable,
-                                      XMLGrammarPool grammarPool,
-                                      XMLComponentManager parentSettings) {
-
-
-        // save parent
-        fParentSettings = parentSettings;
-        // create a vector to hold all the components in use
-        fComponents = new Vector();
-
-        // create storage for recognized features and properties
-        fRecognizedFeatures = new Vector();
-        fRecognizedProperties = new Vector();
-
-        // create table for features and properties
-        fFeatures = new Hashtable();
-        fProperties = new Hashtable();
-
-        // add default recognized features
-        final String[] recognizedFeatures = {
-
-            VALIDATION,                 NAMESPACES, 
-            EXTERNAL_GENERAL_ENTITIES,  EXTERNAL_PARAMETER_ENTITIES,
-            WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
-            ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
-            LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
-            NOTIFY_CHAR_REFS,       WARN_ON_DUPLICATE_ENTITYDEF,
-            NORMALIZE_DATA,             SCHEMA_ELEMENT_DEFAULT
-        };
-        addRecognizedFeatures(recognizedFeatures);
-
-        // set state for default features
-        setFeature(VALIDATION, false);
-        setFeature(NAMESPACES, true);
-        setFeature(EXTERNAL_GENERAL_ENTITIES, true);
-        setFeature(EXTERNAL_PARAMETER_ENTITIES, true);
-        setFeature(WARN_ON_DUPLICATE_ATTDEF, false);
-        setFeature(WARN_ON_DUPLICATE_ENTITYDEF, false);
-        setFeature(WARN_ON_UNDECLARED_ELEMDEF, false);
-        setFeature(ALLOW_JAVA_ENCODINGS, false);
-        setFeature(CONTINUE_AFTER_FATAL_ERROR, false);
-        setFeature(LOAD_EXTERNAL_DTD, true);
-        setFeature(NOTIFY_BUILTIN_REFS, false);
-        setFeature(NOTIFY_CHAR_REFS, false);
-        setFeature(SCHEMA_ELEMENT_DEFAULT, true);
-        setFeature(NORMALIZE_DATA, true);
-
-        // add default recognized properties
-        final String[] recognizedProperties = {
-            XML_STRING,     
-            SYMBOL_TABLE,
-            ERROR_HANDLER,  
-            ENTITY_RESOLVER,
-            ERROR_REPORTER,             
-            ENTITY_MANAGER, 
-            DOCUMENT_SCANNER,
-            DTD_SCANNER,
-            DTD_PROCESSOR,
-            DTD_VALIDATOR,
-            NAMESPACE_BINDER,
-            XMLGRAMMAR_POOL,   
-            DATATYPE_VALIDATOR_FACTORY,
-            VALIDATION_MANAGER 
-        };
-
-        addRecognizedProperties(recognizedProperties);
-
-        if (symbolTable == null) {
-            symbolTable = new SymbolTable();
-        }
-        fSymbolTable = symbolTable;
-        setProperty(SYMBOL_TABLE, fSymbolTable);
-
-        fGrammarPool = grammarPool;
-        if (fGrammarPool != null) {
-            setProperty(XMLGRAMMAR_POOL, fGrammarPool);
-        }
-
-        fEntityManager = createEntityManager();
-        setProperty(ENTITY_MANAGER, fEntityManager);
-        addComponent(fEntityManager);
-
-        fErrorReporter = createErrorReporter();
-        fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
-        setProperty(ERROR_REPORTER, fErrorReporter);
-        addComponent(fErrorReporter);
-
-        // create namespace aware scanner
-        fNamespaceScanner = new XMLNSDocumentScannerImpl();
-        addComponent((XMLComponent)fNamespaceScanner);
-        setProperty(DOCUMENT_SCANNER, fNamespaceScanner);
-
-        // create namespace + dtd validator
-        fNSDTDValidator = new XMLNSDTDValidator();
-        setProperty(DTD_VALIDATOR, fNSDTDValidator);
-        addComponent(fNSDTDValidator);                                                  
-
-        fDTDScanner = createDTDScanner();
-        if (fDTDScanner != null) {
-            setProperty(DTD_SCANNER, fDTDScanner);
-            if (fDTDScanner instanceof XMLComponent) {
-                addComponent((XMLComponent)fDTDScanner);
-            }
-        }
-
-        fDTDProcessor = createDTDProcessor();
-        if (fDTDProcessor != null) {
-            setProperty(DTD_PROCESSOR, fDTDProcessor);
-            if (fDTDProcessor instanceof XMLComponent) {
-                addComponent((XMLComponent)fDTDProcessor);
-            }
-        }
-
-        fDatatypeValidatorFactory = createDatatypeValidatorFactory();
-        if (fDatatypeValidatorFactory != null) {
-            setProperty(DATATYPE_VALIDATOR_FACTORY,
-                        fDatatypeValidatorFactory);
-        }
-        fValidationManager = createValidationManager();
-
-        if (fValidationManager != null) {
-            setProperty (VALIDATION_MANAGER, fValidationManager);
-        }
-        // add message formatters
-        if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
-            XMLMessageFormatter xmft = new XMLMessageFormatter();
-            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
-            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
-        }
-
-        // set locale
-        try {
-            setLocale(Locale.getDefault());
-        } catch (XNIException e) {
-            // do nothing
-            // REVISIT: What is the right thing to do? -Ac
-        }
-
-    } // <init>(SymbolTable,XMLGrammarPool)
-
     /** Configures the pipeline. */
     protected void configurePipeline() {
-
         // setup dtd pipeline
         if (fDTDScanner != null) {
             if (fDTDProcessor != null) {
@@ -335,7 +171,6 @@ extends StandardParserConfiguration {
                 }
 
             }
-
             fProperties.put(DTD_VALIDATOR, fNSDTDValidator);
             fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
             fScanner = fNamespaceScanner;
@@ -351,7 +186,6 @@ extends StandardParserConfiguration {
         else {
 
             if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
-
                 fScanner = fNamespaceScanner;
                 fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
                 fNamespaceScanner.setComponents(null, fNSDTDValidator, fDocumentHandler);
@@ -381,6 +215,22 @@ extends StandardParserConfiguration {
 
     } // configurePipeline()
 
+
+
+    /** Create a document scanner: this scanner performs namespace binding 
+      */
+    protected XMLDocumentScanner createDocumentScanner() {
+        fNamespaceScanner = new XMLNSDocumentScannerImpl();
+        return fNamespaceScanner;
+    } // createDocumentScanner():XMLDocumentScanner
+
+
+    /** Create a DTD validator: this validator performs namespace binding.
+      */
+    protected XMLDTDValidator createDTDValidator() {
+        fNSDTDValidator = new XMLNSDTDValidator();
+        return fNSDTDValidator;
+    } // createDTDValidator():XMLDTDValidator
 
 } // class IntegratedParserConfiguration
 

@@ -62,6 +62,7 @@ import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLDocumentScannerImpl;
+import org.apache.xerces.impl.XMLNSDocumentScannerImpl;
 import org.apache.xerces.impl.XMLDTDScannerImpl;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -87,6 +88,11 @@ import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
  * This is the non validating parser configuration. It extends the basic
  * configuration with the set of following parser components:
  * Document scanner, DTD scanner, namespace binder, document handler.
+ * <p>
+ * Xerces parser that uses this configuration is <strong>not</strong> <a href="http://www.w3.org/TR/REC-xml#sec-conformance">conformant</a> 
+ * non-validating XML processor, since conformant non-validating processor is required  
+ * to process "all the declarations they read in the internal DTD subset ... must use the information in those declarations to normalize attribute values, 
+ * include the replacement text of internal entities, and supply default attribute values".
  * 
  * @author Elena Litani, IBM
  * @version $Id$
@@ -223,6 +229,16 @@ public class NonValidatingConfiguration
     protected XMLNamespaceBinder fNamespaceBinder;
 
     protected ValidationManager fValidationManager;
+
+    // private data
+
+    /** Document scanner that does namespace binding. */
+    private XMLNSDocumentScannerImpl fNamespaceScanner;
+
+    /** Default Xerces implementation of scanner*/
+    private XMLDocumentScannerImpl fNonNSScanner;
+
+
     // state
 
     /** Locator */
@@ -333,11 +349,8 @@ public class NonValidatingConfiguration
         setProperty(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
-        fScanner = createDocumentScanner();
-        setProperty(DOCUMENT_SCANNER, fScanner);
-        if (fScanner instanceof XMLComponent) {
-            addComponent((XMLComponent)fScanner);
-        }
+        // this configuration delays creation of the scanner
+        // till it is known if namespace processing should be performed
 
         fDTDScanner = createDTDScanner();
         if (fDTDScanner != null) {
@@ -582,21 +595,28 @@ public class NonValidatingConfiguration
 
     /** Configures the pipeline. */
     protected void configurePipeline() {
+        // create appropriate scanner
+        // and register it as one of the components.
+        if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
+            if (fNamespaceScanner == null) {
+                fNamespaceScanner = new XMLNSDocumentScannerImpl();
+                addComponent((XMLComponent)fNamespaceScanner);
+            }
+            fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
+            fNamespaceScanner.setComponents(null, null, fDocumentHandler);
+            fScanner = fNamespaceScanner;
+        } 
+        else {
+            if (fNonNSScanner == null) {
+                fNonNSScanner = new XMLDocumentScannerImpl();
+                addComponent((XMLComponent)fNonNSScanner);
+            }
+            fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);
+            fScanner = fNonNSScanner;
+        }
 
-        // REVISIT: This should be better designed. In other words, we
-        //          need to figure out what is the best way for people to
-        //          re-use *most* of the standard configuration but do 
-        //          things common things such as remove a component (e.g.
-        //          the validator), insert a new component (e.g. XInclude), 
-        //          etc... -Ac
-
-        // setup document pipeline
-        fScanner.setDocumentHandler(fNamespaceBinder);
-        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
-        
-
-        fLastComponent = fNamespaceBinder;
-
+        fScanner.setDocumentHandler(fDocumentHandler);
+        fLastComponent = fScanner;
         // setup dtd pipeline
         if (fDTDScanner != null) {
                 fDTDScanner.setDTDHandler(fDTDHandler);
@@ -741,7 +761,7 @@ public class NonValidatingConfiguration
 
     /** Create a document scanner. */
     protected XMLDocumentScanner createDocumentScanner() {
-        return new XMLDocumentScannerImpl();
+        return null;
     } // createDocumentScanner():XMLDocumentScanner
 
     /** Create a DTD scanner. */
@@ -749,10 +769,9 @@ public class NonValidatingConfiguration
         return new XMLDTDScannerImpl();
     } // createDTDScanner():XMLDTDScanner
 
-
     /** Create a namespace binder. */
     protected XMLNamespaceBinder createNamespaceBinder() {
-        return new XMLNamespaceBinder();
+        return null;
     } // createNamespaceBinder():XMLNamespaceBinder
 
     /** Create a datatype validator factory. */

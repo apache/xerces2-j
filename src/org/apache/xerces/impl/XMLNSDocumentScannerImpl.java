@@ -609,7 +609,7 @@ extends XMLDocumentScannerImpl {
          */
         protected boolean scanRootElementHook()
         throws IOException, XNIException {
-            if (!fDTDValidator.hasGrammar()) {
+            if (fDTDValidator != null && !fDTDValidator.hasGrammar()) {
                 fBindNamespaces = true;                
                 fPerformValidation = fDTDValidator.validate();
                 // re-configure pipeline

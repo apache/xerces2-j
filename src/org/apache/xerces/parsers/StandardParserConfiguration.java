@@ -125,11 +125,17 @@ public class StandardParserConfiguration
     protected static final String SCHEMA_ELEMENT_DEFAULT =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
 
+
+    /** feature identifier: XML Schema validation */
+    protected static final String XMLSCHEMA_VALIDATION = 
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+
     // property identifiers
 
     /** Property identifier: XML Schema validator. */
     protected static final String SCHEMA_VALIDATOR =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
+
 
 
     // debugging
@@ -219,7 +225,7 @@ public class StandardParserConfiguration
     /** Configures the pipeline. */
     protected void configurePipeline() {
         super.configurePipeline();
-        if ( getFeature(Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE)) {
+        if ( getFeature(XMLSCHEMA_VALIDATION )) {
             // If schema validator was not in the pipeline insert it.
             if (fSchemaValidator == null) {
                 fSchemaValidator = new XMLSchemaValidator(); 
