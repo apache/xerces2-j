@@ -5036,7 +5036,8 @@ public class TraverseSchema implements
       ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx);
       if (derived.type == XMLElementDecl.TYPE_SIMPLE ) {
 
-        if (base.type != XMLElementDecl.TYPE_SIMPLE)
+        if (base.type != XMLElementDecl.TYPE_SIMPLE &&
+            base.type != XMLElementDecl.TYPE_ANY)
             throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
 
         if (tempType == null) {
