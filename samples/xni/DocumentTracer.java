@@ -735,9 +735,7 @@ public class DocumentTracer
     } // internalEntityDecl(String,XMLString)
 
     /** External entity declaration. */
-    public void externalEntityDecl(String name,
-                                   String publicId, String systemId,
-                                   String baseSystemId, Augmentations augs) 
+    public void externalEntityDecl(String name,XMLResourceIdentifier identifier, Augmentations augs) 
         throws XNIException {
 
         printIndent();
@@ -746,33 +744,35 @@ public class DocumentTracer
         printQuotedString(name);
         fOut.print(',');
         fOut.print("publicId=");
-        printQuotedString(publicId);
+        printQuotedString(identifier.getPublicId());
         fOut.print(',');
         fOut.print("systemId=");
-        printQuotedString(systemId);
+        printQuotedString(identifier.getLiteralSystemId());
         fOut.print(',');
         fOut.print("baseSystemId=");
-        printQuotedString(baseSystemId);
+        printQuotedString(identifier.getBaseSystemId());
         fOut.println(')');
         fOut.flush();
 
     } // externalEntityDecl(String,String,String)
 
     /** Unparsed entity declaration. */
-    public void unparsedEntityDecl(String name, String publicId,
-                                   String systemId, String notation,
-                                   Augmentations augs) throws XNIException {
+    public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier,
+                                   String notation, Augmentations augs) throws XNIException {
 
         printIndent();
-        fOut.print("externalEntityDecl(");
+        fOut.print("unparsedEntityDecl(");
         fOut.print("name=");
         printQuotedString(name);
         fOut.print(',');
         fOut.print("publicId=");
-        printQuotedString(publicId);
+        printQuotedString(identifier.getPublicId());
         fOut.print(',');
         fOut.print("systemId=");
-        printQuotedString(systemId);
+        printQuotedString(identifier.getLiteralSystemId());
+        fOut.print(',');
+        fOut.print("baseSystemId=");
+        printQuotedString(identifier.getBaseSystemId());
         fOut.print(',');
         fOut.print("notation=");
         printQuotedString(notation);
@@ -782,7 +782,7 @@ public class DocumentTracer
     } // unparsedEntityDecl(String,String,String,String)
 
     /** Notation declaration. */
-    public void notationDecl(String name, String publicId, String systemId, 
+    public void notationDecl(String name, XMLResourceIdentifier identifier, 
                              Augmentations augs) throws XNIException {
 
         printIndent();
@@ -791,10 +791,13 @@ public class DocumentTracer
         printQuotedString(name);
         fOut.print(',');
         fOut.print("publicId=");
-        printQuotedString(publicId);
+        printQuotedString(identifier.getPublicId());
         fOut.print(',');
         fOut.print("systemId=");
-        printQuotedString(systemId);
+        printQuotedString(identifier.getLiteralSystemId());
+        fOut.print(',');
+        fOut.print("baseSystemId=");
+        printQuotedString(identifier.getBaseSystemId());
         fOut.println(')');
         fOut.flush();
 
