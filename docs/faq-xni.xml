@@ -90,7 +90,7 @@
    <source>java -Dorg.apache.xerces.xni.parser.XMLParserConfiguration=MyConfig application_class</source>
   </a>
  </faq>
- <faq title="Xerces Parser Congfigurations">
+ <faq title="Xerces Parser Configurations">
   <q>In the Xerces distribution, what are the available parser configurations?</q>
   <a>
    <p>
