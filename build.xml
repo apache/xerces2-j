@@ -506,6 +506,19 @@ Copyright:
   <target name="all" depends="pack-src, pack-bin">
   </target>
 
+  <target name="prepare-schema-src">
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}"
+            includes="**/v2/**/*.java"
+            excludes="**/v2/new_datatypes/**">
+        </fileset>
+    </copy>
+  </target>
+  
+  <target name="schema-all" depends="prepare-src, prepare-schema-src, pack-src, pack-bin">
+  </target>
+
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
