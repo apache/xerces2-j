@@ -34,6 +34,7 @@ import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.NamespaceContext;
+import org.apache.xerces.xs.datatypes.ObjectList;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
@@ -244,6 +245,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private Vector fEnumeration;
     private StringList fLexicalPattern;
     private StringList fLexicalEnumeration;
+    private ObjectList fActualEnumeration;
     private Object fMaxInclusive;
     private Object fMaxExclusive;
     private Object fMinExclusive;
@@ -2052,6 +2054,30 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             fLexicalEnumeration = new StringListImpl(strs, size);
         }
         return fLexicalEnumeration;
+    }
+    
+    /**
+     * A list of actual enumeration values if it exists, otherwise an empty
+     * <code>ObjectList</code>.
+     */
+    public ObjectList getActualEnumeration() {
+        if (fActualEnumeration == null) {
+            fActualEnumeration = new ObjectList () {
+                public int getLength() {
+                    return (fEnumeration != null) ? fEnumeration.size() : 0;
+                }
+                public boolean contains(Object item) {
+                    return (fEnumeration != null && fEnumeration.contains(item));
+                }
+                public Object item(int index) {
+                    if (index < 0 || index >= getLength()) {
+                        return null;
+                    }
+                    return fEnumeration.elementAt(index);
+                }
+            };
+        }
+        return fActualEnumeration;
     }
 
     /**
