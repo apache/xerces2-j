@@ -161,9 +161,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         NORMALIZE_TRIM, //AnyURIDV(),
         NORMALIZE_TRIM, //QNameDV(),
         NORMALIZE_TRIM, //QNameDV(),   // notation
-        NORMALIZE_FULL, //IDDV(),
-        NORMALIZE_FULL, //IDREFDV(),
-        NORMALIZE_FULL, //EntityDV(),
+        NORMALIZE_TRIM, //IDDV(),
+        NORMALIZE_TRIM, //IDREFDV(),
+        NORMALIZE_TRIM, //EntityDV(),
         NORMALIZE_FULL, //ListDV(),
         NORMALIZE_NONE, //UnionDV()
     };
@@ -1468,17 +1468,25 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     //we can still return object for internal use.
     private Object getActualValue(Object content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException{
 
-        if (fVariety == VARIETY_ATOMIC) {
+        String nvalue; 
+        if (context==null ||context.needToNormalize()) {
+            nvalue = normalize(content, fWhiteSpace);
+        } else {
+            nvalue = content.toString();
+        }
 
-            String nvalue; 
-            if (context==null ||context.needToNormalize()) {
-                nvalue = normalize(content, fWhiteSpace);
-            } else {
-                nvalue = content.toString();
+        if ( (fFacetsDefined & FACET_PATTERN ) != 0 ) {
+            RegularExpression regex;
+            for (int idx = fPattern.size()-1; idx >= 0; idx--) {
+                regex = (RegularExpression)fPattern.elementAt(idx);
+                if (!regex.matches(nvalue)){
+                    throw new InvalidDatatypeValueException("cvc-pattern-valid",
+                                                            new Object[]{content, regex});
+                }
             }
+        }
 
-            // update normalized value
-            validatedInfo.normalizedValue = nvalue;
+        if (fVariety == VARIETY_ATOMIC) {
 
             // validate special kinds of token, in place of old pattern matching
             if (fPatternType != SPECIAL_PATTERN_NONE) {
@@ -1508,33 +1516,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 }
             }
 
-            if ( (fFacetsDefined & FACET_PATTERN ) != 0 ) {
-                RegularExpression regex;
-                for (int idx = fPattern.size()-1; idx >= 0; idx--) {
-                    regex = (RegularExpression)fPattern.elementAt(idx);
-                    if (!regex.matches(nvalue)){
-                        throw new InvalidDatatypeValueException("cvc-pattern-valid",
-                                                                new Object[]{content, regex});
-                    }
-                }
-            }
-
+            validatedInfo.normalizedValue = nvalue;
             Object avalue = fDVs[fValidationDV].getActualValue(nvalue, context);
-
             validatedInfo.actualValue = avalue;
 
             return avalue;
 
         } else if (fVariety == VARIETY_LIST) {
 
-            String nvalue; 
-            if (context==null ||context.needToNormalize()) {
-                nvalue = normalize(content, fWhiteSpace);
-            } else {
-                nvalue = content.toString();
-            }
-
-            StringTokenizer parsedList = new StringTokenizer(nvalue);
+            StringTokenizer parsedList = new StringTokenizer(nvalue, " ");
             int countOfTokens = parsedList.countTokens() ;
             Object[] avalue = new Object[countOfTokens];
             XSSimpleTypeDecl[] memberTypes = new XSSimpleTypeDecl[countOfTokens];
