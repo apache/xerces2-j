@@ -167,7 +167,7 @@ public final class Constants {
     public static final String DOM_NAMESPACES = "namespaces";
     public static final String DOM_NAMESPACE_DECLARATIONS = "namespace-declarations";
     public static final String DOM_SUPPORTED_MEDIATYPES_ONLY =
-    "supported-mediatypes-only";
+    "supported-media-types-only";
 
     public static final String DOM_VALIDATE_IF_SCHEMA = "validate-if-schema";
     public static final String DOM_VALIDATE = "validate";
