@@ -13,9 +13,9 @@ include $(TOP)/src/Makefile.incl
 
 TARGETS=\
 	SAXCount.class\
-	SAXCount2.class\
+	SAX2Count.class\
 	SAXWriter.class\
-	SAXWriter2.class
+	SAX2Writer.class
 
 all: dirs compile
 
