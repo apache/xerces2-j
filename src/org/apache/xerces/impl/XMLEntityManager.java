@@ -125,7 +125,7 @@ public class XMLEntityManager
     //
 
     /** Default buffer size (2048). */
-    public static final int DEFAULT_BUFFER_SIZE = 2048;
+    public static final int DEFAULT_BUFFER_SIZE = 64;
 
     // debugging
 
@@ -1099,10 +1099,12 @@ public class XMLEntityManager
 
     /** Prints the contents of the buffer. */
     final void print() {
-        if (DEBUG_BUFFER) {
+        if (true) {
             if (fCurrentEntity != null) {
                 System.out.print('[');
                 System.out.print(fCurrentEntity.count);
+                System.out.print(' ');
+                System.out.print(fCurrentEntity.position);
                 if (fCurrentEntity.count > 0) {
                     System.out.print(" \"");
                     for (int i = 0; i < fCurrentEntity.count; i++) {
@@ -2153,7 +2155,7 @@ public class XMLEntityManager
          */
         public boolean scanData(String delimiter, XMLString data)
             throws IOException, SAXException {
-            if (DEBUG_BUFFER) {
+            if (true) {
                 System.out.print("(scanData: ");
                 print();
                 System.out.println();
@@ -2190,6 +2192,7 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        /***/
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             offset = 0;
                             fCurrentEntity.position = newlines;
@@ -2197,6 +2200,7 @@ public class XMLEntityManager
                                 break;
                             }
                         }
+                        /***/
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2206,6 +2210,7 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        /***/
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             offset = 0;
                             fCurrentEntity.position = newlines;
@@ -2214,6 +2219,7 @@ public class XMLEntityManager
                                 break;
                             }
                         }
+                        /***/
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2247,12 +2253,18 @@ public class XMLEntityManager
             // iterate over buffer until there isn't enough chars left
             // for the delimiter to be there
             boolean done = false;
-            while (fCurrentEntity.position < limit) {
+            while (fCurrentEntity.position < limit/*fCurrentEntity.count*/) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if (c == charAt0) {
                     // looks like we just hit the delimiter
                     int i;
                     for (i = 1; i < delimLen; i++) {
+                        /***
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            fCurrentEntity.position -= i;
+                            break;
+                        }
+                        /***/
                         c = fCurrentEntity.ch[fCurrentEntity.position++];
                         if (c != delimiter.charAt(i)) {
                             fCurrentEntity.position -= i;
@@ -2269,6 +2281,11 @@ public class XMLEntityManager
                     fCurrentEntity.position--;
                     break;
                 }
+                else if (XMLChar.isInvalid(c)) {
+                    System.out.println(">>> invalid character in data");
+                    fCurrentEntity.position--;
+                    break;
+                }
             }
             int length = fCurrentEntity.position - offset;
             fCurrentEntity.columnNumber += length - newlines;
@@ -2278,7 +2295,7 @@ public class XMLEntityManager
             data.setValues(fCurrentEntity.ch, offset, length);
 
             // return true if string was skipped
-            if (DEBUG_BUFFER) {
+            if (true) {
                 System.out.print(")scanData: ");
                 print();
                 System.out.println(" -> " + done);
@@ -2368,12 +2385,13 @@ public class XMLEntityManager
             int c = fCurrentEntity.ch[fCurrentEntity.position];
             if (XMLChar.isSpace(c)) {
                 do {
+                    // handle newlines
                     if (c == '\r' || c == '\n') {
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
                         if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                             fCurrentEntity.ch[0] = (char)c;
-                            load(1, false);
+                            load(1, true);
                         }
                         if (c == '\r') {
                             if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
@@ -2389,9 +2407,12 @@ public class XMLEntityManager
                     else {
                         fCurrentEntity.columnNumber++;
                     }
+                    // load more characters, if needed
                     fCurrentEntity.position++;
-                } while (fCurrentEntity.position < fCurrentEntity.count &&
-                         XMLChar.isSpace(c = fCurrentEntity.ch[fCurrentEntity.position]));
+                    if (fCurrentEntity.position == fCurrentEntity.count) {
+                        load(0, true);
+                    }
+                } while (XMLChar.isSpace(c = fCurrentEntity.ch[fCurrentEntity.position]));
                 if (DEBUG_BUFFER) {
                     System.out.print(")skipSpaces: ");
                     print();

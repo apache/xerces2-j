@@ -192,6 +192,14 @@ public abstract class XMLParser
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
 
+        // set locale
+        try {
+            setLocale(Locale.getDefault());
+        }
+        catch (SAXException e) {
+            // ignore
+        }
+
     } // <init>(SymbolTable)
 
     //

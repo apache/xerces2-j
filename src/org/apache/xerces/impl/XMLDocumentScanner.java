@@ -504,8 +504,7 @@ public class XMLDocumentScanner
     public void endEntity(String name) throws SAXException {
 
         // make sure elements are balanced
-        int elementDepth = fEntityStack[--fEntityDepth];
-        if (fElementDepth != elementDepth) {
+        if (fElementDepth != fEntityStack[--fEntityDepth]) {
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ElementEntityMismatch", 
                                        new Object[]{fCurrentElement.rawname}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
@@ -679,8 +678,7 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        int c = fEntityScanner.peekChar();
-                        if (c == '<' || c == '&' || c == ']' || c == '%') {
+                        if (XMLChar.isMarkup(fEntityScanner.peekChar())) {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
@@ -712,8 +710,7 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        int c = fEntityScanner.peekChar();
-                        if (c == '<' || c == '&' || c == ']' || c == '%') {
+                        if (XMLChar.isMarkup(fEntityScanner.peekChar())) {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
@@ -743,8 +740,7 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        int c = fEntityScanner.peekChar();
-                        if (c == '<' || c == '&' || c == ']' || c == '%') {
+                        if (XMLChar.isMarkup(fEntityScanner.peekChar())) {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
@@ -873,6 +869,7 @@ public class XMLDocumentScanner
                                                new Object[]{rawname},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
+                fElementDepth--;
                 empty = true;
                 break;
             }
@@ -1252,6 +1249,7 @@ public class XMLDocumentScanner
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
         fInMarkup = false;
+        fElementDepth--;
 
         // handle end element
         int depth = handleEndElement(fElementQName);
@@ -1375,9 +1373,6 @@ public class XMLDocumentScanner
             element.uri = startElement.uri;
         }
         
-        // decrease depth
-        fElementDepth--;
-
         // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
@@ -1946,16 +1941,6 @@ public class XMLDocumentScanner
                                         setScannerState(SCANNER_STATE_REFERENCE);
                                         break;
                                     }
-                                    /***
-                                    else if (c == ']') {
-                                        if (fEntityScanner.skipString("]]>")) {
-                                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                                       "CDEndInContent",
-                                                                       null,
-                                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                        }
-                                    }
-                                    /***/
                                     else if (c != -1 && XMLChar.isInvalid(c)) {
                                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                                                    "InvalidCharInContent",

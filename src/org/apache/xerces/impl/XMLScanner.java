@@ -529,6 +529,19 @@ public abstract class XMLScanner
         text.clear();
         while (fEntityScanner.scanData("--", fString)) {
             text.append(fString);
+            /***
+            int c = fEntityScanner.peekChar();
+            if (XMLChar.isInvalid(c)) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "InvalidCharInComment",
+                                           new Object[] { Integer.toHexString(c) },
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                fEntityScanner.scanChar();
+            }
+            else {
+                System.out.println(">>> c: "+c);
+            }
+            /***/
         }
         text.append(fString);
         if (!fEntityScanner.skipChar('>')) {

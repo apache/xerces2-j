@@ -398,6 +398,16 @@ public class XMLChar {
     } // isContent(int):boolean
 
     /**
+     * Returns true if the specified character can be considered markup.
+     * Markup characters include '&lt;', '&amp;', and '%'.
+     *
+     * @param c The character to check.
+     */
+    public static boolean isMarkup(int c) {
+        return c == '<' || c == '&' || c == '%';
+    } // isMarkup(int):boolean
+
+    /**
      * Returns true if the specified character is a space character
      * as defined by production [3] in the XML 1.0 specification.
      *

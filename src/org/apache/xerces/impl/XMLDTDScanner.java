@@ -1700,8 +1700,18 @@ public class XMLDTDScanner
                             break;
                     }
                 }
-                else if (fEntityScanner.peekChar() != quote) {
-                    fStringBuffer2.append((char)fEntityScanner.scanChar());
+                else {
+                    int c = fEntityScanner.peekChar();
+                    if (XMLChar.isMarkup(c)) {
+                        fStringBuffer2.append((char)fEntityScanner.scanChar());
+                    }
+                    else if (XMLChar.isInvalid(c)) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "InvalidCharInLiteral",
+                                                   new Object[] { Integer.toHexString(c) },
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        fEntityScanner.scanChar();
+                    }
                 }
             } while (fEntityScanner.scanLiteral(quote, fString) != quote);
             fStringBuffer2.append(fString);
