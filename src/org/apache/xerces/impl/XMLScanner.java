@@ -288,12 +288,18 @@ public abstract class XMLScanner
         final int STATE_STANDALONE = 2;
         final int STATE_DONE = 3;
         int state = STATE_VERSION;
-        fEntityScanner.skipSpaces();
+        boolean sawSpace = fEntityScanner.skipSpaces();
         while (fEntityScanner.peekChar() != '?') {
             String name = scanPseudoAttribute(scanningTextDecl, fString);
             switch (state) {
                 case STATE_VERSION: {
                     if (name == fVersionSymbol) {
+                        if (!sawSpace) {
+                            reportFatalError(scanningTextDecl
+                                       ? "SpaceRequiredBeforeVersionInTextDecl"
+                                       : "SpaceRequiredBeforeVersionInXMLDecl",
+                                             null);
+                        }
                         version = fString.toString();
                         state = STATE_ENCODING;
                         if (!version.equals("1.0")) {
@@ -304,6 +310,12 @@ public abstract class XMLScanner
                     else if (name == fEncodingSymbol) {
                         if (!scanningTextDecl) {
                             reportFatalError("VersionInfoRequired", null);
+                        }
+                        if (!sawSpace) {
+                            reportFatalError(scanningTextDecl
+                                      ? "SpaceRequiredBeforeEncodinginTextDecl"
+                                      : "SpaceRequiredBeforeEncodinginXMLDecl",
+                                             null);
                         }
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
@@ -320,12 +332,22 @@ public abstract class XMLScanner
                 }
                 case STATE_ENCODING: {
                     if (name == fEncodingSymbol) {
+                        if (!sawSpace) {
+                            reportFatalError(scanningTextDecl
+                                      ? "SpaceRequiredBeforeEncodinginTextDecl"
+                                      : "SpaceRequiredBeforeEncodinginXMLDecl",
+                                             null);
+                        }
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
                         // TODO: check encoding name; set encoding on
                         //       entity scanner
                     }
                     else if (!scanningTextDecl && name == fStandaloneSymbol) {
+                        if (!sawSpace) {
+                            reportFatalError("SpaceRequiredBeforeStandalone",
+                                             null);
+                        }
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
@@ -339,6 +361,10 @@ public abstract class XMLScanner
                 }
                 case STATE_STANDALONE: {
                     if (name == fStandaloneSymbol) {
+                        if (!sawSpace) {
+                            reportFatalError("SpaceRequiredBeforeStandalone",
+                                             null);
+                        }
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
@@ -354,7 +380,7 @@ public abstract class XMLScanner
                     reportFatalError("NoMorePseudoAttributes", null);
                 }
             }
-            fEntityScanner.skipSpaces();
+            sawSpace = fEntityScanner.skipSpaces();
         }
         if (scanningTextDecl && state != STATE_DONE) {
             reportFatalError("MorePseudoAttributes", null);
@@ -401,12 +427,14 @@ public abstract class XMLScanner
         }
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
-            reportFatalError("EqRequiredInTextDecl", new Object[]{name});
+            reportFatalError(scanningTextDecl ? "EqRequiredInTextDecl"
+                             : "EqRequiredInXMLDecl", new Object[]{name});
         }
         fEntityScanner.skipSpaces();
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
-            reportFatalError("QuoteRequiredInTextDecl", new Object[]{name});
+            reportFatalError(scanningTextDecl ? "QuoteRequiredInTextDecl"
+                             : "QuoteRequiredInXMLDecl" , new Object[]{name});
         }
         fEntityScanner.scanChar();
         int c = fEntityScanner.scanLiteral(quote, value);
@@ -419,9 +447,8 @@ public abstract class XMLScanner
                         fStringBuffer2.append((char)fEntityScanner.scanChar());
                     }
                     else if (XMLChar.isInvalid(c)) {
-                        String key = scanningTextDecl 
-                                   ? "InvalidCharInTextDecl" 
-                                   : "InvalidCharInXMLDecl";
+                        String key = scanningTextDecl
+                            ? "InvalidCharInTextDecl" : "InvalidCharInXMLDecl";
                         reportFatalError(key,
                                        new Object[] {Integer.toString(c, 16)});
                         fEntityScanner.scanChar();
@@ -433,7 +460,8 @@ public abstract class XMLScanner
             value.setValues(fStringBuffer2);
         }
         if (!fEntityScanner.skipChar(quote)) {
-            reportFatalError("CloseQuoteMissingInTextDecl",
+            reportFatalError(scanningTextDecl ? "CloseQuoteMissingInTextDecl"
+                             : "CloseQuoteMissingInXMLDecl",
                              new Object[]{name});
         }
 
