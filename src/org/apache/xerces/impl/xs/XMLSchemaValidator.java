@@ -880,8 +880,11 @@ public class XMLSchemaValidator
         }
         try {
             // REVISIT: should schema validation depend on validation?
-            // fValidation = fValidation && componentManager.getFeature(SCHEMA_VALIDATION);
-            fValidation =  componentManager.getFeature(SCHEMA_VALIDATION);
+            // NOTE: YES! That's the way it's documented and has worked
+            //       in the past. Therefore, it must keep the same value
+            //       to retain the same behavior. -Ac
+            fValidation = fValidation && componentManager.getFeature(SCHEMA_VALIDATION);
+            //fValidation =  componentManager.getFeature(SCHEMA_VALIDATION);
         }
         catch (XMLConfigurationException e) {
             fValidation = false;
