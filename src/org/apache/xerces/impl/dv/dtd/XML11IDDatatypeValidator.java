@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
+ *    if any, must include the following acknowledgment:  
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written
+ *    software without prior written permission. For written 
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 1999, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -57,62 +57,60 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import org.apache.xerces.impl.dv.DTDDVFactory;
-import org.apache.xerces.impl.dv.DatatypeValidator;
-import java.util.Hashtable;
+import org.apache.xerces.impl.dv.*;
+import org.apache.xerces.util.XML11Char;
 
 /**
- * the factory to create/return built-in schema DVs and create user-defined DVs
- *
+ * <P>IDDatatypeValidator - ID represents the ID attribute
+ * type from XML 1.1 Recommendation. The value space
+ * of ID is the set of all strings that match the
+ * NCName production and have been used in an XML
+ * document. The lexical space of ID is the set of all
+ * strings that match the NCName production.</P>
+ * <P>The value space of ID is scoped to a specific
+ * instance document.</P>
+ * <P>The following constraint applies:
+ * An ID must not appear more than once in an XML
+ * document as a value of this type; i.e., ID values
+ * must uniquely identify the elements which bear
+ * them.</P>
+ * 
+ * @author Jeffrey Rodriguez, IBM
  * @author Sandy Gao, IBM
- *
+ * @author Neil Graham, IBM
+ * 
  * @version $Id$
  */
-public class DTDDVFactoryImpl extends DTDDVFactory {
+public class XML11IDDatatypeValidator extends IDDatatypeValidator {
 
-    static Hashtable fBuiltInTypes = new Hashtable();
-    static {
-        createBuiltInTypes();
+    // construct an ID datatype validator
+    public XML11IDDatatypeValidator() {
+        super();
     }
 
     /**
-     * return a dtd type of the given name
-     *
-     * @param name  the name of the datatype
-     * @return      the datatype validator of the given name
+     * Checks that "content" string is valid ID value.
+     * If invalid a Datatype validation exception is thrown.
+     * 
+     * @param content       the string value that needs to be validated
+     * @param context       the validation context
+     * @throws InvalidDatatypeException if the content is
+     *         invalid according to the rules for the validators
+     * @see InvalidDatatypeValueException
      */
-    public DatatypeValidator getBuiltInDV(String name) {
-        return (DatatypeValidator)fBuiltInTypes.get(name);
+    public void validate(String content, ValidationContext context) throws InvalidDatatypeValueException {
+
+        //Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+        if (!XML11Char.isXML11ValidName(content)) {
+            throw new InvalidDatatypeValueException("IDInvalid", new Object[]{content});
+        }
+
+        if (context.isIdDeclared(content)) {
+            throw new InvalidDatatypeValueException("IDNotUnique", new Object[]{content});
+        }
+        
+        context.addId(content);
     }
-
-    /**
-     * get all built-in DVs, which are stored in a hashtable keyed by the name
-     *
-     * @return      a hashtable which contains all datatypes
-     */
-    public Hashtable getBuiltInTypes() {
-        return (Hashtable)fBuiltInTypes.clone();
-    }
-
-    // create all built-in types
-    static void createBuiltInTypes() {
-
-        DatatypeValidator dvTemp;
-
-        fBuiltInTypes.put("string", new StringDatatypeValidator());
-        fBuiltInTypes.put("ID", new IDDatatypeValidator());
-        dvTemp = new IDREFDatatypeValidator();
-        fBuiltInTypes.put("IDREF", dvTemp);
-        fBuiltInTypes.put("IDREFS", new ListDatatypeValidator(dvTemp));
-        dvTemp = new ENTITYDatatypeValidator();
-        fBuiltInTypes.put("ENTITY", new ENTITYDatatypeValidator());
-        fBuiltInTypes.put("ENTITIES", new ListDatatypeValidator(dvTemp));
-        fBuiltInTypes.put("NOTATION", new NOTATIONDatatypeValidator());
-        dvTemp = new NMTOKENDatatypeValidator();
-        fBuiltInTypes.put("NMTOKEN", dvTemp);
-        fBuiltInTypes.put("NMTOKENS", new ListDatatypeValidator(dvTemp));
-
-    }//createBuiltInTypes()
-
-}// DTDDVFactoryImpl
+    
+}
 
