@@ -96,7 +96,8 @@ public class ElementNSImpl
     protected String localName;
     
     /** DOM3: type information */
-    XSTypeDefinition type;
+    // REVISIT: we are losing the type information in DOM during serialization
+    transient XSTypeDefinition type;
 
     protected ElementNSImpl() {
         super();
