@@ -563,24 +563,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                 // as xsi:schemaLocation
                 XSAttributeDecl attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
                 // validation the string value to get the list of URI's
-                Object actualValue = attrDecl.fType.validate(sl, null, null);
-                Object[] uris = (Object[])actualValue;
-                // if there are even number of URI's
-                // add them to the location pairs
-                if (uris.length % 2 == 0) {
-                    String namespace, location;
-                    for (int i = 0; i < uris.length;) {
-                        namespace = (String)uris[i++];
-                        location = (String)uris[i++];
-                        LocationArray la = ((LocationArray)locations.get(namespace));
-                        if(la == null) {
-                            la = new LocationArray();
-                            locations.put(namespace, la);
-                        }
-                        la.addLocation(location);
-                    }
-                }
-                else {
+                attrDecl.fType.validate(sl, null, null);
+                if (!tokenizeSchemaLocationStr(sl, locations)) {
                     // report warning (odd number of items)
                     er.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                    "SchemaLocation",

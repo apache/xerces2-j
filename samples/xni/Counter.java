@@ -59,7 +59,6 @@ package xni;
 
 import java.io.PrintWriter;
 
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;

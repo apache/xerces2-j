@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.dv;
 
 import java.util.Hashtable;
-import org.apache.xerces.util.ObjectFactory;
 
 /**
  * The factory to create and return DTD types. The implementation should

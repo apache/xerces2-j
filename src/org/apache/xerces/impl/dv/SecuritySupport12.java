@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -53,96 +53,92 @@
  * Foundation, please see <http://www.apache.org/>.
  */
 
-package org.apache.xerces.util;
+package org.apache.xerces.impl.dv;
 
-import java.lang.reflect.*;
+import java.security.*;
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * This class is duplicated for each JAXP subpackage so keep it in sync.
  * It is package private and therefore is not exposed as part of the JAXP
  * API.
  *
- * Base class with security related methods that work on JDK 1.1.
+ * Security related methods that only work on J2SE 1.2 and newer.
  */
-class SecuritySupport {
+class SecuritySupport12 extends SecuritySupport {
 
-    /*
-     * Make this of type Object so that the verifier won't try to
-     * prove its type, thus possibly trying to load the SecuritySupport12
-     * class.
-     */
-    private static final Object securitySupport;
+    ClassLoader getContextClassLoader() {
+	return (ClassLoader)
+		AccessController.doPrivileged(new PrivilegedAction() {
+	    public Object run() {
+		ClassLoader cl = null;
+		try {
+		    cl = Thread.currentThread().getContextClassLoader();
+		} catch (SecurityException ex) { }
+		return cl;
+	    }
+	});
+    }
 
-    static {
-	SecuritySupport ss = null;
+    String getSystemProperty(final String propName) {
+	return (String)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    return System.getProperty(propName);
+                }
+            });
+    }
+
+    FileInputStream getFileInputStream(final File file)
+        throws FileNotFoundException
+    {
 	try {
-	    Class c = Class.forName("java.security.AccessController");
-	    // if that worked, we're on 1.2.
-	    /*
-	    // don't reference the class explicitly so it doesn't
-	    // get dragged in accidentally.
-	    c = Class.forName("javax.mail.SecuritySupport12");
-	    Constructor cons = c.getConstructor(new Class[] { });
-	    ss = (SecuritySupport)cons.newInstance(new Object[] { });
-	    */
-	    /*
-	     * Unfortunately, we can't load the class using reflection
-	     * because the class is package private.  And the class has
-	     * to be package private so the APIs aren't exposed to other
-	     * code that could use them to circumvent security.  Thus,
-	     * we accept the risk that the direct reference might fail
-	     * on some JDK 1.1 JVMs, even though we would never execute
-	     * this code in such a case.  Sigh...
-	     */
-	    ss = new SecuritySupport12();
-	} catch (Exception ex) {
-	    // ignore it
-	} finally {
-	    if (ss == null)
-		ss = new SecuritySupport();
-	    securitySupport = ss;
+            return (FileInputStream)
+                AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                    public Object run() throws FileNotFoundException {
+                        return new FileInputStream(file);
+                    }
+                });
+	} catch (PrivilegedActionException e) {
+	    throw (FileNotFoundException)e.getException();
 	}
     }
 
-    /**
-     * Return an appropriate instance of this class, depending on whether
-     * we're on a JDK 1.1 or J2SE 1.2 (or later) system.
-     */
-    public static SecuritySupport getInstance() {
-	return (SecuritySupport)securitySupport;
-    }
-
-    public ClassLoader getContextClassLoader() {
-	return null;
-    }
-
-    public String getSystemProperty(String propName) {
-        return System.getProperty(propName);
-    }
-
-    public FileInputStream getFileInputStream(File file)
-        throws FileNotFoundException
+    InputStream getResourceAsStream(final ClassLoader cl,
+                                           final String name)
     {
-        return new FileInputStream(file);
+        return (InputStream)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    InputStream ris;
+                    if (cl == null) {
+                        ris = ClassLoader.getSystemResourceAsStream(name);
+                    } else {
+                        ris = cl.getResourceAsStream(name);
+                    }
+                    return ris;
+                }
+            });
     }
 
-    public InputStream getResourceAsStream(ClassLoader cl, String name) {
-        InputStream ris;
-        if (cl == null) {
-            ris = ClassLoader.getSystemResourceAsStream(name);
-        } else {
-            ris = cl.getResourceAsStream(name);
-        }
-        return ris;
+    boolean getFileExists(final File f) {
+    return ((Boolean)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    return new Boolean(f.exists());
+                }
+            })).booleanValue();
     }
-    
-    public boolean getFileExists(File f) {
-        return f.exists();
+
+    long getLastModified(final File f) {
+    return ((Long)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    return new Long(f.lastModified());
+                }
+            })).longValue();
     }
-    
-    public long getLastModified(File f) {
-        return f.lastModified();
-    }    
+
 }

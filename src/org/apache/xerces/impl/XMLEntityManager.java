@@ -185,9 +185,13 @@ public class XMLEntityManager
     protected static final String BUFFER_SIZE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.BUFFER_SIZE_PROPERTY;
 
-    /** property identifier: security manager. */
-    protected static final String SECURITY_MANAGER =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+
+    //SYSTEM PROPERTY
+    protected static final String SYSTEM_PROPERTY_ENTITY_EXPANSION_LIMIT = "entityExpansionLimit" ;
+
+    /** property identifier: Entity expansion limit */
+    protected static final String ENTITY_EXPANSION_LIMIT  =
+	Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_EXPANSION_LIMIT;
 
     // recognized features and properties
 
@@ -218,7 +222,7 @@ public class XMLEntityManager
         ENTITY_RESOLVER,
         VALIDATION_MANAGER,
         BUFFER_SIZE,
-        SECURITY_MANAGER,
+        ENTITY_EXPANSION_LIMIT,
     };
 
     /** Property defaults. */
@@ -328,9 +332,6 @@ public class XMLEntityManager
      */
     protected int fBufferSize = DEFAULT_BUFFER_SIZE;
 
-    // stores defaults for entity expansion limit if it has
-    // been set on the configuration.
-    protected SecurityManager fSecurityManager = null;
 
     /**
      * True if the document entity is standalone. This should really
@@ -357,10 +358,10 @@ public class XMLEntityManager
 
     /** XML 1.1 entity scanner. */
     protected XMLEntityScanner fXML11EntityScanner;
+    
+    //Application can set the limit of number of entities that can be expanded.
+    protected java.lang.Integer fEntityExpansionLimit = null ;
 
-    // entity expansion limit (contains useful data if and only if
-    // fSecurityManager is non-null)
-    protected int fEntityExpansionLimit = 0;
     // entity currently being expanded:
     protected int fEntityExpansionCount = 0;
 
@@ -891,22 +892,16 @@ public class XMLEntityManager
 
         String encoding = setupCurrentEntity(name, xmlInputSource, literal, isExternal);
 
-        //when entity expansion limit is set by the Application, we need to
-        //check for the entity expansion limit set by the parser, if number of entity
-        //expansions exceeds the entity expansion limit, parser will throw fatal error.
-        // Note that this is intentionally unbalanced; it counts
-        // the number of expansions *per document*.
-        if( fSecurityManager != null && fEntityExpansionCount++ > fEntityExpansionLimit ){
+        //when entity expansion limit is set by the Application, before opening any new entity
+	//parser check for the entity expansion limit set by the parser, if number of entity
+	//expansions exceeds the entity expansion limit, parser will throw fatal error.
+	if( fEntityExpansionLimit != null && fEntityExpansionCount++ > fEntityExpansionLimit.intValue() ){
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                              "EntityExpansionLimitExceeded",
-                                             new Object[]{new Integer(fEntityExpansionLimit) },
+                                             new Object[]{fEntityExpansionLimit },
                                              XMLErrorReporter.SEVERITY_FATAL_ERROR );
-            // is there anything better to do than reset the counter?
-            // at least one can envision debugging applications where this might
-            // be useful...
-            fEntityExpansionCount = 0;
-        }
-        
+	}
+                
         // call handler
         if (fEntityHandler != null) {
             fEntityHandler.startEntity(name, fResourceIdentifier, encoding);
@@ -1217,13 +1212,31 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fValidationManager = null;
         }
-        try {
-            fSecurityManager = (SecurityManager)componentManager.getProperty(SECURITY_MANAGER);
-        }
+        
+        // adding new property http://xml.apache.org/properties/entity-expansion-limit
+	// using this property application can set the limit of number of the entities that
+	// will be expanded.
+        //REVISIT: JAXP 1.3 plans to fix this issue
+	try {
+            fEntityExpansionLimit = (java.lang.Integer)componentManager.getProperty(ENTITY_EXPANSION_LIMIT);
+	}
         catch (XMLConfigurationException e) {
-            fSecurityManager = null;
-        }
+            fEntityExpansionLimit = null;
+	}
 
+        //its good to check for system property value again (though this is little overhead) for every parse,
+	//an application might set the different limit for another XML document
+
+	//determines the integer value of the system property
+        try{
+            Integer entityExpansionLimit = Integer.getInteger(SYSTEM_PROPERTY_ENTITY_EXPANSION_LIMIT);
+            if(entityExpansionLimit != null){
+                fEntityExpansionLimit = entityExpansionLimit ;
+            }
+        }catch(java.lang.SecurityException se){
+            //catch the security exception in case Xerces is run under applet
+        }
+        
         // reset general state
         reset();
         
@@ -1232,8 +1245,7 @@ public class XMLEntityManager
     // reset general state.  Should not be called other than by
     // a class acting as a component manager but not
     // implementing that interface for whatever reason.
-    public void reset() {
-        fEntityExpansionLimit = (fSecurityManager != null)?fSecurityManager.getEntityExpansionLimit():0;
+    public void reset() {        
 
         // initialize state
         fStandalone = false;
@@ -1369,10 +1381,10 @@ public class XMLEntityManager
                     fEntityScanner.setBufferSize(fBufferSize);
                 }
             }
-            if (property.equals(Constants.SECURITY_MANAGER_PROPERTY)) {
-                fSecurityManager = (SecurityManager)value; 
-                fEntityExpansionLimit = (fSecurityManager != null)?fSecurityManager.getEntityExpansionLimit():0;
-            }
+            if (property.equals(Constants.ENTITY_EXPANSION_LIMIT)) {
+		fEntityExpansionLimit = (Integer)value;
+		return ;
+            }            
         }
 
     } // setProperty(String,Object)

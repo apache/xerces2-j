@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -67,7 +67,6 @@ import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -85,7 +84,7 @@ import org.w3c.dom.ls.DOMInputSource;
 
 /**
  * This is Xerces DOM Builder class. It uses the abstract DOM
- * parser with a document scanner, a dtd scanner, and a validator, as 
+ * parser with a document scanner, a dtd scanner, and a validator, as
  * well as a grammar pool.
  *
  * @author Pavani Mukthipudi, Sun Microsystems Inc.
@@ -112,25 +111,25 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
     /** XML Schema validation */
     protected static final String XMLSCHEMA =
-    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;    
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
     /** Dynamic validation */
-    protected static final String DYNAMIC_VALIDATION = 
+    protected static final String DYNAMIC_VALIDATION =
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
     /** Feature identifier: expose schema normalized value */
     protected static final String NORMALIZE_DATA =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
-    
+
     // internal properties
-    protected static final String SYMBOL_TABLE = 
+    protected static final String SYMBOL_TABLE =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-    
-    protected static final String PSVI_AUGMENT = 
+
+    protected static final String PSVI_AUGMENT =
     Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_AUGMENT_PSVI;
 
 
-    // 
+    //
     // Data
     //
 
@@ -178,7 +177,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
      */
     public DOMBuilderImpl(XMLParserConfiguration config) {
         super(config);
-        
+
         // add recognized features
         final String[] domRecognizedFeatures = {
             Constants.DOM_CANONICAL_FORM,
@@ -194,7 +193,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
         // turn off deferred DOM
         fConfiguration.setFeature(DEFER_NODE_EXPANSION, false);
-        
+
         // set default values
         fConfiguration.setFeature(Constants.DOM_CANONICAL_FORM, false);
         fConfiguration.setFeature(Constants.DOM_CDATA_SECTIONS, true);
@@ -202,13 +201,13 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         fConfiguration.setFeature(Constants.DOM_INFOSET, false);
         fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
-        
+
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec
         fConfiguration.setFeature(Constants.DOM_CERTIFIED, true);
 
         // Xerces datatype-normalization feature is on by default
-        fConfiguration.setFeature( NORMALIZE_DATA, false ); 
+        fConfiguration.setFeature( NORMALIZE_DATA, false );
     } // <init>(XMLParserConfiguration)
 
     /**
@@ -251,7 +250,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
     public void reset() {
         super.reset();
         // DOM Filter
-        if (fSkippedElemStack!=null) {        
+        if (fSkippedElemStack!=null) {
             fSkippedElemStack.removeAllElements();
         }
         fRejectedElement.clear();
@@ -259,38 +258,38 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         fSchemaType = null;
 
 
-    } // reset() 
+    } // reset()
 
     //
     // DOMBuilder methods
     //
- 
+
     public DOMConfiguration getConfig(){
         return this;
     }
- 
+
 
     /**
-     *  When the application provides a filter, the parser will call out to 
-     * the filter at the completion of the construction of each 
-     * <code>Element</code> node. The filter implementation can choose to 
-     * remove the element from the document being constructed (unless the 
-     * element is the document element) or to terminate the parse early. If 
-     * the document is being validated when it's loaded the validation 
-     * happens before the filter is called. 
+     *  When the application provides a filter, the parser will call out to
+     * the filter at the completion of the construction of each
+     * <code>Element</code> node. The filter implementation can choose to
+     * remove the element from the document being constructed (unless the
+     * element is the document element) or to terminate the parse early. If
+     * the document is being validated when it's loaded the validation
+     * happens before the filter is called.
      */
     public DOMBuilderFilter getFilter() {
         return fDOMFilter;
     }
 
     /**
-     *  When the application provides a filter, the parser will call out to 
-     * the filter at the completion of the construction of each 
-     * <code>Element</code> node. The filter implementation can choose to 
-     * remove the element from the document being constructed (unless the 
-     * element is the document element) or to terminate the parse early. If 
-     * the document is being validated when it's loaded the validation 
-     * happens before the filter is called. 
+     *  When the application provides a filter, the parser will call out to
+     * the filter at the completion of the construction of each
+     * <code>Element</code> node. The filter implementation can choose to
+     * remove the element from the document being constructed (unless the
+     * element is the document element) or to terminate the parse early. If
+     * the document is being validated when it's loaded the validation
+     * happens before the filter is called.
      */
     public void setFilter(DOMBuilderFilter filter) {
         fDOMFilter = filter;
@@ -299,11 +298,11 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         }
     }
 
-    /** 
+    /**
     * Set parameters and properties
     */
 	public void setParameter(String name, Object value) throws DOMException {
-		// set features           
+		// set features
 		if (value == Boolean.TRUE || value == Boolean.FALSE) {
 			boolean state = (value == Boolean.TRUE) ? true : false;
 			try {
@@ -367,7 +366,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 else if (name.equals(Constants.DOM_PSVI)){
                     //XSModel - turn on PSVI augmentation
                     fConfiguration.setFeature(PSVI_AUGMENT, true);
-                    fConfiguration.setProperty(DOCUMENT_CLASS_NAME, 
+                    fConfiguration.setProperty(DOCUMENT_CLASS_NAME,
                     "org.apache.xerces.dom.PSVIDocumentImpl");
                 }
 				else {
@@ -467,7 +466,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 									                  + Constants.SCHEMA_VALIDATION_FEATURE,
 								                      true);
                                 // map to JAXP schemaLanguage
-							fConfiguration.setProperty( Constants.JAXP_PROPERTY_PREFIX 
+							fConfiguration.setProperty( Constants.JAXP_PROPERTY_PREFIX
                                                         + Constants.SCHEMA_LANGUAGE,
 								                        Constants.NS_XMLSCHEMA);
 							fSchemaType = Constants.NS_XMLSCHEMA;
@@ -477,7 +476,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 								Constants.XERCES_FEATURE_PREFIX
 								+ Constants.SCHEMA_VALIDATION_FEATURE,
 								false);
-                            fConfiguration.setProperty( Constants.JAXP_PROPERTY_PREFIX 
+                            fConfiguration.setProperty( Constants.JAXP_PROPERTY_PREFIX
                                                         + Constants.SCHEMA_LANGUAGE,
                                                         Constants.NS_DTD);
 							fSchemaType = Constants.NS_DTD;
@@ -499,7 +498,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 fConfiguration.setProperty(DOCUMENT_CLASS_NAME, value);
             }
 			else {
-				// REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.       
+				// REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.
 				//parameter is not recognized
 				String msg =
 					DOMMessageFormatter.formatMessage(
@@ -568,8 +567,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 			return null;
 		}
 		else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
-			try {               
-                XMLEntityResolver entityResolver = 
+			try {
+                XMLEntityResolver entityResolver =
                (XMLEntityResolver) fConfiguration.getProperty(ENTITY_RESOLVER);
                 if (entityResolver != null
                     && entityResolver instanceof DOMEntityResolverWrapper) {
@@ -675,15 +674,15 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
 
     /**
-     * Parse an XML document from a location identified by an URI reference. 
-     * If the URI contains a fragment identifier (see section 4.1 in ), the 
+     * Parse an XML document from a location identified by an URI reference.
+     * If the URI contains a fragment identifier (see section 4.1 in ), the
      * behavior is not defined by this specification.
-     *  
+     *
      */
     public Document parseURI(String uri)  {
         XMLInputSource source = new XMLInputSource(null, uri, null);
 
-        try {        
+        try {
             parse(source);
         } catch (Exception e){
             if (fErrorHandler != null) {
@@ -693,7 +692,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 error.fSeverity = error.SEVERITY_FATAL_ERROR;
                 fErrorHandler.getErrorHandler().handleError(error);
             }
-            if (DEBUG) {            
+            if (DEBUG) {
                e.printStackTrace();
             }
         }
@@ -701,16 +700,16 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
     }
 
     /**
-     * Parse an XML document from a resource identified by an 
+     * Parse an XML document from a resource identified by an
      * <code>DOMInputSource</code>.
-     * 
+     *
      */
     public Document parse(DOMInputSource is) {
 
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);
 
-        try {        
+        try {
             parse(xmlInputSource);
         } catch (Exception e) {
             if (fErrorHandler != null) {
@@ -721,7 +720,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
                 fErrorHandler.getErrorHandler().handleError(error);
 
             }
-            if (DEBUG) {            
+            if (DEBUG) {
                e.printStackTrace();
             }
         }
@@ -729,25 +728,25 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
     }
 
     /**
-     *  Parse an XML document or fragment from a resource identified by an 
-     * <code>DOMInputSource</code> and insert the content into an existing 
-     * document at the position epcified with the <code>contextNode</code> 
-     * and <code>action</code> arguments. When parsing the input stream the 
+     *  Parse an XML document or fragment from a resource identified by an
+     * <code>DOMInputSource</code> and insert the content into an existing
+     * document at the position epcified with the <code>contextNode</code>
+     * and <code>action</code> arguments. When parsing the input stream the
      * context node is used for resolving unbound namespace prefixes.
-     *  
-     * @param is  The <code>DOMInputSource</code> from which the source 
-     *   document is to be read. 
-     * @param cnode  The <code>Node</code> that is used as the context for 
-     *   the data that is being parsed. 
-     * @param action This parameter describes which action should be taken 
-     *   between the new set of node being inserted and the existing 
-     *   children of the context node. The set of possible actions is 
-     *   defined above. 
+     *
+     * @param is  The <code>DOMInputSource</code> from which the source
+     *   document is to be read.
+     * @param cnode  The <code>Node</code> that is used as the context for
+     *   the data that is being parsed.
+     * @param action This parameter describes which action should be taken
+     *   between the new set of node being inserted and the existing
+     *   children of the context node. The set of possible actions is
+     *   defined above.
      * @exception DOMException
-     *   HIERARCHY_REQUEST_ERR: Thrown if this action results in an invalid 
-     *   hierarchy (i.e. a Document with more than one document element). 
+     *   HIERARCHY_REQUEST_ERR: Thrown if this action results in an invalid
+     *   hierarchy (i.e. a Document with more than one document element).
      */
-    public void parseWithContext(DOMInputSource is, Node cnode, 
+    public void parseWithContext(DOMInputSource is, Node cnode,
                                  short action) throws DOMException {
         // REVISIT: need to implement.
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
@@ -756,9 +755,9 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 
     /**
      * NON-DOM: convert DOMInputSource to XNIInputSource
-     * 
+     *
      * @param is
-     * @return 
+     * @return
      */
     XMLInputSource dom2xmlInputSource(DOMInputSource is) {
         // need to wrap the DOMInputSource with an XMLInputSource
