@@ -2,6 +2,21 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title='June 5, 2000'>
+        <ul>
+           <li>Added Schema include/import [ericye]</li>
+           <li>Performance tuning [ericye, andyc]</li>
+           <li>Added Ant support to build process [abagchi]</li>
+           <li>Re-architecture Schema datatypes [jeffreyr]</li>
+           <li>Re-organized docs directory to get FOP to work[abagchi, jeffreyr]</li>
+           <li>Fixed Dynamic validation bug [ericye]</li>
+           <li>Fixed Grammar access bug [ericye, andyc]</li>
+	   <li>Fixed Miscellaneous bugs  [ericye, andyc, jeffreyr]</li> 
+	   <li>Added JAXP to build, updated JAXP files [lehors]</li>
+           <li>Added a DOM from scratch and Serializer sample [jeffreyr]</li>
+           <li>Fixed NodeImpl supports nullpointer bug in Samples [lehors]</li>
+        </ul>
+    </s2>
     <s2 title='May 19, 2000'>
         <ul>
            <li>Reworked internals for XML Schema support [andyc, ericye, 
