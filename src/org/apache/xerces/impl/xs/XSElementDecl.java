@@ -173,6 +173,16 @@ public class XSElementDecl {
      * get the hash code
      */
     public int hashCode() {
-        return (fName.hashCode()<<16)+fTargetNamespace.hashCode();
+        int code = fName.hashCode();
+        if (fTargetNamespace != null)
+            code = (code<<16)+fTargetNamespace.hashCode();
+        return code;
+    }
+
+    /**
+     * whether two decls are the same
+     */
+    public boolean equals(Object o) {
+        return o == this;
     }
 } // class XMLElementDecl
