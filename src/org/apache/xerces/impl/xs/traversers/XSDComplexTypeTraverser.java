@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -844,6 +844,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         Element attrNode = null;
         XSParticleDecl particle = null;
 
+        // whether there is a particle with empty model group
+        boolean emptyParticle = false;
         if (complexContentChild != null) {
             // -------------------------------------------------------------
             // GROUP, ALL, SEQUENCE or CHOICE, followed by attributes, if specified.
@@ -865,7 +867,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (particle != null) {
                     XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
                     if (group.fParticleCount == 0)
-                        particle = null;
+                        emptyParticle = true;
                 }
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
@@ -875,7 +877,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (particle != null && particle.fMinOccurs == 0) {
                     XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
                     if (group.fParticleCount == 0)
-                        particle = null;
+                        emptyParticle = true;
                 }
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
@@ -885,7 +887,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (particle != null) {
                     XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
                     if (group.fParticleCount == 0)
-                        particle = null;
+                        emptyParticle = true;
                 }
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
@@ -893,6 +895,25 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 // Should be attributes here - will check below...
                 attrNode = complexContentChild;
             }
+        }
+
+        // if the particle is empty because there is no non-annotation chidren,
+        // we need to make the particle itself null (so that the effective
+        // content is empty).
+        if (emptyParticle) {
+            // get the first child
+            Element child = DOMUtil.getFirstChildElement(complexContentChild);
+            // if it's annotation, get the next one
+            if (child != null) {
+                if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    child = DOMUtil.getNextSiblingElement(child);
+                }
+            }
+            // if there is no (non-annotation) children, mark particle empty
+            if (child == null)
+                particle = null;
+            // child != null means we might have seen an element with
+            // minOccurs == maxOccurs == 0
         }
 
         if (particle == null && isMixed) {
