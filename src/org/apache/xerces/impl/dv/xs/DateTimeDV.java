@@ -54,9 +54,16 @@ public class DateTimeDV extends AbstractDateTimeDV {
         int end = indexOf (str, 0, len, 'T');
 
         // both time and date
-        getDate(str, 0, end, date);
+        int dateEnd = getDate(str, 0, end, date);
         getTime(str, end+1, len, date, timeZone);
 
+        //Check the separator character between Date and Time
+        if (dateEnd != end) {
+            throw new RuntimeException(str
+                    + " is an invalid dateTime dataype value. "
+                    + "Invalid character(s) seprating date and time values.");
+        }
+        
         //validate and normalize
 
         //REVISIT: do we need SchemaDateTimeException?
