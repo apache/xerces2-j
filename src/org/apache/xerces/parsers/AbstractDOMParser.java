@@ -505,7 +505,7 @@ public abstract class AbstractDOMParser
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
         
-        if (!fIncludeComments) {
+        if (!fIncludeComments || fInDTD) {
               return;
         }
         if (!fDeferNodeExpansion) {
