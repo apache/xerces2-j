@@ -94,6 +94,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.EntityReference;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
@@ -438,23 +439,23 @@ public abstract class AbstractDOMParser
         if (DEBUG_EVENTS) {        
             System.out.println("==>startGeneralEntity ("+name+")");
         }
-        if (fCreateEntityRefNodes) {
-            if (!fDeferNodeExpansion) {
-                setCharacterData();
-                EntityReference er = fDocument.createEntityReference(name);
-                // we don't need synchronization now, because entity ref will be
-                // expanded anyway. Synch only needed when user creates entityRef node
-                ((EntityReferenceImpl)er).needsSyncChildren(false);
-                fCurrentNode.appendChild(er);
-                fCurrentNode = er;
-            }
-            else {
-                int er =
-                    fDeferredDocumentImpl.createDeferredEntityReference(name);
-                fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, er);
-                fCurrentNodeIndex = er;
-            }
-        }
+        // Always create entity reference nodes to be able to recreate
+        // entity as a part of doctype
+         if (!fDeferNodeExpansion) {
+            setCharacterData(true);
+            EntityReference er = fDocument.createEntityReference(name);
+            // we don't need synchronization now, because entity ref will be
+            // expanded anyway. Synch only needed when user creates entityRef node
+            ((EntityReferenceImpl)er).needsSyncChildren(false);
+            fCurrentNode.appendChild(er);
+            fCurrentNode = er;
+         }
+         else {
+            int er =
+               fDeferredDocumentImpl.createDeferredEntityReference(name);
+               fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, er);
+               fCurrentNodeIndex = er;
+         }
 
     } // startGeneralEntity(String,XMLResourceIdentifier, Augmentations)
 
@@ -535,7 +536,7 @@ public abstract class AbstractDOMParser
               return;
         }
         if (!fDeferNodeExpansion) {
-            setCharacterData();
+            setCharacterData(false);
             Comment comment = fDocument.createComment(text.toString());
             fCurrentNode.appendChild(comment);
         }
@@ -579,7 +580,7 @@ public abstract class AbstractDOMParser
         }
 
         if (!fDeferNodeExpansion) {
-            setCharacterData();
+            setCharacterData(false);
             ProcessingInstruction pi =
                 fDocument.createProcessingInstruction(target, data.toString());
             fCurrentNode.appendChild(pi);
@@ -781,7 +782,7 @@ public abstract class AbstractDOMParser
                 // REVISIT: Handle entities in attribute value.
             }
 
-            setCharacterData();
+            setCharacterData(false);
             fCurrentNode.appendChild(el);
             fCurrentNode = el;
         }
@@ -982,7 +983,7 @@ public abstract class AbstractDOMParser
             System.out.println("==>endElement ("+element.rawname+")");
         }
         if (!fDeferNodeExpansion) {
-            setCharacterData();
+            setCharacterData(false);
             fCurrentNode = fCurrentNode.getParentNode();
         }
         else {
@@ -1012,7 +1013,7 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startCDATA(Augmentations augs) throws XNIException {
-        setCharacterData();
+        setCharacterData(false);
         fInCDATASection = true;
     } // startCDATA()
 
@@ -1081,59 +1082,104 @@ public abstract class AbstractDOMParser
         if (DEBUG_EVENTS) {
             System.out.println("==>endGeneralEntity: ("+name+")");
         }
-        if (fCreateEntityRefNodes) {
-            if (!fDeferNodeExpansion) {
-                setCharacterData();                
-                if (fDocumentType != null) {
-                    NamedNodeMap entities = fDocumentType.getEntities();
-                    NodeImpl entity = (NodeImpl)entities.getNamedItem(name);
-                    if (entity != null && entity.getFirstChild() == null) {
-                        entity.setReadOnly(false, true);
-                        Node child = fCurrentNode.getFirstChild();
-                        while (child != null) {
-                            Node copy = child.cloneNode(true);
-                            entity.appendChild(copy);
-                            child = child.getNextSibling();
-                        }
-                        entity.setReadOnly(true, true);
-                        entities.setNamedItem(entity);
-                    }
+        if (!fDeferNodeExpansion) {
+            setCharacterData(true);                
+            if (fDocumentType != null) {
+                NamedNodeMap entities = fDocumentType.getEntities();
+                NodeImpl entity = (NodeImpl)entities.getNamedItem(name);
+                if (entity != null && entity.getFirstChild() == null) {
+                    entity.setReadOnly(false, true);
+                    Node child = fCurrentNode.getFirstChild();
+                    while (child != null) {
+                        Node copy = child.cloneNode(true);
+                        entity.appendChild(copy);
+                        child = child.getNextSibling();
+                     }
+                    entity.setReadOnly(true, true);
+                    entities.setNamedItem(entity);
                 }
+            }
+            if (fCreateEntityRefNodes) {
                 // Make entity ref node read only
                 ((NodeImpl)fCurrentNode).setReadOnly(true, true);
                 fCurrentNode = fCurrentNode.getParentNode();
-            }
-            else {
-                int entityIndex = -1;
-                int dtChildIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
-                while (dtChildIndex != -1) {
-                    short nodeType = fDeferredDocumentImpl.getNodeType(dtChildIndex, false);
-                    if (nodeType == Node.ENTITY_NODE) {
-                        String nodeName = fDeferredDocumentImpl.getNodeName(dtChildIndex, false);
-                        if (nodeName.equals(name)) {
-                            if (fDeferredDocumentImpl.getLastChild(dtChildIndex, false) == -1) {
-                                entityIndex = dtChildIndex;
-                            }
-                            break;
-                        }
-                    }
-                    dtChildIndex = fDeferredDocumentImpl.getRealPrevSibling(dtChildIndex, false);
+            } else {  //!fCreateEntityRefNodes
+                // move entity reference children to the list of 
+                // siblings of its parent and remove entity reference
+                NodeList children = fCurrentNode.getChildNodes();
+                Node parent = fCurrentNode.getParentNode();
+                int length = children.getLength();
+                Node previous = fCurrentNode.getPreviousSibling();
+                // normalize text nodes
+                if (previous != null && previous.getNodeType() == Node.TEXT_NODE &&
+                    children.item(0).getNodeType() == Node.TEXT_NODE) {
+                    ((Text)previous).appendData(children.item(0).getNodeValue());
+
+                } else {
+                    parent.insertBefore(children.item(0), fCurrentNode);
                 }
-                if (entityIndex != -1) {
-                    int prevIndex = -1;
-                    int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
-                    while (childIndex != -1) {
-                        int cloneIndex = fDeferredDocumentImpl.cloneNode(childIndex, true);
-                        fDeferredDocumentImpl.insertBefore(entityIndex, cloneIndex, prevIndex);
-                        prevIndex = cloneIndex;
-                        childIndex = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
-                    }
+
+                for (int i=1;i <length;i++) {
+                    parent.insertBefore(children.item(0), fCurrentNode);
                 }
-                fCurrentNodeIndex =
-                    fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex,
-                                                        false);
+                parent.removeChild(fCurrentNode);
+                fCurrentNode = parent;
             }
         }
+        else {
+            int entityIndex = -1;
+            int dtChildIndex = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+            while (dtChildIndex != -1) {
+                short nodeType = fDeferredDocumentImpl.getNodeType(dtChildIndex, false);
+                if (nodeType == Node.ENTITY_NODE) {
+                    String nodeName = fDeferredDocumentImpl.getNodeName(dtChildIndex, false);
+                    if (nodeName.equals(name)) {
+                        if (fDeferredDocumentImpl.getLastChild(dtChildIndex, false) == -1) {
+                            entityIndex = dtChildIndex;
+                        }
+                        break;
+                    }
+                }
+               dtChildIndex = fDeferredDocumentImpl.getRealPrevSibling(dtChildIndex, false);
+            }
+            if (entityIndex != -1) {
+               int prevIndex = -1;
+               int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
+               while (childIndex != -1) {
+                   int cloneIndex = fDeferredDocumentImpl.cloneNode(childIndex, true);
+                   fDeferredDocumentImpl.insertBefore(entityIndex, cloneIndex, prevIndex);
+                   prevIndex = cloneIndex;
+                   childIndex = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
+                }
+             }
+             if (fCreateEntityRefNodes) {            
+                fCurrentNodeIndex =
+                     fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex,
+                                                         false);
+             } else { //!fCreateEntityRefNodes
+                 // move children of entity ref before the entity ref. 
+                 // remove entity ref. 
+                 
+                 // holds a child of entity ref
+                 int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
+                 int parentIndex = 
+                     fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex,
+                                                         false);
+                 
+                 int prevIndex = fCurrentNodeIndex;
+                 int lastChild = childIndex;
+                 int sibling = -1;
+                 while (childIndex != -1) {
+                     sibling = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
+                     fDeferredDocumentImpl.insertBefore(parentIndex, childIndex, prevIndex);
+                     prevIndex = childIndex;
+                     childIndex = sibling;
+                 }
+                 fDeferredDocumentImpl.setAsLastChild(parentIndex, lastChild);
+                 fCurrentNodeIndex = parentIndex;
+             }
+        }
+        
 
     } // endGeneralEntity(String, Augmentations)
 
@@ -1750,9 +1796,9 @@ public abstract class AbstractDOMParser
     // is stored in StringBuffer.      
     // This function is called then the state is changed and the 
     // data needs to be appended to the current node
-    protected void  setCharacterData(){
+    protected void  setCharacterData(boolean sawChars){
         // handle character data
-        fFirstChunk = false;
+        fFirstChunk = sawChars;
         if (fStringBuffer.length() > 0) {
             // if we have data in the buffer we must have created
             // a text node already.
