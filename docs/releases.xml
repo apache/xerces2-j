@@ -9,7 +9,24 @@
    and includes full XML Schema support.
   </desc>
   <changes>
-
+    <add>
+        <note> 
+            Implemented schema particle derivation restriction checking
+        </note>
+        <submitter name="Lisa Martin"/>
+    </add>
+    <add>
+        <note> 
+            Added checking for schema constraint cos-element-consistent 
+        </note>
+        <submitter name="Lisa Martin"/>
+    </add>
+    <fix>
+        <note> 
+            resolved misc. SAX2 bugs
+        </note>
+        <submitter name="Lisa Martin"/>
+    </fix>
     <add>
     <note>
      Added implementation of DOMInputSource, DOMError, DOMLocator and wrappers
