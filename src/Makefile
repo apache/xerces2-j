@@ -48,10 +48,6 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/xerces/dom
 	${CP}  ../src/org/apache/xerces/dom/*.class  			../class/org/apache/xerces/dom
 
-#-src/org/apache/xerces/dom/traversal
-	${MKDIR} ../class/org/apache/xerces/dom/traversal       
-	${CP}  ../src/org/apache/xerces/dom/traversal/*.class  		../class/org/apache/xerces/dom/traversal
-
 #-src/org/apache/xerces/dom/events
 	${MKDIR} ../class/org/apache/xerces/dom/events       
 	${CP}  ../src/org/apache/xerces/dom/events/*.class  		../class/org/apache/xerces/dom/events
@@ -200,10 +196,6 @@ package_src:
 	${MKDIR} ../source/src/org/apache/xerces/dom
 	${CP}  ../src/org/apache/xerces/dom/*.java  			../source/src/org/apache/xerces/dom
 
-#-src/org/apache/xerces/dom/traversal
-	${MKDIR} ../source/src/org/apache/xerces/dom/traversal       
-	${CP}  ../src/org/apache/xerces/dom/traversal/*.java  		../source/src/org/apache/xerces/dom/traversal
-
 #-src/org/apache/xerces/dom/events
 	${MKDIR} ../source/src/org/apache/xerces/dom/events       
 	${CP}  ../src/org/apache/xerces/dom/events/*.java  		../source/src/org/apache/xerces/dom/events
@@ -330,9 +322,6 @@ package_src:
 
 #-src/org/apache/xerces/dom
 	${CP}  ../src/org/apache/xerces/dom/Makefile  			../source/src/org/apache/xerces/dom
-
-#-src/org/apache/xerces/dom/traversal
-	${CP}  ../src/org/apache/xerces/dom/traversal/Makefile  		../source/src/org/apache/xerces/dom/traversal
 
 #-src/org/apache/xerces/dom/events
 	${CP}  ../src/org/apache/xerces/dom/events/Makefile  		../source/src/org/apache/xerces/dom/events
