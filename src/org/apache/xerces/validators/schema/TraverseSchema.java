@@ -1694,6 +1694,9 @@ public class TraverseSchema implements
                             }
                         }
                         else {
+                            if ( facetData.containsKey(facet) )
+                                reportSchemaError(SchemaMessageProvider.DatatypeError,
+                                                  new Object [] {"The facet '" + facet + "' is defined more than once."} );
                              facetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
                              checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
                         }
