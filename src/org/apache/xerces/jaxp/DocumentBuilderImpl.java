@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000-2004 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.DOMImplementation;
@@ -169,11 +170,10 @@ public class DocumentBuilderImpl extends DocumentBuilder
 						if(value !=null && W3C_XML_SCHEMA.equals(value)){
             				domParser.setProperty(name, val);
 						}else{
-            				throw new IllegalArgumentException(
-								"'http://java.sun.com/xml/jaxp/properties/schemaLanguage' "+
-								"property should be set before setting "+
-								"'http://java.sun.com/xml/jaxp/properties/schemaSource'"+
-								" property");
+                            throw new IllegalArgumentException(
+                                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                                "jaxp-order-not-supported",
+                                new Object[] {JAXP_SCHEMA_LANGUAGE, JAXP_SCHEMA_SOURCE}));
 						}
 					}
             	} else {
@@ -199,7 +199,9 @@ public class DocumentBuilderImpl extends DocumentBuilder
 
     public Document parse(InputSource is) throws SAXException, IOException {
         if (is == null) {
-            throw new IllegalArgumentException("InputSource cannot be null");
+            throw new IllegalArgumentException(
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, 
+                "jaxp-null-input-source", null));
         }
 
         if (er != null) {
