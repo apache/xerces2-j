@@ -1970,6 +1970,17 @@ public class XMLDTDScannerImpl
             }
             else {
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
+                // Skip the part in error
+                int ch;
+                do {
+                    // Ignore the current character
+                    fEntityScanner.scanChar();
+                    // Skip any separators
+                    skipSeparator(false, true);
+                    // Keeping getting the next character,
+                    // until it's one of the expected ones
+                    ch = fEntityScanner.peekChar();
+                } while (ch != '<' && ch != ']' && !XMLChar.isSpace(ch));
             }
             skipSeparator(false, true);
         }
