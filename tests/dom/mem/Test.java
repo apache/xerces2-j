@@ -62,6 +62,11 @@
 //       2.  Regression tests for bugs fixed.
 //     All individual are wrapped in a memory leak checker.
 //
+//     DOM Level 3:
+//     1. textContent 
+//     2. userData
+//     3. isEqualNode
+//
 //     This is NOT a complete test of DOM functionality.
 //
 
@@ -1285,6 +1290,24 @@ public class Test {
         el2.setTextContent("bye now");
         el.appendChild(el2);
         Assertion.equals(el.getTextContent(), "yo!bye now");
+        
+        // check that empty element does not produce null value
+		NodeImpl el3 = (NodeImpl) doc.createElement("test");
+		el.appendChild(el3);
+		NodeImpl empty = (NodeImpl) doc.createElement("empty");
+		el3.appendChild(empty);
+		Assertion.verify(el3.getTextContent() != null);
+		
+		empty.setTextContent("hello");
+		Assertion.verify(empty.getChildNodes().getLength() == 1);
+		// check that setting to empty string or null, does not produce
+		// any text node
+		empty.setTextContent(null);
+		Assertion.verify(empty.getChildNodes().getLength() == 0);
+		empty.setTextContent("");
+		Assertion.verify(empty.getChildNodes().getLength() == 0);
+		
+		
 
 
         class MyHandler implements UserDataHandler {
