@@ -65,6 +65,10 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLEntityScanner;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.Grammar;
+import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.impl.validation.XMLAttributeDecl;
+import org.apache.xerces.impl.validation.XMLSimpleType;
 
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
@@ -185,10 +189,16 @@ public class XMLDocumentScanner
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
 
+    /** fGrammarPool */
+    protected GrammarPool fGrammarPool;
+
     // protected data
 
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
+
+    /** Document grammar. */
+    protected Grammar fCurrentGrammar;
 
     /** Entity stack. */
     protected int[] fEntityStack = new int[4];
@@ -215,6 +225,9 @@ public class XMLDocumentScanner
 
     /** Element stack. */
     protected ElementStack fElementStack = new ElementStack();
+
+    /** Attribute decl. */
+    protected XMLAttributeDecl fAttributeDecl = new XMLAttributeDecl();
 
     // features
 
@@ -325,8 +338,12 @@ public class XMLDocumentScanner
         fAttributes.setNamespaces(fNamespaces);
 
         // xerces properties
-        final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
+        final String DTD_SCANNER =
+            Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
+        final String GRAMMAR_POOL =
+            Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+        fGrammarPool = (GrammarPool)componentManager.getProperty(GRAMMAR_POOL);
 
         // initialize vars
         fMarkupDepth = 0;
@@ -335,6 +352,7 @@ public class XMLDocumentScanner
         fSeenDoctypeDecl = false;
         fStandalone = false;
         fScanningDTD = false;
+        fCurrentGrammar = null;
 
         // save built-in entity names
         fCDATASymbol = fSymbolTable.addSymbol("CDATA");
@@ -779,10 +797,26 @@ public class XMLDocumentScanner
                              new Object[]{fCurrentElement.rawname,
                                           fAttributeQName.rawname});
         }
-        // REVISIT: we need the type from the Grammar to do the correct value
-        // normalization
+
+        // get the attribute type from the Grammar
+        if (fCurrentGrammar == null) {
+            // REVISIT: should we use the systemId as the key instead?
+            fCurrentGrammar = fGrammarPool.getGrammar("");
+        }
+        boolean cdata = true;
+        if (fCurrentGrammar != null) {
+            int elDeclIdx =
+                fCurrentGrammar.getElementDeclIndex(fCurrentElement, -1);
+            int atDeclIdx =
+                fCurrentGrammar.getAttributeDeclIndex(elDeclIdx,
+                                                      fAttributeQName.rawname);
+            if (fCurrentGrammar.getAttributeDecl(elDeclIdx, fAttributeDecl)
+                && fAttributeDecl.simpleType.type != XMLSimpleType.TYPE_CDATA){
+                cdata = false;
+            }
+        }
         scanAttributeValue(fString, fAttributeQName.rawname,
-                           attributes, attributes.getLength() - 1, true);
+                           attributes, attributes.getLength() - 1, cdata);
         attributes.setValue(attributes.getLength() - 1, fString.toString());
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
