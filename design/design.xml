@@ -1622,7 +1622,7 @@
     </returns>
    </method>
    <method name='getNextEntityDeclIndex'>
-    <param name='elementDeclIndex'>
+    <param name='entityDeclIndex'>
      <primitive type='int'/>
     </param>
     <returns>
@@ -1654,7 +1654,7 @@
     </returns>
    </method>
    <method name='getNextNotationDeclIndex'>
-    <param name='elementDeclIndex'>
+    <param name='notationDeclIndex'>
      <primitive type='int'/>
     </param>
     <returns>
