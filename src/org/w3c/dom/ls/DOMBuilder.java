@@ -15,7 +15,7 @@ package org.w3c.dom.ls;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
-import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMConfiguration;
 
 /**
  * <strong>DOM Level 3 WD Experimental:
@@ -185,57 +185,94 @@ import org.apache.xerces.dom3.DOMErrorHandler;
 and Save Specification</a>.
  */
 public interface DOMBuilder {
-    /**
-     * If a <code>DOMEntityResolver</code> has been specified, each time a 
-     * reference to an external entity is encountered the 
-     * <code>DOMBuilder</code> will pass the public and system IDs to the 
-     * entity resolver, which can then specify the actual source of the 
-     * entity.
-     * <br> If this attribute is <code>null</code>, the resolution of entities 
-     * in the document is implementation dependent. 
+    
+        /**
+     *  The configuration used when a document is loaded. The values of 
+     * parameters used to load a document are not passed automatically to 
+     * the <code>DOMConfiguration</code> object used by the 
+     * <code>Document</code> nodes. The DOM application is responsible for 
+     * passing the parameters values from the <code>DOMConfiguration</code> 
+     * object referenced from <code>DOMBuilder</code> to the 
+     * <code>DOMConfiguration</code> object referenced from 
+     * <code>Document</code>. 
+     * <br> In addition to the boolean parameters and parameters recognized in 
+     * the Core module, the <code>DOMConfiguration</code> objects for 
+     * <code>DOMBuider</code> adds the following boolean parameters: 
+     * <dl>
+     * <dt>
+     * <code>"entity-resolver"</code></dt>
+     * <dd>[required] A 
+     * <code>DOMEntityResolver</code> object. If this parameter has been 
+     * specified, each time a reference to an external entity is encountered 
+     * the implementation will pass the public and system IDs to the entity 
+     * resolver, which can then specify the actual source of the entity.  If 
+     * this parameter is not set, the resolution of entities in the document 
+     * is implementation dependent.  When the features "LS-Load" or 
+     * "LS-Save" are supported, this parameter may also be supported by the 
+     * <code>DOMConfiguration</code> object referenced from the 
+     * <code>Document</code> node. </dd>
+     * <dt><code>"certified"</code></dt>
+     * <dd>
+     * <dl>
+     * <dt><code>true</code></dt>
+     * <dd>[
+     * optional] Assume, when XML 1.1 is supported, that the input is 
+     * certified (see section 2.13 in [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]). </dd>
+     * <dt><code>false</code></dt>
+     * <dd>[required] (
+     * default) Don't assume that the input is certified (see section 2.13 
+     * in [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>]). </dd>
+     * </dl></dd>
+     * <dt><code>"charset-overrides-xml-encoding"</code></dt>
+     * <dd>
+     * <dl>
+     * <dt><code>true</code></dt>
+     * <dd>[
+     * required] (default) If a higher level protocol such as HTTP [<a href='http://www.ietf.org/rfc/rfc2616.txt'>IETF RFC 2616</a>] provides 
+     * an indication of the character encoding of the input stream being 
+     * processed, that will override any encoding specified in the XML 
+     * declaration or the Text declaration (see also [<a href='http://www.w3.org/TR/2000/REC-xml-20001006'>XML 1.0</a>] 4.3.3 "Character 
+     * Encoding in Entities"). Explicitly setting an encoding in the 
+     * <code>DOMInputSource</code> overrides encodings from the protocol. </dd>
+     * <dt>
+     * <code>false</code></dt>
+     * <dd>[required] Any character set encoding information 
+     * from higher level protocols is ignored by the parser. </dd>
+     * </dl></dd>
+     * <dt>
+     * <code>"supported-mediatypes-only"</code></dt>
+     * <dd>
+     * <dl>
+     * <dt><code>true</code></dt>
+     * <dd>[optional] 
+     * Check that the media type of the parsed resource is a supported media 
+     * type and call the error handler if an unsupported media type is 
+     * encountered. The media types defined in [<a href='http://www.ietf.org/rfc/rfc3023.txt'>IETF RFC 3023</a>] must be accepted. </dd>
+     * <dt>
+     * <code>false</code></dt>
+     * <dd>[required] (default) Don't check the media type, 
+     * accept any type of data. </dd>
+     * </dl></dd>
+     * <dt><code>"unknown-characters"</code></dt>
+     * <dd>
+     * <dl>
+     * <dt>
+     * <code>true</code></dt>
+     * <dd>[required] (default) If, while verifying full 
+     * normalization when [<a href='http://www.w3.org/TR/2002/CR-xml11-20021015/'>XML 1.1</a>] is supported, a processor encounters characters 
+     * for which it cannot determine the normalization properties, then the 
+     * processor will ignore any possible denormalizations caused by these 
+     * characters. </dd>
+     * <dt><code>false</code></dt>
+     * <dd>[optional] Report an fatal error if a 
+     * character is encountered for which the processor can not determine 
+     * the normalization properties. </dd>
+     * </dl></dd>
+     * </dl>
      */
-    public DOMEntityResolver getEntityResolver();
-    /**
-     * If a <code>DOMEntityResolver</code> has been specified, each time a 
-     * reference to an external entity is encountered the 
-     * <code>DOMBuilder</code> will pass the public and system IDs to the 
-     * entity resolver, which can then specify the actual source of the 
-     * entity.
-     * <br> If this attribute is <code>null</code>, the resolution of entities 
-     * in the document is implementation dependent. 
-     */
-    public void setEntityResolver(DOMEntityResolver entityResolver);
 
-    /**
-     *  In the event that an error is encountered in the XML document being 
-     * parsed, the <code>DOMDocumentBuilder</code> will call back to the 
-     * <code>errorHandler</code> with the error information. When the 
-     * document loading process calls the error handler the node closest to 
-     * where the error occured is passed to the error handler, if the 
-     * implementation is unable to pass the node where the error occures the 
-     * document Node is passed to the error handler. In addition to passing 
-     * the Node closest to to where the error occured, the implementation 
-     * should also pass any other valuable information to the error handler, 
-     * such as file name, line number, and so on. Mutations to the document 
-     * from within an error handler will result in implementation dependent 
-     * behaviour. 
-     */
-    public DOMErrorHandler getErrorHandler();
-    /**
-     *  In the event that an error is encountered in the XML document being 
-     * parsed, the <code>DOMDocumentBuilder</code> will call back to the 
-     * <code>errorHandler</code> with the error information. When the 
-     * document loading process calls the error handler the node closest to 
-     * where the error occured is passed to the error handler, if the 
-     * implementation is unable to pass the node where the error occures the 
-     * document Node is passed to the error handler. In addition to passing 
-     * the Node closest to to where the error occured, the implementation 
-     * should also pass any other valuable information to the error handler, 
-     * such as file name, line number, and so on. Mutations to the document 
-     * from within an error handler will result in implementation dependent 
-     * behaviour. 
-     */
-    public void setErrorHandler(DOMErrorHandler errorHandler);
+    public DOMConfiguration getConfig();
+    
 
     /**
      *  When the application provides a filter, the parser will call out to 
@@ -258,51 +295,6 @@ public interface DOMBuilder {
      */
     public void setFilter(DOMBuilderFilter filter);
 
-    /**
-     * Set the state of a feature.
-     * <br>The feature name has the same form as a DOM hasFeature string.
-     * <br>It is possible for a <code>DOMBuilder</code> to recognize a feature 
-     * name but to be unable to set its value.
-     * @param name The feature name.
-     * @param state The requested state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @exception DOMException
-     *   NOT_SUPPORTED_ERR: Raised when the <code>DOMBuilder</code> recognizes 
-     *   the feature name but cannot set the requested value. 
-     *   <br>NOT_FOUND_ERR: Raised when the <code>DOMBuilder</code> does not 
-     *   recognize the feature name.
-     */
-    public void setFeature(String name, 
-                           boolean state)
-                           throws DOMException;
-
-    /**
-     * Query whether setting a feature to a specific value is supported.
-     * <br>The feature name has the same form as a DOM hasFeature string.
-     * @param name The feature name, which is a DOM has-feature style string.
-     * @param state The requested state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @return <code>true</code> if the feature could be successfully set to 
-     *   the specified value, or <code>false</code> if the feature is not 
-     *   recognized or the requested value is not supported. The value of 
-     *   the feature itself is not changed.
-     */
-    public boolean canSetFeature(String name, 
-                                 boolean state);
-
-    /**
-     * Look up the value of a feature.
-     * <br>The feature name has the same form as a DOM hasFeature string
-     * @param name The feature name, which is a string with DOM has-feature 
-     *   syntax.
-     * @return The current state of the feature (<code>true</code> or 
-     *   <code>false</code>).
-     * @exception DOMException
-     *   NOT_FOUND_ERR: Raised when the <code>DOMBuilder</code> does not 
-     *   recognize the feature name.
-     */
-    public boolean getFeature(String name)
-                              throws DOMException;
 
     /**
      *  Parse an XML document from a location identified by a URI reference . 
