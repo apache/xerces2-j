@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
@@ -352,7 +352,7 @@
 
     <fix>
         <note>Fixed external-schemaLocation and external-noNamespaceSchemalocation 
-        	properties related bug (# 5768)        
+                properties related bug (# 5768)        
         </note>
         <submitter name="Gopal Sharma"/>
     </fix>
@@ -372,7 +372,7 @@
     
     <fix>
         <note>Fixed the bug in which duplicate attribute definitions were not ignored
-	  and error was reported for ID datatype and Notation.
+          and error was reported for ID datatype and Notation.
         </note>
         <submitter name="Neeraj Bajaj"/>
     </fix>
