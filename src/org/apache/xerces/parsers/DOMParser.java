@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -86,7 +86,6 @@ import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.dom.ElementImpl;
 import org.apache.xerces.dom.EntityImpl;
-import org.apache.xerces.dom.EntityReferenceImpl;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -108,7 +107,7 @@ import org.xml.sax.SAXNotSupportedException;
 /**
  * DOMParser provides a parser which produces a W3C DOM tree as its output
  *
- * 
+ *
  * @version $Id$
  */
 public class DOMParser
@@ -168,12 +167,12 @@ public class DOMParser
     protected int                  fDocumentIndex;
     protected int                  fDocumentTypeIndex;
     protected int                  fCurrentNodeIndex;
-    
+
     //DOM Level 3 WD - experimental
-    
+
     protected int                  fCurrentEntityName; //name of current entity reference
     protected int                  fCurrentEntityNode; //index of entity node corresponding to current entity reference
-    
+
     // full expansion data
 
     protected DocumentImpl fDocumentImpl;
@@ -354,10 +353,10 @@ public class DOMParser
         fDocumentIndex = -1;
         fDocumentTypeIndex = -1;
         fCurrentNodeIndex = -1;
-        
+
         //DOM Level 3 WD - experimental
-        fCurrentEntityNode = -1;  
-        fCurrentEntityName = -1; 
+        fCurrentEntityNode = -1;
+        fCurrentEntityName = -1;
 
         // init full expansion
         fDocumentImpl = null;
@@ -392,7 +391,7 @@ public class DOMParser
      * @see #getDeferNodeExpansion
      * @see #setDocumentClassName
      */
-    protected void setDeferNodeExpansion(boolean deferNodeExpansion) 
+    protected void setDeferNodeExpansion(boolean deferNodeExpansion)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         fDeferNodeExpansion = deferNodeExpansion;
     }
@@ -403,7 +402,7 @@ public class DOMParser
      *
      * @see #setDeferNodeExpansion
      */
-    protected boolean getDeferNodeExpansion() 
+    protected boolean getDeferNodeExpansion()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDeferNodeExpansion;
     }
@@ -423,7 +422,7 @@ public class DOMParser
      *
      * @see #getCreateEntityReferenceNodes
      */
-    protected void setCreateEntityReferenceNodes(boolean create) 
+    protected void setCreateEntityReferenceNodes(boolean create)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         fCreateEntityReferenceNodes = create;
     }
@@ -434,7 +433,7 @@ public class DOMParser
      *
      * @see #setCreateEntityReferenceNodes
      */
-    public boolean getCreateEntityReferenceNodes() 
+    public boolean getCreateEntityReferenceNodes()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fCreateEntityReferenceNodes;
     }
@@ -458,7 +457,7 @@ public class DOMParser
      *
      * @see #getIncludeIgnorableWhitespace
      */
-    public void setIncludeIgnorableWhitespace(boolean include) 
+    public void setIncludeIgnorableWhitespace(boolean include)
         throws SAXNotRecognizedException, SAXNotSupportedException {
         fIncludeIgnorableWhitespace = include;
     }
@@ -469,11 +468,11 @@ public class DOMParser
      *
      * @see #setIncludeIgnorableWhitespace
      */
-    public boolean getIncludeIgnorableWhitespace() 
+    public boolean getIncludeIgnorableWhitespace()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fIncludeIgnorableWhitespace;
     }
-    
+
     // properties
 
     /**
@@ -491,7 +490,7 @@ public class DOMParser
      * @see #setDeferNodeExpansion
      * @see #DEFAULT_DOCUMENT_CLASS_NAME
      */
-    protected void setDocumentClassName(String documentClassName) 
+    protected void setDocumentClassName(String documentClassName)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         // normalize class name
@@ -525,7 +524,7 @@ public class DOMParser
      *
      * @see #setDocumentClassName
      */
-    protected String getDocumentClassName() 
+    protected String getDocumentClassName()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDocumentClassName;
     }
@@ -537,7 +536,7 @@ public class DOMParser
      *       property is set to true and the document factory is set to
      *       the default factory.
      */
-    protected Element getCurrentElementNode() 
+    protected Element getCurrentElementNode()
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         if (fCurrentElementNode != null &&
@@ -635,7 +634,7 @@ public class DOMParser
                 setIncludeIgnorableWhitespace(state);
                 return;
             }
-            
+
             //
             // Experimental features
             //
@@ -675,7 +674,7 @@ public class DOMParser
      * @exception SAXNotRecognizedException If the requested feature is
      *                                      not known.
      */
-    public boolean getFeature(String featureId) 
+    public boolean getFeature(String featureId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
@@ -836,7 +835,7 @@ public class DOMParser
      *
      * @see Configurable#getProperty
      */
-    public Object getProperty(String propertyId) 
+    public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         //
@@ -964,7 +963,7 @@ public class DOMParser
         // set DOM error checking back on
         if (fDocumentImpl != null) {
             fDocumentImpl.setErrorChecking(true);
-        
+
             if (fDocumentType!=null) {
                 // set entities and notations read_only per DOM spec
                 ((DocumentTypeImpl)fDocumentType).setReadOnly(true, false);
@@ -980,7 +979,7 @@ public class DOMParser
              fDocumentImpl.setEncoding(fStringPool.toString(encodingIndex));
              fDocumentImpl.setStandalone(standalone);
          }
-         else if (fDeferredDocumentImpl != null) {              
+         else if (fDeferredDocumentImpl != null) {
              fDeferredDocumentImpl.setVersion(fStringPool.toString(versionIndex));
              fDeferredDocumentImpl.setEncoding(fStringPool.toString(encodingIndex));
              fDeferredDocumentImpl.setStandalone(standalone);
@@ -988,13 +987,13 @@ public class DOMParser
          else{
           //non xerces implementation
          }
-         
-         
+
+
     }
 
-    /** Text declaration. 
+    /** Text declaration.
      * added DOM Level 3 WD support - experimental
-    */    
+    */
     public void textDecl(int versionIndex, int encodingIndex) throws Exception {
         if (fDeferredDocumentImpl != null)   {
             String name = fStringPool.toString(fCurrentEntityName);
@@ -1004,17 +1003,17 @@ public class DOMParser
                 int entityDecl = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
                 while (entityDecl != -1) {
                     if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
-                    && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) { 
+                    && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) {
                         break;
                     }
                     entityDecl = fDeferredDocumentImpl.getPrevSibling(entityDecl, false);
                 }
                 fCurrentEntityNode = entityDecl;
                 fDeferredDocumentImpl.setEntityInfo(entityDecl, versionIndex, encodingIndex);
-            }    
+            }
         }
        // full node expansion
-       else if (fDocumentImpl !=null){ 
+       else if (fDocumentImpl !=null){
             NamedNodeMap entities = fDocumentType.getEntities();
             if (entities!=null) {
                 EntityImpl entityNode = (EntityImpl)entities.getNamedItem(fCurrentElementNode.getNodeName());
@@ -1034,8 +1033,8 @@ public class DOMParser
 
     /** Report the end of the scope of a namespace declaration. */
     public void endNamespaceDeclScope(int prefix) throws Exception {}
-    
-    
+
+
 
     /** Start element. */
     public void startElement(QName elementQName,
@@ -1358,10 +1357,10 @@ public class DOMParser
     } // comment(int)
 
     // Callers who know they're interacting with this parser should use
-    // characters(int); callers who don't know which parser they 
+    // characters(int); callers who don't know which parser they
     // are interacting with, or who can't be sure of sharing
     // the same stringPool, should use this method.
-    public void characters(char ch[], int start, int length) throws Exception { 
+    public void characters(char ch[], int start, int length) throws Exception {
         characters(fStringPool.addSymbol(new String(ch, start, length)));
     } // characters(char[], int, int)
 
@@ -1389,13 +1388,13 @@ public class DOMParser
     /** Start entity reference. */
     public void startEntityReference(int entityName, int entityType,
                                      int entityContext) throws Exception {
-        
+
         fCurrentEntityName = entityName;
         // are we ignoring entity reference nodes?
         if (!fCreateEntityReferenceNodes) {
             return;
         }
-        
+
 
         // ignore built-in entities
         if (entityName == fAmpIndex ||
@@ -1405,21 +1404,21 @@ public class DOMParser
             entityName == fQuotIndex) {
             return;
         }
-         
+
         // we only support one context for entity references right now...
         if (entityContext != XMLEntityHandler.ENTITYREF_IN_CONTENT) {
             return;
         }
-        
+
         // deferred node expansion
-        
+
         if (fDeferredDocumentImpl != null) {
-            
+
             int entityRefIndex = fDeferredDocumentImpl.createEntityReference(entityName);
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, entityRefIndex);
-            
+
             fCurrentNodeIndex = entityRefIndex;
-            
+
         }
 
         // full node expansion
@@ -1469,7 +1468,7 @@ public class DOMParser
 
             erChild = fDeferredDocumentImpl.getLastChild(erChild, false); // first Child of EntityReference
             if (fDocumentTypeIndex != -1) {
-                // if we have seen <?xml..> decl then Entity decl was found and 
+                // if we have seen <?xml..> decl then Entity decl was found and
                 // set in textDecl() using fCurrentEntityNode
                 if (fCurrentEntityNode  == -1) {
                     // find Entity decl for this EntityReference.
@@ -1495,7 +1494,7 @@ public class DOMParser
                 }
                  // done with current entity reference.
                  // reset values
-                 fCurrentEntityNode  = -1; 
+                 fCurrentEntityNode  = -1;
                  fCurrentEntityName = -1;
             }
 
@@ -1509,8 +1508,6 @@ public class DOMParser
 
             // if necessary populate the related entity now
             if (fDocumentImpl != null) {
-                EntityReferenceImpl xer = (EntityReferenceImpl) erNode;
-
                 NamedNodeMap entities = fDocumentType.getEntities();
                 String name = fStringPool.toString(entityName);
                 Node entityNode = entities.getNamedItem(name);
@@ -1605,15 +1602,15 @@ public class DOMParser
         }
 
     } // startDTD(int,int,int)
-    
+
     /**
      * Supports DOM Level 2 internalSubset additions.
      * Called when the internal subset is completely scanned.
      */
     public  void internalSubset(int internalSubset) {
-        
+
         //System.out.println("internalSubset callback:"+fStringPool.toString(internalSubset));
-        
+
         // full expansion
         if (fDocumentImpl != null && fDocumentType != null) {
             ((DocumentTypeImpl)fDocumentType).setInternalSubset(fStringPool.toString(internalSubset));
@@ -1623,9 +1620,9 @@ public class DOMParser
         else if (fDeferredDocumentImpl != null) {
             fDeferredDocumentImpl.setInternalSubset(fDocumentTypeIndex, internalSubset);
         }
-        
+
     }
-    
+
 
     /**
      *  This function will be called at the end of the DTD.
@@ -1648,8 +1645,8 @@ public class DOMParser
     /**
      * &lt;!ELEMENT Name contentspec&gt;
      */
-    public void elementDecl(QName elementDecl, 
-                            int contentSpecType, 
+    public void elementDecl(QName elementDecl,
+                            int contentSpecType,
                             int contentSpecIndex,
                             XMLContentSpec.Provider contentSpecProvider) throws Exception {
 
@@ -1927,7 +1924,7 @@ public class DOMParser
     /**
      * &lt;!ATTLIST Name AttDef&gt;
      */
-    public void attlistDecl(QName elementDecl, QName attributeDecl, 
+    public void attlistDecl(QName elementDecl, QName attributeDecl,
                             int attType, boolean attList, String enumString,
                             int attDefaultType, int attDefaultValue)
         throws Exception {
@@ -2070,7 +2067,7 @@ public class DOMParser
                                 typeNameIndex = fStringPool.addString("NOTATION");
                                 break;
                             }
-                            case XMLAttributeDecl.TYPE_CDATA: 
+                            case XMLAttributeDecl.TYPE_CDATA:
                             default: {
                                 typeNameIndex = fStringPool.addString("string");
                                 break;
@@ -2247,7 +2244,7 @@ public class DOMParser
                                 typeName = "NOTATION";
                                 break;
                             }
-                            case XMLAttributeDecl.TYPE_CDATA: 
+                            case XMLAttributeDecl.TYPE_CDATA:
                             default: {
                                 typeName = "string";
                                 break;
@@ -2990,7 +2987,7 @@ public class DOMParser
     } // setOccurrenceCount(Element,int,int)
 
     /** Creates the children for the element decl. */
-    private Element createChildren(XMLContentSpec.Provider provider, 
+    private Element createChildren(XMLContentSpec.Provider provider,
                                    int index, XMLContentSpec node,
                                    DocumentImpl factory,
                                    Element parent) throws Exception {
@@ -3027,11 +3024,11 @@ public class DOMParser
                 // go down left side
                 int leftIndex  = node.value;
                 int rightIndex = node.otherValue;
-                Element left = createChildren(provider, leftIndex, node, 
+                Element left = createChildren(provider, leftIndex, node,
                                               factory, parent);
 
                 // go down right side
-                Element right = createChildren(provider, rightIndex, node, 
+                Element right = createChildren(provider, rightIndex, node,
                                                factory, null);
 
                 // append left children
@@ -3106,7 +3103,7 @@ public class DOMParser
     } // createChildren(XMLContentSpec.Provider,int,XMLContentSpec,DocumentImpl,Element):Element
 
     /** Creates the children for the deferred element decl. */
-    private int createChildren(XMLContentSpec.Provider provider, 
+    private int createChildren(XMLContentSpec.Provider provider,
                                int index, XMLContentSpec node,
                                DeferredDocumentImpl factory,
                                int parent) throws Exception {
@@ -3143,11 +3140,11 @@ public class DOMParser
                 // go down left side
                 int leftIndex  = node.value;
                 int rightIndex = node.otherValue;
-                int left = createChildren(provider, leftIndex, node, 
+                int left = createChildren(provider, leftIndex, node,
                                           factory, parent);
 
                 // go down right side
-                int right = createChildren(provider, rightIndex, node, 
+                int right = createChildren(provider, rightIndex, node,
                                            factory, -1);
 
                 // append left children
