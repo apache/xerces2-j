@@ -1066,25 +1066,43 @@ public class DocumentImpl
     } // importNode(Node,boolean,Hashtable):Node
 
     /**
-     * NON-DOM:
+     * DOM Level 3 Prototype:
      * Change the node's ownerDocument, and its subtree, to this Document
      *
-     * @param source The node to move in to this document.
+     * @param source The node to adopt.
      * @exception NOT_SUPPORTED_ERR DOMException, raised if the implementation
      * cannot handle the request, such as when the source node comes from a
      * different DOMImplementation
      * @see DocumentImpl.importNode
      **/
     public void adoptNode(Node source) {
-	if (!(source instanceof NodeImpl)) {
+        NodeImpl node;
+        try {
+            node = (NodeImpl) source;
+        } catch (ClassCastException e) {
 	    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-		      "cannot move a node in from another DOM implementation");
-	}
-	Node parent = source.getParentNode();
-	if (parent != null) {
-	    parent.removeChild(source);
-	}
-	((NodeImpl)source).setOwnerDocument(this);
+		      "cannot adopt a node from another DOM implementation.");
+        }
+        switch (node.getNodeType()) {
+            case ATTRIBUTE_NODE: {
+                AttrImpl attr = (AttrImpl) node;
+                attr.getOwnerElement().removeAttributeNode(attr);
+                attr.isSpecified(true);
+                break;
+            }
+            case DOCUMENT_NODE:
+            case DOCUMENT_TYPE_NODE: {
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                                       "cannot adopt this type of node.");
+            }
+            default: {
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent.removeChild(source);
+                }
+            }
+        }
+	node.setOwnerDocument(this);
     }
 
     // identifier maintenence
