@@ -230,7 +230,9 @@ public class Selector {
             fElementDepth++;
 
             // activate the fields, if selector is matched
-            if (fMatchedDepth == -1 && isMatched()) {
+            int matched = isMatched();
+            if ((fMatchedDepth == -1 && ((matched & MATCHED) == MATCHED)) ||
+                    ((matched & MATCHED_DESCENDANT) == MATCHED_DESCENDANT)) {
                 fMatchedDepth = fElementDepth;
                 fFieldActivator.startValueScopeFor(fIdentityConstraint);
                 int count = fIdentityConstraint.getFieldCount();

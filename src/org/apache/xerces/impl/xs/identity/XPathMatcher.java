@@ -195,13 +195,16 @@ public class XPathMatcher {
     // Public methods
     //
 
-    /** Returns true if XPath has been matched. */
-    public boolean isMatched() {
+    /** 
+     * Returns value of first member of fMatched that
+     * is nonzero.  
+     */
+    public int isMatched() {
         // xpath has been matched if any one of the members of the union have matched.
         for (int i=0; i < fLocationPaths.length; i++)
-            if ((fMatched[i] & MATCHED) == MATCHED) return true;
-        return false;
-    } // isMatched():boolean
+            if ((fMatched[i] & MATCHED) == MATCHED) return fMatched[i];
+        return 0;
+    } // isMatched():int
 
     // returns whether this XPathMatcher was matching a Selector
     public boolean getIsSelector() {
@@ -318,7 +321,7 @@ public class XPathMatcher {
             fStepIndexes[i].push(startStep);
 
             // try next xpath, if not matching
-            if ((fMatched[i] & MATCHED) == MATCHED || fNoMatchDepth[i] > 0) {
+            if ((fMatched[i] & MATCHED_DESCENDANT) == MATCHED || fNoMatchDepth[i] > 0) {
                 fNoMatchDepth[i]++;
                 continue;
             }
@@ -397,6 +400,7 @@ public class XPathMatcher {
             }
             if (fCurrentStep[i] == steps.length) {
                 if(sawDescendant) {
+                    fCurrentStep[i] = descendantStep;
                     fMatched[i] = MATCHED_DESCENDANT;
                 } else {
                     fMatched[i] = MATCHED;
