@@ -108,35 +108,44 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                                       boolean derivedByList ) throws InvalidDatatypeFacetException {
         setBasetype( base ); // Set base type 
 
+
         if ( facets != null ) {   // Set Facet
             if ( derivedByList == false ) { // Derivation by Constraint 
+                Vector enumeration = null;
+                String value       = null;
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key   = (String) e.nextElement();
-                    String value = ((String) facets.get(key ));
                     try {
                         if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                             fPattern        = value;
                         } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                             fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
-                            continue; //Treat the enumaration after this for loop
+                            enumeration     = (Vector)facets.get(key);
                         } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
                             fMaxInclusive    = new BigDecimal(value);
                         } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
                             fMaxExclusive   = new BigDecimal(value);
                         } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
                             fMinInclusive   = new BigDecimal(value);
                         } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
                             fMinExclusive   = new BigDecimal(value);
                         } else if (key.equals(SchemaSymbols.ELT_PRECISION)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_PRECISSION;
                             isPrecisionDefined = true;
                             fPrecision      = Integer.parseInt(value );
                         } else if (key.equals(SchemaSymbols.ELT_SCALE)) {
+                            value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_SCALE;
                             isScaleDefined  = true;
                             fScale          = Integer.parseInt( value );
@@ -171,18 +180,17 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                 }
 
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
-                    Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
-                    if (v != null) {
-                        fEnumDecimal = new BigDecimal[v.size()];
-                        for (int i = 0; i < v.size(); i++)
+                    if (enumeration != null) {
+                        fEnumDecimal = new BigDecimal[enumeration.size()];
+                        for (int i = 0; i < enumeration.size(); i++)
                             try {
-                                fEnumDecimal[i] = new BigDecimal( ((String) v.elementAt(i)));
+                                fEnumDecimal[i] = new BigDecimal( ((String) enumeration.elementAt(i)));
                                 boundsCheck(fEnumDecimal[i]); // Check against max,min Inclusive, Exclusives
                             } catch (InvalidDatatypeValueException idve) {
                                 throw new InvalidDatatypeFacetException(
                                                                        getErrorString(DatatypeMessageProvider.InvalidEnumValue,
                                                                                       DatatypeMessageProvider.MSG_NONE,
-                                                                                      new Object [] { v.elementAt(i)}));
+                                                                                      new Object [] { enumeration.elementAt(i)}));
                             } catch (NumberFormatException nfe) {
                                 throw new InvalidDatatypeFacetException(
                                                                        "Internal Error parsing enumerated values for Decimal type");
@@ -192,6 +200,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             } else { // Derivation by List
             }
         }//End of Facet setup
+
     }
 
 
@@ -239,10 +248,11 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             boundsCheck(d);
             if (  fEnumDecimal != null )
                  enumCheck(d);
+
+
         } else { //derivation by list
 
         }
-
     return null;
     }
 
@@ -271,16 +281,22 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                    getErrorString(DatatypeMessageProvider.OutOfBounds,
                    DatatypeMessageProvider.MSG_NONE,
                                            new Object [] { d}));
+
     }
 
     private void enumCheck(BigDecimal v) throws InvalidDatatypeValueException {
         for (int i = 0; i < fEnumDecimal.length; i++) {
-            if (v == fEnumDecimal[i]) return;
+            if (v.equals(fEnumDecimal[i] ))
+            {
+                return;
+            }
+
         }
         throw new InvalidDatatypeValueException(
                     getErrorString(DatatypeMessageProvider.NotAnEnumValue,
                     DatatypeMessageProvider.MSG_NONE,
                                            new Object [] { v}));
+
     }
 
     /**

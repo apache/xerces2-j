@@ -71,6 +71,7 @@ import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
  */
 
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
+    private static boolean fDebug = false;
     private static DatatypeValidatorFactoryImpl _instance = new DatatypeValidatorFactoryImpl();
     private Hashtable fRegistry = new Hashtable();
 
@@ -106,175 +107,145 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
             Hashtable facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
-            addValidator("language", 
-                         createDatatypeValidator("language", new StringDatatypeValidator() , facets,
-                                                 false ));
+            
+            createDatatypeValidator("language", new StringDatatypeValidator() , facets,
+                                                 false );
 
-            addValidator("IDREFS",
-                         createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true ));
+            createDatatypeValidator( "IDREFS", new IDREFDatatypeValidator(), null , true );
 
-            addValidator("ENTITIES", 
-                         createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true ));
+            createDatatypeValidator( "ENTITIES", new ENTITYDatatypeValidator(),  null, true );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
-            addValidator("NMTOKEN", 
-                         createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false ));
+            createDatatypeValidator("NMTOKEN", new StringDatatypeValidator(), facets, false );
 
-            addValidator("NMTOKENS", 
-                         createDatatypeValidator("NMTOKENS",  
-                                                 getDatatypeValidator( "NMTOKEN" ), null, true ));
+            createDatatypeValidator("NMTOKENS",  
+                                                 getDatatypeValidator( "NMTOKEN" ), null, true );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_PATTERN , "\\i\\c*" );
-            addValidator("Name", 
-                         createDatatypeValidator("Name", new StringDatatypeValidator(), facets, false ));
+            createDatatypeValidator("Name", new StringDatatypeValidator(), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
-            addValidator("NCName", 
-                         createDatatypeValidator("NCName", new StringDatatypeValidator(), facets, false ));
+            createDatatypeValidator("NCName", new StringDatatypeValidator(), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_SCALE, "0");
-            addValidator("integer", 
-                         createDatatypeValidator("integer", new DecimalDatatypeValidator(), facets, false));
+            createDatatypeValidator("integer", new DecimalDatatypeValidator(), facets, false);
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "0" );
-            addValidator("nonPositiveInteger", 
-                         createDatatypeValidator("nonPositiveInteger", 
-                                                 getDatatypeValidator("integer"), facets, false ));
+            createDatatypeValidator("nonPositiveInteger", 
+                                                 getDatatypeValidator("integer"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "-1" );
-            addValidator("negativeInteger", 
-                         createDatatypeValidator("negativeInteger", 
-                                                 getDatatypeValidator( "nonPositiveInteger"), facets, false ));
+            createDatatypeValidator("negativeInteger", 
+                                                 getDatatypeValidator( "nonPositiveInteger"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "9223372036854775807");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-9223372036854775808");
-            addValidator("long", 
-                         createDatatypeValidator("long",
-                                                 getDatatypeValidator( "integer"), facets, false ));
+            createDatatypeValidator("long", getDatatypeValidator( "integer"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "2147483647");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-2147483648");
-            addValidator("int", 
-                         createDatatypeValidator("int", 
-                                                 getDatatypeValidator( "long"), facets,false ));
+            createDatatypeValidator("int", getDatatypeValidator( "long"), facets,false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "32767");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-32768");
-            addValidator("short", 
-                         createDatatypeValidator("short", 
-                                                 getDatatypeValidator( "int"), facets, false ));
+            createDatatypeValidator("short", getDatatypeValidator( "int"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE , "127");
             facets.put(SchemaSymbols.ELT_MININCLUSIVE,  "-128");
-            addValidator("byte",  
-                         createDatatypeValidator("byte",
-                                                 getDatatypeValidator( "short"), facets, false ));
+            createDatatypeValidator("byte",
+                                        getDatatypeValidator( "short"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MININCLUSIVE, "0" );
-            addValidator("nonNegativeInteger", 
-                         createDatatypeValidator("nonNegativeInteger", 
-                                                 getDatatypeValidator( "integer"), facets, false ));
+            createDatatypeValidator("nonNegativeInteger", 
+                                          getDatatypeValidator( "integer"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "18446744073709551615" );
-            addValidator("unsignedLong", 
-                         createDatatypeValidator("unsignedLong",
-                                                 getDatatypeValidator( "nonNegativeInteger"), facets, false ));
+            createDatatypeValidator("unsignedLong",
+                                                 getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "4294967295" );
-            addValidator("unsignedInt", 
-                         createDatatypeValidator("unsignedInt",
-                                                 getDatatypeValidator( "unsignedLong"), facets, false ));
+            createDatatypeValidator("unsignedInt",
+                                                 getDatatypeValidator( "unsignedLong"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "65535" );
-            addValidator("unsignedShort", 
-                         createDatatypeValidator("unsignedShort", 
-                                                 getDatatypeValidator( "unsignedInt"), facets, false ));
+            createDatatypeValidator("unsignedShort", 
+                                                 getDatatypeValidator( "unsignedInt"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
-            addValidator("unsignedByte", 
-                         createDatatypeValidator("unsignedByte",
-                                                 getDatatypeValidator( "unsignedShort"), facets, false ));
+            createDatatypeValidator("unsignedByte",
+                                                 getDatatypeValidator( "unsignedShort"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_MAXINCLUSIVE, "255" );
-            addValidator("positiveInteger", 
-                         createDatatypeValidator("positiveInteger",
-                                                 getDatatypeValidator( "nonNegativeInteger"), facets, false ));
+            createDatatypeValidator("positiveInteger",
+                                                 getDatatypeValidator( "nonNegativeInteger"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "P0Y" );
             facets.put(SchemaSymbols.ELT_PERIOD,   "P0Y" );
-            addValidator("timeInstant", 
-                         createDatatypeValidator("timeInstant", 
-                                                 getDatatypeValidator( "recurringDuration"),facets, false ));
+            createDatatypeValidator("timeInstant", 
+                                                 getDatatypeValidator( "recurringDuration"),facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "P0Y" );
             facets.put(SchemaSymbols.ELT_PERIOD,   "PY24H" );
-            addValidator("time", 
-                         createDatatypeValidator("time", 
-                                                 getDatatypeValidator( "recurringDuration"), facets, false ));
+            createDatatypeValidator("time", 
+                                                 getDatatypeValidator( "recurringDuration"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_PERIOD,   "P0Y" );
-            addValidator("timePeriod", 
-                         createDatatypeValidator("timePeriod", 
-                                                 getDatatypeValidator( "recurringDuration"), facets, false ));
+            createDatatypeValidator("timePeriod", 
+                                                 getDatatypeValidator( "recurringDuration"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "PT24H" );
-            addValidator("date", 
-                         createDatatypeValidator("date",
-                                                 getDatatypeValidator( "timePeriod"), facets, false ));
+            createDatatypeValidator("date",
+                                                 getDatatypeValidator( "timePeriod"), facets, false );
 
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "P1M" );
-            addValidator("month", 
-                         createDatatypeValidator("month",
-                                                 getDatatypeValidator( "timePeriod"), facets, false ));
+            createDatatypeValidator("month",
+                                                 getDatatypeValidator( "timePeriod"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "P1Y" );
-            addValidator("year", 
-                         createDatatypeValidator("year", 
-                                                 getDatatypeValidator( "timePeriod"), facets, false ));
+            createDatatypeValidator("year", 
+                                                 getDatatypeValidator( "timePeriod"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_DURATION, "P100Y" );
-            addValidator("century", 
-                         createDatatypeValidator("century", 
-                                                 getDatatypeValidator( "timePeriod"), facets, false ));
+            createDatatypeValidator("century", 
+                                                 getDatatypeValidator( "timePeriod"), facets, false );
 
             facets = new Hashtable();
             facets.put(SchemaSymbols.ELT_PERIOD, "P1Y" );
             facets.put(SchemaSymbols.ELT_DURATION, "PT24H" );
-            addValidator("recurringDate", 
-                         createDatatypeValidator("recurringDate",
-                                                 getDatatypeValidator( "recurringDuration"),facets, false ));
+            createDatatypeValidator("recurringDate",
+                                                 getDatatypeValidator( "recurringDuration"),facets, false );
         } catch ( InvalidDatatypeFacetException ex ){
             ex.printStackTrace();
         }
@@ -308,8 +279,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
                 simpleType = 
                 ( DatatypeValidator ) createDatatypeValidator (
-                                                   validatorConstructor, validatorArgs );
-
+                                                 validatorConstructor, validatorArgs );
 
                 addValidator( typeName, simpleType );//register validator
 
@@ -330,13 +300,29 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             validator = validatorConstructor.newInstance(arguments);
             return validator;
         } catch (InstantiationException e) {
-            System.out.println(e);
+            if( fDebug == true ){
+                e.printStackTrace();
+            }else {
+                return null;
+            }
         } catch (IllegalAccessException e) {
-            System.out.println(e);
+            if( fDebug == true ){
+                e.printStackTrace();
+            }else {
+                return null;
+            }
         } catch (IllegalArgumentException e) {
-            System.out.println(e);
+            if( fDebug == true ){
+                e.printStackTrace();
+            }else {
+                return null;
+            }
         } catch (InvocationTargetException e) {
-            System.out.println(e);
+            if ( fDebug == true ){
+                e.getTargetException().printStackTrace();
+            } else {
+                return null;
+            }
         }
         return validator;
     }
