@@ -770,7 +770,7 @@ public class XMLEntityManager
                     fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding, fEntityAugs);
                     fEntityAugs.removeAllItems();
                     fEntityAugs.putItem(Constants.ENTITY_SKIPPED, Boolean.TRUE);
-                    fEntityHandler.endEntity(entityName, null);
+                    fEntityHandler.endEntity(entityName, fEntityAugs);
                 }
                 return;
             }
