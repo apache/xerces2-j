@@ -779,9 +779,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                 new Object[]{ ex.getMessage()},
                                                 XMLErrorReporter.SEVERITY_ERROR );
                 }
-            }
-
             fTableOfIDs.clear();//Clear table of IDs
+            }
             return;
         }
 
@@ -1202,7 +1201,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 for (int i=0; i<enumeration.length; i++) {
                     fNotationEnumVals.put(enumeration[i], attributeName);
                 }
-                
+
                 if (fTableOfNOTATIONAttributeNames.containsKey( elementName ) == false) {
                     fTableOfNOTATIONAttributeNames.put( elementName, attributeName);
                 } else {
@@ -1213,75 +1212,71 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
-            
+
             // VC: Attribute Default Legal
             boolean ok = true;
-            if ( defaultValue != null && 
-                 (defaultType==null || (defaultType != null && defaultType.equals("#FIXED")))  ) 
-            if ( type.equals("NMTOKENS") || type.equals("ENTITIES") || type.equals("IDREFS") ) {
-                
-                // Since the default value has been normalized, there should be any leading or trailing spaces
-                String trimmedValue = defaultValue.toString().trim();
+            if (defaultValue != null && 
+                (defaultType==null || (defaultType != null && defaultType.equals("#FIXED"))))
+                if (type.equals("NMTOKENS") || type.equals("ENTITIES") || type.equals("IDREFS")) {
 
-                if (trimmedValue.length() == 0 || ! defaultValue.equals(trimmedValue) ) {
-                    ok = false;
-                }
-                else {
-                    StringTokenizer tokenizer = new StringTokenizer(trimmedValue);
-                    if (tokenizer.hasMoreTokens()) {
-                        while (true) {
-                            String nmtoken = tokenizer.nextToken();
-                            if (type.equals("NMTOKENS")) {
-                                if (!XMLChar.isValidNmtoken(nmtoken)) {
-                                    ok = false;
+                    // Since the default value has been normalized, there should be any leading or trailing spaces
+                    String trimmedValue = defaultValue.toString().trim();
+
+                    if (trimmedValue.length() == 0 || ! defaultValue.equals(trimmedValue)) {
+                        ok = false;
+                    } else {
+                        StringTokenizer tokenizer = new StringTokenizer(trimmedValue);
+                        if (tokenizer.hasMoreTokens()) {
+                            while (true) {
+                                String nmtoken = tokenizer.nextToken();
+                                if (type.equals("NMTOKENS")) {
+                                    if (!XMLChar.isValidNmtoken(nmtoken)) {
+                                        ok = false;
+                                        break;
+                                    }
+                                } else if (type.equals("ENTITIES")||type.equals("IDREFS")) {
+                                    if (!XMLChar.isValidName(nmtoken)) {
+                                        ok = false;
+                                        break;
+                                    }
+                                }
+                                if (!tokenizer.hasMoreTokens()) {
                                     break;
                                 }
                             }
-                            else if (type.equals("ENTITIES")||type.equals("IDREFS")) {
-                                if (!XMLChar.isValidName(nmtoken)) {
-                                    ok = false;
-                                    break;
-                                }
-                            }
-                            if (!tokenizer.hasMoreTokens()) {
-                                break;
+                        }
+                    }
+
+                } else {
+                    if (type.equals("ENTITY") ||
+                        type.equals("ID") ||
+                        type.equals("IDREF") ||
+                        type.equals("NOTATION")) {
+
+
+                        if (!XMLChar.isValidName( defaultValue.toString())) {
+                            ok = false;
+                        }
+
+                    } else if (type.equals("NMTOKEN") ||
+                               type.equals("ENUMERATION")) {
+
+                        if (!XMLChar.isValidNmtoken( defaultValue.toString())) {
+                            ok = false;
+                        }
+                    }
+
+                    if (type.equals("NOTATION") ||
+                        type.equals("ENUMERATION")) {
+                        ok = false;
+                        for (int i=0; i<enumeration.length; i++) {
+                            if (defaultValue.equals(enumeration[i])) {
+                                ok = true;
                             }
                         }
                     }
-                }
-
-            }
-            else {
-                if (type.equals("ENTITY") ||
-                    type.equals("ID") ||
-                    type.equals("IDREF") ||
-                    type.equals("NOTATION") )  {
-
-
-                    if ( !XMLChar.isValidName( defaultValue.toString()) ) {
-                        ok = false;
-                    }
 
                 }
-                else if ( type.equals("NMTOKEN") ||
-                          type.equals("ENUMERATION") ) {
-
-                    if (!XMLChar.isValidNmtoken( defaultValue.toString()) ) {
-                        ok = false;
-                    }
-                }
-
-                if (type.equals("NOTATION") ||
-                    type.equals("ENUMERATION") ) {
-                    ok = false;
-                    for(int i=0; i<enumeration.length; i++) {
-                        if(defaultValue.equals(enumeration[i]) ) {
-                            ok = true;
-                        }
-                    }
-                }
-
-            } 
             if (!ok) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MSG_ATT_DEFAULT_INVALID",
@@ -1508,7 +1503,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
-            
+
             fTableOfIDAttributeNames = null;//should be safe to release these references
             fTableOfNOTATIONAttributeNames = null;
         }
@@ -1895,7 +1890,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                    args, XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
-                
+
                 if (fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENTITY ||
                     fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENUMERATION ||
                     fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ID ||
@@ -1905,7 +1900,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                    ) {
                     validateDTDattribute(element, attrValue, fTempAttDecl);
                 }
-             
+
 
             }
         }
@@ -1937,8 +1932,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
                             fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                               "MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE",
-                                new Object[]{ value, attributeDecl.name.rawname, unTrimValue },
+                                                        "MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE",
+                                                        new Object[]{ value, attributeDecl.name.rawname, unTrimValue},
                                                         XMLErrorReporter.SEVERITY_ERROR );
                         }
                     }
@@ -2495,42 +2490,40 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         //Initialize Validators
         //Datatype Registry
 
-        /* uncomment when using Registry with no Singleton
-        fDataTypeReg = new DatatypeValidatorFactoryImpl();
-        */
+        if (fValidation == true) {
+            /* uncomment when using Registry with no Singleton
+            fDataTypeReg = new DatatypeValidatorFactoryImpl();
+            */
 
-        fDataTypeReg = DatatypeValidatorFactoryImpl.getDatatypeRegistry();//To be commented or deleted  when no Singleton
+            fDataTypeReg = DatatypeValidatorFactoryImpl.getDatatypeRegistry();//To be commented or deleted  when no Singleton
+            fDataTypeReg.initializeDTDRegistry();
+
+            fValID       = (IDDatatypeValidator) fDataTypeReg.getDatatypeValidator("ID" );
+            fValIDRef    = (IDREFDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREF" );
+            fValIDRefs   = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREFS" );
+            fValENTITY   = (ENTITYDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITY" );
+            fValENTITIES = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITIES" );
+            /*
+            fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
+            fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
+            fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
+            */
 
 
-        fDataTypeReg.resetRegistry();
+            //Initialize ID, IDREF, IDREFS validators
+            if (fTableOfIDs == null) {
+                fTableOfIDs = new Hashtable();//Initialize table of IDs
+            }
+            fTableOfIDs.clear();
+            fValID.initialize(fTableOfIDs);
+            fValIDRef.initialize(fTableOfIDs);
+            fValIDRefs.initialize(fTableOfIDs);
 
-        fValID       = (IDDatatypeValidator) fDataTypeReg.getDatatypeValidator("ID" );
-        fValIDRef    = (IDREFDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREF" );
-        fValIDRefs   = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("IDREFS" );
-        fValENTITY   = (ENTITYDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITY" );
-        fValENTITIES = (ListDatatypeValidator) fDataTypeReg.getDatatypeValidator("ENTITIES" );
-        /*
-        fValNMTOKEN  = fDataTypeReg.getDatatypeValidator("NMTOKEN");
-        fValNMTOKENS = fDataTypeReg.getDatatypeValidator("NMTOKENS");
-        fValNOTATION = fDataTypeReg.getDatatypeValidator("NOTATION" );
-        */
+            if (fNotationEnumVals == null) {
+                fNotationEnumVals = new Hashtable(); 
+            }
+            fNotationEnumVals.clear();
 
-
-        //Initialize ID, IDREF, IDREFS validators
-        if (fTableOfIDs == null) {
-            fTableOfIDs = new Hashtable();//Initialize table of IDs
-        }
-        fTableOfIDs.clear();
-        fValID.initialize(fTableOfIDs);
-        fValIDRef.initialize(fTableOfIDs);
-        fValIDRefs.initialize(fTableOfIDs);
-
-        if (fNotationEnumVals == null) {
-            fNotationEnumVals = new Hashtable(); 
-        }
-        fNotationEnumVals.clear();
-
-        if (fValidation) {
             fTableOfIDAttributeNames = new Hashtable();
             fTableOfNOTATIONAttributeNames = new Hashtable();
         }
