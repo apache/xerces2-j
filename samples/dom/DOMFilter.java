@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package dom;                    
+package dom;
 
 import util.Arguments;
 
@@ -73,7 +73,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * A sample DOM filter. This sample program illustrates how to
- * use the Document#getElementsByTagName() method to quickly 
+ * use the Document#getElementsByTagName() method to quickly
  * and easily locate elements by name.
  *
  * @version $Id$
@@ -85,12 +85,13 @@ public class DOMFilter {
     //
 
     /** Default parser name. */
-    private static final String 
+    private static final String
     DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
     private static boolean setSchemaSupport = true;
+    private static boolean setSchemaFullSupport = false;
     private static boolean setDeferredDOM   = true;
 
 
@@ -100,22 +101,24 @@ public class DOMFilter {
     //
 
     /** Prints the specified elements in the given document. */
-    public static void print(String parserWrapperName, String uri, 
+    public static void print(String parserWrapperName, String uri,
                              String elementName, String attributeName) {
 
         try {
             // parse document
-            DOMParserWrapper parser = 
+            DOMParserWrapper parser =
             (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
 
             parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
                                setDeferredDOM );
-            parser.setFeature( "http://xml.org/sax/features/validation", 
+            parser.setFeature( "http://xml.org/sax/features/validation",
                                setValidation );
             parser.setFeature( "http://xml.org/sax/features/namespaces",
                                setNameSpaces );
             parser.setFeature( "http://apache.org/xml/features/validation/schema",
                                setSchemaSupport );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema-full-checking",
+                               setSchemaFullSupport );
 
 
             Document document = parser.parse(uri);
@@ -135,9 +138,9 @@ public class DOMFilter {
     // Private static methods
     //
 
-    /** 
+    /**
      * Prints the contents of the given element node list. If the given
-     * attribute name is non-null, then all of the elements are printed 
+     * attribute name is non-null, then all of the elements are printed
      * out
      */
     private static void print(NodeList elements, String attributeName) {
@@ -239,7 +242,7 @@ public class DOMFilter {
     public static void main(String argv[]) {
 
         Arguments argopt = new Arguments();
-        argopt.setUsage( new String[] 
+        argopt.setUsage( new String[]
                          { "usage: java dom.DOMFilter (options) uri ...","",
                              "options:",
                              "  -p name  Specify DOM parser wrapper by name.",
@@ -249,6 +252,7 @@ public class DOMFilter {
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=on]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -h       This help screen."} );
 
@@ -268,7 +272,7 @@ public class DOMFilter {
 
         argopt.parseArgumentTokens(argv , new char[] { 'p', 'e', 'a'} );
         int   c;
-        String arg = null; 
+        String arg = null;
         while ( ( arg =  argopt.getlistFiles() ) != null ) {
 outer:
             while ( (c =  argopt.getArguments()) != -1 ){
@@ -305,6 +309,12 @@ outer:
                     break;
                 case 'a':
                     attributeName  = argopt.getStringParameter();
+                    break;
+                case 'f':
+                    setSchemaFullSupport = true;
+                    break;
+                case 'F':
+                    setSchemaFullSupport = false;
                     break;
                 case '?':
                 case 'h':

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -86,13 +86,14 @@ public class DOMWriter {
 
 
     /** Default parser name. */
-    private static final String 
+    private static final String
     DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
     private static boolean setSchemaSupport = true;
+    private static boolean setSchemaFullSupport = false;
     private static boolean setDeferredDOM   = true;
 
 
@@ -106,19 +107,19 @@ public class DOMWriter {
     PRINTWRITER_ENCODING = "UTF8";
 
     private static String MIME2JAVA_ENCODINGS[] =
-    { "Default", "UTF-8", "US-ASCII", "ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", 
+    { "Default", "UTF-8", "US-ASCII", "ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4",
         "ISO-8859-5", "ISO-8859-6", "ISO-8859-7", "ISO-8859-8", "ISO-8859-9", "ISO-2022-JP",
-        "SHIFT_JIS", "EUC-JP","GB2312", "BIG5", "EUC-KR", "ISO-2022-KR", "KOI8-R", "EBCDIC-CP-US", 
+        "SHIFT_JIS", "EUC-JP","GB2312", "BIG5", "EUC-KR", "ISO-2022-KR", "KOI8-R", "EBCDIC-CP-US",
         "EBCDIC-CP-CA", "EBCDIC-CP-NL", "EBCDIC-CP-DK", "EBCDIC-CP-NO", "EBCDIC-CP-FI", "EBCDIC-CP-SE",
-        "EBCDIC-CP-IT", "EBCDIC-CP-ES", "EBCDIC-CP-GB", "EBCDIC-CP-FR", "EBCDIC-CP-AR1", 
-        "EBCDIC-CP-HE", "EBCDIC-CP-CH", "EBCDIC-CP-ROECE","EBCDIC-CP-YU",  
+        "EBCDIC-CP-IT", "EBCDIC-CP-ES", "EBCDIC-CP-GB", "EBCDIC-CP-FR", "EBCDIC-CP-AR1",
+        "EBCDIC-CP-HE", "EBCDIC-CP-CH", "EBCDIC-CP-ROECE","EBCDIC-CP-YU",
         "EBCDIC-CP-IS", "EBCDIC-CP-AR2", "UTF-16"
     };
 
 
 /*
-   private static String JAVA_SUPPORTED_ENCODINGS[] = 
-   { "Default", "8859_1", "8859_2", "8859_3", "8859_4", "8859_5", "8859_6", 
+   private static String JAVA_SUPPORTED_ENCODINGS[] =
+   { "Default", "8859_1", "8859_2", "8859_3", "8859_4", "8859_5", "8859_6",
       "8859_7", "8859_8", "8859_9", "Cp037", "Cp273", "Cp277", "Cp278",
       "Cp280", "Cp284", "Cp285", "Cp297", "Cp420", "Cp424", "Cp437",
       "Cp500", "Cp737", "Cp775", "Cp838", "Cp850", "Cp852", "Cp855", "Cp856",
@@ -127,12 +128,12 @@ public class DOMWriter {
       "Cp871", "Cp874", "Cp875",
       "Cp918", "Cp921", "Cp922", "Cp930", "Cp933", "Cp935", "Cp937", "Cp939",
       "Cp942", "Cp948", "Cp949",
-      "Cp950", "Cp964", "Cp970", "Cp1006", "Cp1025", "Cp1026", "Cp1046", 
+      "Cp950", "Cp964", "Cp970", "Cp1006", "Cp1025", "Cp1026", "Cp1046",
       "Cp1097", "Cp1098", "Cp1112",
       "Cp1122", "Cp1123", "Cp1124", "Cp1250", "Cp1251", "Cp1252", "Cp1253",
       "Cp1254", "Cp1255", "Cp1256",
       "Cp1257", "Cp1258", "Cp1381", "Cp1383", "Cp33722", "MS874",
-      "EUCJIS", "GB2312", 
+      "EUCJIS", "GB2312",
        "GBK", "ISO2022CN_CNS", "ISO2022CN_GB",
       "JIS",
       "JIS0208", "KOI8_R", "KSC5601","MS874",
@@ -151,7 +152,7 @@ public class DOMWriter {
     protected boolean canonical;
 
 
-    public DOMWriter(String encoding, boolean canonical)              
+    public DOMWriter(String encoding, boolean canonical)
     throws UnsupportedEncodingException {
         out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
         this.canonical = canonical;
@@ -168,7 +169,7 @@ public class DOMWriter {
 
     public static String getWriterEncoding( ) {
         return(PRINTWRITER_ENCODING);
-    }// getWriterEncoding 
+    }// getWriterEncoding
 
     public static void  setWriterEncoding( String encoding ) {
         if ( encoding.equalsIgnoreCase( "DEFAULT" ) )
@@ -176,8 +177,8 @@ public class DOMWriter {
         else if ( encoding.equalsIgnoreCase( "UTF-16" ) )
             PRINTWRITER_ENCODING  = "Unicode";
         else
-            PRINTWRITER_ENCODING = MIME2Java.convert( encoding ); 
-    }// setWriterEncoding 
+            PRINTWRITER_ENCODING = MIME2Java.convert( encoding );
+    }// setWriterEncoding
 
 
     public static boolean isValidJavaEncoding( String encoding ) {
@@ -186,25 +187,27 @@ public class DOMWriter {
                 return(true);
 
         return(false);
-    }// isValidJavaEncoding 
+    }// isValidJavaEncoding
 
 
 
     /** Prints the resulting document tree. */
-    public static void print(String parserWrapperName, String uri, 
+    public static void print(String parserWrapperName, String uri,
                              boolean canonical ) {
         try {
-            DOMParserWrapper parser = 
+            DOMParserWrapper parser =
             (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
 
             parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
                                setDeferredDOM );
-            parser.setFeature( "http://xml.org/sax/features/validation", 
+            parser.setFeature( "http://xml.org/sax/features/validation",
                                setValidation );
             parser.setFeature( "http://xml.org/sax/features/namespaces",
                                setNameSpaces );
             parser.setFeature( "http://apache.org/xml/features/validation/schema",
                                setSchemaSupport );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema-full-checking",
+                               setSchemaFullSupport );
 
             Document document = parser.parse(uri);
             DOMWriter writer = new DOMWriter(canonical);
@@ -241,11 +244,11 @@ public class DOMWriter {
                                 Encoding + "\"?>");
                 }
                 //print(((Document)node).getDocumentElement());
-                
-                NodeList children = node.getChildNodes(); 
-                for ( int iChild = 0; iChild < children.getLength(); iChild++ ) { 
-                    print(children.item(iChild)); 
-                } 
+
+                NodeList children = node.getChildNodes();
+                for ( int iChild = 0; iChild < children.getLength(); iChild++ ) {
+                    print(children.item(iChild));
+                }
                 out.flush();
                 break;
             }
@@ -377,6 +380,7 @@ public class DOMWriter {
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -c       Canonical XML output.",
                              "  -h       This help screen.",
@@ -399,7 +403,7 @@ public class DOMWriter {
         argopt.parseArgumentTokens(argv, new char[] { 'p', 'e'} );
 
         int   c;
-        String arg = null; 
+        String arg = null;
         while ( ( arg =  argopt.getlistFiles() ) != null ) {
 
             outer:
@@ -443,6 +447,12 @@ public class DOMWriter {
                     break;
                 case 'S':
                     setSchemaSupport = false;
+                    break;
+                case 'f':
+                    setSchemaFullSupport = true;
+                    break;
+                case 'F':
+                    setSchemaFullSupport = false;
                     break;
                 case '?':
                 case 'h':
@@ -522,6 +532,6 @@ public class DOMWriter {
             }
         }
 
-    } // printJavaEncoding()            
+    } // printJavaEncoding()
 
-} 
+}

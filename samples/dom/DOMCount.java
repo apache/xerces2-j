@@ -89,6 +89,7 @@ public class DOMCount {
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
     private static boolean setSchemaSupport = true;
+    private static boolean setSchemaFullSupport = false;
     private static boolean setDeferredDOM   = true;
 
 
@@ -131,6 +132,8 @@ public class DOMCount {
                                setNameSpaces );
             parser.setFeature( "http://apache.org/xml/features/validation/schema",
                                setSchemaSupport );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema-full-checking",
+                               setSchemaFullSupport );
 
             Document document = parser.parse(uri);
             counter.traverse(document);
@@ -258,6 +261,7 @@ public class DOMCount {
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -f | -F  Turn on/off Schema full consraint checking  [default=off]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -h       This help screen."} );
 
@@ -311,6 +315,12 @@ outer:
                 case 'S':
                     //System.out.println("S" );
                     setSchemaSupport = false;
+                    break;
+                case 'f':
+                    setSchemaFullSupport = true;
+                    break;
+                case 'F':
+                    setSchemaFullSupport = false;
                     break;
                 case '?':
                 case 'h':
