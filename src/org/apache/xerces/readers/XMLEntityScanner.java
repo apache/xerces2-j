@@ -112,6 +112,7 @@ public class XMLEntityScanner
      * @param entityHandler 
      */
     public void setEntityHandler(XMLEntityHandler entityHandler) {
+        this.fEntityHandler = entityHandler;
     } // setEntityHandler
 
     /**
