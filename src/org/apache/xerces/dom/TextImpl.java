@@ -44,8 +44,7 @@ public class TextImpl
     // 
     // Private Data members
     //
-    //Used by replaceWholeText
-    private boolean fTextOnlyChildren = false;
+
     
     //
     // Constants
@@ -204,6 +203,7 @@ public class TextImpl
         if (needsSyncData()) {
             synchronizeData();
         }
+
         //if the content is null
         Node parent = this.getParentNode();
         if (content == null || content.length() == 0) {
@@ -212,6 +212,22 @@ public class TextImpl
                 parent.removeChild(this);
             }
             return null;
+        }
+
+        // make sure we can make the replacement
+        if (!canModifyPrev(this)) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                    DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "NO_MODIFICATION_ALLOWED_ERR", null));
+        }
+
+        // make sure we can make the replacement
+        if (!canModifyNext(this)) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                    DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "NO_MODIFICATION_ALLOWED_ERR", null));
         }
 
         //replace the text node
@@ -231,59 +247,37 @@ public class TextImpl
         }
 
         //check logically-adjacent text nodes
-        Node prev = this.getPreviousSibling();  
+        Node prev = currentNode.getPreviousSibling();
         while (prev != null) {
-            fTextOnlyChildren = false;
-            
-            // make sure we can make the replacement
-            if (!canModifyPrev(prev)) {
-                throw new DOMException(
-                        DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                        DOMMessageFormatter.formatMessage(
-                                DOMMessageFormatter.DOM_DOMAIN,
-                                "NO_MODIFICATION_ALLOWED_ERR", null));
-            } else {
-                //If the logically-adjacent previous node can be replaced
-                //remove it.  A logically adjacent node can be replaced if 
-                //it is a Text or CDATASection node or an EntityReference with
-                //Text and CDATA only children
-                if ((prev.getNodeType() == Node.TEXT_NODE) || (prev
-                        .getNodeType() == Node.CDATA_SECTION_NODE)||
-                        (prev.getNodeType() == Node.ENTITY_REFERENCE_NODE && fTextOnlyChildren)) {
-                    parent.removeChild(prev);
-                    prev = this;
-                }                
+            //If the logically-adjacent next node can be removed
+            //remove it. A logically adjacent node can be removed if
+            //it is a Text or CDATASection node or an EntityReference with
+            //Text and CDATA only children.            
+            if ((prev.getNodeType() == Node.TEXT_NODE)
+                    || (prev.getNodeType() == Node.CDATA_SECTION_NODE)
+                    || (prev.getNodeType() == Node.ENTITY_REFERENCE_NODE && hasTextOnlyChildren(prev))) {
+                parent.removeChild(prev);
+                prev = currentNode;
             }
-            prev = prev.getPreviousSibling(); 
+            prev = prev.getPreviousSibling();
         }
-        
-        //check logically-adjacent text nodes        
-        Node next = this.getNextSibling();
+
+        //check logically-adjacent text nodes
+        Node next = currentNode.getNextSibling();
         while (next != null) {
-            fTextOnlyChildren = false;            
-            
-            // make sure we can make the replacement
-            if (!canModifyNext(next)) {
-                throw new DOMException(
-                        DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                        DOMMessageFormatter.formatMessage(
-                                DOMMessageFormatter.DOM_DOMAIN,
-                                "NO_MODIFICATION_ALLOWED_ERR", null));
-            } else {
-                //If the logically-adjacent next node can be replaced
-                //remove it.  A logically adjacent node can be replaced if 
-                //it is a Text or CDATASection node or an EntityReference with
-                //Text and CDATA only children
-                if ((next.getNodeType() == Node.TEXT_NODE) || (next
-                        .getNodeType() == Node.CDATA_SECTION_NODE) ||
-                        (next.getNodeType() == Node.ENTITY_REFERENCE_NODE && fTextOnlyChildren)) {
-                    parent.removeChild(next);
-                    next = this;
-                }
+            //If the logically-adjacent next node can be removed
+            //remove it. A logically adjacent node can be removed if
+            //it is a Text or CDATASection node or an EntityReference with
+            //Text and CDATA only children.
+            if ((next.getNodeType() == Node.TEXT_NODE)
+                    || (next.getNodeType() == Node.CDATA_SECTION_NODE)
+                    || (next.getNodeType() == Node.ENTITY_REFERENCE_NODE && hasTextOnlyChildren(next))) {
+                parent.removeChild(next);
+                next = currentNode;
             }
             next = next.getNextSibling();
         }
-        
+
         return currentNode;
     }
 
@@ -299,8 +293,8 @@ public class TextImpl
      * child was neither Text nor CDATASection nor a replaceable EntityReference
      * Node, then return true. If the last child was a Text or CDATASection node
      * any its previous sibling was not or was an EntityReference that did not
-     * contain only Text or CDATASection nodes, return false.  Check this recursively
-     * for EntityReference nodes.
+     * contain only Text or CDATASection nodes, return false. Check this
+     * recursively for EntityReference nodes.
      * 
      * @param node
      * @return true - can replace text false - can't replace exception must be
@@ -309,59 +303,66 @@ public class TextImpl
     private boolean canModifyPrev(Node node) {
         boolean textLastChild = false;
 
-        short type = node.getNodeType();
+        Node prev = node.getPreviousSibling();
 
-        if (type == Node.ENTITY_REFERENCE_NODE) {
-            //If the previous sibling was entityreference
-            //check if its content is replaceable
-            Node lastChild = node.getLastChild();
+        while (prev != null) {
 
-            //if the entity reference has no children
-            //return false
-            if (lastChild == null) {
-                fTextOnlyChildren = false;
-                return false;
-            }
-            
-            //The replacement text of the entity reference should
-            //be either only text,cadatsections or replaceable entity
-            //reference nodes or the last child should be neither of these
-            while (lastChild != null) {
-                short lType = lastChild.getNodeType();
+            short type = prev.getNodeType();
 
-                if (lType == Node.TEXT_NODE || lType == Node.CDATA_SECTION_NODE) {
-                    textLastChild = true;
-                    fTextOnlyChildren = true;
-                } else if (lType == Node.ENTITY_REFERENCE_NODE) {
-                    if (!canModifyPrev(lastChild)) {
-                        fTextOnlyChildren = false;
-                        return false;
-                    } else {
-                        //If the EntityReference child contains
-                        //only text, or non-text or ends with a
-                        //non-text node.
-                        textLastChild = true;
-                    }
+            if (type == Node.ENTITY_REFERENCE_NODE) {
+                //If the previous sibling was entityreference
+                //check if its content is replaceable
+                Node lastChild = prev.getLastChild();
 
-                } else {
-                    if (textLastChild) {
-                        fTextOnlyChildren = false;                        
-                        return false;
-                    } else {
-                        return true;
-                    }
+                //if the entity reference has no children
+                //return false
+                if (lastChild == null) {
+                    return false;
                 }
-                lastChild = lastChild.getPreviousSibling();
+
+                //The replacement text of the entity reference should
+                //be either only text,cadatsections or replaceable entity
+                //reference nodes or the last child should be neither of these
+                while (lastChild != null) {
+                    short lType = lastChild.getNodeType();
+
+                    if (lType == Node.TEXT_NODE
+                            || lType == Node.CDATA_SECTION_NODE) {
+                        textLastChild = true;
+                    } else if (lType == Node.ENTITY_REFERENCE_NODE) {
+                        if (!canModifyPrev(lastChild)) {
+                            return false;
+                        } else {
+                            //If the EntityReference child contains
+                            //only text, or non-text or ends with a
+                            //non-text node.
+                            textLastChild = true;
+                        }
+                    } else {
+                        //If the last child was replaceable and others are not
+                        //Text or CDataSection or replaceable EntityRef nodes
+                        //return false.
+                        if (textLastChild) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                    lastChild = lastChild.getPreviousSibling();
+                }
+            } else if (type == Node.TEXT_NODE
+                    || type == Node.CDATA_SECTION_NODE) {
+                //If the previous sibling was text or cdatasection move to next
+            } else {
+                //If the previous sibling was anything but text or
+                //cdatasection or an entity reference, stop search and
+                //return true
+                return true;
             }
-        } else if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE) {
-            //If the previous sibling was text or cdatasection move to next
-            fTextOnlyChildren = true;
-        } else {
-            //If the previous sibling was anything but text or
-            //cdatasection or an entity reference, stop search and
-            //return true
-            return true;
+
+            prev = prev.getPreviousSibling();
         }
+
         return true;
     }
 
@@ -375,76 +376,107 @@ public class TextImpl
      * or CDATASection node and its next siblings are neither a replaceable
      * EntityReference or Text or CDATASection nodes, return false. IF the first
      * child was neither Text nor CDATASection nor a replaceable EntityReference
-     * Node, then return true. If the first child was a Text or CDATASection node
-     * any its next sibling was not or was an EntityReference that did not
-     * contain only Text or CDATASection nodes, return false.  Check this recursively
-     * for EntityReference nodes.
+     * Node, then return true. If the first child was a Text or CDATASection
+     * node any its next sibling was not or was an EntityReference that did not
+     * contain only Text or CDATASection nodes, return false. Check this
+     * recursively for EntityReference nodes.
      * 
      * @param node
      * @return true - can replace text false - can't replace exception must be
      *         raised
      */
-
     private boolean canModifyNext(Node node) {
         boolean textFirstChild = false;
 
-        short type = node.getNodeType();
+        Node next = node.getNextSibling();
+        while (next != null) {
 
-        if (type == Node.ENTITY_REFERENCE_NODE) {
-            //If the previous sibling was entityreference
-            //check if its content is replaceable
-            Node firstChild = node.getFirstChild();
+            short type = next.getNodeType();
 
-            //if the entity reference has no children
-            //return false
-            if (firstChild == null) {
-                fTextOnlyChildren = false;
-                return false;
-            }
-            
-            //The replacement text of the entity reference should
-            //be either only text,cadatsections or replaceable entity
-            //reference nodes or the last child should be neither of these
-            while (firstChild != null) {
-                short lType = firstChild.getNodeType();
+            if (type == Node.ENTITY_REFERENCE_NODE) {
+                //If the previous sibling was entityreference
+                //check if its content is replaceable
+                Node firstChild = next.getFirstChild();
 
-                if (lType == Node.TEXT_NODE || lType == Node.CDATA_SECTION_NODE) {
-                    fTextOnlyChildren = true;
-                    textFirstChild = true;
-                } else if (lType == Node.ENTITY_REFERENCE_NODE) {
-                    if (!canModifyNext(firstChild)) {
-                        fTextOnlyChildren = false;
-                        return false;
-                    } else {
-                        //If the EntityReference child contains
-                        //only text, or non-text or ends with a
-                        //non-text node.
-                        textFirstChild = true;
-                    }
-                } else {
-                    //If the first child was replaceable text and next
-                    //children are not, then return false
-                    if (textFirstChild) {
-                        fTextOnlyChildren = false;
-                        return false;
-                    } else {
-                        return true;
-                    }
+                //if the entity reference has no children
+                //return false
+                if (firstChild == null) {
+                    return false;
                 }
-                firstChild = firstChild.getNextSibling();
+
+                //The replacement text of the entity reference should
+                //be either only text,cadatsections or replaceable entity
+                //reference nodes or the last child should be neither of these
+                while (firstChild != null) {
+                    short lType = firstChild.getNodeType();
+
+                    if (lType == Node.TEXT_NODE
+                            || lType == Node.CDATA_SECTION_NODE) {
+                        textFirstChild = true;
+                    } else if (lType == Node.ENTITY_REFERENCE_NODE) {
+                        if (!canModifyNext(firstChild)) {
+                            return false;
+                        } else {
+                            //If the EntityReference child contains
+                            //only text, or non-text or ends with a
+                            //non-text node.
+                            textFirstChild = true;
+                        }
+                    } else {
+                        //If the first child was replaceable text and next
+                        //children are not, then return false
+                        if (textFirstChild) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                    firstChild = firstChild.getNextSibling();
+                }
+            } else if (type == Node.TEXT_NODE
+                    || type == Node.CDATA_SECTION_NODE) {
+                //If the previous sibling was text or cdatasection move to next
+            } else {
+                //If the next sibling was anything but text or
+                //cdatasection or an entity reference, stop search and
+                //return true
+                return true;
             }
-        } else if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE) {
-            //If the previous sibling was text or cdatasection move to next
-            fTextOnlyChildren = true;
-        } else {
-            //If the next sibling was anything but text or
-            //cdatasection or an entity reference, stop search and
-            //return true
-            return true;
+
+            next = next.getNextSibling();
         }
+
         return true;
     }
 
+    /**
+     * Check if an EntityReference node has Text Only child nodes
+     * 
+     * @param node
+     * @return true - Contains text only children
+     */
+    private boolean hasTextOnlyChildren(Node node) {
+
+        Node child = node;
+
+        if (child == null)
+            return false;
+
+        for (int i = 0; i < child.getChildNodes().getLength(); i++) {
+            int type = child.getChildNodes().item(i).getNodeType();
+
+            if (type == Node.ENTITY_REFERENCE_NODE) {
+                return hasTextOnlyChildren(child.getChildNodes().item(i));
+            } else if (type != Node.TEXT_NODE
+                    && type != Node.CDATA_SECTION_NODE
+                    && type != Node.ENTITY_REFERENCE_NODE) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    
     /**
      * NON-DOM: Returns whether this Text is ignorable whitespace.
      */
