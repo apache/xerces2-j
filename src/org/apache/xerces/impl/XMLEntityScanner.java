@@ -561,7 +561,7 @@ public class XMLEntityScanner implements XMLLocator {
 
         // scan qualified name
         int offset = fCurrentEntity.position;
-        if (XMLChar.isNameStart(fCurrentEntity.ch[offset])) {
+        if (XMLChar.isNCNameStart(fCurrentEntity.ch[offset])) {
             if (++fCurrentEntity.position == fCurrentEntity.count) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
                 offset = 0;
@@ -623,7 +623,7 @@ public class XMLEntityScanner implements XMLLocator {
                                                     offset, prefixLength);
                     int len = length - prefixLength - 1;
                     int startLocal = index +1;
-                    if (!XMLChar.isNameStart(fCurrentEntity.ch[startLocal])){
+                    if (!XMLChar.isNCNameStart(fCurrentEntity.ch[startLocal])){
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                  "IllegalQName",
                                                   null,

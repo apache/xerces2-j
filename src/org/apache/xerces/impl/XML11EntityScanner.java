@@ -59,6 +59,7 @@ package org.apache.xerces.impl;
 
 import java.io.IOException;
 
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XML11Char;
 import org.apache.xerces.util.XMLStringBuffer;
@@ -379,7 +380,7 @@ public class XML11EntityScanner
 
         // scan qualified name
         int offset = fCurrentEntity.position;
-        if (XML11Char.isXML11NameStart(fCurrentEntity.ch[offset])) {
+        if (XML11Char.isXML11NCNameStart(fCurrentEntity.ch[offset])) {
             if (++fCurrentEntity.position == fCurrentEntity.count) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
                 offset = 0;
@@ -434,6 +435,13 @@ public class XML11EntityScanner
                     prefix = fSymbolTable.addSymbol(fCurrentEntity.ch,
                                                     offset, prefixLength);
                     int len = length - prefixLength - 1;
+                    int startLocal = index +1;
+                    if (!XML11Char.isXML11NCNameStart(fCurrentEntity.ch[startLocal])){
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "IllegalQName",
+                                                   null,
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                     localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,
                                                        index + 1, len);
 
