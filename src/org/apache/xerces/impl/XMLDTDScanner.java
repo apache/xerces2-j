@@ -103,6 +103,7 @@ public class XMLDTDScanner
     protected static final int SCANNER_STATE_END_OF_INPUT = 0;
     protected static final int SCANNER_STATE_TEXT_DECL = 1;
     protected static final int SCANNER_STATE_MARKUP_DECL = 2;
+    /***
     protected static final int SCANNER_STATE_COMMENT = 3;
     protected static final int SCANNER_STATE_PI = 4;
     protected static final int SCANNER_STATE_ELEMENT_DECL = 5;
@@ -110,6 +111,7 @@ public class XMLDTDScanner
     protected static final int SCANNER_STATE_NOTATION_DECL = 7;
     protected static final int SCANNER_STATE_ENTITY_DECL = 8;
     protected static final int SCANNER_STATE_CONDITIONAL_SECT = 9;
+    ***/
 
     // debugging
 
@@ -141,11 +143,17 @@ public class XMLDTDScanner
 
     private String[] fPseudoAttributeValues = new String[3];
 
-    private int[] fOpStack = new int[5];
-    private int fContentDepth;
-    private int fPEDepth;
-    private int fExtEntityDepth;
-    private int fIncludeSectDepth;
+    // stack of operators (either '|' or ',') in children content
+    private int[] fContentStack = new int[5];
+    private int fContentDepth;  // size of the stack
+
+    // two parallel arrays to check well-formedness of parameter entities
+    private int[] fPEStack = new int[5];
+    private int fPEDepth;       // number of opened parameter entities
+
+    private int fMarkUpDepth;
+    private int fExtEntityDepth;// number of opened external entities
+    private int fIncludeSectDepth; // number of opened include sections
 
     private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
     private XMLString fLiteral = new XMLString();
@@ -301,9 +309,10 @@ public class XMLDTDScanner
 
         // reset state related data
         fStartDTDCalled = false;
-        fPEDepth = 0;
         fExtEntityDepth = 0;
         fIncludeSectDepth = 0;
+        fMarkUpDepth = 0;
+        fPEDepth = 0;
 
         // save built-in symbols
         fXmlSymbol = fSymbolTable.addSymbol("xml");
@@ -397,7 +406,7 @@ public class XMLDTDScanner
             fExtEntityDepth++;
         }
         else if (name.charAt(0) == '%') {
-            fPEDepth++;
+            pushPEStack(fMarkUpDepth);
             if (fEntityScanner.isExternal()) {
                 fExtEntityDepth++;
             }
@@ -407,6 +416,7 @@ public class XMLDTDScanner
         if (fDTDHandler != null) {
             fDTDHandler.startEntity(name, publicId, systemId, encoding);
         }
+
     } // startEntity(String,String,String,String)
 
     /**
@@ -417,11 +427,6 @@ public class XMLDTDScanner
     public void endEntity(String name)
         throws SAXException {
 
-        // call handler
-        if (fDTDHandler != null) {
-            fDTDHandler.endEntity(name);
-        }
-
         if (name.equals("[dtd]")) {
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
@@ -431,10 +436,19 @@ public class XMLDTDScanner
             fExtEntityDepth--;
         }
         else if (name.charAt(0) == '%') {
-            fPEDepth--;
+            // check well-formedness of the enity
+            int startMarkUpDepth = popPEStack();
+            if (startMarkUpDepth != fMarkUpDepth) {
+                reportFatalError("MarkupEntityMismatch", null);
+            }
             if (fEntityScanner.isExternal()) {
                 fExtEntityDepth--;
             }
+        }
+
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.endEntity(name);
         }
 
     } // endEntity(String)
@@ -514,6 +528,7 @@ public class XMLDTDScanner
 
         // scan XMLDecl
         if (fEntityScanner.skipString("<?xml")) {
+            fMarkUpDepth++;
             // NOTE: special case where document starts with a PI
             //       whose name starts with "xml" (e.g. "xmlfoo")
             if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -536,6 +551,7 @@ public class XMLDTDScanner
                 String encoding = null;
 
                 scanXMLDeclOrTextDecl(true, fPseudoAttributeValues);
+                fMarkUpDepth--;
 
                 version = fPseudoAttributeValues[0];
                 encoding = fPseudoAttributeValues[1];
@@ -567,6 +583,7 @@ public class XMLDTDScanner
         throws IOException, SAXException {
 
         super.scanPIData(target, data);
+        fMarkUpDepth--;
 
         // call handler
         if (fDTDHandler != null) {
@@ -587,6 +604,7 @@ public class XMLDTDScanner
     protected final void scanComment() throws IOException, SAXException {
 
         scanComment(fStringBuffer);
+        fMarkUpDepth--;
 
         // call handler
         if (fDTDHandler != null) {
@@ -684,6 +702,7 @@ public class XMLDTDScanner
             reportFatalError("ElementDeclUnterminated",
                              new Object[]{name});
         }
+        fMarkUpDepth--;
 
         // call handler
         if (fDTDHandler != null) {
@@ -765,7 +784,8 @@ public class XMLDTDScanner
         if (fDTDContentModelHandler != null) {
             fDTDContentModelHandler.childrenStartGroup();
         }
-        fContentDepth = 1;
+        fContentDepth = 0;
+        pushContentStack(0);
         int currentOp = 0;
         int c;
         while (true) {
@@ -776,9 +796,8 @@ public class XMLDTDScanner
                 }
                 fStringBuffer.append('(');
                 // push current op on stack and reset it
-                pushOpStack(currentOp);
+                pushContentStack(currentOp);
                 currentOp = 0;
-                fContentDepth++;
                 continue;
             }
             skipSeparator(false, !scanningInternalSubset());
@@ -846,8 +865,7 @@ public class XMLDTDScanner
                     fDTDContentModelHandler.childrenEndGroup();
                 }
                 // restore previous op
-                currentOp = popOpStack();
-                fContentDepth--;
+                currentOp = popContentStack();
                 short oc;
                 // The following checks must be done in a single call (as
                 // opposed to one for ')' and then one for '?', '*', and '+')
@@ -969,6 +987,7 @@ public class XMLDTDScanner
                 if (fDTDHandler != null) {
                     fDTDHandler.endAttlist();
                 }
+                fMarkUpDepth--;
                 return;
             }
 
@@ -1283,6 +1302,7 @@ public class XMLDTDScanner
             reportFatalError("EntityDeclUnterminated",
                              new Object[]{name});
         }
+        fMarkUpDepth--;
 
         // register entity and make callback
         if (isPEDecl) {
@@ -1385,6 +1405,7 @@ public class XMLDTDScanner
             reportFatalError("NotationDeclUnterminated",
                              new Object[]{name});
         }
+        fMarkUpDepth--;
 
         // call handler
         if (fDTDHandler != null) {
@@ -1459,8 +1480,7 @@ public class XMLDTDScanner
                         }
                         if (fEntityScanner.skipChar('>')) {
                             if (fIncludeSectDepth-- == initialDepth) {
-                                // decreaseMarkupDepth();
-
+                                fMarkUpDepth--;
                                 // call handler
                                 if (fDTDHandler != null) {
                                     fDTDHandler.endConditional();
@@ -1502,6 +1522,7 @@ public class XMLDTDScanner
         skipSeparator(false, true);
         while (complete && fScannerState == SCANNER_STATE_MARKUP_DECL) {
             if (fEntityScanner.skipChar('<')) {
+                fMarkUpDepth++;
                 if (fEntityScanner.skipChar('?')) {
                     scanPI();
                 }
@@ -1531,11 +1552,13 @@ public class XMLDTDScanner
                         scanConditionalSect();
                     }
                     else {
+                        fMarkUpDepth--;
                         reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
                                          null);
                     }
                 }
                 else {
+                    fMarkUpDepth--;
                     reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
                                      null);
                 }
@@ -1553,6 +1576,7 @@ public class XMLDTDScanner
                 }
                 // decreaseMarkupDepth();
                 fIncludeSectDepth--;
+                fMarkUpDepth--;
             }
             else if (scanningInternalSubset() &&
                      fEntityScanner.peekChar() == ']') {
@@ -1681,20 +1705,43 @@ public class XMLDTDScanner
                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
     }
 
-
-    private final void pushOpStack(int c) {
-        if (fOpStack.length == fContentDepth) {
+    /*
+     * Element Children Content Stack
+     */
+    private final void pushContentStack(int c) {
+        if (fContentStack.length == fContentDepth) {
             int[] newStack = new int[fContentDepth * 2];
-            System.arraycopy(fOpStack, 0, newStack, 0, fContentDepth);
-            fOpStack = newStack;
+            System.arraycopy(fContentStack, 0, newStack, 0, fContentDepth);
+            fContentStack = newStack;
         }
-        fOpStack[fContentDepth] = c;
+        fContentStack[fContentDepth++] = c;
     }
 
-    private final int popOpStack() {
-        return fOpStack[fContentDepth];
+    private final int popContentStack() {
+        return fContentStack[--fContentDepth];
     }
 
+
+    /*
+     * Parameter Entity Stack
+     */
+    private final void pushPEStack(int depth) {
+        if (fPEStack.length == fPEDepth) {
+            int[] newIntStack = new int[fPEDepth * 2];
+            System.arraycopy(fPEStack, 0, newIntStack, 0, fPEDepth);
+            fPEStack = newIntStack;
+        }
+        fPEStack[fPEDepth++] = depth;
+    }
+
+    private final int popPEStack() {
+        return fPEStack[--fPEDepth];
+    }
+
+
+    /*
+     * Utility method
+     */
     private final void ensureEnumerationSize(int size) {
         if (fEnumeration.length == size) {
             String[] newEnum = new String[size * 2];
