@@ -761,15 +761,14 @@ public abstract class XMLScanner
                     }
                 }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
-                    scanSurrogates(fStringBuffer);
-                    if (fStringBuffer.length != 0) {
+                    if (scanSurrogates(fStringBuffer)) {
                         if (spaces > 1 && fStringBuffer2.length != 0) {
                             fStringBuffer2.append(' ');
                             fAttributeOffset++;
                         }
                         fStringBuffer2.append(fStringBuffer);
-                        spaces = 0;
                     }
+                    spaces = 0;
                 }
                 else if (c != -1 && XMLChar.isInvalid(c)) {
                     reportFatalError("InvalidCharInAttValue",
@@ -1164,6 +1163,7 @@ public abstract class XMLScanner
      * <strong>Note:</strong> This assumes the current char has already been
      * identified as a high surrogate.
      *
+     * @param buf The StringBuffer to append the read surrogates to.
      * @returns True if it succeeded.
      */
     protected boolean scanSurrogates(XMLStringBuffer buf)
@@ -1178,6 +1178,16 @@ public abstract class XMLScanner
         }
         fEntityScanner.scanChar();
 
+        // convert surrogates to supplemental character
+        int c = XMLChar.supplemental((char)high, (char)low);
+
+        // supplemental character must be a valid XML character
+        if (!XMLChar.isValid(c)) {
+            reportFatalError("InvalidCharInContent",
+                             new Object[]{Integer.toString(c, 16)}); 
+            return false;
+        }
+
         // fill in the buffer
         buf.append((char)high);
         buf.append((char)low);
@@ -1185,7 +1195,6 @@ public abstract class XMLScanner
         return true;
 
     } // scanSurrogates():boolean
-
 
 
     /**
