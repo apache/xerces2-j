@@ -468,10 +468,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if ((fConfiguration.features & DOMConfigurationImpl.SPLITCDATA) != 0) {
                     int index;
                     Node parent = node.getParentNode();
+                    
                     isXMLCharWF(fErrorHandler, fError, fLocator, node.getNodeValue(), fDocument.isXML11Version());
                     while ( (index=value.indexOf("]]>")) >= 0 ) {
                         node.setNodeValue(value.substring(0, index+2));
                         value = value.substring(index +2);
+                        
+                        Node firstSplitNode = node;
                         Node newChild = fDocument.createCDATASection(value);
                         parent.insertBefore(newChild, node.getNextSibling());
                         node = newChild;                      
@@ -479,9 +482,9 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN, 
                             "cdata-sections-splitted", 
-                             new Object[]{"Attr",node.getNodeName()});
+                             null);
                         reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_WARNING, 
-                            node, "cdata-sections-splitted");
+                            firstSplitNode, "cdata-sections-splitted");
                     }
 
                 }
@@ -1166,6 +1169,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
             error.fSeverity = severity;
             error.fLocator = locator;
             error.fType = type;
+            error.fRelatedData = node;
             locator.fRelatedNode = node;
     
             if(!errorHandler.handleError(error))
