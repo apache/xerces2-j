@@ -74,6 +74,8 @@ import java.util.*;
 //Unit Test 
 import  org.apache.xerces.parsers.DOMParser;
 import  org.apache.xerces.validators.common.XMLValidator;
+import  org.apache.xerces.validators.datatype.*;
+
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.framework.XMLContentSpec;
@@ -725,7 +727,7 @@ System.out.println("attName of schema element : " + attName + " = " + sattr.getV
                                                          complexTypeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
 
-System.out.println("traversing complex Type : " + typeName);
+System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
 
         if (typeName.equals("")) { // gensym a unique name
             //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
@@ -938,10 +940,12 @@ System.out.println("traversing complex Type : " + typeName);
 
         } 
         else {   
+System.out.println("I'm here!!");
             contentSpecType = fStringPool.addSymbol("CHILDREN");
             csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
             boolean mixedContent = false;
-            boolean elementContent = false;
+	    //REVISIT: is the default content " elementOnly"
+            boolean elementContent = true;
             boolean textContent = false;
             left = -2;
             right = -2;
@@ -964,12 +968,12 @@ System.out.println("traversing complex Type : " + typeName);
                 // add #PCDATA leaf
 
                 left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
-                                                     -1, // -1 means "#PCDATA" is name
-                                                           -1, false);
+							 -1, // -1 means "#PCDATA" is name
+							 -1, false);
                 csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             }
 
-            for (;
+            for (child = XUtil.getFirstChildElement(complexTypeDecl);
                  child != null;
                  child = XUtil.getNextSiblingElement(child)) {
 
@@ -982,17 +986,18 @@ System.out.println("traversing complex Type : " + typeName);
 
                 if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                     if (mixedContent || elementContent) {
-                            QName eltQName = traverseElementDecl(child);
-                            index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-                                                                   eltQName.localpart,
-                                                                   eltQName.uri, 
-                                                                   false);
-                            seeParticle = true;
+System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT_NAME));
+			QName eltQName = traverseElementDecl(child);
+			index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+								   eltQName.localpart,
+								   eltQName.uri, 
+								   false);
+			seeParticle = true;
 
-                        } 
-                        else {
-                            reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
-                        }
+		    } 
+		    else {
+			reportSchemaError(SchemaMessageProvider.EltRefOnlyInMixedElemOnly, null);
+		    }
 
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
@@ -1071,7 +1076,11 @@ System.out.println("traversing complex Type : " + typeName);
 
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
         typeInfo.base = base;
-        typeInfo.derivedBy = parseComplexDerivedBy(complexTypeDecl.getAttribute(SchemaSymbols.ATT_DERIVEDBY));
+	int derivedByInt = -1;
+	if (derivedBy.length() > 0) {
+            derivedByInt = parseComplexDerivedBy(derivedBy);
+	}
+        typeInfo.derivedBy = derivedByInt;
         typeInfo.scopeDefined = scopeDefined; 
         typeInfo.contentSpecHandle = left;
         typeInfo.contentType = contentSpecType;
@@ -1098,7 +1107,7 @@ System.out.println("traversing complex Type : " + typeName);
 
 
         // (attribute | attrGroupRef)*
-        for (;
+        for (child = XUtil.getFirstChildElement(complexTypeDecl);
              child != null;
              child = XUtil.getNextSiblingElement(child)) {
 
@@ -1409,15 +1418,16 @@ System.out.println("traversing complex Type : " + typeName);
                     // REVISIT - integrate w/ error handling
                     String type = fStringPool.toString(enumeration);
                     dv = fDatatypeRegistry.getValidatorFor(type);
-                    if (dv != null)
-                        dv.validate(fStringPool.toString(attDefaultValue));
+                    if (dv != null) ;
+			//REVISIT
+                        //dv.validate(fStringPool.toString(attDefaultValue));
                     else
                         reportSchemaError(SchemaMessageProvider.NoValidatorFor,
                                           new Object [] { type });
-                } catch (InvalidDatatypeValueException idve) {
+                } /*catch (InvalidDatatypeValueException idve) {
                     reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
                                       new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
-                } catch (Exception e) {
+                } */catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Internal error in attribute datatype validation");
                 }
@@ -1435,7 +1445,7 @@ System.out.println("traversing complex Type : " + typeName);
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
-                                  enumeration, fStringPool.toString( attDefaultType ), 
+                                  enumeration, attDefaultType, 
                                   fStringPool.toString( attDefaultValue), dv);
         return -1;
     } // end of method traverseAttribute
@@ -1616,6 +1626,8 @@ System.out.println("traversing element decl : " + name );
         // form attribute
         String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
+	String fromAnotherSchema = null;
+
         if (isTopLevel(elementDecl)) {
         
             int nameIndex = fStringPool.addSymbol(name);
@@ -1723,6 +1735,7 @@ System.out.println("traversing element decl : " + name );
             }
             String typeURI = resolvePrefixToURI(prefix);
             if (!typeURI.equals(fTargetNSURIString)) {
+		fromAnotherSchema = typeURI;
                 typeInfo = getTypeInfoFromNS(typeURI, localpart);
             }
             typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
@@ -1799,6 +1812,8 @@ System.out.println("traversing element decl : " + name );
         // add element decl to pool
         
         int attrListHead = -1 ;
+        
+	// copy up attribute decls from type object
         if (typeInfo != null) {
             attrListHead = typeInfo.attlistHead;
         }
@@ -1808,17 +1823,23 @@ System.out.println("traversing element decl : " + name );
         //        System.out.println("elementIndex:"+elementIndex+" "+elementDecl.getAttribute(ATT_NAME)+" eltType:"+elementName+" contentSpecType:"+contentSpecType+
         //                           " SpecNodeIndex:"+ contentSpecNodeIndex);
 
-        // copy up attribute decls from type object
         if (typeInfo != null) {
             fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
         }
         else {
+	    fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
+
             // REVISIT: should we report error from here?
         }
 
+	// mark element if its type belongs to different Schema.
+System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + elementIndex);
+	fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
+
         return eltQName;
 
-    }// end of method traverseElementDecl
+    }// end of method traverseElementDecl(Element)
+
 
     int getLocalPartIndex(String fullName){
         int colonAt = fullName.indexOf(":"); 
@@ -2467,35 +2488,35 @@ System.out.println("traversing element decl : " + name );
 
     private int parseSimpleDerivedBy (String derivedByString) throws Exception
     {
-            if ( derivedByString.equals (Schema.VAL_LIST) ) {
+            if ( derivedByString.equals (SchemaSymbols.ATTVAL_LIST) ) {
                     return Schema.LIST;
-            } else if ( derivedByString.equals (Schema.VAL_RESTRICTION) ) {
+            } 
+	    else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                     return Schema.RESTRICTION;
-            } else if ( derivedByString.equals (Schema.VAL_REPRODUCTION) ) {
-                    return Schema.REPRODUCTION;
-            } else {
-                    reportGenericSchemaError ("Invalid value for 'derivedBy'");
+            }  
+	    else {
+                    reportGenericSchemaError ("SimpleType: Invalid value for 'derivedBy'");
                     return -1;
             }
     }
 
     private int parseComplexDerivedBy (String derivedByString)  throws Exception
     {
-            if ( derivedByString.equals (Schema.VAL_EXTENSION) ) {
+            if ( derivedByString.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                     return Schema.EXTENSION;
-            } else if ( derivedByString.equals (Schema.VAL_RESTRICTION) ) {
+            } 
+	    else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                     return Schema.RESTRICTION;
-            } else if ( derivedByString.equals (Schema.VAL_REPRODUCTION) ) {
-                    return Schema.REPRODUCTION;
-            } else {
-                    reportGenericSchemaError ( "Invalid value for 'derivedBy'" );
+            } 
+	    else {
+                    reportGenericSchemaError ( "ComplexType: Invalid value for 'derivedBy'" );
                     return -1;
             }
     }
 
     private int parseSimpleFinal (String finalString) throws Exception
     {
-            if ( finalString.equals (Schema.VAL_POUNDALL) ) {
+            if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
                     return Schema.ENUMERATION+Schema.RESTRICTION+Schema.LIST+Schema.REPRODUCTION;
             } else {
                     int enumerate = 0;
@@ -2507,34 +2528,23 @@ System.out.println("traversing element decl : " + name );
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (Schema.VAL_ENUMERATION) ) {
-                                    if ( enumerate == 0 ) {
-                                            enumerate = Schema.ENUMERATION;
-                                    } else {
-                                            reportGenericSchemaError ("enumeration in set twice");
-                                    }
-                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+			    if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = Schema.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ("restriction in set twice");
                                     }
-                            } else if ( token.equals (Schema.VAL_LIST) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( list == 0 ) {
                                             list = Schema.LIST;
                                     } else {
                                             reportGenericSchemaError ("list in set twice");
                                     }
-                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-                                    if ( reproduce == 0 ) {
-                                            reproduce = Schema.REPRODUCTION;
-                                    } else {
-                                            reportGenericSchemaError ("reproduction in set twice");
-                                    }
-                            } else {
-                                            reportGenericSchemaError (  "Invalid value (" + 
-                                                                                                    finalString +
-                                                                                                    ")" );
+			    }
+			    else {
+				reportGenericSchemaError (  "Invalid value (" + 
+							    finalString +
+							    ")" );
                             }
                     }
 
@@ -2544,13 +2554,13 @@ System.out.println("traversing element decl : " + name );
 
     private int parseComplexContent (String contentString)  throws Exception
     {
-            if ( contentString.equals (Schema.VAL_EMPTY) ) {
+            if ( contentString.equals (SchemaSymbols.ATTVAL_EMPTY) ) {
                     return Schema.EMPTY;
-            } else if ( contentString.equals (Schema.VAL_ELEMENTONLY) ) {
+            } else if ( contentString.equals (SchemaSymbols.ATTVAL_ELEMENTONLY) ) {
                     return Schema.ELEMENT_ONLY;
-            } else if ( contentString.equals (Schema.VAL_TEXTONLY) ) {
+            } else if ( contentString.equals (SchemaSymbols.ATTVAL_TEXTONLY) ) {
                     return Schema.TEXT_ONLY;
-            } else if ( contentString.equals (Schema.VAL_MIXED) ) {
+            } else if ( contentString.equals (SchemaSymbols.ATTVAL_MIXED) ) {
                     return Schema.MIXED;
             } else {
                     reportGenericSchemaError ( "Invalid value for content" );
@@ -2571,23 +2581,17 @@ System.out.println("traversing element decl : " + name );
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (Schema.VAL_EXTENSION) ) {
+                            if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.EXTENSION;
                                     } else {
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = Schema.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ( "restriction already in set" );
-                                    }
-                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-                                    if ( reproduce == 0 ) {
-                                            reproduce = Schema.REPRODUCTION;
-                                    } else {
-                                            reportGenericSchemaError ( "reproduction already in set" );
                                     }
                             } else {
                                     reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
@@ -2611,35 +2615,29 @@ System.out.println("traversing element decl : " + name );
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
+                            if ( token.equals (SchemaSymbols.ATTVAL_EQUIVCLASS) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.EQUIVCLASS;
                                     } else {
                                             reportGenericSchemaError ( "'equivClass' already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_EXTENSION) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.EXTENSION;
                                     } else {
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_LIST) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.LIST;
                                     } else {
                                             reportGenericSchemaError ( "'list' already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = Schema.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ( "restriction already in set" );
-                                    }
-                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-                                    if ( reproduce == 0 ) {
-                                            reproduce = Schema.REPRODUCTION;
-                                    } else {
-                                            reportGenericSchemaError ( "reproduction already in set" );
                                     }
                             } else {
                                     reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
@@ -2663,35 +2661,29 @@ System.out.println("traversing element decl : " + name );
                     while (t.hasMoreTokens()) {
                             String token = t.nextToken ();
 
-                            if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
+                            if ( token.equals (SchemaSymbols.ATTVAL_EQUIVCLASS) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.EQUIVCLASS;
                                     } else {
                                             reportGenericSchemaError ( "'equivClass' already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_EXTENSION) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.EXTENSION;
                                     } else {
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_LIST) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( extend == 0 ) {
                                             extend = Schema.LIST;
                                     } else {
                                             reportGenericSchemaError ( "'list' already in set" );
                                     }
-                            } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+                            } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = Schema.RESTRICTION;
                                     } else {
                                             reportGenericSchemaError ( "restriction already in set" );
-                                    }
-                            } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
-                                    if ( reproduce == 0 ) {
-                                            reproduce = Schema.REPRODUCTION;
-                                    } else {
-                                            reportGenericSchemaError ( "reproduction already in set" );
                                     }
                             } else {
                                     reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
@@ -2736,19 +2728,23 @@ System.out.println("traversing element decl : " + name );
             { "negative-integer", SchemaSymbols.ELT_MAXINCLUSIVE, "-1"}
         };
 
+	public DatatypeValidatorRegistry() {
+            initializeRegistry();
+	}
+
         void initializeRegistry() {
             Hashtable facets = null;
-            //fRegistry.put("boolean", new BooleanValidator());
+            fRegistry.put("boolean", new BooleanValidator());
             //DatatypeValidator integerValidator = new IntegerValidator();
             //fRegistry.put("integer", integerValidator);
-            //fRegistry.put("string", new StringValidator());
-            //fRegistry.put("decimal", new DecimalValidator());
-            //fRegistry.put("float", new FloatValidator());
-            //fRegistry.put("double", new DoubleValidator());
-            //fRegistry.put("timeDuration", new TimeDurationValidator());
-            //fRegistry.put("timeInstant", new TimeInstantValidator());
-            //fRegistry.put("binary", new BinaryValidator());
-            //fRegistry.put("uri", new URIValidator());
+            fRegistry.put("string", new StringValidator());
+            fRegistry.put("decimal", new DecimalValidator());
+            fRegistry.put("float", new FloatValidator());
+            fRegistry.put("double", new DoubleValidator());
+            fRegistry.put("timeDuration", new TimeDurationValidator());
+            fRegistry.put("timeInstant", new TimeInstantValidator());
+            fRegistry.put("binary", new BinaryValidator());
+            fRegistry.put("uri", new URIValidator());
             //REVISIT - enable the below
             //fRegistry.put("date", new DateValidator());
             //fRegistry.put("timePeriod", new TimePeriodValidator());
