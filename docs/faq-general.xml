@@ -10,7 +10,7 @@
   </faq>
 
     <faq title="Jar file changes">
-    <q>What happened to xerces.jar</q>
+    <q>What happened to xerces.jar?</q>
     <a>
         <p>In order to take advantage of the fact that this parser is 
         very often used in conjunction with other XML technologies, 
@@ -19,7 +19,7 @@
         jarfiles:
         </p>
         <ul>
-        <li><code>xmlParserAPIs.jar</code> contains the DOM level 2,
+        <li><code>xml-apis.jar</code> contains the DOM level 2,
         SAX 2.0 and the parsing component of JAXP 1.2 API&apos;s;</li>
         <li><code>xercesImpl.jar</code> contains the implementation of
         these API&apos;s as well as the XNI API.
@@ -105,6 +105,8 @@ and xni.parser.PSVIConfiguration.
     <li>ISO Latin Greek (ISO-8859-7)</li>
     <li>ISO Latin Hebrew (ISO-8859-8)</li>
     <li>ISO Latin-5 (ISO-8859-9) [Turkish]</li>
+    <li>ISO Latin-7 (ISO-8859-13)</li>
+    <li>ISO Latin-9 (ISO-8859-15)</li>
     <li>Extended Unix Code, packed for Japanese (euc-jp, eucjis)</li>
     <li>Japanese Shift JIS (shift-jis)</li>
     <li>Chinese (big5)</li>
@@ -143,23 +145,23 @@ and xni.parser.PSVIConfiguration.
   </a>
  </faq>
  
- <faq title='Accessing Document on the Internet'>
-  <q>Parser is not able to access schema documents or external entities available
-	on the Internet</q>
+ <faq title='Accessing Documents on the Internet'>
+  <q>Why is the parser unable to access schema documents or external entities available on the Internet?</q>
   <a>
    <p>
-   Parser is not able to access various external entities or schema documents 
-   (imported, included etc..) available on Internet, Say, 
-   "http://www.w3.org/2001/XMLSchema.xsd"  Schema for Schemas
-   or "http://www.w3.org/2001/xml.xsd" schema defining xml:base, xml:lang attributes
-   etc.. or any other external entity available on the Internet.
+   The parser may not be able to access various external entities or schema documents 
+   (imported, included etc...) available on the Internet, such as the Schema for Schemas 
+   "http://www.w3.org/2001/XMLSchema.xsd" or the schema defining xml:base, xml:lang attributes etc... 
+   "http://www.w3.org/2001/xml.xsd" or any other external entity available on the Internet. There
+   are various reasons one could experience such a problem.
    <br/>
-   				One of the reason could be your proxy settings 
-   that does not allow parser to make URL connections through proxy server. To solve 
-   this problem application has to set two System properties "http.proxyHost" and 
-   "http.proxyPort" before the parsing begins. Other reasons could be the strict firewall
-   settings which doesn't allow any URL connection to be made to the outside web or the 
-   server on which documents are kept is currently not running etc..
+   <br/>
+   One of the reasons could be that your proxy settings do not allow the parser to make 
+   URL connections through a proxy server. To solve this problem, before parsing a document,
+   the application must set the two system properties: "http.proxyHost" and "http.proxyPort". 
+   Another reason could be due to strict firewall settings that do not allow any URL connection 
+   to be made to the outside web. The problem may also be caused by a server that is offline or 
+   inaccessible on the network, preventing documents hosted by the server from being accessed.
    </p>
   </a>
  </faq> 
