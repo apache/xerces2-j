@@ -137,4 +137,12 @@ class SecuritySupport {
         }
         return ris;
     }
+    
+    public boolean getFileExists(File f) {
+        return f.exists();
+    }
+    
+    public long getLastModified(File f) {
+        return f.lastModified();
+    }    
 }

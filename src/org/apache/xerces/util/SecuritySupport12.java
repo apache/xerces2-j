@@ -122,4 +122,23 @@ class SecuritySupport12 extends SecuritySupport {
                 }
             });
     }
+    
+    public boolean getFileExists(final File f) {
+    return ((Boolean)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    return new Boolean(f.exists());
+                }
+            })).booleanValue();
+    }
+    
+    public long getLastModified(final File f) {
+    return ((Long)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    return new Long(f.lastModified());
+                }
+            })).longValue();
+    }
+        
 }

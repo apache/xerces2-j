@@ -96,6 +96,20 @@ public class ObjectFactory {
     /** Set to true for debugging */
     private static final boolean DEBUG = false;
 
+    /** cache the contents of the xerces.properties file.
+     *  Until an attempt has been made to read this file, this will
+     * be null; if the file does not exist or we encounter some other error
+     * during the read, this will be empty.
+     */
+    private static Properties fXercesProperties = null;
+
+    /***
+     * Cache the time stamp of the xerces.properties file so
+     * that we know if it's been modified and can invalidate
+     * the cache when necessary.
+     */
+    private static long fLastModified = -1;
+
     //
     // Public static methods
     //
@@ -167,25 +181,70 @@ public class ObjectFactory {
         }
 
         // Try to read from propertiesFilename, or $java.home/lib/xerces.properties
-        try {
-            if(propertiesFilename ==null) {
+        String factoryClassName = null;
+        // no properties file name specified; use $JAVA_HOME/lib/xerces.properties:
+        if (propertiesFilename == null) {
             String javah = ss.getSystemProperty("java.home");
-                propertiesFilename = javah + File.separator +
-                    "lib" + File.separator + DEFAULT_PROPERTIES_FILENAME;
+            propertiesFilename = javah + File.separator +
+                "lib" + File.separator + DEFAULT_PROPERTIES_FILENAME;
+            File propertiesFile = new File(propertiesFilename);
+            boolean propertiesFileExists = ss.getFileExists(propertiesFile);
+            synchronized (ObjectFactory.class) {
+                boolean loadProperties = false;
+                // file existed last time
+                if(fLastModified >= 0) {
+                    if(propertiesFileExists &&
+                            (fLastModified < (fLastModified = ss.getLastModified(propertiesFile)))) {
+                        loadProperties = true;
+                    } else {
+                        // file has stopped existing...
+                        if(!propertiesFileExists) {
+                            fLastModified = -1;
+                            fXercesProperties = null;
+                        } // else, file wasn't modified!
+                    }
+                } else {
+                    // file has started to exist:
+                    if(propertiesFileExists) {
+                        loadProperties = true;
+                        fLastModified = ss.getLastModified(propertiesFile);
+                    } // else, nothing's changed
+                }
+                if(loadProperties) {
+                    try {
+                        // must never have attempted to read xerces.properties before (or it's outdeated)
+                        fXercesProperties = new Properties();
+                        FileInputStream fis = ss.getFileInputStream(propertiesFile);
+                        fXercesProperties.load(fis);
+                        fis.close();
+	                } catch (Exception x) {
+	                    fXercesProperties = null;
+	                    fLastModified = -1;
+	                    // assert(x instanceof FileNotFoundException
+	                    //        || x instanceof SecurityException)
+	                    // In both cases, ignore and continue w/ next location
+	                }
+                }
             }
-            FileInputStream fis = ss.getFileInputStream(new File(propertiesFilename));
-            Properties props = new Properties();
-            props.load(fis);
-            String factoryClassName = props.getProperty(factoryId);
-            if (factoryClassName != null) {
-                debugPrintln("found in " + propertiesFilename + ", value=" + factoryClassName);
-                return newInstance(factoryClassName, cl, true);
+            if(fXercesProperties != null) {
+                factoryClassName = fXercesProperties.getProperty(factoryId);
             }
-            fis.close();
-        } catch (Exception x) {
-            // assert(x instanceof FileNotFoundException
-            //        || x instanceof SecurityException)
-            // In both cases, ignore and continue w/ next location
+        } else {
+            try {
+                FileInputStream fis = ss.getFileInputStream(new File(propertiesFilename));
+                Properties props = new Properties();
+                props.load(fis);
+                fis.close();
+                factoryClassName = props.getProperty(factoryId);
+            } catch (Exception x) {
+                // assert(x instanceof FileNotFoundException
+                //        || x instanceof SecurityException)
+                // In both cases, ignore and continue w/ next location
+            }
+        }
+        if (factoryClassName != null) {
+            debugPrintln("found in " + propertiesFilename + ", value=" + factoryClassName);
+            return newInstance(factoryClassName, cl, true);
         }
 
         // Try Jar Service Provider Mechanism
