@@ -554,13 +554,15 @@ public class ElementImpl
         if (syncData) {
             synchronizeData();
         }
-    	AttrImpl newAttr = (AttrImpl) 
-    	    ((DocumentImpl)getOwnerDocument()).
-    	        createAttributeNS(namespaceURI, localName);
-    	
+    	AttrImpl newAttr = (AttrImpl)
+            getAttributeNodeNS(namespaceURI, localName);
+        if (newAttr == null) {
+            newAttr = (AttrImpl)
+                getOwnerDocument().createAttributeNS(namespaceURI, localName);
+            attributes.setNamedItemNS(newAttr);
+            newAttr.owned = true;
+    	}
     	newAttr.setNodeValue(value);
-    	attributes.setNamedItemNS(newAttr);
-    	newAttr.owned = true; // Set true AFTER adding -- or move in?????
 
     } // setAttributeNS(String,String,String)
     
