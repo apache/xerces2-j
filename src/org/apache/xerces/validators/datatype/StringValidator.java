@@ -201,13 +201,13 @@ public class StringValidator implements DatatypeValidator {
         }
 
         isMaxExclusiveDefined = ((_facetsDefined & 
-                       DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?false:true;
+                       DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
         isMaxInclusiveDefined = ((_facetsDefined & 
-                       DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?false:true;
+                       DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
         isMinExclusiveDefined = ((_facetsDefined &
-                       DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?false:true;
+                       DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
         isMinInclusiveDefined = ((_facetsDefined &
-                       DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?false:true;
+                       DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
 
         if( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
             throw new ConstrainException(
