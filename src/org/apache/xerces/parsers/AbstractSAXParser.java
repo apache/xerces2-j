@@ -1876,7 +1876,12 @@ public abstract class AbstractSAXParser
         // features
         fNamespaces = fConfiguration.getFeature(NAMESPACES);           
         fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
-        fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
+        try {
+            fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
+        }
+        catch (XMLConfigurationException e) {
+            fNormalizeData = false;
+        }
         
     } // reset()
 

@@ -96,7 +96,7 @@ public class SAXParser
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
             "org.apache.xerces.parsers.StandardParserConfiguration"
             ));
-
+        fConfiguration.addRecognizedFeatures(new String[] {NOTIFY_BUILTIN_REFS});
         fConfiguration.setFeature(NOTIFY_BUILTIN_REFS, true);
     } // <init>()
 
