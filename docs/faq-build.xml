@@ -9,7 +9,7 @@
 			required by the parser itself.</p>
 		</a>
 	</faq>
-	<faq title="Recompling source files?">
+	<faq title="Recompiling source files?">
 		<q>How do I recompile the source files?</q>
 		<a> <p>To build &javaparsername; on Windows, you need a copy of Cygnus's Cygwin.
 See <jump href="http://sourceware.cygnus.com/cygwin">http://sourceware.cygnus.com/cygwin</jump>.
@@ -28,7 +28,7 @@ go to the top of the &javaparsername; tree and type 'make'.
 			</p>
 		</a>
 	</faq>
-	<faq title="Regenerating API documention?">
+	<faq title="Regenerating API documentation?">
 		<q>How do I regenerate the api documentation?</q>
 		<a> <p>To regenerate the api documentation, you need to set up
 your environment to build &javaparsername;.  Instead of typing 'make', you

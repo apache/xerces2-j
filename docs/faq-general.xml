@@ -3,6 +3,67 @@
 
 <faqs title="General FAQs">
 
+	<faq title="Bugzilla">
+		<q>How do I use Bugzilla to report bugs?</q>
+		<a>
+       		         <ul>
+       		         <li>Please report bugs against the newest release.</li>
+       		         <li>If doubt exists whether the behaviour in question is a bug or a feature, 
+       		         please post a message to the xerces-j-user list for clarification.</li>
+      		         <li> To help to eliminate duplicate bug reports, 
+       		         before reporting a bug, you should
+			first query the bugzilla database to see whether the bug has already been reported (and perhaps fixed).
+			Then, checkout code from CVS, and 
+       		         build Xerces-J locally to verify that a bug still exists. </li>
+       	         </ul>
+       	         <p>For more information visit the following links:</p>
+       		         <ul>
+       		         <li><jump href="http://nagoya.apache.org/bugzilla/">
+				http://nagoya.apache.org/bugzilla/</jump></li>
+	                <li><jump href="http://www.mozilla.org/bugs/">
+                		http://www.mozilla.org/bugs/</jump></li>
+                	</ul>
+        	 </a>
+	</faq>
+
+	<faq title="Extracting code from CVS">
+		<q>How do I extract code from CVS?</q>
+		<a>
+			<p>
+    	   		 <br/>set CVSROOT=:pserver:anoncvs@xml.apache.org:/home/cvspublic
+		        <br/>cvs login        <em>(password: anoncvs)</em>
+        		<br/>cvs checkout -d xerces_j xml-xerces/java 
+			</p>
+        	</a> 
+	</faq>
+	<faq title="Revalidation of DOM document in Memory">
+		<q>I have used the DOMParser to convert an XML document into
+			a DOM tree.  Then I made some changes to the DOM tree.  How do I make sure
+			the document still conforms to my (schema or DTD)?</q>
+		<a>
+			<p>
+			DOM revalidation  is not supported by Xerces 1. Ken Rawlings has been trying 
+			to build a revalidating DOMParser based on code which was dropped from Xerces because
+			it was no longer being maintained. The current code is at:
+			<jump href="http://www.vervet.com/~krawling/RevalidatingDOMParser.java">http://www.vervet.com/~krawling/RevalidatingDOMParser.java.</jump>
+			We hope that Xerces 2 will include this capability.
+			</p>
+		</a>
+	</faq>
+	<faq title="Schema/DTD caching">
+		<q>I have a (DTD or schema) that I will use to validate many XML documents.  How can I avoid having to recompile it every time I want to validate a new document?</q>
+		<a>
+			<p>Xerces 1 does not currently support grammar caching.  We
+			expect that Xerces 2 will support this functionality.  Some users
+			have reported success by registering an EntityResolver which handles reading
+			the grammar from the disk and storing it in an efficient way (usually a byteArray), then passing the
+			parser a reader for the efficiently-stored structure.  While this
+			does not avoid recompiling the grammar for each instance document,
+			it does avoid disk accesses.
+			</p>
+		</a>
+	</faq>
+
 	<faq title="New Features?">
 		<q>What are the new features?</q>
 		<a>
