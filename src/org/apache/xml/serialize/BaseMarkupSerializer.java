@@ -69,8 +69,10 @@ import org.xml.sax.DocumentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.misc.LexicalHandler;
-import org.xml.sax.misc.DeclHandler;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Attributes;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.ext.DeclHandler;
 
 
 /**
@@ -238,8 +240,6 @@ public abstract class BaseMarkupSerializer
      */
     private Writer          _docWriter;
 
-    
-
 
     //--------------------------------//
     // Constructor and initialization //
@@ -261,9 +261,15 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    public  DocumentHandler asDocumentHandler()
+    public DocumentHandler asDocumentHandler()
     {
 	return this;
+    }
+
+
+    public ContentHandler asContentHandler()
+    {
+	return null;
     }
 
 
@@ -397,9 +403,9 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    //---------------------------------------//
+    //------------------------------------------//
     // SAX document handler serializing methods //
-    //---------------------------------------//
+    //------------------------------------------//
 
 
     public void characters( char[] chars, int start, int length )
@@ -565,6 +571,50 @@ public abstract class BaseMarkupSerializer
     public void setDocumentLocator( Locator locator )
     {
 	// Nothing to do
+    }
+
+
+    //-----------------------------------------//
+    // SAX content handler serializing methods //
+    //-----------------------------------------//
+
+
+    public void skippedEntity ( String name )
+	throws SAXException
+    {
+	endCDATA();
+	content();
+	printText( "&" + name + ";" );
+    }
+    
+
+    public void startPrefixMapping (String prefix, String uri)
+	throws SAXException
+    {
+	// Not yet supported
+    }
+
+
+    public void endPrefixMapping (String prefix)
+	throws SAXException
+    {
+	// Not yet supported
+    }
+
+
+    public void startElement (String namespaceURI, String localName,
+			      String rawName, Attributes atts)
+	throws SAXException
+    {
+	// Not yet supported
+    }
+
+
+    public void endElement (String namespaceURI, String localName,
+			    String rawName)
+	throws SAXException
+    {
+	// Not yet supported
     }
 
 
@@ -761,6 +811,8 @@ public abstract class BaseMarkupSerializer
 	    }
 	    break;
 	}
+
+
 	case Node.PROCESSING_INSTRUCTION_NODE :
 	    processingInstruction( node.getNodeName(), node.getNodeValue() );
 	    break;

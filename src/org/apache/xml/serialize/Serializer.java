@@ -67,6 +67,7 @@ import java.io.UnsupportedEncodingException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
 import org.xml.sax.DocumentHandler;
+import org.xml.sax.ContentHandler;
 
 
 /**
@@ -101,6 +102,7 @@ import org.xml.sax.DocumentHandler;
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @see DocumentHandler
+ * @see ContentHandler
  * @see OutputFormat
  * @see DOMSerializer
  */
@@ -143,6 +145,16 @@ public interface Serializer
      * interface, it should return null.
      */
     public DocumentHandler asDocumentHandler();
+
+
+    /**
+     * Return a {@link ContentHandler} interface into this serializer.
+     * If the serializer does not support the {@link ContentHandler}
+     * interface, it should return null.
+     */
+    /*
+    public ContentHandler asContentHandler();
+    */
 
 
     /**
