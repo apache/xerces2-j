@@ -61,6 +61,9 @@ public class Writer {
     /** Validate schema annotations feature id (http://apache.org/xml/features/validate-annotations). */
     protected static final String VALIDATE_ANNOTATIONS_ID = "http://apache.org/xml/features/validate-annotations";
     
+    /** Generate synthetic schema annotations feature id (http://apache.org/xml/features/generate-synthetic-annotations). */
+    protected static final String GENERATE_SYNTHETIC_ANNOTATIONS_ID = "http://apache.org/xml/features/generate-synthetic-annotations";
+    
     /** Dynamic validation feature id (http://apache.org/xml/features/validation/dynamic). */
     protected static final String DYNAMIC_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/dynamic";
     
@@ -89,6 +92,9 @@ public class Writer {
     
     /** Default validate schema annotations (false). */
     protected static final boolean DEFAULT_VALIDATE_ANNOTATIONS = false;
+    
+    /** Default generate synthetic schema annotations (false). */
+    protected static final boolean DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS = false;
     
     /** Default dynamic validation support (false). */
     protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
@@ -452,6 +458,7 @@ public class Writer {
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean validateAnnotations = DEFAULT_VALIDATE_ANNOTATIONS;
+        boolean generateSyntheticAnnotations = DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS;
         boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
         boolean canonical = DEFAULT_CANONICAL;
 
@@ -499,6 +506,10 @@ public class Writer {
                 }
                 if (option.equalsIgnoreCase("va")) {
                     validateAnnotations = option.equals("va");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("ga")) {
+                    generateSyntheticAnnotations = option.equals("ga");
                     continue;
                 }
                 if (option.equalsIgnoreCase("dv")) {
@@ -566,6 +577,12 @@ public class Writer {
                 System.err.println("warning: Parser does not support feature ("+VALIDATE_ANNOTATIONS_ID+")");
             }
             try {
+                parser.setFeature(GENERATE_SYNTHETIC_ANNOTATIONS_ID, generateSyntheticAnnotations);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+GENERATE_SYNTHETIC_ANNOTATIONS_ID+")");
+            }
+            try {
                 parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
             }
             catch (SAXException e) {
@@ -629,6 +646,8 @@ public class Writer {
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -va | -VA   Turn on/off validation of schema annotations.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -ga | -GA   Turn on/off generation of synthetic schema annotations.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
         System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -c | -C     Turn on/off Canonical XML output.");
@@ -652,6 +671,10 @@ public class Writer {
         System.err.println(DEFAULT_DYNAMIC_VALIDATION ? "on" : "off");
         System.err.print("  Canonical:  ");
         System.err.println(DEFAULT_CANONICAL ? "on" : "off");
+        System.err.print("  Validate Annotations:    ");
+        System.err.println(DEFAULT_VALIDATE_ANNOTATIONS ? "on" : "off");
+        System.err.print("  Generate Synthetic Annotations:    ");
+        System.err.println(DEFAULT_GENERATE_SYNTHETIC_ANNOTATIONS ? "on" : "off");
 
     } // printUsage()
 
