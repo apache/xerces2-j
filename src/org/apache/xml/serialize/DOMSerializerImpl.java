@@ -499,7 +499,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.serialize((Element)wnode);
             else
                 return null;
-        } catch (LSException lse){
+        } catch (LSException lse) {
+            // Rethrow LSException.
             throw lse;
         } catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
@@ -508,10 +509,13 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             }
             throw new LSException(LSException.SERIALIZE_ERR, e.toString());            
         } catch (IOException ioe) {
-	        String msg = DOMMessageFormatter.formatMessage(
-			    DOMMessageFormatter.DOM_DOMAIN,
-				"STRING_TOO_LONG",
-				new Object[] { ioe.getMessage()});
+            // REVISIT: A generic IOException doesn't provide enough information
+            // to determine that the serialized document is too large to fit
+            // into a string. This could have thrown for some other reason. -- mrglavas
+            String msg = DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.DOM_DOMAIN,
+                "STRING_TOO_LONG",
+                new Object[] { ioe.getMessage()});
             throw new DOMException(DOMException.DOMSTRING_SIZE_ERR,msg);
         }
         return destination.toString();
@@ -787,6 +791,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                     DOMMessageFormatter.SERIALIZER_DOMAIN, 
                     "unsupported-encoding", null));			
 			//return false;
+        } catch (LSException lse) {
+            // Rethrow LSException.
+            throw lse;
         } catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request
@@ -937,6 +944,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.serialize((Element) node);
             else
                 return false;
+        } catch (LSException lse) {
+            // Rethrow LSException.
+            throw lse;
         } catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request
