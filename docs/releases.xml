@@ -6,6 +6,7 @@
         <ul>
             <li>Include documentation in the repository.</li>
             <li>Switch packaging to jar files from .zip and .tar.gz files.</li>
+            <li>StreamingCharReader for stream based applications.</li>
             <li>Assaf Arkin's serialization package.</li>
             <li>Assaf Arkin's HTML DOM Level 1 classes.</li>
             <li>Performance improvements.</li>

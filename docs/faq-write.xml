@@ -244,9 +244,63 @@ Document doc = parser.getDocument();
 		</a>
 	</faq>
     <faq title="How do access the DOM Level 2 functionality">
-    <q>How do I access the DOM Level 2 functionality</q>
-    <a><p>Because the DOM Level 2 spec is not frozen yet, the interfaces
-    for DOM Level 2 can be found in the package org.apache.xerces.domx
-    and its subpackages.</p></a>
+        <q>How do I access the DOM Level 2 functionality</q>
+        <a><p>Because the DOM Level 2 spec is not frozen yet, the interfaces
+              for DOM Level 2 can be found in the package org.apache.xerces.domx
+              and its subpackages.</p></a>
     </faq>
+	<faq title="How do I read data from a stream as it arrives?">
+		<q>How do I read data from a stream as it arrives?</q>
+		<a><p>For performance reasons, all the standard Xerces processing
+		uses readers which buffer the input.  In order to read data
+		from a stream as it arrives, you need to instruct Xerces to
+		use the <code>StreamingCharReader</code> class as its reader.
+		To do this, create a subclass of
+		<code>org.apache.xerces.readers.DefaultReaderFactory</code>
+		and override <code>createCharReader</code> and
+		<code>createUTF8Reader</code> as shown below.
+		</p>
+		<source>
+public class StreamingCharFactory extends org.apache.xerces.readers.DefaultReaderFactory {
+    public XMLEntityHandler.EntityReader createCharReader(XMLEntityHandler entityHandler,
+                                                          XMLErrorReporter errorReporter,
+                                                          boolean sendCharDataAsCharArray,
+                                                          Reader reader,
+                                                          StringPool stringPool) throws Exception
+            {
+                return new org.apache.xerces.readers.StreamingCharReader(entityHandler, errorReporter, sendCharDataAsCharArray, reader, stringPool);
+            }
+
+    public XMLEntityHandler.EntityReader createUTF8Reader(XMLEntityHandler entityHandler,
+                                                          XMLErrorReporter errorReporter,
+                                                          boolean sendCharDataAsCharArray,
+                                                          InputStream data,
+                                                          StringPool stringPool) throws Exception
+            {
+                XMLEntityHandler.EntityReader reader;
+                reader = new org.apache.xerces.readers.StreamingCharReader(entityHandler, errorReporter, sendCharDataAsCharArray, new InputStreamReader(data, "UTF8"), stringPool);
+                return reader;
+            }
+
+}
+		</source>
+		<p>
+	    In your program, after you instantiate a parser class, replace
+	    the <code>DefaultReaderFactory</code> with <code>StreamingCharFactory</code>, and be
+	    sure to wrap the <code>InputStream</code> that you are reading
+	    from with an <code>InputStreamReader</code>.
+		</p>
+	    <source>
+InputStream in = ... ;
+SAXParser p = new SAXParser();
+DocumentHandler h = ... ;
+// set the correct reader factory
+p.setReaderFactory(((StreamingSAXClient)h).new StreamingCharFactory());
+p.setDocumentHandler(h);
+
+// be sure to wrap the input stream in an InputStreamReader.
+p.parse(new InputSource(new InputStreamReader(in)));
+		</source>
+		</a>
+	</faq>
 </faqs>
