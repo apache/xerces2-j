@@ -270,7 +270,6 @@ public abstract class XMLScanner
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
 
-        init();
         // sax features
         try {
             fValidation = componentManager.getFeature(VALIDATION);
@@ -290,6 +289,7 @@ public abstract class XMLScanner
         catch (XMLConfigurationException e) {
             fNotifyCharRefs = false;
         }
+        
         init();
 
     } // reset(XMLComponentManager)
