@@ -75,6 +75,7 @@ Copyright:
     <property name="docs.dir" value="./docs"/>
     <property name="data.dir" value="./data"/>
     <property name="samples.dir" value="./samples"/>
+    <property name="tests.dir" value="./tests"/>
     <property name="tools.dir" value="./tools"/>
     <property name="docs.book" value="${docs.dir}/docs-book.xml"/>
     <property name="version.file" value="org/apache/xerces/framework/Version.java"/>
@@ -90,6 +91,7 @@ Copyright:
     <property name="build.dest" value="${build.dir}/classes"/>
     <property name="build.docs" value="${build.dir}/docs/html"/>
     <property name="build.samples" value="${build.dir}/samples"/>
+    <property name="build.tests" value="${build.dir}/tests"/>
     <property name="build.data" value="${build.dir}/data"/>
     <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
 
@@ -118,6 +120,7 @@ Copyright:
     <echo message="   compile  --> compiles the source code"/>
     <echo message="   jar      --> generates the xerces.jar file"/>
     <echo message="   samples  --> compiles the samples source code"/>
+    <echo message="   tests    --> compiles the tests source code"/>
     <echo message="   sampjar  --> generates the xercesSamples.jar file"/>
     <echo message="   jars     --> generates the xerces and xercesSamples jar files"/>
     <echo message="   docs     --> generates the HTML documentation"/>
@@ -196,6 +199,18 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
+  <!-- Compiles the tests                                                  -->
+  <!-- =================================================================== -->
+  <target name="tests" depends="jar">
+    <mkdir dir="${build.tests}"/>
+    <copydir src="${tests.dir}" dest="${build.tests}" />
+    <javac srcdir="${build.tests}"
+           destdir="${build.dest}"
+           classpath="${build.dir}/${name}.jar"
+           debug="${debug}"/>
+  </target>
+
+  <!-- =================================================================== -->
   <!-- Creates the samples package                                         -->
   <!-- =================================================================== -->
   <target name="sampjar" depends="samples">
@@ -250,7 +265,7 @@ Copyright:
     <mkdir dir="${distsrc.dir}/samples"/>
 
     <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*"
-             includes="**/Makefile, **/Makefile.incl, org/**"/>
+             includes="**/Makefile, **/Makefile.incl, org/**, javax/**"/>
     <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/.#*"/>
     <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
              excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"/>

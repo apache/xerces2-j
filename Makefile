@@ -48,9 +48,8 @@ ${BINZIPFILE}:: ./src/classfiles_updated
 	$(JAR) cvfM ${BINZIPFILE} xerces-${PRODUCTVERSION} 
 	$(MV) xerces-${PRODUCTVERSION} bin
 
-package_src:: ./source/src/Makefile
-./source/src/Makefile: ./src/classfiles_updated
-
+package_src:: ${SRCZIPFILE}
+${SRCZIPFILE}: ./src/classfiles_updated
 	@echo Building the source release package
 	${MAKE} -C src package_src
 	${CP} -r data source

@@ -60,7 +60,8 @@ PACKAGES = org.apache.xerces.parsers \
            org.w3c.dom.html \
            org.xml.sax \
            org.xml.sax.ext \
-           org.xml.sax.helpers
+           org.xml.sax.helpers \
+           javax.xml.parsers
 
 
 BINZIPFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.zip

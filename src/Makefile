@@ -1,7 +1,7 @@
 # Makefile for directory .
 
 TARGETS =
-DIRS = org
+DIRS = org javax
 
 TOP = ..
 include $(TOP)/src/Makefile.incl
@@ -133,10 +133,15 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/wml/dom
 	${CP}  ../src/org/apache/wml/dom/*.class                  ../class/org/apache/wml/dom
 
+#-src/javax/xml/parsers
+	${MKDIR} ../class/javax/xml/parsers
+	${CP}  ../src/javax/xml/parsers/*.class                  ../class/javax/xml/parsers
+
 
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
-	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org; cd ../src        
+	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org javax; cd ../src
+
 ###################################
 #copy the .class files unser samples
 samples: ../bin/${SAMPLESJARFILE}
@@ -301,6 +306,10 @@ package_src:
 	${MKDIR} ../source/src/org/xml/sax/ext
 	${CP}  ../src/org/xml/sax/ext/*.java			../source/src/org/xml/sax/ext
 
+#-src/javax/xml/parsers
+	${MKDIR} ../source/src/javax/xml/parsers
+	${CP}  ../src/javax/xml/parsers/*.java                  ../source/src/javax/xml/parsers
+
 ###################################
 #copy the .java and .dtd files unser samples
 
@@ -458,6 +467,17 @@ package_src:
 
 #-src/org/xml
 	${CP}  ../src/org/xml/Makefile    ../source/src/org/xml
+
+
+#-src/javax/xml/parsers
+	${CP}  ../src/javax/xml/parsers/Makefile    ../source/src/javax/xml/parsers
+
+#-src/javax/xml
+	${CP}  ../src/javax/xml/Makefile    ../source/src/javax/xml
+
+#-src/javax
+	${CP}  ../src/javax/Makefile    ../source/src/javax
+
 
 ###################################
 #copy the Makefiles under samples
