@@ -293,7 +293,7 @@ public class XPathMatcher {
             }
             XPath.Axis axis = step.axis;
             switch (axis.type) {
-                case XPath.Axis.SELF: {
+                case axis.SELF: {
                     if (DEBUG_MATCH) {
                         System.out.println("XPATH["+toString()+"]: "+
                                            "axis: SELF");
@@ -313,7 +313,7 @@ public class XPathMatcher {
                     }
                     continue;
                 }
-                case XPath.Axis.CHILD: {
+                case axis.CHILD: {
                     int elementStep = fCurrentStep + 1;
                     if (DEBUG_MATCH) {
                         System.out.println("XPATH["+toString()+"]: "+
@@ -321,7 +321,7 @@ public class XPathMatcher {
                     }
                     // check element match
                     XPath.NodeTest nodeTest = step.nodeTest;
-                    if (nodeTest.type == XPath.NodeTest.QNAME) {
+                    if (nodeTest.type == nodeTest.QNAME) {
                         if (DEBUG_MATCH) {
                             System.out.println("XPATH["+toString()+"]: "+
                                                "nodeTest: QNAME");
@@ -377,10 +377,10 @@ public class XPathMatcher {
                     if (fCurrentStep < fLocationPath.steps.length) {
                         step = fLocationPath.steps[fCurrentStep];
                         axis = step.axis;
-                        if (axis.type == XPath.Axis.ATTRIBUTE) {
+                        if (axis.type == axis.ATTRIBUTE) {
                             fCurrentStep++;
                             nodeTest = step.nodeTest;
-                            if (nodeTest.type == XPath.NodeTest.QNAME) {
+                            if (nodeTest.type == nodeTest.QNAME) {
                                 boolean matched = true;
                                 QName name = nodeTest.name;
                                 if (name.uri == -1) {
@@ -618,7 +618,7 @@ public class XPathMatcher {
                 org.apache.xerces.parsers.SAXParser parser = 
                     new org.apache.xerces.parsers.SAXParser(symbols) {
                     public void startDocument() throws Exception {
-                        matcher.startDocumentFragment(fStringPool, null);
+                        matcher.startDocumentFragment(matcher.fStringPool, null);
                     }
                     public void startElement(QName element, XMLAttrList attributes, int handle) throws Exception {
                         matcher.startElement(element, attributes, handle);

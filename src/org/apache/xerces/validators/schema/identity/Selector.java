@@ -151,7 +151,7 @@ public class Selector {
     
             // verify that an attribute is not selected
             XPath.Axis axis = fLocationPath.steps[fLocationPath.steps.length-1].axis;
-            if (axis.type == XPath.Axis.ATTRIBUTE) {
+            if (axis.type == axis.ATTRIBUTE) {
                 throw new XPathException("selectors cannot select attributes");
             }
     
