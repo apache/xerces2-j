@@ -501,7 +501,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
                         ctx.setNSContext((NamespaceContext)enumNSDecls.elementAt(i));
                     try {
                         // check 4.3.5.c0 must: enumeration values from the value space of base
-                        fEnumeration.addElement(this.fBase.validate((String)enumVals.elementAt(i), ctx, fTempInfo));
+                        fEnumeration.addElement(this.fBase.validate((String)enumVals.elementAt(i), ctx, tempInfo));
                     } catch (InvalidDatatypeValueException ide) {
                         reportError("FacetValueFromBase", new Object[]{enumVals.elementAt(i), "enumeration"});
                     }
@@ -1001,7 +1001,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         // first normalize string value, and convert it to actual value
         Object ob = getActualValue(content, context, validatedInfo);
 
-        validate(context, tempInfo);
+        validate(context, validatedInfo);
 
         return ob;
 
