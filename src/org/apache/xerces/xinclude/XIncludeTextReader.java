@@ -63,6 +63,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -113,6 +114,8 @@ public class XIncludeTextReader {
                     new URL(
                         new URL(source.getBaseSystemId()),
                         source.getSystemId());
+                // TODO: use this to ensure that rewinding is supported
+                //stream = new XMLEntityManager.RewindableInputStream(url.openStream());
                 stream = url.openStream();
                 URLConnection urlCon = url.openConnection();
 
@@ -157,6 +160,7 @@ public class XIncludeTextReader {
     protected String getEncodingName(InputStream stream) throws IOException {
         final byte[] b4 = new byte[4];
         int count = 0;
+        stream.mark(4);
         for (; count < 4; count++) {
             b4[count] = (byte)stream.read();
         }
@@ -179,6 +183,7 @@ public class XIncludeTextReader {
     /**
      * REVISIT: This code is take from org.apache.xerces.impl.XMLEntityManager.
      *          Is there any way we can share the code, without having it implemented twice?
+     *          I think we should make it public and static in XMLEntityManager. --PJM
      * 
      * Returns the IANA encoding name that is auto-detected from
      * the bytes specified, with the endian-ness of that encoding where appropriate.

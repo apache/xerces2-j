@@ -92,6 +92,7 @@ import org.apache.xerces.xni.parser.XMLDTDSource;
 import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
@@ -147,7 +148,7 @@ public class XIncludeHandler
         Constants.SAX_FEATURE_PREFIX
             + Constants.ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE;
 
-    /** Property identifier: error handler. */
+    /** Property identifier: error reporter. */
     protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
@@ -221,8 +222,8 @@ public class XIncludeHandler
     private int[] fState = new int[INITIAL_SIZE];
 
     // buffering the necessary DTD events
-    private Vector fNotations = new Vector();
-    private Vector fUnparsedEntities = new Vector();
+    private Vector fNotations;
+    private Vector fUnparsedEntities;
 
     private boolean fSendUEAndNotationEvents;
 
@@ -235,6 +236,8 @@ public class XIncludeHandler
         fSawFallback[fDepth] = false;
         fSawInclude[fDepth] = false;
         fState[fDepth] = STATE_NORMAL_PROCESSING;
+        fNotations = new Vector();
+        fUnparsedEntities = new Vector();
     }
 
     // XMLComponent methods
@@ -244,6 +247,15 @@ public class XIncludeHandler
         fNamespaceContext = null;
         fDepth = 0;
         fRootDepth = 0;
+        fNotations = new Vector();
+        fUnparsedEntities = new Vector();
+
+        for (int i = 0; i < fState.length; i++) {
+            // these three arrays will always be the same length, so this is safe
+            fSawFallback[i] = false;
+            fSawInclude[i] = false;
+            fState[i] = STATE_NORMAL_PROCESSING;
+        }
 
         try {
             fSendUEAndNotationEvents =
@@ -260,9 +272,12 @@ public class XIncludeHandler
         try {
             XMLErrorReporter value =
                 (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-            setErrorReporter(value);
-            if (fChildConfig != null) {
-                fChildConfig.setProperty(ERROR_REPORTER, value);
+            if (value != null) {
+                setErrorReporter(value);
+                if (fChildConfig != null) {
+                    // REVISIT: see setErrorReporter()
+                    fChildConfig.setProperty(ERROR_REPORTER, value);
+                }
             }
         }
         catch (XMLConfigurationException e) {
@@ -273,9 +288,12 @@ public class XIncludeHandler
             XMLEntityResolver value =
                 (XMLEntityResolver)componentManager.getProperty(
                     ENTITY_RESOLVER);
-            fEntityResolver = value;
-            if (fChildConfig != null) {
-                fChildConfig.setProperty(ENTITY_RESOLVER, value);
+
+            if (value != null) {
+                fEntityResolver = value;
+                if (fChildConfig != null) {
+                    fChildConfig.setProperty(ENTITY_RESOLVER, value);
+                }
             }
         }
         catch (XMLConfigurationException e) {
@@ -283,24 +301,9 @@ public class XIncludeHandler
         }
 
         fSettings = new ParserConfigurationSettings();
-
-        Enumeration xercesFeatures = Constants.getXercesFeatures();
-        while (xercesFeatures.hasMoreElements()) {
-            String featureId = (String)xercesFeatures.nextElement();
-            fSettings.addRecognizedFeatures(
-                new String[] { Constants.XERCES_FEATURE_PREFIX + featureId });
-            try {
-                fSettings.setFeature(
-                    featureId,
-                    componentManager.getFeature(featureId));
-            }
-            catch (XMLConfigurationException e) {
-                // componentManager doesn't support this feature,
-                // so we won't worry about it
-            }
-        }
-
-        // don't reset fChildConfig -- we don't want it to share the same components
+        copyFeatures(componentManager, fSettings);
+        // Don't reset fChildConfig -- we don't want it to share the same components.
+        // It will be reset when it is actually used to parse something.
     } // reset(XMLComponentManager)
 
     /**
@@ -366,6 +369,7 @@ public class XIncludeHandler
         if (propertyId.equals(ERROR_REPORTER)) {
             setErrorReporter((XMLErrorReporter)value);
             if (fChildConfig != null) {
+                // REVISIT: see setErrorReporter()
                 fChildConfig.setProperty(propertyId, value);
             }
         }
@@ -942,6 +946,16 @@ public class XIncludeHandler
     // XIncludeHandler methods
 
     private void setErrorReporter(XMLErrorReporter reporter) {
+        // REVISIT:
+        // This results in the incorrect location being displayed, because
+        // the XMLLocator is shared across all of the files.
+        //
+        // Howver, we do want to share the error reporter,
+        // since it might be something other than the default.
+        //
+        // This problem only surfaces when the error is reported
+        // somewhere other than in XIncludeHandler, since the XInclude#reportFatalError()
+        // method uses the right XMLLocator
         fErrorReporter = reporter;
         if (fErrorReporter != null) {
             fErrorReporter.putMessageFormatter(
@@ -1029,6 +1043,7 @@ public class XIncludeHandler
                         true);
 
                 // use the same error reporter
+                // REVISIT: see setErrorReporter()
                 fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 // use the same namespace context
                 fChildConfig.setProperty(
@@ -1036,29 +1051,19 @@ public class XIncludeHandler
                         + Constants.NAMESPACE_CONTEXT_PROPERTY,
                     fNamespaceContext);
 
-                XIncludeHandler newHandler = (XIncludeHandler)fChildConfig.getProperty(
-                    Constants.XERCES_PROPERTY_PREFIX
-                        + Constants.XINCLUDE_HANDLER_PROPERTY);
+                XIncludeHandler newHandler =
+                    (XIncludeHandler)fChildConfig.getProperty(
+                        Constants.XERCES_PROPERTY_PREFIX
+                            + Constants.XINCLUDE_HANDLER_PROPERTY);
                 newHandler.setParent(this);
                 newHandler.setDocumentHandler(this.getDocumentHandler());
             }
 
             // set all features on parserConfig to match this parser configuration
-            Enumeration xercesFeatures = Constants.getXercesFeatures();
-            while (xercesFeatures.hasMoreElements()) {
-                String featureId = (String)xercesFeatures.nextElement();
-                try {
-                    fChildConfig.setFeature(
-                        featureId,
-                        fSettings.getFeature(featureId));
-                }
-                catch (XMLConfigurationException e) {
-                    // parserConfig doesn't support this feature,
-                    // so we won't worry about it
-                }
-            }
+            copyFeatures(fSettings, fChildConfig);
 
-            // we don't want a schema validator on the new pipeline
+            // we don't want a schema validator on the new pipeline, 
+            // so we set it to false, regardless of what was copied above
             fChildConfig.setFeature(
                 Constants.XERCES_FEATURE_PREFIX
                     + Constants.SCHEMA_VALIDATION_FEATURE,
@@ -1223,7 +1228,6 @@ public class XIncludeHandler
 
                 // this causes errors with schema validation, since the schema doesn't specify that these elements can have an xml:base attribute
                 // TODO: add a user option to turn this off?
-                // TODO: make this a relative URL, when possible
                 // TODO: [base URI] is still an open issue with the working group.
                 //       They're deciding if xml:base should be added if the [base URI] is different in terms
                 //       of resolving relative references, or if it should be added if they are different at all.
@@ -1238,25 +1242,47 @@ public class XIncludeHandler
             }
 
             // Modify attributes of included items to do namespace-fixup. (spec 4.5.4)
-            // TODO: worry about null namespace?
             Enumeration inscopeNS = fNamespaceContext.getAllPrefixes();
             while (inscopeNS.hasMoreElements()) {
                 String prefix = (String)inscopeNS.nextElement();
                 String parentURI =
                     fNamespaceContext.getURIFromIncludeParent(prefix);
                 String uri = fNamespaceContext.getURI(prefix);
-                if (parentURI != uri
-                    && (attributes != null
-                        && attributes.getValue(NamespaceContext.XMLNS_URI, prefix)
-                            == null)) {
-                    if (attributes == null) {
-                        attributes = new XMLAttributesImpl();
-                    }
+                if (parentURI != uri && attributes != null) {
+                    if (prefix == XMLSymbols.EMPTY_STRING) {
+                        if (attributes
+                            .getValue(
+                                NamespaceContext.XMLNS_URI,
+                                XMLSymbols.PREFIX_XMLNS)
+                            == null) {
+                            if (attributes == null) {
+                                attributes = new XMLAttributesImpl();
+                            }
 
-                    QName ns = (QName)NEW_NS_ATTR_QNAME.clone();
-                    ns.localpart = prefix;
-                    ns.rawname += prefix;
-                    attributes.addAttribute(ns, XMLSymbols.fCDATASymbol, uri);
+                            QName ns = (QName)NEW_NS_ATTR_QNAME.clone();
+                            ns.localpart = XMLSymbols.PREFIX_XMLNS;
+                            ns.rawname = XMLSymbols.PREFIX_XMLNS;
+                            attributes.addAttribute(
+                                ns,
+                                XMLSymbols.fCDATASymbol,
+                                uri);
+                        }
+                    }
+                    else if (
+                        attributes.getValue(NamespaceContext.XMLNS_URI, prefix)
+                            == null) {
+                        if (attributes == null) {
+                            attributes = new XMLAttributesImpl();
+                        }
+
+                        QName ns = (QName)NEW_NS_ATTR_QNAME.clone();
+                        ns.localpart = prefix;
+                        ns.rawname += prefix;
+                        attributes.addAttribute(
+                            ns,
+                            XMLSymbols.fCDATASymbol,
+                            uri);
+                    }
                 }
             }
         }
@@ -1581,6 +1607,65 @@ public class XIncludeHandler
         }
         else {
             fParentXIncludeHandler.checkAndSendNotation(not);
+        }
+    }
+
+    // It would be nice if we didn't have to repeat code like this, but there's no interface that has
+    // setFeature() and addRecognizedFeatures() that the objects have in common.
+    protected void copyFeatures(
+        XMLComponentManager from,
+        ParserConfigurationSettings to) {
+        Enumeration features = Constants.getXercesFeatures();
+        copyFeatures1(features, Constants.XERCES_FEATURE_PREFIX, from, to);
+        features = Constants.getSAXFeatures();
+        copyFeatures1(features, Constants.SAX_FEATURE_PREFIX, from, to);
+    }
+
+    protected void copyFeatures(
+        XMLComponentManager from,
+        XMLParserConfiguration to) {
+        Enumeration features = Constants.getXercesFeatures();
+        copyFeatures1(features, Constants.XERCES_FEATURE_PREFIX, from, to);
+        features = Constants.getSAXFeatures();
+        copyFeatures1(features, Constants.SAX_FEATURE_PREFIX, from, to);
+    }
+
+    private void copyFeatures1(
+        Enumeration features,
+        String featurePrefix,
+        XMLComponentManager from,
+        ParserConfigurationSettings to) {
+        while (features.hasMoreElements()) {
+            String featureId = featurePrefix + (String)features.nextElement();
+
+            to.addRecognizedFeatures(new String[] { featureId });
+
+            try {
+                to.setFeature(featureId, from.getFeature(featureId));
+            }
+            catch (XMLConfigurationException e) {
+                // componentManager doesn't support this feature,
+                // so we won't worry about it
+            }
+        }
+    }
+
+    private void copyFeatures1(
+        Enumeration features,
+        String featurePrefix,
+        XMLComponentManager from,
+        XMLParserConfiguration to) {
+        while (features.hasMoreElements()) {
+            String featureId = featurePrefix + (String)features.nextElement();
+            boolean value = from.getFeature(featureId);
+
+            try {
+                to.setFeature(featureId, value);
+            }
+            catch (XMLConfigurationException e) {
+                // componentManager doesn't support this feature,
+                // so we won't worry about it
+            }
         }
     }
 
