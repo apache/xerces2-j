@@ -310,7 +310,8 @@ catch (SAXException e) {
     the document. When ignorable whitespace text nodes are included in 
     the DOM tree, they will be flagged as ignorable. The ignorable flag
     can be queried by calling the 
-    <code>TextImpl#isIgnorableWhitespace():boolean</code> method.  
+    <code>TextImpl#isIgnorableWhitespace():boolean</code> method. 
+    This feature is relevant only when the grammar is <strong>DTD</strong>. 
    </note>
   </feature>
  </fcategory>
