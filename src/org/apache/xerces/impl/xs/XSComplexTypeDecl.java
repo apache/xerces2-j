@@ -147,11 +147,11 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     public XSCMValidator getContentModel(CMBuilder cmBuilder) {
         if (fCMValidator != null)
             return fCMValidator;
-        cmBuilder.getContentModel(this);
+        fCMValidator = cmBuilder.getContentModel(this);
 
         return fCMValidator;
     }
-   
+
     public String toString() {
 
         StringBuffer str = new StringBuffer();
@@ -164,18 +164,18 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         String derivedBy[] = {"EMPTY", "EXTENSION", "RESTRICTION"};
 
         str.append("Complex type name='" + fTargetNamespace + "," + getXSTypeName() + "', ");
-        if (fBaseType != null) 
+        if (fBaseType != null)
           str.append(" base type name='" + fBaseType.getXSTypeName() + "', ");
-        
+
         str.append(" content type='" + contentType[fContentType] + "', ");
         str.append(" isAbstract='" + isAbstractType() + "', ");
         str.append(" hasTypeId='" + containsTypeID() + "', ");
         str.append(" final='" + fFinal + "', ");
         str.append(" block='" + fBlock + "', ");
-        if (fParticle != null) 
+        if (fParticle != null)
           str.append(" particle='" + fParticle.toString() + "', ");
         str.append(" derivedBy='" + derivedBy[fDerivedBy] + "'. ");
-        
+
     }
 
 } // class XSComplexTypeDecl
