@@ -17,7 +17,7 @@
 package org.apache.xerces.util;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -55,13 +55,13 @@ public class ParserConfigurationSettings
     protected ArrayList fRecognizedProperties;
 
     /** Properties. */
-    protected Hashtable fProperties;
+    protected HashMap fProperties;
 
     /** Recognized features. */
     protected ArrayList fRecognizedFeatures;
 
     /** Features. */
-    protected Hashtable fFeatures;
+    protected HashMap fFeatures;
 
     /** Parent parser configuration settings. */
     protected XMLComponentManager fParentSettings;
@@ -86,8 +86,8 @@ public class ParserConfigurationSettings
         fRecognizedProperties = new ArrayList();
 
         // create table for features and properties
-        fFeatures = new Hashtable();
-        fProperties = new Hashtable();
+        fFeatures = new HashMap();
+        fProperties = new HashMap();
 
         // save parent
         fParentSettings = parent;

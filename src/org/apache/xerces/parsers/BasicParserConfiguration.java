@@ -18,7 +18,7 @@ package org.apache.xerces.parsers;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
@@ -202,8 +202,8 @@ public abstract class BasicParserConfiguration
         fRecognizedProperties = new ArrayList();
 
         // create table for features and properties
-        fFeatures = new Hashtable();
-        fProperties = new Hashtable();
+        fFeatures = new HashMap();
+        fProperties = new HashMap();
 
         // add default recognized features
         final String[] recognizedFeatures = {
