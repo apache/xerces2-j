@@ -139,15 +139,7 @@ public class Grammar {
    private Object fContentSpecOtherValue[][] = new Object[INITIAL_CHUNK_COUNT][];
 
    // scope mapping tables
-
-   //private Hash2intTable fElementNameAndScopeToElementDeclIndexMapping = new Hash2intTable();
-
-   //We can have an array of Hashtable index by Scope & HashName
-   //scope 0-n
-   //
-
-   private Hashtable []fScopeNameElementHash = new Hashtable[10];
-
+   private Hash1int2stringTable fScopeElementUriLocalpartHash = new Hash1int2stringTable();
 
    private QName fQName1 = new QName();
    private QName fQName2 = new QName();
@@ -205,7 +197,19 @@ public class Grammar {
     * @return 
     */
    public int getElementDeclIndex(String elementDeclName, int scope) {
-      return((Integer) fScopeNameElementHash[ scope].get( elementDeclName)).intValue();
+       return fScopeElementUriLocalpartHash.get(scope, elementDeclName, null);
+   } // getElementDeclIndex
+   
+   /**
+    * getElementDeclIndex
+    * 
+    * @param elementDeclQName 
+    * @param scope 
+    * 
+    * @return 
+    */
+   public int getElementDeclIndex(QName elementDeclQName, int scope) {
+       return fScopeElementUriLocalpartHash.get(scope, elementDeclQName.localpart, elementDeclQName.uri);
    } // getElementDeclIndex
 
    /**
@@ -558,10 +562,14 @@ public class Grammar {
       if (elementDecl.simpleType.list  == true ) {
          fElementDeclType[chunk][index] |= LIST_FLAG;
       }
-      if (fScopeNameElementHash[scope] == null ) {
-         fScopeNameElementHash[scope] = new Hashtable();
+
+      if (isDTD()) {
+          fScopeElementUriLocalpartHash.put(scope, elementName, null, elementDeclIndex);
       }
-      fScopeNameElementHash[elementDecl.scope].put( elementName, new Integer( elementDeclIndex ) );
+      else {
+          fScopeElementUriLocalpartHash.put( scope, elementDecl.name.localpart, 
+                                             elementDecl.name.uri, elementDeclIndex);
+      }
    }
 
 
@@ -1106,5 +1114,94 @@ public class Grammar {
       public QName[] qname = new QName[2];
       public int[] type = new int[2];
    }
+
+   /**
+    *
+    * A simple Hashtable implementation that takes a tuple (int, String, String)
+    * as the key and a int as value
+    *
+    */
+   static final class Hash1int2stringTable {
+    
+    
+       private static final int INITIAL_BUCKET_SIZE = 4;
+       private static final int HASHTABLE_SIZE = 512;
+       private Object[][] fHashTable = new Object[HASHTABLE_SIZE][];
+
+
+        public void put(int key1, String key2, String key3, int value) {
+            int hash = (key1+hash(key2)+hash(key3)+2) % HASHTABLE_SIZE;
+            Object[] bucket = fHashTable[hash];
+
+            if (bucket == null) {
+                bucket = new Object[1 + 4*INITIAL_BUCKET_SIZE];
+                bucket[0] = new int[]{1};
+                bucket[1] = new int[]{key1};
+                bucket[2] = key2;
+                bucket[3] = key3;
+                bucket[4] = new int[]{value};
+                fHashTable[hash] = bucket;
+            } else {
+                int count = ((int[])bucket[0])[0];
+                int offset = 1 + 4*count;
+                if (offset == bucket.length) {
+                    int newSize = count + INITIAL_BUCKET_SIZE;
+                    Object[] newBucket = new Object[1 + 4*newSize];
+                    System.arraycopy(bucket, 0, newBucket, 0, offset);
+                    bucket = newBucket;
+                    fHashTable[hash] = bucket;
+                }
+                boolean found = false;
+                int j=1;
+                for (int i=0; i<count; i++){
+                    if ( ((int[])bucket[j])[0] == key1 && (String)bucket[j+1] == key2
+                         && (String)bucket[j+2] == key3 ) {
+                        ((int[])bucket[j+3])[0] = value;
+                        found = true;
+                        break;
+                    }
+                    j += 4;
+                }
+                if (! found) {
+                    bucket[offset++] = new int[]{key1};
+                    bucket[offset++] = key2;
+                    bucket[offset++] = key3;
+                    bucket[offset]= new int[]{value};
+                    ((int[])bucket[0])[0] = ++count;
+                }
+
+            }
+        }
+
+        public int get(int key1, String key2, String key3) {
+            int hash = (key1+hash(key2)+hash(key3)+2) % HASHTABLE_SIZE;
+            Object[] bucket = fHashTable[hash];
+
+            if (bucket == null) {
+                return -1;
+            }
+            int count = ((int[])bucket[0])[0];
+
+            int j=1;
+            for (int i=0; i<count; i++){
+                if ( ((int[])bucket[j])[0] == key1 && (String)bucket[j+1] == key2
+                     && (String)bucket[j+2] == key3) {
+                    return ((int[])bucket[j+3])[0];
+                }
+                j += 4;
+            }
+            return -1;
+        }
+
+        public int hash(String symbol) {
+            int code = 0;
+            int length = symbol.length();
+            for (int i = 0; i < length; i++) {
+                code = code * 37 + symbol.charAt(i);
+            }
+            return code & 0x7FFFFFF;
+        }
+   }  // class Hash1int2stringTable
+
 
 } // class Grammar
