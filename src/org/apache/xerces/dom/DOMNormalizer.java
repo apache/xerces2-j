@@ -121,6 +121,7 @@ import org.w3c.dom.Comment;
  *       can be modified or removed in the future.
  * 
  * @author Elena Litani, IBM
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @version $Id$
  */
 public class DOMNormalizer implements XMLDocumentHandler {
@@ -401,18 +402,18 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             Attr attr = (Attr)attributes.item(i);
                             //removeDefault(attr, attributes);
                             attr.normalize();
+                            //REVISIT: As of right now we are doing checks only if the XML version changed at any moment
+                            //but it is possible that bad XML characters enter into DOM when created in memory -- so we should
+                            //still be doing these checks when document is loaded or modified in memory                                    
+                            if(fDocument.isXMLVersionChanged()){       
+                                fDocument.isXMLName(node.getNodeName() , fDocument.isXML11Version());
+                            }                            
                             // XML 1.0 attribute value normalization
                             //normalizeAttributeValue(attr.getValue(), attr);                            
                         }
                     }
                 }
                 
-                //Check the attribute names.... if the document version was changed.
-                //REVISIT: commenting this for now..
-                
-                //if(fDocument.isXMLVersionChanged()){
-                    //checkAttributeNames(elem, attributes);
-                //}
                 
                 if (fValidationHandler != null) {
                     // REVISIT: possible solutions to discard default content are:
@@ -732,40 +733,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
     }
 
-    //this function is called when normalizing the document
-    //REVISIT: we should also be checking attribute values
-    protected final void checkAttributeNames(ElementImpl element, AttributeMap attributes){
-        // 1. loop through all the attributes..
-        //2. Check that all names are valid as per the version of the document.
-        //3. Check that attribute values are valid as per the version of the document.
-        //Actual attribute values are available only after attribute normalization has been done.
-        //so this function should be called after namespaceFixup() because that function is 
-        //also responsible for normalizing attribure values
-        
-        //REVISIT: should we be doing this separately or in namespaceFixUp() function.
-        //TODO: we are not checking attriubte values yet....
-        
-        for( int i = 0 ; i < attributes.getLength(); i++){
-            Attr attr = (Attr)attributes.item(i) ;
-            if(attr != null){
-                //take care of namespaces
-                if(fNamespaceValidation){
-                    //checkQName does checking based on the version of the document
-                    fDocument.checkQName(attr.getPrefix() , attr.getLocalName()) ;
-                }
-                else{
-                    //REVISIT: checkQName takes care of the version of the document
-                    //but isXMLName doesn't.... why its so ?
-                    fDocument.isXMLName(attr.getNodeName() , fDocument.isXML11Version());
-                }
-            }
-        }
-        
-    }//checkAttributeNames
-    
     // fix namespaces
     // normalize attribute values
     // remove default attributes
+    //check attribute names if the version of the document changed.
     //REVISIT: this function does not do only namespace fix but other things like normalizeAttributeValue, remove default
     //attributes -- we should choose appropriate name.
     
@@ -791,6 +762,15 @@ public class DOMNormalizer implements XMLDocumentHandler {
             // Record all valid local declarations
             for (int k=0; k < attributes.getLength(); k++) {
                 Attr attr = (Attr)attributes.getItem(k);
+
+                //REVISIT: As of right now we are doing checks only if the XML version changed at any moment
+                //but it is possible that bad XML characters enter into DOM when created in memory -- so we should
+                //still be doing these checks when document is loaded or modified in memory                                    
+                if(fDocument.isXMLVersionChanged()){       
+                    //checkQName does checking based on the version of the document
+                    fDocument.checkQName(attr.getPrefix() , attr.getLocalName()) ;
+                }
+                
                 uri = attr.getNamespaceURI();
                 if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
                     // namespace attribute
@@ -832,7 +812,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         }
                     }  // end-else: valid declaration
                 } // end-if: namespace attribute
-
             }
         }
 
