@@ -159,7 +159,7 @@ public class GrammarResolverImpl implements GrammarResolver {
      *               Name space key
      */
     public Grammar removeGrammar( String nameSpaceKey ) {
-        if ( containsNamesSpace( nameSpaceKey ) == true )
+        if ( containsNameSpace( nameSpaceKey ) == true )
           fGrammarRegistry.remove( nameSpaceKey );
         return null;
     }
@@ -185,7 +185,7 @@ public class GrammarResolverImpl implements GrammarResolver {
      * @return                Boolean- true - Namespace key association
      *         is in grammar pool.
      */
-    public boolean containsNamesSpace( String nameSpaceKey ){
+    public boolean containsNameSpace( String nameSpaceKey ){
         return fGrammarRegistry.containsKey( nameSpaceKey );
     }
 
