@@ -125,7 +125,7 @@ public class XMLEntityManager
     //
 
     /** Default buffer size (2048). */
-    public static final int DEFAULT_BUFFER_SIZE = 2048;
+    public static final int DEFAULT_BUFFER_SIZE = 64;
 
     // debugging
 
@@ -900,7 +900,7 @@ public class XMLEntityManager
 
         // call handler
         if (DEBUG_BUFFER) {
-            System.out.println("(endEntity: ");
+            System.out.print("(endEntity: ");
             print();
             System.out.println();
         }
@@ -1516,7 +1516,7 @@ public class XMLEntityManager
 
             // return peeked character
             if (DEBUG_BUFFER) {
-                System.out.print("peekChar: ");
+                System.out.print(")peekChar: ");
                 print();
                 System.out.println(" -> '"+(c!='\r'?(char)c:'\n')+"'");
             }
@@ -1860,7 +1860,7 @@ public class XMLEntityManager
             }
             else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
-                load(1, true);
+                load(1, false);
                 fCurrentEntity.position = 0;
             }
 
@@ -1991,7 +1991,7 @@ public class XMLEntityManager
             }
             else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
-                load(1, true);
+                load(1, false);
                 fCurrentEntity.position = 0;
             }
 
@@ -2017,9 +2017,17 @@ public class XMLEntityManager
                         }
                     }
                     else if (c == '\n') {
+                        System.out.println("hit \\n");
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            offset = 0;
+                            fCurrentEntity.position = newlines;
+                            if (load(newlines, false)) {
+                                break;
+                            }
+                        }
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2134,7 +2142,7 @@ public class XMLEntityManager
             else if (fCurrentEntity.position == limit) {
                 System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
                                  fCurrentEntity.ch, 0, delimLen - 1);
-                load(delimLen - 1, true);
+                load(delimLen - 1, false);
                 fCurrentEntity.position = 0;
             }
 
@@ -2204,6 +2212,7 @@ public class XMLEntityManager
                     for (i = 1; i < delimLen; i++) {
                         c = fCurrentEntity.ch[fCurrentEntity.position++];
                         if (c != delimiter.charAt(i)) {
+                            fCurrentEntity.position -= i;
                             break;
                         }
                     }
@@ -2547,13 +2556,17 @@ public class XMLEntityManager
 
             // end of this entity
             else {
+                //fCurrentEntity.count = offset;
                 entityChanged = true;
                 if (changeEntity) {
                     endEntity();
                     if (fCurrentEntity == null) {
                         throw new EOFException();
                     }
-                    // REVISIT: Does anything else have to occur here? -Ac
+                    // handle the trailing edges
+                    if (fCurrentEntity.position == fCurrentEntity.count) {
+                        load(0, true);
+                    }
                 }
             }
             if (DEBUG_BUFFER) {

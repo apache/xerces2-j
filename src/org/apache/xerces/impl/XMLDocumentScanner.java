@@ -510,21 +510,21 @@ public class XMLDocumentScanner
                                        new Object[]{fCurrentElement.rawname}, XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
-        // make sure markup is properly balanced
-        if (fInMarkup) {
-            fInMarkup = false;
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MarkupEntityMismatch",
-                                       null,
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-
         // keep track of entities appearing in attribute values
         if (fScanningAttribute) {
             if (DEBUG_ATTR_ENTITIES) {
                 System.out.println("*** popAttrEntity("+fAttributeOffset+") \""+name+'"');
             }
             fAttributeEntityStack.popAttrEntity(fAttributeOffset);
+        }
+
+        // make sure markup is properly balanced
+        else if (fInMarkup) {
+            fInMarkup = false;
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MarkupEntityMismatch",
+                                       null,
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
         }
 
         // call handler
@@ -1106,6 +1106,31 @@ public class XMLDocumentScanner
         int c = fEntityScanner.scanContent(fString);
         if (fDocumentHandler != null && fString.length > 0) {
             fDocumentHandler.characters(fString);
+        }
+
+        // REVISIT: Handle this better.
+        if (c == ']' && fString.length == 0) {
+            if (fEntityScanner.skipString("]]>")) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "CDEndInContent",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            else if (fEntityScanner.skipString("]]")) {
+                fStringBuffer.clear();
+                fStringBuffer.append("]]");
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.characters(fStringBuffer);
+                }
+            }
+            else {
+                fStringBuffer.clear();
+                fStringBuffer.append((char)fEntityScanner.scanChar());
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.characters(fStringBuffer);
+                }
+            }
+            c = -1;
         }
         return c;
 
@@ -1909,16 +1934,16 @@ public class XMLDocumentScanner
                                         setScannerState(SCANNER_STATE_REFERENCE);
                                         break;
                                     }
+                                    /***
                                     else if (c == ']') {
-                                        if (fEntityScanner.skipChar(']')) {
-                                            if (fEntityScanner.skipChar('>')) {
-                                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                                           "CDEndInContent",
-                                                                           null,
-                                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                            }
+                                        if (fEntityScanner.skipString("]]>")) {
+                                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                                       "CDEndInContent",
+                                                                       null,
+                                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
                                         }
                                     }
+                                    /***/
                                     else if (c != -1 && XMLChar.isInvalid(c)) {
                                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                                                    "InvalidCharInContent",
@@ -1990,6 +2015,7 @@ public class XMLDocumentScanner
                         }
                         case SCANNER_STATE_CDATA: {
                             scanCDATASection(complete);
+                            setScannerState(SCANNER_STATE_CONTENT);
                             break;
                         }
                         case SCANNER_STATE_REFERENCE: {
