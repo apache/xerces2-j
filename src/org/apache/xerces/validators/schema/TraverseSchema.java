@@ -3453,6 +3453,8 @@ public class TraverseSchema implements
 
         int min=1, max=1;
 
+        // If minOccurs=maxOccurs=0, no component is specified
+       
         if(minOccurs.equals("0") && maxOccurs.equals("0")){
             return -2;
         }
@@ -3528,6 +3530,18 @@ public class TraverseSchema implements
                 reportSchemaError(SchemaMessageProvider.GenericError,
                                   new Object [] { "illegal value for minOccurs or maxOccurs : '" +e.getMessage()+ "' "});
             }
+
+            // Check that minOccurs isn't greater than maxOccurs.
+            // p-props-correct 2.1
+            if (min > max) {
+                reportGenericSchemaError("p-props-correct:2.1 Value of minOccurs '" + minOccurs + "' must not be greater than value of maxOccurs '" + maxOccurs +"'");
+            }
+
+            if (max < 1) {
+                reportGenericSchemaError("p-props-correct:2.2 Value of maxOccurs " + maxOccurs + " is invalid.  It must be greater than or equal to 1");
+            }
+
+              
             if (min==0) {
                 int optional = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
                                                                  leafIndex,
