@@ -161,6 +161,7 @@ public class TraverseSchema implements
 
     /** Compile to true to debug identity constraints. */
     private static final boolean DEBUG_IDENTITY_CONSTRAINTS = false;
+    private static final boolean DEBUG_NEW_GROUP = false;
 
     /**
      * Compile to true to debug datatype validator lookup for
@@ -310,6 +311,11 @@ public class TraverseSchema implements
 
     private class ParticleRecoverableError extends Exception {
         ParticleRecoverableError(String s) {super(s);}
+    }
+
+    private class GroupInfo {
+        int contentSpecIndex = -1;
+        int scope = -1;
     }
 
     private class ElementInfo {
@@ -1201,7 +1207,7 @@ public class TraverseSchema implements
                 // if we're here: must have been a restriction.
                 // we have yet to be renamed.
                 try {
-                    Integer i = (Integer)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
+                    GroupInfo gi = (GroupInfo)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
                     // if that succeeded then we're done; were ref'd here in
                     // an include most likely.
                     continue;
@@ -1427,26 +1433,26 @@ public class TraverseSchema implements
                     continue;
                 }
                	traverseGroupDecl(child);
-                Integer bCSIndexObj = null;
+                GroupInfo bGIObj = null;
                 try {
-                    bCSIndexObj = (Integer)fGroupNameRegistry.get(fTargetNSURIString +","+ dName+redefIdentifier);
+                    bGIObj = (GroupInfo)fGroupNameRegistry.get(fTargetNSURIString +","+ dName+redefIdentifier);
                 } catch(ClassCastException c) {
                     // if it's still a String, then we mustn't have found a corresponding attributeGroup in the redefined schema.
                     // REVISIT:  localize
                     reportGenericSchemaError("src-redefine.6.2:  a <group> within a <redefine> must either have a ref to a <group> with the same name or must restrict such an <group>");
                     continue;
                 }
-                if(bCSIndexObj != null) { // we have something!
-                    int bCSIndex = bCSIndexObj.intValue();
-                    Integer dCSIndexObj;
+                if(bGIObj != null) { // we have something!
+                    int bCSIndex = bGIObj.contentSpecIndex;
+                    GroupInfo dGIObj;
                     try {
-                        dCSIndexObj = (Integer)fGroupNameRegistry.get(fTargetNSURIString+","+dName);
+                        dGIObj = (GroupInfo)fGroupNameRegistry.get(fTargetNSURIString+","+dName);
                     } catch (ClassCastException c) {
                         continue;
                     }
-                    if(dCSIndexObj == null) // something went wrong...
+                    if(dGIObj == null) // something went wrong...
                         continue;
-                    int dCSIndex = dCSIndexObj.intValue();
+                    int dCSIndex = dGIObj.contentSpecIndex;
                     try {
                       checkParticleDerivationOK(dCSIndex, -1, bCSIndex, -1, null);
                     }
@@ -4007,7 +4013,8 @@ public class TraverseSchema implements
           String childName = complexContentChild.getLocalName();
 
           if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-               int groupIndex = traverseGroupDecl(complexContentChild);
+               GroupInfo grpInfo = traverseGroupDecl(complexContentChild);
+               int groupIndex = (grpInfo != null) ? grpInfo.contentSpecIndex:-2;
 
                index = handleOccurrences(groupIndex,
                                 complexContentChild,
@@ -7724,7 +7731,7 @@ throws Exception {
      * @return
      * @exception Exception
      */
-    private int traverseGroupDecl( Element groupDecl ) throws Exception {
+    private GroupInfo traverseGroupDecl( Element groupDecl ) throws Exception {
 
         // General Attribute Checking
         int scope = isTopLevel(groupDecl)?
@@ -7734,7 +7741,8 @@ throws Exception {
 
         String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
-		Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
+        GroupInfo gInfo = null;
+	Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
         if (!ref.equals("")) {
             if (isTopLevel(groupDecl))
@@ -7759,26 +7767,31 @@ throws Exception {
             String uriStr = resolvePrefixToURI(prefix);
 
             if (!uriStr.equals(fTargetNSURIString)) {
-                return traverseGroupDeclFromAnotherSchema(localpart, uriStr);
+                gInfo = traverseGroupDeclFromAnotherSchema(localpart, uriStr);
+                if (DEBUG_NEW_GROUP)
+                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+                return gInfo;
             }
-            Object contentSpecHolder = fGroupNameRegistry.get(uriStr + "," + localpart);
-            if(contentSpecHolder != null ) {	// we may have already traversed this group
-                boolean fail = false;
-                int contentSpecHolderIndex = 0;
-                try {
-                    contentSpecHolderIndex = ((Integer)contentSpecHolder).intValue();
-                } catch (ClassCastException c) {
-                    fail = true;
-                }
-                if(!fail) {
-		            return contentSpecHolderIndex;
-                }
+            
+            try {
+              gInfo = (GroupInfo) fGroupNameRegistry.get(uriStr + "," + localpart);
+              if (gInfo != null) {
+                // Ensure any LEAF elements are created at the 
+                // scope of the referencing type
+                if (DEBUG_NEW_GROUP)
+                  findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+		return gInfo;
+              }
+
             }
+            catch (ClassCastException c) {
+            }
+
 
             // Check if we are in the middle of traversing this group (i.e. circular references)
             if (fCurrentGroupNameStack.search((Object)localpart) > - 1) {
                 reportGenericSchemaError("mg-props-correct: Circular definition for group " + localpart);
-                return -2;
+                return null;
             }
 
             int contentSpecIndex = -1;
@@ -7790,27 +7803,36 @@ throws Exception {
                 //throw new RuntimeException("Group " + localpart + " not found in the Schema");
             }
             else {
-                contentSpecIndex = traverseGroupDecl(referredGroup);
+                gInfo = traverseGroupDecl(referredGroup);
             }
 
-            return contentSpecIndex;
+            // Now that we have a tree, ensure any LEAF elements are created at the 
+            // scope of the referencing type
+            if (gInfo != null) {
+               if (DEBUG_NEW_GROUP) 
+                 findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+            }
+            return gInfo;
+
         } else if (groupName.equals(""))
             // REVISIT: Localize
             reportGenericSchemaError("a <group> must have a name or a ref present");
-		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
-		Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
-        if(contentSpecHolder != null ) {	// we may have already traversed this group
-            boolean fail = false;
-            int contentSpecHolderIndex = 0;
-            try {
-                contentSpecHolderIndex = ((Integer)contentSpecHolder).intValue();
-            } catch (ClassCastException c) {
-                fail = true;
-            }
-            if(!fail) {
-		        return contentSpecHolderIndex;
-            }
+
+	String qualifiedGroupName = fTargetNSURIString + "," + groupName;
+        try {
+          gInfo = (GroupInfo) fGroupNameRegistry.get(qualifiedGroupName);
+          if (gInfo != null) {
+            // Ensure any LEAF elements are created at the 
+            // scope of the referencing type
+            if (DEBUG_NEW_GROUP)
+              findAndCreateElements(gInfo.contentSpecIndex,gInfo.scope);            
+	    return gInfo;
+          }
+
         }
+        catch (ClassCastException c) {
+        }
+
 
 	// if we're here then we're traversing a top-level group that we've never seen before.
         // Push the group name onto a stack, so that we can check for circular groups
@@ -7818,7 +7840,10 @@ throws Exception {
 
         // Save the scope and set the current scope to -1
         int savedScope = fCurrentScope;
-        fCurrentScope = -1;
+        if (DEBUG_NEW_GROUP) 
+           fCurrentScope = fScopeCount++;
+        else
+           fCurrentScope = -1;
 
         int index = -2;
 
@@ -7854,22 +7879,58 @@ throws Exception {
             index = handleOccurrences(index, child, CHILD_OF_GROUP);
         }
 
-	contentSpecHolder = new Integer(index);
-        fCurrentGroupNameStack.pop();
+	gInfo = new GroupInfo();
+        gInfo.contentSpecIndex = index;
+        gInfo.scope = fCurrentScope;
         fCurrentScope = savedScope;
-	fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
-        return index;
+        fCurrentGroupNameStack.pop();
+	fGroupNameRegistry.put(qualifiedGroupName, gInfo);
+        return gInfo;
     }
 
-    private int traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
+    private void findAndCreateElements(int csIndex, int scope) {
 
+        if (csIndex<0) {
+           return;
+        }
+
+        fSchemaGrammar.getContentSpec( csIndex, tempContentSpec1);
+
+        int type = tempContentSpec1.type;
+        int left = tempContentSpec1.value;
+        int right = tempContentSpec1.otherValue;
+
+        if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+          int eltNdx = fSchemaGrammar.getElementDeclIndex(right, left, scope);
+          if (eltNdx <0)
+            return;
+          
+          fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope);
+        
+        }
+        else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+                 type == XMLContentSpec.CONTENTSPECNODE_ALL ||
+                 type == XMLContentSpec.CONTENTSPECNODE_SEQ) {
+
+          findAndCreateElements(left,scope);
+
+          if (right != -2)  
+             findAndCreateElements(right,scope); 
+        }
+        return;
+
+    }
+
+    private GroupInfo traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
+
+        GroupInfo gInfo = null;
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || aGrammar==null ||! (aGrammar instanceof SchemaGrammar) ) {
             // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found in #traverseGroupDeclFromAnotherSchema, "+
                                      "schema uri: " + uriStr
                                      +", groupName: " + groupName);
-            return -1;
+            return null;
         }
 
 
@@ -7878,7 +7939,7 @@ throws Exception {
             // REVISIT: Localize
             reportGenericSchemaError( "no group named \"" + groupName
                                       + "\" was defined in schema : " + uriStr);
-            return -1;
+            return null;
         }
 
         NamespacesScope saveNSMapping = fNamespacesScope;
@@ -7889,24 +7950,20 @@ throws Exception {
 	Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
 	String qualifiedGroupName = fTargetNSURIString + "," + groupName;
-	Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
-    if(contentSpecHolder != null ) {	// we may have already traversed this group
-        boolean fail = false;
-        int contentSpecHolderIndex  = 0;
         try {
-            contentSpecHolderIndex = ((Integer)contentSpecHolder).intValue();
+	    gInfo = (GroupInfo) fGroupNameRegistry.get(qualifiedGroupName);
+            if (gInfo != null)
+              return gInfo; 
         } catch (ClassCastException c) {
-            fail = true;
         }
-        if(!fail) {
-            return contentSpecHolderIndex;
-        }
-    }
 
         // ------------------------------------
 	// if we're here then we're traversing a top-level group that we've never seen before.
 
         int index = -2;
+        int savedScope = fCurrentScope;
+        if (DEBUG_NEW_GROUP) 
+          fCurrentScope = fScopeCount++;
 
         boolean illegalChild = false;
 	String childName = (child != null) ? child.getLocalName() : "";
@@ -7928,11 +7985,14 @@ throws Exception {
             index = handleOccurrences( index, child);
         }
 
-	contentSpecHolder = new Integer(index);
-	fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
+	gInfo = new GroupInfo();
+        gInfo.contentSpecIndex = index;
+        gInfo.scope = fCurrentScope;
+        fCurrentScope = savedScope;
+	fGroupNameRegistry.put(qualifiedGroupName, gInfo);
 	fNamespacesScope = saveNSMapping;
 	fTargetNSURI = saveTargetNSUri;
-        return index;
+        return gInfo;
 
 
     } // end of method traverseGroupDeclFromAnotherSchema
@@ -7979,7 +8039,8 @@ throws Exception {
 
             }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-                index = traverseGroupDecl(child);
+                GroupInfo grpInfo = traverseGroupDecl(child);
+                index = (grpInfo != null) ? grpInfo.contentSpecIndex:-2;
 
                 // A content type of all can only appear
                 // as the content type of a complex type definition.
@@ -8081,7 +8142,8 @@ throws Exception {
 
             }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-                index = traverseGroupDecl(child);
+                GroupInfo grpInfo = traverseGroupDecl(child);
+                index = (grpInfo != null) ? grpInfo.contentSpecIndex:-2;
 
                 // A model group whose {compositor} is "all" can only appear
                 // as the {content type} of a complex type definition.
