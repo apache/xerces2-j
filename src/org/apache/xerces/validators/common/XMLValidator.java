@@ -305,7 +305,7 @@ public final class XMLValidator
 
    private final int TOP_LEVEL_SCOPE = -1;
    private int fCurrentScope = TOP_LEVEL_SCOPE;
-   private int fCurrentSchemaURI = -1;
+   private int fCurrentSchemaURI = StringPool.EMPTY_STRING;
    private int fEmptyURI = StringPool.EMPTY_STRING; 
    private int fXsiPrefix = - 1;
    private int fXsiURI = -2; 
@@ -1457,7 +1457,7 @@ public final class XMLValidator
 
          fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
          if ( fValidating && fGrammarIsSchemaGrammar )
-             if (fGrammarNameSpaceIndex == StringPool.EMPTY_STRING) {
+             if (fGrammarNameSpaceIndex < StringPool.EMPTY_STRING) {
                  fGrammar = null;
                  fGrammarIsSchemaGrammar = false;
                  fGrammarIsDTDGrammar = false;

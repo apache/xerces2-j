@@ -165,6 +165,7 @@ public class TraverseSchema implements
 
     private Element fSchemaRootElement;
     private SchemaInfo fSchemaInfoList = null;
+    private boolean fRedefineSucceeded;
 
     private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
 
@@ -441,6 +442,7 @@ public class TraverseSchema implements
             else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
                 traverseImport(child); 
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
+                fRedefineSucceeded = true; // presume worked until proven failed.
                 traverseRedefine(child); 
             }
         } // for each child node
@@ -741,6 +743,7 @@ public class TraverseSchema implements
             else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
                 traverseImport(child); 
             } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
+                fRedefineSucceeded = true; // presume worked until proven failed.
                 traverseRedefine(child); 
             }
         } // for each child node
@@ -757,7 +760,14 @@ public class TraverseSchema implements
 	 */
     private void traverseRedefine(Element redefineDecl) throws Exception {
 
-        String location = redefineDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        Attr locationAttr = redefineDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
+	    if (locationAttr == null) {
+            // REVISIT: Localize
+            fRedefineSucceeded = false;
+            reportGenericSchemaError("a schemaLocation attribute must be specified on a <redefine> element");
+            return;
+        }
+        String location = locationAttr.getValue();
         
         // expand it before passing it to the parser
         InputSource source = null;
@@ -810,7 +820,10 @@ public class TraverseSchema implements
             root = document.getDocumentElement();
         }
 
-		if (root == null) return; // nothing to be redefined, so just continue; specs disallow an error here.
+		if (root == null) { // nothing to be redefined, so just continue; specs disallow an error here. 
+            fRedefineSucceeded = false;
+            return; 
+        }
 
 		// now if root isn't null, it'll contain the root of the schema we need to redefine.  
 		// We do this in two phases:  first, we look through the children of
@@ -833,6 +846,7 @@ public class TraverseSchema implements
         String redefinedTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
         if (redefinedTargetNSURIString.length() > 0 && !redefinedTargetNSURIString.equals(fTargetNSURIString) ) {
             // REVISIT: Localize
+            fRedefineSucceeded = false;
             reportGenericSchemaError("redefined schema '"+location+"' has a different targetNameSpace '"
                                      +redefinedTargetNSURIString+"' from the original schema");
         }
@@ -906,21 +920,24 @@ public class TraverseSchema implements
             	String typeName = child.getAttribute( SchemaSymbols.ATT_NAME );
 				QName processedTypeName = new QName(-1, fStringPool.addSymbol(typeName), fStringPool.addSymbol(typeName), fTargetNSURI);
 				Element grandKid = XUtil.getFirstChildElement(child);
-				if (grandKid == null)
+				if (grandKid == null) {
+                    fRedefineSucceeded = false;
             		// REVISIT: Localize
             		reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
-				else {
+                } else {
             		String grandKidName = grandKid.getLocalName();
-					if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION))
+					if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
+                        fRedefineSucceeded = false;
             			// REVISIT: Localize
             			reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
-					else {
+                    } else {
             			String derivedBase = grandKid.getAttribute( SchemaSymbols.ATT_BASE );
 						QName processedDerivedBase = parseBase(derivedBase);
-						if(!processedTypeName.equals(processedDerivedBase))
+						if(!processedTypeName.equals(processedDerivedBase)) {
+                            fRedefineSucceeded = false;
             				// REVISIT: Localize
             				reportGenericSchemaError("the base attribute of the restriction child of a simpleType child of a redefine must have the same value as the simpleType's type attribute");
-						else {
+                        } else {
 							// now we have to do the renaming...
 							String newBase = derivedBase + "#redefined";
             				grandKid.setAttribute( SchemaSymbols.ATT_BASE, newBase );
@@ -934,28 +951,32 @@ public class TraverseSchema implements
             	String typeName = child.getAttribute( SchemaSymbols.ATT_NAME );
 				QName processedTypeName = new QName(-1, fStringPool.addSymbol(typeName), fStringPool.addSymbol(typeName), fTargetNSURI);
 				Element grandKid = XUtil.getFirstChildElement(child);
-				if (grandKid == null)
+				if (grandKid == null) {
+                    fRedefineSucceeded = false;
             		// REVISIT: Localize
             		reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
-				else {
+                } else {
 					// have to go one more level down; let another pass worry whether complexType is valid.
 					Element greatGrandKid = XUtil.getFirstChildElement(grandKid);
-					if (greatGrandKid == null)
+					if (greatGrandKid == null) {
+                        fRedefineSucceeded = false;
             			// REVISIT: Localize
             			reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
-					else {
+                    } else {
             			String greatGrandKidName = greatGrandKid.getLocalName();
 						if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) && 
-								!greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION))
+								!greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
+                            fRedefineSucceeded = false;
             				// REVISIT: Localize
             				reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
-						else {
+						} else {
             				String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
 							QName processedDerivedBase = parseBase(derivedBase);
-							if(!processedTypeName.equals(processedDerivedBase))
+							if(!processedTypeName.equals(processedDerivedBase)) {
+                                fRedefineSucceeded = false;
             					// REVISIT: Localize
             					reportGenericSchemaError("the base attribute of the restriction or extension grandchild of a complexType child of a redefine must have the same value as the complexType's type attribute");
-							else {
+							} else {
 								// now we have to do the renaming...
 								String newBase = derivedBase + "#redefined";
             					greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE, newBase );
@@ -970,10 +991,11 @@ public class TraverseSchema implements
 				String baseName = child.getAttribute( SchemaSymbols.ATT_NAME );
 				QName processedBaseName = new QName(-1, fStringPool.addSymbol(baseName), fStringPool.addSymbol(baseName), fTargetNSURI);
 				int attGroupRefsCount = changeRedefineGroup(processedBaseName, name, child);
-				if(attGroupRefsCount > 1)
+				if(attGroupRefsCount > 1) {
+                    fRedefineSucceeded = false;
 					// REVISIT:  localize
 					reportGenericSchemaError("if an attributeGroup child of a <redefine> element contains an attributeGroup ref'ing itself, it must have exactly 1; this one has " + attGroupRefsCount);
-				else if (attGroupRefsCount == 1) {
+				} else if (attGroupRefsCount == 1) {
 					fixRedefinedSchema(SchemaSymbols.ELT_ATTRIBUTEGROUP, 
 						baseName, baseName+"#redefined", 
 						schemaToRedefine);
@@ -984,10 +1006,11 @@ public class TraverseSchema implements
 				String baseName = child.getAttribute( SchemaSymbols.ATT_NAME );
 				QName processedBaseName = new QName(-1, fStringPool.addSymbol(baseName), fStringPool.addSymbol(baseName), fTargetNSURI);
 				int groupRefsCount = changeRedefineGroup(processedBaseName, name, child);
-				if(groupRefsCount > 1)
+				if(groupRefsCount > 1) {
+                    fRedefineSucceeded = false;
 					// REVISIT:  localize
 					reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
-				else if (groupRefsCount == 1) {
+				} else if (groupRefsCount == 1) {
 					fixRedefinedSchema(SchemaSymbols.ELT_GROUP, 
 						baseName, baseName+"#redefined", 
 						schemaToRedefine);
@@ -995,6 +1018,7 @@ public class TraverseSchema implements
 					// REVISIT (schema PR):  the case where must prove the group restricts the redefined one.
 				} 
 			} else {
+                fRedefineSucceeded = false;
             	// REVISIT: Localize
             	reportGenericSchemaError("invalid top-level content for <redefine>");
 				return;
@@ -1076,9 +1100,11 @@ public class TraverseSchema implements
 				}
 			}
 		} //for
-		if(!foundIt)
+		if(!foundIt) {
+            fRedefineSucceeded = false;
 			// REVISIT: localize
 			reportGenericSchemaError("could not find a declaration in the schema to be redefined corresonding to " + oldName);
+        }
 	} // end fixRedefinedSchema
 
     private void traverseImport(Element importDecl)  throws Exception {
@@ -1565,7 +1591,7 @@ public class TraverseSchema implements
             anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
         }
         else if (namespace.equals("##other")) {
-            String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+			String uri = fTargetNSURIString;
             int uriIndex = fStringPool.addSymbol(uri);
             anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAnyOther, -1, uriIndex, false);
         }
@@ -1578,7 +1604,7 @@ public class TraverseSchema implements
             while (tokenizer.hasMoreElements()) {
                 String token = tokenizer.nextToken();
                 if (token.equals("##targetNamespace")) {
-                    token = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+			        token = fTargetNSURIString;
                 }
                 tokens.addElement(token);
             }
@@ -3802,6 +3828,7 @@ public class TraverseSchema implements
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
             String uriString = resolvePrefixToURI(prefix);
+            System.err.println("the uriString is " + uriString);
             QName eltName = new QName(prefix != null ? fStringPool.addSymbol(prefix) : -1,
                                       localpartIndex,
                                       fStringPool.addSymbol(ref),
@@ -4649,7 +4676,7 @@ public class TraverseSchema implements
                     if (child.getAttribute(SchemaSymbols.ATT_NAME).equals(name)) {
                         break;
                     }
-                } else if (child.getLocalName().equals(SchemaSymbols.ELT_REDEFINE)) {
+                } else if (fRedefineSucceeded && child.getLocalName().equals(SchemaSymbols.ELT_REDEFINE)) {
                     Element gChild = XUtil.getFirstChildElement(child);
                     while (gChild != null ){
                         if (gChild.getLocalName().equals(componentCategory)) {

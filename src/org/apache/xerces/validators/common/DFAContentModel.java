@@ -883,8 +883,7 @@ public class DFAContentModel
                 }
                 else {
                     if (fElemMap[inIndex].uri == element.uri &&
-                        fElemMap[inIndex].localpart == element.localpart && 
-                        fElemMapType[inIndex] == fLeafListType[outIndex] )
+                            fElemMap[inIndex].localpart == element.localpart) 
                         break;
                 }
             }
@@ -927,10 +926,7 @@ public class DFAContentModel
 		}
 		else if (leaf.uri == element.uri &&
 					leaf.localpart == element.localpart) {
-        		if (!((leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
-            			(leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
-            			(leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER))
-					fLeafSorter[fSortCount++] = leafIndex;
+				fLeafSorter[fSortCount++] = leafIndex;
 		}
 	    }
 	    fLeafSorter[fSortCount++] = -1;
