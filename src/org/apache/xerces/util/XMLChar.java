@@ -440,6 +440,35 @@ public class XMLChar {
         return c < 0x10000 && (CHARS[c] & MASK_PUBID) != 0;
     } // isPubid(int):boolean
 
+    /*
+     * [5] Name ::= (Letter | '_' | ':') (NameChar)*
+     */
+    /**
+     * Check to see if a string is a valid Name according to [5]
+     * in the XML 1.0 Recommendation
+     *
+     * @param name string to check
+     * @return true if name is a valid Name
+     */
+    public static boolean isValidName(String name) {
+        if (name.length() == 0)
+            return false;
+        char ch = name.charAt(0);
+        if( isNameStart(ch) == false)
+           return false;
+        for (int i = 1; i < name.length(); i++ ) {
+           ch = name.charAt(i);
+           if( isName( ch ) == false ){
+              return false;
+           }
+        }
+        return true;
+    } // isValidName(String):boolean
+
+
+
+
+
     // encodings
 
     /**
