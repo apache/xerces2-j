@@ -215,6 +215,7 @@ public class AttrNSImpl
     	                               "DOM002 Illegal character");
         }
         this.prefix = prefix;
+	this.name = prefix + ":" + localName;
     }
                                         
     /** 
