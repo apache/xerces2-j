@@ -122,19 +122,21 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                 setErrorHandler(new DefaultValidationErrorHandler());
             }
 
-            // XXX Ignore unimplemented features for now
-            try {
-                // Set various parameters obtained from DocumentBuilderFactory
-                domParser.setFeature(XERCES_FEATURE_PREFIX +
-                                     INCLUDE_IGNORABLE_WHITESPACE,
-                                     !dbf.isIgnoringElementContentWhitespace());
-                domParser.setFeature(XERCES_FEATURE_PREFIX +
-                                     CREATE_ENTITY_REF_NODES_FEATURE,
-                                     !dbf.isExpandEntityReferences());
-                // XXX No way to control dbf.isIgnoringComments() or
-                // dbf.isCoalescing()
-            } catch (SAXException e) {
-            }
+            // "namespaceAware" ==  SAX Namespaces feature
+            namespaceAware = dbf.isNamespaceAware();
+            domParser.setFeature("http://xml.org/sax/features/namespaces",
+                                 namespaceAware);
+
+            // Set various parameters obtained from DocumentBuilderFactory
+            domParser.setFeature(XERCES_FEATURE_PREFIX +
+                                 INCLUDE_IGNORABLE_WHITESPACE,
+                                 !dbf.isIgnoringElementContentWhitespace());
+            domParser.setFeature(XERCES_FEATURE_PREFIX +
+                                 CREATE_ENTITY_REF_NODES_FEATURE,
+                                 !dbf.isExpandEntityReferences());
+
+            // XXX No way to control dbf.isIgnoringComments() or
+            // dbf.isCoalescing()
         } catch (SAXException e) {
             // Handles both SAXNotSupportedException, SAXNotRecognizedException
             throw new ParserConfigurationException(e.getMessage());
