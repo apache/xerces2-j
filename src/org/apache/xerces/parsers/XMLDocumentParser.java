@@ -58,17 +58,20 @@
 package org.apache.xerces.parsers;
 
 import java.io.IOException;
-import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.impl.XMLDTDScanner;
-import org.apache.xerces.xni.XMLDocumentHandler;
+
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLDocumentScanner;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.XMLDTDScanner;
+import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.XMLValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
-import org.apache.xerces.impl.XMLValidator;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLDocumentHandler;
+import org.apache.xerces.xni.XMLString;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -137,32 +140,49 @@ public abstract class XMLDocumentParser
         super(symbolTable);
 
         // set default features
-        fFeatures.put(SAX2_FEATURES_PREFIX+"namespaces", Boolean.TRUE);
-        fFeatures.put(SAX2_FEATURES_PREFIX+"validation", Boolean.FALSE);
+        final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+        fFeatures.put(NAMESPACES, Boolean.TRUE);
+        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+        fFeatures.put(VALIDATION, Boolean.FALSE);
 
         // create and register components
-        fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/symbol-table", 
-                        fSymbolTable);
+        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        fProperties.put(SYMBOL_TABLE, fSymbolTable);
+
         fGrammarPool = grammarPool;
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/grammar-pool",
-                        fGrammarPool);
-        //fEntityManager = new XMLEntityManager();
-        //fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/entity-manager",
-                        //fEntityManager);
+        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+        fProperties.put(GRAMMAR_POOL, fGrammarPool);
+
+        /***
+        fEntityManager = new XMLEntityManager();
+        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+        fProperties.put(ENTITY_MANAGER, fEntityManager);
+        /***/
+
         fScanner = new XMLDocumentScanner();
-        fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/document-scanner",
-                        fScanner);
-        // fValidator = new Validator();
-        // fDatatypeValidatorFactory = ...
-        // fProperties.put(XERCES_PROPERTIES_PREFIX +
-        //                "internal/datatype-validator-factory",
-        //                fDatatypeValidatorFactory);
+        final String DOCUMENT_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
+        fProperties.put(DOCUMENT_SCANNER, fScanner);
+
+
+        /***
+        fValidator = new XMLValidator();
+        final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
+        fProperties.put(VALIDATOR, fValidator);
+        
+        fDatatypeValidatorFactory = new DatatypeValidatorFactory();
+        final String DATATYE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYE_VALIDATOR_FACTORY_PROPERTY;
+        fProperties.put(DATATYE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
+        /***/
 
         // plug in components
+        /***/
         fScanner.setDocumentHandler(this);
-        // fScanner.setDocumentHandler(fValidator);
-        // fValidator.setDocumentHandler(this);
-    }
+        /***
+        fScanner.setDocumentHandler(fValidator);
+        fValidator.setDocumentHandler(this);
+        /***/
+        
+    } // <init>(SymbolTable,GrammarPool)
 
     //
     // XMLEntityHandler methods

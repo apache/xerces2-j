@@ -151,6 +151,15 @@ public final class Constants {
     /** EXPERIMENTAL: Grammar access feature ("domx/grammar-access"). */
     //public static final String GRAMMAR_ACCESS_FEATURE = "domx/grammar-access";
 
+    /** Default attribute values feature ("validation/default-attribute-values"). */
+    public static final String DEFAULT_ATTRIBUTE_VALUES_FEATURE = "validation/default-attribute-values";
+
+    /** Validate content models feature ("validation/validate-content-models"). */
+    public static final String VALIDATE_CONTENT_MODELS_FEATURE = "validation/validate-content-models";
+
+    /** Validate datatypes feature ("validation/validate-datatypes"). */
+    public static final String VALIDATE_DATATYPES_FEATURE = "validation/validate-datatypes";
+
     // xerces properties
 
     /** Xerces properties prefix ("http://apache.org/xml/properties/"). */
@@ -176,6 +185,21 @@ public final class Constants {
 
     /** Entity resolver property ("internal/entity-resolver"). */
     public static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
+
+    /** Grammar pool property ("internal/grammar-pool"). */
+    public static final String GRAMMAR_POOL_PROPERTY = "internal/grammar-pool";
+
+    /** Datatype validator factory ("internal/datatype-validator-factory"). */
+    public static final String DATATYPE_VALIDATOR_FACTORY_PROPERTY = "internal/datatype-validator-factory";
+
+    /** Document scanner property ("internal/document-scanner"). */
+    public static final String DOCUMENT_SCANNER_PROPERTY = "internal/document-scanner";
+
+    /** DTD scanner property ("internal/dtd-scanner"). */
+    public static final String DTD_SCANNER_PROPERTY = "internal/dtd-scanner";
+
+    /** Validator property ("internal/validator"). */
+    public static final String VALIDATOR_PROPERTY = "internal/validator";
 
     // private
 
@@ -210,6 +234,9 @@ public final class Constants {
         CREATE_ENTITY_REF_NODES_FEATURE,
         INCLUDE_IGNORABLE_WHITESPACE,
         //GRAMMAR_ACCESS_FEATURE,
+        DEFAULT_ATTRIBUTE_VALUES_FEATURE,
+        VALIDATE_CONTENT_MODELS_FEATURE,
+        VALIDATE_DATATYPES_FEATURE,
     };
 
     /** Xerces properties. */
@@ -221,6 +248,11 @@ public final class Constants {
         ERROR_REPORTER_PROPERTY,
         ENTITY_MANAGER_PROPERTY,
         ENTITY_RESOLVER_PROPERTY,
+        GRAMMAR_POOL_PROPERTY,
+        DATATYPE_VALIDATOR_FACTORY_PROPERTY,
+        DOCUMENT_SCANNER_PROPERTY,
+        DTD_SCANNER_PROPERTY,
+        VALIDATOR_PROPERTY,
     };
 
     /** Empty enumeration. */

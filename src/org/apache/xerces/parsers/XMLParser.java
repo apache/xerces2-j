@@ -61,11 +61,14 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Locale;
+
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLComponentManager;
+
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -82,26 +85,6 @@ import java.util.Hashtable;
  */
 public abstract class XMLParser
     implements XMLComponentManager {
-
-    //
-    // Constants
-    //
-
-    /** SAX2 features prefix. */
-    protected static final String SAX2_FEATURES_PREFIX =
-        "http://xml.org/sax/features/";
-
-    /** SAX2 properties prefix. */
-    protected static final String SAX2_PROPERTIES_PREFIX =
-        "http://xml.org/sax/properties/";
-
-    /** Xerces features prefix. */
-    protected static final String XERCES_FEATURES_PREFIX =
-        "http://apache.org/xml/features/";
-
-    /** Xerces properties prefix. */
-    protected static final String XERCES_PROPERTIES_PREFIX =
-        "http://apache.org/xml/properties/";
 
     //
     // Data
@@ -145,20 +128,22 @@ public abstract class XMLParser
 
         // create and register components
         fSymbolTable = symbolTable;
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/symbol-table",
-                        fSymbolTable);
+        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        fProperties.put(SYMBOL_TABLE, fSymbolTable);
+
         fEntityManager = new XMLEntityManager();
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/entity-manager",
-                        fEntityManager);
+        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+        fProperties.put(ENTITY_MANAGER, fEntityManager);
+
         fErrorReporter = new XMLErrorReporter( fEntityManager.getEntityScanner() );
+        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+        fProperties.put(ERROR_REPORTER, fErrorReporter);
+        
         XMLMessageFormatter xmft = new XMLMessageFormatter();
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
         fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/error-reporter",
-                        fErrorReporter);
 
-        // set features to their default values
-    }
+    } // <init>(SymbolTable)
 
     //
     // Methods
@@ -233,28 +218,28 @@ public abstract class XMLParser
         // SAX2 Features
         //
 
-        if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
+        if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
             String feature =
-                featureId.substring(SAX2_FEATURES_PREFIX.length());
+                featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
             //
             // http://xml.org/sax/features/validation
             //   Validate (true) or don't validate (false).
             //
-            if (feature.equals("validation")) {
+            if (feature.equals(Constants.VALIDATION_FEATURE)) {
                 return;
             }
             //
             // http://xml.org/sax/features/external-general-entities
             //   Expand external general entities (true) or not (false).
             //
-            if (feature.equals("external-general-entities")) {
+            if (feature.equals(Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE)) {
                 return;
             }
             //
             // http://xml.org/sax/features/external-parameter-entities
             //   Expand external parameter entities (true) or not (false).
             //
-            if (feature.equals("external-parameter-entities")) {
+            if (feature.equals(Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE)) {
                 return;
             }
             //
@@ -262,7 +247,7 @@ public abstract class XMLParser
             //   Preprocess namespaces (true) or not (false).  See also
             //   the http://xml.org/sax/properties/namespace-sep property.
             //
-            if (feature.equals("namespaces")) {
+            if (feature.equals(Constants.NAMESPACES_FEATURE)) {
                 return;
             }
             //
@@ -274,14 +259,14 @@ public abstract class XMLParser
         // Xerces Features
         //
 
-        else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
+        else if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
             String feature =
-                featureId.substring(XERCES_FEATURES_PREFIX.length());
+                featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
             //
             // http://apache.org/xml/features/validation/schema
             //   Lets the user turn Schema validation support on/off.
             //
-            if (feature.equals("validation/schema")) {
+            if (feature.equals(Constants.SCHEMA_VALIDATION_FEATURE)) {
                 return;
             }
             //
@@ -290,41 +275,41 @@ public abstract class XMLParser
             //   contains a grammar. Validation is turned on/off based
             //   on each document instance, automatically.
             //
-            if (feature.equals("validation/dynamic")) {
+            if (feature.equals(Constants.DYNAMIC_VALIDATION_FEATURE)) {
                 return;
             }
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals("validation/default-attribute-values")) {
+            if (feature.equals(Constants.DEFAULT_ATTRIBUTE_VALUES_FEATURE)) {
                 // REVISIT
                 throw new SAXNotSupportedException(featureId);
             }
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals("validation/validate-content-models")) {
+            if (feature.equals(Constants.VALIDATE_CONTENT_MODELS_FEATURE)) {
                 // REVISIT
                 throw new SAXNotSupportedException(featureId);
             }
             //
             // http://apache.org/xml/features/validation/nonvalidating/load-dtd-grammar
             //
-            if (feature.equals("nonvalidating/load-dtd-grammar")) {
+            if (feature.equals(Constants.LOAD_DTD_GRAMMAR_FEATURE)) {
                 return;
             }
 
             //
             // http://apache.org/xml/features/validation/default-attribute-values
             //
-            if (feature.equals("validation/validate-datatypes")) {
+            if (feature.equals(Constants.VALIDATE_DATATYPES_FEATURE)) {
                 throw new SAXNotSupportedException(featureId);
             }
             //
             // http://apache.org/xml/features/validation/warn-on-duplicate-attdef
             //   Emits an error when an attribute is redefined.
             //
-            if (feature.equals("validation/warn-on-duplicate-attdef")) {
+            if (feature.equals(Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE)) {
                 return;
             }
             //
@@ -333,7 +318,7 @@ public abstract class XMLParser
             //   references an element, by name, that is not declared
             //   in the grammar.
             //
-            if (feature.equals("validation/warn-on-undeclared-elemdef")) {
+            if (feature.equals(Constants.WARN_ON_UNDECLARED_ELEMDEF_FEATURE)) {
                 return;
             }
             //
@@ -341,7 +326,7 @@ public abstract class XMLParser
             //   Allows the use of Java encoding names in the XML
             //   and TextDecl lines.
             //
-            if (feature.equals("allow-java-encodings")) {
+            if (feature.equals(Constants.ALLOW_JAVA_ENCODINGS_FEATURE)) {
                 return;
             }
             //
@@ -349,7 +334,7 @@ public abstract class XMLParser
             //   Allows the parser to continue after a fatal error.
             //   Normally, a fatal error would stop the parse.
             //
-            if (feature.equals("continue-after-fatal-error")) {
+            if (feature.equals(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
                 return;
             }
             //
@@ -422,33 +407,9 @@ public abstract class XMLParser
         // SAX2 Properties
         //
 
-        if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
+        if (propertyId.startsWith(Constants.SAX_PROPERTY_PREFIX)) {
             String property =
-                propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
-            //
-            // http://xml.org/sax/properties/namespace-sep
-            // Value type: String
-            // Access: read/write, pre-parse only
-            //   Set the separator to be used between the URI part of a name
-            //   and the local part of a name when namespace processing is
-            //   being performed (see the
-            //   http://xml.org/sax/features/namespaces feature).  By default,
-            //   the separator is a single space.  This property may not be set
-            //   while a parse is in progress (throws a
-            //   SAXNotSupportedException).
-            //
-            /***
-            if (property.equals("namespace-sep")) {
-                try {
-                    setNamespaceSep((String)value);
-                }
-                catch (ClassCastException e) {
-                    throw new SAXNotSupportedException(propertyId);
-                }
-                return;
-            }
-            /***/
-            
+                propertyId.substring(Constants.SAX_PROPERTY_PREFIX.length());
             //
             // http://xml.org/sax/properties/xml-string
             // Value type: String
@@ -459,7 +420,7 @@ public abstract class XMLParser
             //   null (this is a good way to check for availability before the
             //   parse begins).
             //
-            if (property.equals("xml-string")) {
+            if (property.equals(Constants.XML_STRING_PROPERTY)) {
                 // REVISIT - we should probably ask xml-dev for a precise
                 // definition of what this is actually supposed to return, and
                 // in exactly which circumstances.
@@ -474,28 +435,28 @@ public abstract class XMLParser
         // Xerces Properties
         //
 
-        else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
+        else if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property =
-                propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
-            if (property.equals("internal/symbol-table")) {
+                propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
                 return;
             }
-            if (property.equals("internal/error-reporter")) {
+            if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
                 return;
             }
-            if (property.equals("internal/entity-manager")) {
+            if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
                 return;
             }
-            if (property.equals("internal/grammar-pool")) {
+            if (property.equals(Constants.GRAMMAR_POOL_PROPERTY)) {
                 return;
             }
-            if (property.equals("internal/datatype-validator-factory")) {
+            if (property.equals(Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY)) {
                 return;
             }
-            if (property.equals("internal/entity-resolver")) {
+            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
                 return;
             }
-            if (property.equals("internal/error-handler")) {
+            if (property.equals(Constants.ERROR_HANDLER_PROPERTY)) {
                 return;
             }
         }
@@ -516,8 +477,8 @@ public abstract class XMLParser
      *                 uninstall the currently installed resolver.
      */
     public void setEntityResolver(EntityResolver resolver) {
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/entity-resolver",
-                        resolver);
+        final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+        fProperties.put(ENTITY_RESOLVER, resolver);
     } // setEntityResolver
 
     /**
@@ -528,8 +489,8 @@ public abstract class XMLParser
      * @see #setEntityResolver
      */
     public EntityResolver getEntityResolver() {
-        return (EntityResolver)fProperties.get(XERCES_PROPERTIES_PREFIX +
-                                               "internal/entity-resolver");
+        final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+        return (EntityResolver)fProperties.get(ENTITY_RESOLVER);
     } // getEntityResolver
 
     /**
@@ -551,8 +512,8 @@ public abstract class XMLParser
      * @see #getErrorHandler
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/error-handler",
-                        errorHandler);
+        final String ERROR_HANDLER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
+        fProperties.put(ERROR_HANDLER, errorHandler);
     } // setErrorHandler
 
     /**
@@ -563,8 +524,8 @@ public abstract class XMLParser
      * @see #setErrorHandler
      */
     public ErrorHandler getErrorHandler() {
-        return (ErrorHandler)fProperties.get(XERCES_PROPERTIES_PREFIX +
-                                             "internal/error-handler");
+        final String ERROR_HANDLER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
+        return (ErrorHandler)fProperties.get(ERROR_HANDLER);
     } // getErrorHandler
 
     /**
