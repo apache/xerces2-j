@@ -547,7 +547,7 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    public void processingInstruction( String target, String code )
+    public final void processingInstruction( String target, String code )
         throws SAXException
     {
         try {
@@ -789,7 +789,7 @@ public abstract class BaseMarkupSerializer
     //------------------------------------------//
 
 
-    public void startDTD( String name, String publicId, String systemId )
+    public final void startDTD( String name, String publicId, String systemId )
         throws SAXException
     {
         try {
