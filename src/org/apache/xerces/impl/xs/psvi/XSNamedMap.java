@@ -71,7 +71,7 @@ public interface XSNamedMap {
      * The range of valid child object indices is 0 to 
      * <code>mapLength-1</code> inclusive. 
      */
-    public int getMapLength();
+    public int getLength();
 
     /**
      *  Returns the <code>index</code>th item in the collection. The index 

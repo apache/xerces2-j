@@ -103,7 +103,7 @@ public class XSNamedMap4Types extends XSNamedMapImpl {
      * range of valid child node indices is 0 to <code>length-1</code>
      * inclusive.
      */
-    public synchronized int getMapLength() {
+    public synchronized int getLength() {
         if (fLength == -1) {
             // first get the number of components for all types
             int length = 0;
@@ -140,7 +140,7 @@ public class XSNamedMap4Types extends XSNamedMapImpl {
      *   name and namespace URI, or <code>null</code> if they do not
      *   identify any <code>XSObject</code> in this map.
      */
-    public XSObject getNSItem(String namespace, String localName) {
+    public XSObject itemByName(String namespace, String localName) {
         if (namespace != null)
             namespace = namespace.intern();
         for (int i = 0; i < fNSNum; i++) {
@@ -165,9 +165,9 @@ public class XSNamedMap4Types extends XSNamedMapImpl {
      *   in the <code>XSNamedMap</code>, or <code>null</code> if that is
      *   not a valid index.
      */
-    public synchronized XSObject getItem(int index) {
+    public synchronized XSObject item(int index) {
         if (fArray == null) {
-            getMapLength();
+            getLength();
         }
         if (index < 0 || index >= fLength)
             return null;

@@ -137,7 +137,7 @@ public class XSNamedMapImpl implements XSNamedMap {
      * range of valid child node indices is 0 to <code>length-1</code>
      * inclusive.
      */
-    public synchronized int getMapLength() {
+    public synchronized int getLength() {
         if (fLength == -1) {
             fLength = 0;
             for (int i = 0; i < fNSNum; i++)
@@ -192,7 +192,7 @@ public class XSNamedMapImpl implements XSNamedMap {
     public synchronized XSObject item(int index) {
         if (fArray == null) {
             // calculate the total number of elements
-            getMapLength();
+            getLength();
             fArray = new XSObject[fLength];
             int pos = 0;
             // get components from all SymbolHash's
