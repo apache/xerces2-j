@@ -125,6 +125,9 @@ implements XMLComponent, XMLDocumentFilter {
     protected static final String SYMBOL_TABLE =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
+    /** Feature id: augment Post-Schema-Validation-Infoset */
+    protected static final String PSVINFOSET =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
 
     /** Feature id: include ignorable whitespace. */
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
@@ -139,14 +142,14 @@ implements XMLComponent, XMLDocumentFilter {
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACE_BINDER,
         INCLUDE_IGNORABLE_WHITESPACE,
-        //  PSVINFOSET,
+        PSVINFOSET,
     };
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         Boolean.TRUE, // ???
         Boolean.TRUE, // ???
-        // ???
+        null,
     };
 
     /** Recognized properties. */
@@ -221,15 +224,12 @@ implements XMLComponent, XMLDocumentFilter {
     public void reset(XMLComponentManager componentManager)
     throws XNIException {
 
-        // Feature's name for PSVIWriter is not yet decided.
-/*      try {
+        try {
             fPSVInfoset = componentManager.getFeature(PSVINFOSET);
         }
         catch (XMLConfigurationException e) {
             fPSVInfoset = false;
-        }*/
-        /**For Testing */
-        fPSVInfoset = true;
+        }
 
         fNamespaceBinder = (XMLNamespaceBinder)componentManager.getProperty(NAMESPACE_BINDER);
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
@@ -654,24 +654,6 @@ implements XMLComponent, XMLDocumentFilter {
      */
     public void characters(XMLString text, Augmentations augs)
     throws XNIException {
-        // REVISIT: 2.6. Character Information Items requires character property for 
-        //          each character. However, it also says:
-        // "Each character is a logically separate information item, 
-        //  but XML applications are free to chunk characters into larger 
-        //  groups as necessary or desirable"
-        //  XSV outputs each character separately.
-        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-        
-        checkForChildren();
-        if (elemPSVI != null) {
-            if (!elemPSVI.getIsSchemaSpecified()){  // value was specified in the instance!
-                printIndentTag("<character>");
-                printElement("characterCode", text.toString());
-                printElement("elementContentWhitespace", "false");
-                printUnIndentTag("</character>");
-            }
-        }
-
         if (fDocumentHandler != null) {
             fDocumentHandler.characters(text,augs);
         }
@@ -842,7 +824,44 @@ implements XMLComponent, XMLDocumentFilter {
         if (elemPSVI != null) {
 
             // REVISIT: Should we store the values till end element call?
+        }
+    }
+
+    /* The following information will be available at the startElement call:
+    * name, namespace, type, notation, validation context
+    *
+    * The following information will be available at the endElement call:
+    * nil, specified, normalized value, member type, validity, error codes,
+    * default
+    */
+    public void printPSVIEndElement(Augmentations augs) {
+        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+        if (elemPSVI != null) {
+
             printElement("psv:validationContext",elemPSVI.getValidationContext());
+
+            short validity = elemPSVI.getValidity();
+            if (validity == ItemPSVI.VALIDITY_UNKNOWN) {
+                printElement("psv:validity","unknown");
+            }
+            else if (validity == ItemPSVI.VALIDITY_VALID) {
+                printElement("psv:validity","valid");
+            }
+            else if (validity == ItemPSVI.VALIDITY_INVALID) {
+                printElement("psv:validity","invalid");
+            }
+
+            short validation = elemPSVI.getValidationAttempted();
+            if (validation == ItemPSVI.VALIDATION_NONE) {
+                printElement("psv:validationAttempted","none");
+                return;
+            }
+            else if (validation == ItemPSVI.VALIDATION_PARTIAL) {
+                printElement("psv:validationAttempted","partial");
+            }
+            else if (validation == ItemPSVI.VALIDATION_FULL) {
+                printElement("psv:validationAttempted","full");
+            }
 
             XSTypeDefinition type = elemPSVI.getTypeDefinition();
             short definationType = type.getTypeCategory();
@@ -862,49 +881,13 @@ implements XMLComponent, XMLDocumentFilter {
                 printElement("psv:memberTypeDefinitionName",memtype.getName());
                 printElement("psv:memberTypeDefinitionNamespace",memtype.getNamespace());
             }
-            
+
             XSNotationDeclaration notation = elemPSVI.getNotation();
             if (notation != null) {
                 printElement("psv:notationSystem",notation.getSystemId());
                 printElement("psv:notationPublic",notation.getPublicId());
             }
-        }
-    }
 
-    /* The following information will be available at the startElement call:
-    * name, namespace, type, notation, validation context
-    *
-    * The following information will be available at the endElement call:
-    * nil, specified, normalized value, member type, validity, error codes,
-    * default
-    */
-    public void printPSVIEndElement(Augmentations augs) {
-        ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
-        if (elemPSVI != null) {
-
-
-            short validation = elemPSVI.getValidationAttempted();
-            if (validation == ItemPSVI.VALIDATION_NONE) {
-                printElement("psv:validationAttempted","none");
-            }
-            else if (validation == ItemPSVI.VALIDATION_PARTIAL) {
-                printElement("psv:validationAttempted","partial");
-            }
-            else if (validation == ItemPSVI.VALIDATION_FULL) {
-                printElement("psv:validationAttempted","full");
-            }
-
-
-            short validity = elemPSVI.getValidity();
-            if (validity == ItemPSVI.VALIDITY_UNKNOWN) {
-                printElement("psv:validity","unknown");
-            }
-            else if (validity == ItemPSVI.VALIDITY_VALID) {
-                printElement("psv:validity","valid");
-            }
-            else if (validity == ItemPSVI.VALIDITY_INVALID) {
-                printElement("psv:validity","invalid");
-            }
             //revisit
             StringList errorCode = elemPSVI.getErrorCodes();
             if (errorCode != null) {
@@ -929,14 +912,6 @@ implements XMLComponent, XMLDocumentFilter {
         AttributePSVI attrPSVI =(AttributePSVI)augs.getItem(Constants.ATTRIBUTE_PSVI);
         if (attrPSVI !=null) {
 
-            short validation = attrPSVI.getValidationAttempted();
-            if (validation == ItemPSVI.VALIDATION_NONE) {
-                printElement("psv:validationAttempted","none");
-            }
-            else if (validation == ItemPSVI.VALIDATION_FULL) {
-                printElement("psv:validationAttempted","full");
-            }
-
             printElement("psv:validationContext",attrPSVI.getValidationContext());
 
             short validity = attrPSVI.getValidity();
@@ -948,6 +923,15 @@ implements XMLComponent, XMLDocumentFilter {
             }
             else if (validity == ItemPSVI.VALIDITY_INVALID) {
                 printElement("psv:validity","invalid");
+            }
+
+            short validation = attrPSVI.getValidationAttempted();
+            if (validation == ItemPSVI.VALIDATION_NONE) {
+                printElement("psv:validationAttempted","none");
+                return;
+            }
+            else if (validation == ItemPSVI.VALIDATION_FULL) {
+                printElement("psv:validationAttempted","full");
             }
 
             StringList errorCode = attrPSVI.getErrorCodes();
