@@ -940,7 +940,7 @@ public abstract class ChildAndParentNode
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize chilren
-        if (syncChildren()) {
+        if (syncChildren() == false ) {
             synchronizeChildren();
         }
         // write object
