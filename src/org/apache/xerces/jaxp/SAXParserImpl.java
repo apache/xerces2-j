@@ -85,7 +85,8 @@ import java.util.*;
  * This is the implementation specific class for the
  * <code>javax.xml.parsers.SAXParser</code>. 
  */
-public class SAXParserImpl extends javax.xml.parsers.SAXParser {
+public class SAXParserImpl extends javax.xml.parsers.SAXParser
+        implements JAXPConstants {
     private XMLReader xmlReader;
     private String schemaLanguage = null;     // null means DTD
     
@@ -185,10 +186,10 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public void setProperty(String name, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        if (DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE.equals(name)) {
+        if (JAXP_SCHEMA_LANGUAGE.equals(name)) {
             // JAXP 1.2 support
-            if (DocumentBuilderImpl.W3C_XML_SCHEMA.equals(value)) {
-                schemaLanguage = DocumentBuilderImpl.W3C_XML_SCHEMA;
+            if (W3C_XML_SCHEMA.equals(value)) {
+                schemaLanguage = W3C_XML_SCHEMA;
                 xmlReader.setFeature(Constants.XERCES_FEATURE_PREFIX +
                                      Constants.SCHEMA_VALIDATION_FEATURE,
                                      true);
@@ -213,7 +214,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public Object getProperty(String name)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        if (DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE.equals(name)) {
+        if (JAXP_SCHEMA_LANGUAGE.equals(name)) {
             // JAXP 1.2 support
             return schemaLanguage;
         } else {

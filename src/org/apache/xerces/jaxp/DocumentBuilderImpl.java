@@ -89,13 +89,9 @@ import org.apache.xerces.impl.Constants;
  * @author Rajiv Mordani
  * @author Edwin Goei
  */
-public class DocumentBuilderImpl extends DocumentBuilder {
-    /** JAXP 1.2 features and values */
-    static final String JAXP_SCHEMA_LANGUAGE =
-        "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-    static final String W3C_XML_SCHEMA =
-        "http://www.w3.org/2001/XMLSchema";
-
+public class DocumentBuilderImpl extends DocumentBuilder
+        implements JAXPConstants
+{
     private EntityResolver er = null;
     private ErrorHandler eh = null;
     private DOMParser domParser = null;
@@ -173,7 +169,7 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                             Constants.SCHEMA_VALIDATION_FEATURE, true);
                     }
                 } else {
-                    // Assume Xerces property
+                    // Let Xerces code handle the property
                     domParser.setProperty(name, val);
                 }
             }
