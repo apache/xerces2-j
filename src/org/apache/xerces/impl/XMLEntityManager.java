@@ -3362,6 +3362,14 @@ public class XMLEntityManager
                 return bytesLeft;
             }
             n -= bytesLeft;
+           /*
+            * In a manner of speaking, when this class isn't permitting more
+            * than one byte at a time to be read, it is "blocking".  The
+            * available() method should indicate how much can be read without
+            * blocking, so while we're in this mode, it should only indicate
+            * that bytes in its buffer are available; otherwise, the result of
+            * available() on the underlying InputStream is appropriate.
+            */
             return fInputStream.skip(n) + bytesLeft;
         }
         
@@ -3371,12 +3379,10 @@ public class XMLEntityManager
                 if (fOffset == fEndOffset) {
                     return -1;
                 }
-                return fInputStream.available();
+                return fCurrentEntity.mayReadChunks ? fInputStream.available()
+                                                    : 0;
             }
-            if (fLength == fEndOffset) {
-                return bytesLeft;
-            }
-            return fInputStream.available() + bytesLeft;
+            return bytesLeft;
         }
 
         public void mark(int howMuch) {

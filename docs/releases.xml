@@ -2,6 +2,22 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+ <release version="TBD">
+  <desc>
+      This release fixes a number of bugs, and adds some functionality.
+  </desc>
+  <changes>
+    <fix>
+      <note>
+        Parser now reads external entities one chunk at a time, rather than a character at a time;
+        this increases performance dramatically in certain circumstances.  
+        This fix also allows a number of EBCDIC encodings to work which did
+        not work previously.  
+      </note>
+      <submitter name="Neil Graham, Henry Zongaro"/>
+    </fix>
+  </changes>
+ </release>
  <release version='Xerces 2.0.1'>
   <desc>
       This release fixes a number of bugs.
