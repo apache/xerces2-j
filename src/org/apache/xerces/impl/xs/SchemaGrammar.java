@@ -33,6 +33,7 @@ import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xs.StringList;
@@ -274,6 +275,261 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
         synchronized SAXParser getSAXParser() {
             return null;
+        }
+    }
+    
+    /**
+     * <p>A partial schema for schemas for validating annotations.</p>
+     * 
+     * @xerces.internal 
+     * 
+     * @author Michael Glavassevich, IBM
+     */
+    public static final class Schema4Annotations extends SchemaGrammar {
+
+        /**
+         * Special constructor to create a schema 
+         * capable of validating annotations.
+         */
+        public Schema4Annotations() {
+            
+            // target namespace
+            fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+            
+            // grammar description
+            fGrammarDescription = new XSDDescription();
+            fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
+            fGrammarDescription.setNamespace(SchemaSymbols.URI_SCHEMAFORSCHEMA);
+            
+            // no global decls other than types
+            fGlobalAttrDecls  = new SymbolHash(1);
+            fGlobalAttrGrpDecls = new SymbolHash(1);
+            fGlobalElemDecls = new SymbolHash(3);
+            fGlobalGroupDecls = new SymbolHash(1);
+            fGlobalNotationDecls = new SymbolHash(1);
+            fGlobalIDConstraintDecls = new SymbolHash(1);
+            
+            // get all built-in types
+            fGlobalTypeDecls = SG_SchemaNS.fGlobalTypeDecls;
+            
+            // create element declarations for <annotation>, <documentation> and <appinfo>
+            XSElementDecl annotationDecl = createAnnotationElementDecl(SchemaSymbols.ELT_ANNOTATION);
+            XSElementDecl documentationDecl = createAnnotationElementDecl(SchemaSymbols.ELT_DOCUMENTATION);
+            XSElementDecl appinfoDecl = createAnnotationElementDecl(SchemaSymbols.ELT_APPINFO);
+            
+            // add global element declarations
+            fGlobalElemDecls.put(annotationDecl.fName, annotationDecl);
+            fGlobalElemDecls.put(documentationDecl.fName, documentationDecl);
+            fGlobalElemDecls.put(appinfoDecl.fName, appinfoDecl);
+            
+            // create complex type declarations for <annotation>, <documentation> and <appinfo>
+            XSComplexTypeDecl annotationType = new XSComplexTypeDecl();
+            XSComplexTypeDecl documentationType = new XSComplexTypeDecl();
+            XSComplexTypeDecl appinfoType = new XSComplexTypeDecl();
+            
+            // set the types on their element declarations
+            annotationDecl.fType = annotationType;
+            documentationDecl.fType = documentationType;
+            appinfoDecl.fType = appinfoType;
+            
+            // create attribute groups for <annotation>, <documentation> and <appinfo>
+            XSAttributeGroupDecl annotationAttrs = new XSAttributeGroupDecl();
+            XSAttributeGroupDecl documentationAttrs = new XSAttributeGroupDecl();
+            XSAttributeGroupDecl appinfoAttrs = new XSAttributeGroupDecl();
+            
+            // fill in attribute groups
+            {
+                // create and fill attribute uses for <annotation>, <documentation> and <appinfo>
+                XSAttributeUseImpl annotationIDAttr = new XSAttributeUseImpl();
+                annotationIDAttr.fAttrDecl = new XSAttributeDecl();
+                annotationIDAttr.fAttrDecl.setValues(SchemaSymbols.ATT_ID, null, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_ID),
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, annotationType, null);
+                annotationIDAttr.fUse = SchemaSymbols.USE_OPTIONAL;
+                annotationIDAttr.fConstraintType = XSConstants.VC_NONE;
+                
+                XSAttributeUseImpl documentationSourceAttr = new XSAttributeUseImpl();
+                documentationSourceAttr.fAttrDecl = new XSAttributeDecl();
+                documentationSourceAttr.fAttrDecl.setValues(SchemaSymbols.ATT_SOURCE, null, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_ANYURI),
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, documentationType, null);
+                documentationSourceAttr.fUse = SchemaSymbols.USE_OPTIONAL;
+                documentationSourceAttr.fConstraintType = XSConstants.VC_NONE;
+                
+                XSAttributeUseImpl documentationLangAttr = new XSAttributeUseImpl();
+                documentationLangAttr.fAttrDecl = new XSAttributeDecl();
+                documentationLangAttr.fAttrDecl.setValues("lang".intern(), NamespaceContext.XML_URI, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_LANGUAGE),
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, documentationType, null);
+                documentationLangAttr.fUse = SchemaSymbols.USE_OPTIONAL;
+                documentationLangAttr.fConstraintType = XSConstants.VC_NONE;
+                
+                XSAttributeUseImpl appinfoSourceAttr = new XSAttributeUseImpl();
+                appinfoSourceAttr.fAttrDecl = new XSAttributeDecl();
+                appinfoSourceAttr.fAttrDecl.setValues(SchemaSymbols.ATT_SOURCE, null, (XSSimpleType) fGlobalTypeDecls.get(SchemaSymbols.ATTVAL_ANYURI),
+                        XSConstants.VC_NONE, XSConstants.SCOPE_LOCAL, null, appinfoType, null);
+                appinfoSourceAttr.fUse = SchemaSymbols.USE_OPTIONAL;
+                appinfoSourceAttr.fConstraintType = XSConstants.VC_NONE;
+                
+                // create lax attribute wildcard for <annotation>, <documentation> and <appinfo>
+                XSWildcardDecl otherAttrs = new XSWildcardDecl();
+                otherAttrs.fNamespaceList = new String [] {fTargetNamespace, null};
+                otherAttrs.fType = XSWildcard.NSCONSTRAINT_NOT;
+                otherAttrs.fProcessContents = XSWildcard.PC_LAX;
+                
+                // add attribute uses and wildcards to attribute groups for <annotation>, <documentation> and <appinfo>
+                annotationAttrs.addAttributeUse(annotationIDAttr);
+                annotationAttrs.fAttributeWC = otherAttrs;
+                
+                documentationAttrs = new XSAttributeGroupDecl();
+                documentationAttrs.addAttributeUse(documentationSourceAttr);
+                documentationAttrs.addAttributeUse(documentationLangAttr);
+                documentationAttrs.fAttributeWC = otherAttrs;
+                
+                appinfoAttrs = new XSAttributeGroupDecl();
+                appinfoAttrs.addAttributeUse(appinfoSourceAttr);
+                appinfoAttrs.fAttributeWC = otherAttrs;
+            }
+            
+            // create particles for <annotation>
+            XSParticleDecl annotationParticle = createUnboundedModelGroupParticle();
+            {
+                XSModelGroupImpl annotationChoice = new XSModelGroupImpl();
+                annotationChoice.fCompositor = XSModelGroupImpl.MODELGROUP_CHOICE;
+                annotationChoice.fParticleCount = 2;
+                annotationChoice.fParticles = new XSParticleDecl[2];
+                annotationChoice.fParticles[0] = createChoiceElementParticle(appinfoDecl);
+                annotationChoice.fParticles[1] = createChoiceElementParticle(documentationDecl);
+                annotationParticle.fValue = annotationChoice;
+            }
+            
+            // create particles for <documentation>
+            XSParticleDecl documentationParticle = createUnboundedAnyWildcardSequenceParticle();
+            
+            // create particles for <appinfo>
+            XSParticleDecl appinfoParticle = createUnboundedAnyWildcardSequenceParticle();
+            
+            // fill complex types
+            annotationType.setValues("#AnonType_" + SchemaSymbols.ELT_ANNOTATION, fTargetNamespace, SchemaGrammar.fAnyType,
+                    XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
+                    XSComplexTypeDecl.CONTENTTYPE_ELEMENT, false, annotationAttrs, null, annotationParticle, new XSObjectListImpl(null, 0));
+            annotationType.setName("#AnonType_" + SchemaSymbols.ELT_ANNOTATION);
+            annotationType.setIsAnonymous();
+            
+            documentationType.setValues("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION, fTargetNamespace, SchemaGrammar.fAnyType,
+                    XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
+                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, documentationParticle, new XSObjectListImpl(null, 0));
+            documentationType.setName("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION);
+            documentationType.setIsAnonymous();
+            
+            appinfoType.setValues("#AnonType_" + SchemaSymbols.ELT_APPINFO, fTargetNamespace, SchemaGrammar.fAnyType,
+                    XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
+                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, appinfoParticle, new XSObjectListImpl(null, 0));
+            appinfoType.setName("#AnonType_" + SchemaSymbols.ELT_APPINFO);
+            appinfoType.setIsAnonymous();
+            
+        } // <init>(int)
+        
+        // return the XMLGrammarDescription corresponding to this
+        // object
+        public XMLGrammarDescription getGrammarDescription() {
+            return fGrammarDescription.makeClone();
+        } // getGrammarDescription():  XMLGrammarDescription
+
+        // override these methods solely so that these
+        // objects cannot be modified once they're created.
+        public void setImportedGrammars(Vector importedGrammars) {
+            // ignore
+        }
+        public void addGlobalAttributeDecl(XSAttributeDecl decl) {
+            // ignore
+        }
+        public void addGlobalAttributeGroupDecl(XSAttributeGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalElementDecl(XSElementDecl decl) {
+            // ignore
+        }
+        public void addGlobalGroupDecl(XSGroupDecl decl) {
+            // ignore
+        }
+        public void addGlobalNotationDecl(XSNotationDecl decl) {
+            // ignore
+        }
+        public void addGlobalTypeDecl(XSTypeDefinition decl) {
+            // ignore
+        }
+        public void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
+            // ignore
+        }
+        public void addRedefinedGroupDecl(XSGroupDecl derived, XSGroupDecl base, SimpleLocator locator) {
+            // ignore
+        }
+        public synchronized void addDocument(Object document, String location) {
+            // ignore
+        }
+
+        // annotation support
+        synchronized DOMParser getDOMParser() {
+            return null;
+        }
+        synchronized SAXParser getSAXParser() {
+            return null;
+        }
+        
+        //
+        // private helper methods
+        //
+        
+        private XSElementDecl createAnnotationElementDecl(String localName) {
+            XSElementDecl eDecl = new XSElementDecl();
+            eDecl.fName = localName;
+            eDecl.fTargetNamespace = fTargetNamespace;
+            eDecl.setIsGlobal();
+            eDecl.fBlock = (XSConstants.DERIVATION_EXTENSION | 
+                    XSConstants.DERIVATION_RESTRICTION | XSConstants.DERIVATION_SUBSTITUTION);
+            eDecl.setConstraintType(XSConstants.VC_NONE);
+            return eDecl;
+        }
+        
+        private XSParticleDecl createUnboundedModelGroupParticle() {
+            XSParticleDecl particle = new XSParticleDecl();
+            particle.fMinOccurs = 0;
+            particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            return particle;
+        }
+        
+        private XSParticleDecl createChoiceElementParticle(XSElementDecl ref) {
+            XSParticleDecl particle = new XSParticleDecl();
+            particle.fMinOccurs = 1;
+            particle.fMaxOccurs = 1;
+            particle.fType = XSParticleDecl.PARTICLE_ELEMENT;
+            particle.fValue = ref;
+            return particle;
+        }
+        
+        private XSParticleDecl createUnboundedAnyWildcardSequenceParticle() {
+            XSParticleDecl particle = createUnboundedModelGroupParticle();
+            XSModelGroupImpl sequence = new XSModelGroupImpl();
+            sequence.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
+            sequence.fParticleCount = 1;
+            sequence.fParticles = new XSParticleDecl[1];
+            sequence.fParticles[0] = createAnyLaxWildcardParticle();
+            particle.fValue = sequence;
+            return particle;
+        }
+        
+        private XSParticleDecl createAnyLaxWildcardParticle() {
+            XSParticleDecl particle = new XSParticleDecl();
+            particle.fMinOccurs = 1;
+            particle.fMaxOccurs = 1;
+            particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
+            
+            XSWildcardDecl anyWC = new XSWildcardDecl();
+            anyWC.fNamespaceList = null;
+            anyWC.fType = XSWildcard.NSCONSTRAINT_ANY;
+            anyWC.fProcessContents = XSWildcard.PC_LAX;
+            
+            particle.fValue = anyWC;
+            return particle;
         }
     }
 
