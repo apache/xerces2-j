@@ -317,6 +317,18 @@ public class XMLEntityManager
     } // addExternalEntity(String,String,String,String)
 
     /**
+     * Checks whether an entity given by name is external.
+     * <p>
+     * <strong>Note:</strong> This method assumes the entity has been declared.
+     *
+     * @returns True if the entity is external.
+     */
+    public boolean isExternalEntity(String name) {
+        Entity entity = (Entity)fEntities.get(name);
+        return entity.isExternal();
+    }
+
+    /**
      * Adds an unparsed entity declaration.
      * <p>
      * <strong>Note:</strong> This method ignores subsequent entity
