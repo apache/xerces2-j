@@ -227,16 +227,17 @@ extends BaseMarkupSerializer {
     /**
      * This methods turns on namespace fixup algorithm during
      * DOM serialization.
-     * @deprecated -- functionality could be removed
      * @see org.w3c.dom.ls.DOMWriter     
      * 
      * @param namespaces
      */
     public void setNamespaces (boolean namespaces){
         fNamespaces = namespaces;
-        fNSBinder = new NamespaceSupport();
-        fLocalNSBinder = new NamespaceSupport();
-        fSymbolTable = new SymbolTable();
+        if (fNSBinder == null) {
+            fNSBinder = new NamespaceSupport();
+            fLocalNSBinder = new NamespaceSupport();
+            fSymbolTable = new SymbolTable();
+        }
     }
 
     //-----------------------------------------//
