@@ -2,6 +2,41 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; TBD'>
+   <desc>TBD</desc>
+   <changes>
+    <fix>
+     <note>
+      Modified the XJavac task used by the build file so that
+      Xerces can be built on Mac OS X with Apple JDK 1.4.
+     </note>
+     <submitter name='Alex Milowski'/>
+    </fix>
+    <update>
+     <note>
+      Implemented the latest 
+      <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/">XInclude</jump> 
+      draft.
+     </note>
+     <submitter name='Michael Glavassevich, K. Venugopal'/>
+    </update>
+    <fix>
+     <note>
+      Implemented missing support for supplemental 
+      characters in XML 1.1 names.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed a bug which caused the parser to overwrite some of
+      the user's configuration with default values when 
+      namespace support was disabled.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.6.0'>
    <desc>This release provides an implementation of W3C DOM Level 3 Core and Load/Save Candidate Recommendations and also brings Xerces into compliance with the most recent work of the W3C XML Core working group (XML 1.1, Namespace in XML 1.1, XML 1.0 3rd edition, XInclude).
 In addition, in this release we improved parser performance in several areas and fixed many bugs.
