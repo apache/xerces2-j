@@ -673,6 +673,11 @@ public class XMLManipulator {
 
     } // getChildText(Node):String
 
+    // return the name of this element
+    public static String getLocalName(Node node) {
+        return node.getLocalName();
+    } // getLocalName(Element):  String
+
     // get the Document of which this Node is a part
     public static Document getDocument(Node node) {
         return node.getOwnerDocument();
