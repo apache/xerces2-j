@@ -694,14 +694,9 @@ public class ElementImpl
      * @see NodeImpl#setReadOnly
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
-
     	super.setReadOnly(readOnly,deep);
-        if (syncChildren) {
-            synchronizeChildren();
-        }
     	attributes.setReadOnly(readOnly,true);
-
-    } // setReadOnly(boolean,boolean)
+    }
 
     //
     // Protected methods
