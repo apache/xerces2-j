@@ -99,9 +99,9 @@ public class ListDV extends TypeValidator{
             return false;
         }
         
-        public Object item(int index) throws XSException {
-            if (index < 0 || index > data.length - 1) {
-                throw new XSException(XSException.INDEX_SIZE_ERR, null);
+        public Object item(int index) {
+            if (index < 0 || index >= data.length) {
+                return null;
             }
             return data[index];
         }

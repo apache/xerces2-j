@@ -15,8 +15,6 @@
  */
 package org.apache.xerces.xs.datatypes;
 
-import org.apache.xerces.xs.XSException;
-
 /**
  * <p><b>EXPERIMENTAL: This interface should not be considered stable.
  * It is likely it may be altered or replaced in the future.</b></p>
@@ -47,15 +45,14 @@ public interface ObjectList {
     public boolean contains(Object item);
     
     /**
-     * Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. 
+     * Returns the <code>index</code>th item in the collection or 
+     * <code>null</code> if <code>index</code> is greater than or equal to 
+     * the number of objects in the list. The index starts at 0. 
      * @param index  index into the collection. 
      * @return  The <code>Object</code> at the <code>index</code>th 
-     *   position in the <code>ObjectList</code>. 
-     * @exception XSException
-     *   INDEX_SIZE_ERR: if <code>index</code> is greater than or equal to the 
-     *   number of objects in the list.
+     *   position in the <code>ObjectList</code>, or <code>null</code> if 
+     *   the index specified is not valid. 
      */
-    public Object item(int index) throws XSException;
+    public Object item(int index);
     
 }
