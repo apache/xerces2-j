@@ -1023,7 +1023,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 next = node.getNextSibling();
                 if (next == null){
                     node = node.getParentNode();
-                    if (root == node){
+                    if (node == null || root == node){
                         next = null;
                         break;                   
                     }
