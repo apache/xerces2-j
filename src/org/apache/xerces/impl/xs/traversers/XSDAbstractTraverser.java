@@ -78,6 +78,7 @@ abstract class XSDAbstractTraverser {
     protected XSDHandler            fSchemaHandler = null;
     protected SymbolTable           fSymbolTable = null;
     protected XSAttributeChecker    fAttrChecker = null;
+    protected boolean               fValidateAnnotations = false;
 
     // used to validate default/fixed attribute values
     ValidationState fValidationState = new ValidationState();
@@ -88,8 +89,9 @@ abstract class XSDAbstractTraverser {
         fAttrChecker = attrChecker;
     }
 
-    void reset(SymbolTable symbolTable) {
+    void reset(SymbolTable symbolTable, boolean validateAnnotations) {
         fSymbolTable = symbolTable;
+        fValidateAnnotations = validateAnnotations;
         fValidationState.setExtraChecking(false);
         fValidationState.setSymbolTable(symbolTable);
     }
@@ -192,8 +194,15 @@ abstract class XSDAbstractTraverser {
             contentBuffer.append(contents.substring(0,annotationTokenEnd));
             contentBuffer.append(localStrBuffer.toString());
             contentBuffer.append(contents.substring(annotationTokenEnd, contents.length()));
-            return new XSAnnotationImpl(contentBuffer.toString(), grammar);
+            final String annotation = contentBuffer.toString();
+            if (fValidateAnnotations) {
+                schemaDoc.addAnnotation(new XSAnnotationInfo(annotation, annotationDecl));
+            }
+            return new XSAnnotationImpl(annotation, grammar);
         } else {
+            if (fValidateAnnotations) {
+                schemaDoc.addAnnotation(new XSAnnotationInfo(contents, annotationDecl));
+            }
             return new XSAnnotationImpl(contents, grammar);
         }
 

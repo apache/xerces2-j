@@ -461,8 +461,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         return element;
     }
 
-    void reset(SymbolTable symbolTable) {
-        super.reset(symbolTable);
+    void reset(SymbolTable symbolTable, boolean validateAnnotations) {
+        super.reset(symbolTable, validateAnnotations);
         fDeferTraversingLocalElements = true;
     } // reset()
 

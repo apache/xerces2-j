@@ -80,6 +80,10 @@ class XSDocumentInfo {
     // array of objects on the schema's root element.  This is null
     // once returnSchemaAttrs has been called.
     protected Object [] fSchemaAttrs;
+    
+    // list of annotations contained in the schema document. This is null
+    // once removeAnnotations has been called.
+    protected XSAnnotationInfo fAnnotations = null;
 
     // note that the caller must ensure to call returnSchemaAttrs()
     // to avoid memory leaks!
@@ -182,6 +186,23 @@ class XSDocumentInfo {
     void returnSchemaAttrs () {
         fAttrChecker.returnAttrArray (fSchemaAttrs, null);
         fSchemaAttrs = null;
+    }
+    
+    // adds an annotation to the list of annotations
+    void addAnnotation(XSAnnotationInfo info) {
+        info.next = fAnnotations;
+        fAnnotations = info;
+    }
+    
+    // returns the list of annotations conatined in the
+    // schema document or null if the document contained no annotations.
+    XSAnnotationInfo getAnnotations() {
+        return fAnnotations;
+    }
+    
+    // removes reference to annotation list
+    void removeAnnotations() {
+        fAnnotations = null;
     }
     
 } // XSDocumentInfo

@@ -17,6 +17,8 @@
 package org.apache.xerces.impl.xs.traversers;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
@@ -41,12 +43,16 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.parsers.XML11Configuration;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
@@ -73,6 +79,14 @@ import org.w3c.dom.Element;
  */
 public class XSDHandler {
 
+    /** Feature identifier: validation. */
+    protected static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
+    /** feature identifier: XML Schema validation */
+    protected static final String XMLSCHEMA_VALIDATION =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+    
     /** Feature identifier:  allow java encodings */
     protected static final String ALLOW_JAVA_ENCODINGS =
         Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
@@ -88,6 +102,10 @@ public class XSDHandler {
     /** Feature: disallow doctype*/
     protected static final String DISALLOW_DOCTYPE =
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+    
+    /** Feature identifier: validate annotations. */
+    protected static final String VALIDATE_ANNOTATIONS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
 
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
@@ -239,6 +257,9 @@ public class XSDHandler {
     // a variable storing whether the last schema document
     // processed (by getSchema) was a duplicate.
     private boolean fLastSchemaWasDuplicate;
+    
+    // validate annotations feature
+    private boolean fValidateAnnotations = false;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -273,6 +294,8 @@ public class XSDHandler {
 
     //DOMParser fSchemaParser;
     SchemaParsingConfig fSchemaParser;
+    XML11Configuration fAnnotationValidator;
+    XSAnnotationGrammarPool fGrammarBucketAdapter;
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -410,7 +433,8 @@ public class XSDHandler {
         buildGlobalNameRegistries();
 
         // third phase:  call traversers
-        traverseSchemas();
+        ArrayList annotationInfo = fValidateAnnotations ? new ArrayList() : null;
+        traverseSchemas(annotationInfo);
 
         // fourth phase: handle local element decls
         traverseLocalElements();
@@ -447,10 +471,47 @@ public class XSDHandler {
             // set the imported grammars
             sg.setImportedGrammars(ins);
         }
+        
+        /** validate annotations **/
+        if (fValidateAnnotations && annotationInfo.size() > 0) {
+            validateAnnotations(annotationInfo);
+        }
 
         // and return.
         return fGrammarBucket.getGrammar(fRoot.fTargetNamespace);
     } // end parseSchema
+    
+    private void validateAnnotations(ArrayList annotationInfo) {
+        if (fAnnotationValidator == null) {
+            createAnnotationValidator();
+        }
+        final int size = annotationInfo.size();
+        final XMLInputSource src = new XMLInputSource(null, null, null);
+        fGrammarBucketAdapter.refreshGrammars(fGrammarBucket);
+        for (int i = 0; i < size; i += 2) {
+            src.setSystemId((String) annotationInfo.get(i));
+            XSAnnotationInfo annotation = (XSAnnotationInfo) annotationInfo.get(i+1);
+            while (annotation != null) {
+                src.setCharacterStream(new StringReader(annotation.fAnnotation));
+                try {
+                    fAnnotationValidator.parse(src);
+                }
+                catch (IOException exc) {}
+                annotation = annotation.next;
+            }
+        }
+    }
+    
+    private void createAnnotationValidator() {
+        fAnnotationValidator = new XML11Configuration();
+        fGrammarBucketAdapter = new XSAnnotationGrammarPool();
+        fAnnotationValidator.setFeature(VALIDATION, true);
+        fAnnotationValidator.setFeature(XMLSCHEMA_VALIDATION, true);
+        fAnnotationValidator.setProperty(XMLGRAMMAR_POOL, fGrammarBucketAdapter);
+        /** Set error handler. **/
+        XMLErrorHandler errorHandler = fErrorReporter.getErrorHandler();
+        fAnnotationValidator.setProperty(ERROR_HANDLER, (errorHandler != null) ? errorHandler : new DefaultErrorHandler());
+    }
 
     /**
      * Pull the grammar out of the bucket simply using
@@ -941,7 +1002,7 @@ public class XSDHandler {
     // as traversed (or hidden) in order to avoid infinite loops.  It completes
     // when it has visited all XSDocumentInfo objects in the
     // DependencyMap and marked them as traversed.
-    protected void traverseSchemas() {
+    protected void traverseSchemas(ArrayList annotationInfo) {
         // the process here is very similar to that in
         // buildGlobalRegistries, except we can't set our schemas as
         // hidden for a second time; so make them all visible again
@@ -1028,6 +1089,17 @@ public class XSDHandler {
                     reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);
                 }
             } // end for
+            
+            /** Collect annotation information for validation. **/
+            if (annotationInfo != null) {
+                XSAnnotationInfo info = currSchemaDoc.getAnnotations();
+                /** Only add annotations to the list if there were any in this document. **/
+                if (info != null) {
+                    annotationInfo.add(doc2SystemId(currDoc));
+                    annotationInfo.add(info);
+                }
+            }
+            currSchemaDoc.removeAnnotations();
 
             // now we're done with this one!
             currSchemaDoc.returnSchemaAttrs();
@@ -1038,6 +1110,7 @@ public class XSDHandler {
                 schemasToProcess.push(currSchemaDepends.elementAt(i));
             }
         } // while
+        
     } // end traverseSchemas
 
     // store whether we have reported an error about that no grammar
@@ -1554,16 +1627,16 @@ public class XSDHandler {
 
         // reset traversers
         fAttributeChecker.reset(fSymbolTable);
-        fAttributeGroupTraverser.reset(fSymbolTable);
-        fAttributeTraverser.reset(fSymbolTable);
-        fComplexTypeTraverser.reset(fSymbolTable);
-        fElementTraverser.reset(fSymbolTable);
-        fGroupTraverser.reset(fSymbolTable);
-        fKeyrefTraverser.reset(fSymbolTable);
-        fNotationTraverser.reset(fSymbolTable);
-        fSimpleTypeTraverser.reset(fSymbolTable);
-        fUniqueOrKeyTraverser.reset(fSymbolTable);
-        fWildCardTraverser.reset(fSymbolTable);
+        fAttributeGroupTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fAttributeTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fComplexTypeTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fElementTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fGroupTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fKeyrefTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fNotationTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fSimpleTypeTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fUniqueOrKeyTraverser.reset(fSymbolTable, fValidateAnnotations);
+        fWildCardTraverser.reset(fSymbolTable, fValidateAnnotations);
 
         fRedefinedRestrictedAttributeGroupRegistry.clear();
         fRedefinedRestrictedGroupRegistry.clear();
@@ -1593,8 +1666,17 @@ public class XSDHandler {
             // property unless it's actually changed.
             if (currErrorHandler != fSchemaParser.getProperty(ERROR_HANDLER)) {
                 fSchemaParser.setProperty(ERROR_HANDLER, (currErrorHandler != null) ? currErrorHandler : new DefaultErrorHandler());
+                if (fAnnotationValidator != null) {
+                    fAnnotationValidator.setProperty(ERROR_HANDLER, (currErrorHandler != null) ? currErrorHandler : new DefaultErrorHandler());
+                }
             }
         } catch (XMLConfigurationException e) {
+        }
+        
+        try {
+            fValidateAnnotations = componentManager.getFeature(VALIDATE_ANNOTATIONS);
+        } catch (XMLConfigurationException e) {
+            fValidateAnnotations = false;
         }
 
         try {
@@ -2134,6 +2216,79 @@ public class XSDHandler {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        key, args, XMLErrorReporter.SEVERITY_WARNING);
         }
+    }
+    
+    /** 
+     * Grammar pool used for validating annotations. This will return all of the
+     * grammars from the grammar bucket. It will also return an object for the
+     * schema for schemas which will contain at least the relevant declarations
+     * for annotations.
+     */
+    private static class XSAnnotationGrammarPool implements XMLGrammarPool {
+        
+        private XSGrammarBucket fGrammarBucket;
+        private Grammar [] fInitialGrammarSet;
+        
+        public Grammar[] retrieveInitialGrammarSet(String grammarType) {
+            if (grammarType == XMLGrammarDescription.XML_SCHEMA) {
+                if (fInitialGrammarSet == null) {
+                    if (fGrammarBucket == null) {
+                        fInitialGrammarSet = new Grammar [] {SchemaGrammar.SG_Schema4Annotations};
+                    }
+                    else {
+                        SchemaGrammar [] schemaGrammars = fGrammarBucket.getGrammars();
+                        /** 
+                         * If the grammar bucket already contains the schema for schemas
+                         * then we already have the definitions for the parts relevant
+                         * to annotations.
+                         */
+                        for (int i = 0; i < schemaGrammars.length; ++i) {
+                            if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(schemaGrammars[i].getTargetNamespace())) {
+                                fInitialGrammarSet = schemaGrammars;
+                                return fInitialGrammarSet;
+                            }
+                        }
+                        Grammar [] grammars = new Grammar[schemaGrammars.length + 1];
+                        System.arraycopy(schemaGrammars, 0, grammars, 0, schemaGrammars.length);
+                        grammars[grammars.length - 1] = SchemaGrammar.SG_Schema4Annotations;
+                        fInitialGrammarSet = grammars;
+                    }
+                }
+                return fInitialGrammarSet;
+            }
+            return new Grammar[0];
+        }
+
+        public void cacheGrammars(String grammarType, Grammar[] grammars) {
+            
+        }
+
+        public Grammar retrieveGrammar(XMLGrammarDescription desc) {
+            if (desc.getGrammarType() == XMLGrammarDescription.XML_SCHEMA) {
+                final String tns = ((XMLSchemaDescription) desc).getTargetNamespace();
+                if (fGrammarBucket != null) {
+                    Grammar grammar = fGrammarBucket.getGrammar(tns);
+                    if (grammar != null) {
+                        return grammar;
+                    }
+                }
+                if (SchemaSymbols.URI_SCHEMAFORSCHEMA.equals(tns)) {
+                    return SchemaGrammar.SG_Schema4Annotations;
+                }
+            }
+            return null;
+        }
+        
+        public void refreshGrammars(XSGrammarBucket gBucket) {
+            fGrammarBucket = gBucket;
+            fInitialGrammarSet = null;
+        }
+
+        public void lockPool() {}
+
+        public void unlockPool() {}
+
+        public void clear() {}
     }
 
     /**

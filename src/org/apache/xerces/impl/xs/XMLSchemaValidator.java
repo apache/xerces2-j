@@ -142,6 +142,10 @@ public class XMLSchemaValidator
     /** Feature identifier: standard uri conformant feature. */
     protected static final String STANDARD_URI_CONFORMANT_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+    
+    /** Feature identifier: validate annotations. */
+    protected static final String VALIDATE_ANNOTATIONS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
 
     /** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
@@ -201,7 +205,8 @@ public class XMLSchemaValidator
             SCHEMA_FULL_CHECKING,
             ALLOW_JAVA_ENCODINGS,
             CONTINUE_AFTER_FATAL_ERROR,
-            STANDARD_URI_CONFORMANT_FEATURE };
+            STANDARD_URI_CONFORMANT_FEATURE,
+            VALIDATE_ANNOTATIONS};
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = { null,
@@ -216,6 +221,7 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
         null, //Boolean.FALSE,
+        null,
         null };
 
     /** Recognized properties. */

@@ -109,6 +109,10 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
     /** Feature identifier: standard uri conformant feature. */
     protected static final String STANDARD_URI_CONFORMANT_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
+    
+    /** Feature identifier: validate annotations. */
+    protected static final String VALIDATE_ANNOTATIONS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
         
     /** Feature: disallow doctype*/
     protected static final String DISALLOW_DOCTYPE = 
@@ -128,7 +132,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
         CONTINUE_AFTER_FATAL_ERROR,
         ALLOW_JAVA_ENCODINGS,
         STANDARD_URI_CONFORMANT_FEATURE, 
-        DISALLOW_DOCTYPE
+        DISALLOW_DOCTYPE,
+        VALIDATE_ANNOTATIONS
     };
 
     // property identifiers
@@ -1080,6 +1085,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
             boolean state = ((Boolean)value).booleanValue();
             if (name.equals(Constants.DOM_VALIDATE) ||
                 name.equals(SCHEMA_FULL_CHECKING) ||
+                name.equals(VALIDATE_ANNOTATIONS) ||
                 name.equals(CONTINUE_AFTER_FATAL_ERROR) ||
                 name.equals(ALLOW_JAVA_ENCODINGS) ||
                 name.equals(STANDARD_URI_CONFORMANT_FEATURE)) {

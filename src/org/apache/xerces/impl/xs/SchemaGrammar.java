@@ -902,6 +902,8 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     // the grammars to hold components of the schema namespace
     public final static BuiltinSchemaGrammar SG_SchemaNS = new BuiltinSchemaGrammar(GRAMMAR_XS);
+    
+    public final static Schema4Annotations SG_Schema4Annotations = new Schema4Annotations();
 
     public final static XSSimpleType fAnySimpleType = (XSSimpleType)SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
 
