@@ -639,7 +639,7 @@ public class DocumentImpl
         for (int i = nodeListeners.size() - 1; i >= 0; --i) {
             LEntry le = (LEntry) nodeListeners.elementAt(i);
             if (le.useCapture == useCapture && le.listener == listener && 
-               le.type.equals(type)) {
+                le.type.equals(type)) {
                 nodeListeners.removeElementAt(i);
                 // Storage management: Discard empty listener lists
                 if (nodeListeners.size() == 0)
@@ -686,10 +686,10 @@ public class DocumentImpl
      *   its default handler for this event, if any.
      * </ol>
      * <p>
-     * Note that (de)registration of handlers during
-     * processing of an event does not take effect during
-     * this phase of this event; they will not be called until
-     * the next time this node is visited by dispatchEvent.
+     * Note that registration of handlers during processing of an event does
+     * not take effect during this phase of this event; they will not be called
+     * until the next time this node is visited by dispatchEvent. On the other
+     * hand, removals take effect immediately.
      * <p>
      * If an event handler itself causes events to be dispatched, they are
      * processed synchronously, before processing resumes
@@ -769,11 +769,12 @@ public class DocumentImpl
                     // count-down more efficient
                     for (int i = nl.size() - 1; i >= 0; --i) {
                         LEntry le = (LEntry) nl.elementAt(i);
-                        if (le.useCapture && le.type.equals(evt.type)) {
+                        if (le.useCapture && le.type.equals(evt.type) &&
+                            nodeListeners.contains(le)) {
                             try {
                                 le.listener.handleEvent(evt);
                             }
-                            catch(Exception e) {
+                            catch (Exception e) {
                                 // All exceptions are ignored.
                             }
                         }
@@ -794,13 +795,13 @@ public class DocumentImpl
                 Vector nl = (Vector) nodeListeners.clone();
                 // count-down is more efficient
                 for (int i = nl.size() - 1; i >= 0; --i) {
-                    LEntry le = (LEntry)nl.elementAt(i);
-                    if (le != null && !le.useCapture &&
-                        le.type.equals(evt.type)) {
+                    LEntry le = (LEntry) nl.elementAt(i);
+                    if (!le.useCapture && le.type.equals(evt.type) &&
+                        nodeListeners.contains(le)) {
                         try {
                             le.listener.handleEvent(evt);
                         }
-                        catch(Exception e) {
+                        catch (Exception e) {
                             // All exceptions are ignored.
                         }
                     }
@@ -826,11 +827,12 @@ public class DocumentImpl
                         // count-down more efficient
                         for (int i = nl.size() - 1; i >= 0; --i) {
                             LEntry le = (LEntry) nl.elementAt(i);
-                            if (!le.useCapture && le.type.equals(evt.type)) {
+                            if (!le.useCapture && le.type.equals(evt.type) &&
+                                nodeListeners.contains(le)) {
                                 try {
                                     le.listener.handleEvent(evt);
                                 }
-                                catch(Exception e) {
+                                catch (Exception e) {
                                     // All exceptions are ignored.
                                 }
                             }
