@@ -514,12 +514,20 @@ public class XMLDTDScannerImpl
             reportEntity = peekReportEntity();
             // check well-formedness of the enity
             int startMarkUpDepth = popPEStack();
+            // throw fatalError if this entity was incomplete and
+            // was a freestanding decl
+            if(startMarkUpDepth == 0 &&
+                    startMarkUpDepth < fMarkUpDepth) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                   "ILL_FORMED_PARAMETER_ENTITY_WHEN_USED_IN_DECL",
+                                   new Object[]{ fEntityManager.fCurrentEntity.name},
+                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
             if (startMarkUpDepth != fMarkUpDepth) {
                 reportEntity = false;
                 if (fValidation) {
                 // Proper nesting of parameter entities is a Validity Constraint
                 // and must not be enforced when validation is off
-                // REVISIT: Should this be a fatal error? -Ac
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "ImproperDeclarationNesting",
                                            new Object[]{ name },
