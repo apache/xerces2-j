@@ -32,7 +32,7 @@
      <p>
       According to the specification for XInclude, processors must add an <code>xml:base</code>
       attribute to elements included from locations with a different base URI.  Without
-      these attributes, the resulting infoset information would be incorrect.  Unfortunatly,
+      these attributes, the resulting infoset information would be incorrect.  Unfortunately,
       these attributes make XInclude processing not transparent to Schema validation.
      </p>
      <p>
