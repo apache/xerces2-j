@@ -1177,6 +1177,10 @@ public final class XMLValidator
          bindNamespacesToElementAndAttributes(element, fAttrList);
       }
 
+      if (fDynamicValidation && fGrammar==null) {
+         fValidating = false;
+      }
+
       if (!fSeenRootElement) {
           fSeenRootElement = true;
       }
@@ -2438,9 +2442,6 @@ public final class XMLValidator
          if (fGrammar == null) {
 
             fGrammar = fGrammarResolver.getGrammar("");
-            if (fDynamicValidation && fGrammar==null) {
-               fValidating = false;
-            }
 
             if (fGrammar != null) {
                if (fGrammar instanceof DTDGrammar) {
