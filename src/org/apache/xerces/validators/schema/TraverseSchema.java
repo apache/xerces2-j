@@ -470,6 +470,11 @@ public class TraverseSchema implements
         public DatatypeValidator datatypeValidator;
     }
 
+    private class baseInfo {
+        private DatatypeValidator baseDataTypeValidator;
+        private ComplexTypeInfo baseComplexTypeInfo;
+        private String baseTypeSchemaURI;
+    }
 
     //REVISIT: verify the URI.
     public final static String SchemaForSchemaURI = "http://www.w3.org/TR-1/Schema";
@@ -1864,6 +1869,14 @@ public class TraverseSchema implements
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
         boolean isNamedType = false;
 
+
+        // traverseComplexTypeDecl supports the April version of the schema spec. 
+        // For candidate recommendation support, traverseComplexTypeDeclCR must be 
+        // invoked
+
+        if (CR_IMPL) 
+          return traverseComplexTypeDeclCR(complexTypeDecl);
+
         if ( DEBUGGING )
             System.out.println("traversing complex Type : " + typeName +","+base+","+content+".");
 
@@ -2341,9 +2354,6 @@ public class TraverseSchema implements
             }
         }
 
-        if ( DEBUGGING )
-            System.out.println("!!!!!>>>>>" + typeName+", "+ baseTypeInfo + ", " 
-                               + baseContentSpecHandle +", " + left +", "+scopeDefined);
 
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
         typeInfo.baseComplexTypeInfo = baseTypeInfo;
@@ -2507,7 +2517,14 @@ public class TraverseSchema implements
         }
         typeInfo.typeName = new String(typeName);
         if ( DEBUGGING )
-            System.out.println("add complex Type to Registry: " + typeName +","+content+".");
+            System.out.println(">>>add complex Type to Registry: " + typeName +
+                               " baseDTValidator=" + typeInfo.baseDataTypeValidator +
+                               " baseCTInfo=" + typeInfo.baseComplexTypeInfo + 
+                               " derivedBy=" + typeInfo.derivedBy + 
+                               " contentType=" + typeInfo.contentType +
+                               " contentSpecHandle=" + typeInfo.contentSpecHandle + 
+                               " datatypeValidator=" + typeInfo.datatypeValidator);
+
         fComplexTypeRegistry.put(typeName,typeInfo);
 
         // before exit the complex type definition, restore the scope, mainly for nested Anonymous Types
@@ -2526,6 +2543,931 @@ public class TraverseSchema implements
 
     } // end of method: traverseComplexTypeDecl
 
+    /**
+     * Traverse ComplexType Declaration - CR Implementation.
+     *  
+     *       <complexType 
+     *         abstract = boolean 
+     *         block = #all or (possibly empty) subset of {extension, restriction} 
+     *         final = #all or (possibly empty) subset of {extension, restriction} 
+     *         id = ID 
+     *         mixed = boolean : false
+     *         name = NCName>
+     *         Content: (annotation? , (simpleContent | complexContent | 
+     *                    ( (group | all | choice | sequence)? , 
+     *                    ( (attribute | attributeGroup)* , anyAttribute?))))  
+     *       </complexType>
+     * @param complexTypeDecl
+     * @return 
+     */
+    
+    private int traverseComplexTypeDeclCR( Element complexTypeDecl ) throws Exception { 
+        
+        // ------------------------------------------------------------------
+        // Get the attributes of the type
+        // ------------------------------------------------------------------
+        String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
+        String blockSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK );
+        String finalSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL );
+        String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
+        String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
+        String mixed = complexTypeDecl.getAttribute(SchemaSymbols.ATT_MIXED);
+        boolean isNamedType = false;
+
+        if ( DEBUGGING )
+            System.out.println("traversing complex Type : " + typeName); 
+
+        // ------------------------------------------------------------------
+        // Generate a type name, if one wasn't specified
+        // ------------------------------------------------------------------
+        if (typeName.equals("")) { // gensym a unique name
+            //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
+            typeName = "#"+fAnonTypeCount++;
+        }
+        else {
+            fCurrentTypeNameStack.push(typeName);
+            isNamedType = true;
+        }
+
+        int typeNameIndex = fStringPool.addSymbol(typeName);
+
+        // ------------------------------------------------------------------
+        // Check if the type has already been registered
+        // ------------------------------------------------------------------
+        if (isTopLevel(complexTypeDecl)) {
+        
+            String fullName = fTargetNSURIString+","+typeName;
+            ComplexTypeInfo temp = (ComplexTypeInfo) fComplexTypeRegistry.get(fullName);
+            if (temp != null ) {
+                return fStringPool.addSymbol(fullName);
+            }
+        }
+
+        int scopeDefined = fScopeCount++;
+        int previousScope = fCurrentScope;
+        fCurrentScope = scopeDefined;
+
+        Element child = null;
+        ComplexTypeInfo typeInfo = new ComplexTypeInfo();
+
+        // ------------------------------------------------------------------
+        // First, handle any ANNOTATION declaration and get next child
+        // ------------------------------------------------------------------
+        child = checkContent(complexTypeDecl,XUtil.getFirstChildElement(complexTypeDecl),
+                             true);
+
+        // ------------------------------------------------------------------
+        // Process the content of the complex type declaration
+        // ------------------------------------------------------------------
+        if (child==null) {
+            //
+            // EMPTY complex type   
+            //
+            typeInfo.contentType = XMLElementDecl.TYPE_ANY;
+            typeInfo.derivedBy = 0;
+            typeInfo.contentSpecHandle = -1;
+            typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
+              new QName(-1,fStringPool.addSymbol("$"+typeName),typeNameIndex,fTargetNSURI),
+              (fTargetNSURI==-1) ? -1 : fCurrentScope, scopeDefined,
+               XMLElementDecl.TYPE_ANY, -1, -1, null);
+            typeInfo.attlistHead = -1; 
+        }
+        else {
+            String childName = child.getNodeName();
+            int index = -2;
+
+            if (childName.equals(SchemaSymbols.ELT_SIMPLECONTENT)) {
+                //
+                // SIMPLE CONTENT element
+                //
+                traverseSimpleContentDecl(typeNameIndex, child, typeInfo);
+                if (XUtil.getNextSiblingElement(child) != null) 
+                    reportGenericSchemaError("SimpleContent must be the only child in complexType "  
+                                             + typeName);
+            }
+            else if (childName.equals(SchemaSymbols.ELT_COMPLEXCONTENT)) {
+                //
+                // COMPLEX CONTENT element
+                //
+                traverseComplexContentDecl(typeNameIndex, child, typeInfo,   
+                      mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+                if (XUtil.getNextSiblingElement(child) != null) 
+                    reportGenericSchemaError("ComplexContent must be the only child in complexType "  
+                                             + typeName);
+            }
+            else {
+                // 
+                // We must have ....
+                // GROUP, ALL, SEQUENCE or CHOICE, followed by optional attributes
+                // Note that it's possible that only attributes are specified.
+                //
+                processComplexContent(typeNameIndex, child, typeInfo, null, 
+                      mixed.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false);
+       
+            }
+        }
+                
+            
+        // ------------------------------------------------------------------
+        // Finish the setup of the typeInfo and register the type
+        // ------------------------------------------------------------------
+        typeInfo.scopeDefined = scopeDefined; 
+        typeInfo.blockSet = parseBlockSet(blockSet); 
+        typeInfo.finalSet = parseFinalSet(finalSet); 
+        typeInfo.isAbstract = isAbstract.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false ;
+        if (!typeName.startsWith("#")) {
+            typeName = fTargetNSURIString + "," + typeName;
+        }
+        typeInfo.typeName = new String(typeName);
+
+        if ( DEBUGGING )
+            System.out.println(">>>add complex Type to Registry: " + typeName +
+                               " baseDTValidator=" + typeInfo.baseDataTypeValidator +
+                               " baseCTInfo=" + typeInfo.baseComplexTypeInfo + 
+                               " derivedBy=" + typeInfo.derivedBy + 
+                               " contentType=" + typeInfo.contentType +
+                               " contentSpecHandle=" + typeInfo.contentSpecHandle + 
+                               " datatypeValidator=" + typeInfo.datatypeValidator);
+
+        fComplexTypeRegistry.put(typeName,typeInfo);
+
+        // ------------------------------------------------------------------
+        // Before exiting, restore the scope, mainly for nested anonymous types
+        // ------------------------------------------------------------------
+        fCurrentScope = previousScope;
+        if (isNamedType) {
+            fCurrentTypeNameStack.pop();
+            checkRecursingComplexType();
+        }
+
+        //set template element's typeInfo
+        fSchemaGrammar.setElementComplexTypeInfo(typeInfo.templateElementIndex, typeInfo);
+
+        typeNameIndex = fStringPool.addSymbol(typeName);
+        return typeNameIndex;
+
+    } // end traverseComplexTypeDeclCR
+
+      
+    /**
+     * Traverse SimpleContent Declaration                          
+     *  
+     *       <simpleContent 
+     *         id = ID 
+     *         {any attributes with non-schema namespace...}>
+     *
+     *         Content: (annotation? , (restriction | extension)) 
+     *       </simpleContent>
+     *
+     *       <restriction
+     *         base = QNAME
+     *         id = ID           
+     *         {any attributes with non-schema namespace...}>
+     *
+     *         Content: (annotation? , ((minExclusive | minInclusive | maxExclusive
+     *                    | maxInclusive | precision | scale | length | minLength 
+     *                    | maxLength | encoding | period | duration | enumeration 
+     *                    | pattern | whiteSpace)*) ? ,  
+     *                    ((attribute | attributeGroup)* , anyAttribute?))
+     *       </restriction>
+     *
+     *       <extension
+     *         base = QNAME
+     *         id = ID           
+     *         {any attributes with non-schema namespace...}>
+     *         Content: (annotation? , ((attribute | attributeGroup)* , anyAttribute?))
+     *       </extension>
+     *
+     * @param typeNameIndex
+     * @param simpleContentTypeDecl
+     * @param typeInfo                   
+     * @return 
+     */
+    
+    private void traverseSimpleContentDecl(int typeNameIndex,
+               Element simpleContentDecl, ComplexTypeInfo typeInfo) 
+               throws Exception {
+
+        
+        String typeName = fStringPool.toString(typeNameIndex);
+
+        // -----------------------------------------------------------------------
+        // Get attributes.   
+        // -----------------------------------------------------------------------
+        String simpleContentTypeId = simpleContentDecl.getAttribute(SchemaSymbols.ATTVAL_ID);
+
+        // -----------------------------------------------------------------------
+        // Set the content type to be simple, and initialize content spec handle
+        // -----------------------------------------------------------------------
+        typeInfo.contentType = XMLElementDecl.TYPE_SIMPLE;
+        typeInfo.contentSpecHandle = -1;
+
+        Element simpleContent = checkContent(simpleContentDecl,
+                                     XUtil.getFirstChildElement(simpleContentDecl),false);
+        
+        // If there are no children, return
+        // TODO - should we raise an exception?
+        if (simpleContent==null)
+          return;
+
+        // -----------------------------------------------------------------------
+        // The content should be either "restriction" or "extension"
+        // -----------------------------------------------------------------------
+        String simpleContentName = simpleContent.getNodeName();
+        if (simpleContentName.equals(SchemaSymbols.ELT_RESTRICTION))
+          typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
+        else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
+          typeInfo.derivedBy = SchemaSymbols.EXTENSION;
+        else
+          reportGenericSchemaError("Invalid content for simpleContent"); 
+
+        // -----------------------------------------------------------------------
+        // Get the attributes of the restriction/extension element
+        // -----------------------------------------------------------------------
+        String base = simpleContent.getAttribute(SchemaSymbols.ATT_BASE);
+        String typeId = simpleContent.getAttribute(SchemaSymbols.ATTVAL_ID);
+
+
+        // -----------------------------------------------------------------------
+        // Skip over any annotations in the restriction or extension elements
+        // todo - check whether the content can be empty...
+        // -----------------------------------------------------------------------
+        Element content = checkContent(simpleContent,
+                              XUtil.getFirstChildElement(simpleContent),true); 
+
+        // -----------------------------------------------------------------------
+        // Handle the base type name 
+        // -----------------------------------------------------------------------
+        if (base.length() < 0)  {
+          reportGenericSchemaError("Must specify BASE attribute");
+          return;
+        }
+        baseInfo bInfo = new baseInfo(); 
+        findBaseTypeInfo(bInfo, base); 
+       
+        // Initialize base dt validator and type info, and check 
+        // that the base isn't a complex type with complex content
+        if (bInfo.baseComplexTypeInfo != null)  {
+           if (bInfo.baseComplexTypeInfo.contentSpecHandle > -1) {
+               reportGenericSchemaError("Base type cannot have complexContent");
+               return;
+           }
+           typeInfo.baseDataTypeValidator = bInfo.baseComplexTypeInfo.datatypeValidator;
+        }
+        else {
+           typeInfo.baseDataTypeValidator = bInfo.baseDataTypeValidator;
+        }
+        typeInfo.baseComplexTypeInfo = bInfo.baseComplexTypeInfo;
+           
+        // -----------------------------------------------------------------------
+        // Process the content of the derivation
+        // -----------------------------------------------------------------------
+        Element attrNode = null;
+        //
+        // RESTRICTION
+        //
+        if (typeInfo.derivedBy==SchemaSymbols.RESTRICTION) {
+            //
+            //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
+            //
+            if (bInfo.baseDataTypeValidator != null) {
+                reportGenericSchemaError("base is a simpleType, can't derive by restriction in " + typeName); 
+                return;
+            }
+
+            //
+            // Build up facet information
+            //
+            int numEnumerationLiterals = 0;
+            int numFacets = 0;
+            Hashtable facetData        = new Hashtable();
+            Vector enumData            = new Vector();
+            Element child;
+
+            //REVISIT: there is a better way to do this, 
+            for (child = content;
+                 child != null && (child.getLocalName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_PRECISION) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_SCALE) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_LENGTH) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_MINLENGTH) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_ENCODING) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_PERIOD) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_DURATION) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_PATTERN) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION));
+                 child = XUtil.getNextSiblingElement(child)) 
+            {
+                if ( child.getNodeType() == Node.ELEMENT_NODE ) {
+                    Element facetElt = (Element) child;
+                    numFacets++;
+                    if (facetElt.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                        numEnumerationLiterals++;
+                        enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
+                        //Enumerations can have annotations ? ( 0 | 1 )
+                        Element enumContent =  XUtil.getFirstChildElement( facetElt );
+                        if( enumContent != null && 
+                            enumContent.getLocalName().equals
+                                  ( SchemaSymbols.ELT_ANNOTATION )){
+                            traverseAnnotationDecl( child );   
+                        }
+                        // TO DO: if Jeff check in new changes to TraverseSimpleType, copy them over
+                    } 
+                    else {
+                        facetData.put(facetElt.getLocalName(),
+                              facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
+                    }
+                }
+            } // end of for loop thru facets
+
+            if (numEnumerationLiterals > 0) {
+                facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
+            }
+
+            //
+            // If there were facets, create a new data type validator, otherwise 
+            // the data type validator is from the base
+            //
+            if (numFacets > 0) {
+                typeInfo.datatypeValidator = fDatatypeRegistry.createDatatypeValidator(
+                                      typeName,
+                                      typeInfo.baseDataTypeValidator, facetData, false);
+            }
+            else
+                typeInfo.datatypeValidator = 
+                             typeInfo.baseComplexTypeInfo.datatypeValidator;
+
+            if (child != null) {
+                // REVISIT: Shouldn't we allow attributes???
+                reportGenericSchemaError("Invalid child '"+child.getLocalName()+
+                                     "' in complexType : '" + typeName +
+                                     "', because it restricts another complexSimpleType");
+            }
+            
+        } // end RESTRICTION
+
+        //
+        // EXTENSION
+        //
+        else {
+            typeInfo.datatypeValidator = bInfo.baseDataTypeValidator;
+
+            //
+            // Look for attributes 
+            //
+            if (content != null)  {
+               //
+               // Check that we have attributes
+               //
+               if (!isAttrOrAttrGroup(content)) {
+                   reportGenericSchemaError("Invalid child '"+content.getLocalName()+
+                                     "' in complexType : '" + typeName);
+               }
+               else {
+                   attrNode = content;
+               }
+            }
+              
+        }
+
+        // -----------------------------------------------------------------------
+        // add a template element to the grammar element decl pool for the type
+        // -----------------------------------------------------------------------
+        int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
+
+        typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
+             new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
+             (fTargetNSURI==-1) ? -1 : fCurrentScope, typeInfo.scopeDefined,
+             typeInfo.contentType, 
+             typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
+        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
+                                typeInfo.templateElementIndex);
+
+        // -----------------------------------------------------------------------
+        // Process attributes                                          
+        // -----------------------------------------------------------------------
+        processAttributes(attrNode,bInfo,typeInfo);
+
+    }  // end traverseSimpleContentDecl
+
+    /**
+     * Traverse complexContent Declaration                          
+     *  
+     *       <complexContent 
+     *         id = ID 
+     *         mixed = boolean 
+     *         {any attributes with non-schema namespace...}>
+     *
+     *         Content: (annotation? , (restriction | extension)) 
+     *       </complexContent>
+     *
+     *       <restriction
+     *         base = QNAME
+     *         id = ID           
+     *         {any attributes with non-schema namespace...}>
+     *
+     *         Content: (annotation? , (group | all | choice | sequence)?, 
+     *                  ((attribute | attributeGroup)* , anyAttribute?))
+     *       </restriction>
+     *
+     *       <extension
+     *         base = QNAME
+     *         id = ID           
+     *         {any attributes with non-schema namespace...}>
+     *         Content: (annotation? , (group | all | choice | sequence)?, 
+     *                  ((attribute | attributeGroup)* , anyAttribute?))
+     *       </extension>
+     *
+     * @param typeNameIndex
+     * @param simpleContentTypeDecl
+     * @param typeInfo                   
+     * @return 
+     */
+    
+    private void traverseComplexContentDecl(int typeNameIndex,  
+               Element complexContentDecl, ComplexTypeInfo typeInfo, 
+               boolean mixedOnComplexTypeDecl) throws Exception { 
+
+        String typeName = fStringPool.toString(typeNameIndex);
+
+        // -----------------------------------------------------------------------
+        // Get the attributes                                                      
+        // -----------------------------------------------------------------------
+        String typeId = complexContentDecl.getAttribute(SchemaSymbols.ATTVAL_ID);
+        String mixed = complexContentDecl.getAttribute(SchemaSymbols.ATT_MIXED);
+        
+        // -----------------------------------------------------------------------
+        // Determine whether the content is mixed, or element-only
+        // Setting here overrides any setting on the complex type decl
+        // -----------------------------------------------------------------------
+        boolean isMixed = mixedOnComplexTypeDecl;
+        if (mixed.equals(SchemaSymbols.ATTVAL_TRUE))
+           isMixed = true;
+        else if (mixed.equals(SchemaSymbols.ATTVAL_FALSE))
+           isMixed = false;
+        
+        // -----------------------------------------------------------------------
+        // Since the type must have complex content, set the simple type validators 
+        // to null
+        // -----------------------------------------------------------------------
+        typeInfo.datatypeValidator = null;
+        typeInfo.baseDataTypeValidator = null;
+
+        Element complexContent = checkContent(complexContentDecl,
+                                 XUtil.getFirstChildElement(complexContentDecl),false);
+        
+        // If there are no children, return
+        // TODO - should we raise an exception?
+        if (complexContent==null)
+          return;
+
+        // -----------------------------------------------------------------------
+        // The content should be either "restriction" or "extension"
+        // -----------------------------------------------------------------------
+        String complexContentName = complexContent.getNodeName();
+        if (complexContentName.equals(SchemaSymbols.ELT_RESTRICTION))
+          typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
+        else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
+          typeInfo.derivedBy = SchemaSymbols.EXTENSION;
+        else
+          reportGenericSchemaError("Invalid content for complexContent"); 
+
+        // Get the attributes of the restriction/extension element
+        String base = complexContent.getAttribute(SchemaSymbols.ATT_BASE);
+        String complexContentTypeId=complexContent.getAttribute(SchemaSymbols.ATTVAL_ID);
+
+
+        // Skip over any annotations in the restriction or extension elements
+        // TODO - check whether the content can be empty...
+        Element content = checkContent(complexContent,
+                              XUtil.getFirstChildElement(complexContent),true); 
+
+        // -----------------------------------------------------------------------
+        // Handle the base type name 
+        // -----------------------------------------------------------------------
+        if (base.length() < 0)  {
+          reportGenericSchemaError("Must specify BASE attribute");
+          return;
+        }
+        baseInfo bInfo = new baseInfo(); 
+        findBaseTypeInfo(bInfo, base); 
+       
+        // Check that the base is a complex type                                  
+        if (bInfo.baseComplexTypeInfo == null)  {
+             reportGenericSchemaError("Base type must be complex");
+             return;
+        }
+
+        // -----------------------------------------------------------------------
+        // Process the elements that make up the content
+        // -----------------------------------------------------------------------
+        if (content != null) {
+            processComplexContent(typeNameIndex,content,typeInfo,bInfo,isMixed);
+        }
+
+        // -----------------------------------------------------------------------
+        // Finish setup                                       
+        // -----------------------------------------------------------------------
+        typeInfo.baseComplexTypeInfo = bInfo.baseComplexTypeInfo;
+        int baseContentSpecHandle = bInfo.baseComplexTypeInfo.contentSpecHandle;
+
+        if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
+           //
+           //REVISIT: !!! really hairy stuff to check the particle derivation OK in 5.10
+           //checkParticleDerivationOK();
+         }
+
+        else {
+            //
+            // Compose the final content model by concatenating the base and the 
+            // current in sequence
+            //
+            if (bInfo.baseTypeSchemaURI != null) {
+                SchemaGrammar aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(
+                                 bInfo.baseTypeSchemaURI);
+                baseContentSpecHandle = importContentSpec(aGrammar, baseContentSpecHandle);
+            }
+            if (typeInfo.contentSpecHandle == -2) {
+                typeInfo.contentSpecHandle = baseContentSpecHandle;
+            }
+            else 
+                typeInfo.contentSpecHandle = 
+                 fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                                                   baseContentSpecHandle,
+                                                   typeInfo.contentSpecHandle,
+                                                   false);
+        }
+
+
+    }  // end traverseComplexContentDecl
+
+
+    /**
+     * Process "base" information                                   
+     *  
+     * @param baseTypeInfo        
+     * @param base
+     * @return 
+     */
+    
+    private void findBaseTypeInfo(baseInfo bInfo, String base) throws Exception {
+
+        String baseTypeSchemaURI = null;
+        ComplexTypeInfo baseComplexTypeInfo = null;
+        DatatypeValidator baseDTValidator = null;
+        
+        int baseTypeSymbol = -1;
+        String fullBaseName = "";
+        Element baseTypeNode = null;
+     
+        String prefix = "";
+        String localpart = base;
+        int colonptr = base.indexOf(":");
+        if ( colonptr > 0) {
+            prefix = base.substring(0,colonptr);
+            localpart = base.substring(colonptr+1);
+        }
+        int localpartIndex = fStringPool.addSymbol(localpart);
+        String typeURI = resolvePrefixToURI(prefix);
+
+        // -------------------------------------------------------------
+        // check if the base type is from the same Schema
+        // -------------------------------------------------------------
+        if ( ! typeURI.equals(fTargetNSURIString) 
+             && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+             && typeURI.length() != 0 ) { 
+            //REVISIT, !!!! a hack: for schema that has no target namespace, 
+            // e.g. personal-schema.xml
+            baseTypeSchemaURI = typeURI;
+            baseComplexTypeInfo = getTypeInfoFromNS(typeURI, localpart);
+            if (baseComplexTypeInfo == null) {
+                baseDTValidator = getTypeValidatorFromNS(typeURI, localpart);
+                if (baseDTValidator == null)
+                    reportGenericSchemaError("Could not find base type " +localpart 
+                                       + " in schema " + typeURI);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // type must be from same schema
+        // -------------------------------------------------------------
+        else {
+            fullBaseName = typeURI+","+localpart;
+
+            // assume the base is a complexType and try to locate the base type first
+            baseComplexTypeInfo= (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
+
+            // if not found, 2 possibilities: 
+            //           1: ComplexType in question has not been compiled yet;
+            //           2: base is SimpleTYpe;
+            if (baseComplexTypeInfo == null) {
+                baseDTValidator = getDatatypeValidator(typeURI, localpart);
+
+                if (baseDTValidator == null) {
+                    baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
+                    if (baseTypeNode != null) {
+                        baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
+                        baseComplexTypeInfo = (ComplexTypeInfo)
+                        fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); 
+                        //REVISIT: should it be fullBaseName;
+                    }
+                    else {
+                        baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                        if (baseTypeNode != null) {
+                            baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
+                            baseDTValidator = getDatatypeValidator(typeURI, localpart);
+                            if (baseDTValidator == null)  {
+                                        //TO DO: signal error here.
+                            }
+                        }
+                        else {
+                            // REVISIT: Localize
+                            reportGenericSchemaError("Base type could not be found : " + base);
+                        }
+                    }
+                }
+            }
+        } // end else (type must be from same schema)
+
+        bInfo.baseDataTypeValidator = baseDTValidator;
+        bInfo.baseComplexTypeInfo = baseComplexTypeInfo;
+        bInfo.baseTypeSchemaURI = baseTypeSchemaURI;
+
+
+    } // end findBaseTypeInfo
+
+    /**
+     * Process content which is complex                             
+     *  
+     *     (group | all | choice | sequence) ? , 
+     *     ((attribute | attributeGroup)* , anyAttribute?))
+     *
+     * @param typeNameIndex
+     * @param complexContentChild
+     * @param typeInfo                   
+     * @return 
+     */
+    
+    private void processComplexContent(int typeNameIndex,
+               Element complexContentChild, ComplexTypeInfo typeInfo, baseInfo bInfo,
+               boolean isMixed) throws Exception {
+
+
+       // -------------------------------------------------------------
+       // Set the content type                                                     
+       // -------------------------------------------------------------
+       if (isMixed) 
+           typeInfo.contentType = XMLElementDecl.TYPE_MIXED;
+       else
+           typeInfo.contentType = XMLElementDecl.TYPE_CHILDREN;
+
+       // -------------------------------------------------------------
+       // GROUP, ALL, SEQUENCE or CHOICE, followed by attributes, if specified.
+       // Note that it's possible that only attributes are specified.
+       // -------------------------------------------------------------
+
+       Element attrNode = null;
+       String childName = complexContentChild.getNodeName();
+       int index=-2;
+
+       if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+           index = expandContentModel(traverseGroupDecl(complexContentChild), 
+                                      complexContentChild);
+           attrNode = XUtil.getNextSiblingElement(complexContentChild);
+       }
+       else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+           index = expandContentModel(traverseSequence(complexContentChild), 
+                                      complexContentChild);
+           attrNode = XUtil.getNextSiblingElement(complexContentChild);
+       }
+       else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+           index = expandContentModel(traverseChoice(complexContentChild), 
+                                      complexContentChild);
+           attrNode = XUtil.getNextSiblingElement(complexContentChild);
+       }
+       else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+           index = expandContentModel(traverseAll(complexContentChild), 
+                                  complexContentChild);
+           attrNode = XUtil.getNextSiblingElement(complexContentChild);
+           //TO DO: REVISIT 
+           //check that minOccurs = 1 and maxOccurs = 1  
+       }
+       else if (isAttrOrAttrGroup(complexContentChild)) {
+           // reset the contentType
+           typeInfo.contentType = XMLElementDecl.TYPE_ANY;
+           attrNode = complexContentChild;
+       }
+       else {
+           reportGenericSchemaError("Invalid child of a complex type");
+       }
+     
+       if (isMixed) {
+
+            //
+            // TODO - check to see if we MUST have an element.  What if only attributes 
+            // were specified??
+
+
+            // add #PCDATA leaf
+            int pcdataNode = fSchemaGrammar.addContentSpecNode(
+                             XMLContentSpec.CONTENTSPECNODE_LEAF,
+                             -1, // -1 means "#PCDATA" is name
+                             -1, false);
+            // 
+            // If there was an element, the content spec becomes a choice of PCDATA and
+            // the element
+            //
+            if (index != -2) 
+                index = fSchemaGrammar.addContentSpecNode(
+                    XMLContentSpec.CONTENTSPECNODE_CHOICE,pcdataNode,index,false);
+            else
+                index = pcdataNode;
+
+       }
+
+       typeInfo.contentSpecHandle = index;
+
+       // -------------------------------------------------------------
+       //add a template element to the grammar element decl pool.
+       // -------------------------------------------------------------
+       String typeName = fStringPool.toString(typeNameIndex);
+       int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
+
+       typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
+            new QName(-1, templateElementNameIndex,typeNameIndex,fTargetNSURI),
+            (fTargetNSURI==-1) ? -1 : fCurrentScope, typeInfo.scopeDefined,
+            typeInfo.contentType, 
+            typeInfo.contentSpecHandle, -1, typeInfo.datatypeValidator);
+       typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex(
+                               typeInfo.templateElementIndex);
+
+       // -------------------------------------------------------------
+       // Now, check attributes and handle
+       // -------------------------------------------------------------
+       if (attrNode !=null) {
+           if (!isAttrOrAttrGroup(attrNode)) 
+              reportGenericSchemaError("Invalid child of a complex type");
+           else
+              processAttributes(attrNode,bInfo,typeInfo);
+       }
+       else
+           processAttributes(null,bInfo,typeInfo);
+
+
+    } // end processComplexContent
+
+    /**
+     * Process attributes of a complex type                              
+     *  
+     * @param attrNode
+     * @param typeInfo                   
+     * @return 
+     */
+    
+    private void processAttributes(Element attrNode, baseInfo bInfo,          
+               ComplexTypeInfo typeInfo) throws Exception {
+
+
+         
+        String baseTypeSchemaURI = (bInfo == null) ? null:bInfo.baseTypeSchemaURI;
+
+        XMLAttributeDecl attWildcard = null;
+        Vector anyAttDecls = new Vector();
+
+        Element child;
+        for (child = attrNode;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
+
+            String childName = child.getLocalName();
+
+            if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                traverseAttributeDecl(child, typeInfo);
+            } 
+            else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
+                traverseAttributeGroupDecl(child,typeInfo,anyAttDecls);
+            }
+            else if ( childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) { 
+                attWildcard = traverseAnyAttribute(child);
+            }
+        }
+
+        if (attWildcard != null) {
+            XMLAttributeDecl fromGroup = null;
+            final int count = anyAttDecls.size();
+            if ( count > 0) {
+                fromGroup = (XMLAttributeDecl) anyAttDecls.elementAt(0);
+                for (int i=1; i<count; i++) {
+                    fromGroup = mergeTwoAnyAttribute(
+                                fromGroup,(XMLAttributeDecl)anyAttDecls.elementAt(i));
+                }
+            }
+            if (fromGroup != null) {
+                int saveProcessContents = attWildcard.defaultType;
+                attWildcard = mergeTwoAnyAttribute(attWildcard, fromGroup);
+                attWildcard.defaultType = saveProcessContents;
+            }
+        }
+        else {
+            //REVISIT: unclear in the Scheme Structures 4.3.3 what to do in this case
+        }
+
+        //
+        // merge in base type's attribute decls
+        //
+        XMLAttributeDecl baseAttWildcard = null;
+        ComplexTypeInfo baseTypeInfo = typeInfo.baseComplexTypeInfo;
+
+        if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
+            int attDefIndex = baseTypeInfo.attlistHead;
+            SchemaGrammar aGrammar = fSchemaGrammar;
+            if (baseTypeSchemaURI != null) {
+                aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(baseTypeSchemaURI);
+            }
+            if (aGrammar == null) {
+                //reportGenericSchemaError("In complexType "+typeName+", can NOT find the grammar "+
+                  //                       "with targetNamespace" + baseTypeSchemaURI+
+                    //                     "for the base type");
+            }
+            else
+            while ( attDefIndex > -1 ) {
+                fTempAttributeDecl.clear();
+                aGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
+                if (fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
+                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
+                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER ) {
+                    if (attWildcard == null) {
+                        baseAttWildcard = fTempAttributeDecl;
+                    }
+                    attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
+                    continue;
+                }
+                // if found a duplicate, if it is derived by restriction,
+                // then skip the one from the base type
+                
+                int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
+                if ( temp > -1) {
+                    if (typeInfo.derivedBy==SchemaSymbols.RESTRICTION) {
+                        attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
+                        continue;
+                    }
+                }
+
+               
+                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                          fTempAttributeDecl.name, fTempAttributeDecl.type, 
+                                          fTempAttributeDecl.enumeration, fTempAttributeDecl.defaultType, 
+                                          fTempAttributeDecl.defaultValue, 
+                                          fTempAttributeDecl.datatypeValidator,
+                                          fTempAttributeDecl.list);
+                attDefIndex = aGrammar.getNextAttributeDeclIndex(attDefIndex);
+            }
+        }
+
+        // att wildcard will inserted after all attributes were processed
+        if (attWildcard != null) {
+            if (attWildcard.type != -1) {
+                fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                          attWildcard.name, attWildcard.type, 
+                                          attWildcard.enumeration, attWildcard.defaultType, 
+                                          attWildcard.defaultValue, 
+                                          attWildcard.datatypeValidator,
+                                          attWildcard.list);
+            }
+            else {
+                //REVISIT: unclear in Schema spec if should report error here.
+            }
+        }
+        else if (baseAttWildcard != null) {
+            fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                      baseAttWildcard.name, baseAttWildcard.type, 
+                                      baseAttWildcard.enumeration, baseAttWildcard.defaultType, 
+                                      baseAttWildcard.defaultValue, 
+                                      baseAttWildcard.datatypeValidator,
+                                      baseAttWildcard.list);
+        }
+
+        typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex
+                                              (typeInfo.templateElementIndex);
+    } // end processAttributes
+
+    private boolean isAttrOrAttrGroup(Element e) 
+    {
+        String elementName = e.getNodeName();
+
+        if (elementName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
+            elementName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ||
+            elementName.equals(SchemaSymbols.ELT_ANYATTRIBUTE))
+          return true;
+        else
+          return false;
+    }
 
     private void checkRecursingComplexType() throws Exception {
         if ( fCurrentTypeNameStack.empty() ) {
