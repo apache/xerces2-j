@@ -445,9 +445,9 @@ import java.util.*;
  *      </TD>
  *  </TR>
  *  <TR>
- *      <TD WIDTH="33%">Japanese: iso-2022-jp</TD>
+ *      <TD WIDTH="33%">Japanese: ISO-2022-jp</TD>
  *      <TD WIDTH="15%">
- *          <P ALIGN="CENTER">iso-2020-jp
+ *          <P ALIGN="CENTER">ISO-2020-jp
  *      </TD>
  *      <TD WIDTH="12%">
  *          <P ALIGN="CENTER">MIME
@@ -531,17 +531,57 @@ public class MIME2Java {
         //    <preferred MIME name (uppercase)>, <Java encoding name>
         s_enchash.put("UTF-8", "UTF8");
         s_enchash.put("US-ASCII",        "ASCII");
-        s_enchash.put("ISO-8859-1",      "8859_1");
-        s_enchash.put("ISO-8859-2",      "8859_2");
-        s_enchash.put("ISO-8859-3",      "8859_3");
-        s_enchash.put("ISO-8859-4",      "8859_4");
-        s_enchash.put("ISO-8859-5",      "8859_5");
-        s_enchash.put("ISO-8859-6",      "8859_6");
-        s_enchash.put("ISO-8859-7",      "8859_7");
-        s_enchash.put("ISO-8859-8",      "8859_8");
-        s_enchash.put("ISO-8859-9",      "8859_9");
-        s_enchash.put("ISO-2022-JP",     "JIS");
+        s_enchash.put("ISO-8859-1",      "ISO8859_1");
+        s_enchash.put("ISO-IR-100",      "ISO8859_1");
+        s_enchash.put("ISO_8859-1",      "ISO8859_1");
+        s_enchash.put("LATIN1",      "ISO8859_1");
+        s_enchash.put("L1",      "ISO8859_1");
+        s_enchash.put("IBM819",      "ISO8859_1");
+        s_enchash.put("CP819",      "ISO8859_1");
+        s_enchash.put("ISO-8859-2",      "ISO8859_2");
+        s_enchash.put("ISO-IR-101",      "ISO8859_2");
+        s_enchash.put("ISO_8859-2",      "ISO8859_2");
+        s_enchash.put("LATIN2",      "ISO8859_2");
+        s_enchash.put("L2",      "ISO8859_2");
+        s_enchash.put("ISO-8859-3",      "ISO8859_3");
+        s_enchash.put("ISO-IR-109",      "ISO8859_3");
+        s_enchash.put("ISO_8859-3",      "ISO8859_3");
+        s_enchash.put("LATIN3",      "ISO8859_3");
+        s_enchash.put("L3",      "ISO8859_3");
+        s_enchash.put("ISO-8859-4",      "ISO8859_4");
+        s_enchash.put("ISO-IR-110",      "ISO8859_4");
+        s_enchash.put("ISO_8859-4",      "ISO8859_4");
+        s_enchash.put("LATIN4",      "ISO8859_4");
+        s_enchash.put("L4",      "ISO8859_4");
+        s_enchash.put("ISO-8859-5",      "ISO8859_5");
+        s_enchash.put("ISO-IR-144",      "ISO8859_5");
+        s_enchash.put("ISO_8859-5",      "ISO8859_5");
+        s_enchash.put("CYRILLIC",      "ISO8859_5");
+        s_enchash.put("ISO-8859-6",      "ISO8859_6");
+        s_enchash.put("ISO-IR-127",      "ISO8859_6");
+        s_enchash.put("ISO_8859-6",      "ISO8859_6");
+        s_enchash.put("ECMA-114",      "ISO8859_6");
+        s_enchash.put("ASMO-708",      "ISO8859_6");
+        s_enchash.put("ARABIC",      "ISO8859_6");
+        s_enchash.put("ISO-8859-7",      "ISO8859_7");
+        s_enchash.put("ISO-IR-126",      "ISO8859_7");
+        s_enchash.put("ISO_8859-7",      "ISO8859_7");
+        s_enchash.put("ELOT_928",      "ISO8859_7");
+        s_enchash.put("ECMA-118",      "ISO8859_7");
+        s_enchash.put("GREEK",      "ISO8859_7");
+        s_enchash.put("GREEK8",      "ISO8859_7");
+        s_enchash.put("ISO-8859-8",      "ISO8859_8");
+        s_enchash.put("ISO-IR-138",      "ISO8859_8");
+        s_enchash.put("ISO_8859-8",      "ISO8859_8");
+        s_enchash.put("HEBREW",      "ISO8859_8");
+        s_enchash.put("ISO-8859-9",      "ISO8859_9");
+        s_enchash.put("ISO-IR-148",      "ISO8859_9");
+        s_enchash.put("ISO_8859-9",      "ISO8859_9");
+        s_enchash.put("LATIN5",      "ISO8859_9");
+        s_enchash.put("L5",      "ISO8859_9");
+        s_enchash.put("ISO-2022-JP",     "ISO2022JP");
         s_enchash.put("SHIFT_JIS",       "SJIS");
+        s_enchash.put("MS_Kanji",       "SJIS");
         /**
          * MS932 is suitable for Windows-31J,
          * but JDK 1.1.x does not support MS932.
@@ -552,16 +592,17 @@ public class MIME2Java {
         } else {
             s_enchash.put("WINDOWS-31J",      "MS932");
         }
-        s_enchash.put("EUC-JP",          "EUCJIS");
+        s_enchash.put("EUC-JP",          "EUC_JP");
         s_enchash.put("GB2312",          "GB2312");
         s_enchash.put("BIG5",            "Big5");
-        s_enchash.put("EUC-KR",          "KSC5601");
+        s_enchash.put("EUC-KR",          "EUC_KR");
         s_enchash.put("ISO-2022-KR",     "ISO2022KR");
         s_enchash.put("KOI8-R",          "KOI8_R");
 
         s_enchash.put("EBCDIC-CP-US",    "CP037");
         s_enchash.put("EBCDIC-CP-CA",    "CP037");
         s_enchash.put("EBCDIC-CP-NL",    "CP037");
+        s_enchash.put("EBCDIC-CP-WT",    "CP037");
         s_enchash.put("EBCDIC-CP-DK",    "CP277");
         s_enchash.put("EBCDIC-CP-NO",    "CP277");
         s_enchash.put("EBCDIC-CP-FI",    "CP278");
@@ -573,45 +614,103 @@ public class MIME2Java {
         s_enchash.put("EBCDIC-CP-AR1",   "CP420");
         s_enchash.put("EBCDIC-CP-HE",    "CP424");
         s_enchash.put("EBCDIC-CP-CH",    "CP500");
+        s_enchash.put("EBCDIC-CP-BE",    "CP500");
+        s_enchash.put("CP-AR",        "CP868");
+        s_enchash.put("CP-GR",        "CP869");
         s_enchash.put("EBCDIC-CP-ROECE", "CP870");
         s_enchash.put("EBCDIC-CP-YU",    "CP870");
         s_enchash.put("EBCDIC-CP-IS",    "CP871");
         s_enchash.put("EBCDIC-CP-AR2",   "CP918");
 
-	// Add support for Cp1252
+	    // Add support for Cp1252 and its friends
         s_enchash.put("CP1252",   "Cp1252");
-	// Add support for two Thai encodings.
+        s_enchash.put("WINDOWS-1250",   "Cp1250");
+        s_enchash.put("WINDOWS-1251",   "Cp1251");
+        s_enchash.put("WINDOWS-1252",   "Cp1252");
+        s_enchash.put("WINDOWS-1253",   "Cp1253");
+        s_enchash.put("WINDOWS-1254",   "Cp1254");
+        s_enchash.put("WINDOWS-1255",   "Cp1255");
+        s_enchash.put("WINDOWS-1256",   "Cp1256");
+        s_enchash.put("WINDOWS-1257",   "Cp1257");
+        s_enchash.put("WINDOWS-1258",   "Cp1258");
+	    // Add support for two Thai encodings.
         s_enchash.put("CP874",   "Cp874");
         s_enchash.put("TIS620",   "TIS620");
+        s_enchash.put("TIS-620",   "TIS620");
                                                 // j:CNS11643 -> EUC-TW?
-                                                // ISO-2022-CN? ISO-2022-CN-EXT?
+        s_enchash.put("ISO-2022-CN",    "ISO2022CN");
+        s_enchash.put("X0201",  "JIS0201");
+        s_enchash.put("X0208",  "JIS0208");
+        s_enchash.put("X0212",  "JIS0212");
+        s_enchash.put("ISO-IR-159",  "JIS0212");
                                                 
         s_revhash = new Hashtable();
         //    <Java encoding name (uppercase)>, <preferred MIME name>
         s_revhash.put("UTF8", "UTF-8");
         s_revhash.put("ASCII", "US-ASCII");
-        s_revhash.put("8859_1", "ISO-8859-1");
-        s_revhash.put("8859_2", "ISO-8859-2");
-        s_revhash.put("8859_3", "ISO-8859-3");
-        s_revhash.put("8859_4", "ISO-8859-4");
-        s_revhash.put("8859_5", "ISO-8859-5");
-        s_revhash.put("8859_6", "ISO-8859-6");
-        s_revhash.put("8859_7", "ISO-8859-7");
-        s_revhash.put("8859_8", "ISO-8859-8");
-        s_revhash.put("8859_9", "ISO-8859-9");
-        s_revhash.put("JIS", "ISO-2022-JP");
+        s_revhash.put("ISO8859_1", "ISO-8859-1");
+        s_revhash.put("ISO8859_1", "ISO-IR-100");
+        s_revhash.put("ISO8859_1", "ISO_8859-1");
+        s_revhash.put("ISO8859_1", "LATIN1");
+        s_revhash.put("ISO8859_1", "L1");
+        s_revhash.put("ISO8859_1", "IBM819");
+        s_revhash.put("ISO8859_1", "CP819");
+        s_revhash.put("ISO8859_2", "ISO-8859-2");
+        s_revhash.put("ISO8859_2", "ISO-IR-101");
+        s_revhash.put("ISO8859_2", "ISO_8859-2");
+        s_revhash.put("ISO8859_2", "LATIN2");
+        s_revhash.put("ISO8859_2", "L2");
+        s_revhash.put("ISO8859_3", "ISO-8859-3");
+        s_revhash.put("ISO8859_3", "ISO-IR-109");
+        s_revhash.put("ISO8859_3", "ISO_8859-3");
+        s_revhash.put("ISO8859_3", "LATIN3");
+        s_revhash.put("ISO8859_3", "L3");
+        s_revhash.put("ISO8859_4", "ISO-8859-4");
+        s_revhash.put("ISO8859_4", "ISO-IR-110");
+        s_revhash.put("ISO8859_4", "ISO_8859-4");
+        s_revhash.put("ISO8859_4", "LATIN4");
+        s_revhash.put("ISO8859_4", "L4");
+        s_revhash.put("ISO8859_5", "ISO-8859-5");
+        s_revhash.put("ISO8859_5", "ISO-IR-144");
+        s_revhash.put("ISO8859_5", "ISO_8859-5");
+        s_revhash.put("ISO8859_5", "CYRILLIC");
+        s_revhash.put("ISO8859_6", "ISO-8859-6");
+        s_revhash.put("ISO8859_6", "ISO-IR-127");
+        s_revhash.put("ISO8859_6", "ISO_8859-6");
+        s_revhash.put("ISO8859_6", "ECMA-114");
+        s_revhash.put("ISO8859_6", "ASMO-708");
+        s_revhash.put("ISO8859_6", "ARABIC");
+        s_revhash.put("ISO8859_7", "ISO-8859-7");
+        s_revhash.put("ISO8859_7", "ISO-IR-126");
+        s_revhash.put("ISO8859_7", "ISO_8859-7");
+        s_revhash.put("ISO8859_7", "ELOT_928");
+        s_revhash.put("ISO8859_7", "ECMA-118");
+        s_revhash.put("ISO8859_7", "GREEK");
+        s_revhash.put("ISO8859_7", "GREEK8");
+        s_revhash.put("ISO8859_8", "ISO-8859-8");
+        s_revhash.put("ISO8859_8", "ISO-IR-138");
+        s_revhash.put("ISO8859_8", "ISO_8859-8");
+        s_revhash.put("ISO8859_8", "HEBREW");
+        s_revhash.put("ISO8859_9", "ISO-8859-9");
+        s_revhash.put("ISO8859_9", "ISO-IR-148");
+        s_revhash.put("ISO8859_9", "ISO_8859-9");
+        s_revhash.put("ISO8859_9", "LATIN5");
+        s_revhash.put("ISO8859_9", "L5");
+        s_revhash.put("ISO2022JP", "ISO-2022-JP");
         s_revhash.put("SJIS", "Shift_JIS");
+        s_revhash.put("SJIS", "MS_Kanji");
         s_revhash.put("MS932", "WINDOWS-31J");
-        s_revhash.put("EUCJIS", "EUC-JP");
+        s_revhash.put("EUC_JP", "EUC-JP");
         s_revhash.put("GB2312", "GB2312");
         s_revhash.put("BIG5", "Big5");
-        s_revhash.put("KSC5601", "EUC-KR");
+        s_revhash.put("EUC_KR", "EUC-KR");
         s_revhash.put("ISO2022KR", "ISO-2022-KR");
         s_revhash.put("KOI8_R", "KOI8-R");
 
         s_revhash.put("CP037", "EBCDIC-CP-US");
         s_revhash.put("CP037", "EBCDIC-CP-CA");
         s_revhash.put("CP037", "EBCDIC-CP-NL");
+        s_revhash.put("CP037", "EBCDIC-CP-WT");
         s_revhash.put("CP277", "EBCDIC-CP-DK");
         s_revhash.put("CP277", "EBCDIC-CP-NO");
         s_revhash.put("CP278", "EBCDIC-CP-FI");
@@ -623,18 +722,36 @@ public class MIME2Java {
         s_revhash.put("CP420", "EBCDIC-CP-AR1");
         s_revhash.put("CP424", "EBCDIC-CP-HE");
         s_revhash.put("CP500", "EBCDIC-CP-CH");
+        s_revhash.put("CP500", "EBCDIC-CP-BE");
+        s_revhash.put("CP868",      "CP-AR");
+        s_revhash.put("CP869",      "CP-GR");
         s_revhash.put("CP870", "EBCDIC-CP-ROECE");
         s_revhash.put("CP870", "EBCDIC-CP-YU");
         s_revhash.put("CP871", "EBCDIC-CP-IS");
         s_revhash.put("CP918", "EBCDIC-CP-AR2");
 
-	// Add support for Cp1252
+	// Add support for Cp1252 and friends
 	// Since this code page should be written out in mixed case,
 	// there is no need to reverse the function.
         s_revhash.put("Cp1252", "Cp1252");
+        s_revhash.put("Cp1250", "WINDOWS-1250");
+        s_revhash.put("Cp1251", "WINDOWS-1251");
+        s_revhash.put("Cp1252", "WINDOWS-1252");
+        s_revhash.put("Cp1253", "WINDOWS-1253");
+        s_revhash.put("Cp1254", "WINDOWS-1254");
+        s_revhash.put("Cp1255", "WINDOWS-1255");
+        s_revhash.put("Cp1256", "WINDOWS-1256");
+        s_revhash.put("Cp1257", "WINDOWS-1257");
+        s_revhash.put("Cp1258", "WINDOWS-1258");
 	// Add support for two Thai encodings.
         s_revhash.put("Cp874", "Cp874");
         s_revhash.put("TIS620", "TIS620");
+        s_revhash.put("TIS620", "TIS-620");
+        s_revhash.put("ISO2022CN",  "ISO-2022-CN");
+        s_revhash.put("JIS0201",    "X0201");
+        s_revhash.put("JIS0208",    "X0208");
+        s_revhash.put("JIS0212",    "X0212");
+        s_revhash.put("JIS0212",    "ISO-IR-159");
     }
 
     private MIME2Java() {
