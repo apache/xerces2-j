@@ -293,6 +293,8 @@ public class DTDGrammar
      *                 at least report the base system identifier of the
      *                 DTD.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDTD(XMLLocator locator, Augmentations augs) throws XNIException {
@@ -308,20 +310,17 @@ public class DTDGrammar
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the start of the DTD entity by calling the
-     * startEntity method with the entity name "[dtd]" <em>before</em> calling
+     * startParameterEntity method with the entity name "[dtd]" <em>before</em> calling
      * the startDTD method.
      * 
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param name     The name of the parameter entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -341,7 +340,14 @@ public class DTDGrammar
     
     } // startParameterEntity(String,XMLResourceIdentifier,String,Augmentations)
 
-    /** Start external subset. */
+    /**
+     * The start of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startExternalSubset(Augmentations augs) throws XNIException {
         fReadingExternalDTD = true;
     } // startExternalSubset(Augmentations)
@@ -356,7 +362,8 @@ public class DTDGrammar
      * the endDTD method.
      * 
      * @param name The name of the entity.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endParameterEntity(String name, Augmentations augs) throws XNIException {
@@ -366,7 +373,14 @@ public class DTDGrammar
 
     } // endParameterEntity(String,Augmentations)
 
-    /** End external subset. */
+    /**
+     * The end of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endExternalSubset(Augmentations augs) throws XNIException {
         fReadingExternalDTD = false;
     } // endExternalSubset(Augmentations)
@@ -376,7 +390,8 @@ public class DTDGrammar
      * 
      * @param name         The name of the element.
      * @param contentModel The element content model.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void elementDecl(String name, String contentModel, Augmentations augs)
@@ -476,6 +491,8 @@ public class DTDGrammar
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
@@ -603,7 +620,8 @@ public class DTDGrammar
      *             value contains the same sequence of characters that was in 
      *             the internal entity declaration, without any entity
      *             references expanded.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
@@ -635,7 +653,8 @@ public class DTDGrammar
      * @param systemId The system identifier of the entity.
      * @param baseSystemId The base system identifier of the entity if
      *                     the entity is external, null otherwise.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
@@ -667,7 +686,8 @@ public class DTDGrammar
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
      * @param notation The name of the notation.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId, 
@@ -696,7 +716,8 @@ public class DTDGrammar
      *                 specified.
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
@@ -715,6 +736,8 @@ public class DTDGrammar
     /**
      * The end of the DTD.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDTD(Augmentations augs) throws XNIException {
@@ -754,6 +777,8 @@ public class DTDGrammar
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void textDecl(String version, String encoding, Augmentations augs) 
@@ -763,7 +788,8 @@ public class DTDGrammar
      * A comment.
      * 
      * @param text The text in the comment.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by application to signal an error.
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {}
@@ -781,7 +807,8 @@ public class DTDGrammar
      * 
      * @param target The target.
      * @param data   The data or null if none specified.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data,
@@ -792,7 +819,8 @@ public class DTDGrammar
      * 
      * @param elementName The name of the element that this attribute
      *                    list is associated with.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startAttlist(String elementName, Augmentations augs) 
@@ -800,7 +828,8 @@ public class DTDGrammar
 
     /**
      * The end of an attribute list.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endAttlist(Augmentations augs) throws XNIException {}
@@ -810,7 +839,8 @@ public class DTDGrammar
      * 
      * @param type The type of the conditional section. This value will
      *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see XMLDTDHandler#CONDITIONAL_INCLUDE
@@ -823,13 +853,16 @@ public class DTDGrammar
      * Characters within an IGNORE conditional section.
      *
      * @param text The ignored text.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      */
     public void ignoredCharacters(XMLString text, Augmentations augs) 
         throws XNIException {}
 
     /**
      * The end of a conditional section.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endConditional(Augmentations augs) throws XNIException {}
@@ -844,7 +877,8 @@ public class DTDGrammar
      * startContentModel method and the call to the endContentModel method.
      * 
      * @param elementName The name of the element.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startContentModel(String elementName, Augmentations augs)
@@ -865,6 +899,8 @@ public class DTDGrammar
      * <code>pcdata()</code> method. A children content model will
      * contain additional groups and/or elements.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see #any
@@ -881,6 +917,9 @@ public class DTDGrammar
      * mixed content model. This method will be the first called
      * following the content model's <code>startGroup()</code>.
      *
+     *@param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see #startGroup
@@ -893,6 +932,8 @@ public class DTDGrammar
      * A referenced element in a mixed or children content model.
      * 
      * @param elementName The name of the referenced element.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -917,7 +958,8 @@ public class DTDGrammar
      * content model.
      * 
      * @param separator The type of children separator.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see org.apache.xerces.xni.XMLDTDContentModelHandler#SEPARATOR_CHOICE
@@ -949,7 +991,8 @@ public class DTDGrammar
      * 
      * @param occurrence The occurrence count for the last element
      *                   or group.
-     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see org.apache.xerces.xni.XMLDTDContentModelHandler#OCCURS_ZERO_OR_ONE
@@ -972,7 +1015,9 @@ public class DTDGrammar
 
     /**
      * The end of a group for mixed or children content models.
-     *
+     * 
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endGroup(Augmentations augs) throws XNIException {
@@ -992,6 +1037,8 @@ public class DTDGrammar
     /** 
      * A content model of ANY. 
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see #empty
@@ -1002,6 +1049,8 @@ public class DTDGrammar
     /**
      * A content model of EMPTY.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see #any
@@ -1011,6 +1060,8 @@ public class DTDGrammar
 
     /**
      * The end of a content model.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1025,7 +1076,10 @@ public class DTDGrammar
         return false;
     } // isNamespaceAware():boolean
 
-    /** Returns the element decl index. */
+    /** Returns the element decl index. 
+     * @param elementDeclQName qualilfied name of the element
+     * @param scope 
+     */
     public int getElementDeclIndex(QName elementDeclQName, int scope) {
         return getElementDeclIndex(elementDeclQName.rawname, scope);
     } // getElementDeclIndex(QName,int):int

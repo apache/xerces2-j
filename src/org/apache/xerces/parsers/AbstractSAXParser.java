@@ -218,8 +218,12 @@ public abstract class AbstractSAXParser
     /**
      * The start of the document.
      *
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
+     * @param locator The document locator, or null if the document
+     *                 location cannot be reported during the parsing
+     *                 of this document. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can
+     *                 at least report the system identifier of the
+     *                 document.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -253,7 +257,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // startDocument(String,String)
+    } // startDocument(locator,encoding,augs)
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
@@ -299,10 +303,7 @@ public abstract class AbstractSAXParser
      * appearing as part of attribute values.
      *
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -317,7 +318,7 @@ public abstract class AbstractSAXParser
         
         startParameterEntity(name, identifier, encoding, augs);
 
-    } // startEntity(String,String,String,String,String)
+    } // startGeneralEntity(String,String,String,String,String)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
@@ -676,18 +677,32 @@ public abstract class AbstractSAXParser
     // XMLDTDHandler methods
     //
 
-    /** Start external subset. */
+    /**
+     * The start of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startExternalSubset(Augmentations augs) throws XNIException {
         startParameterEntity("[dtd]", null, null, augs);
     }
 
-    /** End external subset. */
+    /**
+     * The end of the DTD external subset.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endExternalSubset(Augmentations augs) throws XNIException {
         endParameterEntity("[dtd]", augs);
     }
 
     /**
-     * This method notifies of the start of an entity. The DTD has the
+     * This method notifies of the start of parameter entity. The DTD has the
      * pseudo-name of "[dtd]" parameter entity names start with '%'; and
      * general entity names are just the entity name.
      * <p>
@@ -700,15 +715,14 @@ public abstract class AbstractSAXParser
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      *
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
+     * @param name     The name of the parameter entity.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal parameter entities).
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -727,7 +741,7 @@ public abstract class AbstractSAXParser
             throw new XNIException(e);
         }
 
-    } // startEntity(String,String,String,String,String)
+    } // startParameterEntity(String,identifier,String,Augmentation)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
@@ -743,7 +757,9 @@ public abstract class AbstractSAXParser
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      *
-     * @param name The name of the entity.
+     * @param name The name of the parameter entity.
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -766,6 +782,9 @@ public abstract class AbstractSAXParser
      *
      * @param name         The name of the element.
      * @param contentModel The element content model.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -802,6 +821,9 @@ public abstract class AbstractSAXParser
      *                      "#REQUIRED", or null.
      * @param defaultValue  The attribute default value, or null if no
      *                      default value is specified.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -856,6 +878,9 @@ public abstract class AbstractSAXParser
      *             the internal entity declaration, without any entity
      *             references expanded.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text,
@@ -885,6 +910,9 @@ public abstract class AbstractSAXParser
      * @param systemId The system identifier of the entity.
      * @param baseSystemId The baseSystem identifier of the entity.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId,
@@ -912,6 +940,9 @@ public abstract class AbstractSAXParser
      * @param systemId The system identifier of the entity, or null if not
      *                 specified.
      * @param notation The name of the notation.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -941,6 +972,9 @@ public abstract class AbstractSAXParser
      * @param systemId The system identifier of the notation, or null if not
      *                 specified.
      *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId,
@@ -960,6 +994,9 @@ public abstract class AbstractSAXParser
 
     /**
      * The end of the DTD.
+     *
+     * @param augs Additional information that may include infoset
+     *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -1231,7 +1268,8 @@ public abstract class AbstractSAXParser
      * @see org.xml.sax.Parser
      */
     public void setLocale(Locale locale) throws SAXException {
-
+        //REVISIT:this methods is not part of SAX2 interfaces, we should throw exception
+        //if any application uses SAX2 and sets locale also. -nb
         fConfiguration.setLocale(locale);
 
     } // setLocale(Locale)

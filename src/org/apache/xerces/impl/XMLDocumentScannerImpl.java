@@ -392,12 +392,7 @@ public class XMLDocumentScannerImpl
      * general entities are just specified by their name.
      *
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param identifier The resource identifier.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -422,7 +417,7 @@ public class XMLDocumentScannerImpl
             fDocumentHandler.startDocument(fEntityScanner, encoding, fAugmentations);
         }
 
-    } // startEntity(String,String,String,String,String)
+    } // startEntity(String,identifier,String)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
