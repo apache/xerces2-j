@@ -17,7 +17,7 @@
        <LI>
         <SPAN class="method-title">reset</SPAN>      (   <SPAN
         class="interface-title">XMLComponentManager</SPAN> <SPAN
-        class="param-title">configurationManager</SPAN>          )
+        class="param-title">componentManager</SPAN>          )
        <LI>
         <SPAN class="method-title">setFeature</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
@@ -94,7 +94,7 @@
      <DT>class <SPAN class="class-title">XMLStringBuffer</SPAN>
      <DD class="extends">      extends      <SPAN class="class-title">XMLString</SPAN>
      <DD class="constants">      constants:      <UL>
-       <LI>int <SPAN class="constant-title">SIZE</SPAN>
+       <LI>int <SPAN class="constant-title">DEFAULT_SIZE</SPAN>
       </UL>
      <DD class="constructors">      constructors:      <UL>
        <LI>
@@ -105,6 +105,8 @@
         int <SPAN class="param-title">size</SPAN>          )
       </UL>
      <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">clear</SPAN>      (             )
        <LI>
         <SPAN class="method-title">append</SPAN>      (   char <SPAN
         class="param-title">c</SPAN>          )
@@ -289,6 +291,11 @@
          <SPAN class="class-title">String</SPAN> <SPAN
         class="param-title">prefix</SPAN>          )
        <LI>
+        <SPAN class="method-title">startCDATA</SPAN>      (
+        )
+       <LI>
+        <SPAN class="method-title">endCDATA</SPAN>      (             )
+       <LI>
         <SPAN class="method-title">textDecl</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">version</SPAN>, <SPAN
@@ -296,11 +303,6 @@
         class="param-title">encoding</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">actualEncoding</SPAN>          )
-       <LI>
-        <SPAN class="method-title">startCDATA</SPAN>      (
-        )
-       <LI>
-        <SPAN class="method-title">endCDATA</SPAN>      (             )
        <LI>
         <SPAN class="method-title">endDocument</SPAN>      (
         )
@@ -312,12 +314,18 @@
      <DT>class <SPAN class="class-title">XMLAttributes</SPAN>
      <DD class="implements">      implements      <SPAN
       class="interface-title">AttributeList</SPAN>, <SPAN class="interface-title">Attributes</SPAN>
+     <DD class="fields">      fields:      <UL>
+       <LI>boolean <SPAN class="field-title">fNamespaces</SPAN>
+      </UL>
      <DD class="constructors">      constructors:      <UL>
        <LI>
         <SPAN class="constructor-title">XMLAttributes</SPAN>      (
         )
       </UL>
      <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">setNamespaces</SPAN>      (   boolean
+         <SPAN class="param-title">namespaces</SPAN>          )
        <LI>
         <SPAN class="method-title">setAttribute</SPAN>      (   <SPAN
         class="class-title">QName</SPAN> <SPAN
@@ -662,10 +670,13 @@
         class="param-title">baseSystemId</SPAN>          )       :
          <SPAN class="class-title">InputSource</SPAN>
        <LI>
-        <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">entityName</SPAN>, boolean <SPAN
-        class="param-title">parameter</SPAN>          )
+        <SPAN class="method-title">startParameterEntity</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">entityName</SPAN>          )
+       <LI>
+        <SPAN class="method-title">startGeneralEntity</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">entityName</SPAN>          )
        <LI>
         <SPAN class="method-title">startEntity</SPAN>      (   <SPAN
         class="class-title">InputSource</SPAN> <SPAN
@@ -683,6 +694,8 @@
      <DD class="fields">      fields:      <UL>
        <LI>
         <SPAN class="interface-title">XMLEntityHandler</SPAN> <SPAN class="field-title">fEntityHandler</SPAN>
+       <LI>
+        <SPAN class="class-title">SymbolTable</SPAN> <SPAN class="field-title">fSymbolTable</SPAN>
        <LI>
         <SPAN class="class-title">InputSource</SPAN> <SPAN class="field-title">fInputSource</SPAN>
        <LI>int <SPAN class="field-title">fLineNumber</SPAN>
@@ -708,10 +721,10 @@
         )       :    long
        <LI>
         <SPAN class="method-title">peekChar</SPAN>      (             )
-        :    char
+        :    int
        <LI>
         <SPAN class="method-title">scanChar</SPAN>      (             )
-        :    char
+        :    int
        <LI>
         <SPAN class="method-title">scanNmtoken</SPAN>      (
         )       :    <SPAN class="class-title">String</SPAN>
@@ -721,21 +734,29 @@
        <LI>
         <SPAN class="method-title">scanQName</SPAN>      (   <SPAN
         class="class-title">QName</SPAN> <SPAN
-        class="param-title">qname</SPAN>          )
+        class="param-title">qname</SPAN>          )       :    boolean
        <LI>
         <SPAN class="method-title">scanContent</SPAN>      (   <SPAN
         class="class-title">XMLString</SPAN> <SPAN
-        class="param-title">content</SPAN>          )
+        class="param-title">content</SPAN>          )       :    boolean
        <LI>
-        <SPAN class="method-title">scanAttContent</SPAN>      (   <SPAN
+        <SPAN class="method-title">scanAttContent</SPAN>      (   int
+         <SPAN class="param-title">quote</SPAN>, <SPAN
         class="class-title">XMLString</SPAN> <SPAN
-        class="param-title">content</SPAN>          )
+        class="param-title">content</SPAN>          )       :    boolean
+       <LI>
+        <SPAN class="method-title">scanData</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">delimiter</SPAN>, <SPAN
+        class="class-title">XMLString</SPAN> <SPAN
+        class="param-title">data</SPAN>          )       :    boolean
        <LI>
         <SPAN class="method-title">skipSpaces</SPAN>      (
-        )
+        )       :    boolean
        <LI>
-        <SPAN class="method-title">skipString</SPAN>      (
-        )
+        <SPAN class="method-title">skipString</SPAN>      (   <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">s</SPAN>          )       :    boolean
       </UL>
     </DL>
    </A></BLOCKQUOTE>

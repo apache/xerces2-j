@@ -244,7 +244,7 @@
 
   <interface id='configurable' name='XMLComponent'>
    <method name='reset'>
-    <param name='configurationManager'>
+    <param name='componentManager'>
      <reference idref='configuration-manager'/>
     </param>
     <throws>
@@ -387,7 +387,7 @@
    <extends>
     <reference idref='string'/>
    </extends>
-   <constant name='SIZE'>
+   <constant name='DEFAULT_SIZE'>
     <primitive type='int'/>
    </constant>
    <constructor/>
@@ -396,6 +396,7 @@
      <primitive type='int'/>
     </param>
    </constructor>
+   <method name='clear'/>
    <method name='append'>
     <param name='c'>
      <primitive type='char'/>
@@ -565,7 +566,7 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <!-- REVISIT
+   <!-- REVISIT: Document fragment scanning.
    <method name='scanDocumentFragment'>
     <param name='complete'>
      <primitive type='boolean'/>
@@ -707,6 +708,16 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
+   <method name='startCDATA'>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='endCDATA'>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>   
    <method name='textDecl'>
     <param name='version'>
      <reference idref='java-string'/>
@@ -721,16 +732,6 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startCDATA'>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='endCDATA'>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>   
    <method name='endDocument'>
     <throws>
      <reference idref='sax-exception'/>
@@ -745,7 +746,15 @@
    <implements>
     <reference idref='sax-attributes'/>
    </implements>
+   <field name='fNamespaces'>
+    <primitive type='boolean'/>
+   </field>
    <constructor/>
+   <method name='setNamespaces'>
+    <param name='namespaces'>
+     <primitive type='boolean'/>
+    </param>
+   </method>
    <method name='setAttribute'>
     <param name='name'>
      <reference idref='qname'/>
@@ -1338,12 +1347,14 @@
      <reference idref='sax-exception'/>
     </throws>
    </method>
-   <method name='startEntity'>
+   <method name='startParameterEntity'>
     <param name='entityName'>
      <reference idref='java-string'/>
     </param>
-    <param name='parameter'>
-     <primitive type='boolean'/>
+   </method>
+   <method name='startGeneralEntity'>
+    <param name='entityName'>
+     <reference idref='java-string'/>
     </param>
    </method>
    <method name='startEntity'>
@@ -1364,6 +1375,9 @@
    </implements>
    <field name='fEntityHandler'>
     <reference idref='entity-handler'/>
+   </field>
+   <field name='fSymbolTable'>
+    <reference idref='symbol-table'/>
    </field>
    <field name='fInputSource'>
     <reference idref='sax-input-source'/>
@@ -1398,7 +1412,7 @@
    </method>
    <method name='peekChar'>
     <returns>
-     <primitive type='char'/>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1406,7 +1420,7 @@
    </method>
    <method name='scanChar'>
     <returns>
-     <primitive type='char'/>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1432,28 +1446,80 @@
     <param name='qname'>
      <reference idref='qname'/>
     </param>
+    <returns>
+     <note>True if QName was scanned.</note>
+     <primitive type='boolean'/>
+    </returns>
     <throws>
      <reference idref='java-io-exception'/>
     </throws>
    </method>
    <method name='scanContent'>
+    <note>Scans parsed content in an XML document.</note>
     <param name='content'>
      <reference idref='string'/>
     </param>
+    <returns>
+     <note>True if more content is available.</note>
+     <primitive type='boolean'/>
+    </returns>
     <throws>
      <reference idref='java-io-exception'/>
     </throws>
    </method>
    <method name='scanAttContent'>
+    <note>Scans attribute content.</note>
+    <param name='quote'>
+     <primitive type='int'/>
+    </param>
     <param name='content'>
+     <note>True if more attribute content is available.</note>
      <reference idref='string'/>
     </param>
+    <returns>
+     <primitive type='boolean'/>
+    </returns>
     <throws>
      <reference idref='java-io-exception'/>
     </throws>
    </method>
-   <method name='skipSpaces'/>
-   <method name='skipString'/>
+   <method name='scanData'>
+    <param name='delimiter'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='data'>
+     <reference idref='string'/>
+    </param>
+    <returns>
+     <note>True if more data is available</note>
+     <primitive type='boolean'/>
+    </returns>
+    <throws>
+     <reference idref='java-io-exception'/>
+    </throws>
+   </method>
+   <method name='skipSpaces'>
+    <returns>
+     <note>True if spaces were skipped.</note>
+     <primitive type='boolean'/>
+    </returns>
+    <throws>
+     <reference idref='java-io-exception'/>
+    </throws>
+   </method>
+   <method name='skipString'>
+    <param name='s'>
+     <note>The string to skip.</note>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <note>True if string was skipped.</note>
+     <primitive type='boolean'/>
+    </returns>
+    <throws>
+     <reference idref='java-io-exception'/>
+    </throws>
+   </method>
   </class>
 
   <interface id='entity-handler' name='XMLEntityHandler'>
