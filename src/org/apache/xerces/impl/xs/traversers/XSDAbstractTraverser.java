@@ -182,15 +182,30 @@ abstract class XSDAbstractTraverser {
             // Vector should contain rawname value pairs
             int i=0;
             while(i<annotationLocalAttrs.size()) {
-                localStrBuffer.append((String)annotationLocalAttrs.elementAt(i++))
+                String rawname = (String)annotationLocalAttrs.elementAt(i++);
+                int colonIndex = rawname.indexOf(':');
+                String prefix, localpart;
+                if (colonIndex == -1) {
+                    prefix = "";
+                    localpart = rawname;
+                }
+                else {
+                    prefix = rawname.substring(0,colonIndex);
+                    localpart = rawname.substring(colonIndex+1);
+                }
+                String uri = schemaDoc.fNamespaceSupport.getURI(prefix.intern());
+                if (!annotationDecl.getAttributeNS(uri, localpart).equals("")) {
+                    i++; // skip the next value, too
+                    continue;
+                }
+                localStrBuffer.append(rawname)
                     .append("=\"");
                 String value = (String)annotationLocalAttrs.elementAt(i++);
                 // search for pesky "s and >s within attr value:
                 value = processAttValue(value);
                 localStrBuffer.append(value)
-                    .append("\"");
+                    .append("\" ");
             }
-            localStrBuffer.append(" ");
             // and now splice it into place; immediately after the annotation token, for simplicity's sake
             StringBuffer contentBuffer = new StringBuffer(contents.length() + localStrBuffer.length());
             int annotationTokenEnd = contents.indexOf(SchemaSymbols.ELT_ANNOTATION);

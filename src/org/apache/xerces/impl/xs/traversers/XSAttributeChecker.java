@@ -1108,6 +1108,11 @@ public class XSAttributeChecker {
             String attrName = sattr.getName();
             String attrVal = DOMUtil.getValue(sattr);
 
+            // we don't want to add namespace declarations to the non-schema attributes
+            if (attrName.startsWith("xmlns")) {
+                continue;
+            }
+            
             // skip anything starts with x/X m/M l/L
             // add this to the list of "non-schema" attributes
             if (attrName.toLowerCase(Locale.ENGLISH).startsWith("xml")) {

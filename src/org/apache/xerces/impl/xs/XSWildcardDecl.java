@@ -585,7 +585,7 @@ public class XSWildcardDecl implements XSWildcard {
      * disallowed namespaces.
      */
     public StringList getNsConstraintList() {
-        return new StringListImpl(fNamespaceList, fNamespaceList.length);
+        return new StringListImpl(fNamespaceList, fNamespaceList == null ? 0 : fNamespaceList.length);
     }
 
     /**

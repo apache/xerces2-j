@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,7 +109,7 @@ public interface XSWildcard extends XSTerm {
 
     /**
      * [process contents]: one of skip, lax or strict. Valid constants values 
-     * are: <code>SKIP_PROCESS, LAX_PROCESS, STRING_PROCESS </code>. 
+     * are: <code>PC_SKIP, PC_LAX, PC_STRICT</code>. 
      */
     public short getProcessContents();
 

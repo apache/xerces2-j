@@ -210,7 +210,7 @@ public class ElementImpl extends DefaultElement {
 
     public String getAttributeNS(String namespaceURI, String localName) {
         for (int i=0; i<attrs.length; i++) {
-            if (attrs[i].getName().equals(localName) && attrs[i].getNamespaceURI().equals(namespaceURI)) {
+            if (attrs[i].getLocalName().equals(localName) && attrs[i].getNamespaceURI().equals(namespaceURI)) {
                 return attrs[i].getValue();
             }
         }
