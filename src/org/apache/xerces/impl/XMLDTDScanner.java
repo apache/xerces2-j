@@ -748,13 +748,15 @@ public class XMLDTDScanner
     private final void scanMixed(String elName)
         throws IOException, SAXException {
 
+        String childName = null;
+
         fStringBuffer.append("#PCDATA");
         skipSeparator(false, !scanningInternalSubset());
         while (fEntityScanner.skipChar('|')) {
             fStringBuffer.append('|');
             skipSeparator(false, !scanningInternalSubset());
 
-            String childName = fEntityScanner.scanName();
+            childName = fEntityScanner.scanName();
             if (childName == null) {
                 reportFatalError("MSG_ELEMENT_TYPE_REQUIRED_IN_MIXED_CONTENT",
                                  new Object[]{elName});
@@ -772,6 +774,10 @@ public class XMLDTDScanner
         // case we cross the boundary of an entity between the two characters.
         if (fEntityScanner.skipString(")*")) {
             fStringBuffer.append(")*");
+        }
+        else if (childName != null) {
+            reportFatalError("MixedContentUnterminated",
+                             new Object[]{elName});
         }
         else if (fEntityScanner.skipChar(')')){
             fStringBuffer.append(')');
