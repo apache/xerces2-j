@@ -148,6 +148,8 @@ public class XMLDTDScanner
 
     private boolean fValidation = false;
 
+    private boolean fStartDTDCalled = false;
+
     private boolean fScanningExtSubset;
 
     private String[] fPseudoAttributeValues = new String[3];
@@ -190,6 +192,10 @@ public class XMLDTDScanner
     public boolean scanDTD(boolean complete)
         throws IOException, SAXException {
 
+        // call handler
+        if (fDTDHandler != null && fStartDTDCalled == false) {
+            fDTDHandler.startDTD();
+        }
         try {
             // set starting state
             setScannerState(SCANNER_STATE_TEXT_DECL);
@@ -209,6 +215,10 @@ public class XMLDTDScanner
         } catch (EOFException e) {
             if (fScannerState == SCANNER_STATE_MARKUP_DECL) {
                 // no opened markup, this is the normal eof, we're all set
+                // call handler
+                if (fDTDHandler != null) {
+                    fDTDHandler.endDTD();
+                }
             } else {
                 // markup is truncated, forward exception
                 throw e;
@@ -260,9 +270,15 @@ public class XMLDTDScanner
      * 
      * @return 
      */
-    public boolean scanDTDInternalSubset(boolean complete)
+    public boolean scanDTDInternalSubset(boolean complete, boolean standalone,
+                                         boolean hasExtDTD)
         throws IOException, SAXException {
 
+        // call handler
+        if (fDTDHandler != null) {
+            fStartDTDCalled = true;
+            fDTDHandler.startDTD();
+        }
         fScanningExtSubset = false;
 
         // set starting state
@@ -274,6 +290,12 @@ public class XMLDTDScanner
                 return false;
             }
         } while (complete);
+
+        // REVISIT: fix this for the case when it's not complete
+        // call handler
+        if (fDTDHandler != null && hasExtDTD == false) {
+            fDTDHandler.endDTD();
+        }
 
         // return success
         return true;
@@ -399,16 +421,9 @@ public class XMLDTDScanner
      */
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
-        // keep track of this entity
-/*        Entity entity = new Entity(name, publicId, systemId, fElementDepth);
-        fEntityStack.push(entity);
-*/
         // call handler
         if (fDTDHandler != null) {
             fDTDHandler.startEntity(name, publicId, systemId, encoding);
-            if (name.equals("[dtd]")) {
-                fDTDHandler.startDTD();
-            }
         }
     } // startEntity(String,String,String,String)
 
@@ -422,9 +437,6 @@ public class XMLDTDScanner
 
         // call handler
         if (fDTDHandler != null) {
-            if (name.equals("[dtd]")) {
-                fDTDHandler.endDTD();
-            }
             fDTDHandler.endEntity(name);
         }
 
@@ -1168,8 +1180,7 @@ public class XMLDTDScanner
      * @param complete True if this method is intended to scan
      *                 and dispatch as much as possible.                 
      *
-     * @returns True if there is more to dispatch either from this 
-     *          or a another dispatcher.
+     * @returns True if there is more to scan.
      *
      * @throws IOException  Thrown on i/o error.
      * @throws SAXException Thrown on parse error.
