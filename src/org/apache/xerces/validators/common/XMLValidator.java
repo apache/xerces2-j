@@ -832,10 +832,17 @@ public final class XMLValidator
                 if (result != -1) {
                     int majorCode = result != childrenLength ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
                     fGrammar.getElementDecl(elementIndex, fTempElementDecl);
-                    reportRecoverableXMLError(majorCode,
-                                              0,
-                                              fStringPool.toString(elementType),
-                                              XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));
+                    if (fTempElementDecl.type == XMLElementDecl.TYPE_EMPTY) {
+                        reportRecoverableXMLError(majorCode,
+                                                  0,
+                                                  fStringPool.toString(elementType),
+                                                  "EMPTY");
+                    }
+                    else
+                        reportRecoverableXMLError(majorCode,
+                                                  0,
+                                                  fStringPool.toString(elementType),
+                                                  XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));
                 }
             }
             fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
