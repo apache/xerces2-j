@@ -98,6 +98,7 @@ import org.apache.xerces.validators.schema.SchemaMessageProvider;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.schema.TraverseSchema;
 
+import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 
 /**
@@ -891,6 +892,7 @@ public final class XMLValidator
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
                 int childCount = peekChildCount();
                 int result = checkContent(elementIndex, childCount, peekChildren());
+//debugging
 //System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
                 if (result != -1) {
                     int majorCode = result != childCount ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
@@ -2407,7 +2409,7 @@ public final class XMLValidator
         fENTITIESSymbol = XMLAttributeDecl.TYPE_ENTITY;
         fNMTOKENSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
         fNMTOKENSSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
-        fNOTATIONSymbol = fStringPool.addSymbol("NOTATION");
+        fNOTATIONSymbol = XMLAttributeDecl.TYPE_NOTATION;
         fENUMERATIONSymbol = XMLAttributeDecl.TYPE_ENUMERATION;
         fREQUIREDSymbol = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
         fFIXEDSymbol = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
@@ -3466,11 +3468,12 @@ public final class XMLValidator
                 elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
             }
             if (elementIndex == -1) {
-                System.out.println("can't not find elementDecl in the grammar, " +
+                /****/
+                System.out.println("!!! can not find elementDecl in the grammar, " +
                                    " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
                                    " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
-                                   " the current enclosing scope: " + fCurrentScope );
-                // TO DO : REPORT INTERNAL Error here.
+                                   " and the current enclosing scope: " + fCurrentScope );
+                /****/
             }
             fGrammar.getElementDecl(elementIndex, fTempElementDecl);
 
@@ -3719,13 +3722,24 @@ public final class XMLValidator
             XMLContentModel cmElem = null;
             try {
                 // REVISIT: this might not be right
-                cmElem = getContentModel(elementIndex);
-                fTempQName.rawname = fTempQName.localpart = fStringPool.addString(fDatatypeBuffer.toString());
-                return cmElem.validateContent(1, new QName[] { fTempQName });
+                //cmElem = getContentModel(elementIndex);
+                //fTempQName.rawname = fTempQName.localpart = fStringPool.addString(fDatatypeBuffer.toString());
+                //return cmElem.validateContent(1, new QName[] { fTempQName });
+                fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+
+                DatatypeValidator dv = fTempElementDecl.datatypeValidator;
+                if (dv == null) {
+                    System.out.println("Internal Error: this element have a simpletype "+
+                                       "but no datatypevalidator was found, element "+fTempElementDecl.name);
+                }
+                else {
+                    dv.validate(fDatatypeBuffer.toString(), fTempElementDecl.list);
+                }
+
             } 
-            catch (CMException cme) {
-                System.out.println("Internal Error in datatype validation");
-            } 
+            //catch (CMException cme) {
+              //  System.out.println("Internal Error in datatype validation");
+            //} 
             catch (InvalidDatatypeValueException idve) {
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                            SchemaMessageProvider.SCHEMA_DOMAIN,

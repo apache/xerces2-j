@@ -549,29 +549,29 @@ implements XMLContentSpec.Provider {
         //  encapsulates all of the work to create the DFA.
         //
         
-	//int leafCount = countLeaves(contentSpecIndex);
-	fLeafCount = 0;
+        //int leafCount = countLeaves(contentSpecIndex);
+        fLeafCount = 0;
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
 
-	// REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
-	return new DFAContentModel(  cmn, fLeafCount);
+        // REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
+        return new DFAContentModel(  cmn, fLeafCount);
     }
 
     private void printSyntaxTree(CMNode cmn){
-	System.out.println("CMNode : " + cmn.type());
+        System.out.println("CMNode : " + cmn.type());
 
-	if (cmn.type() == XMLContentSpec.CONTENTSPECNODE_LEAF) {
-	    System.out.println( "     Leaf: " + ((CMLeaf)cmn).getElement());
-	    return;
-	}
-	if (cmn instanceof CMBinOp) {
-	    printSyntaxTree( ((CMBinOp)cmn).getLeft());
-	    printSyntaxTree( ((CMBinOp)cmn).getRight());
-	}
-	if (cmn instanceof CMUniOp) {
-	    printSyntaxTree( ((CMUniOp)cmn).getChild());
-	}
-	
+        if (cmn.type() == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            System.out.println( "     Leaf: " + ((CMLeaf)cmn).getElement());
+            return;
+        }
+        if (cmn instanceof CMBinOp) {
+            printSyntaxTree( ((CMBinOp)cmn).getLeft());
+            printSyntaxTree( ((CMBinOp)cmn).getRight());
+        }
+        if (cmn instanceof CMUniOp) {
+            printSyntaxTree( ((CMUniOp)cmn).getChild());
+        }
+        
     }
 
     
@@ -584,7 +584,7 @@ implements XMLContentSpec.Provider {
         if (contentSpecIndex == -1) {
             return 0;
         }
-	/****
+        /****
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
         int type = fContentSpecType[chunk][index];
