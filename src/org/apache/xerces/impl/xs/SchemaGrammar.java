@@ -145,8 +145,15 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
         fGlobalElemDecls = new SymbolHash();
         fGlobalGroupDecls = new SymbolHash();
         fGlobalNotationDecls = new SymbolHash();
-        fGlobalTypeDecls = new SymbolHash();
         fGlobalIDConstraintDecls = new SymbolHash();
+
+        // if we are parsing S4S, put built-in types in first
+        // they might get overwritten by the types from S4S, but that's
+        // considered what the application wants to do.
+        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA)
+            fGlobalTypeDecls = SG_SchemaNS.fGlobalTypeDecls.makeClone();
+        else
+            fGlobalTypeDecls = new SymbolHash();
     } // <init>(String, XSDDescription)
 
     // number of built-in XSTypes we need to create for base and full

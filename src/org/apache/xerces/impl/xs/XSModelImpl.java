@@ -149,11 +149,19 @@ public class XSModelImpl implements XSModel {
     public XSModelImpl(SchemaGrammar[] grammars) {
         // copy namespaces/grammars from the array to our arrays
         int len = grammars.length;
-        fNamespaces = new String[Math.max(len, 5)];
-        fGrammarList = new SchemaGrammar[Math.max(len, 5)];
+        fNamespaces = new String[Math.max(len+1, 5)];
+        fGrammarList = new SchemaGrammar[Math.max(len+1, 5)];
+        boolean hasS4S = false;
         for (int i = 0; i < len; i++) {
             fNamespaces[i] = grammars[i].getTargetNamespace();
             fGrammarList[i] = grammars[i];
+            if (fNamespaces[i] == SchemaSymbols.URI_SCHEMAFORSCHEMA)
+                hasS4S = true;
+        }
+        // If a schema for the schema namespace isn't included, include it here.
+        if (!hasS4S) {
+            fNamespaces[len] = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+            fGrammarList[len++] = SchemaGrammar.SG_SchemaNS;
         }
 
         SchemaGrammar sg1, sg2;
