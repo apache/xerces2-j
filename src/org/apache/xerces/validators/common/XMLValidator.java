@@ -1942,23 +1942,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
    /** Root element specified. */
    private void rootElementSpecified(QName rootElement) throws Exception {
 
-      // this is what it used to be
-      //if  (fDynamicValidation && !fSeenDoctypeDecl) {
-      //fValidating = false;
-      //}
-
-
       if ( fLoadDTDGrammar )
          // initialize the grammar to be the default one, 
          // it definitely should be a DTD Grammar at this case;
          if (fGrammar == null) {
 
             fGrammar = fGrammarResolver.getGrammar("");
-
-            //TO DO, for ericye debug only
-            if (fGrammar == null && DEBUG_SCHEMA_VALIDATION) {
-               System.out.println("Oops! no grammar is found for validation");
-            }
 
             if (fDynamicValidation && fGrammar==null) {
                fValidating = false;
