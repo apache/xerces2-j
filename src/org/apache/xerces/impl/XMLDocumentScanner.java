@@ -679,7 +679,10 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                        int c = fEntityScanner.peekChar();
+                        if (c == '<' || c == '&' || c == ']') {
+                            fStringBuffer.append((char)fEntityScanner.scanChar());
+                        }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
@@ -709,7 +712,10 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                        int c = fEntityScanner.peekChar();
+                        if (c == '<' || c == '&' || c == ']') {
+                            fStringBuffer.append((char)fEntityScanner.scanChar());
+                        }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
@@ -737,7 +743,10 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                        int c = fEntityScanner.peekChar();
+                        if (c == '<' || c == '&' || c == ']') {
+                            fStringBuffer.append((char)fEntityScanner.scanChar());
+                        }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;

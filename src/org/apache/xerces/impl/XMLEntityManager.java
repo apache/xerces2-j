@@ -1034,7 +1034,15 @@ public class XMLEntityManager
                                        "EncodingDeclInvalid",
                                        new Object[] { encoding },
                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            encoding = "UTF-8";
+            // NOTE: AndyH suggested that, on failure, we use ISO Latin 1
+            //       because every byte is a valid ISO Latin 1 character.
+            //       It may not translate correctly but if we failed on
+            //       the encoding anyway, then we're expecting the content
+            //       of the document to be bad. This will just prevent an
+            //       invalid UTF-8 sequence to be detected. This is only
+            //       important when continue-after-fatal-error is turned 
+            //       on. -Ac
+            encoding = "ISO-8859-1";
         }
 
         // try to use a Java reader
@@ -2594,8 +2602,18 @@ public class XMLEntityManager
         extends FilterReader {
 
         //
+        // Constants
+        //
+
+        /** XMLDecl or TextDecl characters. */
+        private final char[] TEXTDECL = { '<','?','x','m','l' };
+
+        //
         // Data
         //
+
+        /** Offset. */
+        private int fOffset;
 
         /** True if we've seen the first character. */
         private boolean fSeenFirstChar;
@@ -2632,13 +2650,8 @@ public class XMLEntityManager
 
             // read character and look for end of markup
             int c = in.read();
-            if (!fSeenFirstChar) {
-                fSeenFirstChar = true;
-                fSeenEndOfMarkup = c != '<';
-            }
-            else {
-                fSeenEndOfMarkup = c == '>' || c == '[';
-            }
+            fSeenEndOfMarkup = fOffset < TEXTDECL.length
+                             ? c != TEXTDECL[fOffset++] : c == '>';
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ read() -> '"+(char)c+"' (end of markup: "+fSeenEndOfMarkup+')');
                 System.out.flush();

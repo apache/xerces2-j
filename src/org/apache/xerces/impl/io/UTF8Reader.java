@@ -254,6 +254,13 @@ public class UTF8Reader
             length = fBuffer.length - fOffset;
         }
 
+        // handle surrogate
+        if (fSurrogate != -1) {
+            ch[offset++] = (char)fSurrogate;
+            fSurrogate = -1;
+            length--;
+        }
+
         // read bytes
         int count = fInputStream.read(fBuffer, fOffset, length);
         if (count == -1) {
@@ -380,7 +387,12 @@ public class UTF8Reader
                          ((b2 >> 4) & 0x0003);
                 int ls = 0xDC00 | ((b2 << 6) & 0x03C0) | (b3 & 0x003F);
                 ch[out++] = (char)hs;
-                ch[out++] = (char)ls;
+                if (out < offset + length) {
+                    ch[out++] = (char)ls;
+                }
+                else {
+                    fSurrogate = ls;
+                }
                 count -= 3;
                 continue;
             }
