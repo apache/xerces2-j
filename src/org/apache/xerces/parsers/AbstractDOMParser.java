@@ -368,23 +368,25 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             documentClassName = DEFAULT_DOCUMENT_CLASS_NAME;
         }
         
-        // verify that this class exists and is of the right type
-        try {
-            Class _class = ObjectFactory.findProviderClass (documentClassName,
-            ObjectFactory.findClassLoader (), true);
-            //if (!_class.isAssignableFrom(Document.class)) {
-            if (!Document.class.isAssignableFrom (_class)) {
+        if (!documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
+            // verify that this class exists and is of the right type
+            try {
+                Class _class = ObjectFactory.findProviderClass (documentClassName,
+                ObjectFactory.findClassLoader (), true);
+                //if (!_class.isAssignableFrom(Document.class)) {
+                if (!Document.class.isAssignableFrom (_class)) {
+                    throw new IllegalArgumentException (
+                        DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "InvalidDocumentClassName", new Object [] {documentClassName}));
+                }
+            }
+            catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException (
                     DOMMessageFormatter.formatMessage(
                     DOMMessageFormatter.DOM_DOMAIN,
-                    "InvalidDocumentClassName", new Object [] {documentClassName}));
+                    "MissingDocumentClassName", new Object [] {documentClassName}));
             }
-        }
-        catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException (
-                DOMMessageFormatter.formatMessage(
-                DOMMessageFormatter.DOM_DOMAIN,
-                "MissingDocumentClassName", new Object [] {documentClassName}));
         }
         
         // set document class name
