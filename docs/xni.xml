@@ -37,7 +37,7 @@
   <p>Design and implementation information:</p>
   <ul>
    <li><link idref='xni-design'>Design Details</link></li>
-   <li><link idref='xni-api'>Application Programming Interface</link></li>
+   <li><link idref='xni-api'>API Documentation</link></li>
    <li><link idref='xni-config'>Parser Configuration</link></li>
   </ul>
  </s2>

@@ -27,12 +27,10 @@
  <external label='API JavaDoc' href='apiDocs/index.html'/>
  <document label='XNI Manual' title='Xerces Native Interface'
            id='xni' source='xni.xml'/>
- <!--
  <hidden title='XNI Design' id='xni-design' source='xni-design.xml'/>
  <hidden title='XNI API' id='xni-api' source='xni-api.xml'/>
- <hidden title='XNI Parser Configurations' 
+ <hidden title='XNI Parser Configuration' 
          id='xni-config' source='xni-config.xml'/>
- -->
  <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>
   <faq title='Common FAQs' id='faq-common' source='faq-common.xml'/>
   <faq title='General FAQs' id='faq-general' source='faq-general.xml'/>

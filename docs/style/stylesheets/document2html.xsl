@@ -413,8 +413,13 @@
   </xsl:template>
 
   <xsl:template match="img">
+    <img src="images/{@src}" border="0" vspace="4" hspace="4">
+     <xsl:if test='@alt'>
+      <xsl:attribute name='alt'><xsl:value-of select='@alt'/></xsl:attribute>
+     </xsl:if>
+    </img>
     <!--<img src="images/{@src}" border="0" vspace="4" hspace="4" align="right"/>-->
-    <img src="{@src}" border="0"/>
+    <!--<img src="{@src}" border="0"/>-->
   </xsl:template>
 
   <xsl:template match="resource-ref">

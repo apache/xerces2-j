@@ -1,4 +1,4 @@
-<?xml encoding='US-ASCII'?>
+<?xml encoding='UTF-8'?>
 
 <!-- MARKUP ENTITY -->
 <!ENTITY % markup "em|strong|ref|code|br">
