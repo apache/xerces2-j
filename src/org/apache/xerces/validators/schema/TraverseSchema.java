@@ -504,7 +504,6 @@ public class TraverseSchema implements
             // REVISIT: Anything to do?
             return;
         }
-        
 
         //Make sure namespace binding is defaulted
         String rootPrefix = root.getPrefix();
@@ -513,10 +512,6 @@ public class TraverseSchema implements
             if( xmlns.length() == 0 )
                 root.setAttribute("xmlns", SchemaSymbols.URI_SCHEMAFORSCHEMA );
         }
-
-
-
-
 
         //Retrieve the targetnamespace URI information
         fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
@@ -1471,8 +1466,65 @@ public class TraverseSchema implements
                     break; // attr processing is done later on in this method
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ANY)) {
+                    /***
                     contentSpecType = fStringPool.addSymbol("ANY");
                     left = -1;
+                    /***/
+                    int anyIndex = -1;
+                    String namespace = child.getAttribute("namespace").trim();
+                    if (namespace.length() == 0 || namespace.equals("##any")) {
+                        anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, -1, -1, false);
+                    }
+                    else if (namespace.equals("##other")) {
+                        String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+                        int uriIndex = fStringPool.addSymbol(uri);
+                        anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY_OTHER, -1, uriIndex, false);
+                    }
+                    else if (namespace.equals("##local")) {
+                        anyIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL, -1, -1, false);
+                    }
+                    else if (namespace.length() > 0) {
+                        StringTokenizer tokenizer = new StringTokenizer(namespace);
+                        Vector tokens = new Vector();
+                        while (tokenizer.hasMoreElements()) {
+                            String token = tokenizer.nextToken();
+                            if (token.equals("##targetNamespace")) {
+                                token = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+                            }
+                            tokens.addElement(token);
+                        }
+                        String uri = (String)tokens.elementAt(0);
+                        int uriIndex = fStringPool.addSymbol(uri);
+                        int leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, -1, uriIndex, false);
+                        int valueIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ANY, leafIndex, -1, false);
+                        int count = tokens.size();
+                        if (count > 1) {
+                            uri = (String)tokens.elementAt(1);
+                            uriIndex = fStringPool.addSymbol(uri);
+                            leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, -1, uriIndex, false);
+                            int otherValueIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, leafIndex, -1, false);
+                            int choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, valueIndex, otherValueIndex, false);
+                            for (int i = 2; i < count; i++) {
+                                uri = (String)tokens.elementAt(i);
+                                uriIndex = fStringPool.addSymbol(uri);
+                                leafIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, -1, uriIndex, false);
+                                otherValueIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, leafIndex, -1, false);
+                                choiceIndex = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, choiceIndex, otherValueIndex, false);
+                            }
+                            anyIndex = choiceIndex;
+                        }
+                        else {
+                            anyIndex = leafIndex;
+                        }
+                    }
+                    else {
+                        reportGenericSchemaError("Empty namespace attribute for any element");
+                    }
+
+                    index = anyIndex;
+                    seeParticle = true;
+                    seeOtherParticle = true;
+                    /***/
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                     //REVISIT, do nothing for annotation for now.
@@ -2337,10 +2389,10 @@ public class TraverseSchema implements
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
             String uriString = resolvePrefixToURI(prefix);
-            QName eltName = new QName(  fStringPool.addSymbol(prefix),
+            QName eltName = new QName(prefix != null ? fStringPool.addSymbol(prefix) : -1,
                                       localpartIndex,
                                       fStringPool.addSymbol(ref),
-                                      fStringPool.addSymbol(uriString) );
+                                      uriString != null ? fStringPool.addSymbol(uriString) : -1);
 
             //if from another schema, just return the element QName
             if (! uriString.equals(fTargetNSURIString) ) {

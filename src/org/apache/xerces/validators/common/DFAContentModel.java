@@ -109,6 +109,12 @@ public class DFAContentModel
      */
     private QName fElemMap[] = null;
 
+    /**
+     * This is a map of whether the element map contains information 
+     * related to ANY models.
+     */
+    private int fElemMapType[] = null;
+
     /** The element map size. */
     private int fElemMapSize = 0;
 
@@ -165,6 +171,9 @@ public class DFAContentModel
      * build operation, then dropped.
      */
     private CMLeaf fLeafList[] = null;
+
+    /** Array mapping ANY types to the leaf list. */
+    private int fLeafListType[] = null;
 
     /**
      * The string pool of our parser session. This is set during construction
@@ -345,8 +354,24 @@ public class DFAContentModel
             int elemIndex = 0;
             for (; elemIndex < fElemMapSize; elemIndex++)
             {
-                if (isEqual(fElemMap[elemIndex], curElem))
+                int type = fElemMapType[elemIndex];
+                if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+                    if (isEqual(fElemMap[elemIndex], curElem))
+                        break;
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                     break;
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                    if (fElemMap[elemIndex].uri == -1) {
+                        break;
+                    }
+                }
+                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                    if (fElemMap[elemIndex].uri != curElem.uri) {
+                        break;
+                    }
+                }
             }
 
             // If we didn't find it, then obviously not valid
@@ -618,6 +643,7 @@ public class DFAContentModel
         //  will put them in the array according to their position values.
         //
         fLeafList = new CMLeaf[fLeafCount];
+        fLeafListType = new int[fLeafCount];
         postTreeBuildInit(fHeadNode, 0);
 
         //
@@ -641,6 +667,7 @@ public class DFAContentModel
         //  map to element types. This element map provides that mapping.
         //
         fElemMap = new QName[fLeafCount];
+        fElemMapType = new int[fLeafCount];
         fElemMapSize = 0;
         for (int outIndex = 0; outIndex < fLeafCount; outIndex++)
         {
@@ -659,8 +686,11 @@ public class DFAContentModel
             }
 
             // If it was not in the list, then add it, if not the EOC node
-            if (inIndex == fElemMapSize)
-                fElemMap[fElemMapSize++].setValues(element);
+            if (inIndex == fElemMapSize) {
+                fElemMap[fElemMapSize].setValues(element);
+                fElemMapType[fElemMapSize] = fLeafListType[outIndex];
+                fElemMapSize++;
+            }
         }
 
         //
@@ -1019,7 +1049,16 @@ public class DFAContentModel
         nodeCur.setMaxStates(fLeafCount);
 
         // Recurse as required
-        if ((nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+        if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+            // REVISIT: Don't waste these structures.
+            QName qname = new QName(-1, -1, -1, ((CMAll)nodeCur).getURI());
+            fLeafList[curIndex] = new CMLeaf(qname, ((CMAll)nodeCur).getPosition());
+            fLeafListType[curIndex] = nodeCur.type();
+            curIndex++;
+        }
+        else if ((nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_CHOICE)
         ||  (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_SEQ))
         {
             curIndex = postTreeBuildInit(((CMBinOp)nodeCur).getLeft(), curIndex);
@@ -1036,8 +1075,11 @@ public class DFAContentModel
             //  a non-epsilon leaf.
             //
              final QName node = ((CMLeaf)nodeCur).getElement();
-            if (node.localpart != fEpsilonIndex)
-                fLeafList[curIndex++] = (CMLeaf)nodeCur;
+            if (node.localpart != fEpsilonIndex) {
+                fLeafList[curIndex] = (CMLeaf)nodeCur;
+                fLeafListType[curIndex] = XMLContentSpec.CONTENTSPECNODE_LEAF;
+                curIndex++;
+            }
         }
          else
         {

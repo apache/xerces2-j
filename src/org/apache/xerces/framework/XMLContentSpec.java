@@ -138,6 +138,30 @@ public class XMLContentSpec {
     /** Represents sequence, ','. */
     public static final int CONTENTSPECNODE_SEQ = 5;
 
+    /** 
+     * Represents any namespace specified namespace. When the element
+     * found in the document must belong to a specific namespace, 
+     * <code>otherValue</code> will contain the name of the namespace.
+     * If <code>otherValue</code> is <code>-1</code> then the element
+     * can be from any namespace.
+     * <p>
+     * Lists of valid namespaces are created from choice content spec
+     * nodes that have any content spec nodes as children.
+     */
+    public static final int CONTENTSPECNODE_ANY = 6;
+
+    /** 
+     * Represents any other namespace (XML Schema: ##other). 
+     * <p>
+     * When the content spec node type is set to CONTENTSPECNODE_ANY_OTHER, 
+     * <code>value</code> will contain the namespace that <em>cannot</em>
+     * occur.
+     */
+    public static final int CONTENTSPECNODE_ANY_OTHER = 7;
+
+    /** Represents any local element (XML Schema: ##local). */
+    public static final int CONTENTSPECNODE_ANY_LOCAL = 8;
+
     //
     // Data
     //
@@ -256,8 +280,11 @@ public class XMLContentSpec {
             switch (contentSpec.type) {
                 case XMLContentSpec.CONTENTSPECNODE_LEAF: {
                     str.append('(');
-                    if (contentSpec.value == -1) {
+                    if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                         str.append("#PCDATA");
+                    }
+                    else if (contentSpec.otherValue != -1) {
+                        str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                     }
                     else {
                         str.append(stringPool.toString(contentSpec.value));
@@ -282,8 +309,11 @@ public class XMLContentSpec {
                     provider.getContentSpec(contentSpec.value, contentSpec);
                     if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                         str.append('(');
-                        if (contentSpec.value == -1) {
+                        if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                             str.append("#PCDATA");
+                        }
+                        else if (contentSpec.otherValue != -1) {
+                            str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                         }
                         else {
                             str.append(stringPool.toString(contentSpec.value));
@@ -300,8 +330,11 @@ public class XMLContentSpec {
                     provider.getContentSpec(contentSpec.value, contentSpec);
                     if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                         str.append('(');
-                        if (contentSpec.value == -1) {
+                        if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                             str.append("#PCDATA");
+                        }
+                        else if (contentSpec.otherValue != -1) {
+                            str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                         }
                         else {
                             str.append(stringPool.toString(contentSpec.value));
@@ -318,6 +351,21 @@ public class XMLContentSpec {
                 case XMLContentSpec.CONTENTSPECNODE_SEQ: {
                     appendContentSpec(provider, stringPool,
                                       contentSpec, str, true);
+                    break;
+                }
+                // REVISIT
+                case XMLContentSpec.CONTENTSPECNODE_ANY: {
+                    str.append("##any:uri=");
+                    str.append(stringPool.toString(contentSpec.otherValue));
+                    break;
+                }
+                case XMLContentSpec.CONTENTSPECNODE_ANY_OTHER: {
+                    str.append("##other:uri=");
+                    str.append(stringPool.toString(contentSpec.otherValue));
+                    break;
+                }
+                case XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL: {
+                    str.append("##local");
                     break;
                 }
                 default: {
@@ -375,8 +423,11 @@ public class XMLContentSpec {
 
         switch (contentSpec.type) {
             case XMLContentSpec.CONTENTSPECNODE_LEAF: {
-                if (contentSpec.value == -1) {
+                if (contentSpec.value == -1 && contentSpec.otherValue == -1) {
                     str.append("#PCDATA");
+                }
+                else if (contentSpec.otherValue != -1) {
+                    str.append("##any:uri="+stringPool.toString(contentSpec.otherValue));
                 }
                 else {
                     str.append(stringPool.toString(contentSpec.value));

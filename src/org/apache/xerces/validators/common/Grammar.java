@@ -128,7 +128,11 @@ implements XMLContentSpec.Provider {
     // scope mapping tables
 
     private Hash2intTable fElementNameAndScopeToElementDeclIndexMapping = new Hash2intTable();
-    // TODO
+
+    // temp vars
+
+    private QName fQName1 = new QName();
+    private QName fQName2 = new QName();
 
     //
     // Public methods
@@ -501,23 +505,30 @@ implements XMLContentSpec.Provider {
 
         getContentSpec(contentSpecIndex, contentSpec);
 
-        //
-        //  Check that the left value is not -1, since any content model
-        //  with PCDATA should be MIXED, so we should not have gotten here.
-        //
-        if ( contentSpec.value == -1)
-            throw new CMException(ImplementationMessages.VAL_NPCD);
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ||
+            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+            // let fall through to build a DFAContentModel
+        }
 
-        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            //
+            //  Check that the left value is not -1, since any content model
+            //  with PCDATA should be MIXED, so we should not have gotten here.
+            //
+            if (contentSpec.value == -1 && contentSpec.otherValue == -1)
+                throw new CMException(ImplementationMessages.VAL_NPCD);
+
             //
             //  Its a single leaf, so its an 'a' type of content model, i.e.
             //  just one instance of one element. That one is definitely a
             //  simple content model.
             //
 
-            return new SimpleContentModel( new QName(-1,contentSpec.value, -1, -1),
-                                           null, contentSpec.type);
-        } else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+            fQName1.setValues(-1, contentSpec.value, -1, contentSpec.otherValue);
+            return new SimpleContentModel(fQName1, null, contentSpec.type);
+        } 
+        else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_CHOICE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_SEQ)) {
             //
             //  Lets see if both of the children are leafs. If so, then it
@@ -535,11 +546,12 @@ implements XMLContentSpec.Provider {
                 //  Its a simple choice or sequence, so we can do a simple
                 //  content model for it.
                 //
-                return new SimpleContentModel( new QName(-1,contentSpecLeft.value, -1, -1),
-                                               new QName(-1,contentSpecRight.value, -1, -1),
-                                               contentSpec.type );
+                fQName1.setValues(-1, contentSpecLeft.value, -1, contentSpecLeft.otherValue);
+                fQName2.setValues(-1, contentSpecRight.value, -1, contentSpecRight.otherValue);
+                return new SimpleContentModel(fQName1, fQName2, contentSpec.type);
             }
-        } else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
+        } 
+        else if ((contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
                    ||  (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)) {
             //
@@ -556,10 +568,11 @@ implements XMLContentSpec.Provider {
                 //  will check for this repetition. We pass -1 for the unused
                 //  right node.
                 //
-                return new SimpleContentModel( new QName(-1,contentSpecLeft.value, -1, -1), null,
-                                               contentSpec.type);
+                fQName1.setValues(-1, contentSpecLeft.value, -1, contentSpecLeft.otherValue);
+                return new SimpleContentModel(fQName1, null, contentSpec.type);
             }
-        } else {
+        } 
+        else {
             throw new CMException(ImplementationMessages.VAL_CST);
         }
 
@@ -632,20 +645,30 @@ implements XMLContentSpec.Provider {
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
         getContentSpec(startNode, contentSpec);
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+            nodeRet = new CMAll(contentSpec.type, -1, fLeafCount++);
+        }
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+            nodeRet = new CMAll(contentSpec.type, contentSpec.otherValue, fLeafCount++);
+        }
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+            nodeRet = new CMAll(contentSpec.type, -1, fLeafCount++);
+        }
         //
         //  If this node is a leaf, then its an easy one. We just add it
         //  to the tree.
         //
-        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+        else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
             //
             //  Create a new leaf node, and pass it the current leaf count,
             //  which is its DFA state position. Bump the leaf count after
             //  storing it. This makes the positions zero based since we
             //  store first and then increment.
             //
-            nodeRet = new CMLeaf( new QName( -1, contentSpec.value, -1, contentSpec.otherValue ),
-                                                                                      fLeafCount++);
-        } else {
+            fQName1.setValues(-1, contentSpec.value, -1, contentSpec.otherValue);
+            nodeRet = new CMLeaf(fQName1, fLeafCount++);
+        } 
+        else {
             //
             //  Its not a leaf, so we have to recurse its left and maybe right
             //  nodes. Save both values before we recurse and trash the node.
