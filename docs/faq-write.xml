@@ -146,10 +146,14 @@ parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", fal
 	</faq>
 	
 	<faq title="Associating Data with a Node">
-		<q>How do associate my own data with a node in the DOM tree?</q>
+		<q>How do I associate my own data with a node in the DOM tree?</q>
 		<a><p>The class <code>org.apache.xerces.dom.NodeImpl</code> provides a 
 			<code>void setUserData(Object o)</code> and an <code>Object getUserData()</code>
          	method that you can use to attach any object to a node in the DOM tree.</p>
+                <p>Beware that you should try and remove references to your
+                  data on nodes you no longer use (by calling
+                  <code>setUserData(null)</code>, or these nodes will not be
+                  garbage collected until the whole document is.</p>
 		</a>
 	</faq>
 	
