@@ -159,6 +159,7 @@ class FactoryFinder {
                 dPrint("found in jaxp.properties, value=" + factoryClassName);
                 return newInstance(factoryClassName, cl, true);
             }
+            fis.close();
         } catch (Exception x) {
             // assert(x instanceof FileNotFoundException
             //        || x instanceof SecurityException)
