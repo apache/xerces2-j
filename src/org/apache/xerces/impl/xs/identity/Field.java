@@ -197,7 +197,7 @@ public class Field {
 
         /** Constructs a field matcher. */
         public Matcher(Field.XPath xpath, ValueStore store) {
-            super(xpath, true, null);
+            super(xpath, null);
             fStore = store;
         } // <init>(Field.XPath,ValueStore)
 

@@ -116,6 +116,12 @@ public class XPathMatcher {
                                                DEBUG_MATCH ||
                                                DEBUG_STACK;
 
+    // constants describing whether a match was made,
+    // and if so how.  
+    protected static final int MATCHED = 1;
+    protected static final int MATCHED_ATTRIBUTE = 3;
+    protected static final int MATCHED_DESCENDANT = 5;
+
     //
     // Data
     //
@@ -123,17 +129,8 @@ public class XPathMatcher {
     /** XPath location path. */
     private XPath.LocationPath[] fLocationPaths;
 
-    /** Application preference to buffer content or not. */
-    private boolean fShouldBufferContent;
-
-    /** True if should buffer character content <em>at this time</em>. */
-    private boolean fBufferContent;
-
-    /** Buffer to hold match text. */
-    private StringBuffer fMatchedBuffer = new StringBuffer();
-
     /** True if XPath has been matched. */
-    private boolean[] fMatched;
+    private int[] fMatched;
 
     /** The matching string. */
     private String fMatchedString;
@@ -150,19 +147,12 @@ public class XPathMatcher {
      */
     private int [] fNoMatchDepth;
 
-    // Xerces 1.x framework
-
-    /** Symbol table. */
-    protected SymbolTable fSymbolTable;
-
-    /** Namespace scope. */
-    /*** REVISIT:  do we need this?  -NG
-    protected NamespaceContext fNamespacesScope;
-    */
-
     // the Identity constraint we're the matcher for.  Only
     // used for selectors!
     protected IdentityConstraint fIDConstraint;
+
+    // the symbolTable for the XPath parser
+    protected SymbolTable fSymbolTable;
 
     //
     // Constructors
@@ -175,7 +165,7 @@ public class XPathMatcher {
      * @param xpath   The xpath.
      */
     public XPathMatcher(XPath xpath) {
-        this(xpath, false, null);
+        this(xpath, null);
     } // <init>(XPath)
 
     /**
@@ -188,15 +178,14 @@ public class XPathMatcher {
      * @param idConstraint:  the identity constraint we're matching for;
      *      null unless it's a Selector.
      */
-    public XPathMatcher(XPath xpath, boolean shouldBufferContent, IdentityConstraint idConstraint) {
+    public XPathMatcher(XPath xpath, IdentityConstraint idConstraint) {
         fLocationPaths = xpath.getLocationPaths();
-        fShouldBufferContent = shouldBufferContent;
         fIDConstraint = idConstraint;
         fStepIndexes = new IntStack[fLocationPaths.length];
         for(int i=0; i<fStepIndexes.length; i++) fStepIndexes[i] = new IntStack();
         fCurrentStep = new int[fLocationPaths.length];
         fNoMatchDepth = new int[fLocationPaths.length];
-        fMatched = new boolean[fLocationPaths.length];
+        fMatched = new int[fLocationPaths.length];
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#<init>()");
         }
@@ -210,7 +199,7 @@ public class XPathMatcher {
     public boolean isMatched() {
         // xpath has been matched if any one of the members of the union have matched.
         for (int i=0; i < fLocationPaths.length; i++)
-            if (fMatched[i]) return true;
+            if ((fMatched[i] & MATCHED) == MATCHED) return true;
         return false;
     } // isMatched():boolean
 
@@ -232,6 +221,31 @@ public class XPathMatcher {
     //
     // Protected methods
     //
+
+    protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) { 
+        fMatchedString = ePSVI.getSchemaNormalizedValue();
+        // REVISIT:  make sure type is simple!
+        XSSimpleType val=null;
+
+        if (eDecl!=null) {
+            XSTypeDecl type = eDecl.fType;
+            if (type != null) {
+                if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+                    XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
+                    val = (XSSimpleType)ctype.getSimpleType();
+                }
+                else {
+                    val = (XSSimpleType)(type);
+                }
+            }
+        }
+
+        if(eDecl != null) {
+            matched(fMatchedString, val, (eDecl.getIsNillable()));
+        } else {
+            matched(fMatchedString, val, false); 
+        }
+    } // handleContent(XSElementDecl, ElementPSVI)
 
     /**
      * This method is called when the XPath handler matches the
@@ -265,17 +279,17 @@ public class XPathMatcher {
         }
 
         // reset state
-        clear();
+        fSymbolTable = symbolTable;
+        fMatchedString = null;
         for(int i = 0; i < fLocationPaths.length; i++) {
             fStepIndexes[i].clear();
             fCurrentStep[i] = 0;
             fNoMatchDepth[i] = 0;
+            fMatched[i] = 0;
         }
 
-        // keep values
-        fSymbolTable = symbolTable;
 
-    } // startDocumentFragment(NamespaceContext)
+    } // startDocumentFragment(SymbolTable)
 
     /**
      * The start of an element. If the document specifies the start element
@@ -304,7 +318,7 @@ public class XPathMatcher {
             fStepIndexes[i].push(startStep);
 
             // try next xpath, if not matching
-            if (fMatched[i] || fNoMatchDepth[i] > 0) {
+            if ((fMatched[i] & MATCHED) == MATCHED || fNoMatchDepth[i] > 0) {
                 fNoMatchDepth[i]++;
                 continue;
             }
@@ -327,11 +341,7 @@ public class XPathMatcher {
                 if (DEBUG_MATCH) {
                     System.out.println(toString()+" XPath MATCHED!");
                 }
-                fMatched[i] = true;
-                int j=0;
-                for(; j<i && !fMatched[j]; j++);
-                if(j==i)
-                    fBufferContent = fShouldBufferContent;
+                fMatched[i] = MATCHED;
                 continue;
             }
 
@@ -347,6 +357,7 @@ public class XPathMatcher {
                 }
                 fCurrentStep[i]++;
             }
+            boolean sawDescendant = fCurrentStep[i] > descendantStep;
             if (fCurrentStep[i] == steps.length) {
                 if (DEBUG_MATCH) {
                     System.out.println(toString()+" XPath DIDN'T MATCH!");
@@ -385,11 +396,11 @@ public class XPathMatcher {
                 }
             }
             if (fCurrentStep[i] == steps.length) {
-                fMatched[i] = true;
-                int j=0;
-                for(; j<i && !fMatched[j]; j++);
-                if(j==i)
-                    fBufferContent = fShouldBufferContent;
+                if(sawDescendant) {
+                    fMatched[i] = MATCHED_DESCENDANT;
+                } else {
+                    fMatched[i] = MATCHED;
+                }
                 continue;
             }
 
@@ -418,21 +429,20 @@ public class XPathMatcher {
                         }
                     }
 
-                    for (int aindex = 0; aindex < attrCount; aindex++) {
-                        attributes.getName(aindex, aname);
+                    for (int aIndex = 0; aIndex < attrCount; aIndex++) {
+                        attributes.getName(aIndex, aname);
                         if (nodeTest.type != XPath.NodeTest.QNAME ||
                             nodeTest.name.equals(aname)) {
                             fCurrentStep[i]++;
                             if (fCurrentStep[i] == steps.length) {
-                                fMatched[i] = true;
+                                fMatched[i] = MATCHED_ATTRIBUTE;
                                 int j=0;
-                                for(; j<i && !fMatched[j]; j++);
+                                for(; j<i && ((fMatched[j] & MATCHED) != MATCHED); j++);
                                 if(j==i) {
-                                    String avalue = attributes.getValue(aindex);
+                                    String avalue = attributes.getValue(aIndex);
                                     fMatchedString = avalue;
-                                    // now, we have to go on the hunt for
-                                    // datatype validator; not an easy or pleasant task...
 
+                                    // find Datatype validator...
                                     XSSimpleType aValidator = null;
                                     if (attrGrp != null) {
                                       XSAttributeUseImpl tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
@@ -448,7 +458,7 @@ public class XPathMatcher {
                         }
                     }
                 }
-                if (!fMatched[i]) {
+                if ((fMatched[i] & MATCHED) != MATCHED) {
                     if(fCurrentStep[i] > descendantStep) {
                         fCurrentStep[i] = descendantStep;
                         continue;
@@ -472,6 +482,7 @@ public class XPathMatcher {
      *
      * @param element The name of the element.
      * @param eDecl:  the element declaration
+     * @param ePSVI contains validation info for this element
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
@@ -483,6 +494,9 @@ public class XPathMatcher {
                                ")");
         }
         for(int i = 0; i<fLocationPaths.length; i++) {
+            // go back a step
+            fCurrentStep[i] = fStepIndexes[i].pop();
+
             // don't do anything, if not matching
             if (fNoMatchDepth[i] > 0) {
                 fNoMatchDepth[i]--;
@@ -491,38 +505,18 @@ public class XPathMatcher {
             // signal match, if appropriate
             else {
                 int j=0;
-                for(; j<i && !fMatched[j]; j++);
-                if (j<i) continue;
-                if (fBufferContent) {
-                    fBufferContent = false;
-                    fMatchedString = ePSVI.getSchemaNormalizedValue();
-                    // REVISIT:  make sure type is simple!
-                    XSSimpleType val=null;
-
-                    if (eDecl!=null) {
-                      XSTypeDecl type = eDecl.fType;
-                      if (type != null) {
-                        if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
-                          XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-                          val = (XSSimpleType)ctype.getSimpleType();
-                        }
-                        else {
-                          val = (XSSimpleType)(type);
-                        }
-                      }
-                    }
-
-                    if(eDecl != null) {
-                        matched(fMatchedString, val, (eDecl.getIsNillable()));
-                    } else
-                        matched(fMatchedString, val, false);
-
+                for(; j<i && ((fMatched[j] & MATCHED) != MATCHED); j++);
+                if ((j<i) || (fMatched[j] == 0) ||
+                        ((fMatched[j] & MATCHED_ATTRIBUTE) == MATCHED_ATTRIBUTE)) {
+                    continue;
                 }
-                clear();
+                // only certain kinds of matchers actually
+                // match element content.  This permits
+                // them a way to override this to do nothing
+                // and hopefully save a few operations.
+                handleContent(eDecl, ePSVI);
+                fMatched[i] = 0;
             }
-
-            // go back a step
-            fCurrentStep[i] = fStepIndexes[i].pop();
 
             if (DEBUG_STACK) {
                 System.out.println(toString()+": "+fStepIndexes[i]);
@@ -530,17 +524,6 @@ public class XPathMatcher {
         }
 
     } // endElement(QName)
-
-    /**
-     * The end of the document fragment.
-     *
-     * @throws SAXException Thrown by handler to signal an error.
-     */
-    public void endDocumentFragment() throws XNIException {
-        if (DEBUG_METHODS) {
-            System.out.println(toString()+"#endDocumentFragment()");
-        }
-    } // endDocumentFragment()
 
     //
     // Object methods
@@ -582,15 +565,6 @@ public class XPathMatcher {
     //
     // Private methods
     //
-
-    /** Clears the match values. */
-    private void clear() {
-        fBufferContent = false;
-        fMatchedBuffer.setLength(0);
-        fMatchedString = null;
-        for(int i = 0; i < fLocationPaths.length; i++) 
-            fMatched[i] = false;
-    } // clear()
 
     /** Normalizes text. */
     private String normalize(String s) {

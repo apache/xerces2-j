@@ -2090,11 +2090,8 @@ public class XMLSchemaValidator
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
             IdentityConstraint id;
             if ((id = matcher.getIDConstraint()) != null && id.getCategory() != IdentityConstraint.IC_KEYREF) {
-                matcher.endDocumentFragment();
                 fValueStoreCache.transplant(id);
             }
-            else if (id == null)
-                matcher.endDocumentFragment();
         }
         // now handle keyref's/...
         for (int i = oldCount - 1; i >= newCount; i--) {
@@ -2104,7 +2101,6 @@ public class XMLSchemaValidator
                 ValueStoreBase values = fValueStoreCache.getValueStoreFor(id);
                 if (values != null) // nothing to do if nothing matched!
                     values.endDocumentFragment();
-                matcher.endDocumentFragment();
             }
         }
         fValueStoreCache.endElement();

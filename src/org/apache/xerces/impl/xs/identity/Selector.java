@@ -64,9 +64,9 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.psvi.ElementPSVI;
-import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
+import org.apache.xerces.util.SymbolTable;
 
 import org.xml.sax.SAXException;
 
@@ -198,7 +198,7 @@ public class Selector {
 
         /** Constructs a selector matcher. */
         public Matcher(Selector.XPath xpath, FieldActivator activator) {
-            super(xpath, false, Selector.this.fIdentityConstraint);
+            super(xpath, Selector.this.fIdentityConstraint);
             fFieldActivator = activator;
         } // <init>(Selector.XPath,FieldActivator)
 
@@ -209,10 +209,9 @@ public class Selector {
         public void startDocumentFragment(SymbolTable symbolTable)
         throws XNIException {
             super.startDocumentFragment(symbolTable);
-            //super.startDocumentFragment(context, symbolTable);
             fElementDepth = 0;
             fMatchedDepth = -1;
-        } // startDocumentFragment(SymbolTable)
+        } // startDocumentFragment()
 
         /**
          * The start of an element. If the document specifies the start element
@@ -251,6 +250,15 @@ public class Selector {
                 fFieldActivator.endValueScopeFor(fIdentityConstraint);
             }
         }
+
+        //
+        // Protected methods
+        //
+
+        // overridden to do nothing; selectors don't care
+        // about element content
+        protected void handleContent(XSElementDecl eDecl, ElementPSVI ePSVI) {
+        } // handleContent(XSElementDecl, ElementPSVI)
 
     } // class Matcher
 
