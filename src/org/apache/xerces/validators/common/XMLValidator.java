@@ -1021,6 +1021,7 @@ NamespacesScope.NamespacesHandler {
          if (fValidating ) {
             try {
                this.fValIDRef.validate( null, this.fValidateIDRef );   
+               this.fValIDRefs.validate( null, this.fValidateIDRef );
             } catch ( InvalidDatatypeValueException ex ) {
                reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
                                           ex.getMessage() ); 
@@ -1032,6 +1033,7 @@ NamespacesScope.NamespacesHandler {
          try {//Reset datatypes state
             this.fValID.validate( null, this.fResetID );
             this.fValIDRef.validate(null, this.fResetIDRef );
+            this.fValIDRefs.validate(null, this.fResetID );
          } catch ( InvalidDatatypeValueException ex ) {
             System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
          }
@@ -1423,7 +1425,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
    } // getLocatorImpl(LocatorImpl):LocatorImpl
 
-
+                                                           
    // initialization
 
    /** Reset pool. */
@@ -1432,6 +1434,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          //System.out.println("We reset" );
          this.fValID.validate( null, this.fResetID );
          this.fValIDRef.validate(null, this.fResetIDRef );
+         this.fValIDRefs.validate(null, this.fResetIDRef );
       } catch ( InvalidDatatypeValueException ex ) {
          System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
       }
@@ -1524,11 +1527,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          fValNOTATION = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
 
 
-         //Initialize ENTITY Validator
+         //Initialize ENTITY & ENTITIES Validatorh
          Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
             (Object) this.fStringPool};
          fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
          fValENTITY.validate( null, fValidateENTITYMsg );
+         fValENTITIES.validate( null, fValidateENTITYMsg );
       } catch ( InvalidDatatypeValueException ex ) {
          System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
       }
