@@ -515,6 +515,7 @@ public class XSDHandler {
             // set the target namespace of the description
             if (referType == XSDDescription.CONTEXT_PREPARSE) {
                 desc.setTargetNamespace(currSchemaInfo.fTargetNamespace);
+                callerTNS = currSchemaInfo.fTargetNamespace;
             }
             else {
                 // the second index to the NS_ERROR_CODES array
