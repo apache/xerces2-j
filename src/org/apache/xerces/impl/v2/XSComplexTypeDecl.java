@@ -77,27 +77,38 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
     // name of the complexType
     public String fName = null;
+
     // target namespace of the complexType
     public String fTargetNamespace = null;
+
     // base type of the complexType
     public XSTypeDecl fBaseType = null;
+
     // derivation method of the complexType
     public short fDerivedBy = SchemaSymbols.RESTRICTION;
+
     // final set of the complexType
     public short fFinal = SchemaSymbols.EMPTY_SET;
+
     // block set (prohibited substitution) of the complexType
     public short fBlock = SchemaSymbols.EMPTY_SET;
+
     // flags: whether is abstract; whether contains ID type
     public short fMiscFlags = 0;
+
     // the attribute group that holds the attribute uses and attribute wildcard
     public XSAttributeGroupDecl fAttrGrp = new XSAttributeGroupDecl();
+
     // the content type of the complexType
     public short fContentType = CONTENTTYPE_EMPTY;
+
     // if the content type is simple, then the corresponding simpleType
     // REVISIT: to be changed to XSSimpleTypeDecl
     public DatatypeValidator fDatatypeValidator = null;
+
     // if the content type is element or mixed, the particle
     public XSParticleDecl fParticle = null;
+
     // if there is a particle, the content model corresponding to that particle
     XSCMValidator fCMValidator = null;
 
@@ -140,4 +151,31 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
         return fCMValidator;
     }
+   
+    public String toString() {
+
+        StringBuffer str = new StringBuffer();
+        appendTypeInfo(str);
+        return str.toString();
+    }
+
+    void appendTypeInfo(StringBuffer str) {
+        String contentType[] = {"EMPTY", "SIMPLE", "MIXED", "ELEMENT"};
+        String derivedBy[] = {"EMPTY", "EXTENSION", "RESTRICTION"};
+
+        str.append("Complex type name='" + fTargetNamespace + "," + getXSTypeName() + "', ");
+        if (fBaseType != null) 
+          str.append(" base type name='" + fBaseType.getXSTypeName() + "', ");
+        
+        str.append(" content type='" + contentType[fContentType] + "', ");
+        str.append(" isAbstract='" + isAbstractType() + "', ");
+        str.append(" hasTypeId='" + containsTypeID() + "', ");
+        str.append(" final='" + fFinal + "', ");
+        str.append(" block='" + fBlock + "', ");
+        if (fParticle != null) 
+          str.append(" particle='" + fParticle.toString() + "', ");
+        str.append(" derivedBy='" + derivedBy[fDerivedBy] + "'. ");
+        
+    }
+
 } // class XSComplexTypeDecl
