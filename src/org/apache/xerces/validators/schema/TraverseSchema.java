@@ -274,14 +274,30 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
      * </import>
      * 
      * <simpleType
-     *   abstract = boolean 
-     *   base = QName 
-     *   derivedBy = | list | restriction  : restriction
      *   id = ID 
-     *   name = NCName>
-     *   Content: ( annotation? , ( minExclusive | minInclusive | maxExclusive | maxInclusive | precision | scale | length | minLength | maxLength | encoding | period | duration | enumeration | pattern )* )
+     *   name = NCName 
+     *   Content: (annotation? , ((list | restriction | union)))
      * </simpleType>
      * 
+     * <restriction 
+     *   base = QName 
+     *   id = ID 
+     *   Content: (annotation? , (simpleType? , (duration | encoding | enumeration | length | maxExclusive | maxInclusive | maxLength | minExclusive | minInclusive | minLength | pattern | period | precision | scale | whiteSpace)*))
+     * </restriction>
+     *
+     * <list 
+     *   id = ID 
+     *   itemType = QName 
+     *   Content: (annotation? , (simpleType?))
+     * </list>
+     *
+     * <union 
+     *   id = ID 
+     *   memberTypes = List of QName 
+     *   Content: (annotation? , (simpleType*))
+     * </union>
+     *
+     *
      * <length
      *   id = ID 
      *   value = nonNegativeInteger>
@@ -1277,7 +1293,18 @@ public class TraverseSchema implements
        return baseValidator;
     }
 
-   //REVISIT: update comments. CR Implementation
+   /**
+     * Traverse SimpleType declaration:
+     * <simpleType
+     *         id = ID 
+     *         name = NCName>
+     *         Content: (annotation? , ((list | restriction | union)))
+     *       </simpleType>
+     * traverse <list>|<restriction>|<union>
+     * 
+     * @param simpleTypeDecl
+     * @return 
+     */
     private int traverseSimpleType( Element simpleTypeDecl ) throws Exception {
         
         //REVISIT: remove all DEBUG_UNION.
@@ -1315,6 +1342,7 @@ public class TraverseSchema implements
             System.out.println("[varietyProperty]:"+   varietyProperty );
         }
 
+        //REVISIT: change symbols from ATTVAL_ to ELM_. 
         if (varietyProperty.equals(SchemaSymbols.ATTVAL_LIST)) { //traverse List
            baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
            list = true;
@@ -1431,19 +1459,20 @@ public class TraverseSchema implements
                     baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
                     if (baseValidator != null) {
                         if (DEBUG_UNION) {
-							System.out.println("validator to add: " + baseValidator.toString());
-						}
+                            System.out.println("validator to add: " + baseValidator.toString());
+                        }
                         dTValidators.addElement((DatatypeValidator)baseValidator);
-					}
-				}
-				if ( baseValidator == null || typeNameIndex == -1) {
+                    }
+                }
+				
+                if ( baseValidator == null || typeNameIndex == -1) {
                      reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
                                       new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
                                           simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
                     return (-1);
-				}
+                }
 				content   = XUtil.getNextSiblingElement( content );
-			}
+            }
         } // end - traverse Union
         
         
@@ -1464,10 +1493,10 @@ public class TraverseSchema implements
                             enumData.addElement(enumVal);
                             //Enumerations can have annotations ? ( 0 | 1 )
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
-                        } 
-                        else {
+                    }
+                    else {
                          facetData.put(content.getNodeName(),content.getAttribute( SchemaSymbols.ATT_VALUE ));
-                        }
+                    }
                 }
                     content = XUtil.getNextSiblingElement(content);
             }
@@ -2578,14 +2607,22 @@ public class TraverseSchema implements
         if (minOccurs.equals("")) {
             minOccurs = "1";
         }
-        if (maxOccurs.equals("") ){
+        if (CR_IMPL) { //CR IMPLEMENTATION
+            if (maxOccurs.equals("")) {
+                maxOccurs = "1";
+            }
+        }
+        else { //WORKING DRAFT IMPLEMENTATION
+            if (maxOccurs.equals("") ){
             if ( minOccurs.equals("0")) {
                 maxOccurs = "1";
             }
             else {
                 maxOccurs = minOccurs;
             }
+            }
         }
+        
 
 
         int leafIndex = index;
