@@ -3766,7 +3766,9 @@ public final class XMLValidator
                                             ex.getMinorCode(),
                                             fStringPool.toString( attributeDecl.name.rawname), value );
                } else {
-                  System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+                  reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
+                                            XMLMessages.VC_ENTITY_NAME,
+                                            fStringPool.toString( attributeDecl.name.rawname), value );
                }
             }
 
@@ -3808,8 +3810,8 @@ public final class XMLValidator
                fValID.validate( value, fIdDefs );
                fValIDRef.validate( value, this.fValidateIDRef ); //just in case we called id after IDREF
             } catch ( InvalidDatatypeValueException ex ) {
-               reportRecoverableXMLError(ex.getMajorCode(),
-                                         ex.getMinorCode(),
+               reportRecoverableXMLError(XMLMessages.MSG_ID_INVALID,
+                                         XMLMessages.VC_ID,
                                          fStringPool.toString( attributeDecl.name.rawname), value );
             }
 
@@ -3850,7 +3852,9 @@ public final class XMLValidator
                                             ex.getMinorCode(),
                                             fStringPool.toString( attributeDecl.name.rawname), value );
                } else {
-                  System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+                  reportRecoverableXMLError(XMLMessages.MSG_IDREFS_INVALID,
+                                            XMLMessages.VC_IDREF,
+                                            fStringPool.toString( attributeDecl.name.rawname), value );
                }
             }
 

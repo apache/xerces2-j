@@ -168,8 +168,8 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
             if (!entityHandler.isUnparsedEntity( attValueHandle ) ) {
                 InvalidDatatypeValueException error =
                 new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
-                error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
-                error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
+                error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID);
+                error.setMajorCode(XMLMessages.VC_ENTITY_DECLARED);
                 throw error;
             }
         }
