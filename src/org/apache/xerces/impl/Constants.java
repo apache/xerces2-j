@@ -91,10 +91,10 @@ public final class Constants {
     public static final String VALIDATION_FEATURE = "validation";
 
     /** External general entities feature ("external-general-entities "). */
-    public static final String EXTERNAL_GENERAL_ENTITIES_FEATURE = "external-general-entities ";
+    public static final String EXTERNAL_GENERAL_ENTITIES_FEATURE = "external-general-entities";
 
     /** External parameter entities feature ("external-parameter-entities "). */
-    public static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE = "external-parameter-entities ";
+    public static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE = "external-parameter-entities";
 
     // sax properties
 
