@@ -578,7 +578,7 @@ public class TraverseSchema implements
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
             fElementDefaultQualified = true;
-            fAttributeDefaultQualified = true;
+            //fAttributeDefaultQualified = true;
         }
 
 
@@ -848,7 +848,7 @@ public class TraverseSchema implements
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
             fElementDefaultQualified = true;
-            fAttributeDefaultQualified = true;
+            //fAttributeDefaultQualified = true;
         }
 
         //fScopeCount++;
