@@ -305,6 +305,8 @@ public class XMLEntityManager
      *                     where <em>the entity being added</em> and
      *                     is used to expand the system identifier when
      *                     the system identifier is a relative URI.
+     *                     When null the system identifier of the first
+     *                     external entity on the stack is used instead.
      *
      * @see SymbolTable
      */
@@ -312,7 +314,19 @@ public class XMLEntityManager
                                   String publicId, String systemId, 
                                   String baseSystemId) {
         if (!fEntities.containsKey(name)) {
-            Entity entity = new ExternalEntity(name, publicId, systemId, baseSystemId, null);
+            if (baseSystemId == null) {
+                // search for the first external entity on the stack 
+                int size = fEntityStack.size();
+                for (int i = size - 1; i >= 0 ; i--) {
+                    ScannedEntity externalEntity =
+                        (ScannedEntity)fEntityStack.elementAt(i);
+                    if (externalEntity.systemId != null) {
+                        baseSystemId = externalEntity.systemId;
+                    }
+                }
+            }
+            Entity entity = new ExternalEntity(name, publicId, systemId,
+                                               baseSystemId, null);
             fEntities.put(name, entity);
         }
     } // addExternalEntity(String,String,String,String)
@@ -2660,20 +2674,18 @@ public class XMLEntityManager
          */
         public String getSystemId() {
             if (fCurrentEntity != null) {
-                //return fCurrentEntity.systemId != null
-                //     ? fCurrentEntity.systemId : fCurrentEntity.name;
-
                 if (fCurrentEntity.systemId != null ) {
                     return fCurrentEntity.systemId;
                 }
                 else {
                     // search for the first external entity on the stack 
                     int size = fEntityStack.size();
-                    for (int i=size-1; i>0 ; i--) {
-                        ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+                    for (int i = size - 1; i >= 0 ; i--) {
+                        ScannedEntity externalEntity =
+                            (ScannedEntity)fEntityStack.elementAt(i);
 
-                        if (firstExternalEntity.systemId != null) {
-                            return firstExternalEntity.systemId;
+                        if (externalEntity.systemId != null) {
+                            return externalEntity.systemId;
                         }
                     }
                 }
