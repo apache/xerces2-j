@@ -1497,7 +1497,7 @@ public class XSDHandler {
                 // than checking its value.  Don't set the ERROR_HANDLER
                 // property unless it's actually changed.
                 if (currErrorHandler
-                    == fSchemaParser.getProperty(ERROR_HANDLER)) {
+                    != fSchemaParser.getProperty(ERROR_HANDLER)) {
                     fSchemaParser.setProperty(ERROR_HANDLER, currErrorHandler);
                 }
             }
