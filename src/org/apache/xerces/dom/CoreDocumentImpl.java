@@ -314,7 +314,7 @@ public class CoreDocumentImpl
         callUserDataHandlers(this, newdoc, UserDataHandler.NODE_CLONED);
         cloneNode(newdoc, deep);
 
-    	return newdoc;
+        return newdoc;
 
     } // cloneNode(boolean):Node
 
@@ -374,7 +374,7 @@ public class CoreDocumentImpl
     public Node insertBefore(Node newChild, Node refChild)
         throws DOMException {
 
-    	// Only one such child permitted
+        // Only one such child permitted
         int type = newChild.getNodeType();
         if (errorChecking) {
             if((type == Node.ELEMENT_NODE && docElement != null) ||
@@ -384,17 +384,17 @@ public class CoreDocumentImpl
             }
         }
 
-    	super.insertBefore(newChild,refChild);
+        super.insertBefore(newChild,refChild);
 
-    	// If insert succeeded, cache the kid appropriately
+        // If insert succeeded, cache the kid appropriately
         if (type == Node.ELEMENT_NODE) {
-    	    docElement = (ElementImpl)newChild;
+            docElement = (ElementImpl)newChild;
         }
         else if (type == Node.DOCUMENT_TYPE_NODE) {
-    	    docType=(DocumentTypeImpl)newChild;
+            docType=(DocumentTypeImpl)newChild;
         }
 
-    	return newChild;
+        return newChild;
 
     } // insertBefore(Node,Node):Node
 
@@ -409,16 +409,16 @@ public class CoreDocumentImpl
         throws DOMException {
         super.removeChild(oldChild);
 
-    	// If remove succeeded, un-cache the kid appropriately
+        // If remove succeeded, un-cache the kid appropriately
         int type = oldChild.getNodeType();
         if(type == Node.ELEMENT_NODE) {
-    	    docElement = null;
+            docElement = null;
         }
         else if (type == Node.DOCUMENT_TYPE_NODE) {
-    	    docType=null;
+            docType=null;
         }
 
-    	return oldChild;
+        return oldChild;
 
     }   // removeChild(Node):Node
 
@@ -436,10 +436,10 @@ public class CoreDocumentImpl
 
         int type = oldChild.getNodeType();
         if(type == Node.ELEMENT_NODE) {
-    	    docElement = (ElementImpl)newChild;
+            docElement = (ElementImpl)newChild;
         }
         else if (type == Node.DOCUMENT_TYPE_NODE) {
-    	    docType = (DocumentTypeImpl)newChild;
+            docType = (DocumentTypeImpl)newChild;
         }
         return oldChild;
     }   // replaceChild(Node,Node):Node
@@ -480,11 +480,11 @@ public class CoreDocumentImpl
     public Attr createAttribute(String name)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(name)) {
+        if (errorChecking && !isXMLName(name)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
-    	return new AttrImpl(this, name);
+        return new AttrImpl(this, name);
 
     } // createAttribute(String):Attr
 
@@ -534,11 +534,11 @@ public class CoreDocumentImpl
     public Element createElement(String tagName)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(tagName)) {
+        if (errorChecking && !isXMLName(tagName)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
-    	return new ElementImpl(this, tagName);
+        return new ElementImpl(this, tagName);
 
     } // createElement(String):Element
 
@@ -555,11 +555,11 @@ public class CoreDocumentImpl
     public EntityReference createEntityReference(String name)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(name)) {
+        if (errorChecking && !isXMLName(name)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
-    	return new EntityReferenceImpl(this, name);
+        return new EntityReferenceImpl(this, name);
 
     } // createEntityReference(String):EntityReference
 
@@ -580,11 +580,11 @@ public class CoreDocumentImpl
                                                              String data)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(target)) {
+        if (errorChecking && !isXMLName(target)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
-    	return new ProcessingInstructionImpl(this, target, data);
+        return new ProcessingInstructionImpl(this, target, data);
 
     } // createProcessingInstruction(String,String):ProcessingInstruction
 
@@ -743,7 +743,7 @@ public class CoreDocumentImpl
      * The encoding of this document (part of XML Declaration)
      */
     public String getEncoding() {
-	return encoding;
+        return encoding;
     }
 
     /**
@@ -760,7 +760,7 @@ public class CoreDocumentImpl
      * The version of this document (part of XML Declaration)
      */
     public String getVersion() {
-	return version;
+        return version;
     }
 
     /**
@@ -818,11 +818,11 @@ public class CoreDocumentImpl
                                            String systemID)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(qualifiedName)) {
+        if (errorChecking && !isXMLName(qualifiedName)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
-    	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
+        return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
 
     } // createDocumentType(String):DocumentType
 
@@ -841,11 +841,11 @@ public class CoreDocumentImpl
     public Entity createEntity(String name)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-    		                           "DOM002 Illegal character");
+        if (errorChecking && !isXMLName(name)) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
+                                           "DOM002 Illegal character");
         }
-    	return new EntityImpl(this, name);
+        return new EntityImpl(this, name);
 
     } // createEntity(String):Entity
 
@@ -864,11 +864,11 @@ public class CoreDocumentImpl
     public Notation createNotation(String name)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-    		                           "DOM002 Illegal character");
+        if (errorChecking && !isXMLName(name)) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
+                                           "DOM002 Illegal character");
         }
-    	return new NotationImpl(this, name);
+        return new NotationImpl(this, name);
 
     } // createNotation(String):Notation
 
@@ -879,9 +879,9 @@ public class CoreDocumentImpl
     public ElementDefinitionImpl createElementDefinition(String name)
         throws DOMException {
 
-    	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
-    		                           "DOM002 Illegal character");
+        if (errorChecking && !isXMLName(name)) {
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
+                                           "DOM002 Illegal character");
         }
         return new ElementDefinitionImpl(this, name);
 
@@ -899,7 +899,7 @@ public class CoreDocumentImpl
      * and a NOT_SUPPORTED_ERR exception is thrown if attempted.
      */
     public Node importNode(Node source, boolean deep)
-	throws DOMException {
+        throws DOMException {
         return importNode(source, deep, false, null);
     } // importNode(Node,boolean):Node
 
@@ -917,7 +917,7 @@ public class CoreDocumentImpl
      */
     private Node importNode(Node source, boolean deep, boolean cloningDoc,
                             Hashtable reversedIdentifiers)
-	throws DOMException {
+        throws DOMException {
         Node newnode=null;
 
         // Sigh. This doesn't work; too many nodes have private data that
@@ -988,11 +988,11 @@ public class CoreDocumentImpl
 
                 if( source.getOwnerDocument().getImplementation().hasFeature("XML", "2.0") ){
                     if (source.getLocalName() == null) {
-         	        newnode = createAttribute(source.getNodeName());
-         	    } else {
-          	        newnode = createAttributeNS(source.getNamespaceURI(),
+                        newnode = createAttribute(source.getNodeName());
+                    } else {
+                        newnode = createAttributeNS(source.getNamespaceURI(),
                                                     source.getNodeName());
-         	    }
+                    }
                 }
                 else {
                     newnode = createAttribute(source.getNodeName());
@@ -1023,52 +1023,52 @@ public class CoreDocumentImpl
                         deep = true;
                     }
                 }
-		break;
+                break;
             }
 
-	    case TEXT_NODE: {
-		newnode = createTextNode(source.getNodeValue());
-		break;
+            case TEXT_NODE: {
+                newnode = createTextNode(source.getNodeValue());
+                break;
             }
 
-	    case CDATA_SECTION_NODE: {
-		newnode = createCDATASection(source.getNodeValue());
-		break;
+            case CDATA_SECTION_NODE: {
+                newnode = createCDATASection(source.getNodeValue());
+                break;
             }
 
-    	    case ENTITY_REFERENCE_NODE: {
-		newnode = createEntityReference(source.getNodeName());
+            case ENTITY_REFERENCE_NODE: {
+                newnode = createEntityReference(source.getNodeName());
                 // the subtree is created according to this doc by the method
                 // above, so avoid carrying over original subtree
                 deep = false;
-		break;
+                break;
             }
 
-    	    case ENTITY_NODE: {
-		Entity srcentity = (Entity)source;
-		EntityImpl newentity =
-		    (EntityImpl)createEntity(source.getNodeName());
-		newentity.setPublicId(srcentity.getPublicId());
-		newentity.setSystemId(srcentity.getSystemId());
-		newentity.setNotationName(srcentity.getNotationName());
+            case ENTITY_NODE: {
+                Entity srcentity = (Entity)source;
+                EntityImpl newentity =
+                    (EntityImpl)createEntity(source.getNodeName());
+                newentity.setPublicId(srcentity.getPublicId());
+                newentity.setSystemId(srcentity.getSystemId());
+                newentity.setNotationName(srcentity.getNotationName());
                 // Kids carry additional value,
                 // allow deep import temporarily
                 newentity.isReadOnly(false);
-		newnode = newentity;
-		break;
+                newnode = newentity;
+                break;
             }
 
-    	    case PROCESSING_INSTRUCTION_NODE: {
-		newnode = createProcessingInstruction(source.getNodeName(),
-						      source.getNodeValue());
-		break;
+            case PROCESSING_INSTRUCTION_NODE: {
+                newnode = createProcessingInstruction(source.getNodeName(),
+                                                      source.getNodeValue());
+                break;
             }
 
-    	    case COMMENT_NODE: {
-		newnode = createComment(source.getNodeValue());
-		break;
+            case COMMENT_NODE: {
+                newnode = createComment(source.getNodeValue());
+                break;
             }
-    	    
+            
             case DOCUMENT_TYPE_NODE: {
                 // unless this is used as part of cloning a Document
                 // forbid it for the sake of being compliant to the DOM spec
@@ -1108,21 +1108,21 @@ public class CoreDocumentImpl
             }
 
             case DOCUMENT_FRAGMENT_NODE: {
-		newnode = createDocumentFragment();
-		// No name, kids carry value
-		break;
+                newnode = createDocumentFragment();
+                // No name, kids carry value
+                break;
             }
 
-    	    case NOTATION_NODE: {
-		Notation srcnotation = (Notation)source;
-		NotationImpl newnotation =
-		    (NotationImpl)createNotation(source.getNodeName());
-		newnotation.setPublicId(srcnotation.getPublicId());
-		newnotation.setSystemId(srcnotation.getSystemId());
-		// Kids carry additional value
-		newnode = newnotation;
-		// No name, no value
-		break;
+            case NOTATION_NODE: {
+                Notation srcnotation = (Notation)source;
+                NotationImpl newnotation =
+                    (NotationImpl)createNotation(source.getNodeName());
+                newnotation.setPublicId(srcnotation.getPublicId());
+                newnotation.setSystemId(srcnotation.getSystemId());
+                // Kids carry additional value
+                newnode = newnotation;
+                // No name, no value
+                break;
             }
             case DOCUMENT_NODE : // Can't import document nodes
             default: {           // Unknown node type
@@ -1133,19 +1133,19 @@ public class CoreDocumentImpl
 
         callUserDataHandlers(source, newnode, UserDataHandler.NODE_IMPORTED);
 
-    	// If deep, replicate and attach the kids.
-    	if (deep) {
-	    for (Node srckid = source.getFirstChild();
+        // If deep, replicate and attach the kids.
+        if (deep) {
+            for (Node srckid = source.getFirstChild();
                  srckid != null;
                  srckid = srckid.getNextSibling()) {
-		newnode.appendChild(importNode(srckid, true, false,
+                newnode.appendChild(importNode(srckid, true, false,
                                                reversedIdentifiers));
-	    }
+            }
         }
         if (newnode.getNodeType() == Node.ENTITY_NODE) {
           ((NodeImpl)newnode).setReadOnly(true, true);
         }
-    	return newnode;
+        return newnode;
 
     } // importNode(Node,boolean,boolean,Hashtable):Node
 
@@ -1367,13 +1367,33 @@ public class CoreDocumentImpl
     public Element createElementNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-    	if (errorChecking && !isXMLName(qualifiedName)) {
+        if (errorChecking && !isXMLName(qualifiedName)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
         return new ElementNSImpl(this, namespaceURI, qualifiedName);
     }
 
+    /**
+     * Xerces-specific constructor. "localName" is passed in, so we don't need
+     * to create a new String for it.
+     * 
+     * @param namespaceURI The namespace URI of the element to
+     *                     create.
+     * @param qualifiedName The qualified name of the element type to
+     *                      instantiate.
+     * @param localName     The local name of the element to instantiate.
+     * @return Element A new Element object with the following attributes:
+     * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
+     *                      name contains an invalid character.
+     */
+    public Element createElementNS(String namespaceURI, String qualifiedName,
+                                   String localpart)
+        throws DOMException
+    {
+        return new ElementNSImpl(this, namespaceURI, qualifiedName, localpart);
+    }
+    
     /**
      * Introduced in DOM Level 2. <p>
      * Creates an attribute of the given qualified name and namespace URI.
@@ -1395,11 +1415,32 @@ public class CoreDocumentImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-    	if (errorChecking && !isXMLName(qualifiedName)) {
+        if (errorChecking && !isXMLName(qualifiedName)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
                                    "DOM002 Illegal character");
         }
         return new AttrNSImpl(this, namespaceURI, qualifiedName);
+    }
+
+    /**
+     * Xerces-specific constructor. "localName" is passed in, so we don't need
+     * to create a new String for it.
+     *
+     * @param namespaceURI  The namespace URI of the attribute to
+     *                      create. When it is null or an empty string,
+     *                      this method behaves like createAttribute.
+     * @param qualifiedName The qualified name of the attribute to
+     *                      instantiate.
+     * @param localName     The local name of the attribute to instantiate.
+     * @return Attr         A new Attr object.
+     * @throws DOMException INVALID_CHARACTER_ERR: Raised if the specified
+                            name contains an invalid character.
+     */
+    public Attr createAttributeNS(String namespaceURI, String qualifiedName,
+                                  String localName)
+        throws DOMException
+    {
+        return new AttrNSImpl(this, namespaceURI, qualifiedName, localName);
     }
 
     /**
@@ -1467,7 +1508,7 @@ public class CoreDocumentImpl
             parent.getNodeType() == Node.DOCUMENT_TYPE_NODE) {
             return child.getNodeType() == Node.ELEMENT_NODE;
         }
-    	return 0 != (kidOK[parent.getNodeType()] & 1 << child.getNodeType());
+        return 0 != (kidOK[parent.getNodeType()] & 1 << child.getNodeType());
     }
 
     /**

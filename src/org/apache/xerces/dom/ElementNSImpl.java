@@ -89,16 +89,16 @@ public class ElementNSImpl
     /** DOM2: localName. */
     protected String localName;
 
-    
+
     /**
      * DOM2: Constructor for Namespace implementation.
      */
     protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
-			    String namespaceURI,
-			    String qualifiedName) 
+                            String namespaceURI,
+                            String qualifiedName) 
         throws DOMException
     {
-    	super(ownerDocument, qualifiedName);
+        super(ownerDocument, qualifiedName);
 
         int index = qualifiedName.indexOf(':');
         String prefix;
@@ -128,13 +128,25 @@ public class ElementNSImpl
                 }
             }
         }
-	this.namespaceURI = namespaceURI;
+        this.namespaceURI = namespaceURI;
+    }
+
+    // when local name is known
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
+                            String namespaceURI, String qualifiedName,
+                            String localName)
+        throws DOMException
+    {
+        super(ownerDocument, qualifiedName);
+
+        this.localName = localName;
+        this.namespaceURI = namespaceURI;
     }
 
     // for DeferredElementImpl
     protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
-			    String value) {
-	super(ownerDocument, value);
+                            String value) {
+        super(ownerDocument, value);
     }
 
     //
@@ -204,7 +216,7 @@ public class ElementNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	if (ownerDocument().errorChecking) {
+        if (ownerDocument().errorChecking) {
             if (isReadOnly()) {
                 throw new DOMException(
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
@@ -212,7 +224,7 @@ public class ElementNSImpl
             }
             if (!CoreDocumentImpl.isXMLName(prefix)) {
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "DOM002 Illegal character");
+                                       "DOM002 Illegal character");
             }
             if (namespaceURI == null || prefix.indexOf(':') >=0) {
                   throw new DOMException(DOMException.NAMESPACE_ERR, 
@@ -236,7 +248,7 @@ public class ElementNSImpl
      * Returns the local part of the qualified name of this node.
      * @since WD-DOM-Level-2-19990923
      */
-    public String             getLocalName()
+    public String getLocalName()
     {
         if (needsSyncData()) {
             synchronizeData();

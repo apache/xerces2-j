@@ -95,10 +95,10 @@ public class AttrNSImpl
      * DOM2: Constructor for Namespace implementation.
      */
     protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
-			 String namespaceURI, 
-			 String qualifiedName) {
+                         String namespaceURI, 
+                         String qualifiedName) {
 
-    	super(ownerDocument, qualifiedName);
+        super(ownerDocument, qualifiedName);
 
         int index = qualifiedName.indexOf(':');
         String prefix;
@@ -111,7 +111,7 @@ public class AttrNSImpl
                 (namespaceURI == null || !namespaceURI.equals(xmlnsURI))) {
 
                 throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
+                                       "DOM003 Namespace error");
             }
         }
         else {
@@ -140,13 +140,24 @@ public class AttrNSImpl
                 }
             }
         }
-	this.namespaceURI = namespaceURI;
+        this.namespaceURI = namespaceURI;
     } 
 
+    // when local name is known
+    protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
+                         String namespaceURI, 
+                         String qualifiedName,
+                         String localName) {
+        super(ownerDocument, qualifiedName);
+        
+        this.localName = localName;
+        this.namespaceURI = namespaceURI;
+    }
+    
     // for DeferredAttrImpl
     protected AttrNSImpl(CoreDocumentImpl ownerDocument, 
-			 String value) {
-	super(ownerDocument, value);
+                         String value) {
+        super(ownerDocument, value);
     }
 
     //
@@ -174,7 +185,7 @@ public class AttrNSImpl
         // REVIST: This code could/should be done at a lower-level, such that
         // the namespaceURI is set properly upon creation. However, there still
         // seems to be some DOM spec interpretation grey-area.
-	return namespaceURI;
+        return namespaceURI;
     }
     
     /** 
@@ -214,7 +225,7 @@ public class AttrNSImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-	if (ownerDocument().errorChecking) {
+        if (ownerDocument().errorChecking) {
             if (isReadOnly()) {
                 throw new DOMException(
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
@@ -222,11 +233,11 @@ public class AttrNSImpl
             }
             if (!CoreDocumentImpl.isXMLName(prefix)) {
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "DOM002 Illegal character");
+                                       "DOM002 Illegal character");
             }
             if (namespaceURI == null || prefix.indexOf(':') >=0) {
                 throw new DOMException(DOMException.NAMESPACE_ERR, 
-				       "DOM003 Namespace error");
+                                       "DOM003 Namespace error");
             } else if (prefix != null) {
                 if (prefix.equals("xmlns")) {
                     if (!namespaceURI.equals(xmlnsURI)){
@@ -245,7 +256,7 @@ public class AttrNSImpl
             }
         }
         // update node name with new qualifiedName
-	name = prefix + ":" + localName;
+        name = prefix + ":" + localName;
     }
                                         
     /** 
