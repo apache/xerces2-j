@@ -156,7 +156,9 @@ Copyright:
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
-           optimize="${optimize}" />
+           optimize="${optimize}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
   </target>
 
   <!-- =================================================================== -->
@@ -181,7 +183,9 @@ Copyright:
            excludes="**/DOMAddLines.java "
            destdir="${build.dest}"
            classpath="${build.dir}/classes"
-           debug="${debug}"/>
+           debug="${debug}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
   </target>
 
   <!-- =================================================================== -->
@@ -195,7 +199,9 @@ Copyright:
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes:./tools/junit.jar"
-           debug="${debug}"/>
+           debug="${debug}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
   </target>
 
   <!-- =================================================================== -->
