@@ -1003,7 +1003,8 @@ public class TraverseSchema implements
 
         if ( nameProperty.equals("")) { // anonymous simpleType
             newSimpleTypeName = fStringPool.addSymbol(
-                               "http://www.apache.org/xml/xerces/internalDatatype"+fSimpleTypeAnonCount++ );   
+                "#S#"+fSimpleTypeAnonCount++ );   
+                               //"http://www.apache.org/xml/xerces/internalDatatype"+fSimpleTypeAnonCount++ );   
             } else 
             newSimpleTypeName       = fStringPool.addSymbol( nameProperty );
 
@@ -1020,13 +1021,17 @@ public class TraverseSchema implements
                 prefix = baseTypeQNameProperty.substring(0,colonptr);
                 localpart = baseTypeQNameProperty.substring(colonptr+1);
             }
+            String uri = resolvePrefixToURI(prefix);
 
-            baseValidator = fDatatypeRegistry.getDatatypeValidator( localpart );
+            baseValidator = getDatatypeValidator(uri, localpart);
+
             if (baseValidator == null) {
                 Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                 if (baseTypeNode != null) {
                     traverseSimpleTypeDecl( baseTypeNode );
-                    baseValidator = fDatatypeRegistry.getDatatypeValidator(localpart);
+                    
+                    baseValidator = getDatatypeValidator(uri, localpart);
+                    
                     if (baseValidator == null) {
                         reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
                         new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
@@ -1105,9 +1110,14 @@ public class TraverseSchema implements
         }
 
         // create & register validator for "generated" type if it doesn't exist
+        
+        String nameOfType = fStringPool.toString( newSimpleTypeName);
+        if (fTargetNSURIString.length () != 0) {
+            nameOfType = fTargetNSURIString+","+nameOfType;
+        }
+                 
+
         try {
-           String nameOfType = 
-                            fStringPool.toString( newSimpleTypeName );
 
            DatatypeValidator newValidator =
                  fDatatypeRegistry.getDatatypeValidator( nameOfType );
@@ -1125,7 +1135,7 @@ public class TraverseSchema implements
                //e.printStackTrace(System.err);
                reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
-        return newSimpleTypeName;
+        return fStringPool.addSymbol(nameOfType);
     }
 
     /*
@@ -1197,6 +1207,21 @@ public class TraverseSchema implements
             reportGenericSchemaError("Only value of strict supported for processContents attribute");
         }
         return anyIndex;
+    }
+
+
+    public DatatypeValidator getDatatypeValidator(String uri, String localpart) {
+
+        DatatypeValidator dv = null;
+
+        if (uri.length()==0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+            dv = fDatatypeRegistry.getDatatypeValidator( localpart );
+        }
+        else {
+            dv = fDatatypeRegistry.getDatatypeValidator( uri+","+localpart );
+        }
+
+        return dv;
     }
 
     /*
@@ -1403,7 +1428,7 @@ public class TraverseSchema implements
      */
     
     //REVISIT: TO DO, base and derivation ???
-    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception{ 
+    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception { 
         String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
         String base = complexTypeDecl.getAttribute(SchemaSymbols.ATT_BASE);
         String blockSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK );
@@ -1487,8 +1512,7 @@ public class TraverseSchema implements
                 // check if the base type is from the same Schema;
                 if ( ! typeURI.equals(fTargetNSURIString) 
                      && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
-                     && ! (typeURI.length() == 0)
-                     )  /*REVISIT, !!!! a hack: for schema that has no target namespace, e.g. personal-schema.xml*/{
+                     && typeURI.length() != 0 )  /*REVISIT, !!!! a hack: for schema that has no target namespace, e.g. personal-schema.xml*/{
                     baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
                     if (baseTypeInfo == null) {
                         baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
@@ -1512,7 +1536,8 @@ public class TraverseSchema implements
                     // if not found, 2 possibilities: 1: ComplexType in question has not been compiled yet;
                     //                                2: base is SimpleTYpe;
                     if (baseTypeInfo == null) {
-                        baseTypeValidator = fDatatypeRegistry.getDatatypeValidator(localpart);
+                            baseTypeValidator = getDatatypeValidator(typeURI, localpart);
+
                         if (baseTypeValidator == null) {
                             baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                             if (baseTypeNode != null) {
@@ -1524,7 +1549,7 @@ public class TraverseSchema implements
                                 baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                                 if (baseTypeNode != null) {
                                     baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
-                                    simpleTypeValidator = baseTypeValidator = fDatatypeRegistry.getDatatypeValidator(localpart);
+                                    simpleTypeValidator = baseTypeValidator = getDatatypeValidator(typeURI, localpart);
                                     if (simpleTypeValidator == null) {
                                         //TO DO: signal error here.
                                     }
@@ -1657,10 +1682,10 @@ public class TraverseSchema implements
         if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
             //TO DO
             if (base.length() == 0) {
-                simpleTypeValidator = baseTypeValidator = fDatatypeRegistry.getDatatypeValidator(SchemaSymbols.ATTVAL_STRING);
+                simpleTypeValidator = baseTypeValidator = getDatatypeValidator("", SchemaSymbols.ATTVAL_STRING);
             }
-            else if (fDatatypeRegistry.getDatatypeValidator(base) == null 
-                     && baseTypeInfo.datatypeValidator==null ) // must be datatype
+            else if ( baseTypeValidator == null 
+                      && baseTypeInfo != null && baseTypeInfo.datatypeValidator==null ) // must be datatype
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
                                           new Object [] { base }); //REVISIT check forward refs
             //handle datatypes
@@ -1833,7 +1858,7 @@ public class TraverseSchema implements
             if ( ! ( seeOtherParticle || seeAll ) && (elementContent || mixedContent)
                  && base.length() == 0 ) {
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE;
-                simpleTypeValidator = fDatatypeRegistry.getDatatypeValidator(SchemaSymbols.ATTVAL_STRING);
+                simpleTypeValidator = getDatatypeValidator("", SchemaSymbols.ATTVAL_STRING);
                 // REVISIT: Localize
                 reportGenericSchemaError ( " complexType '"+typeName+"' with a elementOnly or mixed content "
                                            +"need to have at least one particle child");
@@ -2285,20 +2310,26 @@ public class TraverseSchema implements
             }
             localpart = fStringPool.toString(dataTypeSymbol);
 
+            dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+
         } else {
 
             String prefix = "";
             localpart = datatype;
+            dataTypeSymbol = fStringPool.addSymbol(localpart);
+
             int  colonptr = datatype.indexOf(":");
             if ( colonptr > 0) {
                 prefix = datatype.substring(0,colonptr);
                 localpart = datatype.substring(colonptr+1);
             }
             String typeURI = resolvePrefixToURI(prefix);
-            dataTypeSymbol = fStringPool.addSymbol(localpart);
 
             if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
                  || typeURI.length()==0) {
+
+                dv = getDatatypeValidator("", localpart);
+
                 if (localpart.equals("ID")) {
                     attType = XMLAttributeDecl.TYPE_ID;
                 } else if (localpart.equals("IDREF")) {
@@ -2321,22 +2352,31 @@ public class TraverseSchema implements
                 }
                 else {
                     attType = XMLAttributeDecl.TYPE_SIMPLE;
+                    if (dv == null && typeURI.length() == 0) {
+                        Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                        if (topleveltype != null) {
+                            traverseSimpleTypeDecl( topleveltype );
+                            dv = getDatatypeValidator(typeURI, localpart);
+                        }else {
+                            // REVISIT: Localize
+                            reportGenericSchemaError("simpleType not found : " + localpart);
+                        }
+                    }
                 }
-            } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
-                //REVISIT check against list of validators to ensure valid type name
+            } else {
 
                 // check if the type is from the same Schema
 
-                if (!typeURI.equals(fTargetNSURIString) && typeURI.length() != 0 ) {
-                    dv = getTypeValidatorFromNS(typeURI, localpart);
-                    if (dv == null) {
-                        //TO DO: report error here;
-                        System.out.println("Counld not find simpleType " +localpart 
-                                           + " in schema " + typeURI);
+                dv = getDatatypeValidator(typeURI, localpart);
+                if (dv == null && typeURI.equals(fTargetNSURIString) ) {
+                    Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                    if (topleveltype != null) {
+                        traverseSimpleTypeDecl( topleveltype );
+                        dv = getDatatypeValidator(typeURI, localpart);
+                    }else {
+                        // REVISIT: Localize
+                        reportGenericSchemaError("simpleType not found : " + localpart);
                     }
-                }
-                else {
-                    dv = fDatatypeRegistry.getDatatypeValidator(localpart);
                 }
 
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
@@ -2353,25 +2393,9 @@ public class TraverseSchema implements
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
 
-        if(dv==null){
-            dv = fDatatypeRegistry.getDatatypeValidator(localpart); 
-            if ( dv == null )  {
-                 Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
-                 if (topleveltype != null) {
-                      traverseSimpleTypeDecl( topleveltype );
-                      dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-                            //   TO DO:  the Default and fixed attribute handling should be here.
-                      }else {
-                          // REVISIT: Localize
-                      reportGenericSchemaError("simpleType not found : " + localpart);
-                      }
-                 }
-        }
-
-
         if (dv == null) {
             // REVISIT: Localize
-            reportGenericSchemaError("null validator for datatype : " 
+            reportGenericSchemaError("could not resolve the type or get a null validator for datatype : " 
                                      + fStringPool.toString(dataTypeSymbol));
         }
 
@@ -2850,7 +2874,11 @@ public class TraverseSchema implements
  
         }
         
-        //ComplexTypeInfo typeInfo = new ComplexTypeInfo();
+
+        //
+        // resolving the type for this element right here
+        //
+
         ComplexTypeInfo typeInfo = null;
 
         // element has a single child element, either a datatype or a type, null if primitive
@@ -2955,7 +2983,7 @@ public class TraverseSchema implements
             else {
                 typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
                 if (typeInfo == null) {
-                    dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                    dv = getDatatypeValidator(typeURI, localpart);
                     if (dv == null )
                     if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
                         && !fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) 
@@ -2990,7 +3018,7 @@ public class TraverseSchema implements
                             topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
                             if (topleveltype != null) {
                                 typeNameIndex = traverseSimpleTypeDecl( topleveltype );
-                                dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                                dv = getDatatypeValidator(typeURI, localpart);
                                 //   TO DO:  the Default and fixed attribute handling should be here.
                             }
                             else {
@@ -3046,6 +3074,35 @@ public class TraverseSchema implements
             contentSpecType = XMLElementDecl.TYPE_SIMPLE;
         }
 
+        //
+        // key/keyref/unique processing\
+        //
+
+        child = XUtil.getFirstChildElement(elementDecl);
+        Vector idConstraints = null;
+        
+        while (child != null){
+            String childName = child.getNodeName();
+           /**** 
+            if ( childName.equals(SchemaSymbols.ELT_KEY) ) { 
+                traverseKey(child, idCnstrt);
+            }
+            else if ( childName.equals(SchemaSymbols.ELT_KEYREF) ) {
+                traverseKeyRef(child, idCnstrt);
+            }
+            else if ( childName.equals(SchemaSymbols.ELT_UNIQUE) ) {
+                traverseUnique(child, idCnstrt);
+            }
+
+            if (idCnstrt!= null) {
+                if (idConstraints != null) {
+                    idConstraints = new Vector();
+                }
+                idConstraints.addElement(idCnstrt);
+            }
+            /****/
+            child = XUtil.getNextSiblingElement(child);
+        }
         
         //
         // Create element decl
@@ -3204,6 +3261,9 @@ public class TraverseSchema implements
     }
     
     DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {
+        // The following impl is for the case where every Schema Grammar has its own instance of DatatypeRegistry.
+        // Now that we have only one DataTypeRegistry used by all schemas. this is not needed.
+        /*****
         Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
         if (grammar != null && grammar instanceof SchemaGrammar) {
             SchemaGrammar sGrammar = (SchemaGrammar) grammar;
@@ -3214,6 +3274,8 @@ public class TraverseSchema implements
             reportGenericSchemaError("could not resolve URI : " + newSchemaURI + " to a SchemaGrammar in getTypeValidatorFromNS");
         }
         return null;
+        /*****/
+        return getDatatypeValidator(newSchemaURI, localpart);
     }
 
     ComplexTypeInfo getTypeInfoFromNS(String newSchemaURI, String localpart) throws Exception {

@@ -100,6 +100,7 @@ import org.apache.xerces.validators.schema.SchemaMessageProvider;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.schema.TraverseSchema;
 
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 
@@ -222,6 +223,7 @@ public final class XMLValidator
     private int fXsiPrefix = - 1;
     private int fXsiURI = -2; 
     private int fXsiTypeAttValue = -1;
+    private DatatypeValidator fXsiTypeValidator = null;
 
     private Grammar fGrammar = null;
     private int fGrammarNameSpaceIndex = -1;
@@ -1331,6 +1333,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fCurrentSchemaURI = -1;
         fEmptyURI = - 1; 
         fXsiPrefix = - 1;
+        fXsiTypeValidator = null;
 
         fGrammar = null;
         fGrammarNameSpaceIndex = -1;
@@ -2331,8 +2334,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
 
                 Hashtable complexRegistry = ((SchemaGrammar)fGrammar).getComplexTypeRegistry();
-                if (complexRegistry==null) {
-                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, fErrorReporter.getLocator().getSystemId()
+                DatatypeValidatorFactoryImpl dataTypeReg = ((SchemaGrammar)fGrammar).getDatatypeRegistry();
+                if (complexRegistry==null || dataTypeReg == null) {
+                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                              XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                              fErrorReporter.getLocator().getSystemId()
                                        +" line"+fErrorReporter.getLocator().getLineNumber()
                                        +", canot resolve xsi:type = " + xsiType+"  ---2");
                 }
@@ -2345,7 +2351,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     //      the SchemaGrammar.
 
                     if (typeInfo==null) {
-                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "unsupported case in xsi:type handling");
+                        if (uri.length() == 0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
+                            fXsiTypeValidator = dataTypeReg.getDatatypeValidator(localpart);
+                        }
+                        else 
+                            fXsiTypeValidator = dataTypeReg.getDatatypeValidator(uri+","+localpart);
+                        if( fXsiTypeValidator == null ) 
+                            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
+                                                      XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                                      "unresolved type : "+uri+","+localpart+" found  in xsi:type handling");
                     }
                     else 
                         elementIndex = typeInfo.templateElementIndex;
@@ -2811,6 +2825,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 fGrammar.getElementDecl(elementIndex, fTempElementDecl);
 
                 DatatypeValidator dv = fTempElementDecl.datatypeValidator;
+
+                // If there is xsi:type validator, substitute it.
+                if ( fXsiTypeValidator != null ) {
+                    dv = fXsiTypeValidator;
+                    fXsiTypeValidator = null;
+                }
+
                 if (dv == null) {
                     System.out.println("Internal Error: this element have a simpletype "+
                                        "but no datatypevalidator was found, element "+fTempElementDecl.name

@@ -108,6 +108,7 @@ public final  class SchemaSymbols {
     public static final String ELT_SELECTOR =  "selector";
     public static final String ELT_SEQUENCE =  "sequence";
     public static final String ELT_SIMPLETYPE =  "simpleType";
+    public static final String ELT_UNIQUE = "unique";
     public static final String ATT_ABSTRACT =  "abstract";
     public static final String ATT_ATTRIBUTEFORMDEFAULT =  "attributeFormDefault";
     public static final String ATT_BASE =  "base";
