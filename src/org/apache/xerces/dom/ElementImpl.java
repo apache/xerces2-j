@@ -662,8 +662,8 @@ public class ElementImpl
 			attributes.setNamedItemNS(newAttr);
 		}
 		else {
-            // change prefix and value
-            ((AttrNSImpl)newAttr).name= prefix+":"+localName;
+            // change prefix and value                
+            ((AttrNSImpl)newAttr).name= (prefix!=null)?(prefix+":"+localName):localName;
 			newAttr.setNodeValue(value);
 		}
 
