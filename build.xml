@@ -186,6 +186,12 @@ Copyright:
   <!-- Compiles the source directory                                       -->
   <!-- =================================================================== -->
   <target name="compile" depends="prepare-src">
+    <copy todir="${build.dest}">
+      <fileset dir="${build.src}">
+        <include name="**/*.res"/>
+      </fileset>
+    </copy>
+
     <javac srcdir="${build.src}"
            excludes="**/RevalidatingDOMParser.java "
            destdir="${build.dest}"

@@ -115,8 +115,7 @@ public final class HTMLdtd
      * Locates the HTML entities file that is loaded upon initialization.
      * This file is a resource loaded with the default class loader.
      */
-    private static final String     ENTITIES_RESOURCE = "HTMLEntities.res";
-
+    private static final String     ENTITIES_RESOURCE = "org/apache/xml/serialize/HTMLEntities.res";
 
     /**
      * Only opening tag should be printed.
@@ -391,7 +390,14 @@ public final class HTMLdtd
         try {
             _byName = new Hashtable();
             _byChar = new Hashtable();
-            is = HTMLdtd.class.getResourceAsStream( ENTITIES_RESOURCE );
+
+            ClassLoader cl=HTMLdtd.class.getClassLoader();
+            if( cl == null ) {
+                is=ClassLoader.getSystemResourceAsStream( ENTITIES_RESOURCE );
+            } else {
+                is=cl.getResourceAsStream( ENTITIES_RESOURCE );
+            }
+
             if ( is == null )
                 throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not be found.\n" + ENTITIES_RESOURCE);
             reader = new BufferedReader( new InputStreamReader( is ) );
