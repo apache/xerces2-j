@@ -59,7 +59,6 @@ package org.apache.xerces.impl;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Stack;
 
 import org.apache.xerces.impl.XMLEntityManager;
@@ -83,7 +82,6 @@ import org.apache.xerces.xni.XMLString;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.helpers.NamespaceSupport;
 
 /**
  * This class is responsible for scanning XML document structure
@@ -236,11 +234,6 @@ public class XMLDocumentScanner
     /** Namespaces. */
     protected boolean fNamespaces;
 
-    // namespaces
-
-    /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
-
     // dispatchers
 
     /** Active dispatcher. */
@@ -293,12 +286,6 @@ public class XMLDocumentScanner
 
     /** Symbol: "apos". */
     private String fAposSymbol;
-
-    /** Symbol: "xml". */
-    private String fXmlSymbol;
-
-    /** Symbol: "xmlns". */
-    private String fXmlnsSymbol;
 
     /** Symbol: "CDATA". */
     private String fCDATASymbol;
@@ -371,7 +358,6 @@ public class XMLDocumentScanner
         // initialize vars
         fEntityStack.removeAllElements();
         fEntityDepth = 0;
-        fNamespaceSupport.reset();
 
         fElementDepth = 0;
         fCurrentElement = null;
@@ -387,8 +373,6 @@ public class XMLDocumentScanner
         fGtSymbol = fSymbolTable.addSymbol("gt");
         fQuotSymbol = fSymbolTable.addSymbol("quot");
         fAposSymbol = fSymbolTable.addSymbol("apos");
-        fXmlSymbol = fSymbolTable.addSymbol("xml");
-        fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
         fCDATASymbol = fSymbolTable.addSymbol("CDATA");
 
         // setup dispatcher
@@ -918,11 +902,6 @@ public class XMLDocumentScanner
 
         } while (true);
 
-        // bind namespaces
-        if (fNamespaces) {
-            bindNamespaces(fElementQName, fAttributes);
-        }
-
         // push element stack
         fCurrentElement = fElementStack.pushElement(fElementQName);
 
@@ -1283,89 +1262,6 @@ public class XMLDocumentScanner
         }
     } // handleCharacter(char)
 
-    /**
-     * Binds the namespaces. This method will handle calling the
-     * document handler to start the prefix mappings.
-     * <p>
-     * <strong>Note:</strong> This method makes use of the
-     * fAttributeQName variable. Any contents of the variable will
-     * be destroyed. Caller should copy the values out of this
-     * temporary variable before calling this method.
-     *
-     * @param element    The element name.
-     * @param attributes The attributes for the element.
-     *
-     * @throws SAXException Thrown if handler throws SAX exception upon
-     *                      notification of start prefix mapping.
-     */
-    protected void bindNamespaces(QName element, XMLAttributes attributes)
-        throws SAXException {
-
-        // add new namespace context
-        fNamespaceSupport.pushContext();
-
-        // search for new namespace bindings
-        int length = attributes.getLength();
-        for (int i = 0; i < length; i++) {
-            String rawname = attributes.getQName(i);
-            if (rawname.startsWith("xmlns")) {
-                // declare prefix in context
-                String prefix = rawname.length() > 5
-                              ? attributes.getLocalName(i) : "";
-                String uri = attributes.getValue(i);
-                fNamespaceSupport.declarePrefix(prefix, uri);
-
-                // call handler
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.startPrefixMapping(prefix, uri);
-                }
-            }
-        }
-
-        // bind the element
-        String prefix = element.prefix != null
-                      ? element.prefix : "";
-        element.uri = fNamespaceSupport.getURI(prefix);
-        if (element.prefix == null && element.uri != null) {
-            element.prefix = fSymbolTable.addSymbol("");
-        }
-        if (element.prefix != null && element.uri == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                       "ElementPrefixUnbound",
-                                       new Object[]{element.prefix, element.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-
-        // bind the attributes
-        for (int i = 0; i < length; i++) {
-            attributes.getName(i, fAttributeQName);
-            String arawname = fAttributeQName.rawname;
-            String aprefix = fAttributeQName.prefix != null 
-                           ? fAttributeQName.prefix : "";
-            if (aprefix == fXmlSymbol) {
-                fAttributeQName.uri = NamespaceSupport.XMLNS;
-                attributes.setName(i, fAttributeQName);
-            }
-            else if (arawname != fXmlnsSymbol && !arawname.startsWith("xmlns:")) {
-                if (fAttributeQName.prefix != null) {
-                    fAttributeQName.uri = fNamespaceSupport.getURI(fAttributeQName.prefix);
-                    if (fAttributeQName.uri == null) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                                   "AttributePrefixUnbound",
-                                                   new Object[]{fAttributeQName.prefix, fAttributeQName.rawname},
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                }
-                else {
-                    // attributes with no prefix get element's uri
-                    fAttributeQName.uri = element.uri;
-                }
-                attributes.setName(i, fAttributeQName);
-            }
-        }
-
-    } // bindNamespaces(QName,XMLAttributes)
-
     /** 
      * Handles the end element. This method will make sure that
      * the end element name matches the current element and notify
@@ -1402,21 +1298,6 @@ public class XMLDocumentScanner
         // call handler
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
-        }
-
-        // end prefix mappings
-        if (fNamespaces) {
-            // call handler
-            if (fDocumentHandler != null) {
-                Enumeration prefixes = fNamespaceSupport.getDeclaredPrefixes();
-                while (prefixes.hasMoreElements()) {
-                    String prefix = (String)prefixes.nextElement();
-                    fDocumentHandler.endPrefixMapping(prefix);
-                }
-            }
-
-            // pop context
-            fNamespaceSupport.popContext();
         }
 
         return fElementDepth;
