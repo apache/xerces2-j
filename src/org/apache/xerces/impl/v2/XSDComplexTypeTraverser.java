@@ -392,7 +392,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
                                    schemaDoc,grammar);
           mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
-          if (!typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp)) {
+          String error = typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp);
+          if (error != null) {
+            reportGenericSchemaError("ComplexType " + typeName + ": " + error);
             throw new ComplexTypeRecoverableError();
           }
 
@@ -549,7 +551,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           }
 
           mergeAttributes(baseType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
-          if (!typeInfo.fAttrGrp.validRestrictionOf(baseType.fAttrGrp)) {
+          String error = typeInfo.fAttrGrp.validRestrictionOf(baseType.fAttrGrp);
+          if (error != null) {
+            reportGenericSchemaError("ComplexType " + typeName + ": " + error);
             throw new ComplexTypeRecoverableError();
           }
           
@@ -801,41 +805,4 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
       }
       return fErrorContent;
     }
-
-    // HELP FUNCTIONS:
-    //
-    // 1. processAttributes
-    // 2. processBasetTypeInfo
-    // 3. AWildCardIntersection
-    // 4. parseBlockSet - should be here or in SchemaHandler??
-    // 5. parseFinalSet - also used by traverseSimpleType, thus should be in SchemaHandler
-    // 6. handleComplexTypeError
-    // and more...
-
-/*
-    REVISIT: something done in AttriubteTraverser in Xerces1. Should be done
-             here in complexTypeTraverser.
-
-        // add attribute to attr decl pool in fSchemaGrammar,
-        if (typeInfo != null) {
-
-            // check that there aren't duplicate attributes
-            int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, attQName);
-            if (temp > -1) {
-              //Error - ct-props-correct.4:  
-            }
-
-            // check that there aren't multiple attributes with type derived from ID
-            if (dvIsDerivedFromID) {
-               if (typeInfo.containsAttrTypeID())  {
-                 // Error  - "ct-props-correct.5" 
-               }
-               typeInfo.setContainsAttrTypeID();
-            }
-            fSchemaGrammar.addAttDeDecl(typeInfo.templateElementIndex,
-                                        attQName, attType,
-                                        dataTypeSymbol, attValueAndUseType,
-                                        fStringPool.toString( attValueConstraint), dv, attIsList);
-        }
-*/
 }
