@@ -311,7 +311,7 @@ extends XMLSerializer {
                     modifyDOMError(
                         msg,
                         DOMError.SEVERITY_FATAL_ERROR,
-                        fCurrentNode);
+                        null, fCurrentNode);
                     boolean continueProcess =
                         fDOMErrorHandler.handleError(fDOMError);
                     if (!continueProcess) {
@@ -327,7 +327,7 @@ extends XMLSerializer {
                     modifyDOMError(
                         msg,
                         DOMError.SEVERITY_WARNING,
-                        fCurrentNode);
+                        null, fCurrentNode);
                     fDOMErrorHandler.handleError(fDOMError);
                 }
                 }

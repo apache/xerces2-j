@@ -499,6 +499,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.serialize((Element)wnode);
             else
                 return null;
+        } catch (LSException lse){
+            throw lse;
         } catch (RuntimeException e) {
             if (e == DOMNormalizer.abort){
                 // stopped at user request

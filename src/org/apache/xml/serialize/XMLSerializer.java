@@ -742,7 +742,7 @@ extends BaseMarkupSerializer {
                         if (fDOMErrorHandler != null) {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.XML_DOMAIN,"CantBindXMLNS",null );
-                            modifyDOMError(msg,  DOMError.SEVERITY_ERROR, attr);
+                            modifyDOMError(msg,  DOMError.SEVERITY_ERROR, null, attr);
                             boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                             if (!continueProcess) {
                                 // stop the namespace fixup and validation
@@ -859,7 +859,7 @@ extends BaseMarkupSerializer {
                         String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN, "NullLocalElementName", 
                             new Object[]{elem.getNodeName()});
-                        modifyDOMError(msg,DOMError.SEVERITY_ERROR, elem);
+                        modifyDOMError(msg,DOMError.SEVERITY_ERROR, null, elem);
                         boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                         // REVISIT: should we terminate upon request?
                         if (!continueProcess) {
@@ -1032,7 +1032,7 @@ extends BaseMarkupSerializer {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
                                 "NullLocalAttrName", new Object[]{attr.getNodeName()});                            
-                            modifyDOMError(msg, DOMError.SEVERITY_ERROR, attr);
+                            modifyDOMError(msg, DOMError.SEVERITY_ERROR, null, attr);
                             boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                             if (!continueProcess) {
                                 // stop the namespace fixup and validation

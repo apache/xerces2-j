@@ -64,6 +64,7 @@ import org.w3c.dom.Entity;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Notation;
+import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSSerializerFilter;
 import org.w3c.dom.traversal.NodeFilter;
 import org.xml.sax.ContentHandler;
@@ -1412,23 +1413,24 @@ public abstract class BaseMarkupSerializer
                 if (fDOMErrorHandler != null) {
                     // REVISIT: this means that if DOM Error handler is not registered we don't report any
                     // fatal errors and might serialize not wellformed document
-                    if ((features & DOMSerializerImpl.SPLITCDATA) == 0
-                        && (features & DOMSerializerImpl.WELLFORMED) == 0) {
-                        // issue fatal error
-                        String msg =
-                            DOMMessageFormatter.formatMessage(
-                                DOMMessageFormatter.SERIALIZER_DOMAIN,
-                                "EndingCDATA",
-                                null);
-                        modifyDOMError(
-                            msg,
-                            DOMError.SEVERITY_FATAL_ERROR,
-                            fCurrentNode);
-                        boolean continueProcess =
+                    if ((features & DOMSerializerImpl.SPLITCDATA) == 0) {
+                        String msg = DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.SERIALIZER_DOMAIN,
+                            "EndingCDATA",
+                            null);    
+                        if ((features & DOMSerializerImpl.WELLFORMED) != 0) {
+                            // issue fatal error
+                            modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR, "wf-invalid-character", fCurrentNode);
                             fDOMErrorHandler.handleError(fDOMError);
-                        if (!continueProcess) {
-                            throw new IOException();
-                        }
+                            throw new LSException(LSException.SERIALIZE_ERR, msg);
+                        } 
+                        else {
+                            // issue error
+                            modifyDOMError(msg, DOMError.SEVERITY_ERROR, "cdata-section-not-splitted", fCurrentNode);
+                            if (!fDOMErrorHandler.handleError(fDOMError)) {
+                                throw new LSException(LSException.SERIALIZE_ERR, msg);
+                            }
+                        }                        
                     } else {
                         // issue warning
                         String msg =
@@ -1439,7 +1441,7 @@ public abstract class BaseMarkupSerializer
                         modifyDOMError(
                             msg,
                             DOMError.SEVERITY_WARNING,
-                            fCurrentNode);
+                            null, fCurrentNode);
                         fDOMErrorHandler.handleError(fDOMError);
                     }
                 }
@@ -1811,11 +1813,13 @@ public abstract class BaseMarkupSerializer
      * 
      * @param message
      * @param severity
+     * @param type
      * @return a DOMError
      */
-    protected DOMError modifyDOMError(String message, short severity, Node node){
+    protected DOMError modifyDOMError(String message, short severity, String type, Node node){
             fDOMError.reset();
             fDOMError.fMessage = message;
+            fDOMError.fType = type;
             fDOMError.fSeverity = severity;
             fDOMError.fLocator = new DOMLocatorImpl(-1, -1, -1, node, null);
             return fDOMError;
@@ -1825,7 +1829,7 @@ public abstract class BaseMarkupSerializer
 
     protected void fatalError(String message) throws IOException{
         if (fDOMErrorHandler != null) {
-            modifyDOMError(message, DOMError.SEVERITY_FATAL_ERROR, fCurrentNode);
+            modifyDOMError(message, DOMError.SEVERITY_FATAL_ERROR, null, fCurrentNode);
             fDOMErrorHandler.handleError(fDOMError);
         } 
         else {
