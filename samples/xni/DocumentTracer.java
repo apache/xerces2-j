@@ -628,7 +628,8 @@ public class DocumentTracer
     } // startDTD(XMLLocator)
 
     /** Start external subset. */
-    public void startExternalSubset(Augmentations augs) throws XNIException {
+    public void startExternalSubset(XMLResourceIdentifier identifier, 
+                                    Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("startExternalSubset(");
