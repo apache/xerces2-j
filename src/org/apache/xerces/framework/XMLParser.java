@@ -127,6 +127,7 @@ public abstract class XMLParser
         "http://apache.org/xml/features/validation/schema-full-checking",
         "http://apache.org/xml/features/validation/dynamic",
         "http://apache.org/xml/features/validation/default-attribute-values",
+        "http://apache.org/xml/features/validation/normalize-element-contents",
         "http://apache.org/xml/features/validation/validate-content-models",
         "http://apache.org/xml/features/validation/validate-datatypes",
         "http://apache.org/xml/features/validation/warn-on-duplicate-attdef",
@@ -631,6 +632,21 @@ public abstract class XMLParser
         fValidator.setSchemaFullCheckingEnabled(schemaFullChecking);
     }
 
+
+    /**
+     * Normalization of element content is controlled by this feature.
+     * If this feature is set to true, DOM and SAX APIs will expose element content
+     * that is normalized according to XML Schema REC.
+     * Otherwise, element content will be exposed as required by the infoset.
+     * 
+     * @param normalize
+     */
+    protected void setNormalizeElementContents(boolean normalize) {
+        fValidator.setNormalizeContents(normalize);
+    }
+    protected boolean getNormalizeElementContents() {
+        return fValidator.getNormalizeConents();
+    }
 
     /**
      * Allows the user to set a list of external XML Schemas (ex."http://example.com schema.xsd") 
@@ -1343,6 +1359,11 @@ public abstract class XMLParser
                 // REVISIT
                 throw new SAXNotSupportedException(featureId);
             }
+
+            if (feature.equals("validation/normalize-element-contents")) {
+                setNormalizeElementContents(state);
+                return;
+             }
             //
             // http://apache.org/xml/features/validation/normalize-attribute-values
             //
@@ -1512,6 +1533,9 @@ public abstract class XMLParser
             if (feature.equals("validation/default-attribute-values")) {
                 // REVISIT
                 throw new SAXNotRecognizedException(featureId);
+            }
+            if (feature.equals("validation/normalize-element-contents")) {
+                return getNormalizeElementContents();
             }
             //
             // http://apache.org/xml/features/validation/validate-content-models

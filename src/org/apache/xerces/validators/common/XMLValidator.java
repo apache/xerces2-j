@@ -237,6 +237,9 @@ public final class XMLValidator
    private boolean fWarningOnUndeclaredElements = false;
    private boolean fNormalizeAttributeValues = true;
    private boolean fLoadDTDGrammar = true;
+   // normalize element content
+   // default: don't normalize
+   private boolean fNormalizeContents = false;
 
    // Private temporary variables
    private Hashtable fLocationUriPairs = new Hashtable(10);
@@ -622,6 +625,14 @@ public final class XMLValidator
       return fWarningOnUndeclaredElements;
    }
 
+   /** Sets fNormalizeContents **/
+   public void setNormalizeContents(boolean normalize){
+      fNormalizeContents = normalize;
+   }
+   public boolean getNormalizeConents() {
+      return fNormalizeContents;
+   }
+
     //
     // FieldActivator methods
     //
@@ -805,7 +816,7 @@ public final class XMLValidator
             if (DEBUG_NORMALIZATION) {
                 System.out.println("Start schema datatype normalization <whiteSpace value=" +fWhiteSpace+">");
             }
-            if (fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize
+            if (!fNormalizeContents || fWhiteSpace == DatatypeValidator.PRESERVE) { //do not normalize                
                 fDatatypeBuffer.append(chars, offset, length);
             }
             else {
@@ -879,7 +890,7 @@ public final class XMLValidator
             if (fCurrentDV !=null) {
                 fWhiteSpace = fCurrentDV.getWSFacet();
             }
-            if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
+            if (!fNormalizeContents || fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
                 fDatatypeBuffer.append(fStringPool.toString(data));
             }
             else {
@@ -1971,6 +1982,7 @@ public final class XMLValidator
       fValidating = fValidationEnabled;
       fValidationEnabledByDynamic = false;
       fDynamicDisabledByValidation = false;
+      fNormalizeContents = false;
       poolReset();
       fCalledStartDocument = false;
       fStandaloneReader = -1;
