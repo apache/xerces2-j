@@ -2,6 +2,33 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title="January 26, 1999">
+        <ul>
+            <li>Add new feature <code>http://apache.org/xml/features/dom/include-ignorable-whitespace</code> [andyc]</li>
+            <li>ANT build file almost works (mod bug in ANT) [twl]</li>
+            <li>ChunkyByteArray - needed resize chunk array for large files [andyc] </li>
+            <li>UTF8DataChunk - memory perf fix [andyc] </li>
+            <li>DOM L1 - cache node children length to accelerate <code>Node#item()</code>[andyc]</li>
+            <li>DOM L1 - Off by one error in DeferredDocumentImpl [jflight@impresse.com]</li>
+            <li>DOM L1 - Slight refactoring of DOM to save memory [lehors]</li>   
+            <li>Schema datatypes - add binary &amp; URI, update
+            decimal &amp; String [twl]</li>
+            <li>Schema datatypes - allow StringValidator to validate maxLength &amp; enumeration facets [gtj@peakin.com]</li>
+            <li>Schema datatypes - timeDuration &amp; timeInstant validators [gtj@peakin.com]</li>
+            <li>Schema functionality - allow schema lookup via installed entity resolver [gtj@peakin.com]</li>
+            <li>Schema bug fixes (reportSchemaError &amp; integer subtype registration) [gtj@peakin.com]</li>
+            <li>Serializer bug on CData sections [arkin] </li>
+            <li>Serializers now prints PUBLIC/SYSTEM id [arkin]</li>
+            <li>HTMLTableElementImpl - Empty cell no longer created
+            when adding a row [arkin]</li>
+            <li>DOM L2 - TreeWalkerImpl didn't iterate backwards properly [bmj01@club-internet.fr]</li>
+            <li>DOM L2 - Tracking the candidate recommendation [lehors]</li>
+            <li>DOM L2 Namespace bug fixes [rip, lehors]</li>
+            <li>DOM L2 API moved to org.w3c.dom where it belongs
+            [rip]</li>
+            <li>DOMMemTest [lehors]</li>
+        </ul>
+    </s2>
     <s2 title="December 31, 1999">
         <ul>
             <li>Include documentation in the repository.</li>
