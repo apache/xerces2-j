@@ -451,24 +451,31 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
                                                                  XMLErrorReporter.SEVERITY_WARNING);
                 }
             }
-            fCMBuilder.setDeclPool(null);
-        } else {
+        }
+        
+        if (useDeclPool) {
             fDeclPool.reset();
             fCMBuilder.setDeclPool(fDeclPool);
+            fSchemaHandler.setDeclPool(fDeclPool);
+        } else {
+            fCMBuilder.setDeclPool(null);
+            fSchemaHandler.setDeclPool(null);
         }
 
         fSchemaHandler.reset(fErrorReporter, fEntityResolver,
                 fSymbolTable, fGrammarPool, fAllowJavaEncodings, fStrictURI);
-        if(fGrammarPool == null) {
-            fDeclPool.reset();
-            fSchemaHandler.setDeclPool(fDeclPool);
-        } else {
-            fSchemaHandler.setDeclPool(null);
-        }
         fSubGroupHandler.reset();
         fJAXPProcessed = false;
     } // reset()
 
+    // useDeclPool is only set to true when the validator invokes the loader,
+    // and there is no grammar pool. that is, the grammar will never be
+    // exposed to the application.
+    private boolean useDeclPool = false;
+    public void setUseDeclPool(boolean use) {
+        useDeclPool = use;
+    }
+    
     /**
      * Returns a Grammar object by parsing the contents of the
      * entity pointed to by source.

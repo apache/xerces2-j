@@ -1363,6 +1363,10 @@ public class XMLSchemaValidator
             fGrammarPool = null;
         }
         fSchemaLoader.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+        // only set useDeclPool to true when the validator invokes the loader,
+        // and there is no grammar pool. that is, the grammar will never be
+        // exposed to the application.
+        fSchemaLoader.setUseDeclPool(fGrammarPool == null);
 
         // Copy the allow-java-encoding feature to the grammar loader.
         // REVISIT: what other fetures/properties do we want to copy?
