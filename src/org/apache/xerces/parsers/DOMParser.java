@@ -151,7 +151,22 @@ public class DOMParser
             parse(source);
         }
 
-        // close opened stream
+        // wrap XNI exceptions as SAX exceptions
+        catch (XNIException e) {
+            Exception ex = e.getException();
+            if (ex == null) {
+                throw new SAXException(e.getMessage());
+            }
+            if (ex instanceof SAXException) {
+                throw (SAXException)ex;
+            }
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            throw new SAXException(ex);
+        }
+
+        // close stream opened by the parser
         finally {
             try {
                 Reader reader = source.getCharacterStream();
@@ -183,6 +198,7 @@ public class DOMParser
     public void parse(InputSource inputSource) 
         throws SAXException, IOException {
 
+        // parse document
         try {
             XMLInputSource xmlInputSource = 
                 new XMLInputSource(inputSource.getPublicId(),
@@ -193,6 +209,8 @@ public class DOMParser
             xmlInputSource.setEncoding(inputSource.getEncoding());
             parse(xmlInputSource);
         }
+
+        // wrap XNI exceptions as SAX exceptions
         catch (XNIException e) {
             Exception ex = e.getException();
             if (ex == null) {
