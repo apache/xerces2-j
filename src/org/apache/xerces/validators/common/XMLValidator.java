@@ -721,6 +721,7 @@ public final class XMLValidator
             }
             qname.setValues(element);
             fElementChildrenLength++;
+            
             if (DEBUG_ELEMENT_CHILDREN) {
                 printChildren();
                 printStack();
@@ -866,7 +867,7 @@ public final class XMLValidator
         //REVISIT: Validation
         fCurrentScope = fScopeStack[fElementDepth];
 
-        if ( DEBUG_SCHEMA_VALIDATION ) {
+        //if ( DEBUG_SCHEMA_VALIDATION ) {
         
 /****
 System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
@@ -875,7 +876,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                    "\n fCurrentContentSpecType : " + fCurrentContentSpecType +
                    "\n++++++++++++++++++++++++++++++++++++++++++++++++" );
 /****/  
-        }
+        //}
 
         // if enclosing element's Schema is different, need to switch "context"
         if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
@@ -1720,9 +1721,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Root element specified. */
     private void rootElementSpecified(QName rootElement) throws Exception {
 
-        if  (fDynamicValidation && !fSeenDoctypeDecl) {
-          fValidating = false;
-        }
+        // this is what it used to be
+        //if  (fDynamicValidation && !fSeenDoctypeDecl) {
+          //fValidating = false;
+        //}
+
         if (fValidating) {
 
             // initialize the grammar to be the default one.
