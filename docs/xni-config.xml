@@ -394,7 +394,7 @@
    <table>
     <tr>
      <th>
-      Extends <link anchor='component-manager'>XMLComponentManager</link>
+      Extends <link anchor='parser-configuration'>XMLParserConfiguration</link>
      </th>
     </tr>
     <tr><th>Methods</th></tr>

@@ -75,6 +75,19 @@
    </li>
   </ul>
  </s2>
+ <s2 title='Changes from Previous Release'>
+  <p>
+   This release is primarily a bug fix release. However, a new
+   XNI parser configuration interface has been added to allow the
+   creation of "pull" parser configurations. In addition, more
+   XNI documentation has been written that explains how to re-use
+   the standard Xerces2 parser components.
+  </p>
+  <p>
+   For a more complete list of changes, refer to the 
+   <link idref='releases'>Release Information</link> page.
+  </p>	      
+ </s2>
  <s2 title='Changes from Xerces 1.x'>
   <p>
    Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase
