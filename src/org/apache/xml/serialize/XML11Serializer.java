@@ -311,7 +311,7 @@ extends XMLSerializer {
                 }
                 continue;
             }
-            printXMLChar(ch);
+            printXMLChar(ch, false);
         }
     }
 
@@ -376,15 +376,13 @@ extends XMLSerializer {
 
     // note that this "int" should, in all cases, be a char.
     // REVISIT:  make it a char...
-    protected final void printXMLChar( int ch ) throws IOException {
+    protected final void printXMLChar( int ch, boolean keepQuot ) throws IOException {
 
         if ( ch == '<') {
             _printer.printText("&lt;");
         } else if (ch == '&') {
             _printer.printText("&amp;");
-        } else if ( ch == '"') {
-            // REVISIT: for character data we should not convert this into 
-            //          char reference
+        } else if ( ch == '"' && !keepQuot) {
             _printer.printText("&quot;");
         } else if ( _encodingInfo.isPrintable((char)ch) && XML11Char.isXML11ValidLiteral(ch)) { 
             _printer.printText((char)ch);
@@ -454,7 +452,7 @@ extends XMLSerializer {
                 if ( unescaped  && XML11Char.isXML11ValidLiteral(ch)) {
                     _printer.printText( ch );
                 } else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -478,7 +476,7 @@ extends XMLSerializer {
                 else if ( unescaped && XML11Char.isXML11ValidLiteral(ch) )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true);
             }
         }
     }
@@ -510,7 +508,7 @@ extends XMLSerializer {
                 if ( unescaped && XML11Char.isXML11ValidLiteral(ch))
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -536,7 +534,7 @@ extends XMLSerializer {
                 else if ( unescaped && XML11Char.isXML11ValidLiteral(ch))
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true );
             }
         }
     }

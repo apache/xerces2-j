@@ -1248,24 +1248,24 @@ extends BaseMarkupSerializer {
                 }
                 continue;
             }
-            printXMLChar(ch);
+            printXMLChar(ch, false);
         }
     }
 
-
     // note that this "int" should, in all cases, be a char.
-    protected void printXMLChar( int ch ) throws IOException {
-
+    // if printing out attribute values, the double quotes mark is converted to
+    // quot, otherwise keep quotations as is.
+    protected void printXMLChar( int ch, boolean keepQuot) throws IOException {
+        
         if ( ch == '<') {
             _printer.printText("&lt;");
         } else if (ch == '&') {
             _printer.printText("&amp;");
-        } else if ( ch == '"') {
-            // REVISIT: for character data we should not convert this into 
-            //          char reference
+        } else if ( ch == '"' && ! keepQuot) {
             _printer.printText("&quot;");
         } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch)) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
+                    	// REVISIT: new line characters must be escaped
             _printer.printText((char)ch);
         } else {
             // The character is not printable, print as character reference.
@@ -1274,8 +1274,6 @@ extends BaseMarkupSerializer {
             _printer.printText( ';' );
         }
     }
-
-
 
     protected void printText( String text, boolean preserveSpace, boolean unescaped )
     throws IOException {
@@ -1301,7 +1299,7 @@ extends BaseMarkupSerializer {
                 if ( unescaped ) {
                     _printer.printText( ch );
                 } else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -1325,7 +1323,7 @@ extends BaseMarkupSerializer {
                 else if ( unescaped )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true);
             }
         }
     }
@@ -1357,7 +1355,7 @@ extends BaseMarkupSerializer {
                 if ( unescaped )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true );
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -1383,7 +1381,7 @@ extends BaseMarkupSerializer {
                 else if ( unescaped )
                     _printer.printText( ch );
                 else
-                    printXMLChar( ch );
+                    printXMLChar( ch, true );
             }
         }
     }
