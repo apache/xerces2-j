@@ -63,18 +63,53 @@ import  org.apache.xerces.utils.StringPool;
 
 import  org.w3c.dom.Node;
 import  org.w3c.dom.Document;
+import  org.apache.xerces.validators.common.XMLContentModel;
 
-public abstract class Grammar  {
-    private  String    fGrammarID       = null;
-    private  Document  fGrammarDocument = null;
-    private StringPool fStringPool      = null;
+public abstract class Grammar {
+    private  String                fGrammarID       = null;
+    private  Document              fGrammarDocument = null;
+    private StringPool             fStringPool      = null;
+    private  arrayRepresentation   fGrammarArrayRepresentation = null;
 
     public Grammar( String grammarID ) {
-       fGrammarID = grammarID;
+        fGrammarID = grammarID;
     }
     public String whatGrammarAmI(){
         return fGrammarID;
     }
-    abstract public void     populateGrammar( Node node );
-    abstract public Document getGrammarDocument();
+    public arrayRepresentation getGrammarArrayRepresentation(){
+        return fGrammarArrayRepresentation;
+    }
+
+
+
+    abstract public void                populateGrammar( Node node );
+    abstract public Document            getGrammarDocument();
+
+
+    public class arrayRepresentation {
+        public int                    fElementCount = 0;    // Element list
+        public int[][]                fElementType  = null; 
+        public byte[][]               fElementDeclIsExternal = null;
+        public int[][]                fContentSpecType = null;
+        public int[][]                fContentSpec     = null;
+        public XMLContentModel[][]    fContentModel    = null;
+        public int[][]                fAttlistHead     = null;
+        public int[][]                fAttlistTail     = null;
+
+        public int                    fNodeCount       = 0;   //ContentSpecNode list                      
+        public byte[][]               fNodeType        = null; 
+        public int[][]                fNodeValue       = null;
+
+        public int                    fAttDefCount     = 0;     //AttDef list
+        public int[][]                fAttPrefix       = null; 
+        public int[][]                fAttName         = null;
+        public int[][]                fAttType         = null; 
+        public XMLValidator.AttributeValidator[][] fAttValidator    = null;
+        public int[][]                fEnumeration     = null;
+        public int[][]                fAttDefaultType  = null;
+        public int[][]                fAttValue        = null;
+        public byte[][]               fAttDefIsExternal  = null;
+        public int[][]                fNextAttDef        = null ;
+    }
 }
