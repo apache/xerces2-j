@@ -482,7 +482,6 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             XMLInputSource source,
             Hashtable locationPairs) throws IOException, XNIException {
         
-        fXSDDescription.reset();
         // this should only be done once per invocation of this object;
         // unless application alters JAXPSource in the mean time.
         if(!fJAXPProcessed) {
@@ -577,6 +576,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         String sid = null;
         if (componentType == null) {
             // Not an array
+            fXSDDescription.reset();
             xis = xsdToXMLInputSource(fJAXPSource);
             sid = xis.getSystemId();
             fXSDDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
@@ -595,10 +595,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
         }
 
         Object[] objArr = (Object[]) fJAXPSource;
+        fJAXPProcessed = true;
         for (int i = 0; i < objArr.length; i++) {
+            fXSDDescription.reset();
             xis = xsdToXMLInputSource(objArr[i]);
             sid = xis.getSystemId();
-            fXSDDescription.reset();
             fXSDDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
             if (sid != null) {
                 fXSDDescription.setLiteralSystemId(sid);
