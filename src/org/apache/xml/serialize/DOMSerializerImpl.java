@@ -202,7 +202,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 			 // REVISIT: modify error exception to TYPE_MISMATCH
  			String msg = DOMMessageFormatter.formatMessage(
 			 DOMMessageFormatter.DOM_DOMAIN,
-			 "FEATURE_NOT_SUPPORTED",
+			 "TYPE_MISMATCH_ERR",
 			 new Object[] { name });
 			throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
 		}
@@ -215,7 +215,7 @@ public class DOMSerializerImpl implements DOMSerializer, DOMConfiguration {
 				// REVISIT: modify error exception to TYPE_MISMATCH
                 String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
 			}

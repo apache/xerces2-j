@@ -643,7 +643,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
@@ -660,7 +660,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
@@ -696,7 +696,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
@@ -727,7 +727,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
@@ -743,7 +743,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
@@ -757,7 +757,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     String msg =
                         DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
-                            "FEATURE_NOT_SUPPORTED",
+                            "TYPE_MISMATCH_ERR",
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }

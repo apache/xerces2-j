@@ -413,7 +413,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 					String msg =
 						DOMMessageFormatter.formatMessage(
 							DOMMessageFormatter.DOM_DOMAIN,
-							"FEATURE_NOT_SUPPORTED",
+							"TYPE_MISMATCH_ERR",
 							new Object[] { name });
 					throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 				}
@@ -431,7 +431,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 					String msg =
 						DOMMessageFormatter.formatMessage(
 							DOMMessageFormatter.DOM_DOMAIN,
-							"FEATURE_NOT_SUPPORTED",
+							"TYPE_MISMATCH_ERR",
 							new Object[] { name });
 					throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 				}
@@ -479,7 +479,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 					String msg =
 						DOMMessageFormatter.formatMessage(
 							DOMMessageFormatter.DOM_DOMAIN,
-							"FEATURE_NOT_SUPPORTED",
+							"TYPE_MISMATCH_ERR",
 							new Object[] { name });
 					throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 				}
@@ -517,7 +517,7 @@ extends AbstractDOMParser implements DOMParser, DOMConfiguration {
 					String msg =
 						DOMMessageFormatter.formatMessage(
 							DOMMessageFormatter.DOM_DOMAIN,
-							"FEATURE_NOT_SUPPORTED",
+							"TYPE_MISMATCH_ERR",
 							new Object[] { name });
 					throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 				}
