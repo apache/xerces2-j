@@ -156,8 +156,6 @@ implements DOMImplementation, DOMImplementationLS {
             && (anyVersion 
                 || version.equals("3.0")));
             
-        ;
-
     } // hasFeature(String,String):boolean
 
 
