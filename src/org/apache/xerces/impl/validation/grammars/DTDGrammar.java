@@ -61,6 +61,12 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.impl.validation.Grammar;
+import org.apache.xerces.impl.validation.XMLElementDecl;
+import org.apache.xerces.impl.validation.XMLAttributeDecl;
+import org.apache.xerces.impl.validation.XMLNotationDecl;
+import org.apache.xerces.impl.validation.XMLEntityDecl;
+import org.apache.xerces.impl.validation.XMLSimpleType;
+import org.apache.xerces.xni.QName;
 import org.xml.sax.SAXException;
 
 /**
@@ -75,11 +81,47 @@ public class DTDGrammar
     // Data
     //
 
+    /** Current ElementIndex */
+    private int              fCurrentElementIndex;
+
+    /** Element declaration. */
+    private XMLElementDecl    fElementDecl        = new XMLElementDecl();
+
+    /** Current AttributeIndex */
+    private int               fCurrentAttributeIndex;
+
+    /** Attribute declaration. */
+    private XMLAttributeDecl  fAttributeDecl      = new XMLAttributeDecl();
+
+    /** QName holder           */
+    private QName             fQName              = new QName();
+
+    /** XMLEntityDecl. */
+    private XMLEntityDecl     fEntityDecl         = new XMLEntityDecl();
+
+    /** internal XMLEntityDecl. */
+    private XMLEntityDecl     fInternalEntityDecl = new XMLEntityDecl();
+
+    /** external XMLEntityDecl */
+    private XMLEntityDecl     fExternalEntityDecl = new XMLEntityDecl();
+
+    /** Simple Type. */
+    private XMLSimpleType     fSimpleType         = new XMLSimpleType();
+
+
     /** setDTDHandler */
     protected XMLDTDHandler setDTDHandler;
 
     /** setDTDContentModelHandler */
     protected XMLDTDContentModelHandler setDTDContentModelHandler;
+
+
+     // debugging
+
+    /** Debug DTDGrammar. */
+    private static final boolean DEBUG_SCANNER_STATE = false;
+
+
 
     //
     // Constructors
@@ -89,7 +131,7 @@ public class DTDGrammar
      * 
      */
     public DTDGrammar() {
-    }
+           }
 
     /**
      * 
@@ -113,6 +155,7 @@ public class DTDGrammar
      */
     public void startEntity(String name, String publicId, String systemId, String encoding)
         throws SAXException {
+        this.fEntityDecl.setValues( name, publicId, systemId, null, null, false );//fill internal fEntityDecl struct
     }
 
     /**
@@ -133,6 +176,9 @@ public class DTDGrammar
      */
     public void startDTD()
         throws SAXException {
+        if( setDTDHandler != null){
+            setDTDHandler.startDTD();//callback
+        }
     } // startDTD
 
     /**
@@ -142,6 +188,9 @@ public class DTDGrammar
      */
     public void comment(XMLString text)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.comment( text );
+        }
     } // comment
 
     /**
@@ -152,6 +201,9 @@ public class DTDGrammar
      */
     public void processingInstruction(String target, XMLString data)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.processingInstruction( target, data );
+        }
     } // processingInstruction
 
     /**
@@ -159,6 +211,10 @@ public class DTDGrammar
      */
     public void startExternalSubset()
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.startExternalSubset();
+        }
+       
     } // startExternalSubset
 
     /**
@@ -166,6 +222,9 @@ public class DTDGrammar
      */
     public void endExternalSubset()
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.endExternalSubset();
+        }
     } // endExternalSubset
 
     /**
@@ -176,6 +235,15 @@ public class DTDGrammar
      */
     public void elementDecl(String name, XMLString contentModel)
         throws SAXException {
+        fCurrentElementIndex = createElementDecl();//create element decl
+        //set element decl
+        fElementDecl.clear();
+        fElementDecl.name.setValues( null, null, name, null );
+
+        setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
+        if( setDTDHandler != null ){
+            setDTDHandler.elementDecl( name, contentModel );
+        }
     } // elementDecl
 
     /**
@@ -185,6 +253,9 @@ public class DTDGrammar
      */
     public void startAttlist(String elementName)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.startAttlist( elementName );
+        }
     } // startAttlist
 
     /**
@@ -199,6 +270,36 @@ public class DTDGrammar
      */
     public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue)
         throws SAXException {
+
+        fCurrentAttributeIndex = createAttributeDecl();// Create current Attribute Decl
+        fAttributeDecl.clear();
+        fAttributeDecl.name.setValues(null,null,elementName,null);
+
+        fSimpleType.clear();
+        if( defaultType.equals( "DEFAULT" ) ){
+            fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_DEFAULT;
+        } else if( defaultType.equals( "FIXED") ) {
+            fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_FIXED;
+        } else if( defaultType.equals( "IMPLIED") ) {
+           fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_IMPLIED;
+        } else if( defaultType.equals( "REQUIRED") ) {
+           fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_REQUIRED;
+        }
+        fSimpleType.defaultValue      = defaultValue.toString();
+
+        fSimpleType.enumeration       = enumeration;
+        /*   todo when we implement datatypes
+        fSimpleType.datatypeValidator = DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(type);
+        */
+
+        fAttributeDecl.simpleType = fSimpleType;
+        setAttributeDecl( fCurrentElementIndex, fCurrentAttributeIndex,
+                                                               fAttributeDecl );
+        if( setDTDHandler != null ){
+            setDTDHandler.attributeDecl( elementName, attributeName, type,
+                                       enumeration, defaultType, defaultValue );
+        }
+
     } // attributeDecl
 
     /**
@@ -206,6 +307,9 @@ public class DTDGrammar
      */
     public void endAttlist()
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.endAttlist();
+        }
     } // endAttlist
 
     /**
@@ -217,6 +321,9 @@ public class DTDGrammar
      */
     public void internalEntityDecl(String name, XMLString text, boolean isPE)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.internalEntityDecl(name, text, isPE);
+        }
     } // internalEntityDecl
 
     /**
@@ -229,6 +336,9 @@ public class DTDGrammar
      */
     public void externalEntityDecl(String name, String publicId, String systemId, boolean isPE)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.externalEntityDecl(name, publicId, systemId, isPE );
+        }
     } // externalEntityDecl
 
     /**
@@ -241,6 +351,9 @@ public class DTDGrammar
      */
     public void unparsedEntityDecl(String name, String publicId, String systemId, String notation)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation );
+        }
     } // unparsedEntityDecl
 
     /**
@@ -252,6 +365,9 @@ public class DTDGrammar
      */
     public void notationDecl(String name, String publicId, String systemId)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.notationDecl( name, publicId, systemId );
+        }
     } // notationDecl
 
     /**
@@ -261,6 +377,9 @@ public class DTDGrammar
      */
     public void startConditional(short type)
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.startConditional( type );
+        }
     } // startConditional
 
     /**
@@ -268,6 +387,9 @@ public class DTDGrammar
      */
     public void endConditional()
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.endConditional();
+        }
     } // endConditional
 
     /**
@@ -275,6 +397,9 @@ public class DTDGrammar
      */
     public void endDTD()
         throws SAXException {
+        if( setDTDHandler != null ){
+            setDTDHandler.endDTD();
+        }
     } // endDTD
 
     //
@@ -289,6 +414,9 @@ public class DTDGrammar
      */
     public void startContentModel(String elementName, short type)
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.startContentModel( elementName, type );
+        }
     } // startContentModel
 
     /**
@@ -298,6 +426,9 @@ public class DTDGrammar
      */
     public void mixedElement(String elementName)
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.mixedElement( elementName );
+        }
     } // mixedElement
 
     /**
@@ -305,6 +436,10 @@ public class DTDGrammar
      */
     public void childrenStartGroup()
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.childrenStartGroup();
+        }
+
     } // childrenStartGroup
 
     /**
@@ -314,6 +449,9 @@ public class DTDGrammar
      */
     public void childrenElement(String elementName)
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.childrenElement( elementName );
+        }
     } // childrenElement
 
     /**
@@ -323,6 +461,9 @@ public class DTDGrammar
      */
     public void childrenSeparator(short separator)
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.childrenSeparator( separator );
+        }
     } // childrenSeparator
 
     /**
@@ -332,6 +473,9 @@ public class DTDGrammar
      */
     public void childrenOccurrence(short occurrence)
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.childrenOccurrence( occurrence );
+        }
     } // childrenOccurrence
 
     /**
@@ -339,6 +483,9 @@ public class DTDGrammar
      */
     public void childrenEndGroup()
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.childrenEndGroup();
+        }
     } // childrenEndGroup
 
     /**
@@ -346,6 +493,9 @@ public class DTDGrammar
      */
     public void endContentModel()
         throws SAXException {
+        if( setDTDContentModelHandler != null ){
+            setDTDContentModelHandler.endContentModel();
+        }
     } // endContentModel
 
 } // class DTDGrammar
