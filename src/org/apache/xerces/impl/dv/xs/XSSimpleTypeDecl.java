@@ -1,12 +1,12 @@
 /*
  * Copyright 2001-2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -225,7 +225,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private Object fMaxExclusive;
     private Object fMinExclusive;
     private Object fMinInclusive;
-    
+
     // annotations for constraining facets
     public XSAnnotation lengthAnnotation;
     public XSAnnotation minLengthAnnotation;
@@ -239,10 +239,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     public XSAnnotation maxExclusiveAnnotation;
     public XSAnnotation minInclusiveAnnotation;
     public XSAnnotation minExclusiveAnnotation;
-    
+
     // facets as objects
     private XSObjectListImpl fFacets;
-    
+
     // enumeration and pattern facets
     private XSObjectListImpl fMultiValueFacets;
 
@@ -283,7 +283,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         this.fFinite = finite;
         this.fNumeric = numeric;
         fAnnotations = null;
-        
+
         // Specify the build in kind for this primitive type
         fBuiltInKind = builtInKind;
     }
@@ -295,7 +295,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         // Specify the build in kind for this built-in type
         fBuiltInKind = builtInKind;
     }
-    
+
     //Create a new simple type for restriction.
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet, boolean isImmutable,
                 XSObjectList annotations) {
@@ -399,7 +399,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //set values for restriction.
-    protected XSSimpleTypeDecl setRestrictionValues(XSSimpleTypeDecl base, String name, String uri, short finalSet, 
+    protected XSSimpleTypeDecl setRestrictionValues(XSSimpleTypeDecl base, String name, String uri, short finalSet,
                 XSObjectList annotations) {
         //decline to do anything if the object is immutable.
         if(fIsImmutable) return null;
@@ -570,8 +570,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * Returns the closest built-in type category this type represents or 
-     * derived from. For example, if this simple type is a built-in derived 
+     * Returns the closest built-in type category this type represents or
+     * derived from. For example, if this simple type is a built-in derived
      * type integer the <code>INTEGER_DV</code> is returned.
      */
     public short getBuiltInKind() {
@@ -579,9 +579,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * If variety is <code>atomic</code> the primitive type definition (a 
-     * built-in primitive datatype definition or the simple ur-type 
-     * definition) is available, otherwise <code>null</code>. 
+     * If variety is <code>atomic</code> the primitive type definition (a
+     * built-in primitive datatype definition or the simple ur-type
+     * definition) is available, otherwise <code>null</code>.
      */
     public XSSimpleTypeDefinition getPrimitiveType() {
         if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
@@ -598,9 +598,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * If variety is <code>list</code> the item type definition (an atomic or 
-     * union simple type definition) is available, otherwise 
-     * <code>null</code>. 
+     * If variety is <code>list</code> the item type definition (an atomic or
+     * union simple type definition) is available, otherwise
+     * <code>null</code>.
      */
     public XSSimpleTypeDefinition getItemType() {
         if (fVariety == VARIETY_LIST) {
@@ -613,9 +613,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * If variety is <code>union</code> the list of member type definitions (a 
-     * non-empty sequence of simple type definitions) is available, 
-     * otherwise an empty <code>XSObjectList</code>. 
+     * If variety is <code>union</code> the list of member type definitions (a
+     * non-empty sequence of simple type definitions) is available,
+     * otherwise an empty <code>XSObjectList</code>.
      */
     public XSObjectList getMemberTypes() {
         if (fVariety == VARIETY_UNION) {
@@ -787,7 +787,6 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
         }
 
-        boolean needCheckBase = true;
         // maxInclusive
         if ((presentFacet & FACET_MAXINCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MAXINCLUSIVE) == 0) {
@@ -795,7 +794,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             } else {
                 maxInclusiveAnnotation = facets.maxInclusiveAnnotation;
                 try {
-                    fMaxInclusive = getActualValue(facets.maxInclusive, context, tempInfo, true);
+                    fMaxInclusive = fBase.getActualValue(facets.maxInclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MAXINCLUSIVE;
                     if ((fixedFacet & FACET_MAXINCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXINCLUSIVE;
@@ -805,37 +804,33 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                                                                    "maxInclusive", fBase.getName()});
                 }
 
-                // maxInclusive from base
+                // check against fixed value in base
                 if (((fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
-                    result = fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxInclusive);
-                    if ((fBase.fFixedFacet & FACET_MAXINCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"maxInclusive", fMaxInclusive, fBase.fMaxInclusive, fTypeName});
-                    }
-                    if (result == 0) {
-                        needCheckBase = false;
+                    if ((fBase.fFixedFacet & FACET_MAXINCLUSIVE) != 0) {
+                        if (fDVs[fValidationDV].compare(fMaxInclusive, fBase.fMaxInclusive) != 0)
+                            reportError( "FixedFacetValue", new Object[]{"maxInclusive", fMaxInclusive, fBase.fMaxInclusive, fTypeName});
                     }
                 }
-                if (needCheckBase) {
-                    try {
-                        fBase.validate(context, tempInfo);
-                    } catch (InvalidDatatypeValueException ide) {
-                        reportError(ide.getKey(), ide.getArgs());
-                        reportError("FacetValueFromBase", new Object[]{fTypeName, facets.maxInclusive,
-                                                                       "maxInclusive", fBase.getName()});
-                    }
+                // maxInclusive from base
+                try {
+                    fBase.validate(context, tempInfo);
+                } catch (InvalidDatatypeValueException ide) {
+                    reportError(ide.getKey(), ide.getArgs());
+                    reportError("FacetValueFromBase", new Object[]{fTypeName, facets.maxInclusive,
+                            "maxInclusive", fBase.getName()});
                 }
             }
         }
 
         // maxExclusive
-        needCheckBase = true;
+        boolean needCheckBase = true;
         if ((presentFacet & FACET_MAXEXCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MAXEXCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"maxExclusive", fTypeName});
             } else {
                 maxExclusiveAnnotation = facets.maxExclusiveAnnotation;
                 try {
-                    fMaxExclusive = getActualValue(facets.maxExclusive, context, tempInfo, true);
+                    fMaxExclusive = fBase.getActualValue(facets.maxExclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MAXEXCLUSIVE;
                     if ((fixedFacet & FACET_MAXEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXEXCLUSIVE;
@@ -845,7 +840,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                                                                    "maxExclusive", fBase.getName()});
                 }
 
-                // maxExclusive from base
+                // check against fixed value in base
                 if (((fBase.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxExclusive);
                     if ((fBase.fFixedFacet & FACET_MAXEXCLUSIVE) != 0 && result != 0) {
@@ -855,6 +850,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                         needCheckBase = false;
                     }
                 }
+                // maxExclusive from base
                 if (needCheckBase) {
                     try {
                         fBase.validate(context, tempInfo);
@@ -862,6 +858,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                         reportError(ide.getKey(), ide.getArgs());
                         reportError("FacetValueFromBase", new Object[]{fTypeName, facets.maxExclusive,
                                                                        "maxExclusive", fBase.getName()});
+                    }
+                }
+                // If maxExclusive == base.maxExclusive, then we only need to check
+                // maxExclusive <= base.maxInclusive
+                else if (((fBase.fFacetsDefined & FACET_MAXINCLUSIVE) != 0)) {
+                    if (fDVs[fValidationDV].compare(fMaxExclusive, fBase.fMaxInclusive) > 0) {
+                        reportError( "maxExclusive-valid-restriction.2", new Object[]{facets.maxExclusive, fBase.fMaxInclusive});
                     }
                 }
             }
@@ -874,7 +877,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             } else {
                 minExclusiveAnnotation = facets.minExclusiveAnnotation;
                 try {
-                    fMinExclusive = getActualValue(facets.minExclusive, context, tempInfo, true);
+                    fMinExclusive = fBase.getActualValue(facets.minExclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MINEXCLUSIVE;
                     if ((fixedFacet & FACET_MINEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MINEXCLUSIVE;
@@ -884,7 +887,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                                                                    "minExclusive", fBase.getName()});
                 }
 
-                // minExclusive from base
+                // check against fixed value in base
                 if (((fBase.fFacetsDefined & FACET_MINEXCLUSIVE) != 0)) {
                     result = fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinExclusive);
                     if ((fBase.fFixedFacet & FACET_MINEXCLUSIVE) != 0 && result != 0) {
@@ -894,6 +897,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                         needCheckBase = false;
                     }
                 }
+                // minExclusive from base
                 if (needCheckBase) {
                     try {
                         fBase.validate(context, tempInfo);
@@ -903,17 +907,23 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                                                                        "minExclusive", fBase.getName()});
                     }
                 }
+                // If minExclusive == base.minExclusive, then we only need to check
+                // minExclusive >= base.minInclusive
+                else if (((fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
+                    if (fDVs[fValidationDV].compare(fMinExclusive, fBase.fMinInclusive) < 0) {
+                        reportError( "minExclusive-valid-restriction.3", new Object[]{facets.minExclusive, fBase.fMinInclusive});
+                    }
+                }
             }
         }
         // minInclusive
-        needCheckBase = true;
         if ((presentFacet & FACET_MININCLUSIVE) != 0) {
             if ((allowedFacet & FACET_MININCLUSIVE) == 0) {
                 reportError("cos-applicable-facets", new Object[]{"minInclusive", fTypeName});
             } else {
                 minInclusiveAnnotation = facets.minInclusiveAnnotation;
                 try {
-                    fMinInclusive = getActualValue(facets.minInclusive, context, tempInfo, true);
+                    fMinInclusive = fBase.getActualValue(facets.minInclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MININCLUSIVE;
                     if ((fixedFacet & FACET_MININCLUSIVE) != 0)
                         fFixedFacet |= FACET_MININCLUSIVE;
@@ -923,24 +933,20 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                                                                    "minInclusive", fBase.getName()});
                 }
 
-                // minInclusive from base
+                // check against fixed value in base
                 if (((fBase.fFacetsDefined & FACET_MININCLUSIVE) != 0)) {
-                    result = fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinInclusive);
-                    if ((fBase.fFixedFacet & FACET_MININCLUSIVE) != 0 && result != 0) {
-                        reportError( "FixedFacetValue", new Object[]{"minInclusive", facets.minInclusive, fBase.fMinInclusive, fTypeName});
-                    }
-                    if (result == 0) {
-                        needCheckBase = false;
+                    if ((fBase.fFixedFacet & FACET_MININCLUSIVE) != 0) {
+                        if (fDVs[fValidationDV].compare(fMinInclusive, fBase.fMinInclusive) != 0)
+                            reportError( "FixedFacetValue", new Object[]{"minInclusive", facets.minInclusive, fBase.fMinInclusive, fTypeName});
                     }
                 }
-                if (needCheckBase) {
-                    try {
-                        fBase.validate(context, tempInfo);
-                    } catch (InvalidDatatypeValueException ide) {
-                        reportError(ide.getKey(), ide.getArgs());
-                        reportError("FacetValueFromBase", new Object[]{fTypeName, facets.minInclusive,
-                                                                       "minInclusive", fBase.getName()});
-                    }
+                // minInclusive from base
+                try {
+                    fBase.validate(context, tempInfo);
+                } catch (InvalidDatatypeValueException ide) {
+                    reportError(ide.getKey(), ide.getArgs());
+                    reportError("FacetValueFromBase", new Object[]{fTypeName, facets.minInclusive,
+                            "minInclusive", fBase.getName()});
                 }
             }
         }
@@ -1335,7 +1341,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             else {
                 for (int i = fBase.fPattern.size()-1; i >= 0; i--) {
                     fPattern.addElement(fBase.fPattern.elementAt(i));
-                    fPatternStr.addElement(fBase.fPatternStr.elementAt(i));                    
+                    fPatternStr.addElement(fBase.fPatternStr.elementAt(i));
                 }
                 if (fBase.patternAnnotations != null){
                     for (int i = fBase.patternAnnotations.getLength()-1;i>=0;i--){
@@ -1876,37 +1882,37 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     *  Fundamental Facet: ordered. 
+     *  Fundamental Facet: ordered.
      */
     public short getOrdered() {
         return fOrdered;
     }
 
     /**
-     * Fundamental Facet: bounded. 
+     * Fundamental Facet: bounded.
      */
     public boolean getBounded(){
         return fBounded;
     }
 
     /**
-     * Fundamental Facet: cardinality. 
+     * Fundamental Facet: cardinality.
      */
     public boolean getFinite(){
         return fFinite;
     }
 
     /**
-     * Fundamental Facet: numeric. 
+     * Fundamental Facet: numeric.
      */
     public boolean getNumeric(){
         return fNumeric;
     }
 
     /**
-     * Convenience method. [Facets]: check whether a facet is defined on this 
+     * Convenience method. [Facets]: check whether a facet is defined on this
      * type.
-     * @param facetName  The name of the facet. 
+     * @param facetName  The name of the facet.
      * @return  True if the facet is defined, false otherwise.
      */
     public boolean isDefinedFacet(short facetName) {
@@ -1920,8 +1926,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * [facets]: all facets defined on this type. The value is a bit 
-     * combination of FACET_XXX constants of all defined facets. 
+     * [facets]: all facets defined on this type. The value is a bit
+     * combination of FACET_XXX constants of all defined facets.
      */
     public short getDefinedFacets() {
         if (fPatternType != SPECIAL_PATTERN_NONE)
@@ -1932,9 +1938,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * Convenience method. [Facets]: check whether a facet is defined and 
-     * fixed on this type. 
-     * @param facetName  The name of the facet. 
+     * Convenience method. [Facets]: check whether a facet is defined and
+     * fixed on this type.
+     * @param facetName  The name of the facet.
      * @return  True if the facet is fixed, false otherwise.
      */
     public boolean isFixedFacet(short facetName) {
@@ -1955,16 +1961,16 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * Convenience method. Returns a value of a single constraining facet for 
-     * this simple type definition. This method must not be used to retrieve 
-     * values for <code>enumeration</code> and <code>pattern</code> facets. 
-     * @param facetName The name of the facet, i.e. 
-     *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see 
-     *   <code>XSConstants</code>). To retrieve the value for a pattern or 
-     *   an enumeration, see <code>enumeration</code> and 
+     * Convenience method. Returns a value of a single constraining facet for
+     * this simple type definition. This method must not be used to retrieve
+     * values for <code>enumeration</code> and <code>pattern</code> facets.
+     * @param facetName The name of the facet, i.e.
+     *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see
+     *   <code>XSConstants</code>). To retrieve the value for a pattern or
+     *   an enumeration, see <code>enumeration</code> and
      *   <code>pattern</code>.
-     * @return A value of the facet specified in <code>facetName</code> for 
-     *   this simple type definition or <code>null</code>. 
+     * @return A value of the facet specified in <code>facetName</code> for
+     *   this simple type definition or <code>null</code>.
      */
     public String getLexicalFacetValue(short facetName) {
         switch (facetName) {
@@ -1995,8 +2001,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * A list of enumeration values if it exists, otherwise an empty 
-     * <code>StringList</code>. 
+     * A list of enumeration values if it exists, otherwise an empty
+     * <code>StringList</code>.
      */
     public StringList getLexicalEnumeration() {
         if (fLexicalEnumeration == null){
@@ -2012,8 +2018,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * A list of pattern values if it exists, otherwise an empty 
-     * <code>StringList</code>. 
+     * A list of pattern values if it exists, otherwise an empty
+     * <code>StringList</code>.
      */
     public StringList getLexicalPattern() {
         if (fPatternType == SPECIAL_PATTERN_NONE && fValidationDV != DV_INTEGER && fPatternStr == null)
@@ -2049,8 +2055,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     * [annotations]: a set of annotations for this simple type component if 
-     * it exists, otherwise an empty <code>XSObjectList</code>. 
+     * [annotations]: a set of annotations for this simple type component if
+     * it exists, otherwise an empty <code>XSObjectList</code>.
      */
     public XSObjectList getAnnotations() {
         return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
@@ -2462,10 +2468,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     /**
-     *  A list of constraining facets if it exists, otherwise an empty 
-     * <code>XSObjectList</code>. Note: This method must not be used to 
-     * retrieve values for <code>enumeration</code> and <code>pattern</code> 
-     * facets. 
+     *  A list of constraining facets if it exists, otherwise an empty
+     * <code>XSObjectList</code>. Note: This method must not be used to
+     * retrieve values for <code>enumeration</code> and <code>pattern</code>
+     * facets.
      */
     public XSObjectList getFacets() {
         if (fFacets == null &&
@@ -2576,10 +2582,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
         return (fFacets != null) ? fFacets : XSObjectListImpl.EMPTY_LIST;
     }
-    
+
     /**
-     *  A list of enumeration and pattern constraining facets if it exists, 
-     * otherwise an empty <code>XSObjectList</code>. 
+     *  A list of enumeration and pattern constraining facets if it exists,
+     * otherwise an empty <code>XSObjectList</code>.
      */
     public XSObjectList getMultiValueFacets() {
         if (fMultiValueFacets == null &&
@@ -2610,10 +2616,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
             fMultiValueFacets = new XSObjectListImpl(facets, count);
         }
-        return (fMultiValueFacets != null) ? 
+        return (fMultiValueFacets != null) ?
             fMultiValueFacets : XSObjectListImpl.EMPTY_LIST;
     }
-    
+
     private static final class XSFacetImpl implements XSFacet {
         final short kind;
         final String value;
@@ -2684,7 +2690,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
 
     }
-    
+
     private static final class XSMVFacetImpl implements XSMultiValueFacet {
         final short kind;
         XSObjectList annotations;
@@ -2695,7 +2701,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             this.values = values;
             this.annotations = annotations;
         }
- 
+
 
         /* (non-Javadoc)
          * @see org.apache.xerces.xs.XSFacet#getFacetKind()
