@@ -326,7 +326,7 @@ config.setProperty("http://apache.org/xml/properties/internal/grammar-pool",
         is a bit trickier.  You'll need to do something like
         this:
     </p>
-    <source>System.setProperty("org.apache.xerces.xni.parser.Configuration",
+    <source>System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration",
     "org.apache.xerces.parsers.XMLGrammarCachingConfiguration");
 DocumentBuilder builder = // JAXP factory invocation
 // parse documents and store grammars</source>
