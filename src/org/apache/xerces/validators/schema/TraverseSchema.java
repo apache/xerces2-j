@@ -3352,9 +3352,10 @@ public class TraverseSchema implements
         XMLAttributeDecl baseAttWildcard = null;
         ComplexTypeInfo baseTypeInfo = typeInfo.baseComplexTypeInfo;
 
+        SchemaGrammar aGrammar=null;
         if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
             int attDefIndex = baseTypeInfo.attlistHead;
-            SchemaGrammar aGrammar = fSchemaGrammar;
+            aGrammar = fSchemaGrammar;
             String baseTypeSchemaURI = baseFromAnotherSchema(baseName)? 
                            fStringPool.toString(baseName.uri):null;
             if (baseTypeSchemaURI != null) {
@@ -3380,25 +3381,12 @@ public class TraverseSchema implements
                     continue;
                 }
                 // if found a duplicate, if it is derived by restriction,
-                // then skip the one from the base type, first, checking constraints 
+                // then skip the one from the base type
                 
                 int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
                 if ( temp > -1) {
-                    if (typeInfo.derivedBy==SchemaSymbols.RESTRICTION) {
-                        //
-                        // derivation-ok-restriction.  Constraint 2.1.1
-                        // 
-                        fTemp2AttributeDecl.clear();
-                        fSchemaGrammar.getAttributeDecl(temp, fTemp2AttributeDecl);
-                        if (!(checkSimpleTypeDerivationOK(
-                               fTemp2AttributeDecl.datatypeValidator,
-                               fTempAttributeDecl.datatypeValidator))) {
-                           throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.1:  Type of attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation must be a restriction of type of attribute in base");
-                        }
-                                    
                         attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
                         continue;
-                    }
                 }
 
                
@@ -3438,8 +3426,108 @@ public class TraverseSchema implements
 
         typeInfo.attlistHead = fSchemaGrammar.getFirstAttributeDeclIndex
                                               (typeInfo.templateElementIndex);
+
+        // For derivation by restriction, ensure that the resulting attribute list 
+        // satisfies the constraints in derivation-ok-restriction 2,3,4
+        if ((typeInfo.derivedBy==SchemaSymbols.RESTRICTION) && 
+            (typeInfo.attlistHead>-1 && baseTypeInfo != null)) {
+           checkAttributesDerivationOKRestriction(typeInfo.attlistHead,fSchemaGrammar,
+               attWildcard,baseTypeInfo.attlistHead,aGrammar,baseAttWildcard);
+        }
+        
     } // end processAttributes
 
+    // Check that the attributes of a type derived by restriction satisfy the 
+    // constraints of derivation-ok-restriction
+
+    private void checkAttributesDerivationOKRestriction(int dAttListHead, SchemaGrammar dGrammar, XMLAttributeDecl dAttWildCard, int bAttListHead, SchemaGrammar bGrammar, XMLAttributeDecl bAttWildCard) throws ComplexTypeRecoverableError {
+
+       int attDefIndex = dAttListHead;
+
+       if (bAttListHead < 0) {
+          throw new ComplexTypeRecoverableError("derivation-ok-restriction.2:  Base type definition does not have any attributes"); 
+       }
+          
+       // Loop thru the attributes
+       while ( attDefIndex > -1 ) {
+          fTempAttributeDecl.clear();
+          dGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
+          if (isWildCard(fTempAttributeDecl)) 
+             continue;
+          int bAttDefIndex = bGrammar.findAttributeDecl(bAttListHead, fTempAttributeDecl.name);
+          if (bAttDefIndex > -1) {
+             //
+             // derivation-ok-restriction.  Constraint 2.1.1
+             // 
+             fTemp2AttributeDecl.clear();
+             bGrammar.getAttributeDecl(bAttDefIndex, fTemp2AttributeDecl);
+             if (!(checkSimpleTypeDerivationOK(
+                  fTempAttributeDecl.datatypeValidator,
+                  fTemp2AttributeDecl.datatypeValidator))) {
+               throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.1:  Type of attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation must be a restriction of type of attribute in base");
+             }
+
+             //
+             // derivation-ok-restriction.  Constraint 2.1.2
+             // 
+             if ((fTemp2AttributeDecl.defaultType & 
+                   XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) {
+
+               if (!((fTempAttributeDecl.defaultType & 
+                   XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) ||
+                   !fTempAttributeDecl.defaultValue.equals(fTemp2AttributeDecl.defaultValue)) {
+                  
+                  throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.2.2:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' is either not fixed, or is not fixed with the same value as the attribute in the base");
+               }
+             }
+                    
+          }
+         else {
+             //
+             // derivation-ok-restriction.  Constraint 2.2
+             // 
+             if ((bAttWildCard==null) ||
+              !wildcardAllowsNameSpace(bAttWildCard, dGrammar.getTargetNamespaceURI())) {
+                throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.2:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' has a target namespace which is not valid with respect to a base type definition's wildcard or, the base does not contain a wildcard");
+               
+             }
+         }
+         attDefIndex = dGrammar.getNextAttributeDeclIndex(attDefIndex);
+             
+       }
+
+       // derivation-ok-restriction.  Constraint 4
+       if (dAttWildCard!=null) {
+          if (!wildcardSubset(dAttWildCard,bAttWildCard)) {
+
+          }
+       }
+          
+          
+    }
+
+    // TO BE DONE 
+    private boolean wildcardAllowsNameSpace(XMLAttributeDecl wildcard, String uri) {
+        return true;
+    }
+
+    // TO BE DONE 
+    private boolean wildcardSubset(XMLAttributeDecl derivedWildcard, 
+                                   XMLAttributeDecl baseWildcard) {
+        return true;
+    }
+
+    private boolean isWildCard(XMLAttributeDecl a) {
+
+        if (a.type == XMLAttributeDecl.TYPE_ANY_ANY 
+           ||a.type == XMLAttributeDecl.TYPE_ANY_LIST
+           ||a.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
+           ||a.type == XMLAttributeDecl.TYPE_ANY_OTHER ) 
+          return true;
+        else
+          return false;
+    }
+        
     private boolean isAttrOrAttrGroup(Element e) 
     {
         String elementName = e.getLocalName();
