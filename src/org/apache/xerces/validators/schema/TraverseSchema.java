@@ -162,8 +162,9 @@ import  org.apache.xml.serialize.XMLSerializer;
      * 
      * <attributeGroup 
      *   id = ID 
+     *   name = NCName
      *   ref = QName>
-     *   Content: (annotation?)
+     *   Content: (annotation?, (attribute|attributeGroup), anyAttribute?)
      * </>
      * 
      * <anyAttribute 
@@ -412,6 +413,7 @@ public class TraverseSchema {
         public int contentType;
         public int contentSpecHandle = -1;
         public int attlistHead = -1;
+        public DatatypeValidator datatypeValidator;
     }
 
 
@@ -450,6 +452,7 @@ public class TraverseSchema {
         //fGlobalAttrs  = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTE);
         //fGlobalAttrGrps = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTEGROUP);
 
+        checkTopLevelDuplicateNames(root);
 
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
@@ -477,6 +480,9 @@ public class TraverseSchema {
             }
         } // for each child node
     } // traverseSchema(Element)
+
+    private void checkTopLevelDuplicateNames(Element root) {
+    }
 
     /**
      * No-op - Traverse Annotation Declaration
@@ -611,7 +617,115 @@ public class TraverseSchema {
         int left = -2;
         int right = -2;
         Vector uses = new Vector();
+        ComplexTypeInfo baseTypeInfo = null;  //if base is a complexType;
+        DatatypeValidator baseTypeValidator = null; //if base is a simple type or a complex type derived from a simpleType
+        DatatypeValidator simpleTypeValidator = null;
+        int baseTypeSymbol = -1;
+        String fullBaseName = "";
+        boolean baseIsSimpleSimple = false;
+        boolean baseIsComplexSimple = false;
+        boolean derivedByRestriction = true;
+        boolean derivedByExtension = false;
+        int baseContentSpecHandle = -1;
+        Element baseTypeNode = null;
 
+
+        //int parsedderivedBy = parseComplexDerivedBy(derivedBy);
+        //handle the inhreitance here. 
+        if (base.length()>0) {
+            if (derivedBy.length() == 0) {
+                reportGenericSchemaError("derivedBy must be present when base is present in " 
+                                         +SchemaSymbols.ELT_COMPLEXTYPE
+                                         +" "+ typeName);
+            }
+            else {
+                if (derivedBy.equals(SchemaSymbols.ATTVAL_EXTENSION)) {
+                    derivedByRestriction = false;
+                }
+                
+                String prefix = "";
+                String localpart = base;
+                int colonptr = base.indexOf(":");
+                if ( colonptr > 0) {
+                    prefix = base.substring(0,colonptr);
+                    localpart = base.substring(colonptr+1);
+                }
+                int localpartIndex = fStringPool.addSymbol(localpart);
+                String typeURI = resolvePrefixToURI(prefix);
+                if (!typeURI.equals(targetNSUriString)) {
+                    baseTypeInfo = getTypeInfoFromNS(typeURI, localpart);
+                    // REVISIT: baseTypeValidator = getTypeValidatorFromNS(typeURI, localpart);
+                }
+                else {
+                
+                    fullBaseName = typeURI+","+localpart;
+                        // try to locate the base type first
+                    baseTypeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(fullBaseName);
+                    if (baseTypeInfo == null) {
+                        baseTypeValidator = fDatatypeRegistry.getValidatorFor(fullBaseName);
+                        if (baseTypeValidator == null) {
+                            baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
+                            if (baseTypeNode != null) {
+                                baseTypeSymbol = traverseComplexTypeDecl( baseTypeNode );
+                                baseTypeInfo = (ComplexTypeInfo)
+                                fComplexTypeRegistry.get(fStringPool.toString(baseTypeSymbol)); //REVIST: should it be fullBaseName;
+                            }
+                            else {
+                                baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                                if (baseTypeNode != null) {
+                                    baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
+                                    baseTypeValidator = fDatatypeRegistry.getValidatorFor(fullBaseName);
+                                    baseIsSimpleSimple = true;
+                                }
+                                else {
+                                    reportGenericSchemaError("Base type could not be found : " + base);
+                                }
+                            }
+                        }
+                        else {
+                            baseIsSimpleSimple = true;
+                        }
+
+                        //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
+                        if (baseIsSimpleSimple && derivedByRestriction) {
+                            reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
+                        }
+
+                        //if  the base is a complexType
+                        if (baseTypeInfo != null ) {
+
+                            //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
+                            //              5.11: Derivation Valid ( Restriction, Complex ) 1.2.1
+                            if (derivedByRestriction) {
+                                //REVISIT: check base Type's finalset does not include "restriction"
+                            }
+                            else {
+                                //REVISIT: check base Type's finalset doest not include "extension"
+                            }
+
+                            if ( baseTypeInfo.contentSpecHandle > -1) {
+                                if (derivedByRestriction) {
+                                    //REVISIT: !!! really hairy staff to check the particle derivation OK in 5.10
+                                    checkParticleDerivationOK(complexTypeDecl, baseTypeNode);
+                                }
+                                baseContentSpecHandle = baseTypeInfo.contentSpecHandle;
+                            }
+                            else if ( baseTypeInfo.datatypeValidator != null ) {
+                                baseTypeValidator = baseTypeInfo.datatypeValidator;
+                                baseIsComplexSimple = true;
+                            }
+                        }
+
+                        //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
+                        if (baseIsComplexSimple && !derivedByRestriction ) {
+                            reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
+                        }
+
+
+                    }
+                }
+            }
+        }
 
         // skip refinement and annotations
         child = null;
@@ -636,7 +750,7 @@ public class TraverseSchema {
             //REVISIT: SimpleType restriction handling
             //if (child.getNodeName().equals(SchemaSymbols.ELT_RESTRICTIONS))
                 reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-                                  new Object [] { "Restriction" });
+                                  new Object [] { "Restrictions" });
         }
 
             // if content = textonly, base is a datatype
@@ -793,7 +907,16 @@ public class TraverseSchema {
             }
         }
         
-        // stick in ElementDeclPool as a hack
+        // if derived by extension and base complextype has a content model, 
+        // compose the final content model by concatenating the base and the 
+        // current in sequence.
+        if (!derivedByRestriction && baseContentSpecHandle > -1 ) {
+            left = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                                                 baseContentSpecHandle,
+                                                 left,
+                                                 false);
+        }
+        // REVISIT: keep it here for now, stick in ElementDeclPool as a hack
         //int typeIndex = fValidator.addElementDecl(typeNameIndex, contentSpecType, left, false);
 
         if (!typeName.startsWith("#")) {
@@ -805,6 +928,7 @@ public class TraverseSchema {
         typeInfo.scopeDefined = scopeDefined; 
         typeInfo.contentSpecHandle = left;
         typeInfo.contentType = contentSpecType;
+        typeInfo.datatypeValidator = simpleTypeValidator;
         typeInfo.blockSet = parseBlockSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
         typeInfo.finalSet = parseFinalSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
 
@@ -812,10 +936,10 @@ public class TraverseSchema {
 
         //for (int x = 0; x < uses.size(); x++)
             //addUse(typeNameIndex, (Integer)uses.elementAt(x));
-
         
         int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
-        
+
+
         // REVISIT: this part is definitely broken!!!
         // (attribute | attrGroupRef)*
         for (;
@@ -827,24 +951,14 @@ public class TraverseSchema {
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 traverseAttributeDecl(child, typeInfo);
             } 
-        /*    else if (childName.equals(SchemaSymbols.ELT_ATTRGROUPDECL) 
-                     && !child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+            else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
 
-                int index = traverseAttrGroupRef(child);
+                traverseAttributeGroupDecl(child,typeInfo);
+            }
+        }
 
-                if (getContentSpecHandleForElementType(index) == -1) {
-                    reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-                                      new Object [] { "Forward References to attrGroup" });
-                    Vector v = null;
-                    Integer i = new Integer(index);
-                    if ((v = (Vector) fForwardRefs.get(i)) == null)
-                        v = new Vector();
-                    v.addElement(new Integer(typeNameIndex));
-                    fForwardRefs.put(i,v);
-                    addUse(typeNameIndex, index);
-                } else
-                    fValidator.copyAtts(index, typeNameIndex);
-            }*/
+        if (baseIsComplexSimple) {
+            //TO DO: add the attributes de
         }
 
         fCurrentScope = previousScope;
@@ -854,7 +968,10 @@ public class TraverseSchema {
 
     } // end of method: traverseComplexTypeDecl
 
-    int expandContentModel ( int index, Element particle) throws Exception {
+    private void checkParticleDerivationOK(Element derivedTypeNode, Element baseTypeNode) {
+    }
+
+    private int expandContentModel ( int index, Element particle) throws Exception {
         
         String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);
         String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);    
@@ -1010,7 +1127,32 @@ public class TraverseSchema {
         int attType = -1;
         int enumeration = -1;
 
+        String ref = attrDecl.getAttribute(SchemaSymbols.ATT_REF); 
         String datatype = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
+
+        if (!ref.equals("")) {
+            if (XUtil.getFirstChildElement(attrDecl) != null)
+                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+            String prefix = "";
+            String localpart = ref;
+            int colonptr = ref.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = ref.substring(0,colonptr);
+                localpart = ref.substring(colonptr+1);
+            }
+            if (!resolvePrefixToURI(prefix).equals(targetNSUriString)) {
+                // REVISIST: different NS, not supported yet.
+                reportGenericSchemaError("Feature not supported: see an attribute from different NS");
+            }
+            Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
+            if (referredAttribute != null) {
+                traverseAttributeDecl(referredAttribute, typeInfo);
+            }
+            else {
+                reportGenericSchemaError ( "Couldn't find top level attribute " + ref);
+            }
+            return -1;
+        }
 
         if (datatype.equals("")) {
             Element child = XUtil.getFirstChildElement(attrDecl);
@@ -1120,14 +1262,177 @@ public class TraverseSchema {
         QName attQName = new QName(-1,attName,attName,uriIndex);
 
         // add attribute to attr decl pool in fValidator, and get back the head
-        typeInfo.attlistHead = fValidator.addAttDef( typeInfo.attlistHead, 
-                                                      attQName, attType, 
-                                                      enumeration, attDefaultType, 
-                                                      attDefaultValue, true);
-
+        int newhead = fValidator.addAttDef( typeInfo.attlistHead, 
+                                                              attQName, attType, 
+                                                              enumeration, attDefaultType, 
+                                                              attDefaultValue, true);
+        if (newhead > -1 ) {
+            typeInfo.attlistHead = newhead;
+        }
         return -1;
-    }
+    } // end of method traverseAttribute
 
+    /*
+    * 
+    * <attributeGroup 
+    *   id = ID 
+    *   name = NCName
+    *   ref = QName>
+    *   Content: (annotation?, (attribute|attributeGroup), anyAttribute?)
+    * </>
+    * 
+    */
+    private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo ) throws Exception {
+        // attribute name
+        int attGrpName = fStringPool.addSymbol(attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        
+        String ref = attrGrpDecl.getAttribute(SchemaSymbols.ATT_REF); 
+
+        // attribute type
+        int attType = -1;
+        int enumeration = -1;
+
+        if (!ref.equals("")) {
+            if (XUtil.getFirstChildElement(attrGrpDecl) != null)
+                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+            String prefix = "";
+            String localpart = ref;
+            int colonptr = ref.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = ref.substring(0,colonptr);
+                localpart = ref.substring(colonptr+1);
+            }
+            if (!resolvePrefixToURI(prefix).equals(targetNSUriString)) {
+                // REVISIST: different NS, not supported yet.
+                reportGenericSchemaError("Feature not supported: see an attribute from different NS");
+            }
+            Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
+            if (referredAttrGrp != null) {
+                traverseAttributeDecl(referredAttrGrp, typeInfo);
+            }
+            else {
+                reportGenericSchemaError ( "Couldn't find top level attributegroup " + ref);
+            }
+            return -1;
+        }
+
+        for ( Element child = XUtil.getFirstChildElement(attrGrpDecl); 
+             child != null ; child = XUtil.getNextSiblingElement(child)) {
+       
+            if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
+                traverseAttributeDecl(child, typeInfo);
+            }
+            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
+                traverseAttributeGroupDecl(child, typeInfo);
+            }
+            else if (child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
+                // REVISIT: what about appInfo
+            }
+        }
+        return -1;
+    } // end of method traverseAttributeGroup
+    
+    /*
+    // REVISIT addAttDef a hack for TraverseSchema 
+    public int addAttDef(int attlistHeadIndex, QName attributeDecl, 
+                         int attType, int enumeration, 
+                         int attDefaultType, int attDefaultValue, 
+                         boolean whenRestriction) throws Exception {
+
+        int attlistIndex = attlistHeadIndex;
+
+        int dupID = -1;
+        int dupNotation = -1;
+        while (attlistIndex != -1) {
+            int attrChunk = attlistIndex >> CHUNK_SHIFT;
+            int attrIndex = attlistIndex & CHUNK_MASK;
+            // REVISIT: Validation. Attributes are also tuples.
+            if (fStringPool.equalNames(fAttName[attrChunk][attrIndex], attributeDecl.rawname)) {
+                // REVISIT
+                if ( ! whenRestriction) {
+                    reportGenericSchemaError("Duplicate attributes in "+typeInfo.name);
+                }
+                return -1;
+            }
+            if (fValidating) {
+                if (attType == fIDSymbol && fAttType[attrChunk][attrIndex] == fIDSymbol) {
+                    dupID = fAttName[attrChunk][attrIndex];
+                }
+                if (attType == fNOTATIONSymbol && fAttType[attrChunk][attrIndex] == fNOTATIONSymbol) {
+                    dupNotation = fAttName[attrChunk][attrIndex];
+                }
+            }
+            attlistIndex = fNextAttDef[attrChunk][attrIndex];
+        }
+        if (fValidating) {
+            //REVISIT
+            if (dupID != -1) {
+                Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
+                                  fStringPool.toString(dupID),
+                                  fStringPool.toString(attributeDecl.rawname) };
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_MORE_THAN_ONE_ID_ATTRIBUTE,
+                                           XMLMessages.VC_ONE_ID_PER_ELEMENT_TYPE,
+                                           args,
+                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                return -1;
+            }
+            if (dupNotation != -1) {
+                Object[] args = { fStringPool.toString(fElementType[elemChunk][elemIndex]),
+                                  fStringPool.toString(dupNotation),
+                                  fStringPool.toString(attributeDecl.rawname) };
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE,
+                                           XMLMessages.VC_ONE_NOTATION_PER_ELEMENT_TYPE,
+                                           args,
+                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                return -1;
+            }
+        }
+        //
+        // save the fields
+        //
+        int chunk = fAttDefCount >> CHUNK_SHIFT;
+        int index = fAttDefCount & CHUNK_MASK;
+        ensureAttrCapacity(chunk);
+        fAttName[chunk][index] = attributeDecl.rawname;
+        fAttType[chunk][index] = attType;
+        fAttValidator[chunk][index] = getValidatorForAttType(attType);
+        fEnumeration[chunk][index] = enumeration;
+        fAttDefaultType[chunk][index] = attDefaultType;
+        fAttDefIsExternal[chunk][index] = (byte)(isExternal ? 1 : 0);
+        fAttValue[chunk][index] = attDefaultValue;
+        //
+        // add to the attr list for this element
+        //
+        int nextIndex = -1;
+        if (attDefaultValue != -1) {
+            nextIndex = fAttlistHead[elemChunk][elemIndex];
+            fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
+            if (nextIndex == -1) {
+                fAttlistTail[elemChunk][elemIndex] = fAttDefCount;
+            }
+        } else {
+            nextIndex = fAttlistTail[elemChunk][elemIndex];
+            fAttlistTail[elemChunk][elemIndex] = fAttDefCount;
+            if (nextIndex == -1) {
+                fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
+            }
+            else {
+                fNextAttDef[nextIndex >> CHUNK_SHIFT][nextIndex & CHUNK_MASK] = fAttDefCount;
+                nextIndex = -1;
+            }
+        }
+        nextIndex = attlistHeadIndex;
+        fNextAttDef[chunk][index] = nextIndex;
+        
+        //return fAttDefCount++;
+        return fAttDefCount++;
+
+    } // addAttDef(QName,QName,int,int,int,int,boolean):int
+*/
 
     /**
      * Traverse element declaration:
@@ -1240,6 +1545,14 @@ public class TraverseSchema {
         // form attribute
         String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
+        if (isTopLevel(elementDecl)) {
+        
+            int nameIndex = fStringPool.addSymbol(name);
+            int eltKey = fValidator.getDeclaration(nameIndex,0);
+            if (eltKey > -1 ) {
+                return new QName(-1,nameIndex,nameIndex,targetNSURI);
+            }
+        }
         int attrCount = 0;
         if (!ref.equals("")) attrCount++;
         if (!type.equals("")) attrCount++;
@@ -1365,7 +1678,7 @@ public class TraverseSchema {
                 scopeDefined = typeInfo.scopeDefined;
             }
    
-        }
+        } // end of method traverseElementDecl
  
         //
         // Create element decl
@@ -1443,7 +1756,7 @@ public class TraverseSchema {
      * @param elementDecl
      * @exception Exception
      */
-    private int traverseAttributeGroupDecl( Element attributeGroupDecl ) throws Exception {
+    /*private int traverseAttributeGroupDecl( Element attributeGroupDecl ) throws Exception {
         int attributeGroupID         =  fStringPool.addSymbol(
                                                              attributeGroupDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
@@ -1451,7 +1764,7 @@ public class TraverseSchema {
                                                             attributeGroupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
         return -1;
-    }
+    }*/
 
 
     /**
@@ -2393,6 +2706,8 @@ public class TraverseSchema {
             catch (Exception e) {
                 e.printStackTrace(System.err);
             }
+            
+            parser.getDocument();
     }
 
     static class Resolver implements EntityResolver {
