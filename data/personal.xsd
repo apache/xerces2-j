@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE schema PUBLIC "-//W3C//DTD XMLSCHEMA 19991216//EN"
-                        "http://www.w3.org/TR/1999/WD-xmlschema-1-19991217/structures.dtd">
+                        "http://www.w3.org/TR/2000/WD-xmlschema-1-20000407/structures.dtd">
 <schema>
 
  <element name="personnel">
