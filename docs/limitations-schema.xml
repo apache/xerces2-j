@@ -19,12 +19,6 @@
 	</s2>
 	<s2 title="Limitations">
         <ul>
-            <li>There are certain constraints that we don't check in
-                this release, namely:
-                <br/> - Unique Particle Attribution;
-                <br/> - Particle Valid (Restriction);
-                <br/> - Element Declarations Consistent.
-            </li>
             <li> Length, minLength, and maxLength facets are limited to the value 
             2147483647. Items larger than this limit will not be validated 
             correctly.</li>
@@ -41,9 +35,11 @@
             <li> When the same schema document is both imported and
             included by the same schema document, only the first one
             takes effect;</li>
-            <li> If an imported/inluded/redefined schema document is
-            specified via a relative path, sometimes the parser fails
-            to locate such document.</li>
+            <li> If an imported/included/redefined schema document is
+            specified via a relative path, the parser may not
+            always succeed in locating the document.  Please implement and register a SAX
+            EntityResolver (<code>org.xml.sax.EntityResolver</code>) to customize
+            the parser&apos;s behaviour to your situation;</li>
         </ul>
     </s2>
     <s2 title='Interpretation of Areas that are Unclear or
