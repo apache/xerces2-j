@@ -122,9 +122,14 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
         //Pass content as a String
+        //System.out.println( "base = " + this.fBaseValidator );
 
+        //if( this.fBaseValidator != null ){
+          //  this.fBaseValidator.validate( content, state );
+        //}
         StateMessageDatatype message;
         if ( this.fDerivedByList == false ){
+            //System.out.println("conten = " + content );
             if (state!= null){
                 message = (StateMessageDatatype) state;    
                 if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
@@ -145,8 +150,8 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
                         InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
 
-                        error.setMajorCode(XMLMessages.MSG_IDREF_INVALID );
-                        error.setMinorCode(XMLMessages.VC_IDREF);
+                        error.setMinorCode(XMLMessages.MSG_IDREF_INVALID );
+                        error.setMajorCode(XMLMessages.VC_IDREF);
                         throw error;//Need Message
                     }
                     //System.out.println("Content = " + content );
@@ -154,7 +159,7 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                 }
             }
          } else {
-
+            //System.out.println("list = " + content );
             if (state!= null){
                 message = (StateMessageDatatype) state;    
                 if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
@@ -167,7 +172,7 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                     return null;
 
                 } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
-                    ////System.out.println("Call to Validate" );
+                    //System.out.println("Call to Validate IDREFS" );
                     this.checkIdRefs();//Validate that all keyRef is a keyIds
                 } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                     //System.out.println("IDREFS = " + content );
@@ -175,6 +180,10 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                     this.fTableOfId = (Hashtable) message.getDatatypeObject();
                     while ( tokenizer.hasMoreTokens() ) {
                         String idName = tokenizer.nextToken(); 
+                        //System.out.println("idName = " + idName );
+                        if( this.fBaseValidator != null ){
+                               this.fBaseValidator.validate( idName, state );
+                        }
                         addIdRef( idName, state);// We are storing IDs 
                     }
                 }
@@ -222,36 +231,52 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
     /** addId. */
     private void addIdRef(String content, Object state) {
-        //System.out.println("this.fTableOfId = " + this.fTableOfId );
-        //System.out.println("this =  " + this );
+        //System.out.println("this.fTableOfId = " + content );
+        //System.out.println("state =  " + state  );
+        //System.out.println("table = " + this.fTableOfId );
+
 
         if ( this.fTableOfId != null &&  this.fTableOfId.containsKey( content ) ){
             //System.out.println("It already contains key = " + content );
             return;
         }
+        //System.out.println("Table of IDRefs = " + this.fTableIDRefs );
         if ( this.fTableIDRefs == null ){
             this.fTableIDRefs = new Hashtable();
         } else if ( fTableIDRefs.containsKey( content ) ){
             return;
         }
 
+
         if ( this.fNullValue == null ){
             fNullValue = new Object();
         }
         //System.out.println("tabl IDREFs = " + this.fTableIDRefs );
-        this.fTableIDRefs.put( content, fNullValue ); 
+        try {
+            this.fTableIDRefs.put( content, fNullValue ); 
+        } catch( OutOfMemoryError ex ){
+            System.out.println( "Out of Memory: Hashtable of ID's has " + this.fTableIDRefs.size() + " Elements" );
+            ex.printStackTrace();
+        }
     } // addId(int):boolean
 
 
     private void checkIdRefs() throws InvalidDatatypeValueException {
+        //System.out.println("Tab Ids = " + this.fTableOfId );
+        //System.out.println("Tab refs = " + this.fTableIDRefs );
+
         if ( this.fTableIDRefs == null)
             return;
         
         Enumeration en = this.fTableIDRefs.keys();
+        //System.out.println("TabIDREFs=  " + this.fTableIDRefs );
+
         while (en.hasMoreElements()) {
             String key = (String)en.nextElement();
 
+            //System.out.println("Tab Ids = " + this.fTableOfId );
             if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key)) {
+                
                 InvalidDatatypeValueException error =  new
                             InvalidDatatypeValueException( key );
                 error.setMinorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);

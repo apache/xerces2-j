@@ -107,7 +107,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
      */
     public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
         //Pass content as a String
-
+        //System.out.println("Call to ID= " );
         if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
             InvalidDatatypeValueException error =  new
                             InvalidDatatypeValueException( "ID is not valid: " );
