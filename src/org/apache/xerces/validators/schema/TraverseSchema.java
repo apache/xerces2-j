@@ -6645,11 +6645,11 @@ throws Exception {
                         if(fSubstitutionGroupRecursionRegistry.contains(substitutionGroupElementDecl.getAttribute("name"))) {
                             ignoreSub = true;
                         } else {
-                            fSubstitutionGroupRecursionRegistry.addElement(substitutionGroupElementDecl.getAttribute("name"));
+                            fSubstitutionGroupRecursionRegistry.addElement(substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
                             traverseElementDecl(substitutionGroupElementDecl);
                             substitutionGroupElementDeclIndex =
                                 fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(substitutionGroupStr),TOP_LEVEL_SCOPE);
-                            fSubstitutionGroupRecursionRegistry.remove(substitutionGroupElementDecl.getAttribute("name"));
+                            fSubstitutionGroupRecursionRegistry.removeElement((Object)substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
                         }
                     }
                 }
