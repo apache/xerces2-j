@@ -340,7 +340,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                     f=Float.NaN;
                 } else {
                     throw new InvalidDatatypeValueException(
-                                  getErrorString(DatatypeMessageProvider.NotReal,
+                                  getErrorString(DatatypeMessageProvider.NotFloat,
                                                  DatatypeMessageProvider.MSG_NONE,
                                                            new Object [] { content}));
                 }
