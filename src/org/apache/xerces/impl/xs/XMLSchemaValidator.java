@@ -746,6 +746,9 @@ public class XMLSchemaValidator
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
 
+        // record the fact that there is a comment child.
+        fSawChidren = true;
+
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.comment(text, augs);
@@ -771,6 +774,9 @@ public class XMLSchemaValidator
      */
     public void processingInstruction(String target, XMLString data, Augmentations augs)
     throws XNIException {
+
+        // record the fact that there is a PI child.
+        fSawChidren = true;
 
         // call handlers
         if (fDocumentHandler != null) {
@@ -902,6 +908,12 @@ public class XMLSchemaValidator
 
     /** Stack to record if we saw character data outside of element content*/
     boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
+
+    /** Did we see children that are neither characters nor elements? */
+    boolean fSawChidren = false;
+
+    /** Stack to record if we other children that character or elements */
+    boolean[] fSawChildrenStack = new boolean[INITIAL_STACK_SIZE];
 
     /** temprory qname */
     final QName fTempQName = new QName();
@@ -1064,6 +1076,7 @@ public class XMLSchemaValidator
         fCurrCMState = null;
         fBuffer.setLength(0);
         fSawCharacters=false;
+        fSawChidren=false;
         fValidationRootDepth = -1;
         fValidationRoot = null;
         fSkipValidationDepth = -1;
@@ -1180,6 +1193,10 @@ public class XMLSchemaValidator
             boolean[] newArrayD = new boolean[newSize];
             System.arraycopy(fStringContent, 0, newArrayD, 0, fElementDepth);
             fStringContent = newArrayD;
+
+            newArrayD = new boolean[newSize];
+            System.arraycopy(fSawChildrenStack, 0, newArrayD, 0, fElementDepth);
+            fSawChildrenStack = newArrayD;
 
             int[][] newArrayIA = new int[newSize][];
             System.arraycopy(fCMStateStack, 0, newArrayIA, 0, fElementDepth);
@@ -1325,6 +1342,7 @@ public class XMLSchemaValidator
             fTypeStack[fElementDepth] = fCurrentType;
             fCMStack[fElementDepth] = fCurrentCM;
             fStringContent[fElementDepth] = fSawCharacters;
+            fSawChildrenStack[fElementDepth] = fSawChidren;
         }
 
         // get the element decl for this element
@@ -1456,6 +1474,7 @@ public class XMLSchemaValidator
         // and the buffer to hold the value of the element
         fBuffer.setLength(0);
         fSawCharacters = false;
+        fSawChidren = false;
 
         // get information about xsi:nil
         String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
@@ -1535,6 +1554,7 @@ public class XMLSchemaValidator
                 fCurrentCM = fCMStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
                 fSawCharacters = fStringContent[fElementDepth];
+                fSawChidren = fSawChildrenStack[fElementDepth];
             }
             else {
                 fElementDepth--;
@@ -1647,6 +1667,7 @@ public class XMLSchemaValidator
             fCurrentCM = fCMStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
+            fSawChidren = fSawChildrenStack[fElementDepth];
         }
 
         // need to pop context so that the bindings for this element is
@@ -2265,7 +2286,7 @@ public class XMLSchemaValidator
         if (!fNil) {
             // 2.1 If the {content type} is empty, then the element information item has no character or element information item [children].
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY &&
-                (fChildCount != 0 || textContent.length() != 0)) {
+                (fChildCount != 0 || textContent.length() != 0 || fSawChidren)) {
                 reportSchemaError("cvc-complex-type.2.1", new Object[]{element.rawname});
             }
             // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the normalized value of the element information item is valid with respect to that simple type definition as defined by String Valid (3.14.4).
@@ -2290,7 +2311,6 @@ public class XMLSchemaValidator
             }
             // 2.3 If the {content type} is element-only, then the element information item has no character information item [children] other than those whose [character code] is defined as a white space in [XML 1.0 (Second Edition)].
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
-                // REVISIT: how to check whether there is any text content?
                 if (fSawCharacters) {
                     reportSchemaError("cvc-complex-type.2.3", new Object[]{element.rawname});
                 }
