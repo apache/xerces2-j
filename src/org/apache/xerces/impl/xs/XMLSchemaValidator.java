@@ -2162,6 +2162,7 @@ public class XMLSchemaValidator
         if (fElementDepth == 0) {
             // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
             String invIdRef = fValidationState.checkIDRefID();
+            fValidationState.resetIDTables();
             if (invIdRef != null) {
                 reportSchemaError("cvc-id.1", new Object[]{invIdRef});
             }
@@ -2169,7 +2170,6 @@ public class XMLSchemaValidator
             if (fFullChecking) {
                 XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
             }
-            fValidationState.resetIDTables();
 
             grammars = fGrammarBucket.getGrammars();
             // return the final set of grammars validator ended up with
