@@ -401,6 +401,10 @@ public final class XMLValidator
     // store the substitution group comparator
     protected SubstitutionGroupComparator fSGComparator = null;
 
+    // on which grammars we have checked UPA
+    protected Hashtable UPACheckedGrammarURIs = new Hashtable();
+    protected static Object fgNullObject = new Object();
+
    //
    // Constructors
    //
@@ -539,7 +543,7 @@ public final class XMLValidator
    public void setExternalNoNamespaceSchema(Object value){
        fExternalNoNamespaceSchema = (String)value;
    }
-   
+
    public String getExternalSchemas(){
        return fExternalSchemas;
    }
@@ -1076,7 +1080,7 @@ public final class XMLValidator
                 }
               fValueStoreCache.endDocument();
           }
-         fDocumentHandler.endDocument();                                
+         fDocumentHandler.endDocument();
       }
    }
 
@@ -1136,7 +1140,7 @@ public final class XMLValidator
       // (2) report error for PROHIBITED attrs that are present (V_TAGc)
       // (3) add default attrs (FIXED and NOT_FIXED)
       //
-      
+
       if (!fSeenRootElement) {
          rootElementSpecified(element);
          fStringPool.resetShuffleCount();
@@ -1145,7 +1149,7 @@ public final class XMLValidator
       if (fGrammar != null && fGrammarIsDTDGrammar) {
          fAttrListHandle = addDTDDefaultAttributes(element, fAttrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
       }
-      
+
       fCheckedForSchema = true;
       if (fNamespacesEnabled) {
          bindNamespacesToElementAndAttributes(element, fAttrList);
@@ -1953,7 +1957,7 @@ public final class XMLValidator
       fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
 
       // we reset fGrammarResolver in XMLParser before passing it to Validator
-      
+
       fGrammarIsDTDGrammar = false;
       fGrammarIsSchemaGrammar = false;
 
@@ -1964,7 +1968,8 @@ public final class XMLValidator
       fWhiteSpace = DatatypeValidator.COLLAPSE;
 
       fMatcherStack.clear();
-      
+
+      UPACheckedGrammarURIs.clear();
       //REVISIT: fExternalSchemas/fExternalNoNamespaceSchema is not reset 'cause we don't have grammar cashing in Xerces-J
       //         reconsider implementation when we have grammar chashing
       //
@@ -1998,7 +2003,7 @@ public final class XMLValidator
       fDATATYPESymbol = fStringPool.addSymbol("<<datatype>>");
       fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
       fXMLLang = fStringPool.addSymbol("xml:lang");
-   
+
    } // init()
 
     /**
@@ -2475,6 +2480,7 @@ public final class XMLValidator
 
       fNamespacesScope.increaseDepth();
 
+
       if (fAttrListHandle != -1 || !fSeenRootElement) {
          int index = attrList.getFirstAttr(fAttrListHandle);
          while (index != -1) {
@@ -2521,13 +2527,13 @@ public final class XMLValidator
                  // and user set property on the parser to include external schemas
                  //
                  if (fExternalSchemas != null && fExternalSchemas.length()!=0) {
-                    
+
                      parseSchemaLocation(fExternalSchemas);
                  }
                  if (fExternalNoNamespaceSchema!=null && fExternalNoNamespaceSchema.length() !=0 ) {
-                     
+
                      fLocationUriPairs.put(fExternalNoNamespaceSchema, "");
-                     
+
                      //REVISIT: wrong solution  (see AndyC note below)
                      if (fNamespacesScope != null) {
                       //bind prefix "" to URI "" in this case
@@ -2568,7 +2574,7 @@ public final class XMLValidator
                         parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)));
                      } else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION)) {
                         fLocationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
-                        
+
                         /***/
                         // NOTE: This is the *wrong* solution to the problem
                         //       of finding the grammar associated to elements
@@ -2645,7 +2651,7 @@ public final class XMLValidator
    } // bindNamespacesToElementAndAttributes(QName,XMLAttrList)
 
    private void parseSchemas () throws Exception{
-      
+
        // try to resolve all the grammars here
        Enumeration locations = fLocationUriPairs.keys();
        String location = null;
@@ -2654,7 +2660,7 @@ public final class XMLValidator
            location = (String) locations.nextElement();
            uri = (String) fLocationUriPairs.get(location);
            resolveSchemaGrammar( location, uri);
-       }       
+       }
    }
 
    private void parseSchemaLocation(String schemaLocationStr) throws Exception{
@@ -2682,9 +2688,9 @@ public final class XMLValidator
 
 
    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
-       SchemaGrammar grammar = null;       
-       
-       if (uri!=null) {       
+       SchemaGrammar grammar = null;
+
+       if (uri!=null) {
          grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
        }
        if (grammar == null) {
@@ -2718,7 +2724,7 @@ public final class XMLValidator
             loc = fEntityHandler.expandSystemId(loc);
             source = new InputSource(loc);
          }
-         
+
          try {
             fSchemaGrammarParser.parse( source );
          } catch ( IOException e ) {
@@ -2762,8 +2768,8 @@ public final class XMLValidator
             generalAttrCheck.checkNonSchemaAttributes(fGrammarResolver);
 
             //allowing xsi:schemaLocation to appear on any element
-               
-            String targetNS =   root.getAttribute("targetNamespace");               
+
+            String targetNS =   root.getAttribute("targetNamespace");
             fGrammarNameSpaceIndex = fStringPool.addSymbol(targetNS);
             fGrammarResolver.putGrammar(targetNS, grammar);
             fGrammar = (SchemaGrammar)grammar;
@@ -2780,9 +2786,14 @@ public final class XMLValidator
                  // for each grammar
                  while (grammarURIs.hasMoreElements()) {
                      grammarURI = (String)grammarURIs.nextElement();
+                     // if we checked UPA on this grammar, just skip
+                     if (UPACheckedGrammarURIs.get(grammarURI) != null)
+                        continue;
+                     // otherwise, mark this one as checked
+                     UPACheckedGrammarURIs.put(grammarURI, fgNullObject);
                      gGrammar = fGrammarResolver.getGrammar(grammarURI);
                      if (!(gGrammar instanceof SchemaGrammar))
-                            continue;
+                        continue;
                      sGrammar = (SchemaGrammar)gGrammar;
 
                      // get all registered complex type in this grammar
@@ -3104,6 +3115,10 @@ public final class XMLValidator
       } else {
 
          //REVISIT: is this the right place to check on if the Schema has changed?
+         TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
+        if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1)
+            baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
+
 
          if ( fNamespacesEnabled && fValidating &&
               element.uri != fGrammarNameSpaceIndex &&
@@ -3135,30 +3150,26 @@ public final class XMLValidator
             if (elementIndex == -1) {
                // if validating based on a Schema, try to resolve the element again by searching in its type's ancestor types
                if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
-                  TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
-                  baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
                   int aGrammarNSIndex = fGrammarNameSpaceIndex;
                   while (baseTypeInfo != null) {
+                    String baseTName = baseTypeInfo.typeName;
+                    if (!baseTName.startsWith("#")) {
+                       int comma = baseTName.indexOf(',');
+                       aGrammarNSIndex = fStringPool.addSymbol(baseTName.substring(0,comma).trim());
+                       if (aGrammarNSIndex != fGrammarNameSpaceIndex) {
+                          if ( !switchGrammar(aGrammarNSIndex) ) {
+                             break; //exit the loop in this case
+                          }
+                          fGrammarNameSpaceIndex = aGrammarNSIndex;
+                       }
+                    }
                      elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
                      if (elementIndex > -1 ) {
                         //System.out.println("found element index for " + fStringPool.toString(element.localpart));
                         // update the current Grammar NS index if resolving element succeed.
-                        fGrammarNameSpaceIndex = aGrammarNSIndex;
                         break;
                      }
                      baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
-                     if (baseTypeInfo != null) {
-                        String baseTName = baseTypeInfo.typeName;
-                        if (!baseTName.startsWith("#")) {
-                           int comma = baseTName.indexOf(',');
-                           aGrammarNSIndex = fStringPool.addSymbol(baseTName.substring(0,comma).trim());
-                           if (aGrammarNSIndex != fGrammarNameSpaceIndex) {
-                              if ( !switchGrammar(aGrammarNSIndex) ) {
-                                 break; //exit the loop in this case
-                              }
-                           }
-                        }
-                     }
                   }
                   // if *still* can't find it, try a grammar with no targetNamespace
                   if(elementIndex == -1 && element.uri == StringPool.EMPTY_STRING) {

@@ -3359,6 +3359,7 @@ public class TraverseSchema implements
 
         Element child = null;
         ComplexTypeInfo typeInfo = new ComplexTypeInfo();
+        typeInfo.scopeDefined = scopeDefined;
 
         try {
 
@@ -3438,7 +3439,6 @@ public class TraverseSchema implements
         // ------------------------------------------------------------------
         // Finish the setup of the typeInfo and register the type
         // ------------------------------------------------------------------
-        typeInfo.scopeDefined = scopeDefined;
         if (isAbstract.equals(SchemaSymbols.ATTVAL_TRUE))
           typeInfo.setIsAbstractType();
         if (!forwardRef)
