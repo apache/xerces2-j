@@ -1,7 +1,20 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; TBD'>
+   <desc>TBD</desc>
+   <changes>
+    <fix>
+     <note>
+      Fixed bug in HTML DOM implementation that would cause a hierarchy
+      request error by trying to move a doctype node to be a child of
+      the &lt;html&gt; element.
+     </note>
+     <submitter name='Andy Clark'/>
+    </fix>
+   </changes>
+  </release>
   <release version='&ParserName; 2.5.0'>
    <desc>
     This release provides a partial implementation of W3C XInclude specification as well as adds annotation support for the XML Schema component API. In addition to fixing many bugs, this release also brings Xerces into compliance with the most recent work of the W3C DOM working group on DOM level 3 Core and Load/Save, and includes additional fixes related to the XML 1.1 specification.
