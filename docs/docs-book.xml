@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE book SYSTEM 'dtd/book.dtd'>
 <book title='&ParserName; Documentation' 
-      copyright='1999-2002 The Apache Software Foundation'>
+      copyright='1999-2003 The Apache Software Foundation'>
  <external label='Home' href='http://xml.apache.org/'/>
  <separator/>
  <document label='Readme' title='&ParserNameLong; Readme'
