@@ -96,7 +96,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Entity;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Comment;
 /**
  * This class adds implementation for normalizeDocument method.
@@ -298,15 +297,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
         //          if so we should not depend on Xerces specific classes
 
         int type = node.getNodeType();
+        boolean wellformed;
+
         switch (type) {
         case Node.DOCUMENT_TYPE_NODE: {
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{doctype}");
                 }
-                if ((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0) {
-                    // remove all entity nodes
-                    ((DocumentTypeImpl)node).entities.removeAll();
-                }
+                //REVISIT: well-formness encoding info
                 break;
             }
 
@@ -319,15 +317,20 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 //application has set the value of well-formed features to true
                 if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) && 
                     fDocument.isXMLVersionChanged()){
-                    //take care of namespaces
                     if(fNamespaceValidation){
-                        //checkQName does checking based on the version of the document
-                        fDocument.checkQName(node.getPrefix() , node.getLocalName()) ;
+                        wellformed = CoreDocumentImpl.isValidQName(node.getPrefix() , node.getLocalName(),  fDocument.isXML11Version()) ;
                     }
                     else{
-                        //REVISIT: checkQName takes care of the version of the document
-                        //but isXMLName doesn't.... why its so ?
-                        fDocument.isXMLName(node.getNodeName() , fDocument.isXML11Version());
+                        wellformed = CoreDocumentImpl.isXMLName(node.getNodeName() , fDocument.isXML11Version());
+                    }
+                    if (!wellformed){
+                        if (fErrorHandler != null) {
+                            String msg = "Invalid XML Character in element " + node.getNodeName() ;
+                            reportDOMError(msg,
+                                DOMError.SEVERITY_ERROR, null,  "wf-invalid-character");
+
+                        }
+                        
                     }
                 }
                 // push namespace context
@@ -338,60 +341,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if (elem.needsSyncChildren()) {
                     elem.synchronizeChildren();
                 }
-                // REVISIT: need to optimize for the cases there normalization is not 
-                //          needed and an element could be skipped.
-
-                // Normalize all of the attributes & remove defaults
                 AttributeMap attributes = (elem.hasAttributes()) ? (AttributeMap) elem.getAttributes() : null; 
-
-
-                //It is an error if an attribute value contains a reference 
-                //to an entity for which no declaration has been read.
- 				//REVISIT: To improve performance since now we are looping 
- 				//an extra time via attributes.                
-                if ( attributes!=null ) {
-                    for ( int i=0; i<attributes.getLength(); ++i ) {
-
-                        Attr attr = (Attr)attributes.item(i);
-                        NodeList children = attr.getChildNodes();
-
-                        //check each child node of the attribute's value
-                        for (int j =0; j < children.getLength(); j++ ) {
-                            if (DEBUG_ND) {
-                                 System.out.println("==>normalizeNode:{attribute} "+ attr.getNodeName() + "=" + attr.getNodeValue());
-                             }
-
-                             Node child = children.item(j);
-
-                             //If the attribute's child is an entity refernce
-                             if (child.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
-
-                                 Document owner = attr.getOwnerDocument();
-                                 Entity ent = null;
-
-                                 //search for the entity in the docType
-                                 //of the attribute's ownerDocument
-                                 if(owner != null) {
-                                     DocumentType docType = owner.getDoctype();
-                                     if(docType != null) {
-                                         NamedNodeMap entities = docType.getEntities();
-                                         ent = (Entity)entities.getNamedItemNS("*",child.getNodeName());
-                                     } 
-                                 } 
-                                 
-                                 //If the entity was not found issue a fatal error
-                                 if (ent == null && fErrorHandler != null) {
-                                     reportDOMError("The attribute " + attr.getNodeName() 
-                                         + " value '" + child.getNodeValue() 
-                                         + "' referenced an entity that was not declared", 
-                                         DOMError.SEVERITY_FATAL_ERROR, attr,null);
-                                 }
-                                                                          
-                             }//endif Node.ENTITY_REFERENCE_NODE
-                        }
-                    }
-                } //endif
-                                          
 
                 // fix namespaces and remove default attributes
                 if ((fConfiguration.features & DOMConfigurationImpl.NAMESPACES) !=0) {
@@ -405,16 +355,21 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             Attr attr = (Attr)attributes.item(i);
                             //removeDefault(attr, attributes);
                             attr.normalize();
-                            
-                            //do the name check only when version of the document was changed &
-                            //application has set the value of well-formed features to true
-                            if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) && 
-                                fDocument.isXMLVersionChanged()){
-                                fDocument.isXMLName(node.getNodeName() , fDocument.isXML11Version());
-                            }                            
-                            // XML 1.0 attribute value normalization
-                            //normalizeAttributeValue(attr.getValue(), attr);                            
-                        }
+                            if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)){
+                                    isAttrValueWF(attributes, (AttrImpl)attr, attr.getValue());
+                                if (fDocument.isXMLVersionChanged()){                                   
+                                    wellformed=CoreDocumentImpl.isXMLName(node.getNodeName() , fDocument.isXML11Version());
+                                    if (!wellformed){
+                                        if (fErrorHandler != null) {
+                                           String msg = "Invalid XML Character in element " + node.getNodeName() ;
+                                           reportDOMError(msg,
+                                              DOMError.SEVERITY_ERROR, null,  "wf-invalid-character");
+                                        }
+                        
+                                    }
+                                }           
+                            }
+                        }                                                        
                     }
                 }
                 
@@ -444,10 +399,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 } 
                 if (DEBUG_ND) {
                     // normalized subtree
-                    System.out.println("   normalized children for{"+node.getNodeName()+"}");
+                    System.out.println("***The children of {"+node.getNodeName()+"} are normalized");
                     for (kid = elem.getFirstChild(); kid != null; kid = next) {
                         next = kid.getNextSibling();
-                        System.out.println(kid.getNodeName() +": "+kid.getNodeValue());
+                        System.out.println(kid.getNodeName() +"["+kid.getNodeValue()+"]");
                     }
 
                 }
@@ -489,13 +444,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     }
                 }//if comment node need not be removed
                 else {
-                    
-                    //do the well-formed valid character check when application has set the value of well-formed features to true
                     if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)){
                         String commentdata = ((Comment)node).getData();
-                        //check comments for invalid xml chracter as per the version
-                        //of the document                            
-                        checkInValidXMLCharacters(commentdata, fDocument.isXML11Version());                        
+                        // check comments for invalid xml chracter as per the version
+                        // of the document                            
+                        isCommentWF(commentdata, fDocument.isXML11Version());                        
                     }
                 }//end-else if comment node is not to be removed.
 				break;
@@ -504,21 +457,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if (DEBUG_ND) {
                     System.out.println("==>normalizeNode:{entityRef} "+node.getNodeName());
                 }
-                                
-                //do the name check only when version of the document was changed &
-                //application has set the value of well-formed features to true
-                if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) && 
-                    fDocument.isXMLVersionChanged()){
-                    //REVISIT: checkQName takes care of the version of the document
-                    //but isXMLName doesn't.... why its so ?
-                    fDocument.isXMLName(node.getNodeName() , fDocument.isXML11Version());                    
-                }
 
                 if ((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0) {
                     Node prevSibling = node.getPreviousSibling();
                     Node parent = node.getParentNode();
                     ((EntityReferenceImpl)node).setReadOnly(false, true);
                     expandEntityRef (parent, node);
+                    // REVISIT: remove Entity node from the Doctype
                     parent.removeChild(node);
                     Node next = (prevSibling != null)?prevSibling.getNextSibling():parent.getFirstChild();
                     // The list of children #text -> &ent;
@@ -530,6 +475,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     }
                     return next;
                 } else {
+                    if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) && 
+                        fDocument.isXMLVersionChanged()){
+                            CoreDocumentImpl.isXMLName(node.getNodeName() , fDocument.isXML11Version());                    
+                    }
                     // REVISIT: traverse entity reference and send appropriate calls to the validator
                     // (no normalization should be performed for the children).
                 }
@@ -541,45 +490,25 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     System.out.println("==>normalizeNode:{cdata}");
                 }
                 
-                //1. Wether we are converting CDATA nodes to text nodes or not...
-                //we should be checking the node value in any case for valid XML character
-                    
-                //2. it is  possible to have the character sequence "]]>" in the content, 
-                //which is illegal in a CDATA section per section 2.7 of [XML 1.0]. 
-                //But DOM Says that the presence of this character sequence must generate a fatal error 
-                //only during _serialization_ or the cdata section must be splitted before the 
-                //serialization (see also the parameter "split-cdata-sections" in the DOMConfiguration interface). 
-                
-                //2a We dont need to generate fatal error when the DOM is in memory, this 
-                //would be taken care in serializer code
-                
-                //2b CDATA section splition is taken care down depending on the feature value
-                //or presence of ']]>' in CDATA shouldnot affect the following checks
-                //we should be checking for presence of valid XML characters
-                
-                
-                //do the well-formed valid character check when application has set the value of well-formed features to true
-                if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) ){                                                        
-                    checkInValidXMLCharacters(node.getNodeValue(), fDocument.isXML11Version());                    
-                }
-                
                 if ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) {
                     // convert CDATA to TEXT nodes
-                    Text text = fDocument.createTextNode(node.getNodeValue());
-                    Node parent = node.getParentNode();
                     Node prevSibling = node.getPreviousSibling();
-                    node = parent.replaceChild(text, node);
-                    if (prevSibling != null && prevSibling.getNodeType() == Node.TEXT_NODE) {
-
-                        text.insertData(0, prevSibling.getNodeValue());
-                        parent.removeChild(prevSibling);
+                    if (prevSibling != null && prevSibling.getNodeType() == Node.TEXT_NODE){
+                        ((Text)prevSibling).appendData(node.getNodeValue());
+                        node.getParentNode().removeChild(node);
+                        return prevSibling; //don't advance                        
                     }
-                    return text; // Don't advance; 
+                    else {
+                        Text text = fDocument.createTextNode(node.getNodeValue());
+                        Node parent = node.getParentNode();
+                        node = parent.replaceChild(text, node);
+                        return text;  //don't advance
+                        
+                    }
                 }
+
                 // send characters call for CDATA
                 if (fValidationHandler != null) {
-
-                    //
                     // set error node in the dom error wrapper
                     // so if error occurs we can report an error node
                     fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
@@ -588,23 +517,28 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     fValidationHandler.characterData(node.getNodeValue(), null);
                     fValidationHandler.endCDATA(null);
                 }
-
+                String value = node.getNodeValue();
+                
                 if ((fConfiguration.features & DOMConfigurationImpl.SPLITCDATA) != 0) {
-                    String value = node.getNodeValue();
                     int index;
                     Node parent = node.getParentNode();
+                    isXMLCharWF(node.getNodeValue(), fDocument.isXML11Version());
                     while ( (index=value.indexOf("]]>")) >= 0 ) {
                         node.setNodeValue(value.substring(0, index+2));
                         value = value.substring(index +2);
                         Node newChild = fDocument.createCDATASection(value);
                         parent.insertBefore(newChild, node.getNextSibling());
-                        node = newChild;
-                       
+                        node = newChild;                      
                         // issue warning
                         reportDOMError(
                             "CDATA sections containing the CDATA section termination marker ']]>'",
                             DOMError.SEVERITY_WARNING, node,  "cdata-sections-splitted");
                     }
+
+                }
+                else {
+                    // check well-formness
+                    isCDataWF(value, fDocument.isXML11Version());
                 }
                 break;
             }
@@ -623,56 +557,45 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if ( next!=null && next.getNodeType() == Node.TEXT_NODE ) {
                     ((Text)node).appendData(next.getNodeValue());
                     node.getParentNode().removeChild( next );
+                    // We don't need to check well-formness here since we are not yet
+                    // done with this node.
                     
-                //check the text values for valid xml character as per document version
-                //when application has set the value of well-formed features to true
-                if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) ){
-                        checkInValidXMLCharacters(node.getNodeValue(), fDocument.isXML11Version());
-                    }
-                    
-                    return node; // Don't advance;
-                    
+                    return node; // Don't advance;                   
                 } else if (node.getNodeValue().length()==0) {
                     // If kid is empty, remove it
                     node.getParentNode().removeChild( node );
                 } else {                    
-                    //check the text values for valid xml character as per document version...
-                    //do the name check when application has set the value of well-formed features to true                    
-                    if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) ){
-                        checkInValidXMLCharacters(node.getNodeValue(), fDocument.isXML11Version());
-                    }
-                    
-                    // validator.characters() call
-                    // Don't send characters in the following cases:
+                    // validator.characters() call and well-formness
+                    // Don't send characters or check well-formness in the following cases:
                     // 1. entities is false, next child is entity reference: expand tree first
                     // 2. comments is false, and next child is comment
                     // 3. cdata is false, and next child is cdata
+                  
+                    short nextType = (next != null)?next.getNodeType():-1;
+                    if (nextType == -1 || !(((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0 &&
+                           nextType == Node.ENTITY_NODE) ||
+                          ((fConfiguration.features & DOMConfigurationImpl.COMMENTS) == 0 &&
+                           nextType == Node.COMMENT_NODE) ||
+                          ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) &&
+                          nextType == Node.CDATA_SECTION_NODE)) {
+                              if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0) ){
+                                  isXMLCharWF(node.getNodeValue(), fDocument.isXML11Version());
+                              }                              
+                              if (fValidationHandler != null) {
+                                     fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
+                                     fCurrentNode = node;
+                                     fValidationHandler.characterData(node.getNodeValue(), null);
+                                     if (DEBUG_ND) {
+                                         System.out.println("=====>characterData(),"+nextType);
 
-                    if (fValidationHandler != null) {
-                        short nextType = (next != null)?next.getNodeType():-1;
-                        if (!(((fConfiguration.features & DOMConfigurationImpl.ENTITIES) == 0 &&
-                               nextType == Node.ENTITY_NODE) ||
-                              ((fConfiguration.features & DOMConfigurationImpl.COMMENTS) == 0 &&
-                               nextType == Node.COMMENT_NODE) ||
-                              ((fConfiguration.features & DOMConfigurationImpl.CDATA) == 0) &&
-                              nextType == Node.CDATA_SECTION_NODE)) {
-
-                            //
-                            // set error node in the dom error wrapper
-                            // so if error occurs we can report an error node
-                            fConfiguration.fErrorHandlerWrapper.fCurrentNode = node;
-                            fCurrentNode = node;
-                            fValidationHandler.characterData(node.getNodeValue(), null);
-                            if (DEBUG_ND) {
-                                System.out.println("=====>characterData(),"+nextType);
-
-                            }
-                        } else {
+                                     }
+                              }                             
+                    }
+                    else {
                             if (DEBUG_ND) {
                                 System.out.println("=====>don't send characters(),"+nextType);
 
                             }
-                        }
                     }
                 }
                 break;
@@ -686,7 +609,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 String target = pinode.getTarget();
                 //1.check PI target name
                 if(fDocument.isXML11Version()){
-
                     if(!XML11Char.isXML11ValidName(target)){
                             //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
                             reportDOMError("Invalid Character in node name",
@@ -703,9 +625,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                 //2. check PI data
                 //processing isntruction data may have certain characters
-                //which may not be valid XML character
-                
-                checkInValidXMLCharacters(pinode.getData(), fDocument.isXML11Version());
+                //which may not be valid XML character               
+                isXMLCharWF(pinode.getData(), fDocument.isXML11Version());
             }
         }//end case Node.PROCESSING_INSTRUCTION_NODE
         
@@ -896,6 +817,23 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     if (uri != null && uri.equals(NamespaceContext.XMLNS_URI)) {
                         continue;
                     }
+                    //---------------------------------------
+                    // check if value of the attribute is namespace well-formed
+                    //---------------------------------------
+                    if ( ((fConfiguration.features & DOMConfigurationImpl.WELLFORMED) != 0)){
+                            isAttrValueWF(attributes, (AttrImpl)attr, attr.getValue());
+                            if (fDocument.isXMLVersionChanged()){                                   
+                                boolean wellformed=CoreDocumentImpl.isXMLName(attr.getNodeName() , fDocument.isXML11Version());
+                                if (!wellformed){
+                                    if (fErrorHandler != null) {
+                                    String msg = "Invalid XML Character in element " + attr.getNodeName() ;
+                                    reportDOMError(msg,
+                                        DOMError.SEVERITY_ERROR, null,  "wf-invalid-character");
+                                    }
+                        
+                                }
+                        }
+                    }
 
                     // ---------------------------------------
                     // remove default attributes
@@ -987,12 +925,123 @@ public class DOMNormalizer implements XMLDocumentHandler {
             }
         } // end loop for attributes
     }
+    
+    /**
+     * Adds a namespace attribute or replaces the value of existing namespace
+     * attribute with the given prefix and value for URI.
+     * In case prefix is empty will add/update default namespace declaration.
+     * 
+     * @param prefix
+     * @param uri
+     * @exception IOException
+     */
 
-    //check for valid xml charactsr as per the XML version 
-    public void checkInValidXMLCharacters(String datavalue, boolean isXML11Version)
+    protected final void addNamespaceDecl(String prefix, String uri, ElementImpl element){
+        if (DEBUG) {
+            System.out.println("[ns-fixup] addNamespaceDecl ["+prefix+"]");
+        }
+        if (prefix == XMLSymbols.EMPTY_STRING) {
+            if (DEBUG) {
+                System.out.println("=>add xmlns=\""+uri+"\" declaration");
+            }
+            element.setAttributeNS(NamespaceContext.XMLNS_URI, XMLSymbols.PREFIX_XMLNS, uri);             
+        } else {
+            if (DEBUG) {
+                System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
+            }
+            element.setAttributeNS(NamespaceContext.XMLNS_URI, "xmlns:"+prefix, uri); 
+        }
+    }
+    
+    
+    //
+    // Methods for well-formness checking
+    //
+    
+    
+    /**
+     * Check if CDATA section is well-formed
+     * @param datavalue
+     * @param isXML11Version = true if XML 1.1
+     */
+    void isCDataWF(String datavalue, boolean isXML11Version)
     {
         if(datavalue == null || (datavalue.length() == 0) ) return ;
                 
+        char [] dataarray = datavalue.toCharArray(); 
+        int datalength = dataarray.length ;
+
+        //version of the document is XML 1.1
+        if(isXML11Version){                    
+            //we need to check all chracters as per production rules of XML11
+            int i = 0 ;
+            while(i < datalength){     
+                char c = dataarray[i++];                                      
+                if(XML11Char.isXML11Invalid(c)){
+                    String msg = "Invalid XML Character " + "'" + Integer.toString(c, 16) + "'" + "in the DOM." ;
+                    //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                    reportDOMError(msg,
+                        DOMError.SEVERITY_FATAL_ERROR, null,  "wf-invalid-character");
+                                        
+                }
+                else if (c==']'){
+                    int count = i;
+                    if (count<datalength && dataarray[count]==']'){
+                        while (++count <datalength && dataarray[count]==']'){
+                            // do nothing
+                        }
+                        if (count <datalength && dataarray[count]=='>'){
+                            //CDEndInContent
+                            String msg = "]: The character sequence \"]]>\" must not appear in content unless used to mark the end of a CDATA section.";
+                            reportDOMError(msg,
+                                DOMError.SEVERITY_FATAL_ERROR, null,  "CDEndInContent");
+                            
+                        }
+                    }
+                    
+                }
+            }
+        }//version of the document is XML 1.0
+        else{                    
+            //we need to check all chracters as per production rules of XML 1.0
+            int i = 0 ;
+            while(i < datalength){   
+                char c = dataarray[i++];                         
+                if( XMLChar.isInvalid(c) ){
+                    String msg = "Invalid XML Character " +  "'" + Integer.toString(c, 16) + "'" + "in the DOM." ;
+                    //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                    reportDOMError(msg,
+                        DOMError.SEVERITY_FATAL_ERROR, null,  "wf-invalid-character");                                        
+                }
+                else if (c==']'){
+                    int count = i;
+                    if (count<datalength && dataarray[count]==']'){
+                        while (++count <datalength && dataarray[count]==']'){
+                            // do nothing
+                        }
+                        if (count <datalength && dataarray[count]=='>'){
+                            //CDEndInContent
+                            String msg = "]: The character sequence \"]]>\" must not appear in content unless used to mark the end of a CDATA section.";
+                            reportDOMError(msg,
+                                DOMError.SEVERITY_FATAL_ERROR, null,  "CDEndInContent");
+                            
+                        }
+                    }
+                    
+                }
+            }            
+        }//end-else fDocument.isXMLVersion()
+        
+    }//isCDataWF
+     
+    /**
+     * NON-DOM: check for valid XML characters as per the XML version
+     * @param datavalue
+     * @param isXML11Version = true if XML 1.1
+     */
+    void isXMLCharWF(String datavalue, boolean isXML11Version)
+    {
+        if(datavalue == null || (datavalue.length() == 0) ) return ;      
         char [] dataarray = datavalue.toCharArray(); 
         int datalength = dataarray.length ;
 
@@ -1023,50 +1072,113 @@ public class DOMNormalizer implements XMLDocumentHandler {
             }            
         }//end-else fDocument.isXMLVersion()
         
-    }//checkforValidXMLCharacter
-
-
+    }//isXMLCharWF
+    
     /**
-     * Adds a namespace attribute or replaces the value of existing namespace
-     * attribute with the given prefix and value for URI.
-     * In case prefix is empty will add/update default namespace declaration.
-     * 
-     * @param prefix
-     * @param uri
-     * @exception IOException
+     * NON-DOM: check if value of the comment is well-formed
+     * @param datavalue
+     * @param isXML11Version = true if XML 1.1
      */
+    void isCommentWF(String datavalue, boolean isXML11Version)
+    {
+        if(datavalue == null || (datavalue.length() == 0) ) return ;
+                
+        char [] dataarray = datavalue.toCharArray(); 
+        int datalength = dataarray.length ;
 
-    protected final void addNamespaceDecl(String prefix, String uri, ElementImpl element){
-        if (DEBUG) {
-            System.out.println("[ns-fixup] addNamespaceDecl ["+prefix+"]");
-        }
-        if (prefix == XMLSymbols.EMPTY_STRING) {
-            if (DEBUG) {
-                System.out.println("=>add xmlns=\""+uri+"\" declaration");
-            }
-            element.setAttributeNS(NamespaceContext.XMLNS_URI, XMLSymbols.PREFIX_XMLNS, uri);             
-        } else {
-            if (DEBUG) {
-                System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
-            }
-            element.setAttributeNS(NamespaceContext.XMLNS_URI, "xmlns:"+prefix, uri); 
-        }
-    }
-
-    /*protected final boolean removeDefault (Attr attribute, AttributeMap attrMap){
-        if ((fConfiguration.features & DOMConfigurationImpl.DEFAULTS) != 0) {
-            // remove default attributes
-            if (!attribute.getSpecified()) {
-                if (DEBUG_ND) {
-                    System.out.println("==>remove default attr: "+attribute.getNodeName());
+        //version of the document is XML 1.1
+        if(isXML11Version){                    
+            //we need to check all chracters as per production rules of XML11
+            int i = 0 ;
+            while(i < datalength){   
+                char c = dataarray[i++];
+                                         
+                if(XML11Char.isXML11Invalid(c)){
+                    String msg = "Invalid XML Character " + "'" + Integer.toString(dataarray[i-1], 16) + "'" + "in the DOM." ;
+                    //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                    reportDOMError(msg,
+                        DOMError.SEVERITY_FATAL_ERROR, null,  "wf-invalid-character");                                       
                 }
-                attrMap.removeItem(attribute, false);
-                return true;
+                else if (c == '-' && i<datalength && dataarray[i]=='-'){
+                    String msg = "For compatibility, the string '--' (double-hyphen) must not occur within comments" ;
+                    // invalid: '--' in comment                   
+                    reportDOMError(msg,
+                        DOMError.SEVERITY_FATAL_ERROR, null,  "wf-invalid-character");  
+                }
+            }
+        }//version of the document is XML 1.0
+        else{                    
+            //we need to check all chracters as per production rules of XML 1.0
+            int i = 0 ;
+            while(i < datalength){ 
+                char c = dataarray[i++];                           
+                if( XMLChar.isInvalid(c) ){
+                    String msg = "Invalid XML Character " +  "'" + Integer.toString(c, 16) + "'" + "in the DOM." ;
+                    //REVISIT: As per DOM it is error but as per XML spec. it is fatal error
+                    reportDOMError(msg,
+                        DOMError.SEVERITY_FATAL_ERROR, null,  "wf-invalid-character");
+                }  
+                else if (c == '-' && i<datalength && dataarray[i]=='-'){
+                        String msg = "For compatibility, the string '--' (double-hyphen) must not occur within comments" ;
+                        // invalid: '--' in comment                   
+                        reportDOMError(msg,
+                            DOMError.SEVERITY_FATAL_ERROR, null,  "wf-invalid-character");  
+                }                                      
+            }
+                        
+        }//end-else fDocument.isXMLVersion()
+        
+    }//isCommentWF
+    
+    /** NON-DOM: check if attribute value is well-formed
+     * @param attributes
+     * @param a
+     * @param value
+     */
+    void isAttrValueWF(AttributeMap attributes, AttrImpl a, String value) {
+        if (a.hasStringValue()) {
+            isXMLCharWF(value, fDocument.isXML11Version());
+        } else {
+            //check each child node of the attribute's value
+            for (int j = 0; j < attributes.getLength(); j++) {
+                Node child = attributes.item(j);
+                //If the attribute's child is an entity refernce
+                if (child.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                    Document owner = a.getOwnerDocument();
+                    Entity ent = null;
+                    //search for the entity in the docType
+                    //of the attribute's ownerDocument
+                    if (owner != null) {
+                        DocumentType docType = owner.getDoctype();
+                        if (docType != null) {
+                            NamedNodeMap entities = docType.getEntities();
+                            ent = (Entity) entities.getNamedItemNS(
+                                    "*",
+                                    child.getNodeName());
+                        }
+                    }
+                    //If the entity was not found issue a fatal error
+                    if (ent == null && fErrorHandler != null) {
+                        reportDOMError(
+                            "The attribute "
+                                + a.getNodeName()
+                                + " value '"
+                                + child.getNodeValue()
+                                + "' referenced an entity that was not declared",
+                            DOMError.SEVERITY_FATAL_ERROR,
+                            a,
+                            null);
+                    }
+                }
+                else {
+                    // Text node
+                    isXMLCharWF(child.getNodeValue(), fDocument.isXML11Version());
+                }
             }
         }
-        return false;
     }
-    */
+
+
 
     /**
      * Reports a DOM error to the user handler.
@@ -1101,6 +1213,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
         qname.rawname = fSymbolTable.addSymbol(node.getNodeName()); 
         qname.uri =  (namespace != null)?fSymbolTable.addSymbol(namespace):null;
     }
+    
+
 
 	/* REVISIT: remove this method if DOM does not change spec.
 	 * Performs partial XML 1.0 attribute value normalization and replaces

@@ -2020,7 +2020,7 @@ extends ParentNode implements Document  {
      * utility class
      */
     
-    protected boolean isXMLName(String s, boolean xml11Version) {
+    static boolean isXMLName(String s, boolean xml11Version) {
         
         if (s == null) {
             return false;
@@ -2032,7 +2032,28 @@ extends ParentNode implements Document  {
         
     } // isXMLName(String):boolean
     
-    
+    /**
+     * Checks if the given qualified name is legal with respect 
+     * to the version of XML to which this document must conform.
+     * 
+     * @param prefix prefix of qualified name
+     * @param local local part of qualified name
+     */
+    static boolean isValidQName(String prefix, String local, boolean xml11Version) {
+
+        // check that both prefix and local part match NCName
+        boolean validNCName = false;
+        if (!xml11Version) {
+            validNCName = (prefix == null || XMLChar.isValidNCName(prefix)) 
+                && XMLChar.isValidNCName(local);
+        }
+        else {
+            validNCName = (prefix == null || XML11Char.isXML11ValidNCName(prefix))
+                && XML11Char.isXML11ValidNCName(local);
+        }
+        
+        return validNCName;
+    }
     //
     // Protected methods
     //
