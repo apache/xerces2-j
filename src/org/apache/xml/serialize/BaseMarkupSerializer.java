@@ -145,7 +145,7 @@ public abstract class BaseMarkupSerializer
     /**
      * The writer to which the document is written.
      */
-    private Writer          _writer;
+    protected Writer          _writer;
 
 
     /**
@@ -335,6 +335,8 @@ public abstract class BaseMarkupSerializer
     public void serialize( Element elem )
         throws IOException
     {
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
 	try {
 	    startDocument();
 	} catch ( SAXException except ) { }
@@ -357,6 +359,8 @@ public abstract class BaseMarkupSerializer
     public void serialize( DocumentFragment frag )
         throws IOException
     {
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
 	try {
 	    startDocument();
 	} catch ( SAXException except ) { }
@@ -379,6 +383,8 @@ public abstract class BaseMarkupSerializer
     public void serialize( Document doc )
         throws IOException
     {
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
 	try {
 	    startDocument();
 	} catch ( SAXException except ) { }
@@ -397,7 +403,7 @@ public abstract class BaseMarkupSerializer
 
     public void characters( char[] chars, int start, int length )
     {
-	characters( new String( chars, start, length ), false, false );
+	characters( new String( chars, start, length ), false );
     }
 
 
@@ -506,7 +512,7 @@ public abstract class BaseMarkupSerializer
 
 	state = getElementState();
 	if ( state != null )
-	    state.cdata = true;
+	    state.doCData = true;
     }
 
 
@@ -516,7 +522,7 @@ public abstract class BaseMarkupSerializer
 
 	state = getElementState();
 	if ( state != null )
-	    state.cdata = false;
+	    state.doCData = false;
     }
 
 
@@ -699,6 +705,8 @@ public abstract class BaseMarkupSerializer
     {
 	// Only works if we're going out of DTD mode.
 	if ( _writer == _dtdWriter ) {
+System.out.println( "Writer " + _writer );
+System.out.println( "DocWriter " + _docWriter );
 	    _line.append( _text );
 	    _text = new StringBuffer( 20 );
 	    flushLine( false );
@@ -729,11 +737,13 @@ public abstract class BaseMarkupSerializer
 	// handled by SAX are serialized directly.
         switch ( node.getNodeType() ) {
 	case Node.TEXT_NODE :
-	    characters( node.getNodeValue(), false, false );
+	    characters( node.getNodeValue(), false );
 	    break;
 
 	case Node.CDATA_SECTION_NODE :
-	    characters( node.getNodeValue(), true, false );
+	    startCDATA();
+	    characters( node.getNodeValue(), false );
+	    endCDATA();
 	    break;
 
 	case Node.COMMENT_NODE :
@@ -742,6 +752,7 @@ public abstract class BaseMarkupSerializer
 
 	case Node.ENTITY_REFERENCE_NODE :
 	    // Entity reference printed directly in text, do not break or pause.
+	    endCDATA();
 	    content();
 	    printText( '&' + node.getNodeName() + ';' );
 	    break;
@@ -771,7 +782,7 @@ public abstract class BaseMarkupSerializer
 		    for ( i = 0 ; i < map.getLength() ; ++i ) {
 			entity = (Entity) map.item( i );
 			unparsedEntityDecl( entity.getNodeName(), entity.getPublicId(),
-				    entity.getSystemId(), entity.getNotationName() );
+					    entity.getSystemId(), entity.getNotationName() );
 		    }
 		}
 		map = docType.getNotations();
@@ -818,6 +829,11 @@ public abstract class BaseMarkupSerializer
 
 	state = getElementState();
 	if ( state != null ) {
+	    // Need to close CData section first
+	    if ( state.inCData && ! state.doCData ) {
+		printText( "]]>" );
+		state.inCData = false;
+	    }
 	    // If this is the first content in the element,
 	    // change the state to not-empty and close the
 	    // opening element tag.
@@ -842,10 +858,9 @@ public abstract class BaseMarkupSerializer
      * whether the text is printed as CDATA or unescaped.
      *
      * @param text The text to print
-     * @param cdata True is should print as CDATA
      * @param unescaped True is should print unescaped
      */
-    protected void characters( String text, boolean cdata, boolean unescaped )
+    protected void characters( String text, boolean unescaped )
     {
 	ElementState state;
 
@@ -854,11 +869,10 @@ public abstract class BaseMarkupSerializer
 	// based on elements listed in the output format (the element
 	// state) or whether we are inside a CDATA section or entity.
 	if ( state != null ) {
-	    cdata = cdata || state.cdata;
 	    unescaped = unescaped || state.unescaped;
 	}
 
-	if ( cdata ) {
+	if ( state != null && ( state.inCData || state.doCData ) ) {
 	    StringBuffer buffer;
 	    int          index;
 	    int          saveIndent;
@@ -867,13 +881,17 @@ public abstract class BaseMarkupSerializer
 	    // appearing in the code must be identified and dealt with.
 	    // The contents of a text node is considered space preserving.
 	    buffer = new StringBuffer( text.length() );
+	    if ( ! state.inCData ) {
+		buffer.append( "<![CDATA[" );
+		state.inCData = true;
+	    }
 	    index = text.indexOf( "]]>" );
 	    while ( index >= 0 ) {
-		buffer.append( "<![CDATA[" ).append( text.substring( 0, index + 2 ) ).append( "]]>" );
+		buffer.append( text.substring( 0, index + 2 ) ).append( "]]><![CDATA[" );
 		text = text.substring( index + 2 );
 		index = text.indexOf( "]]>" );
 	    }
-	    buffer.append( "<![CDATA[" ).append( text ).append( "]]>" );
+	    buffer.append( text );
 	    saveIndent = _nextIndent;
 	    _nextIndent = 0;
 	    printText( buffer, true );

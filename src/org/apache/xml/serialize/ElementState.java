@@ -100,7 +100,7 @@ class ElementState
      * True if textual content of current element should be
      * serialized as CDATA section.
      */
-    boolean cdata;
+    boolean doCData;
 
 
     /**
@@ -108,6 +108,12 @@ class ElementState
      * serialized as raw characters (unescaped).
      */
     boolean unescaped;
+
+
+    /**
+     * True while inside CData and printing text as CData.
+     */
+    boolean inCData;
 
 
 }

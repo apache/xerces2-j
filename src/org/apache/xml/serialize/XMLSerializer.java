@@ -176,6 +176,8 @@ public final class XMLSerializer
 
     public void startDocument()
     {
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
 	// Nothing to do here. All the magic happens in startDocument(String)
     }
 
@@ -187,6 +189,9 @@ public final class XMLSerializer
 	ElementState state;
 	String       name;
 	String       value;
+
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
 
 	state = getElementState();
 	if ( state == null ) {
@@ -244,7 +249,7 @@ public final class XMLSerializer
 	// with the tag name and space preserving.
 	// We still do not change the curent element state.
 	state = enterElementState( tagName, preserveSpace );
-	state.cdata = _format.isCDataElement( tagName );
+	state.doCData = _format.isCDataElement( tagName );
 	state.unescaped = _format.isNonEscapingElement( tagName );
     }
 
@@ -261,6 +266,9 @@ public final class XMLSerializer
 	if ( state.empty ) {
 	    printText( "/>" );
 	} else {
+	    // Must leave CData section first
+	    if ( state.inCData )
+		printText( "]]>" );
 	    // This element is not empty and that last content was
 	    // another element, so print a line break before that
 	    // last element and this element's closing tag.
@@ -457,7 +465,7 @@ public final class XMLSerializer
 	    // Enter an element state, and serialize the children
 	    // one by one. Finally, end the element.
 	    state = enterElementState( tagName, preserveSpace );
-	    state.cdata = _format.isCDataElement( tagName );
+	    state.doCData = _format.isCDataElement( tagName );
 	    state.unescaped = _format.isNonEscapingElement( tagName );
 	    child = elem.getFirstChild();
 	    while ( child != null ) {

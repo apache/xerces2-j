@@ -212,6 +212,8 @@ public class HTMLSerializer
     {
 	// Do nothing for HTML/XHTML, browser might not respond
 	// well to <?xml ...?>
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
     }
 
 
@@ -222,6 +224,9 @@ public class HTMLSerializer
 	ElementState state;
 	String       name;
 	String       value;
+
+	if ( _writer == null )
+	    throw new IllegalStateException( "No writer supplied for serializer" );
 
 	state = getElementState();
 	if ( state == null ) {
@@ -273,7 +278,7 @@ public class HTMLSerializer
 		} else {
 		    // HTML: Empty values print as attribute name, no value.
 		    // HTML: URI attributes will print unescaped
-		    if ( value == null )
+		    if ( value == null || value.length() == 0 )
 			printText( name );
 		    else if ( HTMLdtd.isURI( tagName, name ) )
 			printText( name + "=\"" + escapeURI( value ) + '"' );
@@ -295,12 +300,13 @@ public class HTMLSerializer
 	// unescaped (HTML).
 	if ( tagName.equalsIgnoreCase( "SCRIPT" ) ||
 	     tagName.equalsIgnoreCase( "STYLE" ) ) {
-	    if ( _xhtml )
+	    if ( _xhtml ) {
 		// XHTML: Print contents as CDATA section
-		getElementState().cdata = true;
-	    else
+		getElementState().doCData = true;
+	    } else {
 		// HTML: Print contents unescaped
 		getElementState().unescaped = true;
+	    }
 	}
     }
 
@@ -315,11 +321,15 @@ public class HTMLSerializer
 	unindent();
 	state = getElementState();
 	if ( _xhtml) {
-	    if ( state.empty )
+	    if ( state.empty ) {
 		printText( " />" );
-	    else
+	    } else {
+		// Must leave CData section first
+		if ( state.inCData )
+		    printText( "]]>" );
 		// XHTML: element names are lower case, DOM will be different
 		printText( "</" + tagName.toLowerCase() + ">" );
+	    }
 	} else {
 	    if ( state.empty )
 		printText( ">" );
@@ -332,6 +342,9 @@ public class HTMLSerializer
 		if ( ! tagName.equalsIgnoreCase( "A" )  && _format.getIndenting() &&
 		     ! state.preserveSpace && state.afterElement )
 		    breakLine();
+		// Must leave CData section first (Illegal in HTML, but still)
+		if ( state.inCData )
+		    printText( "]]>" );
 		printText( "</" + tagName + ">" );
 	    }
 	}
@@ -496,7 +509,7 @@ public class HTMLSerializer
 		    } else {
 			// HTML: Empty values print as attribute name, no value.
 			// HTML: URI attributes will print unescaped
-			if ( value == null )
+			if ( value == null || value.length() == 0 )
 			    printText( name );
 			else if ( HTMLdtd.isURI( tagName, name ) )
 			    printText( name + "=\"" + escapeURI( value ) + '"' );
@@ -521,12 +534,13 @@ public class HTMLSerializer
 	    // unescaped (HTML).
 	    if ( tagName.equalsIgnoreCase( "SCRIPT" ) ||
 		 tagName.equalsIgnoreCase( "STYLE" ) ) {
-		if ( _xhtml )
+		if ( _xhtml ) {
 		    // XHTML: Print contents as CDATA section
-		    getElementState().cdata = true;
-		else
+		    getElementState().doCData = true;
+		} else {
 		    // HTML: Print contents unescaped
 		    getElementState().unescaped = true;
+		}
 	    }
 
 	    child = elem.getFirstChild();
@@ -552,7 +566,8 @@ public class HTMLSerializer
     }
 
 
-    protected void characters( String text, boolean cdata, boolean unescaped )
+    /*
+    protected void characters( String text, boolean unescaped )
     {
 	ElementState state;
 
@@ -567,8 +582,9 @@ public class HTMLSerializer
 	    else
 		super.characters( text, false, true );
 	} else
-	    super.characters( text, cdata, unescaped );
+	    super.characters( text, unescaped );
     }
+    */
 
 
     protected String getEntityRef( char ch )
@@ -581,8 +597,8 @@ public class HTMLSerializer
     {
 	int index;
 
-	// Apparently Netscape doesn't like if we escape the URI
-	// using %nn, so we leave it as is, just remove any quotes.
+	// XXX  Apparently Netscape doesn't like if we escape the URI
+	//      using %nn, so we leave it as is, just remove any quotes.
 	index = uri.indexOf( "\"" );
 	if ( index >= 0 )
 	    return uri.substring( 0, index );

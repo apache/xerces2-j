@@ -86,12 +86,6 @@ import org.xml.sax.AttributeList;
  * will not throw an exception directly, but only throw it
  * at the end of serializing (either DOM or SAX's {@link
  * org.xml.sax.DocumentHandler#endDocument}.
- * <p>
- * For elements that are not specified as whitespace preserving,
- * the serializer will potentially break long text lines at space
- * boundaries, indent lines, and serialize elements on separate
- * lines. Line terminators will be regarded as spaces, and
- * spaces at beginning of line will be stripped.
  *
  *
  * @version
@@ -202,8 +196,6 @@ public final class TextSerializer
 	// Do not change the current element state yet.
 	// This only happens in endElement().
 
-	indent();
-
 	// Ignore all other attributes of the element, only printing
 	// its contents.
 
@@ -221,7 +213,6 @@ public final class TextSerializer
 	// Works much like content() with additions for closing
 	// an element. Note the different checks for the closed
 	// element's state and the parent element's state.
-	unindent();
 	state = getElementState();
 	// Leave the element state and update that of the parent
 	// (if we're not root) to not empty and after element.
@@ -252,9 +243,21 @@ public final class TextSerializer
     }
 
 
-    protected void characters( String text, boolean cdata, boolean unescaped )
+    public void characters( char[] chars, int start, int length )
     {
-	super.characters( text, false, true );
+	characters( new String( chars, start, length ), false );
+    }
+
+
+    protected void characters( String text, boolean unescaped )
+    {
+	ElementState state;
+
+	state = content();
+	if ( state != null ) {
+	    state.doCData = state.inCData = false;
+	}
+	printText( text, true );
     }
 
 
@@ -314,8 +317,6 @@ public final class TextSerializer
 	// Do not change the current element state yet.
 	// This only happens in endElement().
 
-	indent();
-
 	// Ignore all other attributes of the element, only printing
 	// its contents.
 
@@ -332,7 +333,6 @@ public final class TextSerializer
 	    }
 	    endElement( tagName );
 	} else {
-	    unindent();
 	    if ( state != null ) {
 		// After element but parent element is no longer empty.
 		state.afterElement = true;
@@ -354,11 +354,11 @@ public final class TextSerializer
 	// handled by SAX are serialized directly.
         switch ( node.getNodeType() ) {
 	case Node.TEXT_NODE :
-	    characters( node.getNodeValue(), false, true );
+	    characters( node.getNodeValue(), true );
 	    break;
 
 	case Node.CDATA_SECTION_NODE :
-	    characters( node.getNodeValue(), false, true );
+	    characters( node.getNodeValue(), true );
 	    break;
 
 	case Node.COMMENT_NODE :
