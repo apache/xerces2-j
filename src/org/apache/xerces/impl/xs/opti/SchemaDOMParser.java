@@ -287,22 +287,40 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
      */
     public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
-
+        // the order of events that occurs here is:
+        //   schemaDOM.startAnnotation/startAnnotationElement (if applicable)
+        //   schemaDOM.emptyElement  (basically the same as startElement then endElement)
+        //   schemaDOM.endAnnotationElement (if applicable)
+        // the order of events that would occur if this was <element></element>:
+        //   schemaDOM.startAnnotation/startAnnotationElement (if applicable)
+        //   schemaDOM.startElement
+        //   schemaDOM.endAnnotationElement (if applicable)
+        //   schemaDOM.endElementElement
+        // Thus, we can see that the order of events isn't the same.  However, it doesn't
+        // seem to matter.  -- PJM
         if (fAnnotationDepth == -1) {
             // this is messed up, but a case to consider:
             if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
                     element.localpart == SchemaSymbols.ELT_ANNOTATION) {
                 schemaDOM.startAnnotation(element, attributes, fNamespaceContext);
-                schemaDOM.endAnnotationElement(element, true);
-            } 
+            }
         } else {
             schemaDOM.startAnnotationElement(element, attributes);
-            schemaDOM.endAnnotationElement(element, false);
-        } 
+        }
+        
         schemaDOM.emptyElement(element, attributes, 
                                fLocator.getLineNumber(),
                                fLocator.getColumnNumber());
-
+        
+        if (fAnnotationDepth == -1) {
+            // this is messed up, but a case to consider:
+            if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
+                    element.localpart == SchemaSymbols.ELT_ANNOTATION) {
+                schemaDOM.endAnnotationElement(element, true);
+            }
+        } else {
+            schemaDOM.endAnnotationElement(element, false);
+        } 
     }
 
 
