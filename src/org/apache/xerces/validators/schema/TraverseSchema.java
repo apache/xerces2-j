@@ -370,8 +370,8 @@ import  org.apache.xerces.validators.schema.SchemaSymbols;
      * </period>
      * 
  * 
- * @author Jeffrey Rodriguez
- *         Eric Ye
+ * @author Eric Ye, Jeffrey Rodriguez, Andy Clark
+ *  
  * @see                  org.apache.xerces.validators.common.Grammar
  *
  * @version $Id$
@@ -474,6 +474,7 @@ public class TraverseSchema implements
         if (uriStr == null) {
             // REVISIT: Localize
             reportGenericSchemaError("prefix : [" + prefix +"] can not be resolved to a URI");
+            return "";
         }
 
         //REVISIT, !!!! a hack: needs to be updated later, cause now we only use localpart to key build-in datatype.
@@ -2518,30 +2519,68 @@ public class TraverseSchema implements
             return eltName;
         }
                 
+        // Handle the equivClass
         Element equivClassElementDecl = null;
         int equivClassElementDeclIndex = -1;
         boolean noErrorSoFar = true;
+        String equivClassUri = null;
+        String equivClassLocalpart = null;
+        String equivClassFullName = null;
+        ComplexTypeInfo equivClassEltTypeInfo = null;
+        DatatypeValidator equivClassEltDV = null;
 
         if ( equivClass.length() > 0 ) {
-            equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, getLocalPart(equivClass));
-            if (equivClassElementDecl == null) {
-                noErrorSoFar = false;
-                // REVISIT: Localize
-                reportGenericSchemaError("Equivclass affiliation element "
-                                          +equivClass
-                                          +" in element declaration " 
-                                          +name);  
-            }
-            else {
-                equivClassElementDeclIndex = 
-                    fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
-
-                if ( equivClassElementDeclIndex == -1) {
-                    traverseElementDecl(equivClassElementDecl);
-                    equivClassElementDeclIndex = 
-                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+            equivClassUri =  resolvePrefixToURI(getPrefix(equivClass));
+            equivClassLocalpart = getLocalPart(equivClass);
+            equivClassFullName = equivClassUri+","+equivClassLocalpart;
+           
+            if ( !equivClassUri.equals(fTargetNSURIString) ) {  
+                equivClassEltTypeInfo = getElementDeclTypeInfoFromNS(equivClassUri, equivClassLocalpart);
+                if (equivClassEltTypeInfo == null) {
+                    equivClassEltDV = getElementDeclTypeValidatorFromNS(equivClassUri, equivClassLocalpart);
+                    if (equivClassEltDV == null) {
+                        //TO DO: report error here;
+                        noErrorSoFar = false;
+                        reportGenericSchemaError("Could not find type for element '" +equivClassLocalpart 
+                                                 + "' in schema '" + equivClassUri+"'");
+                    }
                 }
             }
+            else {
+                equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, equivClassLocalpart);
+                if (equivClassElementDecl == null) {
+                    noErrorSoFar = false;
+                    // REVISIT: Localize
+                    reportGenericSchemaError("Equivclass affiliation element "
+                                              +equivClass
+                                              +" in element declaration " 
+                                              +name);  
+                }
+                else {
+                    equivClassElementDeclIndex = 
+                        fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+
+                    if ( equivClassElementDeclIndex == -1) {
+                        traverseElementDecl(equivClassElementDecl);
+                        equivClassElementDeclIndex = 
+                            fSchemaGrammar.getElementDeclIndex(fTargetNSURI, getLocalPartIndex(equivClass),TOP_LEVEL_SCOPE);
+                    }
+                }
+                if (equivClassElementDeclIndex != -1) {
+                    equivClassEltTypeInfo = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
+                    if (equivClassEltTypeInfo == null) {
+                        fSchemaGrammar.getElementDecl(equivClassElementDeclIndex, fTempElementDecl);
+                        equivClassEltDV = fTempElementDecl.datatypeValidator;
+                        if (equivClassEltDV == null) {
+                            //TO DO: report error here;
+                            noErrorSoFar = false;
+                            reportGenericSchemaError("Could not find type for element '" +equivClassLocalpart 
+                                                     + "' in schema '" + equivClassUri+"'");
+                        }
+                    }
+                }
+            }
+ 
         }
         
         //ComplexTypeInfo typeInfo = new ComplexTypeInfo();
@@ -2555,6 +2594,7 @@ public class TraverseSchema implements
         
         boolean haveAnonType = false;
 
+        // Handle Anonymous type if there is one
         if (child != null) {
             
             String childName = child.getNodeName();
@@ -2608,6 +2648,7 @@ public class TraverseSchema implements
             }
         } 
 
+        // handle type="" here
         if (haveAnonType && (type.length()>0)) {
             noErrorSoFar = false;
             // REVISIT: Localize
@@ -2695,12 +2736,12 @@ public class TraverseSchema implements
             }
 
         }
-        // this element is ur-type
+        // this element is ur-type, check its equivClass afficliation.
         else {
-            // if there is equivClass affiliation, then grab its type and stick it to this element
-            if (equivClassElementDeclIndex != -1) {
-                ComplexTypeInfo equivClassEltType = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
-            }
+            // if there is equivClass affiliation and not type defintion found for this element, 
+            // then grab equivClass affiliation's type and give it to this element
+            if ( typeInfo == null && dv == null ) typeInfo = equivClassEltTypeInfo;
+            if ( typeInfo == null && dv == null ) dv = equivClassEltDV;
         }
 
         if (typeInfo == null && dv==null) {
@@ -2806,6 +2847,9 @@ public class TraverseSchema implements
         fSchemaGrammar.setElementDeclFinalSet(elementIndex, finalSet);
         fSchemaGrammar.setElementDeclMiscFlags(elementIndex, elementMiscFlags);
 
+        // setEquivClassElementFullName
+        fSchemaGrammar.setElementDeclEquivClassElementFullName(elementIndex, equivClassFullName);
+
         return eltQName;
 
     }// end of method traverseElementDecl(Element)
@@ -2827,6 +2871,24 @@ public class TraverseSchema implements
             localpart = fullName.substring(colonAt+1);
         }
         return localpart;
+    }
+    
+    int getPrefixIndex(String fullName){
+        int colonAt = fullName.indexOf(":"); 
+        String prefix = "";
+        if (  colonAt > -1 ) {
+            prefix = fullName.substring(0,colonAt);
+        }
+        return fStringPool.addSymbol(prefix);
+    }
+
+    String getPrefix(String fullName){
+        int colonAt = fullName.indexOf(":"); 
+        String prefix = "";
+        if (  colonAt > -1 ) {
+            prefix = fullName.substring(0,colonAt);
+        }
+        return prefix;
     }
     
     private void checkEquivClassOK(Element elementDecl, Element equivClassElementDecl){
@@ -2865,7 +2927,7 @@ public class TraverseSchema implements
         return false;
     }
     
-    DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart){
+    DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {
         Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
         if (grammar != null && grammar instanceof SchemaGrammar) {
             SchemaGrammar sGrammar = (SchemaGrammar) grammar;
@@ -2873,13 +2935,12 @@ public class TraverseSchema implements
             return dv;
         }
         else {
-            //TO DO: report internal erro here
-            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar in getTypeValidatorFromNS");
+            reportGenericSchemaError("could not resolve URI : " + newSchemaURI + " to a SchemaGrammar in getTypeValidatorFromNS");
         }
         return null;
     }
 
-    ComplexTypeInfo getTypeInfoFromNS(String newSchemaURI, String localpart){
+    ComplexTypeInfo getTypeInfoFromNS(String newSchemaURI, String localpart) throws Exception {
         Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
         if (grammar != null && grammar instanceof SchemaGrammar) {
             SchemaGrammar sGrammar = (SchemaGrammar) grammar;
@@ -2887,11 +2948,62 @@ public class TraverseSchema implements
             return typeInfo;
         }
         else {
-            //TO DO: report internal erro here
-            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar in getTypeInfoFromNS");
+            reportGenericSchemaError("could not resolve URI : " + newSchemaURI + " to a SchemaGrammar in getTypeInfoFromNS");
         }
         return null;
     }
+    
+    DatatypeValidator getElementDeclTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {
+        Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
+        if (grammar != null && grammar instanceof SchemaGrammar) {
+            SchemaGrammar sGrammar = (SchemaGrammar) grammar;
+            int eltIndex = sGrammar.getElementDeclIndex(fStringPool.addSymbol(newSchemaURI), 
+                                                        fStringPool.addSymbol(localpart), 
+                                                        TOP_LEVEL_SCOPE);
+
+            DatatypeValidator dv = null;
+            if (eltIndex>-1) {
+                sGrammar.getElementDecl(eltIndex, fTempElementDecl);
+                dv = fTempElementDecl.datatypeValidator;
+            }
+            else {
+                reportGenericSchemaError("could not find global element : '" + localpart 
+                                         + " in the SchemaGrammar "+newSchemaURI);
+            }
+            return dv;
+        }
+        else {
+            reportGenericSchemaError("could not resolve URI : " + newSchemaURI
+                                      + " to a SchemaGrammar in getELementDeclTypeValidatorFromNS");
+        }
+        return null;
+    }
+
+    ComplexTypeInfo getElementDeclTypeInfoFromNS(String newSchemaURI, String localpart) throws Exception {
+        Grammar grammar = fGrammarResolver.getGrammar(newSchemaURI);
+        if (grammar != null && grammar instanceof SchemaGrammar) {
+            SchemaGrammar sGrammar = (SchemaGrammar) grammar;
+            int eltIndex = sGrammar.getElementDeclIndex(fStringPool.addSymbol(newSchemaURI), 
+                                                              fStringPool.addSymbol(localpart), 
+                                                              TOP_LEVEL_SCOPE);
+            ComplexTypeInfo typeInfo = null;
+            if (eltIndex>-1) {
+                 typeInfo = sGrammar.getElementComplexTypeInfo(eltIndex);
+            }
+            else {
+                reportGenericSchemaError("could not find global element : '" + localpart 
+                                         + " in the SchemaGrammar "+newSchemaURI);
+
+            }
+            return typeInfo;
+        }
+        else {
+            reportGenericSchemaError("could not resolve URI : " + newSchemaURI 
+                                     + " to a SchemaGrammar in getElementDeclTypeInfoFromNS");
+        }
+        return null;
+    }
+
     /**
      * Traverse attributeGroup Declaration
      * 
