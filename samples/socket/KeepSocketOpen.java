@@ -207,7 +207,8 @@ public class KeepSocketOpen {
             System.out.println("Server: Created.");
             fFilenames = filenames;
             fVerbose = verbose;
-            fBuffer = new byte[1024];
+            //fBuffer = new byte[1024];
+            fBuffer = new byte[4096<<2];
         } // <init>(int,String[])
 
         //
@@ -244,11 +245,12 @@ public class KeepSocketOpen {
                     while (true) {
 
                         // read random amount
-                        int length = (Math.abs(random.nextInt()) + 1) % fBuffer.length;
+                        //int length = (Math.abs(random.nextInt()) % fBuffer.length) + 1;
+                        int length = fBuffer.length;
                         if (fVerbose) System.out.println("Server: Attempting to read "+length+" byte(s).");
                         int count = fileIn.read(fBuffer, 0, length);
-                        if (fVerbose) System.out.println("Server: Read "+length+" byte(s).");
                         if (count == -1) {
+                            if (fVerbose) System.out.println("Server: EOF.");
                             break;
                         }
                         if (fVerbose) System.out.println("Server: Writing "+count+" byte(s) to wrapped output stream.");
