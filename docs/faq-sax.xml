@@ -89,6 +89,23 @@ event.
     </a>
   </faq>
   
+  <faq title="Attributes and ContentHandler.startElement">
+    <q>Why is the Attributes parameter passed to startElement always a 
+    reference to the same object?</q>
+    <a>
+      <p>Outside the scope of <code>startElement</code>, the value of the 
+         <code>Attributes</code> parameter is undefined. For each instance of Xerces'
+         SAX parser, there exists only one <code>Attributes</code> instance which 
+         is reused for every new set of attributes. Before each 
+         <code>startElement</code> callback, the previous values in this object
+         will be overwritten. This is done for performance reasons in order
+         to reduce object creation. To persist a set of attributes
+         beyond <code>startElement</code> the object should be cloned, for
+         instance by using <code>org.xml.sax.helpers.AttributesImpl</code>.
+      </p>
+    </a>
+  </faq>
+  
   <faq title="Namespace of xmlns attributes">
     <q>Why does the SAX parser report that xmlns attributes have no namespace?</q>
     <a>
@@ -101,7 +118,7 @@ event.
     </a>
   </faq>
 
-  <faq title="Encodings and XML Version Via SAX">
+  <faq title="Encodings and XML Version via SAX">
     <q>Is there any way I can determine what encoding an entity was
     written in, or what XML version the document conformed to, if I'm
     using SAX?</q>
