@@ -15,7 +15,7 @@
     <q>How do I supply my own implementation of the DOM?</q>
     <a>
       <p>
-	Use 
+	Use the
     <link idref='properties' anchor="dom.document-class-name">http://apache.org/xml/properties/dom/document-class-name</link> property
  	to register your own implementation of the 
         <code>org.w3c.dom.Document</code> interface.</p>
@@ -207,7 +207,7 @@ String str = writer.writeToString(document);</source>
   			</li>
   			<li>
   			   Provide XML Schemas (agains which validation should occur)
-  			   by either setting <em>xsi:schemaLocation</em>/
+  			   by either setting <em>xsi:schemaLocation</em> /
   				<em>xsi:noSchemaLocation</em> attributes on the <code>documentElement</code>, or
   			   by setting <code>schema-location</code> parameter on the 
   			   <code>DOMConfiguration</code>.
@@ -222,7 +222,7 @@ String str = writer.writeToString(document);</source>
   		</ul>
   		<p>
   			<strong>Note:</strong> if a document contains any DOM Level 1 nodes (the nodes created using createElement, 
-  			createAttribute, etc.) the fatal error will occur as described in the 
+  			createAttribute, etc.) a fatal error will occur as described in the 
   			<jump href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/namespaces-algorithms.html'>Namespace Normalization</jump>
   			algorithm.
   			In general, the
@@ -299,15 +299,13 @@ builder.setErrorHandler(handler);</source>
 
 
   <faq title='Controlling Entity Representation'>
-    <q>
-      How can I control the way that entities are represented in the DOM?
-    </q>
+    <q>How can I control the way that entities are represented in the DOM?</q>
     <a>
       <p>The Xerces  <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code> 
         feature
 	(or corresponding DOM Level 3 DOMBuilder <code>entities</code> feature)  
 	controls how entities appear in the DOM tree. When one of those features 
-	is set to true (the default), an occurance of an entity reference
+	is set to true (the default), an occurrence of an entity reference
 	in the XML document will be represented by a subtree with an 
 	EntityReference node at the root whose children represent the 
 	entity expansion.
@@ -347,8 +345,8 @@ builder.setErrorHandler(handler);</source>
     </a>
   </faq>
 
-<faq title='Making getElementById() work'>
-  <q>Why does not getElementById()  work for documents validated against XML Schemas?</q>
+<faq title='Making getElementById work'>
+  <q>Why does getElementById not work for documents validated against XML Schemas?</q>
   <a>
   <p>Make sure the <link idref='features' anchor="validation">validation feature</link> and the 
 <link idref='features' anchor="validation.schema">schema feature</link> are turned on before you parse a document.
