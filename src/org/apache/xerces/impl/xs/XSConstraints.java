@@ -79,6 +79,8 @@ import java.util.Vector;
 public class XSConstraints {
 
     static final int OCCURRENCE_UNKNOWN = SchemaSymbols.OCCURRENCE_UNBOUNDED-1;
+    static final XSSimpleType STRING_TYPE = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
+
     /**
      * check whether derived is valid derived from base, given a subset
      * of {restriction, extension}.
@@ -285,18 +287,22 @@ public class XSConstraints {
 
         // get the simple type declaration, and validate
         Object actualValue = null;
-        if (dv != null) {
-            try {
-                if (value instanceof String) {
-                    actualValue = dv.validate((String)value, context, vinfo);
-                } else {
-                    ValidatedInfo info = (ValidatedInfo)value;
-                    dv.validate(context, info);
-                    actualValue = info.actualValue;
-                }
-            } catch (InvalidDatatypeValueException ide) {
-                return null;
+        if (dv == null) {
+            // complex type with mixed. to make sure that we store correct
+            // information in vinfo and return the correct value, we use
+            // "string" type for validation
+            dv = STRING_TYPE;
+        }
+        try {
+            if (value instanceof String) {
+                actualValue = dv.validate((String)value, context, vinfo);
+            } else {
+                ValidatedInfo info = (ValidatedInfo)value;
+                dv.validate(context, info);
+                actualValue = info.actualValue;
             }
+        } catch (InvalidDatatypeValueException ide) {
+            return null;
         }
 
         return actualValue;
