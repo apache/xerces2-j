@@ -238,16 +238,16 @@ public class DeferredDocumentImpl
 
         // return node index
         return nodeIndex;
-        
+
     } // createDocumentType(int,int,int):int
-    
+
     public void setInternalSubset(int doctypeIndex, int subsetIndex) {
         int chunk     = doctypeIndex >> CHUNK_SHIFT;
         int index     = doctypeIndex & CHUNK_MASK;
         int extraDataIndex = fNodeValue[chunk][index];
         int echunk = extraDataIndex >> CHUNK_SHIFT;
         int eindex = extraDataIndex & CHUNK_MASK;
-        fNodeLastChild[echunk][eindex]  = subsetIndex;
+        setChunkIndex(fNodeLastChild, subsetIndex, echunk, eindex);
     }
 
     /** Creates a notation in the table. */
@@ -612,16 +612,16 @@ public class DeferredDocumentImpl
         setChunkIndex(fNodeLastChild, childIndex, pchunk, pindex);
     } // setAsLastChild(int,int)
 
-    /** 
-     * Returns the parent node of the given node. 
+    /**
+     * Returns the parent node of the given node.
      * <em>Calling this method does not free the parent index.</em>
      */
     public int getParentNode(int nodeIndex) {
         return getParentNode(nodeIndex, false);
     }
 
-    /** 
-     * Returns the parent node of the given node. 
+    /**
+     * Returns the parent node of the given node.
      * @param free True to free parent node.
      */
     public int getParentNode(int nodeIndex, boolean free) {
@@ -642,8 +642,8 @@ public class DeferredDocumentImpl
         return getLastChild(nodeIndex, true);
     }
 
-    /** 
-     * Returns the last child of the given node. 
+    /**
+     * Returns the last child of the given node.
      * @param free True to free child index.
      */
     public int getLastChild(int nodeIndex, boolean free) {
@@ -659,7 +659,7 @@ public class DeferredDocumentImpl
 
     } // getLastChild(int,boolean):int
 
-    /** 
+    /**
      * Returns the prev sibling of the given node.
      * This is post-normalization of Text Nodes.
      */
@@ -667,7 +667,7 @@ public class DeferredDocumentImpl
         return getPrevSibling(nodeIndex, true);
     }
 
-    /** 
+    /**
      * Returns the prev sibling of the given node.
      * @param free True to free sibling index.
      */
@@ -946,8 +946,8 @@ public class DeferredDocumentImpl
         return getNodeNameString(nodeIndex, true);
     } // getNodeNameString(int):String
 
-    /** 
-     * Returns the name of the given node. 
+    /**
+     * Returns the name of the given node.
      * @param free True to free the string index.
      */
     public String getNodeNameString(int nodeIndex, boolean free) {
@@ -958,7 +958,7 @@ public class DeferredDocumentImpl
 
         int chunk = nodeIndex >> CHUNK_SHIFT;
         int index = nodeIndex & CHUNK_MASK;
-        int nameIndex = free 
+        int nameIndex = free
                       ? clearChunkIndex(fNodeName, chunk, index)
                       : getChunkIndex(fNodeName, chunk, index);
         if (nameIndex == -1) {
@@ -974,8 +974,8 @@ public class DeferredDocumentImpl
         return getNodeValueString(nodeIndex, true);
     } // getNodeValueString(int):String
 
-    /** 
-     * Returns the value of the given node. 
+    /**
+     * Returns the value of the given node.
      * @param free True to free the string index.
      */
     public String getNodeValueString(int nodeIndex, boolean free) {
@@ -1024,8 +1024,8 @@ public class DeferredDocumentImpl
         return getNodeName(nodeIndex, true);
     }
 
-    /** 
-     * Returns the real int name of the given node. 
+    /**
+     * Returns the real int name of the given node.
      * @param free True to free the name index.
      */
     public int getNodeName(int nodeIndex, boolean free) {
@@ -1051,7 +1051,7 @@ public class DeferredDocumentImpl
 
     /**
      * Returns the real int value of the given node.
-     * @param free True to free the value index. 
+     * @param free True to free the value index.
      */
     public int getNodeValue(int nodeIndex, boolean free) {
 
@@ -1071,8 +1071,8 @@ public class DeferredDocumentImpl
         return getNodeType(nodeIndex, true);
     }
 
-    /** 
-     * Returns the type of the given node. 
+    /**
+     * Returns the type of the given node.
      * @param True to free type index.
      */
     public short getNodeType(int nodeIndex, boolean free) {
@@ -1114,8 +1114,8 @@ public class DeferredDocumentImpl
         return getNodeURI(nodeIndex, true);
     }
 
-    /** 
-     * Returns the URI of the given node. 
+    /**
+     * Returns the URI of the given node.
      * @param True to free URI index.
      */
     public short getNodeURI(int nodeIndex, boolean free) {
