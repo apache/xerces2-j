@@ -287,13 +287,14 @@ public class ObjectFactory {
         throws ConfigurationError
     {
         try {
-            Class spiClass;
-            if (classLoader == null) {
-                spiClass = Class.forName(className);
-            } else {
-                spiClass = classLoader.loadClass(className);
+            if (classLoader != null) {
+                try {
+                      return classLoader.loadClass(className).newInstance ();
+                } catch (ClassNotFoundException x) {
+                      // try again
+                }
             }
-            return spiClass.newInstance();
+            return Class.forName(className).newInstance();
         } catch (ClassNotFoundException x) {
             throw new ConfigurationError(
                 "Provider " + className + " not found", x);
