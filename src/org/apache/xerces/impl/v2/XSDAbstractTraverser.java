@@ -104,8 +104,8 @@ abstract class XSDAbstractTraverser {
     protected static final int NOT_ALL_CONTEXT    = 0;
     protected static final int PROCESSING_ALL_EL  = 1;
     protected static final int GROUP_REF_WITH_ALL = 2;
-    protected static final int CHILD_OF_GROUP     = 3;
-    protected static final int PROCESSING_ALL_GP  = 4;
+    protected static final int CHILD_OF_GROUP     = 4;
+    protected static final int PROCESSING_ALL_GP  = 8;
 
     //Shared data
     protected XSDHandler            fSchemaHandler = null;
@@ -505,6 +505,7 @@ abstract class XSDAbstractTraverser {
                                               String particleName, Element parent,
                                               int allContextFlags,
                                               long defaultVals) {
+            
 
         int min = particle.fMinOccurs;
         int max = particle.fMaxOccurs;
