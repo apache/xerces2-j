@@ -347,9 +347,10 @@ DocumentBuilder builder = // JAXP factory invocation
     <p>
         Yes, for grammar types for which such an API is defined.
         No such API exists at the current moment for DTD's.  For
-        XML Schemas, there is a Xerces-specific schema component
-        model <link idref="api" anchor="xml-schema-api-documentation">API</link>.
-        For details, it's best to look at the javadocs for
+        XML Schemas, Xerces implements the 
+        <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>.
+        For details, it's best to look at the 
+        <link idref="api" anchor="xml-schema-api-documentation">API</link> docs for
         the <code>org.apache.xerces.xs</code>
         package.  Assuming you have produced a Grammar object from an XML Schema
         document by some means, to turn that object
@@ -375,9 +376,9 @@ DocumentBuilder builder = // JAXP factory invocation
   <q>Is there an alternative method for getting an XSModel?</q>
   <a>
    <p>
-       Yes, the <link idref="api" anchor="xml-schema-api-documentation">XML Schema API</link>
-       defines an interface called <code>XSLoader</code> which provides methods for loading
-       XML Schema documents into an <code>XSModel</code>. The <code>XSImplementation</code>
+       Yes, the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>
+       specification defines an interface called <code>XSLoader</code> which provides methods 
+       for loading XML Schema documents into an <code>XSModel</code>. The <code>XSImplementation</code>
        interface provides a method to create an <code>XSLoader</code> using the 
        <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Bootstrap">
        DOM Level 3 Bootstraping mechanism</jump>. An application can get a reference to 

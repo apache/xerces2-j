@@ -84,8 +84,9 @@
  <anchor name="xml-schema-api-documentation"/>
  <s2 title='XML Schema API Documentation'>
   <p>
-   The XML Schema API defines a set of interfaces for accessing and querying
-   the post schema validation infoset (PSVI) defined in
+   The <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump> 
+   specification defines a set of interfaces for accessing and querying the post schema 
+   validation infoset (PSVI) defined in 
    <jump href="http://www.w3.org/TR/xmlschema-1/#PSVI_contributions">Contributions 
    to the post-schema-validation infoset (Appendix C.2)</jump>. These interfaces
    provide access to the XML Schema components, which follow as a consequence of 

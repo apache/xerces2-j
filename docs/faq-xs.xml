@@ -36,7 +36,7 @@
   </faq>
 
   <faq title="Using Entities and CDATA Sections">
-    <q>How does XML Schema processor treats entities and CDATA secptions?</q>
+    <q>How does the XML Schema processor treat entities and CDATA sections?</q>
     <a> 
       <p>According to the XML Infoset the infoset items contributing to the 
 	<jump href='http://www.w3.org/TR/xml-infoset/#infoitem.character'>[character
@@ -57,7 +57,7 @@
     <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
     <a>
       <p>
-	Xerces defines an <link idref="api" anchor="xml-schema-api-documentation">XML Schema API</link>
+	Xerces defines an <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>
 	for accessing and querying the post schema validation infoset (PSVI) defined in 
 	<jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
 	  Contributions to the post-schema-validation infoset (Appendix C.2)</jump>. 
@@ -75,7 +75,7 @@
       <p>
         The PSVI interfaces which used to be part of the <code>org.apache.xerces.xni.psvi</code>
         and <code>org.apache.xerces.impl.xs.psvi</code> packages were modified and have been moved
-        into the <link idref="api" anchor="xml-schema-api-documentation">XML Schema API</link>.
+        into the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>.
       </p>
     </a>
   </faq>
@@ -97,7 +97,7 @@ public void startElement(QName element, XMLAttributes attributes,
     ...
 }</source>
       <note>For more information, please refer to the API documentation
-	of the PSVI interfaces.</note>
+	for the XML Schema API.</note>
       
       <p>The above code shows how to retrieve PSVI information after
 	elements/attributes are assessed. The other kind of information PSVI
