@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -193,10 +194,11 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
 
         //check content
         Element child = DOMUtil.getFirstChildElement(elmNode);
+        XSAnnotationImpl annotation = null;
         if (child != null)
         {
             if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
 
@@ -204,6 +206,7 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                 reportSchemaError("s4s-elt-must-match.1", new Object[]{"wildcard", "(annotation?)", DOMUtil.getLocalName(child)}, elmNode);
             }
         }
+        wildcard.fAnnotation = annotation;
 
         return wildcard;
 

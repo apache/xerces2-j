@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;;
 
 /**
  * The XML representation for a complexType
@@ -109,6 +110,9 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
     // if there is a particle, the content model corresponding to that particle
     XSCMValidator fCMValidator = null;
 
+    // list of annotations affiliated with this type
+    XSObjectListImpl fAnnotations = null;
+
     public XSComplexTypeDecl() {
         // do-nothing constructor for now.
     }
@@ -117,7 +121,8 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
             XSTypeDefinition baseType, short derivedBy, short schemaFinal, 
             short block, short contentType,
             boolean isAbstract, XSAttributeGroupDecl attrGrp, 
-            XSSimpleType simpleType, XSParticleDecl particle) {
+            XSSimpleType simpleType, XSParticleDecl particle,
+            XSObjectListImpl annotations) {
         fTargetNamespace = targetNamespace;
         fBaseType = baseType;
         fDerivedBy = derivedBy;
@@ -129,6 +134,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
         fAttrGrp = attrGrp;
         fXSSimpleType = simpleType;
         fParticle = particle;
+        fAnnotations = annotations;
    }
 
    public void setName(String name) {
@@ -270,6 +276,11 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
         fXSSimpleType = null;
         fParticle = null;
         fCMValidator = null;
+        if(fAnnotations != null) {
+            // help out the garbage collector
+            fAnnotations.reset();
+        }
+        fAnnotations = null;
     }
 
     /**
@@ -416,8 +427,7 @@ public class XSComplexTypeDecl implements XSComplexTypeDefinition {
      * Optional. Annotation.
      */
     public XSObjectList getAnnotations() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotations;
     }
     
 	/**

@@ -62,6 +62,7 @@ import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
@@ -73,6 +74,7 @@ import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
@@ -98,7 +100,7 @@ import org.w3c.dom.Element;
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     // size of stack to hold globals:
-    private final static int GLOBAL_NUM = 10;
+    private final static int GLOBAL_NUM = 11;
 
     // globals for building XSComplexTypeDecls
     private String fName = null;
@@ -113,6 +115,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private XSParticleDecl fParticle = null;
     private boolean fIsAbstract = false;
     private XSComplexTypeDecl fComplexTypeDecl = null;
+    private XSAnnotationImpl [] fAnnotations = null;
 
     private XSParticleDecl fEmptyParticle = null;
 
@@ -240,7 +243,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             if (child != null) {
                 // traverse annotation if any
                 if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                    addAnnotation(traverseAnnotationDecl(child, attrValues, false, schemaDoc));
                     child = DOMUtil.getNextSiblingElement(child);
                 }
                 if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -312,7 +315,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         fComplexTypeDecl.setValues(fName, fTargetNamespace, fBaseType,
                 fDerivedBy, fFinal, fBlock, fContentType, fIsAbstract,
-                fAttrGrp, fXSSimpleType, fParticle);
+                fAttrGrp, fXSSimpleType, fParticle, new XSObjectListImpl(fAnnotations, 
+                fAnnotations == null? 0 : fAnnotations.length));
         return fComplexTypeDecl;
     }
 
@@ -336,7 +340,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         if (simpleContent != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(simpleContent, simpleContentAttrValues, false, schemaDoc);
+                addAnnotation(traverseAnnotationDecl(simpleContent, simpleContentAttrValues, false, schemaDoc));
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
             }
         }
@@ -455,7 +459,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // traverse annotation if any
 
             if (DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(simpleContent, derivationTypeAttrValues, false, schemaDoc);
+                addAnnotation(traverseAnnotationDecl(simpleContent, derivationTypeAttrValues, false, schemaDoc));
                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
             }
 
@@ -529,7 +533,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 fixedFacets = fi.fFixedFacets;
             }
 
-            fXSSimpleType = schemaFactory.createTypeRestriction(null,schemaDoc.fTargetNamespace,(short)0,baseValidator);
+            fXSSimpleType = schemaFactory.createTypeRestriction(null,schemaDoc.fTargetNamespace,(short)0,baseValidator,null);
             try{
                 fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
                 fXSSimpleType.applyFacets(facetData, presentFacets, fixedFacets, fValidationState);
@@ -655,7 +659,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         if (complexContent != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(complexContent, complexContentAttrValues, false, schemaDoc);
+                addAnnotation(traverseAnnotationDecl(complexContent, complexContentAttrValues, false, schemaDoc));
                 complexContent = DOMUtil.getNextSiblingElement(complexContent);
             }
         }
@@ -744,7 +748,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         if (complexContent != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(complexContent, derivationTypeAttrValues, false, schemaDoc);
+                addAnnotation(traverseAnnotationDecl(complexContent, derivationTypeAttrValues, false, schemaDoc));
                 complexContent = DOMUtil.getNextSiblingElement(complexContent);
             }
             if (complexContent !=null &&
@@ -1169,9 +1173,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fGlobalStore[fGlobalStorePos++] = fAttrGrp;
         fGlobalStore[fGlobalStorePos++] = fParticle;
         fGlobalStore[fGlobalStorePos++] = fXSSimpleType;
+        fGlobalStore[fGlobalStorePos++] = fAnnotations;
     }
 
     private void contentRestore() {
+        fAnnotations = (XSAnnotationImpl [])fGlobalStore[--fGlobalStorePos];
         fXSSimpleType = (XSSimpleType)fGlobalStore[--fGlobalStorePos];
         fParticle = (XSParticleDecl)fGlobalStore[--fGlobalStorePos];
         fAttrGrp = (XSAttributeGroupDecl)fGlobalStore[--fGlobalStorePos];
@@ -1186,5 +1192,22 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fName = (String)fGlobalStore[--fGlobalStorePos];
         fIsAbstract = ((Boolean)fGlobalStore[--fGlobalStorePos]).booleanValue();
         fComplexTypeDecl = (XSComplexTypeDecl)fGlobalStore[--fGlobalStorePos];
+    }
+
+    private void addAnnotation(XSAnnotationImpl annotation) {
+        if(annotation == null)
+            return;
+        // it isn't very likely that there will be more than one annotation
+        // in a complexType decl.  This saves us fromhaving to push/pop
+        // one more object from the fGlobalStore, and that's bound
+        // to be a savings for most applications
+        if(fAnnotations == null) {
+            fAnnotations = new XSAnnotationImpl[1];
+        } else {
+            XSAnnotationImpl [] tempArray = new XSAnnotationImpl[fAnnotations.length + 1];
+            System.arraycopy(fAnnotations, 0, tempArray, 0, fAnnotations.length);
+            fAnnotations = tempArray;
+        }
+        fAnnotations[fAnnotations.length-1] = annotation;
     }
 }

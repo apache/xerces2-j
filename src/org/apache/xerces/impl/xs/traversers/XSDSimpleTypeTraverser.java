@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,9 +65,11 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
@@ -176,10 +178,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         // annotation?,(list|restriction|union)
         Element child = DOMUtil.getFirstChildElement(simpleTypeDecl);
+        XSAnnotationImpl [] annotations = null;
         if (child != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                XSAnnotationImpl annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                if (annotation != null)
+                    annotations = new XSAnnotationImpl [] {annotation};
                 child = DOMUtil.getNextSiblingElement(child);
             }
         }
@@ -231,7 +236,17 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (content != null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(content, contentAttrs, false, schemaDoc);
+                XSAnnotationImpl annotation = traverseAnnotationDecl(content, contentAttrs, false, schemaDoc);
+                if(annotation != null ) {
+                    if(annotations == null) 
+                        annotations = new XSAnnotationImpl [] {annotation};
+                    else {
+                        XSAnnotationImpl [] tempArray = new XSAnnotationImpl[2];
+                        tempArray[0] = annotations[0];
+                        annotations = tempArray;
+                        annotations[1] = annotation;
+                    }
+                }
                 content = DOMUtil.getNextSiblingElement(content);
             }
         }
@@ -272,7 +287,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
 
-        // when there is an error finding the base type of a restriciton
+        // when there is an error finding the base type of a restriction
         // we use anySimpleType as the base, then we should skip the facets,
         // because anySimpleType doesn't recognize any facet.
         boolean skipFacets = false;
@@ -347,16 +362,19 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // create the simple type based on the "base" type
         XSSimpleType newDecl = null;
         if (restriction) {
-            newDecl = schemaFactory.createTypeRestriction(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator);
+            newDecl = schemaFactory.createTypeRestriction(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator, 
+                annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
         }
         else if (list) {
-            newDecl = schemaFactory.createTypeList(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator);
+            newDecl = schemaFactory.createTypeList(name, schemaDoc.fTargetNamespace, (short)finalProperty, baseValidator,
+                annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
         }
         else if (union) {
             XSSimpleType[] memberDecls = new XSSimpleType[dTValidators.size()];
             for (int i = 0; i < dTValidators.size(); i++)
                 memberDecls[i] = (XSSimpleType)dTValidators.elementAt(i);
-            newDecl = schemaFactory.createTypeUnion(name, schemaDoc.fTargetNamespace, (short)finalProperty, memberDecls);
+            newDecl = schemaFactory.createTypeUnion(name, schemaDoc.fTargetNamespace, (short)finalProperty, memberDecls,
+                annotations == null? null : new XSObjectListImpl(annotations, annotations.length));
         }
 
         // now traverse facets, if it's derived by restriction
@@ -467,13 +485,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         switch (refType) {
         case XSConstants.DERIVATION_RESTRICTION:
             return schemaFactory.createTypeRestriction(name, namespace, (short)0,
-                                                       SchemaGrammar.fAnySimpleType);
+                                                       SchemaGrammar.fAnySimpleType, null);
         case XSConstants.DERIVATION_LIST:
             return schemaFactory.createTypeList(name, namespace, (short)0,
-                                                SchemaGrammar.fAnySimpleType);
+                                                SchemaGrammar.fAnySimpleType, null);
         case XSConstants.DERIVATION_UNION:
             return schemaFactory.createTypeUnion(name, namespace, (short)0,
-                                                 new XSSimpleType[]{SchemaGrammar.fAnySimpleType});
+                                                 new XSSimpleType[]{SchemaGrammar.fAnySimpleType}, null);
         }
         
         return null;

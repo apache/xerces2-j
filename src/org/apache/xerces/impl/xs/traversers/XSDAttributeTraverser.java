@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
@@ -122,6 +123,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
                 Element child = DOMUtil.getFirstChildElement(attrDecl);
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    // REVISIT:  put this somewhere
                     traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                     child = DOMUtil.getNextSiblingElement(child);
                 }
@@ -293,8 +295,9 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // get 'annotation'
         Element child = DOMUtil.getFirstChildElement(attrDecl);
+        XSAnnotationImpl annotation = null;
         if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
         }
 
@@ -327,7 +330,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
 
         attribute.setValues(nameAtt, tnsAtt, attrType,
-            constraintType, scope, attDefault, enclCT);
+            constraintType, scope, attDefault, enclCT, annotation);
 
         // Step 2: register attribute decl to the grammar
         if (isGlobal && nameAtt != null)

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,6 +90,9 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
     public XSWildcardDecl fAttributeWC = null;
     // whether there is an attribute use whose type is or is derived from ID.
     public String fIDAttrName = null;
+
+    // optional annotation
+    public XSAnnotationImpl fAnnotation;
 
     // add an attribute use
     // if the type is derived from ID, but there is already another attribute
@@ -333,6 +336,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         } 
         fAttrUseNum = 0;
         fAttributeWC = null;
+        fAnnotation = null;
         fIDAttrName = null;
 
     }
@@ -379,8 +383,7 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
     
 	/**

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,8 @@ public class XSElementDecl implements XSElementDeclaration {
     public short fBlock = XSConstants.DERIVATION_NONE;
     // final set (substitution group exclusions) of the element
     public short fFinal = XSConstants.DERIVATION_NONE;
+    // optional annotation
+    public XSAnnotationImpl fAnnotation = null;
     // value constraint value
     public ValidatedInfo fDefault = null;
     // the substitution group affiliation of the element
@@ -132,7 +134,7 @@ public class XSElementDecl implements XSElementDeclaration {
         fEnclosingCT = enclosingCT;
     }
 
-    public void addIDConstaint(IdentityConstraint idc) {
+    public void addIDConstraint(IdentityConstraint idc) {
         if (fIDCPos == fIDConstraints.length) {
             fIDConstraints = resize(fIDConstraints, fIDCPos*2);
         }
@@ -202,6 +204,7 @@ public class XSElementDecl implements XSElementDeclaration {
         fBlock = XSConstants.DERIVATION_NONE;
         fFinal = XSConstants.DERIVATION_NONE;
         fDefault = null;
+        fAnnotation = null;
         fSubGroup = null;
         // reset identity constraints
         for (int i=0;i<fIDCPos;i++) {
@@ -362,8 +365,7 @@ public class XSElementDecl implements XSElementDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
     
 
@@ -375,4 +377,4 @@ public class XSElementDecl implements XSElementDeclaration {
 		return null;
 	}
 
-} // class XMLElementDecl
+} // class XSElementDecl

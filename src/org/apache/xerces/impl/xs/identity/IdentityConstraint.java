@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.
+ * Copyright (c) 2001-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +57,14 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.psvi.XSIDCDefinition;
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 
 /**
  * Base class of Schema identity constraint.
@@ -92,6 +98,12 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
 
     /** Fields. */
     protected Field[] fFields;
+
+    // optional annotations
+    protected XSAnnotationImpl [] fAnnotations = null;
+
+    // number of annotations in this identity constraint
+    protected int fNumAnnotations;
 
     //
     // Constructors
@@ -247,8 +259,7 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
      * Optional. Annotation.
      */
     public XSObjectList getAnnotations() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return new XSObjectListImpl(fAnnotations, fNumAnnotations);
     }
     
 	/**
@@ -258,5 +269,18 @@ public abstract class IdentityConstraint implements XSIDCDefinition {
         // REVISIT: implement
 		return null;
 	}
+
+    public void addAnnotation(XSAnnotationImpl annotation) {
+        if(annotation == null)
+            return;
+        if(fAnnotations == null) {
+            fAnnotations = new XSAnnotationImpl[2];
+        } else if(fNumAnnotations == fAnnotations.length) {
+            XSAnnotationImpl[] newArray = new XSAnnotationImpl[fNumAnnotations << 1];
+            System.arraycopy(fAnnotations, 0, newArray, 0, fNumAnnotations);
+            fAnnotations = newArray;
+        }
+        fAnnotations[fNumAnnotations++] = annotation;
+    }
 
 } // class IdentityConstraint

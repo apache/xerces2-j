@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
@@ -133,8 +134,8 @@ abstract class XSDAbstractTraverser {
     // REVISIT: store annotation information for PSVI
     // REVISIT: how to pass the parentAttrs? as DOM attributes?
     //          as name/value pairs (string)? in parsed form?
-    // REVISIT: what to return
-    void traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs,
+    // @return XSAnnotationImpl object
+    XSAnnotationImpl traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs,
                                 boolean isGlobal, XSDocumentInfo schemaDoc) {
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc);
@@ -159,7 +160,7 @@ abstract class XSDAbstractTraverser {
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         }
 
-        // REVISIT: an annotation decl should be returned when we support PSVI
+        return null;
     }
 
     // the QName simple type used to resolve qnames
@@ -222,6 +223,7 @@ abstract class XSDAbstractTraverser {
                 if (child != null) {
                      // traverse annotation if any
                      if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                         // REVISIT:  change API to provide a receptacle for these
                          traverseAnnotationDecl(child, attrs, false, schemaDoc);
                          child = DOMUtil.getNextSiblingElement(child);
                      }
@@ -245,6 +247,7 @@ abstract class XSDAbstractTraverser {
                     if (child != null) {
                          // traverse annotation if any
                          if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                             // REVISIT:  change API to provide for these
                              traverseAnnotationDecl(child, attrs, false, schemaDoc);
                              child = DOMUtil.getNextSiblingElement(child);
                          }
@@ -338,6 +341,7 @@ abstract class XSDAbstractTraverser {
                 if (child != null) {
                     // traverse annotation if any
                     if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                        // REVISIT:  change API to provide for these
                         traverseAnnotationDecl(child, attrs, false, schemaDoc);
                         child = DOMUtil.getNextSiblingElement(child);
                     }

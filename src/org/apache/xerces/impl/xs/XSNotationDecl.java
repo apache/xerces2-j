@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,9 @@ public class XSNotationDecl implements XSNotationDeclaration {
     // system id of the notation
     public String fSystemId = null;
 
+    // optional annotation
+    public XSAnnotationImpl fAnnotation = null;
+
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
      */
@@ -123,8 +126,7 @@ public class XSNotationDecl implements XSNotationDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
 
 	/**

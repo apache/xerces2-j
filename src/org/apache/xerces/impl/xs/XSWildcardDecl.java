@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,6 +85,9 @@ public class XSWildcardDecl implements XSWildcard {
     // for NSCONSTRAINT_LIST, it means one of the namespaces in the list
     // for NSCONSTRAINT_NOT, it means not any of the namespaces in the list
     public String[] fNamespaceList;
+
+    // optional annotation
+    public XSAnnotationImpl fAnnotation = null;
 
     // I'm trying to implement the following constraint exactly as what the
     // spec describes. Sometimes it seems redundant, and sometimes there seems
@@ -609,8 +612,7 @@ public class XSWildcardDecl implements XSWildcard {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
 
 

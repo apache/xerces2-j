@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002,2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,9 @@ public class XSModelGroupImpl implements XSModelGroup {
     // particles
     public XSParticleDecl[] fParticles = null;
     public int fParticleCount = 0;
+
+    // this particle's optional annotation
+    public XSAnnotationImpl fAnnotation;
 
     // whether this model group contains nothing
     public boolean isEmpty() {
@@ -201,6 +204,7 @@ public class XSModelGroupImpl implements XSModelGroup {
         fParticles = null;
         fParticleCount = 0;
         fDescription = null;
+        fAnnotation = null;
     }
     
     /**
@@ -251,8 +255,7 @@ public class XSModelGroupImpl implements XSModelGroup {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
 
 	/**
@@ -262,4 +265,4 @@ public class XSModelGroupImpl implements XSModelGroup {
 		return null;
 	}
 
-} // class XSParticle
+} // class XSModelGroupImpl

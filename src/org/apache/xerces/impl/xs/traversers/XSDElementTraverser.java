@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
@@ -191,6 +192,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
                 Element child = DOMUtil.getFirstChildElement(elmDecl);
                 if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    // REVISIT:  put this somewhere
                     traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                     child = DOMUtil.getNextSiblingElement(child);
                 }
@@ -335,10 +337,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // get 'annotation'
         Element child = DOMUtil.getFirstChildElement(elmDecl);
+        XSAnnotationImpl annotation = null;
         if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
         }
+        element.fAnnotation = annotation;
 
         // get 'type definition'
         XSTypeDefinition elementType = null;

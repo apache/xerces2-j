@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         // General Attribute Checking on sElem
         // first child could be an annotation
         if (DOMUtil.getLocalName(sElem).equals(SchemaSymbols.ELT_ANNOTATION)) {
-            traverseAnnotationDecl(sElem, icElemAttrs, false, schemaDoc);
+            ic.addAnnotation(traverseAnnotationDecl(sElem, icElemAttrs, false, schemaDoc));
             sElem = DOMUtil.getNextSiblingElement(sElem);
         }
         // if no more children report an error
@@ -115,7 +115,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         if (selChild !=null) {
             // traverse annotation if any
             if (DOMUtil.getLocalName(selChild).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(selChild, attrValues, false, schemaDoc);
+                ic.addAnnotation(traverseAnnotationDecl(selChild, attrValues, false, schemaDoc));
                 selChild = DOMUtil.getNextSiblingElement(selChild);
             }
             else {
@@ -167,7 +167,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             if (fieldChild != null) {            
                 // traverse annotation
                 if (DOMUtil.getLocalName(fieldChild).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    traverseAnnotationDecl(fieldChild, attrValues, false, schemaDoc);
+                    ic.addAnnotation(traverseAnnotationDecl(fieldChild, attrValues, false, schemaDoc));
                     fieldChild = DOMUtil.getNextSiblingElement(fieldChild);
                 }
             }

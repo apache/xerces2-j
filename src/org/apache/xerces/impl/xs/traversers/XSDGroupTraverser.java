@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSAnnotationImpl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
@@ -113,6 +114,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // no children other than "annotation?" are allowed
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+            // REVISIT:  put this somewhere
             traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
         }
@@ -165,6 +167,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
+        XSAnnotationImpl annotation = null;
         if (l_elmChild == null) {
         	reportSchemaError("s4s-elt-must-match.2",
                               new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
@@ -172,7 +175,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         } else {
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
+                annotation = traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
                 l_elmChild = DOMUtil.getNextSiblingElement(l_elmChild);
                 if (l_elmChild != null)
                     childName = l_elmChild.getLocalName();
@@ -209,6 +212,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
                 if (particle != null)
                     group.fModelGroup = (XSModelGroupImpl)particle.fValue;
+                group.fAnnotation = annotation;
                 grammar.addGlobalGroupDecl(group);
             }
         }

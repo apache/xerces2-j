@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,8 @@ public class XSGroupDecl implements XSModelGroupDefinition {
     public String fTargetNamespace = null;
     // model group of the group
     public XSModelGroupImpl fModelGroup = null;
+    // optional annotation 
+    public XSAnnotationImpl fAnnotation = null;
 
     /**
      * Get the type of the object, i.e ELEMENT_DECLARATION.
@@ -110,8 +112,7 @@ public class XSGroupDecl implements XSModelGroupDefinition {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
     
 	/**

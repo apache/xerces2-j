@@ -634,7 +634,9 @@ public class XSDHandler {
                 if(importChild != null ) {
                     String importComponentType = DOMUtil.getLocalName(importChild);
                     if (importComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                        fElementTraverser.traverseAnnotationDecl(importChild, importAttrs, true, currSchemaInfo);
+                        // promoting annotations to parent component
+                        sg.addAnnotation(
+                            fElementTraverser.traverseAnnotationDecl(importChild, importAttrs, true, currSchemaInfo));
                     } else {
                         reportSchemaError("s4s-elt-must-match.1", new Object [] {localName, "annotation?", importComponentType}, child);
                     }
@@ -701,7 +703,9 @@ public class XSDHandler {
                     if(includeChild != null ) {
                         String includeComponentType = DOMUtil.getLocalName(includeChild);
                         if (includeComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                            fElementTraverser.traverseAnnotationDecl(includeChild, includeAttrs, true, currSchemaInfo);
+                            // promoting annotations to parent component
+                            sg.addAnnotation(
+                                fElementTraverser.traverseAnnotationDecl(includeChild, includeAttrs, true, currSchemaInfo));
                         } else {
                             reportSchemaError("s4s-elt-must-match.1", new Object [] {localName, "annotation?", includeComponentType}, child);
                         }
@@ -716,7 +720,9 @@ public class XSDHandler {
                             redefinedChild = DOMUtil.getNextSiblingElement(redefinedChild)) {
                         String redefinedComponentType = DOMUtil.getLocalName(redefinedChild);
                         if (redefinedComponentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                            fElementTraverser.traverseAnnotationDecl(redefinedChild, includeAttrs, true, currSchemaInfo);
+                            // promoting annotations to parent component
+                            sg.addAnnotation(
+                                fElementTraverser.traverseAnnotationDecl(redefinedChild, includeAttrs, true, currSchemaInfo));
                             DOMUtil.setHidden(redefinedChild);
                         } 
                         // catch all other content errors later
@@ -1007,7 +1013,7 @@ public class XSDHandler {
                     fSimpleTypeTraverser.traverseGlobal(globalComp, currSchemaDoc, currSG);
                 }
                 else if (componentType.equals(SchemaSymbols.ELT_ANNOTATION)) {
-                    fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc);
+                    currSG.addAnnotation(fElementTraverser.traverseAnnotationDecl(globalComp, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
                 }
                 else {
                     reportSchemaError("s4s-elt-invalid-content.1", new Object [] {SchemaSymbols.ELT_SCHEMA, DOMUtil.getLocalName(globalComp)}, globalComp);

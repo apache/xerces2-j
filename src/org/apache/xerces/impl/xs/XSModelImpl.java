@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002, 2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,6 +75,7 @@ import org.apache.xerces.impl.xs.util.NSItemListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.XMLSymbols;
 
@@ -136,6 +137,9 @@ public class XSModelImpl implements XSModel {
     private XSNamedMap[] fGlobalComponents;
     // store a certain kind of components from one namespace
     private XSNamedMap[][] fNSComponents;
+
+    // store all annotations
+    private XSObjectListImpl fAnnotations = null;
     
    /**
     * Construct an XSModelImpl, by storing some grammars and grammars imported
@@ -439,9 +443,24 @@ public class XSModelImpl implements XSModel {
     /**
      *  {annotations} A set of annotations.
      */
-    public XSObjectList getAnnotations() {
-        // REVISIT: SCAPI: to implement
-        return null;
+    public synchronized XSObjectList getAnnotations() {
+        if(fAnnotations != null) 
+            return fAnnotations;
+
+        // do this in two passes to avoid inaccurate array size
+        int totalAnnotations = 0;
+        for (int i = 0; i < fGrammarCount; i++) {
+            totalAnnotations += fGrammarList[i].fNumAnnotations;
+        }
+        XSAnnotationImpl [] annotations = new XSAnnotationImpl [totalAnnotations];
+        int currPos = 0;
+        for (int i = 0; i < fGrammarCount; i++) {
+            SchemaGrammar currGrammar = fGrammarList[i];
+            System.arraycopy(currGrammar.fAnnotations, 0, annotations, currPos, currGrammar.fNumAnnotations);
+            currPos += currGrammar.fNumAnnotations;
+        }
+        fAnnotations = new XSObjectListImpl(annotations, annotations.length);
+        return fAnnotations;
     }
 
     private static final String null2EmptyString(String str) {

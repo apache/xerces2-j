@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,12 +88,15 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
     short fScope = XSConstants.SCOPE_ABSENT;
     // enclosing complex type, when the scope is local
     XSComplexTypeDecl fEnclosingCT = null;
+    // optional annotation
+    XSAnnotationImpl fAnnotation = null;
     // value constraint value
     ValidatedInfo fDefault = null;
 
     public void setValues(String name, String targetNamespace,
             XSSimpleType simpleType, short constraintType, short scope,
-            ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT) { 
+            ValidatedInfo valInfo, XSComplexTypeDecl enclosingCT,
+            XSAnnotationImpl annotation) { 
         fName = name;
         fTargetNamespace = targetNamespace;
         fType = simpleType;
@@ -101,6 +104,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fScope = scope;
         fDefault = valInfo;
         fEnclosingCT = enclosingCT;
+        fAnnotation = annotation;
     }
 
     public void reset(){
@@ -110,6 +114,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         fConstraintType = XSConstants.VC_NONE;
         fScope = XSConstants.SCOPE_ABSENT;
         fDefault = null;
+        fAnnotation = null;
     }
 
     /**
@@ -185,8 +190,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
      * Optional. Annotation.
      */
     public XSAnnotation getAnnotation() {
-        // REVISIT: SCAPI: to implement
-        return null;
+        return fAnnotation;
     }
     
     public ValidatedInfo getValInfo() {

@@ -64,6 +64,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
 import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
 import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
@@ -83,7 +84,6 @@ import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 
@@ -102,7 +102,7 @@ import org.apache.xerces.xni.grammars.XSGrammar;
  * @version $Id$
  */
 
-public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
+public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
 
     // the target namespace of grammar
     String fTargetNamespace;
@@ -118,6 +118,12 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 
     // the XMLGrammarDescription member
     XSDDescription fGrammarDescription = null;
+
+    // annotations associated with the "root" schema of this targetNamespace
+    XSAnnotationImpl [] fAnnotations = null;
+
+    // number of annotations declared
+    int fNumAnnotations;
 
     //
     // Constructors
@@ -237,7 +243,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
                 // xsi:schemaLocation
                 name = SchemaSymbols.XSI_SCHEMALOCATION;
                 tns = SchemaSymbols.URI_XSI;
-                type = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI);
+                type = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI, null);
                 fGlobalAttrDecls.put(name, new BuiltinAttrDecl(name, tns, type, scope));
                 
                 // xsi:noNamespaceSchemaLocation
@@ -372,7 +378,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
      * register one identity constraint
      */
     public final void addIDConstraintDecl(XSElementDecl elmDecl, IdentityConstraint decl) {
-        elmDecl.addIDConstaint(decl);
+        elmDecl.addIDConstraint(decl);
         fGlobalIDConstraintDecls.put(decl.getIdentityConstraintName(), decl);
     }
 
@@ -624,6 +630,10 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
         
             return particleG;
         }
+
+        public XSObjectList getAnnotations() {
+            return null;
+        }
     }
     private static class BuiltinAttrDecl extends XSAttributeDecl {
         public BuiltinAttrDecl(String name, String tns, 
@@ -642,6 +652,9 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 
         public void reset () {
             // also ignore this call.
+        }
+        public XSAnnotation getAnnotation() {
+            return null;
         }
     } // class BuiltinAttrDecl
 
@@ -872,8 +885,20 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 	 * @see org.apache.xerces.impl.xs.psvi.XSNamespaceItem#getAnnotations()
 	 */
 	public XSObjectList getAnnotations() {
-        // REVISIT: implement
-		return null;
+		return new XSObjectListImpl(fAnnotations, fNumAnnotations);
 	}
+
+    public void addAnnotation(XSAnnotationImpl annotation) {
+        if(annotation == null)
+            return;
+        if(fAnnotations == null) {
+            fAnnotations = new XSAnnotationImpl[2];
+        } else if(fNumAnnotations == fAnnotations.length) {
+            XSAnnotationImpl[] newArray = new XSAnnotationImpl[fNumAnnotations << 1];
+            System.arraycopy(fAnnotations, 0, newArray, 0, fNumAnnotations);
+            fAnnotations = newArray;
+        }
+        fAnnotations[fNumAnnotations++] = annotation;
+    }
 
 } // class SchemaGrammar
