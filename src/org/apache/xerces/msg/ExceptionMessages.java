@@ -148,28 +148,18 @@ public class ExceptionMessages extends ListResourceBundle {
     
     // org.apache.xerces.readers
 
-    { "RDR001", "untested 1" },
-    { "RDR002", "cannot happen 7" },
-    { "RDR003", "cannot happen 8" },
-    { "RDR004", "cannot happen 9" },
+    { "RDR001", "untested" },
+    { "RDR002", "cannot happen" },
             
     //org.apache.xerces.utils
-
-    { "UTL001", "cannot happen 20" },
-    { "UTL002", "cannot happen 21" },
-    { "UTL003", "untested 1" },
-    { "UTL004", "untested 2" },
+    { "UTL001", "untested" },
+    { "UTL002", "cannot happen" },
 
     //org.apache.xerces.validators
 
     { "VAL001", "Element stack underflow" },
     { "VAL002", "getValidatorForAttType ({0})" },
-    { "VAL003", "cannot happen 26" },
-    { "VAL004", "cannot happen 27" },
-    { "VAL005", "cannot happen 28" },
-    { "VAL006", "cannot happen 29" },
-    { "VAL007", "cannot happen 30" },
-    { "VAL008", "cannot happen 1" }
+    { "VAL003",  "cannot happen" }
 
         
     };

@@ -212,49 +212,49 @@ final class UTF8Recognizer extends XMLDeclRecognizer {
         // The rest of the methods in XMLReader are not used for parsing XMLDecl/TextDecl.
         //
         public void append(XMLEntityHandler.CharBuffer charBuffer, int offset, int length) {
-            throw new RuntimeException("RDR002 cannot happen 7");
+            throw new RuntimeException("RDR002 cannot happen");
         }
         public int addString(int offset, int length) {
-            throw new RuntimeException("RDR003 cannot happen 8");
+            throw new RuntimeException("RDR002 cannot happen");
         }
         public int addSymbol(int offset, int length) {
-            throw new RuntimeException("RDR004 cannot happen 9");
+            throw new RuntimeException("RDR002 cannot happen");
         }
         public void skipToChar(char ch) throws IOException {
-            throw new IOException("cannot happen 10");
+            throw new IOException("RDR002 cannot happen");
         }
         public void skipPastName(char fastcheck) throws IOException {
-            throw new IOException("cannot happen 11");
+            throw new IOException("RDR002 cannot happen");
         }
         public void skipPastNmtoken(char fastcheck) throws IOException {
-            throw new IOException("cannot happen 12");
+            throw new IOException("RDR002 cannot happen");
         }
         public boolean lookingAtValidChar(boolean skipPastChar) throws IOException {
-            throw new IOException("cannot happen 13");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanInvalidChar() throws IOException {
-            throw new IOException("cannot happen 14");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanCharRef(boolean hex) throws IOException {
-            throw new IOException("cannot happen 15");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanAttValue(char qchar, boolean asSymbol) throws IOException {
-            throw new IOException("cannot happen 15.2");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanEntityValue(int qchar, boolean createString) throws IOException {
-            throw new IOException("cannot happen 15.3");
+            throw new IOException("RDR002 cannot happen");
         }
         public boolean scanExpectedName(char fastcheck, StringPool.CharArrayRange expectedName) throws IOException {
-            throw new IOException("cannot happen 16.1");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanQName(char fastcheck) throws IOException {
-            throw new IOException("cannot happen 16.2");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanName(char fastcheck) throws IOException {
-            throw new IOException("cannot happen 16.3");
+            throw new IOException("RDR002 cannot happen");
         }
         public int scanContent(int elementType) throws IOException {
-            throw new IOException("cannot happen 17");
+            throw new IOException("RDR002 cannot happen");
         }
     }
 }
