@@ -1922,7 +1922,8 @@ public class XSchemaValidator implements XMLValidator {
                     else // buildAll    
                         reportSchemaError(SchemaMessageProvider.OrderIsAll,
                                           new Object [] { "group" } );
-                } else if (childName.equals(ELT_ATTRIBUTEDECL)) {
+                } else if (childName.equals(ELT_ATTRIBUTEDECL) ||
+                           childName.equals(ELT_ATTRGROUPDECL)) {
                     break; // attr processing is done be    low
                 } else if (childName.equals(ELT_ANY)) {
                     contentSpecType = fStringPool.addSymbol("ANY");
@@ -1998,6 +1999,8 @@ public class XSchemaValidator implements XMLValidator {
 		}
 		
 		Element child = XUtil.getFirstChildElement(groupDecl);
+        while (child != null && child.getNodeName().equals(ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
 
 		int contentSpecType = 0;
 		int csnType = 0;
@@ -2201,6 +2204,8 @@ public class XSchemaValidator implements XMLValidator {
 		
 		// element has a single child element, either a datatype or a type, null if primitive
 		Element content = XUtil.getFirstChildElement(elementDecl);
+        while (content != null && content.getNodeName().equals(ELT_ANNOTATION))
+            content = XUtil.getNextSiblingElement(content);
 
 		if (content != null) {
 			String contentName = content.getNodeName();
@@ -2390,6 +2395,8 @@ public class XSchemaValidator implements XMLValidator {
 		}
 		
 		Element child = XUtil.getFirstChildElement(attrGroupDecl);
+        while (child != null && child.getNodeName().equals(ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
 
 		int groupIndices[] = new int [((org.apache.xerces.dom.NodeImpl)attrGroupDecl).getLength()];
 		int numGroups = 0;
