@@ -911,7 +911,7 @@ public final class XMLDocumentScanner {
                     fEntityReader.lookingAtValidChar(true);
                 }
             } while (fScannerState != SCANNER_STATE_END_OF_INPUT && keepgoing);
-            return (fScannerState != SCANNER_STATE_END_OF_INPUT);
+            return true;
         }
         public void endOfInput(int entityName, boolean moreToFollow) throws Exception {
             switch (fScannerState) {
@@ -1384,7 +1384,7 @@ public final class XMLDocumentScanner {
                     throw new RuntimeException("FWK001 4] ScannerState="+fScannerState+"\n" + "4\t"+fScannerState);
                 }
             } while (fScannerState != SCANNER_STATE_END_OF_INPUT && keepgoing);
-            return (fScannerState != SCANNER_STATE_END_OF_INPUT);
+            return true;
         }
         public void endOfInput(int entityName, boolean moreToFollow) throws Exception {
             switch (fScannerState) {
@@ -1521,7 +1521,7 @@ public final class XMLDocumentScanner {
                     fEntityReader.lookingAtValidChar(true);
                 }
             } while (fScannerState != SCANNER_STATE_END_OF_INPUT && keepgoing);
-            return (fScannerState != SCANNER_STATE_END_OF_INPUT);
+            return true;
         }
         public void endOfInput(int entityName, boolean moreToFollow) throws Exception {
             if (moreToFollow)
