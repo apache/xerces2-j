@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -873,7 +873,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             // Try to write to some other kind of URI. Some protocols
             // won't support this, though HTTP should work.
             else {
-            	URLConnection urlCon = url.openConnection();
+                URLConnection urlCon = url.openConnection();
                 urlCon.setDoInput(false);
                 urlCon.setDoOutput(true);
                 urlCon.setUseCaches(false); // Enable tunneling.
