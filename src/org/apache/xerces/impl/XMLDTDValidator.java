@@ -760,6 +760,7 @@ public class XMLDTDValidator
         throws XNIException {
 
         handleStartElement(element, attributes, true);
+        handleEndElement(element, true);
 
     } // emptyElement(QName,XMLAttributes)
 
@@ -2577,7 +2578,6 @@ public class XMLDTDValidator
         if (fDocumentHandler != null) {
             if (isEmpty) {
                 fDocumentHandler.emptyElement(element, attributes);
-                handleEndElement(element, isEmpty);
             }
             else {
                 fDocumentHandler.startElement(element, attributes);

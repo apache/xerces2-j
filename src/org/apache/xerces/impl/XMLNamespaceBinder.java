@@ -493,72 +493,7 @@ public class XMLNamespaceBinder
      */
     public void startElement(QName element, XMLAttributes attributes)
         throws XNIException {
-
-        // add new namespace context
-        fNamespaceSupport.pushContext();
-
-        // search for new namespace bindings
-        int length = attributes.getLength();
-        for (int i = 0; i < length; i++) {
-            String rawname = attributes.getQName(i);
-            if (rawname.startsWith("xmlns")) {
-                // declare prefix in context
-                String prefix = rawname.length() > 5
-                              ? attributes.getLocalName(i) : fEmptySymbol;
-                String uri = attributes.getValue(i);
-                uri = fSymbolTable.addSymbol(uri);
-                fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
-
-                // call handler
-                if (fDocumentHandler != null) {
-                    fDocumentHandler.startPrefixMapping(prefix, uri);
-                }
-            }
-        }
-
-        // bind the element
-        String prefix = element.prefix != null
-                      ? element.prefix : fEmptySymbol;
-        element.uri = fNamespaceSupport.getURI(prefix);
-        if (element.prefix == null && element.uri != null) {
-            element.prefix = fEmptySymbol;
-        }
-        if (element.prefix != null && element.uri == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                       "ElementPrefixUnbound",
-                                       new Object[]{element.prefix, element.rawname},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
-        }
-
-        // bind the attributes
-        for (int i = 0; i < length; i++) {
-            attributes.getName(i, fAttributeQName);
-            String aprefix = fAttributeQName.prefix != null 
-                           ? fAttributeQName.prefix : fEmptySymbol;
-            String arawname = fAttributeQName.rawname;
-            if (aprefix == fXmlSymbol) {
-                fAttributeQName.uri = fNamespaceSupport.getURI(fXmlSymbol);
-                attributes.setName(i, fAttributeQName);
-            }
-            else if (arawname != fXmlnsSymbol && !arawname.startsWith("xmlns:")) {
-                if (aprefix != fEmptySymbol) {
-                    fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
-                    if (fAttributeQName.uri == null) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
-                                                   "AttributePrefixUnbound",
-                                                   new Object[]{aprefix, arawname},
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    attributes.setName(i, fAttributeQName);
-                }
-            }
-        }
-
-        // call handler
-        if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startElement(element, attributes);
-        }
-
+        handleStartElement(element, attributes, false);
     } // startElement(QName,XMLAttributes)
 
     /**
@@ -571,10 +506,8 @@ public class XMLNamespaceBinder
      */
     public void emptyElement(QName element, XMLAttributes attributes)
         throws XNIException {
-
-        startElement(element, attributes);
-        endElement(element);
-
+        handleStartElement(element, attributes, true);
+        handleEndElement(element, true);
     } // emptyElement(QName,XMLAttributes)
 
     /**
@@ -616,31 +549,7 @@ public class XMLNamespaceBinder
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endElement(QName element) throws XNIException {
-
-        // bind element
-        String eprefix = element.prefix != null ? element.prefix : fEmptySymbol;
-        element.uri = fNamespaceSupport.getURI(eprefix);
-        if (element.uri != null) {
-            element.prefix = eprefix;
-        }
-        
-        // call handlers
-        if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.endElement(element);
-        }
-
-        // end prefix mappings
-        if (fDocumentHandler != null) {
-            int count = fNamespaceSupport.getDeclaredPrefixCount();
-            for (int i = count - 1; i >= 0; i--) {
-                String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
-                fDocumentHandler.endPrefixMapping(prefix);
-            }
-        }
-
-        // pop context
-        fNamespaceSupport.popContext();
-
+        handleEndElement(element, false);
     } // endElement(QName)
 
     /**
@@ -712,5 +621,117 @@ public class XMLNamespaceBinder
             fDocumentHandler.endEntity(name);
         }
     } // endEntity(String)
+
+    //
+    // Protected methods
+    //
+
+    /** Handles start element. */
+    protected void handleStartElement(QName element, XMLAttributes attributes,
+                                      boolean isEmpty) throws XNIException {
+
+        // add new namespace context
+        fNamespaceSupport.pushContext();
+
+        // search for new namespace bindings
+        int length = attributes.getLength();
+        for (int i = 0; i < length; i++) {
+            String rawname = attributes.getQName(i);
+            if (rawname.startsWith("xmlns")) {
+                // declare prefix in context
+                String prefix = rawname.length() > 5
+                              ? attributes.getLocalName(i) : fEmptySymbol;
+                String uri = attributes.getValue(i);
+                uri = fSymbolTable.addSymbol(uri);
+                fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
+
+                // call handler
+                if (fDocumentHandler != null) {
+                    fDocumentHandler.startPrefixMapping(prefix, uri);
+                }
+            }
+        }
+
+        // bind the element
+        String prefix = element.prefix != null
+                      ? element.prefix : fEmptySymbol;
+        element.uri = fNamespaceSupport.getURI(prefix);
+        if (element.prefix == null && element.uri != null) {
+            element.prefix = fEmptySymbol;
+        }
+        if (element.prefix != null && element.uri == null) {
+            fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                       "ElementPrefixUnbound",
+                                       new Object[]{element.prefix, element.rawname},
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+
+        // bind the attributes
+        for (int i = 0; i < length; i++) {
+            attributes.getName(i, fAttributeQName);
+            String aprefix = fAttributeQName.prefix != null 
+                           ? fAttributeQName.prefix : fEmptySymbol;
+            String arawname = fAttributeQName.rawname;
+            if (aprefix == fXmlSymbol) {
+                fAttributeQName.uri = fNamespaceSupport.getURI(fXmlSymbol);
+                attributes.setName(i, fAttributeQName);
+            }
+            else if (arawname != fXmlnsSymbol && !arawname.startsWith("xmlns:")) {
+                if (aprefix != fEmptySymbol) {
+                    fAttributeQName.uri = fNamespaceSupport.getURI(aprefix);
+                    if (fAttributeQName.uri == null) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "AttributePrefixUnbound",
+                                                   new Object[]{aprefix, arawname},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                    attributes.setName(i, fAttributeQName);
+                }
+            }
+        }
+
+        // call handler
+        if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
+            if (isEmpty) {
+                fDocumentHandler.emptyElement(element, attributes);
+            }
+            else {
+                fDocumentHandler.startElement(element, attributes);
+            }
+        }
+
+    } // handleStartElement(QName,XMLAttributes,boolean)
+
+    /** Handles end element. */
+    protected void handleEndElement(QName element, boolean isEmpty)
+        throws XNIException {
+
+        // bind element
+        String eprefix = element.prefix != null ? element.prefix : fEmptySymbol;
+        element.uri = fNamespaceSupport.getURI(eprefix);
+        if (element.uri != null) {
+            element.prefix = eprefix;
+        }
+        
+        // call handlers
+        if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
+            if (!isEmpty) {
+                fDocumentHandler.endElement(element);
+            }
+        }
+
+        // end prefix mappings
+        if (fDocumentHandler != null) {
+            int count = fNamespaceSupport.getDeclaredPrefixCount();
+            for (int i = count - 1; i >= 0; i--) {
+                String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
+                fDocumentHandler.endPrefixMapping(prefix);
+            }
+        }
+
+        // pop context
+        fNamespaceSupport.popContext();
+
+    } // handleEndElement(QName,boolean)
 
 } // class XMLNamespaceBinder

@@ -4,6 +4,19 @@
  <release version='NOT YET RELEASED'>
   <desc/>
   <changes>
+   <fix>
+    <note>
+     Improved ability of document scanner to perform pull parsing.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+   <fix>
+    <note>
+     Fixed bug where namespace binder would turn an emptyElement callback into
+     startElement and endElement callbacks.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
    <update>
     <note>
      Updated standard parser configuration to separate DTD validation
