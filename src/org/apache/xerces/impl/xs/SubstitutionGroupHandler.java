@@ -33,6 +33,8 @@ import java.util.Vector;
  */
 public class SubstitutionGroupHandler {
 
+    private static final XSElementDecl[] EMPTY_GROUP = new XSElementDecl[0];
+
     // grammar resolver
     XSGrammarBucket fGrammarBucket;
 
@@ -195,6 +197,11 @@ public class SubstitutionGroupHandler {
         Object subGroup = fSubGroups.get(element);
         if (subGroup != null)
             return (XSElementDecl[])subGroup;
+        
+        if ((element.fBlock & XSConstants.DERIVATION_SUBSTITUTION) != 0) {
+            fSubGroups.put(element, EMPTY_GROUP);
+            return EMPTY_GROUP;
+        }
         
         // Otherwise, get all potential sub group elements
         // (without considering "block" on this element
