@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -203,7 +203,7 @@ public class DOMEntityResolverWrapper
     private String getType(XMLResourceIdentifier resourceIdentifier) {
         if (resourceIdentifier instanceof XMLGrammarDescription) {
             XMLGrammarDescription desc = (XMLGrammarDescription) resourceIdentifier;
-            if (desc.getGrammarType() == XMLGrammarDescription.XML_SCHEMA) {
+            if (XMLGrammarDescription.XML_SCHEMA.equals(desc.getGrammarType())) {
                 return XSD_TYPE;
             }
         }
