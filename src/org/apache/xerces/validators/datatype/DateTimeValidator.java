@@ -288,7 +288,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             // REVISIT: output values for facets in error message
             short c;
             if ( fMinInclusive != null ) {
-
+                
                 c = compareDates(date, (int[])fMinInclusive, false);
                 if ( c == LESS_THAN || c == INDETERMINATE ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
@@ -328,7 +328,11 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     public int compare( String content1, String content2) {
         //implement compareDates using the compare() method
-        return -1;
+        parse(content1, fDateValue);
+        parse(content2,fTempDate);
+        int result = compareDates(fDateValue, fTempDate, true);
+        
+        return (result==INDETERMINATE)?-1:result;
     }
 
 
@@ -530,6 +534,13 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         int i = indexOf(start, end, '-');
         if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced.");
         fStart=i; //position after the Year
+        int length = i-start;
+        if (length<4) {
+            throw new RuntimeException("Year must have 'CCYY' format.");
+        }
+        else if (length > 4 && fBuffer.charAt(start)=='0'){
+            throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden");
+        }
         date[CY]=parseInt(start,i);
         start = ++i;
         date[M]=parseInt(start, start+2);
@@ -562,7 +573,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     }
 
     /**
-     * Parses time zone: 'Z' or {+,-} followed by hh or hh:mm
+     * Parses time zone: 'Z' or {+,-} followed by  hh:mm
      * 
      * @param data
      * @param sign
@@ -570,6 +581,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      */
     protected void getTimeZone (int[] data, int sign) throws RuntimeException{
         data[utc]=fBuffer.charAt(sign);
+
         if ( fBuffer.charAt(sign) == 'Z' ) {
             if (fEnd>(++sign)) {
                 throw new RuntimeException("Error in parsing time zone");
@@ -580,21 +592,14 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             
             //parse [hh]
             timeZone[hh]=parseInt(++sign, sign+2);
-            if ( data[utc]=='-' ) {
-                timeZone[hh]*=-1;
-            }
             sign+=3;
-
+            
             //parse [ss]
-            if ( (sign+2)<=fEnd ) {
-                timeZone[mm]=parseInt(sign, sign+2);
-                if ( data[utc]=='-' ) {
-                    timeZone[mm]*=-1;
-                }
-                if ( sign+2!=fEnd ) {
-                    //REVISIT: report an error
-                }
+            timeZone[mm]=parseInt(sign, sign+2);
+            if ( sign+2!=fEnd ) {
+                throw new RuntimeException("Error in parsing time zone");
             }
+            
         }
         else {
             throw new RuntimeException("Error in parsing time zone");

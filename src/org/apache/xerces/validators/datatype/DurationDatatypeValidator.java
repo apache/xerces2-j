@@ -310,13 +310,19 @@ public class DurationDatatypeValidator extends DateTimeValidator {
 
         //add seconds
         temp = DATETIMES[index][s] + date[s];
-        duration[s] =  temp%60;
-        carry = temp/60;
+        carry = fQuotient (temp, 60);
+        duration[s] =  mod(temp, 60, carry);
+        
+        //add minutes 
+        temp = DATETIMES[index][m] +date[m] + carry; 
+        carry = fQuotient (temp, 60); 
+        duration[m]= mod(temp, 60, carry);         
 
         //add hours
         temp = DATETIMES[index][h] + date[h] + carry;
-        duration[h] = temp%24;
-        carry = temp/24;
+        carry = fQuotient(temp, 24);
+        duration[h] = mod(temp, 24, carry);
+        
 
         duration[D]=DATETIMES[index][D] + date[D] + carry;
 

@@ -107,7 +107,7 @@ public class DateTimeDatatypeValidator extends DateTimeValidator {
             //         we should not try normalizing in this case ..
             throw new SchemaDateTimeException ("Not valid date");
         }
-        else if ( date[utc]!=0 ) {
+        else if ( date[utc]!=0 && date[utc]!='Z') {
             normalize(date);
         }
         return date;
