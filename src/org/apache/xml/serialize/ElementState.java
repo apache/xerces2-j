@@ -77,70 +77,70 @@ public class ElementState
     /**
      * The element's raw tag name (local or prefix:local).
      */
-    String rawName;
+    public String rawName;
 
 
     /**
      * The element's local tag name.
      */
-    String localName;
+    public String localName;
 
 
     /**
      * The element's namespace URI.
      */
-    String namespaceURI;
+    public String namespaceURI;
 
 
     /**
      * True if element is space preserving.
      */
-    boolean preserveSpace;
+    public boolean preserveSpace;
 
 
     /**
      * True if element is empty. Turns false immediately
      * after serializing the first contents of the element.
      */
-    boolean empty;
+    public boolean empty;
 
 
     /**
      * True if the last serialized node was an element node.
      */
-    boolean afterElement;
+    public boolean afterElement;
 
 
     /**
      * True if the last serialized node was a comment node.
      */
-    boolean afterComment;
+    public boolean afterComment;
 
 
     /**
      * True if textual content of current element should be
      * serialized as CDATA section.
      */
-    boolean doCData;
+    public boolean doCData;
 
 
     /**
      * True if textual content of current element should be
      * serialized as raw characters (unescaped).
      */
-    boolean unescaped;
+    public boolean unescaped;
 
 
     /**
      * True while inside CData and printing text as CData.
      */
-    boolean inCData;
+    public boolean inCData;
 
 
     /**
      * Association between namespace URIs (keys) and prefixes (values).
      */
-    Hashtable prefixes;
+    public Hashtable prefixes;
 
 
 }
