@@ -746,9 +746,9 @@ implements XMLContentSpec.Provider {
         // Handle any and leaf nodes
         getContentSpec( contentSpecIndex, contentSpec);
         if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF ||
-            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY ||
-            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
-            contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            (contentSpec.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
 
             // resize arrays, if needed
             if (children.length == children.qname.length) {
