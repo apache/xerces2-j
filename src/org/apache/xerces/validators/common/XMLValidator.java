@@ -182,10 +182,6 @@ public final class XMLValidator
 
     // other
 
-    private Hashtable fIdDefs = null;
-    private Hashtable fIdRefs = null;
-    private Object fNullValue = null;
-
     // attribute validators
 
     private AttributeValidator fAttValidatorCDATA = null;
@@ -977,7 +973,7 @@ public final class XMLValidator
             // (1) check that there was an element with a matching id for every
             //   IDREF and IDREFS attr (V_IDREF0)
             //
-            if (fValidating && fIdRefs != null) {
+            if (fValidating ) {
                 this.fValIDRefs.validate( null, this.fValidateIDRef );   
             }
             return;
@@ -1370,13 +1366,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Reset pool. */
     private void poolReset() {
-        if (fIdDefs != null) {
-            fIdDefs.clear();
+        try{
+            this.fValIDRef.validate(null, this.fResetIDRef );
+            this.fValIDRefs.validate(null, this.fResetIDRef );
+        } catch( InvalidDatatypeValueException ex ){
+            System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
         }
-        if (fIdRefs != null) {
-            fIdRefs.clear();
-        }
-
     } // poolReset()
 
     /** Reset common. */
@@ -3220,39 +3215,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // checkContent(int,int,int[]):int
 
-    /**
-     * Check that all ID references were to ID attributes present in the document.
-     * <p>
-     * This method is a convenience call that allows the validator to do any id ref
-     * checks above and beyond those done by the scanner. The scanner does the checks
-     * specificied in the XML spec, i.e. that ID refs refer to ids which were
-     * eventually defined somewhere in the document.
-     * <p>
-     * If the validator is for a Schema perhaps, which defines id semantics beyond
-     * those of the XML specificiation, this is where that extra checking would be
-     * done. For most validators, this is a no-op.
-     *
-     * @exception Exception Thrown on error.
-     */
-    private void checkIdRefs() throws Exception {
-
-        if (fIdRefs == null)
-            return;
-        Enumeration en = fIdRefs.keys();
-        while (en.hasMoreElements()) {
-            Integer key = (Integer)en.nextElement();
-            if (fIdDefs == null || !fIdDefs.containsKey(key)) {
-                Object[] args = { fStringPool.toString(key.intValue()) };
-                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED,
-                                           XMLMessages.VC_IDREF,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-            }
-        }
-
-    } // checkIdRefs()
 
     /** 
      * Checks that all declared elements refer to declared elements
