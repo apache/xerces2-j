@@ -79,10 +79,7 @@ public class DOMMessageFormatter {
                     msg += " " + resourceBundle.getString(key);
                 }
             }
-        }
-        
-        
-        // error
+        } // error
         catch (MissingResourceException e) {
             msg = resourceBundle.getString("BadMessageKey");
             throw new MissingResourceException(key, msg, key);
@@ -107,11 +104,11 @@ public class DOMMessageFormatter {
     }
     
     static ResourceBundle getResourceBundle(String domain){
-        if(domain == DOM_DOMAIN)
+        if(domain == DOM_DOMAIN || domain.equals(DOM_DOMAIN))
             return domResourceBundle;
-        else if( domain == XML_DOMAIN)
+        else if( domain == XML_DOMAIN || domain.equals(XML_DOMAIN))
             return xmlResourceBundle;
-        else if(domain == SERIALIZER_DOMAIN)
+        else if(domain == SERIALIZER_DOMAIN || domain.equals(SERIALIZER_DOMAIN))
             return serResourceBundle;
         return null;
     }
@@ -121,12 +118,12 @@ public class DOMMessageFormatter {
     public static void init(){
         if (locale != null) {
             domResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages", locale);
-            xmlResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages", locale);
-            serResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
+            serResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages", locale);
+            xmlResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages", locale);
         }else{
             domResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.DOMMessages");
-            xmlResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
-            serResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
+            serResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSerializerMessages");
+            xmlResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLMessages");
         }
     }
     
