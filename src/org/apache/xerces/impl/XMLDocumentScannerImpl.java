@@ -289,7 +289,7 @@ public class XMLDocumentScannerImpl
         catch (XMLConfigurationException e) {
             fLoadExternalDTD = true;
         }
-
+        
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
 
@@ -705,7 +705,7 @@ public class XMLDocumentScannerImpl
                                 setDispatcher(fDTDDispatcher);
                                 return true;
                             }
-                            if (fDoctypeSystemId != null) {
+                            if (fDoctypeSystemId != null && (fValidation || fLoadExternalDTD)) {
                                 setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                 setDispatcher(fDTDDispatcher);
                                 return true;
@@ -770,7 +770,6 @@ public class XMLDocumentScannerImpl
          */
         public boolean dispatch(boolean complete)
             throws IOException, XNIException {
-
             fEntityManager.setEntityHandler(null);
             try {
                 boolean again;
