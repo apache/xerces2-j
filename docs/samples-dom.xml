@@ -175,7 +175,7 @@
    preparsed schema grammars.
   </p>
   <note>The Abstract Schema module implementation is <code>deprecated</code>. You should use 
-        Xerces Grammar cashing functionality to pre-parse schemas.</note>
+        Xerces Grammar caching functionality to pre-parse schemas.</note>
   <s3 title='usage'>
    <source>java dom.ASBuilder [-f|-F] -a uri ... [-i uri ...]</source>
   </s3>
