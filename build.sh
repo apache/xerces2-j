@@ -12,11 +12,15 @@ if [ "$JAVA_HOME" = "" ] ; then
    exit 1
 fi
 
-LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:./tools/ant.jar:./tools/xerces-1.0.1.jar:./tools/xalan-0.19.2.jar:./tools/stylebook-1.0-b2.jar:./tools/style-apachexml.jar:./tools/xml.jar:$CLASSPATH
+# UNIX
+CLPATHSEP=:
+# if we're on a Windows box make it ;
+uname | grep WIN && CLPATHSEP=\;
+
+LOCALCLASSPATH="$JAVA_HOME/lib/tools.jar${CLPATHSEP}./tools/ant.jar${CLPATHSEP}./tools/xerces-1.0.1.jar${CLPATHSEP}./tools/xalan-0.19.2.jar${CLPATHSEP}./tools/stylebook-1.0-b2.jar${CLPATHSEP}./tools/style-apachexml.jar${CLPATHSEP}./tools/xml.jar${CLPATHSEP}$CLASSPATH"
 ANT_HOME=./tools
 
-echo Building with classpath $LOCALCLASSPATH
+echo Building with classpath \"$LOCALCLASSPATH\"
 echo Starting Ant...
 echo
-$JAVA_HOME/bin/java -Dant.home=$ANT_HOME -classpath $LOCALCLASSPATH org.apache.tools.ant.Main $*
-unset LOCALCLASSPATH
+"$JAVA_HOME"/bin/java -Dant.home="$ANT_HOME" -classpath "$LOCALCLASSPATH" org.apache.tools.ant.Main $@
