@@ -571,8 +571,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		//          should consider reorganizing it.
 		//
 		
-        //save unnormalized values
-        saveUnnormalized(date);
 		//add minutes (from time zone)
 		int negate = -1;
 		
@@ -625,7 +623,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	/**
      * @param date
      */
-    private void saveUnnormalized(DateTimeData date) {
+    protected void saveUnnormalized(DateTimeData date) {
         date.unNormYear = date.year;
         date.unNormMonth = date.month;
         date.unNormDay = date.day;

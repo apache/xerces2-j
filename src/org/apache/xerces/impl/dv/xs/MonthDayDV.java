@@ -88,7 +88,10 @@ public class MonthDayDV extends AbstractDateTimeDV {
         //validate and normalize
 
         validateDateTime(date);
-
+        
+        //save unnormalized values
+        saveUnnormalized(date);
+        
         if ( date.utc!=0 && date.utc!='Z' ) {
             normalize(date);
         }

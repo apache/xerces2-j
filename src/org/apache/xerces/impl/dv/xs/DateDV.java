@@ -57,6 +57,9 @@ public class DateDV extends DateTimeDV {
         //REVISIT: do we need SchemaDateTimeException?
         validateDateTime(date);
 
+        //save unnormalized values
+        saveUnnormalized(date);
+        
         if (date.utc!=0 && date.utc!='Z') {
             normalize(date);
         }

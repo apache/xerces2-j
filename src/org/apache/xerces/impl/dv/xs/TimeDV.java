@@ -69,7 +69,10 @@ public class TimeDV extends AbstractDateTimeDV {
 
         validateDateTime(date);
 
-        if ( date.utc!=0 ) {
+        //save unnormalized values
+        saveUnnormalized(date);
+        
+        if ( date.utc!=0 && date.utc != 'Z') {
             normalize(date);
         }
         date.position = 2;
