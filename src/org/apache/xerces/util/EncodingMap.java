@@ -653,7 +653,7 @@ public class EncodingMap {
      * Adds a Java to IANA encoding name mapping.
      * 
      * @param javaEncoding The Java encoding name.
-     * @param ianaEncoding The IANA encodign name.
+     * @param ianaEncoding The IANA encoding name.
      */
     public static void putJava2IANAMapping(String javaEncoding, 
                                            String ianaEncoding) {
