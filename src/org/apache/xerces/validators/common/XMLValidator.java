@@ -137,6 +137,9 @@ public final class XMLValidator
     private static final int CHUNK_MASK = CHUNK_SIZE - 1;
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT));   // 2^10 = 1k
 
+    private Hashtable fIdDefs = null;
+   
+
     private  StateMessageDatatype fStoreIDRef = new StateMessageDatatype() {
         private Hashtable fIdDefs;
         public Object getDatatypeObject(){
@@ -144,6 +147,9 @@ public final class XMLValidator
         }
         public int    getDatatypeState(){
             return IDREFDatatypeValidator.IDREF_STORE;
+        }
+        public void setDatatypeObject( Object data ){
+            fIdDefs = (Hashtable) data;
         }
     };
 
@@ -155,6 +161,8 @@ public final class XMLValidator
        public int    getDatatypeState(){
            return IDREFDatatypeValidator.IDREF_CLEAR;
        }
+       public void setDatatypeObject( Object data ){
+       }
    };
 
    private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
@@ -165,6 +173,8 @@ public final class XMLValidator
           public int    getDatatypeState(){
               return IDREFDatatypeValidator.IDREF_VALIDATE;
           }
+          public void setDatatypeObject( Object data ){
+       }
       };
 
 
@@ -974,7 +984,14 @@ public final class XMLValidator
             //   IDREF and IDREFS attr (V_IDREF0)
             //
             if (fValidating ) {
-                this.fValIDRefs.validate( null, this.fValidateIDRef );   
+                try{
+                    this.fValIDRef.validate( null, this.fValidateIDRef );   
+                }catch( InvalidDatatypeValueException ex ){
+                    reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
+                                               ex.getMessage() ); 
+
+
+                }
             }
             return;
         }
@@ -2956,7 +2973,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     }
                 }
                 try{
-                    fValID.validate( value, null );
+                    //this.fIdDefs = (Hashtable) fValID.validate( value, null );
+                    //System.out.println("this.fIdDefs = " + this.fIdDefs );
+
+                    this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
                 } catch ( InvalidDatatypeValueException ex ){
                     reportRecoverableXMLError(ex.getMajorCode(),
                                               ex.getMinorCode(),
