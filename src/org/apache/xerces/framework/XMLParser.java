@@ -142,8 +142,8 @@ public abstract class XMLParser
         // SAX2 core
         "http://xml.org/sax/properties/xml-string",
         // Xerces
-        "http://apache.org/xml/properties/external-schemaLocation",
-        "http://apache.org/xml/properties/external-noNamespaceSchemaLocation"
+        "http://apache.org/xml/properties/schema/external-schemaLocation",
+        "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation"
     };
 
     // debugging
@@ -640,7 +640,7 @@ public abstract class XMLParser
      * See XML Schema REC: http://www.w3.org/TR/xmlschema-1/#schema-loc
      * <P>
      * This method is equivalent to the property:
-     * <PRE>http://apache.org/xml/properties/validation/external-schemaLocation</PRE>
+     * <PRE>http://apache.org/xml/properties/validation/schema/external-schemaLocation</PRE>
      * 
      * @param value  The list of schemas.
      * @exception SAXNotRecognizedException
@@ -650,7 +650,7 @@ public abstract class XMLParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
-            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/external-schema-location:  parse is in progress");
+            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/schema/external-schema-location:  parse is in progress");
         }
         fValidator.setExternalSchemas(value);
     }
@@ -661,7 +661,7 @@ public abstract class XMLParser
      * See XML Schema REC: http://www.w3.org/TR/xmlschema-1/#schema-loc
      * <P>
      * This method is equivalent to the property:
-     * <PRE>http://apache.org/xml/properties/validation/external-noNamespaceSchemaLocation</PRE>
+     * <PRE>http://apache.org/xml/properties/validation/schema/external-noNamespaceSchemaLocation</PRE>
      * 
      * @param value  An XML Schema file name
      * @exception SAXNotRecognizedException
@@ -671,7 +671,7 @@ public abstract class XMLParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
-            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/external-noNamespaceSchemaLocation:  parse is in progress");
+            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/schema/external-noNamespaceSchemaLocation:  parse is in progress");
         }
         fValidator.setExternalNoNamespaceSchema(value);
     }
@@ -1662,11 +1662,11 @@ public abstract class XMLParser
         if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
             property = propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
             
-            if (property.equals("external-schemaLocation")) {
+            if (property.equals("schema/external-schemaLocation")) {
                 setExternalSchemaLocation(value);
                 return;
             }
-            else if (property.equals("external-noNamespaceSchemaLocation")) {
+            else if (property.equals("schema/external-noNamespaceSchemaLocation")) {
                 setExternalNoNamespaceSchemaLocation(value);
                 return;
             }
