@@ -506,31 +506,27 @@ import java.io.Serializable;
       // path segment not equal to ".."
       index = 1;
       int segIndex = -1;
-      String tempString = null;
 
       while ((index = path.indexOf("/../", index)) > 0) {
-        tempString = path.substring(0, path.indexOf("/../"));
-        segIndex = tempString.lastIndexOf('/');
-        if (segIndex != -1) {
-          if (!tempString.substring(segIndex++).equals("..")) {
-            path = path.substring(0, segIndex).concat(path.substring(index+4));
-          }
-          else
-            index += 4;
-        }
-        else
+        segIndex = path.lastIndexOf('/', index-1);
+        if (segIndex != -1 && !path.substring(segIndex+1, index).equals("..")) {
+          path = path.substring(0, segIndex).concat(path.substring(index+3));
+          index = segIndex;
+        } else {
           index += 4;
+        }
       }
 
       // 6f - remove ending "<segment>/.." where "<segment>" is a
       // complete path segment
       if (path.endsWith("/..")) {
-        tempString = path.substring(0, path.length()-3);
-        segIndex = tempString.lastIndexOf('/');
-        if (segIndex != -1) {
+        index = path.length()-3;
+        segIndex = path.lastIndexOf('/', index-1);
+        if (segIndex != -1 && !path.substring(segIndex+1, index).equals("..")) {
           path = path.substring(0, segIndex+1);
         }
       }
+
       m_path = path;
     }
   }

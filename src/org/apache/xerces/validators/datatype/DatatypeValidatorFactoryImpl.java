@@ -190,6 +190,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 if ( fRegistryExpanded == 0 ) {
                     initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
                 }
+
+                fDTDDatatypeRegistry.put("anySimpleType", getDatatypeValidator("string"));
+
                 Hashtable facets = new Hashtable (2);
                 facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATT_REPLACE);
                 createSchemaDatatypeValidator("normalizedString", getDatatypeValidator("string"), facets, false);

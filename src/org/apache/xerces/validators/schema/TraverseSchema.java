@@ -2067,8 +2067,8 @@ public class TraverseSchema implements
                                str.toString()+":"+message);
                         throw ex;
                     }
-                } 
-            }); 
+                }
+            });
 
          try {
              parser.setFeature("http://xml.org/sax/features/validation", false);
@@ -5554,7 +5554,10 @@ throws Exception {
         // for the child of a model group definition.
         if (isGroupChild &&
             (minOccurs.length() != 0 || maxOccurs.length() != 0)) {
-            reportSchemaError(SchemaMessageProvider.MinMaxOnGroupChild, null);
+            Element group = (Element)particle.getParentNode();
+            Object[] args = new Object[]{group.getAttribute(SchemaSymbols.ATT_NAME),
+                                         particle.getNodeName()};
+            reportSchemaError(SchemaMessageProvider.MinMaxOnGroupChild, args);
             minOccurs = (maxOccurs = "1");
         }
 
@@ -6005,7 +6008,7 @@ throws Exception {
                     reportGenericSchemaError("attribute " + attNameStr + " has an unrecognized type " + datatypeStr);
                 }
             }
-		} else {
+        } else {
             attType        = XMLAttributeDecl.TYPE_SIMPLE;
             localpart      = "string";
             dataTypeSymbol = fStringPool.addSymbol(localpart);
@@ -6730,84 +6733,86 @@ throws Exception {
             }
             String typeURI = resolvePrefixToURI(prefix);
 
-            // check if the type is from the same Schema
-            if ( !typeURI.equals(fTargetNSURIString)
-                 && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-                 && typeURI.length() != 0) {  // REVISIT, only needed because of resolvePrifixToURI.
-                fromAnotherSchema = typeURI;
-                typeInfo = getTypeInfoFromNS(typeURI, localpart);
-                if (typeInfo == null) {
-                    dv = getTypeValidatorFromNS(typeURI, localpart);
-                    if (dv == null) {
-                        //TO DO: report error here;
-                        noErrorSoFar = false;
-                        reportGenericSchemaError("Could not find type " +localpart
-                                           + " in schema " + typeURI);
+            if (!(typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+                localpart.equals("anyType"))) {
+                // check if the type is from the same Schema
+                if ( !typeURI.equals(fTargetNSURIString)
+                     && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
+                     && typeURI.length() != 0) {  // REVISIT, only needed because of resolvePrifixToURI.
+                    fromAnotherSchema = typeURI;
+                    typeInfo = getTypeInfoFromNS(typeURI, localpart);
+                    if (typeInfo == null) {
+                        dv = getTypeValidatorFromNS(typeURI, localpart);
+                        if (dv == null) {
+                            //TO DO: report error here;
+                            noErrorSoFar = false;
+                            reportGenericSchemaError("Could not find type " +localpart
+                                               + " in schema " + typeURI);
+                        }
                     }
                 }
-            }
-            else {
-                typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
-                if (typeInfo == null) {
-                    dv = getDatatypeValidator(typeURI, localpart);
-                    if (dv == null )
-                    if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-                        && !fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA))
-                    {
-                        noErrorSoFar = false;
-                        // REVISIT: Localize
-                        reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
-                    }
-                    else {
-                        Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
-                        if (topleveltype != null) {
-                            if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
-                                //then we found a recursive element using complexType.
-                                // REVISIT: this will be broken when recursing happens between 2 schemas
-                                int uriInd = StringPool.EMPTY_STRING;
-                                if ( formStr.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-                                     fElementDefaultQualified) {
-                                    uriInd = fTargetNSURI;
-                                }
-                                int nameIndex = fStringPool.addSymbol(nameStr);
-                                QName tempQName = new QName(-1, nameIndex, nameIndex, uriInd);
-                                int eltIndex = fSchemaGrammar.addElementDecl(tempQName,
-                                        fCurrentScope, fCurrentScope, -1, -1, -1, null);
-                                fElementRecurseComplex.addElement(new ElementInfo(eltIndex,localpart));
-                                return tempQName;
-                            }
-                            else {
-                                // Squirrel away the baseTypeNameStack.
-                                Stack savedbaseNameStack = null;
-                                if (!fBaseTypeNameStack.isEmpty()) {
-                                  savedbaseNameStack = fBaseTypeNameStack;
-                                  fBaseTypeNameStack = new Stack();
-                                }
-                                typeNameIndex = traverseComplexTypeDecl( topleveltype, true );
-                                if (savedbaseNameStack != null)
-                                    fBaseTypeNameStack  = savedbaseNameStack;
-                                typeInfo = (ComplexTypeInfo)
-                                    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
-                            }
+                else {
+                    typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
+                    if (typeInfo == null) {
+                        dv = getDatatypeValidator(typeURI, localpart);
+                        if (dv == null )
+                        if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
+                            && !fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA))
+                        {
+                            noErrorSoFar = false;
+                            // REVISIT: Localize
+                            reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
                         }
                         else {
-                            topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                            Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                             if (topleveltype != null) {
-                                typeNameIndex = traverseSimpleTypeDecl( topleveltype );
-                                dv = getDatatypeValidator(typeURI, localpart);
+                                if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
+                                    //then we found a recursive element using complexType.
+                                    // REVISIT: this will be broken when recursing happens between 2 schemas
+                                    int uriInd = StringPool.EMPTY_STRING;
+                                    if ( formStr.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                                         fElementDefaultQualified) {
+                                        uriInd = fTargetNSURI;
+                                    }
+                                    int nameIndex = fStringPool.addSymbol(nameStr);
+                                    QName tempQName = new QName(-1, nameIndex, nameIndex, uriInd);
+                                    int eltIndex = fSchemaGrammar.addElementDecl(tempQName,
+                                            fCurrentScope, fCurrentScope, -1, -1, -1, null);
+                                    fElementRecurseComplex.addElement(new ElementInfo(eltIndex,localpart));
+                                    return tempQName;
+                                }
+                                else {
+                                    // Squirrel away the baseTypeNameStack.
+                                    Stack savedbaseNameStack = null;
+                                    if (!fBaseTypeNameStack.isEmpty()) {
+                                      savedbaseNameStack = fBaseTypeNameStack;
+                                      fBaseTypeNameStack = new Stack();
+                                    }
+                                    typeNameIndex = traverseComplexTypeDecl( topleveltype, true );
+                                    if (savedbaseNameStack != null)
+                                        fBaseTypeNameStack  = savedbaseNameStack;
+                                    typeInfo = (ComplexTypeInfo)
+                                        fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                                }
                             }
                             else {
-                                noErrorSoFar = false;
-                                // REVISIT: Localize
-                                reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
+                                topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
+                                if (topleveltype != null) {
+                                    typeNameIndex = traverseSimpleTypeDecl( topleveltype );
+                                    dv = getDatatypeValidator(typeURI, localpart);
+                                }
+                                else {
+                                    noErrorSoFar = false;
+                                    // REVISIT: Localize
+                                    reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
+                                }
+
                             }
 
                         }
-
                     }
                 }
             }
-
         }
         // now we need to make sure that our substitution (if any)
         // is valid, now that we have all the requisite type-related info.
@@ -6918,12 +6923,12 @@ throws Exception {
 			dv = substitutionGroupEltDV;
         }
 
+        boolean isAnyType = false;
         if (typeInfo == null && dv==null) {
             if (noErrorSoFar) {
                 // Actually this Element's type definition is ur-type;
+                isAnyType = true;
                 contentSpecType = XMLElementDecl.TYPE_ANY;
-                // REVISIT, need to wait till we have wildcards implementation.
-                // ADD attribute wildcards here
             }
             else {
                 noErrorSoFar = false;
@@ -7029,6 +7034,25 @@ throws Exception {
         int elementIndex = fSchemaGrammar.addElementDecl(eltQName, enclosingScope, scopeDefined,
                                                          contentSpecType, contentSpecNodeIndex,
                                                          attrListHead, dv);
+        // for anyType, we add an attribute wildcard for this element
+        if (isAnyType) {
+            fSchemaGrammar.addAttDef( elementIndex,
+                                      // name
+                                      new QName(),
+                                      // type (namespace constaint)
+                                      XMLAttributeDecl.TYPE_ANY_ANY,
+                                      // enumeration (namespace list)
+                                      -1,
+                                      // defaultType (process contents)
+                                      XMLAttributeDecl.PROCESSCONTENTS_STRICT,
+                                      // defaultValue
+                                      null,
+                                      // datatypeValidator
+                                      null,
+                                      // list
+                                      false);
+        }
+
         if ( DEBUGGING ) {
             /***/
             System.out.println("########elementIndex:"+elementIndex+" ("+fStringPool.toString(eltQName.uri)+","
