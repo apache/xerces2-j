@@ -1700,12 +1700,19 @@ public class XIncludeHandler
                             }
 
                             QName ns = (QName)NEW_NS_ATTR_QNAME.clone();
+                            ns.prefix = null;
                             ns.localpart = XMLSymbols.PREFIX_XMLNS;
                             ns.rawname = XMLSymbols.PREFIX_XMLNS;
-                            attributes.addAttribute(
-                                ns,
-                                XMLSymbols.fCDATASymbol,
-                                uri);
+                            int index = 
+                                attributes.addAttribute(
+                                    ns,
+                                    XMLSymbols.fCDATASymbol,
+                                    uri != null ? uri : XMLSymbols.EMPTY_STRING);
+                            attributes.setSpecified(index, true);
+                            // Need to re-declare this prefix in the current context
+                            // in order for the SAX parser to report the appropriate
+                            // start and end prefix mapping events. -- mrglavas
+                            fNamespaceContext.declarePrefix(prefix, uri);
                         }
                     }
                     else if (
@@ -1721,10 +1728,16 @@ public class XIncludeHandler
                         ns.rawname = (fSymbolTable != null) ? 
                             fSymbolTable.addSymbol(ns.rawname) :
                             ns.rawname.intern();
-                        attributes.addAttribute(
-                            ns,
-                            XMLSymbols.fCDATASymbol,
-                            uri);
+                        int index =
+                            attributes.addAttribute(
+                                ns,
+                                XMLSymbols.fCDATASymbol,
+                                uri != null ? uri : XMLSymbols.EMPTY_STRING);
+                        attributes.setSpecified(index, true);
+                        // Need to re-declare this prefix in the current context
+                        // in order for the SAX parser to report the appropriate 
+                        // start and end prefix mapping events. -- mrglavas
+                        fNamespaceContext.declarePrefix(prefix, uri);
                     }
                 }
             }
