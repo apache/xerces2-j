@@ -24,10 +24,11 @@
 	XML Schema</link> page. 
     </p>
     <p>
-      Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the Document 
-      Object Model Level 3 Core and Load/Save Candidate Recommendations and provides a 
-      <link idref='faq-xinclude'>partial implementation</link> of the XML Inclusions 
-      (XInclude) W3C Candidate Recommendation.
+      Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the 
+<jump href="http://www.w3.org/DOM/DOMTR/">Document 
+      Object Model Level 3 Core and Load/Save</jump> Candidate Recommendations and provides a 
+      <link idref='faq-xinclude'>partial implementation</link> of the <jump href="http://www.w3.org/TR/xinclude/">XML Inclusions 
+      (XInclude)</jump> W3C Working Draft in Last Call.
     </p>
 
 
@@ -38,7 +39,7 @@
         in section 2.13 of this specification.
         It also handles namespaces according to the 
         <jump href="http://www.w3.org/TR/2003/PR-xml-names11-20031105/">
-        XML Namespaces 1.1 Proposed Recommendation</jump>,
+        XML Namespaces 1.1 Proposed</jump> Recommendation,
         and will correctly serialize XML 1.1 documents if the DOM level
         3 load/save API's are in use.
     </p>
@@ -54,8 +55,8 @@
       <li>
 	<jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
 	(XML) 1.0 
-	<jump href='http://www.w3.org/TR/2000/REC-xml-20001006'>Second 
-	  Edition</jump> Recommendation
+	<jump href='http://www.w3.org/TR/2003/PER-xml-20031030/'>Third 
+	  Edition</jump> 
       </li>
       <li>
 	<jump href='http://www.w3.org/TR/REC-xml-names/'>Namespaces
@@ -72,8 +73,8 @@
       </li>
       <li>
 	<jump href='http://sax.sourceforge.net/'>Simple API for XML</jump>
-	(SAX) 2.0
-	<jump href='http://prdownloads.sourceforge.net/sax/sax2-r2pre2.jar'>Core</jump>,
+	(SAX) 2.0.1
+	<jump href='http://prdownloads.sourceforge.net/sax/sax2r2.jar'>Core</jump>,
 	and
 	<jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extension</jump>
       </li>
@@ -107,8 +108,15 @@
     </p>
     
     <ul>
-      <li>Added partial implementation for W3C XInclude specification.</li>
-      <li>Added implementation for exposing XML Schema annotations.</li>
+       <li>Finalized XML Schema API (see <code>org.apache.xerces.xs</code>) and updated implementation accordingly.</li>
+       
+       <li>Implemented the following W3C specifications:</li>
+         <ul>
+           <li>DOM Level 3 "Core" and "Load and Save" Candidate Recommendations</li>
+           <li>SAX 2.0.1</li>
+           <li>Extensible Markup Language (XML) 1.1 Proposed Recommendation</li>
+           <li>Namespaces in XML 1.1 Proposed Recommendation</li>
+         </ul>
     </ul>
     <p>
       

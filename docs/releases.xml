@@ -3,8 +3,16 @@
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
   <release version='&ParserName; 2.6.0'>
-   <desc>TBD</desc>
+   <desc>This release provides an implementation of W3C DOM Level 3 Core and Load/Save Candidate Recommendations and also brings Xerces into compliance with the most recent work of the W3C XML Core working group (XML 1.1, Namespace in XML 1.1, XML 1.0 3rd edition, XInclude).
+In addion, in this release we improved parser performance in several areas and fixes many bugs.</desc>
    <changes>
+    <update>
+     <note>
+      Improved the scanning of attribute lists, both small and large.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+
     <update>
      <note>
       Reimplemented XML11Configuration (the default configuration), improving
@@ -14,35 +22,17 @@
      </note>
      <submitter name='Elena Litani'/>
     </update>
+
     <update>
      <note>
-      Improved the performance of XML 1.1 namespace binding by replacing
-      the namespace binder with a specialized document scanner responsible
-      for binding namespaces.
-     </note>
-     <submitter name='Michael Glavassevich, Elena Litani'/>
-    </update>
-    <update>
-     <note>
-      Improved the scanning of attribute lists, both small and large.
-     </note>
-     <submitter name='Michael Glavassevich'/>
-    </update>
-    <update>
-     <note>
-      Modified PSVI interfaces (<code>org.apache.xerces.xs</code>) and
+      Modified XML Schema interfaces (<code>org.apache.xerces.xs</code>) and
       updated the implementation accordingly. Methods were added to expose 
       actual values and their types and new interfaces were added for 
-      loading XSModels. 
+      loading XSModels. In addition, fixed various bugs in the implementation and <code>PSVIWriter</code> sample.
      </note>
-     <submitter name='Sandy Gao, Elena Litani'/>
+     <submitter name='Sandy Gao, Pete Lloyd, Elena Litani'/>
     </update>
-    <update>
-     <note>
-      Moved Xerces' SAX support up to SAX 2.0.1.
-     </note>
-     <submitter name='Elena Litani'/>
-    </update>
+    
     <update>
      <note>
       Implemented the DOM Level 3 
@@ -51,14 +41,14 @@
      </note>
      <submitter name='Neil Delima, Neeraj Bajaj, Michael Glavassevich, Elena Litani, Ramesh Mandava, Gopal Sharma, K.Venugopal'/>
     </update>
+
     <add>
      <note>
-      Added support for the 'well-formed' feature in DOM Level 3. Now an application can 
-      check the DOM created in memory or after doing any modifications for well-formedness 
-      as per the XML version of the document by calling Document.normalizeDocument()
+      Added support for the 'well-formed' feature in DOM Level 3 Core.
      </note>
      <submitter name='Neeraj Bajaj'/>
     </add>
+
     <add>
      <note>
       Added XML 1.1 support to DOM Level 3.
@@ -67,24 +57,12 @@
     </add>
     <fix>
      <note>
-      Fixed various bugs in the DOM normalizer.
-     </note>
-     <submitter name='Kohsuke Kawaguchi'/>
-    </fix>
-    <fix>
-     <note>
-      Fixed the serializer so that TAB (0x9), LF (0xA), CR (0xD) are
+      Fixed the serializer so that 
+      TAB (0x9), LF (0xA), CR (0xD), NEL (0x85) and LSEP (0x2028) are
       escaped where appropriate in order to allow these characters
-      to be roundtripped. For XML 1.1 serialization, NEL (0x85) and
-      LSEP (0x2028) are also escaped so that may be roundtripped.
+      to be roundtripped. 
      </note>
      <submitter name='Neil Delima, Elena Litani'/>
-    </fix>
-    <fix>
-     <note>
-      Fixed various bugs related to PSVI.
-     </note>
-     <submitter name='Sandy Gao, Pete Lloyd'/>
     </fix>
     <update>
      <note>
@@ -126,21 +104,8 @@
      </note>
      <submitter name='Michael Glavassevich'/>
     </fix>
-    <fix>
-     <note>
-      Fixed several bugs regarding error reporting in the 
-      DOM Level 2 Range implementation.
-     </note>
-     <submitter name='Neil Delima'/>
-    </fix>
-    <add>
-     <note>
-      Added support for XML Base to the XInclude implementation.
-     </note>
-     <submitter name='Peter McCracken'/>
-    </add>
     <update>
-     <note>
+     <note> Added support for XML Base to the XInclude implementation.
       Fixed various bugs regarding text inclusion and relative URI 
       resolution in the XInclude implementation.
      </note>
@@ -153,27 +118,13 @@
      </note>
      <submitter name='Neil Delima, Michael Glavassevich, Glenn Marcy, Peter McCracken'/>
     </update>
-    <fix>
+    <update>
      <note>
-      Fixed bugs related to the preparsing of DTDs, including one 
-      that prevented external parameter entities from being read.
+      Moved Xerces' SAX support up to SAX 2.0.1.
      </note>
-     <submitter name='Michael Glavassevich'/>
-    </fix>
-    <add>
-     <note>
-      Added support for printing XML 1.1 documents to the sax.Writer
-      and dom.Writer samples.
-     </note>
-     <submitter name='Michael Glavassevich'/>
-    </add>
-    <fix>
-     <note>
-      Fixed a bug that caused incorrect locator information to be provided 
-      for errors reported in external entities of XML 1.1 documents.
-     </note>
-     <submitter name='Michael Glavassevich'/>
-    </fix>
+     <submitter name='Elena Litani'/>
+    </update>
+
     <fix>
      <note>
       Fixed bugs in the XML 1.1 entity scanner that in some cases treated 

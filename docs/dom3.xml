@@ -26,10 +26,7 @@
 			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/">Load and Save</jump> Candidate Recommendations.
 			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
-		<p>
-			The DOM Level 3 methods for which implementation is not provided throw
-			<code>DOMException NOT_SUPPORTED_ERR</code> exception.
-		</p>
+
 
 		<note>
 			To find out how to access
@@ -188,45 +185,31 @@
 		<ul>
 
     		<li>
-    			<strong>DOMParser</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-LSParser-parseWithContext">
+    			<strong>LSParser</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-LSParser-parseWithContext">
     			parserWithContext</jump>
     			 -- not supported.
 	    	</li>
-            <li><strong>DocumentLS, ElementLS</strong> - convenience interfaces are not supported.</li>
 	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-DOMIMplementationLS-MODE_ASYNCH">
 			MODE_ASYNCHRONOUS</jump> 
 				-- not supported.
 			</li>
-		</ul>
+            <li><strong>LSSerializer</strong> - the following parameters are not supported:</li>
+<ul>
+<li><strong>ignore-unknown-character-denormalizations</strong>
+[
+<em>true</em>
+]</li>
+<li><strong>normalize-characters</strong>
+[
+<em>true</em>
+]</li>
+<li><strong>well-formed</strong>
+[
+<em>true</em>
+]</li>
+</ul>
+</ul>
 
 	</s2>
-	<!--
-	<s2 title='Implementation of DOM Level 3 Abstract Schemas'>
-		<p>
-			The implementation of Abstract Schemas is
-			<strong>deprecated</strong>
-			. The funtionality will be removed in the future releases of Xerces.
-		</p>
 
-		<ul>
-			<li>
-				<code>DOMImplementationAS</code>
-			</li>
-			<li>
-				<code>DOMASBuilder</code>
-				supports parsing of XML Schemas and setting the
-				<code>ASModel</code>
-				on the parser.
-			</li>
-		</ul>
-		<note>
-			<code>DOMASBuilder</code>
-			does not support parsing of DTDs. The parser provides only partial implementation for
-			<code>ASModel</code>
-			. For more information on how to parse schemas and set those on the parser instance, see
-			<code>dom.ASBuilder</code>
-			sample.
-		</note>
-	</s2>
-	-->
 </s1>
