@@ -59,10 +59,6 @@ package org.apache.xerces.xni;
 
 /**
  * Location information.
- * <p>
- * Since location information subsumes information on the physical 
- * location of the resource, it makes eminent sense for this interface 
- * to extend XMLResourceIdentifier.
  *
  * @author Andy Clark, IBM
  *
