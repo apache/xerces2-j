@@ -447,10 +447,17 @@ class ObjectFactory {
             // XXX Does not handle all possible input as specified by the
             // Jar Service Provider specification
             factoryClassName = rd.readLine();
-            rd.close();
         } catch (IOException x) {
             // No provider found
             return null;
+        }
+        finally {
+            try {
+                // try to close the reader.
+                rd.close();
+            }
+            // Ignore the exception.
+            catch (IOException exc) {}
         }
 
         if (factoryClassName != null &&
