@@ -692,7 +692,7 @@ extends BaseMarkupSerializer {
             length = attrMap.getLength();
         }
 
-        if (!fNamespaces) { // no namespace fixup should be perform                    
+        if (!fNamespaces) { // no namespace fixup should be performed                    
 
             // serialize element name
             _printer.printText( '<' );
@@ -708,22 +708,7 @@ extends BaseMarkupSerializer {
                 value = attr.getValue();
                 if ( value == null )
                     value = "";
-                if ( attr.getSpecified()) {
-                    _printer.printSpace();
-                    _printer.printText( name );
-                    _printer.printText( "=\"" );
-                    printEscaped( value );
-                    _printer.printText( '"' );
-                }
-                // If the attribute xml:space exists, determine whether
-                // to preserve spaces in this and child nodes based on
-                // its value.
-                if ( name.equals( "xml:space" ) ) {
-                    if ( value.equals( "preserve" ) )
-                        fPreserveSpace = true;
-                    else
-                        fPreserveSpace = _format.getPreserveSpace();
-                }
+                printAttribute (name, value, attr.getSpecified(), attr);
             }
         } else { // do namespace fixup
 
@@ -1128,7 +1113,7 @@ extends BaseMarkupSerializer {
      */
     private void printAttribute (String name, String value, boolean isSpecified, Attr attr) throws IOException{
 
-        if (isSpecified || (features & DOMSerializerImpl.DISCARDDEFAULT) != 0) {
+        if (isSpecified || (features & DOMSerializerImpl.DISCARDDEFAULT) == 0) {
             if (fDOMFilter !=null && 
                 (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ATTRIBUTE)!= 0) {
                 short code = fDOMFilter.acceptNode(attr);
