@@ -32,6 +32,10 @@
             <li> Due to changes in the specification for Decimals in
             JDK1.3, not all decimals that should be invalid according
             to the Schema specs may be found by the parser;</li>
+            <li> For larger values of maxOccurs, a StackOverflowError may occur.
+      	    The workaround for this problem, if your application permits it, 
+      	    is to change the maxOccurs value to unbounded.</li>
+
         </ul>
     </s2>
     <s2 title='Interpretation of Areas that are Unclear or
