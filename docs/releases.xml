@@ -6,6 +6,48 @@
   <desc>
   </desc>
   <changes>
+   
+   <add>
+    <note>Implemented support for UCS-4 and UCS-2 encodings.</note>
+    <submitter name='Neil Graham'/>
+   </add>
+   
+   <add>
+    <note>
+     Added ability to override default parser configuration.
+    </note>
+    <submitter name='Andy Clark'/>
+   </add>
+
+    <add>
+    <note>Implemented DOM Level 3 isEqualNode() method
+    </note>
+    <submitter name='Arnaud Le Hors'/>
+   </add>
+   
+   <add>
+    <note>Implemented namespace fixup during serialization of DOM tree.</note>
+    <submitter name='Elena Litani'/>
+   </add>
+   
+   <add>
+     <note>Added implementation for new Xerces features validation/schema/normalized-value and 
+     validation/schema/element-default</note>
+      <submitter name='Elena Litani'/>
+   </add>
+
+   <add>
+        <note>Implemented current-element-node property</note>
+        <submitter name='Ted Leung'/>
+   </add> 
+   
+      
+   <add>
+    <note>Added internal subset string to DOM.</note>
+    <submitter name='Andy Clark'/>
+   </add>
+
+   
    <update>
     <note> Added an interface, XMLResourceIdentifier, for
         describing the physical location of XML resources (external
@@ -17,13 +59,7 @@
     </note>
     <submitter name="Neil Graham"/>
    </update>
-   <add>
-        <note> Added interfaces to support grammar caching
-        facilities in the
-        <code>org.apache.xerces.xni.grammars</code> package.
-        </note>
-    <submitter name="Neil Graham"/>
-    </add>
+   
    <update>
     <note>
      Updated Xerces Native Interface to add augmentations to
@@ -33,27 +69,71 @@
     </note>
     <submitter name='Andy Clark'/>
    </update>
-   <add>
+   
+   
+   <update>
     <note>
-     Added ability to override default parser configuration.
+     Updated Xerces Native Interface to add methods to Augmentations, XMLAttributes, and
+     modify PSVI interfaces.
     </note>
-    <submitter name='Andy Clark'/>
-   </add>
+    <submitter name='Elena Litani'/>
+   </update>
+   
+   <update>
+    <note>
+      Cleaned up separation between DOMParser and DeferredDOM by
+      moving part of the code from createDeferredElement back into the parser,
+      this has several benefits including to only have to walk the list of
+      attributes once
+    </note>
+    <submitter name='Arnaud Le Hors'/>
+   </update>
+   
+
    <fix>
         <note> Fixed a bug in the ui.DOMParserSaveEncoding sample.
         </note>
         <submitter name="Joerg Vogel, Neil Graham"/>
    </fix>
-   <add>
-    <note>Implemented support for UCS-4 and UCS-2 encodings.</note>
-    <submitter name='Neil Graham'/>
-   </add>
-   <add>
-    <note>Added internal subset string to DOM.</note>
-    <submitter name='Andy Clark'/>
-   </add>
+   
+   <fix>
+        <note> 
+            Modified XMLDTDScanner to synchronize start/end entity calls.
+            Fixed XMLDocumentScannerImpl so it always checks settings for load-external-dtd feature. 
+            Modified implementation of setDocumentHandler(): now user can change document handler
+            during the parse.
+        </note>
+        <submitter name="Elena Litani"/>
+    </fix>
+    
+   <fix>
+        <note> 
+            Fixed DOM L2 bug: synchronization for entity reference nodes, 
+            cloning of attribute node, report of event phases. 
+            
+        </note>
+        <submitter name="Arnaud Le Hors, Elena Litani"/>
+    </fix> 
+    
+     <fix>
+        <note>Fixed JAXP implemenation of schemaLanguage property.
+        </note>
+        <submitter name="Edwin Goei"/>
+    </fix>
+
+    
+    <fix>
+        <note>Javadoc fixes. 
+        </note>
+        <submitter name="Ted Leung"/>
+    </fix>
+    
+
+
   </changes>
  </release>
+ 
+
  <release version='Xerces 2.0.0 (beta4)'>
   <desc>
    This release fixes a number of bugs, introduces more changes to the Xerces
