@@ -132,6 +132,18 @@ public class ValidationState implements ValidationContext {
         fNamespaceSupport = null;
         fSymbolTable = null;
     }
+
+    /**
+     * The same validation state can be used to validate more than one (schema)
+     * validation roots. Entity/Namespace/Symbol are shared, but each validation
+     * root needs its own id/idref tables. So we need this method to reset only
+     * the two tables.
+     */
+    public void resetIDTables() {
+        fIdTable.clear();
+        fIdRefTable.clear();
+    }
+
     //
     // implementation of ValidationContext methods
     //
