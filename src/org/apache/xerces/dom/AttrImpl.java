@@ -337,9 +337,9 @@ public class AttrImpl
      */
     public void setValue(String newvalue) {
 
-    	CoreDocumentImpl ownerDocument = ownerDocument();
-    	
-    	if (ownerDocument.errorChecking && isReadOnly()) {
+        CoreDocumentImpl ownerDocument = ownerDocument();
+        
+        if (ownerDocument.errorChecking && isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
