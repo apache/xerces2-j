@@ -276,6 +276,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * Reset() 
      */
     public void reset() {
+        fNormalizedValue = null;
         fDeclaration = null;
         fTypeDecl = null;
         fSpecified = true;

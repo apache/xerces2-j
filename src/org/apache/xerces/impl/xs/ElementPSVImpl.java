@@ -339,6 +339,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fValidity = ElementPSVI.UNKNOWN_VALIDITY;
         fErrorCodes = null;
         fValidationContext = null;
+        fNormalizedValue = null;
     }
 
 }
