@@ -511,8 +511,14 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
         processExternalHints(fExternalSchemas, fExternalNoNSSchema,
                              locationPairs, fErrorReporter);
         SchemaGrammar grammar = loadSchema(desc, source, locationPairs);
+
         if(grammar != null && fGrammarPool != null) {
             fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, fGrammarBucket.getGrammars());
+            // NOTE: we only need to verify full checking in case the schema was not provided via JAXP
+            // since full checking already verified for all JAXP schemas
+            if(fIsCheckedFully && fJAXPCache.get(grammar) != grammar) {
+                XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
+            }
         }
         return grammar;
     } // loadGrammar(XMLInputSource):  Grammar
@@ -538,19 +544,22 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
             processJAXPSchemaSource(locationPairs);
         }
         SchemaGrammar grammar = fSchemaHandler.parseSchema(source, desc, locationPairs);
-        // is full-checking enabled?  If so, if we're preparsing we'll
-        // need to let XSConstraints have a go at the new grammar.
-        if(fIsCheckedFully) {
-            XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
-        }
+
         return grammar;
     } // loadSchema(XSDDescription, XMLInputSource):  SchemaGrammar
 
-    // this makes use of the schema location property values.
-    // we store the namespace/location pairs in a hashtable (use "" as the
-    // namespace of absent namespace). when resolving an entity, we first try
-    // to find in the hashtable whether there is a value for that namespace,
-    // if so, pass that location value to the user-defined entity resolver.
+    /** This method tries to resolve location of the given schema.
+     * The loader stores the namespace/location pairs in a hashtable (use "" as the
+     * namespace of absent namespace). When resolving an entity, loader first tries
+     * to find in the hashtable whether there is a value for that namespace,
+     * if so, pass that location value to the user-defined entity resolver.
+     *
+     * @param desc
+     * @param locationPairs
+     * @param entityResolver
+     * @return
+     * @throws IOException
+     */
     public static XMLInputSource resolveDocument(XSDDescription desc, Hashtable locationPairs,
             XMLEntityResolver entityResolver) throws IOException {
         String loc = null;
@@ -663,6 +672,8 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
      * REVISIT:  the JAXP 1.2 spec is less than clear as to whether this property
      * should be available to imported schemas.  I have assumed
      * that it should.  - NG
+     * Note: all JAXP schema files will be checked for full-schema validity if the feature was set up
+     * 
      */
     private void processJAXPSchemaSource(Hashtable locationPairs) throws IOException {
         fJAXPProcessed = true;
@@ -699,6 +710,9 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
                 if(fJAXPSource instanceof InputStream ||
                     fJAXPSource instanceof InputSource) {
                         fJAXPCache.put(fJAXPSource, g);
+                        if(fIsCheckedFully) {
+                            XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
+                        }
                 }
                 fGrammarBucket.putGrammar(g);
             }
@@ -744,8 +758,7 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
             String targetNamespace = null ;
             // load schema
 			SchemaGrammar grammar = fSchemaHandler.parseSchema(xis,fXSDDescription, locationPairs);
-			// is full-checking enabled?  If so, if we're preparsing we'll
-			// need to let XSConstraints have a go at the new grammar.
+
 			if(fIsCheckedFully) {
 				XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
 			}                                   
@@ -902,22 +915,6 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
 		
 		fGrammarBucket.reset();
         
-        boolean psvi = true;
-        try {
-            psvi = componentManager.getFeature(AUGMENT_PSVI);
-        } catch (XMLConfigurationException e) {
-            psvi = false;
-        }
-        
-		if (!psvi) {
-			fDeclPool.reset();
-			fCMBuilder.setDeclPool(fDeclPool);
-			fSchemaHandler.setDeclPool(fDeclPool);
-		} else {
-			fCMBuilder.setDeclPool(null);
-			fSchemaHandler.setDeclPool(null);
-		}
-
 		fSubGroupHandler.reset();		
 		
         boolean parser_settings;
@@ -937,7 +934,23 @@ public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,
         // Note: in case XMLSchemaValidator has created the loader, 
         // the entity manager property is null
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);      
-				
+		
+        boolean psvi = true;
+        try {
+            psvi = componentManager.getFeature(AUGMENT_PSVI);
+        } catch (XMLConfigurationException e) {
+            psvi = false;
+        }
+        
+        if (!psvi) {
+            fDeclPool.reset();
+            fCMBuilder.setDeclPool(fDeclPool);
+            fSchemaHandler.setDeclPool(fDeclPool);
+        } else {
+            fCMBuilder.setDeclPool(null);
+            fSchemaHandler.setDeclPool(null);
+        }
+        		
 		// get schema location properties
 		try {
 			fExternalSchemas = (String) componentManager.getProperty(SCHEMA_LOCATION);
