@@ -4,6 +4,7 @@ TARGETS=\
 	DOMAddLines.class\
 	DOMCount.class\
 	DOMFilter.class\
+	DOMGenerate.class\
 	DOMParserWrapper.class\
 	DOMWriter.class
 
