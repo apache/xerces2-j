@@ -56,9 +56,11 @@ public class ByteListImpl implements ByteList {
      *   <code>item</code>. 
      */
     public boolean contains(byte item) {
-        for(int i = 0;i < data.length; i++)
-            if(data[i] == item)
+        for (int i = 0; i < data.length; ++i) {
+            if (data[i] == item) {
                 return true;
+            }
+        }
         return false;
     }
 
@@ -72,8 +74,9 @@ public class ByteListImpl implements ByteList {
      *   INDEX_SIZE_ERR: if <code>index</code> is greater than or equal to the 
      *   number of objects in the list.
      */
-    public byte item(int index)
-                      throws XSException {
+    public byte item(int index) 
+        throws XSException {
+        
         if(index < 0 || index > data.length - 1) {
             throw new XSException(XSException.INDEX_SIZE_ERR, null);
         }
