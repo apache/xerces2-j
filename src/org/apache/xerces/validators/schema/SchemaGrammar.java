@@ -55,7 +55,9 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
+ /*
+ * @version $Id$
+ */
 package org.apache.xerces.validators.schema;
 
 import org.apache.xerces.framework.XMLContentSpec;
@@ -100,7 +102,7 @@ public class SchemaGrammar extends Grammar{
     private int fScopeDefinedByElement[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fFromAnotherSchemaURI[][] = new String[INITIAL_CHUNK_COUNT][];
     private TraverseSchema.ComplexTypeInfo fComplexTypeInfo[][] = 
-	new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
+        new TraverseSchema.ComplexTypeInfo[INITIAL_CHUNK_COUNT][];
     
     /*
     private int fElementDeclCount;
@@ -130,32 +132,42 @@ public class SchemaGrammar extends Grammar{
 
     // scope mapping tables
 
-    // TODO
-    */
+   */
 
     //
     // Public methods
     //
     public int getElementDefinedScope(int elementDeclIndex) {
-	//TO DO
-	return -1;
+        
+        if (elementDeclIndex < -1) {
+            return -1;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fScopeDefinedByElement[chunk][index];
 
     }
 
     public String getElementFromAnotherSchemaURI(int elementDeclIndex) {
-	//TO DO
-	return null;
+        
+        if (elementDeclIndex < -1) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fFromAnotherSchemaURI[chunk][index];
 
     }
     public TraverseSchema.ComplexTypeInfo getElementComplexTypeInfo(int elementDeclIndex){
-	//TO DO
-	return null;
+
+        if (elementDeclIndex <- 1) {
+            return null;
+        }
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        return fComplexTypeInfo[chunk][index];
     }
 
-    public int getFirstAttributeIndex(int elementIndex){
-	//TO DO: 
-	return -1;
-    }
 
 
     //
@@ -164,15 +176,15 @@ public class SchemaGrammar extends Grammar{
 
 
     protected int createElementDecl() {
-	return super.createElementDecl();
+        return super.createElementDecl();
     }
 
     protected void setElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
-	super.setElementDecl(elementDeclIndex,elementDecl);
+        super.setElementDecl(elementDeclIndex,elementDecl);
     }
 
     //public int addAttributeDeclByHead(int attributeDeclIndex, int attributeListHead) {
-    //	return super.addAttributeDeclByHead(attributeDeclIndex, attributeListHead);
+    //  return super.addAttributeDeclByHead(attributeDeclIndex, attributeListHead);
     //}
 
 
@@ -181,7 +193,7 @@ public class SchemaGrammar extends Grammar{
     }
 
     protected void setContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
-	super.setContentSpec(contentSpecIndex, contentSpec);
+        super.setContentSpec(contentSpecIndex, contentSpec);
     }
 
     protected int createAttributeDecl() {
@@ -189,16 +201,16 @@ public class SchemaGrammar extends Grammar{
     }
 
     protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
-	super.setAttributeDecl(elementDeclIndex, attributeDeclIndex, attributeDecl);
+        super.setAttributeDecl(elementDeclIndex, attributeDeclIndex, attributeDecl);
     }
 
     protected void setElementDefinedScope(int elementDeclIndex, int scopeDefined) {
-	if (elementDeclIndex > -1 ) {
-	    int chunk = elementDeclIndex >> CHUNK_SHIFT;
-	    int index = elementDeclIndex & CHUNK_MASK;
-	    fScopeDefinedByElement[chunk][index] = scopeDefined;
-	}
-	
+        if (elementDeclIndex > -1 ) {
+            int chunk = elementDeclIndex >> CHUNK_SHIFT;
+            int index = elementDeclIndex & CHUNK_MASK;
+            fScopeDefinedByElement[chunk][index] = scopeDefined;
+        }
+        
     }
 
     protected  void setElementFromAnotherSchemaURI(int elementDeclIndex, String anotherSchemaURI) {
@@ -214,25 +226,25 @@ public class SchemaGrammar extends Grammar{
      */
 
     protected int addElementDecl(QName eltQName, int enclosingScope, int scopeDefined, 
-				 int contentSpecType, int contentSpecIndex, 
-				 int attrListHead, DatatypeValidator dv){
-	int elementDeclIndex = getElementDeclIndex(eltQName.localpart, enclosingScope);
-	if (elementDeclIndex == -1) {
-	    if (enclosingScope<-1 || scopeDefined < -1 ) {
-		//TO DO: report error here;
-	    }
-	    fTempElementDecl.name = eltQName;
-	    fTempElementDecl.enclosingScope = enclosingScope;
-	    fTempElementDecl.type = contentSpecType;
-	    fTempElementDecl.contentSpecIndex = contentSpecIndex;
-	    fTempElementDecl.datatypeValidator = dv;
-	    fTempElementDecl.firstAttributeDeclIndex = attrListHead;
-	    elementDeclIndex = createElementDecl();
-	    setElementDecl(elementDeclIndex,fTempElementDecl);
-	    //note, this is the scope defined by the element, not its enclosing scope
-	    setElementDefinedScope(elementDeclIndex, scopeDefined);
-	}
-	return elementDeclIndex;
+                                 int contentSpecType, int contentSpecIndex, 
+                                 int attrListHead, DatatypeValidator dv){
+        int elementDeclIndex = getElementDeclIndex(eltQName.localpart, enclosingScope);
+        if (elementDeclIndex == -1) {
+            if (enclosingScope<-1 || scopeDefined < -1 ) {
+                //TO DO: report error here;
+            }
+            fTempElementDecl.name = eltQName;
+            fTempElementDecl.enclosingScope = enclosingScope;
+            fTempElementDecl.type = contentSpecType;
+            fTempElementDecl.contentSpecIndex = contentSpecIndex;
+            fTempElementDecl.datatypeValidator = dv;
+            fTempElementDecl.firstAttributeDeclIndex = attrListHead;
+            elementDeclIndex = createElementDecl();
+            setElementDecl(elementDeclIndex,fTempElementDecl);
+            //note, this is the scope defined by the element, not its enclosing scope
+            setElementDefinedScope(elementDeclIndex, scopeDefined);
+        }
+        return elementDeclIndex;
 
     }
 
@@ -240,31 +252,32 @@ public class SchemaGrammar extends Grammar{
      *@return the new attribute List Head
      */
     protected void addAttDef(  int templateElementIndex, 
-		      QName attQName, int attType, 
-		      int enumeration, int attDefaultType, 
-		      int attDefaultValue, DatatypeValidator dv){
-	int attrDeclIndex = createAttributeDecl();
-	fTempAttributeDecl.name = attQName;
+                      QName attQName, int attType, 
+                      int enumeration, String attDefaultType, 
+                      String attDefaultValue, DatatypeValidator dv){
+        int attrDeclIndex = createAttributeDecl();
+        fTempAttributeDecl.name = attQName;
         fTempAttributeDecl.datatypeValidator = dv;
-	fTempAttributeDecl.type = attType;
-        fTempAttributeDecl.defaultType = new String(); //TO DO: fStringPool.toString(attDefaultType);
-	fTempAttributeDecl.defaultValue = new String(); //TO DO: fStringPool.toString(attDefaultValue);
-        //setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
+        fTempAttributeDecl.type = attType;
+        fTempAttributeDecl.defaultType = attDefaultType;
+        fTempAttributeDecl.defaultValue = attDefaultValue;
+        // TO DO: what about enumeration?
+        // setAttributeDecl(attrDeclIndex,fTempAttributeDecl);
 
-	super.setAttributeDecl(templateElementIndex, attrDeclIndex, fTempAttributeDecl);
+        super.setAttributeDecl(templateElementIndex, attrDeclIndex, fTempAttributeDecl);
     }
     /**
      *@return the new contentSpec Index
      */
     protected int addContentSpecNode(int contentSpecType, int value, int otherValue, boolean mustBeUnique) {
-	fTempContentSpecNode.type = contentSpecType;
-	fTempContentSpecNode.value = value;
-	fTempContentSpecNode.otherValue = otherValue;
+        fTempContentSpecNode.type = contentSpecType;
+        fTempContentSpecNode.value = value;
+        fTempContentSpecNode.otherValue = otherValue;
 
-	int contentSpecIndex = createContentSpec();
-	setContentSpec(contentSpecIndex, fTempContentSpecNode);
+        int contentSpecIndex = createContentSpec();
+        setContentSpec(contentSpecIndex, fTempContentSpecNode);
 
-	return contentSpecIndex;
+        return contentSpecIndex;
     }
                                                 
 
@@ -280,11 +293,15 @@ public class SchemaGrammar extends Grammar{
         } 
         catch (ArrayIndexOutOfBoundsException ex) {
              fScopeDefinedByElement= resize(fScopeDefinedByElement, fScopeDefinedByElement.length * 2);
+             fFromAnotherSchemaURI = resize(fFromAnotherSchemaURI, fFromAnotherSchemaURI.length *2);
+             fComplexTypeInfo =      resize(fComplexTypeInfo, fComplexTypeInfo.length *2);
         }
         catch (NullPointerException ex) {
             // ignore
         }
         fScopeDefinedByElement[chunk] = new int[CHUNK_SIZE];
+        fFromAnotherSchemaURI[chunk] = new String[CHUNK_SIZE];
+        fComplexTypeInfo[chunk] = new TraverseSchema.ComplexTypeInfo[CHUNK_SIZE];
         return true;
     }
 
@@ -325,7 +342,7 @@ public class SchemaGrammar extends Grammar{
         return newarray;
     }
     private TraverseSchema.ComplexTypeInfo[][] resize(TraverseSchema.ComplexTypeInfo array[][], int newsize) {
-	TraverseSchema.ComplexTypeInfo newarray[][] = new TraverseSchema.ComplexTypeInfo[newsize][];
+        TraverseSchema.ComplexTypeInfo newarray[][] = new TraverseSchema.ComplexTypeInfo[newsize][];
         System.arraycopy(array, 0, newarray, 0, array.length);
         return newarray;
     }
