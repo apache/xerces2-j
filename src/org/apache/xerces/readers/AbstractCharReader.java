@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,13 +68,13 @@ import java.util.Vector;
 
 /**
  * An abstract class for readers that process input data as characters.
- *
+ * <p>
  * This is the base class of the CharReader and UTF8CharReader classes.
  * The CharReader classes fills in the "chunks" of data to process from
  * a character stream (java.io.Reader).  The UTF8CharReader performs
  * its own UTF-8 transcoding to fill in the data from an InputStream.
  *
- * @version
+ * @version $Id$
  */
 abstract class AbstractCharReader extends XMLEntityReader {
 
