@@ -261,11 +261,10 @@ public final class XMLValidator
     private int fCurrentSchemaURI = -1;
     private int fEmptyURI = - 1; 
     private int fXsiPrefix = - 1;
-    private int fXsiURI = -1; 
+    private int fXsiURI = -2; 
 
     private Grammar fGrammar = null;
     private int fGrammarNameSpaceIndex = -1;
-    //TO DO: how to initializ this ?
     private GrammarResolver fGrammarResolver = null;
 
     // state and stuff
@@ -3067,15 +3066,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             // initialize the grammar to be the default one.
             if (fGrammar == null) {
-                //TO DO, for ericye debug only
-                //System.out.println("I am getting a grammar .... " );
 
                 fGrammar = fGrammarResolver.getGrammar("");
                 
                 //TO DO, for ericye debug only
-                //if (fGrammar == null) {
-                  //  System.out.println("Oops! no grammar is found");
-                 // }
+                if (fGrammar == null && DEBUG_SCHEMA_VALIDATION) {
+                    System.out.println("Oops! no grammar is found for validation");
+                }
 
                 fGrammarNameSpaceIndex = fEmptyURI;
             }
@@ -3158,7 +3155,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         if (attrValue.equals(SchemaSymbols.URI_XSI)) {
                             fXsiPrefix = nsPrefix;
                             seeXsi = true;
-                            // fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
                         }
                         
                         if (fValidating && !seeXsi) {
@@ -3183,13 +3179,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     } 
                     else {
                         if ( DEBUG_SCHEMA_VALIDATION ) {
-//System.out.println("deal with XSI");
-//System.out.println("before find XSI: "+fStringPool.toString(attPrefix)+","+fStringPool.toString(fXsiPrefix) );
+                            System.out.println("deal with XSI");
+                            System.out.println("before find XSI: "+fStringPool.toString(attPrefix)
+                                               +","+fStringPool.toString(fXsiPrefix) );
                         }
                         if (attPrefix == fXsiPrefix && fXsiPrefix != -1 ) {
 
                             if (DEBUG_SCHEMA_VALIDATION) {
-//System.out.println("find XSI: "+fStringPool.toString(attPrefix)+","+fStringPool.toString(attName) );
+                                System.out.println("find XSI: "+fStringPool.toString(attPrefix)
+                                                   +","+fStringPool.toString(attName) );
                             }
 
 
@@ -3229,7 +3227,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         int elementURI;
         if (prefix == -1) {
-            if (fGrammar.getElementDeclIndex(element.localpart, fCurrentScope) > -1) {
+            // REVISIT, is this only valid for Schema Validation
+            if (fGrammar != null && fValidating && fGrammar.getElementDeclIndex(element.localpart, fCurrentScope) > -1) {
                 element.uri = -1;
             }
             else {
@@ -3338,10 +3337,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         Document     document   = parser.getDocument(); //Our Grammar
 
-        //OutputFormat    format  = new OutputFormat( document );
-       // java.io.StringWriter outWriter = new java.io.StringWriter();
-        //XMLSerializer    serial = new XMLSerializer( outWriter,format);
-
         TraverseSchema tst = null;
         try {
             if (DEBUG_SCHEMA_VALIDATION) {
@@ -3350,12 +3345,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
             if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
-                //TO DO : consistent report error here
+                //TO DO : report error here
                 System.out.println("Schema in " + loc + " has a different target namespace " + 
                                    "from the one specified in the instance document :" + uri); 
             }
-            //serial.serialize( root );
-            //System.out.println(outWriter.toString());
             if (fGrammar == null) {
                 fGrammar = new SchemaGrammar();
             }
@@ -3482,13 +3475,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             return;
         }
-        // REVISIT: Validation
-        //int elementIndex = getDeclaration(element);
+        
         int elementIndex = -1;
+
         //REVISIT, is it possible, fValidating is false and fGrammar is no null.???
         if ( fGrammar != null ){
-            //TO DO: for ericye debug only
-            //System.out.println("localpart: '" + fStringPool.toString(element.localpart)+"' and scope : " + fCurrentScope);
+            if (DEBUG_SCHEMA_VALIDATION) {
+                System.out.println("localpart: '" + fStringPool.toString(element.localpart)
+                                   +"' and scope : " + fCurrentScope);
+            }
 
             if (element.uri == -1) {
                 elementIndex = fGrammar.getElementDeclIndex(element.localpart,fCurrentScope);
@@ -3520,18 +3515,18 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                        " and the current enclosing scope: " + fCurrentScope );
                 /****/
             }
-            fGrammar.getElementDecl(elementIndex, fTempElementDecl);
 
-            //TO DO: for ericye debug only      
-            //System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
-            //                   + fStringPool.toString(fTempElementDecl.name.localpart)
-            //                   +"' \n its ContentType:" + fStringPool.toString(fTempElementDecl.type)
-            //                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n");
-
+            if (DEBUG_SCHEMA_VALIDATION) {
+                fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
+                                   + fStringPool.toString(fTempElementDecl.name.localpart)
+                                   +"' \n its ContentType:" + fStringPool.toString(fTempElementDecl.type)
+                                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n");
+            }
         }
 
         //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
-        //       this element actually is of a type in a Schema in different namespace.
+        //       this element actually is of a type in another Schema.
         if (fGrammar instanceof SchemaGrammar && elementIndex != -1) {
             String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
             if (anotherSchemaURI != null) {
@@ -3585,6 +3580,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 // here, we validate every "user-defined" attributes
                 if (attrNameIndex != fNamespacesPrefix && attrList.getAttrPrefix(index) != fNamespacesPrefix) 
                 if (fValidating) {
+                    fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
                     fTempQName.setValues(attrList.getAttrPrefix(index), 
                                          attrList.getAttrLocalpart(index),
                                          attrList.getAttrName(index),
@@ -3599,15 +3595,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         System.out.println("[Error] attribute " + fStringPool.toString(attrList.getAttrName(index))
                                            + " not found in element type " + fStringPool.toString(element.rawname));
 
-                        //REVISIT : how attrNameLocator is initialized?
-                        /*****
+                        /*****/
                         fErrorReporter.reportError(fAttrNameLocator,
                                                    XMLMessages.XML_DOMAIN,
                                                    XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
                                                    XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
                                                    args,
                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                        ******/   
+                        /******/   
 
                     }
                     else  {
@@ -3617,17 +3612,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         if (fTempAttDecl.datatypeValidator == null) {
                             Object[] args = { fStringPool.toString(element.rawname),
                                               fStringPool.toString(attrList.getAttrName(index)) };
-                        //REVISIT : how attrNameLocator is initialized?
-                              /****
+                            System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
+                                               + " not found in element type " + fStringPool.toString(element.rawname));
+                        //REVISIT : is this the right message?
+                              /****/
                             fErrorReporter.reportError(fAttrNameLocator,    
                                                    XMLMessages.XML_DOMAIN,
                                                    XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
                                                    XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
                                                    args,
                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                             ****/   
-                            System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
-                                              + " not found in element type " + fStringPool.toString(element.rawname));
+                             /****/   
                         }
                         else{
                             fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)),
