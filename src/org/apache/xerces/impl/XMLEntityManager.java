@@ -1852,19 +1852,19 @@ public class XMLEntityManager
                     load(1, false);
                 }
                 if (c == '\r' && external) {
-                    // REVISIT: Does this need to be updated to fix the
-                    //          #x0D ^#x0A newline normalization problem? -Ac
                     if (fCurrentEntity.ch[fCurrentEntity.position++] != '\n') {
                         fCurrentEntity.position--;
                     }
                     c = '\n';
                 }
+                /*** NEWLINE NORMALIZATION ***
                 else {
                     if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
                         && fCurrentEntity.isExternal()) {
                         fCurrentEntity.position++;
                     }
                 }
+                /***/
             }
 
             // return character that was scanned

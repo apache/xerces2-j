@@ -821,6 +821,10 @@ public abstract class XMLScanner
                 else if (c == '<') {
                     reportFatalError("LessthanInAttValue",
                                      new Object[] { null, atName });
+                    fEntityScanner.scanChar();
+                    if (entityDepth == fEntityDepth) {
+                        fStringBuffer2.append((char)c);
+                    }
                 }
                 else if (c == '%' || c == ']') {
                     fEntityScanner.scanChar();
@@ -833,21 +837,11 @@ public abstract class XMLScanner
                                            + fStringBuffer.toString() + "\"");
                     }
                 }
-                else if (c == '\r') {
-                    // This happens when parsing the entity replacement text of
-                    // an entity which had a character reference &#13; in its
-                    // literal entity value. The character is normalized to
-                    // #x20 and collapsed per the normal rules.
+                else if (c == '\n' || c == '\r') {
                     fEntityScanner.scanChar();
                     fStringBuffer.append(' ');
-                    fStringBuffer.append((char)c);
                     if (entityDepth == fEntityDepth) {
-                        fStringBuffer2.append((char)c);
-                    }
-                    if (DEBUG_ATTR_NORMALIZATION) {
-                        System.out.println("** valueG: \""
-                                           + fStringBuffer.toString()
-                                           + "\"");
+                        fStringBuffer2.append('\n');
                     }
                 }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
@@ -867,46 +861,17 @@ public abstract class XMLScanner
                     reportFatalError("InvalidCharInAttValue",
                                      new Object[] {Integer.toString(c, 16)});
                     fEntityScanner.scanChar();
-                }
-                // the following is to handle quotes we get from entities
-                // which we must not confused with the end quote
-                while (true) {
-                    c = fEntityScanner.scanLiteral(quote, value);
-                    if (DEBUG_ATTR_NORMALIZATION) {
-                        System.out.println("scanLiteral -> \"" +
-                                           value.toString() + "\"");
-                    }
-                    //fStringBuffer2.append(value);
-                    normalizeWhitespace(value);
-                    if (DEBUG_ATTR_NORMALIZATION) {
-                        System.out.println("normalizeWhitespace -> \""
-                                           + value.toString()
-                                           + "\"");
-                    }
-                    // this is: !(c == quote && entityDepth != fEntityDepth)
-                    if (c != quote || entityDepth == fEntityDepth) {
-                        break;
-                    }
-                    fStringBuffer.append(value);
-                    if (DEBUG_ATTR_NORMALIZATION) {
-                        System.out.println("** valueK: \""
-                                           + fStringBuffer.toString()
-                                           + "\"");
-                    }
-                    fEntityScanner.scanChar();
-                    fStringBuffer.append((char)c);
                     if (entityDepth == fEntityDepth) {
                         fStringBuffer2.append((char)c);
                     }
-                    if (DEBUG_ATTR_NORMALIZATION) {
-                        System.out.println("** valueL: \""
-                                           + fStringBuffer.toString()
-                                           + "\"");
-                    }
                 }
-            } while (c != quote);
+                c = fEntityScanner.scanLiteral(quote, value);
+                if (entityDepth == fEntityDepth) {
+                    fStringBuffer2.append(value);
+                }
+                normalizeWhitespace(value);
+            } while (c != quote || entityDepth != fEntityDepth);
             fStringBuffer.append(value);
-            fStringBuffer2.append(value);
             if (DEBUG_ATTR_NORMALIZATION) {
                 System.out.println("** valueN: \""
                                    + fStringBuffer.toString() + "\"");
