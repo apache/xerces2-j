@@ -90,6 +90,13 @@ public abstract class CharacterDataImpl
         return data;
     }
 
+   /** Convenience wrapper for calling setNodeValueInternal when 
+     * we are not performing a replacement operation  
+     */
+    protected void setNodeValueInternal (String value) {
+    	setNodeValueInternal(value, false);
+    }
+    
     /** This function added so that we can distinguish whether
      *  setNodeValue has been called from some other DOM functions.
      *  or by the client.<p>
@@ -97,7 +104,7 @@ public abstract class CharacterDataImpl
      *  from the high-level functions in CharacterData, and another
      *  type if the client simply calls setNodeValue(value).
      */
-    protected void setNodeValueInternal(String value) {
+    protected void setNodeValueInternal(String value, boolean replace) {
     	if (isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
@@ -114,12 +121,12 @@ public abstract class CharacterDataImpl
         CoreDocumentImpl ownerDocument = ownerDocument();
 
         // notify document
-        ownerDocument.modifyingCharacterData(this);
+        ownerDocument.modifyingCharacterData(this, replace);
 
     	this.data = value;
 
         // notify document
-        ownerDocument.modifiedCharacterData(this, oldvalue, value);
+        ownerDocument.modifiedCharacterData(this, oldvalue, value, replace);
     }
 
     /**
@@ -203,38 +210,54 @@ public abstract class CharacterDataImpl
      */
     public void deleteData(int offset, int count) 
         throws DOMException {
-
-    	if (isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
-        }
-
-        if (count < 0) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
-        }
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-        int tailLength = Math.max(data.length() - count - offset, 0);
-        try {
-            String value = data.substring(0, offset) +
-                (tailLength > 0
-                 ? data.substring(offset + count, offset + count + tailLength) 
-                 : "");
-
-            setNodeValueInternal(value);
-
-            // notify document
-            ownerDocument().deletedText(this, offset, count);
-        }
-        catch (StringIndexOutOfBoundsException e) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
-        }
-
+    	
+    	internalDeleteData(offset, count, false);
     } // deleteData(int,int)
+
+    
+    /** NON-DOM INTERNAL: Within DOM actions, we sometimes need to be able
+     * to control which mutation events are spawned. This version of the
+     * deleteData operation allows us to do so. It is not intended
+     * for use by application programs.
+     */
+    void internalDeleteData (int offset, int count, boolean replace)
+	throws DOMException {
+	
+    	if (isReadOnly()) {
+    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+    		throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+    	}
+
+    	if (count < 0) {
+    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+    		throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
+    	}
+
+    	if (needsSyncData()) {
+    		synchronizeData();
+    	}
+    	int tailLength = Math.max(data.length() - count - offset, 0);
+    	try {
+    		String value = data.substring(0, offset) +
+            	(tailLength > 0
+            			? data.substring(offset + count, offset + count + tailLength) 
+            			: "");
+
+        
+    		setNodeValueInternal(value, replace);      
+
+    		// notify document
+    		ownerDocument().deletedText(this, offset, count);
+    	}
+    	catch (StringIndexOutOfBoundsException e) {
+    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+    		throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
+    	}
+	
+    } // internalDeleteData(int,int,boolean)
+    	
+
+    
 
     /**
      * Insert additional characters into the data stored in this node,
@@ -248,30 +271,47 @@ public abstract class CharacterDataImpl
     public void insertData(int offset, String data) 
         throws DOMException {
 
-        if (isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
-        }
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-        try {
-            String value =
-                new StringBuffer(this.data).insert(offset, data).toString();
-
-            setNodeValueInternal(value);
-
-            // notify document
-            ownerDocument().insertedText(this, offset, data.length());
-        }
-        catch (StringIndexOutOfBoundsException e) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
-            throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
-        }
-
+    	internalInsertData(offset, data, false);
+        
     } // insertData(int,int)
+    
+    
+    
+    /** NON-DOM INTERNAL: Within DOM actions, we sometimes need to be able
+     * to control which mutation events are spawned. This version of the
+     * insertData operation allows us to do so. It is not intended
+     * for use by application programs.
+     */
+    void internalInsertData (int offset, String data, boolean replace)
+	throws DOMException {
+	
+    	if (isReadOnly()) {
+    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+    		throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+    	}
 
+    	if (needsSyncData()) {
+    		synchronizeData();
+    	}
+    	try {
+    		String value =
+    			new StringBuffer(this.data).insert(offset, data).toString();
+
+        
+    		setNodeValueInternal(value, replace);
+      
+    		// notify document
+    		ownerDocument().insertedText(this, offset, data.length());
+    	}
+    	catch (StringIndexOutOfBoundsException e) {
+    		String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INDEX_SIZE_ERR", null);
+    		throw new DOMException(DOMException.INDEX_SIZE_ERR, msg);
+    	}
+
+    } // internalInsertData(int,String,boolean)
+
+    
+    
     /**
      * Replace a series of characters at the specified (zero-based)
      * offset with a new string, NOT necessarily of the same
@@ -305,8 +345,25 @@ public abstract class CharacterDataImpl
         // DOMSubtreeModified. But mutation events are 
         // underspecified; I don't feel compelled
         // to deal with it right now.
-        deleteData(offset, count);
-        insertData(offset, data);
+        if (isReadOnly()) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+        }
+        
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+       
+        //notify document
+        ownerDocument().replacingData(this);
+
+        // keep old value for document notification
+        String oldvalue = this.data;
+               
+        internalDeleteData(offset, count, true);
+        internalInsertData(offset, data, true);
+                
+        ownerDocument().replacedCharacterData(this, oldvalue, this.data);
 
     } // replaceData(int,int,String)
 

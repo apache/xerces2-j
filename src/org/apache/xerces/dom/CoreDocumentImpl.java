@@ -2599,15 +2599,15 @@ extends ParentNode implements Document  {
     }
 
     /**
-     * A method to be called when a character data node has been modified
+     * A method to be called when a character data node is about to be modified
      */
-    void modifyingCharacterData(NodeImpl node) {
+    void modifyingCharacterData(NodeImpl node, boolean replace) {
     }
 
     /**
      * A method to be called when a character data node has been modified
      */
-    void modifiedCharacterData(NodeImpl node, String oldvalue, String value) {
+    void modifiedCharacterData(NodeImpl node, String oldvalue, String value, boolean replace) {
     }
 
     /**
@@ -2646,6 +2646,19 @@ extends ParentNode implements Document  {
     void replacedNode(NodeImpl node) {
     }
 
+    /**
+     * A method to be called when a character data node is about to be replaced
+     */
+    void replacingData(NodeImpl node) {
+    }
+
+    /**
+     *  method to be called when a character data node has been replaced.
+     */
+    void replacedCharacterData(NodeImpl node, String oldvalue, String value) {
+    }
+
+    
     /**
      * A method to be called when an attribute value has been modified
      */

@@ -26,11 +26,6 @@ package org.apache.xerces.dom;
     Move it when we have a chance to do so. Sorry; we were
     rushed.
     
-    ***** Also, I'm currently asking "are there any listeners"
-    by testing captures+bubbles+defaults =? 0. It would probably
-    make sense to have a separate "total" field, calculated at
-    add/remove, to save a few cycles during dispatch. Fix.
-    
     ???? CONCERN: Hashtables are known to be "overserialized" in
     current versions of Java. That may impact performance.
     
@@ -47,7 +42,7 @@ package org.apache.xerces.dom;
 class LCount 
 { 
     static java.util.Hashtable lCounts=new java.util.Hashtable();
-    public int captures=0,bubbles=0,defaults=0;
+    public int captures=0,bubbles=0,defaults, total=0;
 
     static LCount lookup(String evtName)
     {

@@ -517,7 +517,7 @@ public class DocumentImpl
         // a listener to dispatch to
         if (type == null || type.equals("") || listener == null)
             return;
-
+      
         // Each listener may be registered only once per type per phase.
         // Simplest way to code that is to zap the previous entry, if any.
         removeEventListener(node, type, listener, useCapture);
@@ -531,10 +531,14 @@ public class DocumentImpl
 	    
         // Record active listener
         LCount lc = LCount.lookup(type);
-        if (useCapture)
+        if (useCapture) {
             ++lc.captures;
-        else
+            ++lc.total;
+        }
+        else {
             ++lc.bubbles;
+            ++lc.total;
+        }
 
     } // addEventListener(NodeImpl,String,EventListener,boolean) :void
 	
@@ -574,10 +578,14 @@ public class DocumentImpl
 
                 // Remove active listener
                 LCount lc = LCount.lookup(type);
-                if (useCapture)
+                if (useCapture) {
                     --lc.captures;
-                else
+                    --lc.total;
+                }
+                else {
                     --lc.bubbles;
+                    --lc.total;
+                }
 
                 break;  // Found it; no need to loop farther.
             }
@@ -658,7 +666,7 @@ public class DocumentImpl
         
         // If nobody is listening for this event, discard immediately
         LCount lc = LCount.lookup(evt.getType());
-        if (lc.captures + lc.bubbles + lc.defaults == 0)
+        if (lc.total == 0)
             return evt.preventDefault;
 
         // INITIALIZE THE EVENT'S DISPATCH STATUS
@@ -719,6 +727,7 @@ public class DocumentImpl
                 }
             }
         }
+        
         
         // Both AT_TARGET and BUBBLE use non-capturing listeners.
         if (lc.bubbles > 0) {
@@ -802,32 +811,52 @@ public class DocumentImpl
      * are dispatched to an entire subtree. This is the distribution code
      * therefor. They DO NOT bubble, thanks be, but may be captured.
      * <p>
+     * Similar to code in dispatchingEventToSubtree however this method
+     * is only used on the target node and does not start a dispatching chain
+     * on the sibling of the target node as this is not part of the subtree 
      * ***** At the moment I'm being sloppy and using the normal
      * capture dispatcher on every node. This could be optimized hugely
      * by writing a capture engine that tracks our position in the tree to
      * update the capture chain without repeated chases up to root.
-     * @param node node to dispatch to
-     * @param n node which was directly inserted or removed
+     * @param n target node (that was directly inserted or removed)
      * @param e event to be sent to that node and its subtree
      */
-    protected void dispatchEventToSubtree(NodeImpl node, Node n, Event e) {
-        Vector nodeListeners = getEventListeners(node);
-        if (nodeListeners == null || n == null)
-            return;
-
-        // ***** Recursive implementation. This is excessively expensive,
-        // and should be replaced in conjunction with optimization
-        // mentioned above.
+    protected void dispatchEventToSubtree(Node n, Event e) {
+        
         ((NodeImpl) n).dispatchEvent(e);
         if (n.getNodeType() == Node.ELEMENT_NODE) {
             NamedNodeMap a = n.getAttributes();
             for (int i = a.getLength() - 1; i >= 0; --i)
-                dispatchEventToSubtree(node, a.item(i), e);
+                dispatchingEventToSubtree(a.item(i), e);
         }
-        dispatchEventToSubtree(node, n.getFirstChild(), e);
-        dispatchEventToSubtree(node, n.getNextSibling(), e);
+        dispatchingEventToSubtree(n.getFirstChild(), e);
+        
     } // dispatchEventToSubtree(NodeImpl,Node,Event) :void
 
+
+    /**
+     * Dispatches event to the target node's descendents recursively
+     * 
+     * @param n node to dispatch to
+     * @param e event to be sent to that node and its subtree
+     */
+    protected void dispatchingEventToSubtree(Node n, Event e) {
+    	if (n==null) 
+    		return;
+    	
+    	// ***** Recursive implementation. This is excessively expensive,
+        // and should be replaced in conjunction with optimization
+        // mentioned above.
+    	((NodeImpl) n).dispatchEvent(e);
+        if (n.getNodeType() == Node.ELEMENT_NODE) {
+            NamedNodeMap a = n.getAttributes();
+            for (int i = a.getLength() - 1; i >= 0; --i)
+                dispatchingEventToSubtree(a.item(i), e);
+        }
+        dispatchingEventToSubtree(n.getFirstChild(), e);   
+        dispatchingEventToSubtree(n.getNextSibling(), e);
+    }
+    
     /**
      * NON-DOM INTERNAL: Return object for getEnclosingAttr. Carries
      * (two values, the Attr node affected (if any) and its previous 
@@ -889,7 +918,7 @@ public class DocumentImpl
         if (enclosingAttr != null) {
             LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
             owner = (NodeImpl) enclosingAttr.getOwnerElement();
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            if (lc.total > 0) {
                 if (owner != null) {
                     MutationEventImpl me =  new MutationEventImpl();
                     me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
@@ -907,7 +936,7 @@ public class DocumentImpl
         // "This event is dispatched after all other events caused by the
         // mutation have been fired."
         LCount lc = LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
-        if (lc.captures + lc.bubbles + lc.defaults > 0) {
+        if (lc.total > 0) {
             MutationEvent me =  new MutationEventImpl();
             me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
                                  true, false, null, null,
@@ -940,7 +969,7 @@ public class DocumentImpl
         // was requested, we need to preserve its previous value for
         // that event.
         LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-        if (lc.captures + lc.bubbles + lc.defaults > 0) {
+        if (lc.total > 0) {
             NodeImpl eventAncestor = node;
             while (true) {
                 if (eventAncestor == null)
@@ -955,6 +984,8 @@ public class DocumentImpl
                 }
                 else if (type == Node.ENTITY_REFERENCE_NODE)
                     eventAncestor = eventAncestor.parentNode();
+                else if (type == Node.TEXT_NODE)
+                    eventAncestor = eventAncestor.parentNode();
                 else
                     return;
                 // Any other parent means we're not in an Attr
@@ -965,34 +996,51 @@ public class DocumentImpl
     /**
      * A method to be called when a character data node has been modified
      */
-    void modifyingCharacterData(NodeImpl node) {
+    void modifyingCharacterData(NodeImpl node, boolean replace) {
         if (mutationEvents) {
-            saveEnclosingAttr(node);
+        	if (!replace) {
+        		saveEnclosingAttr(node);
+        	}
         }
     }
 
     /**
      * A method to be called when a character data node has been modified
      */
-    void modifiedCharacterData(NodeImpl node, String oldvalue, String value) {
+    void modifiedCharacterData(NodeImpl node, String oldvalue, String value, boolean replace) {
         if (mutationEvents) {
-            // MUTATION POST-EVENTS:
-            LCount lc =
-                LCount.lookup(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED);
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
-                MutationEvent me = new MutationEventImpl();
-                me.initMutationEvent(
-                                 MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
-                                     true, false, null,
-                                     oldvalue, value, null, (short) 0);
-                dispatchEvent(node, me);
-            }
+        	if (!replace) {
+        		// MUTATION POST-EVENTS:
+        		LCount lc =
+        			LCount.lookup(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED);
+        		if (lc.total > 0) {
+        			MutationEvent me = new MutationEventImpl();
+        			me.initMutationEvent(
+                                 	MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
+                                     	true, false, null,
+										oldvalue, value, null, (short) 0);
+        			dispatchEvent(node, me);
+        		}
             
-            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
-            // if required. (Common to most kinds of mutation)
-            dispatchAggregateEvents(node, savedEnclosingAttr);
-        } // End mutation postprocessing
+        		// Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
+        		// if required. (Common to most kinds of mutation)
+        		dispatchAggregateEvents(node, savedEnclosingAttr);
+        	} // End mutation postprocessing
+        }
     }
+    
+    /**
+     * A method to be called when a character data node has been replaced
+     */
+    void replacedCharacterData(NodeImpl node, String oldvalue, String value) {
+    	//now that we have finished replacing data, we need to perform the same actions
+    	//that are required after a character data node has been modified
+    	//send the value of false for replace parameter so that mutation
+    	//events if appropriate will be initiated
+    	modifiedCharacterData(node, oldvalue, value, false);
+    }
+    
+    
 
     /**
      * A method to be called when a node is about to be inserted in the tree.
@@ -1014,7 +1062,7 @@ public class DocumentImpl
             // "Local" events (non-aggregated)
             // New child is told it was inserted, and where
             LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            if (lc.total > 0) {
                 MutationEventImpl me = new MutationEventImpl();
                 me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,
                                      true, false, node,
@@ -1026,7 +1074,7 @@ public class DocumentImpl
             // to the Doc.
             lc = LCount.lookup(
                             MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT);
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            if (lc.total > 0) {
                 NodeImpl eventAncestor = node;
                 if (savedEnclosingAttr != null)
                     eventAncestor = (NodeImpl)
@@ -1050,7 +1098,7 @@ public class DocumentImpl
                                              .DOM_NODE_INSERTED_INTO_DOCUMENT,
                                              false,false,null,null,
                                              null,null,(short)0);
-                        dispatchEventToSubtree(node, newInternal, me);
+                        dispatchEventToSubtree(newInternal, me);
                     }
                 }
             }
@@ -1102,7 +1150,7 @@ public class DocumentImpl
             }
             // Child is told that it is about to be removed
             LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED);
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            if (lc.total > 0) {
                 MutationEventImpl me= new MutationEventImpl();
                 me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
                                      true, false, node, null,
@@ -1114,7 +1162,7 @@ public class DocumentImpl
             // losing that status
             lc = LCount.lookup(
                              MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT);
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            if (lc.total > 0) {
                 NodeImpl eventAncestor = this;
                 if(savedEnclosingAttr != null)
                     eventAncestor = (NodeImpl)
@@ -1130,7 +1178,7 @@ public class DocumentImpl
                               MutationEventImpl.DOM_NODE_REMOVED_FROM_DOCUMENT,
                                              false, false, null,
                                              null, null, null, (short) 0);
-                        dispatchEventToSubtree(node, oldChild, me);
+                        dispatchEventToSubtree(oldChild, me);
                     }
                 }
             }
@@ -1158,6 +1206,15 @@ public class DocumentImpl
         if (mutationEvents) {
             saveEnclosingAttr(node);
         }
+    }
+    
+    /**
+     * A method to be called when character data is about to be replaced in the tree.
+     */
+    void replacingData (NodeImpl node) {
+    	if (mutationEvents) {
+    			saveEnclosingAttr(node);
+    	}
     }
 
     /**
@@ -1209,7 +1266,7 @@ public class DocumentImpl
     	    // If we have to send DOMAttrModified (determined earlier),
             // do so.
             LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if (lc.captures + lc.bubbles + lc.defaults > 0) {
+            if (lc.total > 0) {
                 MutationEventImpl me= new MutationEventImpl();
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
                                      true, false, attr,
