@@ -201,57 +201,46 @@ public class SymbolTable {
 
     } // addSymbol(char[],int,int):String
 
+    /**
+     * Returns a hashcode value for the specified symbol. The value
+     * returned by this method must be identical to the value returned
+     * by the <code>hash(char[],int,int)</code> method when called
+     * with the character array that comprises the symbol string.
+     * 
+     * @param symbol The symbol to hash.
+     */
+    public int hash(String symbol) {
+        int code = 0;
+        int length = symbol.length();
+        for (int i = 0; i < length; i++) {
+            code = code * 37 + symbol.charAt(i);
+        }
+        return code & 0x7FFFFFF;
+    }
+
+
+    /**
+     * Returns a hashcode value for the specified symbol information. 
+     * The value returned by this method must be identical to the value
+     * returned by the <code>hash(String)</code> method when called
+     * with the string object created from the symbol information.
+     * 
+     * @param buffer The character buffer containing the symbol.
+     * @param offset The offset into the character buffer of the start
+     *               of the symbol.
+     * @param length The length of the symbol.
+     */
+    public int hash(char[] buffer, int offset, int length) {
+        int code = 0;
+        for (int i = 0; i < length; i++) {
+            code = code * 37 + buffer[offset + i];
+        }
+        return code & 0x7FFFFFF;
+    }
+
     //
     // Classes
     //
-
-    /**
-     * Default symbol hasher implementation.
-     */
-    protected static final class Hasher 
-        implements SymbolHasher {
-
-        //
-        // SymbolHasher methods
-        //
-
-        /**
-         * Returns a hashcode value for the specified symbol. The value
-         * returned by this method must be identical to the value returned
-         * by the <code>hash(char[],int,int)</code> method when called
-         * with the character array that comprises the symbol string.
-         * 
-         * @param symbol The symbol to hash.
-         */
-        public int hash(String symbol) {
-            int code = 0;
-            int length = symbol.length();
-            for (int i = 0; i < length; i++) {
-                code = code * 37 + symbol.charAt(i);
-            }
-            return code & 0x7FFFFFF;
-        }
-
-        /**
-         * Returns a hashcode value for the specified symbol information. 
-         * The value returned by this method must be identical to the value
-         * returned by the <code>hash(String)</code> method when called
-         * with the string object created from the symbol information.
-         * 
-         * @param buffer The character buffer containing the symbol.
-         * @param offset The offset into the character buffer of the start
-         *               of the symbol.
-         * @param length The length of the symbol.
-         */
-        public int hash(char[] buffer, int offset, int length) {
-            int code = 0;
-            for (int i = 0; i < length; i++) {
-                code = code * 37 + buffer[offset + i];
-            }
-            return code & 0x7FFFFFF;
-        }
-
-    } // class Hasher
 
     /**
      * This class is a symbol table entry. Each entry acts as a node
