@@ -1027,118 +1027,123 @@ public class XMLSchemaValidator
     private boolean fUnionType = false;
 
     /** Schema grammar resolver. */
-    final XSGrammarBucket fGrammarBucket;
-    final SubstitutionGroupHandler fSubGroupHandler;
-
-    // Schema grammar loader
-    final XMLSchemaLoader fSchemaLoader;
+    private final XSGrammarBucket fGrammarBucket = new XSGrammarBucket();
+    private final SubstitutionGroupHandler fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
 
     /** the DV usd to convert xsi:type to a QName */
     // REVISIT: in new simple type design, make things in DVs static,
     //          so that we can QNameDV.getCompiledForm()
-    final XSSimpleType fQNameDV =
+    private final XSSimpleType fQNameDV =
         (XSSimpleType) SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
 
-    final CMNodeFactory nodeFactory = new CMNodeFactory();
+    private final CMNodeFactory nodeFactory = new CMNodeFactory();
     /** used to build content models */
     // REVISIT: create decl pool, and pass it to each traversers
-    final CMBuilder fCMBuilder = new CMBuilder(nodeFactory);
+    private final CMBuilder fCMBuilder = new CMBuilder(nodeFactory);
+    
+    // Schema grammar loader
+    private final XMLSchemaLoader fSchemaLoader =
+        new XMLSchemaLoader(
+                fXSIErrorReporter.fErrorReporter,
+                fGrammarBucket,
+                fSubGroupHandler,
+                fCMBuilder);
 
     // state
 
     /** String representation of the validation root. */
     // REVISIT: what do we store here? QName, XPATH, some ID? use rawname now.
-    String fValidationRoot;
+    private String fValidationRoot;
 
     /** Skip validation: anything below this level should be skipped */
-    int fSkipValidationDepth;
+    private int fSkipValidationDepth;
 
     /** anything above this level has validation_attempted != full */
-    int fNFullValidationDepth;
+    private int fNFullValidationDepth;
 
     /** anything above this level has validation_attempted != none */
-    int fNNoneValidationDepth;
+    private int fNNoneValidationDepth;
 
     /** Element depth: -2: validator not in pipeline; >= -1 current depth. */
-    int fElementDepth;
+    private int fElementDepth;
 
     /** Seen sub elements. */
-    boolean fSubElement;
+    private boolean fSubElement;
 
     /** Seen sub elements stack. */
-    boolean[] fSubElementStack = new boolean[INITIAL_STACK_SIZE];
+    private boolean[] fSubElementStack = new boolean[INITIAL_STACK_SIZE];
 
     /** Current element declaration. */
-    XSElementDecl fCurrentElemDecl;
+    private XSElementDecl fCurrentElemDecl;
 
     /** Element decl stack. */
-    XSElementDecl[] fElemDeclStack = new XSElementDecl[INITIAL_STACK_SIZE];
+    private XSElementDecl[] fElemDeclStack = new XSElementDecl[INITIAL_STACK_SIZE];
 
     /** nil value of the current element */
-    boolean fNil;
+    private boolean fNil;
 
     /** nil value stack */
-    boolean[] fNilStack = new boolean[INITIAL_STACK_SIZE];
+    private boolean[] fNilStack = new boolean[INITIAL_STACK_SIZE];
 
     /** notation value of the current element */
-    XSNotationDecl fNotation;
+    private XSNotationDecl fNotation;
 
     /** notation stack */
-    XSNotationDecl[] fNotationStack = new XSNotationDecl[INITIAL_STACK_SIZE];
+    private XSNotationDecl[] fNotationStack = new XSNotationDecl[INITIAL_STACK_SIZE];
 
     /** Current type. */
-    XSTypeDefinition fCurrentType;
+    private XSTypeDefinition fCurrentType;
 
     /** type stack. */
-    XSTypeDefinition[] fTypeStack = new XSTypeDefinition[INITIAL_STACK_SIZE];
+    private XSTypeDefinition[] fTypeStack = new XSTypeDefinition[INITIAL_STACK_SIZE];
 
     /** Current content model. */
-    XSCMValidator fCurrentCM;
+    private XSCMValidator fCurrentCM;
 
     /** Content model stack. */
-    XSCMValidator[] fCMStack = new XSCMValidator[INITIAL_STACK_SIZE];
+    private XSCMValidator[] fCMStack = new XSCMValidator[INITIAL_STACK_SIZE];
 
     /** the current state of the current content model */
-    int[] fCurrCMState;
+    private int[] fCurrCMState;
 
     /** stack to hold content model states */
-    int[][] fCMStateStack = new int[INITIAL_STACK_SIZE][];
+    private int[][] fCMStateStack = new int[INITIAL_STACK_SIZE][];
 
     /** whether the curret element is strictly assessed */
-    boolean fStrictAssess = true;
+    private boolean fStrictAssess = true;
 
     /** strict assess stack */
-    boolean[] fStrictAssessStack = new boolean[INITIAL_STACK_SIZE];
+    private boolean[] fStrictAssessStack = new boolean[INITIAL_STACK_SIZE];
 
     /** Temporary string buffers. */
-    final StringBuffer fBuffer = new StringBuffer();
+    private final StringBuffer fBuffer = new StringBuffer();
 
     /** Whether need to append characters to fBuffer */
-    boolean fAppendBuffer = true;
+    private boolean fAppendBuffer = true;
 
     /** Did we see any character data? */
-    boolean fSawText = false;
+    private boolean fSawText = false;
 
     /** stack to record if we saw character data */
-    boolean[] fSawTextStack = new boolean[INITIAL_STACK_SIZE];
+    private boolean[] fSawTextStack = new boolean[INITIAL_STACK_SIZE];
 
     /** Did we see non-whitespace character data? */
-    boolean fSawCharacters = false;
+    private boolean fSawCharacters = false;
 
     /** Stack to record if we saw character data outside of element content*/
-    boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
+    private boolean[] fStringContent = new boolean[INITIAL_STACK_SIZE];
 
     /** Did we see children that are neither characters nor elements? */
-    boolean fSawChildren = false;
+    private boolean fSawChildren = false;
 
     /** Stack to record if we other children that character or elements */
-    boolean[] fSawChildrenStack = new boolean[INITIAL_STACK_SIZE];
+    private boolean[] fSawChildrenStack = new boolean[INITIAL_STACK_SIZE];
 
-    /** temprory qname */
-    final QName fTempQName = new QName();
+    /** temporary qname */
+    private final QName fTempQName = new QName();
 
-    /** temprory validated info */
-    ValidatedInfo fValidatedInfo = new ValidatedInfo();
+    /** temporary validated info */
+    private ValidatedInfo fValidatedInfo = new ValidatedInfo();
 
     // used to validate default/fixed values against xsi:type
     // only need to check facets, so we set extraChecking to false (in reset)
@@ -1175,16 +1180,6 @@ public class XMLSchemaValidator
 
     /** Default constructor. */
     public XMLSchemaValidator() {
-        fGrammarBucket = new XSGrammarBucket();
-        fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
-        // initialize the schema loader
-        fSchemaLoader =
-            new XMLSchemaLoader(
-                fXSIErrorReporter.fErrorReporter,
-                fGrammarBucket,
-                fSubGroupHandler,
-                fCMBuilder);
-
         fState4XsiType.setExtraChecking(false);
         fState4ApplyDefault.setFacetChecking(false);
 
