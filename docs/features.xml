@@ -128,6 +128,39 @@ catch (SAXException e) {
     document instances that use Schema grammars.
    </note>
   </feature>
+    
+  <feature name='http://apache.org/xml/features/validation/schema/normalized-value'
+           id='validation.schema.normalized-value'>
+   <true>Expose via SAX and DOM XML Schema normalized values for attributes and elements.
+   </true>
+   <false>Expose the infoset values</false>
+   <default value='true'/>   
+   <access parsing='read-only' not-parsing='read-write'/>
+   <note> XML Schema normalized values will be exposed only if 
+          both <link anchor="validation.schema">schema validation</link> and
+          <link anchor="validation">validation</link> features are set to true. 
+   </note>  
+   <see idref='validation'/>
+   <see idref='validation.schema'/> 
+   <see idref='validation.schema.element-default'/>
+  </feature>
+  
+   <feature name='http://apache.org/xml/features/validation/schema/element-default'
+           id='validation.schema.element-default'>
+   <true>Send XML Schema element default values via characters().
+   </true>
+   <false>Do not send XML Schema default values in XNI</false>
+   <default value='true'/>   
+   <access parsing='read-only' not-parsing='read-write'/>
+   <note> XML Schema default values will be send via characters() if both <link anchor="validation.schema">schema validation</link> and
+          <link anchor="validation">validation</link> features are set to true.
+   </note>  
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+   <see idref='validation.schema.normalized-value'/>
+  </feature>
+
+
   <feature name='http://xml.org/sax/features/external-general-entities'
            id='external-general-entities'>
    <true>Include external general entities.</true>
