@@ -70,6 +70,8 @@ import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.xs.AttributePSVImpl;
+import org.apache.xerces.impl.xs.XSAttributeDecl;
 
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -777,9 +779,11 @@ public abstract class AbstractDOMParser
                 Attr attr = createAttrNode(fAttrQName);
 
                 String attrValue = attributes.getValue(i);
-                // REVISIT: Should this happen here ? Why not in schema validator?
+                // REVISIT: consider moving this code to the XML Schema validator. 
+                //          When PSVI and XML Schema component interfaces are finalized
+                //          remove dependancy on *Impl class.
+                AttributePSVImpl attrPSVI = (AttributePSVImpl)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                 if (fNormalizeData) {
-                    AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
                     // We shouldn't take the normalized value in this case.
                     if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
@@ -798,8 +802,11 @@ public abstract class AbstractDOMParser
                     AttrImpl attrImpl = (AttrImpl)attr;
                     boolean specified = attributes.isSpecified(i);
                     attrImpl.setSpecified(specified);
-                    // identifier registration
-                    if (attributes.getType(i).equals("ID")) {
+                    // Identifier registration
+                    // try to retrieve XML Schema attribute declaration 
+                    XSAttributeDecl xsDecl = (attrPSVI !=null)? attrPSVI.getAttributeDecl():null;
+                    if (attributes.getType(i).equals("ID") || 
+                        (xsDecl !=null && xsDecl.fType.isIDType())) {
                         ((ElementImpl) el).setIdAttributeNode(attr);
                     }
                 }
@@ -818,9 +825,12 @@ public abstract class AbstractDOMParser
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
                 String attrValue = attributes.getValue(i);
-                // REVISIT: Should this happen here ? Why not in schema validator?
+                // REVISIT: consider moving this code to the XML Schema validator. 
+                //          When PSVI and XML Schema component interfaces are finalized
+                //          remove dependancy on *Impl class.
+                AttributePSVImpl attrPSVI = (AttributePSVImpl)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                
                 if (fNormalizeData) {
-                    AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
                     // If validation is not attempted, the SchemaNormalizedValue will be null. 
                     // We shouldn't take the normalized value in this case.
                     if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
@@ -834,7 +844,11 @@ public abstract class AbstractDOMParser
                                                     attrValue,
                                                     attributes.isSpecified(i));
                 // identifier registration
-                if (attributes.getType(i).equals("ID")) {
+                // try to retrieve XML Schema attribute declaration 
+                XSAttributeDecl xsDecl = (attrPSVI !=null)? attrPSVI.getAttributeDecl():null;
+
+                if (attributes.getType(i).equals("ID") || 
+                    (xsDecl !=null && xsDecl.fType.isIDType())) {
                     fDeferredDocumentImpl.setIdAttributeNode(el, attr);
                 }
             }

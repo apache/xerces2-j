@@ -159,7 +159,7 @@ extends AbstractDOMParser implements DOMBuilder {
     //          DOMBuilder
     protected String fSchemaType = XML_SCHEMA_VALIDATION;
 
-
+    protected final static boolean DEBUG = false;
     //
     // Constructors
     //
@@ -498,6 +498,9 @@ extends AbstractDOMParser implements DOMBuilder {
             parse(source);
         } catch (Exception e){
             // do nothing since exceptions are reported via Error handler
+            if (DEBUG) {            
+               e.printStackTrace();
+            }
         }
         return getDocument();
     }
@@ -515,6 +518,9 @@ extends AbstractDOMParser implements DOMBuilder {
             parse(xmlInputSource);
         } catch (Exception e) {
             // do nothing since exceptions are reported via Error handler
+            if (DEBUG) {            
+               e.printStackTrace();
+            }
         }
         return getDocument();
     }
