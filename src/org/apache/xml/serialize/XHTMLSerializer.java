@@ -74,7 +74,7 @@ import java.io.UnsupportedEncodingException;
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
-public final class XHTMLSerializer
+public class XHTMLSerializer
     extends HTMLSerializer
 {
 
