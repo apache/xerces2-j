@@ -11,15 +11,9 @@
    <BODY>
     <SPAN class='netscape'>
     <H1>Xerces 2 Schedule</H1>
+    <H2>Milestones</H2>
     <xsl:for-each select='milestone'>
-     <A name='{@id}'/>
-     <H2>
-      Milestone #<xsl:value-of select='position()'/>
-      (<xsl:value-of select='@id'/>)
-     </H2>
-     <P>
-      <xsl:apply-templates select='.'/>
-     </P>
+     <xsl:apply-templates select='.'/>
     </xsl:for-each>
     </SPAN>
     <HR/>
@@ -31,40 +25,43 @@
  </xsl:template>
 
  <xsl:template match='milestone'>
-  <TABLE border='0'>
-   <TR>
-    <TH>Title:</TH>
-    <TD><xsl:value-of select='title'/></TD>
-   </TR>
-   <xsl:if test='@date'>
-    <TR>
-     <TH>Date:</TH>
-     <TD><xsl:value-of select='@date'/></TD>
-    </TR>
-   </xsl:if>
-   <xsl:if test='depends'>
-    <TR>
-     <TH>Depends:</TH>
-     <TD>
-      <xsl:for-each select='depends'>
-       <A href='#{@idref}'><xsl:value-of select='@idref'/></A>
-       <xsl:if test='not(position()=last())'>, </xsl:if>
-      </xsl:for-each>
-     </TD>
-    </TR>
-   </xsl:if>
-   <xsl:if test='goal'>
-    <TR>
-     <TH>Goals:</TH>
-     <TD>
-      <xsl:for-each select='goal'>
-       <xsl:value-of select='.'/>
-       <xsl:if test='not(position()=last())'><BR/></xsl:if>
-      </xsl:for-each>
-     </TD>
-    </TR>
-   </xsl:if>
-  </TABLE>
+  <A name='{@id}'/>
+  <H3>
+   <xsl:value-of select='title'/>
+   (<xsl:value-of select='@id'/>)
+  </H3>
+  <P>
+   <TABLE border='0'>
+    <xsl:if test='@date'>
+     <TR>
+      <TH>Date:</TH>
+      <TD><xsl:value-of select='@date'/></TD>
+     </TR>
+    </xsl:if>
+    <xsl:if test='depends'>
+     <TR>
+      <TH>Depends:</TH>
+      <TD>
+       <xsl:for-each select='depends'>
+        <A href='#{@idref}'><xsl:value-of select='@idref'/></A>
+        <xsl:if test='not(position()=last())'>, </xsl:if>
+       </xsl:for-each>
+      </TD>
+     </TR>
+    </xsl:if>
+    <xsl:if test='goal'>
+     <TR>
+      <TH>Goals:</TH>
+      <TD>
+       <xsl:for-each select='goal'>
+        <xsl:value-of select='.'/>
+        <xsl:if test='not(position()=last())'><BR/></xsl:if>
+       </xsl:for-each>
+      </TD>
+     </TR>
+    </xsl:if>
+   </TABLE>
+  </P>
  </xsl:template>
 
 </xsl:stylesheet>
