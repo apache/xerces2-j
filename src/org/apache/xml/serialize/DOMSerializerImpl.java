@@ -459,7 +459,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      * the node from the stream or to terminate the serialization early.
      */
     public LSSerializerFilter getFilter(){
-        return null;
+        return serializer.fDOMFilter;
     }
     /**
      *  When the application provides a filter, the serializer will call out
@@ -626,12 +626,13 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             serializer._format.setEncoding(encoding);
             OutputStream outputStream = destination.getByteStream();
             Writer writer = destination.getCharacterStream();
-            String uri = uri = destination.getSystemId();
+            String uri =  destination.getSystemId();
             if (writer == null) {
                 if (outputStream == null) {
                     if (uri == null) {
                         if (ser.fDOMErrorHandler != null) {
                             DOMErrorImpl error = new DOMErrorImpl();
+                            error.fType = "no-output-specified";
                             error.fMessage = "no-output-specified";
                             error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
                             ser.fDOMErrorHandler.handleError(error);
