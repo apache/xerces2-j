@@ -911,18 +911,8 @@ public class Grammar {
       fElementDeclType[chunk][index]                  = elementDecl.type; 
       fElementDeclDatatypeValidator[chunk][index]     =
                         elementDecl.simpleType.datatypeValidator;
-     /*
-
-      if( elementDecl.type == XMLElementDecl.TYPE_ANY ){
-         elementDecl.contentModelValidator = 
-
-      } else if( elementDecl.type == XMLElementDecl.TYPE_CHILDREN ){
-
-      } else if( elementDecl.type == XMLElementDecl.TYPE_EMPTY ){
-      } else if( elementDecl.type == XMLElementDecl.TYPE_MIXED ){
-      } else if( elementDecl.type == XMLElementDecl.TYPE_SIMPLE ){
-      }
-      */
+      fElementDeclDefaultType[chunk][index] = elementDecl.simpleType.defaultType;
+      fElementDeclDefaultValue[chunk][index] = elementDecl.simpleType.defaultValue;
 
       fElementDeclContentModelValidator[chunk][index] = elementDecl.contentModelValidator;
          
@@ -1002,7 +992,7 @@ public class Grammar {
       fAttributeDeclDefaultType[attrChunk][attrIndex]  =  attributeDecl.simpleType.defaultType;
       fAttributeDeclDatatypeValidator[attrChunk][attrIndex] =  attributeDecl.simpleType.datatypeValidator;
 
-      fAttributeDeclDefaultValue[attrChunk][attrIndex] = new String( attributeDecl.simpleType.defaultValue );
+      fAttributeDeclDefaultValue[attrChunk][attrIndex] = attributeDecl.simpleType.defaultValue;
 
       int elemChunk     = elementDeclIndex >> CHUNK_SHIFT;
       int elemIndex     = elementDeclIndex &  CHUNK_MASK;

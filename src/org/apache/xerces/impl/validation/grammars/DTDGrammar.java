@@ -444,8 +444,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
     *
     * @throws SAXException Thrown by handler to signal an error.
     */
-   public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue)
-   throws SAXException {
+   public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue) throws SAXException {
 
       if ( this.fElementDeclTab.containsKey( (String) elementName) ) {
          //if ElementDecl has already being created in the Grammar then remove from table, 
@@ -485,7 +484,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
       if ( DEBUG == true ) {
           System.out.println("defaultvalue = " + defaultValue.toString() );
       }
-      fSimpleType.defaultValue      = defaultValue.toString();
+      fSimpleType.defaultValue      = defaultValue.length > 0 ?  defaultValue.toString() : null;
       fSimpleType.enumeration       = enumeration;
       fSimpleType.datatypeValidator = DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(type);
 
