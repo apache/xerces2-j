@@ -894,7 +894,7 @@ public class SchemaValidator
         fElementDepth++;
 
         // if the wildcard is skip, then return
-        if (wildcard != null && wildcard.fPprocessContents == XSWildcardDecl.WILDCARD_SKIP) {
+        if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP) {
             fSkipValidationDepth = fElementDepth;
             return;
         }
@@ -926,7 +926,7 @@ public class SchemaValidator
                 // REVISIT: report error, because it's root element
                 reportGenericSchemaError("can't find decl for root element '"+element.rawname+"'");
             } else if (wildcard != null &&
-                wildcard.fPprocessContents == XSWildcardDecl.WILDCARD_STRICT) {
+                wildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT) {
                 // REVISIT: report error, because wilcard = strict
                 reportGenericSchemaError("can't find decl for strict wildcard '"+element.rawname+"'");
             }

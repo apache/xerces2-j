@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,7 @@ public class XSWildcardDecl {
     // the type of wildcard: any, other, or list
     public short fType = WILDCARD_ANY;
     // the type of process contents: strict, lax, or skip
-    public short fPprocessContents = WILDCARD_STRICT;
+    public short fProcessContents = WILDCARD_STRICT;
     // the namespace list:
     // for WILDCARD_LIST, it means one of the namespaces in the list
     // for WILDCARD_OTHER, it means not any of the namespaces in the list

@@ -135,19 +135,19 @@ public class XSAttributeChecker {
 
     private static final XIntPool fXIntPool = new XIntPool();
     // constants to return
-    private static XInt INT_QUALIFIED      = fXIntPool.getXInt(SchemaSymbols.FORM_QUALIFIED);
-    private static XInt INT_UNQUALIFIED    = fXIntPool.getXInt(SchemaSymbols.FORM_UNQUALIFIED);
-    private static XInt INT_EMPTY_SET      = fXIntPool.getXInt(SchemaSymbols.EMPTY_SET);
-    private static XInt INT_ANY_STRICT     = fXIntPool.getXInt(SchemaSymbols.ANY_STRICT);
-    private static XInt INT_ANY_LAX        = fXIntPool.getXInt(SchemaSymbols.ANY_LAX);
-    private static XInt INT_ANY_SKIP       = fXIntPool.getXInt(SchemaSymbols.ANY_SKIP);
-    private static XInt INT_USE_OPTIONAL   = fXIntPool.getXInt(SchemaSymbols.USE_OPTIONAL);
-    private static XInt INT_USE_REQUIRED   = fXIntPool.getXInt(SchemaSymbols.USE_REQUIRED);
-    private static XInt INT_USE_PROHIBITED = fXIntPool.getXInt(SchemaSymbols.USE_PROHIBITED);
-    private static XInt INT_WS_PRESERVE    = fXIntPool.getXInt(SchemaSymbols.WS_PRESERVE);
-    private static XInt INT_WS_REPLACE     = fXIntPool.getXInt(SchemaSymbols.WS_REPLACE);
-    private static XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(SchemaSymbols.WS_COLLAPSE);
-    private static XInt INT_UNBOUNDED      = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
+    private static final XInt INT_QUALIFIED      = fXIntPool.getXInt(SchemaSymbols.FORM_QUALIFIED);
+    private static final XInt INT_UNQUALIFIED    = fXIntPool.getXInt(SchemaSymbols.FORM_UNQUALIFIED);
+    private static final XInt INT_EMPTY_SET      = fXIntPool.getXInt(SchemaSymbols.EMPTY_SET);
+    private static final XInt INT_ANY_STRICT     = fXIntPool.getXInt(SchemaSymbols.ANY_STRICT);
+    private static final XInt INT_ANY_LAX        = fXIntPool.getXInt(SchemaSymbols.ANY_LAX);
+    private static final XInt INT_ANY_SKIP       = fXIntPool.getXInt(SchemaSymbols.ANY_SKIP);
+    private static final XInt INT_USE_OPTIONAL   = fXIntPool.getXInt(SchemaSymbols.USE_OPTIONAL);
+    private static final XInt INT_USE_REQUIRED   = fXIntPool.getXInt(SchemaSymbols.USE_REQUIRED);
+    private static final XInt INT_USE_PROHIBITED = fXIntPool.getXInt(SchemaSymbols.USE_PROHIBITED);
+    private static final XInt INT_WS_PRESERVE    = fXIntPool.getXInt(SchemaSymbols.WS_PRESERVE);
+    private static final XInt INT_WS_REPLACE     = fXIntPool.getXInt(SchemaSymbols.WS_REPLACE);
+    private static final XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(SchemaSymbols.WS_COLLAPSE);
+    private static final XInt INT_UNBOUNDED      = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
     // used to store the map from element name to attribute list
     protected static Hashtable fEleAttrsMapG = new Hashtable();

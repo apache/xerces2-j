@@ -54,10 +54,14 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XInt;
 import org.w3c.dom.Element;
+import java.util.StringTokenizer;
 
 /**
  * The wildcard schema component traverser.
@@ -72,7 +76,6 @@ import org.w3c.dom.Element;
  *   Content: (annotation?)
  * </any>
  *
- *
  * <anyAttribute
  *   id = ID
  *   namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )  : ##any
@@ -81,29 +84,186 @@ import org.w3c.dom.Element;
  *   Content: (annotation?)
  * </anyAttribute>
  *
+ * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-class  XSDWildcardTraverser extends XSDAbstractTraverser {
+class XSDWildcardTraverser extends XSDAbstractTraverser {
 
+    /**
+     * constructor
+     *
+     * @param  handler
+     * @param  errorReporter
+     * @param  gAttrCheck
+     */
     XSDWildcardTraverser (XSDHandler handler,
                           XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
     }
 
+
+    /**
+     * Traverse <any>
+     *
+     * @param  elmNode
+     * @param  schemaDoc
+     * @param  grammar
+     * @return the wildcard node index
+     */
     XSParticleDecl traverseAny(Element elmNode,
                                XSDocumentInfo schemaDoc,
                                SchemaGrammar grammar) {
 
-        return null;
+        // General Attribute Checking for elmNode
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        XSWildcardDecl wildcard = traverseWildcardDecl(elmNode, attrValues, schemaDoc, grammar);
+        XSParticleDecl particle = null;
+        if (wildcard != null) {
+            int min = ((XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS]).intValue();
+            int max = ((XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS]).intValue();
+            if (max != 0) {
+                particle = new XSParticleDecl();
+                particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
+                particle.fValue = wildcard;
+                particle.fMinOccurs = min;
+                particle.fMaxOccurs = max;
+            }
+        }
+
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+
+        return particle;
     }
 
+
+    /**
+     * Traverse <anyAttribute>
+     *
+     * @param  elmNode
+     * @param  schemaDoc
+     * @param  grammar
+     * @return the wildcard node index
+     */
     XSWildcardDecl traverseAnyAttribute(Element elmNode,
                                         XSDocumentInfo schemaDoc,
                                         SchemaGrammar grammar) {
 
-        return null;
+        // General Attribute Checking for elmNode
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        XSWildcardDecl wildcard = traverseWildcardDecl(elmNode, attrValues, schemaDoc, grammar);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+
+        return wildcard;
     }
 
-}
+
+    /**
+     *
+     * @param  elmNode
+     * @param  attrValues
+     * @param  schemaDoc
+     * @param  grammar
+     * @return the wildcard node index
+     */
+     XSWildcardDecl traverseWildcardDecl(Element elmNode,
+                                         Object[] attrValues,
+                                         XSDocumentInfo schemaDoc,
+                                         SchemaGrammar grammar) {
+
+        XSWildcardDecl wildcard = new XSWildcardDecl();
+
+        //get all attributes
+        String namespaceAttr       = (String) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
+        XInt   processContentsAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_PROCESSCONTENTS];
+
+        wildcard.fProcessContents = processContentsAttr.shortValue();
+
+        wildcard.fType = XSWildcardDecl.WILDCARD_ANY;
+        if (namespaceAttr.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY)) {
+            wildcard.fType = XSWildcardDecl.WILDCARD_ANY;
+        }
+        else if (namespaceAttr.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
+            wildcard.fType = XSWildcardDecl.WILDCARD_OTHER;
+            if (schemaDoc.fTargetNamespace.length() == 0) {
+                wildcard.fNamespaceList = new String[1];
+                wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
+            } else {
+                wildcard.fNamespaceList = new String[2];
+                wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
+                wildcard.fNamespaceList[1] = fSchemaHandler.EMPTY_STRING;
+            }
+        }
+        else {
+            // REVISIT: namespace should be return in String[] or Vector,
+            //          then we don't need to tokenize them again
+
+            //namespace = "##local" OR
+            //namespace = "##targetNamespace" OR
+            //namespace = "anyURI" OR
+            //namespace = "anyURI ##local" OR
+            //namespace = "anyURI ##targetNamespace"
+
+            StringTokenizer tokens = new StringTokenizer(namespaceAttr);
+            String[] namespaceList = new String[tokens.countTokens()];
+            int i = 0;
+            String token;
+            String tempNamespace;
+            while (tokens.hasMoreTokens()) {
+                token = tokens.nextToken();
+                if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+                    tempNamespace = fSchemaHandler.EMPTY_STRING;
+                }
+                else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
+                    tempNamespace = schemaDoc.fTargetNamespace;
+                }
+                else {
+                    // we have found namespace URI here
+                    tempNamespace = token;
+                }
+
+                //check for duplicate namespaces in the list
+                int j=0;
+                for (; j<i; j++) {
+                    if (tempNamespace.equals(namespaceList[j]))
+                        break;
+                }
+                if (j == i) {
+                    // this means traversed whole for loop
+                    // i.e. not a duplicate namespace
+                    namespaceList[i] = tempNamespace;
+                    i++;
+                }
+            }
+            if (i == namespaceList.length) {
+                wildcard.fNamespaceList = namespaceList;
+            } else {
+                wildcard.fNamespaceList = new String[i];
+                System.arraycopy(namespaceList, 0, wildcard.fNamespaceList, 0, i);
+            }
+        }
+
+        //check content
+        Element child = DOMUtil.getFirstChildElement(elmNode);
+        if (child != null)
+        {
+            if (child.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+
+            if (child != null) {
+                Object[] args = new Object [] { "wildcard", child.getLocalName()};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "WildcardContentRestricted",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
+            }
+        }
+
+        return wildcard;
+
+    } // traverseWildcardDecl
+
+} // XSDWildcardTraverser

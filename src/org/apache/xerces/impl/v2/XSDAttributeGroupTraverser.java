@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -57,8 +56,10 @@
  */
 package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
-import  org.w3c.dom.Element;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.xni.QName;
+import org.w3c.dom.Element;
 
 /**
  * The attribute group definition schema component traverser.
@@ -70,9 +71,13 @@ import  org.w3c.dom.Element;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, ((attribute | attributeGroup)*, anyAttribute?))
  * </attributeGroup>
+ *
+ * @author Rahul Srivastava, Sun Microsystems Inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-class  XSDAttributeGroupTraverser extends XSDAbstractTraverser{
+class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
 
     XSDAttributeGroupTraverser (XSDHandler handler,
                                 XSAttributeChecker gAttrCheck) {
@@ -80,17 +85,127 @@ class  XSDAttributeGroupTraverser extends XSDAbstractTraverser{
         super(handler, gAttrCheck);
     }
 
+
     XSAttributeGroupDecl traverseLocal(Element elmNode,
                                        XSDocumentInfo schemaDoc,
                                        SchemaGrammar grammar) {
 
-        return null;
-    }
+        // General Attribute Checking for elmNode declared locally
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+
+        // get attribute
+        QName   refAttr	= (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
+
+        XSAttributeGroupDecl attrGrp = null;
+
+        // ref should be here.
+        if (refAttr == null) {
+            reportGenericSchemaError("Local attributeGroup declaration should have ref.");
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            return null;
+        }
+
+        // get global decl
+        attrGrp = grammar.getGlobalAttributeGroupDecl(refAttr.localpart);
+
+        // no children are allowed here except annotation, which is optional.
+        Element child = DOMUtil.getFirstChildElement(elmNode);
+        String childName = child.getLocalName();
+        if (child != null) {
+            if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+                traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                child = DOMUtil.getNextSiblingElement(child);
+                childName = child.getLocalName();
+            }
+
+            if (child != null) {
+                Object[] args = new Object [] { "attributeGroup", childName};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                          "AttributeGroupContentRestricted",
+                                          args,
+                                          XMLErrorReporter.SEVERITY_ERROR);
+
+            }
+         } // if
+
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        return attrGrp;
+
+    } // traverseLocal
 
     XSAttributeGroupDecl traverseGlobal(Element elmNode,
                                         XSDocumentInfo schemaDoc,
                                         SchemaGrammar grammar) {
 
-        return null;
-    }
-}
+        XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
+
+        // General Attribute Checking for elmNode declared globally
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc.fNamespaceSupport);
+
+        String  nameAttr   = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
+
+        // global declaration must have a name
+        if (nameAttr == null) {
+            reportGenericSchemaError("Global attributeGroup declaration must have a name.");
+            nameAttr = "no name";
+        }
+
+        attrGrp.fName = nameAttr;
+        attrGrp.fTargetNamespace = schemaDoc.fTargetNamespace;
+
+        // check the content
+        Element child = DOMUtil.getFirstChildElement(elmNode);
+        String childName = child == null ? null : child.getLocalName();
+
+        if (child != null && childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            child = DOMUtil.getNextSiblingElement(child);
+        }
+
+        XSAttributeGroupDecl tempAttrGrp = null;
+        XSAttributeUse tempAttrUse = null;
+
+        for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
+            childName = child.getLocalName();
+            if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+                tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child, schemaDoc, grammar);
+                attrGrp.addAttributeUse(tempAttrUse);
+            }
+            else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                //REVISIT: do we need to save some state at this point??
+                tempAttrGrp = traverseLocal(child, schemaDoc, grammar);
+                XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
+                for (int i=0; i<attrUseS.length; i++) {
+                    attrGrp.addAttributeUse(attrUseS[i]);
+                }
+            }
+            else
+                break;
+        } // for
+
+        if (child != null) {
+            childName = child.getLocalName();
+            if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
+                XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.traverseAnyAttribute(child, schemaDoc, grammar);
+                attrGrp.fAttributeWC = tempAttrWC;
+                child = DOMUtil.getNextSiblingElement(child);
+            }
+
+            if (child != null) {
+                Object[] args = new Object [] { "attributeGroup", childName};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                               "AttributeGroupContentRestricted",
+                               args,
+                               XMLErrorReporter.SEVERITY_ERROR);
+            }
+        } // if
+
+        // make an entry in global declarations.
+        grammar.addGlobalAttributeGroupDecl(attrGrp);
+
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        return attrGrp;
+
+    } // traverseGlobal
+
+} // XSDAttributeGroupTraverser

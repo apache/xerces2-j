@@ -83,6 +83,9 @@ public class XSAttributeGroupDecl {
             fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
         }
         fAttributeUses[fAttrUseNum++] = attrUse;
+
+        //REVISIT: while adding check for duplicate attribute use.
+        //This will take care of union of attributeUse(s).
     }
 
     public XSAttributeUse[] getAttributeUses() {
