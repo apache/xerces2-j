@@ -670,6 +670,7 @@ public class HTMLDocumentImpl
 	populateElementType( "TABLE", "HTMLTableElementImpl" );
 	populateElementType( "CAPTION", "HTMLTableCaptionElementImpl" );
 	populateElementType( "TD", "HTMLTableCellElementImpl" );
+	populateElementType( "TH", "HTMLTableCellElementImpl" );
 	populateElementType( "COL", "HTMLTableColElementImpl" );
 	populateElementType( "COLGROUP", "HTMLTableColElementImpl" );
 	populateElementType( "TR", "HTMLTableRowElementImpl" );
