@@ -10,7 +10,7 @@
            id='install' source='install.xml'/>
  <external label='Download' href='http://xml.apache.org/dist/xerces-j/'/>
  <external label='CVS Repository'
-           href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/?only_with_tag=xerces_j_2&amp;hideattic=0'/>
+           href='http://xml.apache.org/websrc/cvsweb.cgi/xml-xerces/java/'/>
  <separator/>
  <document label='Samples' title='Sample Programs'
            id='samples' source='samples.xml'/>
