@@ -211,10 +211,6 @@ public class XMLDTDScanner
         // keep dispatching "events"
         while (complete) {
             if (!scanDecls(complete)) {
-                // call handler
-                if (fDTDHandler != null) {
-                    fDTDHandler.endDTD();
-                }
                 return false;
             }
         }
@@ -433,6 +429,10 @@ public class XMLDTDScanner
 
         if (name.equals("[dtd]")) {
             fEndOfDTD = true;
+            // call handler
+            if (fDTDHandler != null) {
+                fDTDHandler.endDTD();
+            }
         }
 
         // call handler
