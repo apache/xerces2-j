@@ -19,6 +19,7 @@ package org.apache.xerces.impl.xs;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -251,6 +252,12 @@ public class XMLSchemaValidator
 	// If it is not present in calls that we're passing on, we *must*
 	// clear this before we introduce it into the pipeline.
 	protected final AugmentationsImpl fAugmentations = new AugmentationsImpl();
+	
+    /** 
+     * Map which is used to catch instance documents that try 
+     * and match a field several times in the same scope.
+     */ 
+    protected final HashMap fMayMatchFieldMap = new HashMap();
 
 	// this is included for the convenience of handleEndElement
 	protected XMLString fDefaultValue;
@@ -1233,7 +1240,7 @@ public class XMLSchemaValidator
 		fInCDATA = false;
 
 		fMatcherStack.clear();
-
+		fMayMatchFieldMap.clear();
 		
 		// get error reporter
 		fXSIErrorReporter.reset((XMLErrorReporter) componentManager.getProperty(ERROR_REPORTER));
@@ -1380,21 +1387,21 @@ public class XMLSchemaValidator
 
 	} // startValueScopeFor(IdentityConstraint identityConstraint)
 
-	/**
-	 * Request to activate the specified field. This method returns the
-	 * matcher for the field.
-	 *
-	 * @param field The field to activate.
-	 */
-	public XPathMatcher activateField(Field field, int initialDepth) {
-		ValueStore valueStore =
-			fValueStoreCache.getValueStoreFor(field.getIdentityConstraint(), initialDepth);
-		field.setMayMatch(true);
-		XPathMatcher matcher = field.createMatcher(valueStore);
-		fMatcherStack.addMatcher(matcher);
-		matcher.startDocumentFragment();
-		return matcher;
-	} // activateField(Field):XPathMatcher
+    /**
+     * Request to activate the specified field. This method returns the
+     * matcher for the field.
+     *
+     * @param field The field to activate.
+     */
+    public XPathMatcher activateField(Field field, int initialDepth) {
+        ValueStore valueStore =
+            fValueStoreCache.getValueStoreFor(field.getIdentityConstraint(), initialDepth);
+        setMayMatch(field, Boolean.TRUE);
+        XPathMatcher matcher = field.createMatcher(this, valueStore);
+        fMatcherStack.addMatcher(matcher);
+        matcher.startDocumentFragment();
+        return matcher;
+    } // activateField(Field):XPathMatcher
 
 	/**
 	 * Ends the value scope for the specified identity constraint.
@@ -1408,6 +1415,28 @@ public class XMLSchemaValidator
 		valueStore.endValueScope();
 
 	} // endValueScopeFor(IdentityConstraint)
+	
+    /**
+     * Sets whether the given field is permitted to match a value.
+     * This should be used to catch instance documents that try 
+     * and match a field several times in the same scope.
+     * 
+     * @param field The field that may be permitted to be matched.
+     * @param state Boolean indiciating whether the field may be matched.
+     */
+    public void setMayMatch(Field field, Boolean state) {
+        fMayMatchFieldMap.put(field, state);
+    } // setMayMatch(Field, Boolean)
+    
+    /**
+     * Returns whether the given field is permitted to match a value.
+     * 
+     * @param field The field that may be permitted to be matched.
+     * @return Boolean indicating whether the field may be matched.
+     */
+    public Boolean mayMatch(Field field) {
+        return (Boolean) fMayMatchFieldMap.get(field);
+    } // mayMatch(Field):Boolean
 
 	// a utility method for Identity constraints
 	private void activateSelectorFor(IdentityConstraint ic) {
@@ -3345,7 +3374,7 @@ public class XMLSchemaValidator
 				reportSchemaError(code, new Object[] { field.toString()});
 				return;
 			}
-			if (!field.mayMatch()) {
+			if (Boolean.TRUE != mayMatch(field)) {
 				String code = "FieldMultipleMatch";
 				reportSchemaError(code, new Object[] { field.toString()});
 			} else {

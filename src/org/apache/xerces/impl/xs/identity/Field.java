@@ -43,7 +43,7 @@ public class Field {
 
     // whether this field can be matched; used to catch instance documents
     // that try and match a field several times in the same scope.
-    protected boolean mayMatch = true;
+    // protected boolean mayMatch = true;
 
     //
     // Constructors
@@ -60,7 +60,7 @@ public class Field {
     // Public methods
     //
 
-    // sets mayMatch
+    /** // sets mayMatch
     public void setMayMatch(boolean b) {
         mayMatch = b;
     } // setMayMatch(boolean);
@@ -68,7 +68,7 @@ public class Field {
     // returns mayMatch
     public boolean mayMatch() {
         return mayMatch;
-    } // mayMatch():boolean
+    } // mayMatch():boolean **/
     
     /** Returns the field XPath. */
     public org.apache.xerces.impl.xpath.XPath getXPath() {
@@ -83,8 +83,8 @@ public class Field {
     // factory method
 
     /** Creates a field matcher. */
-    public XPathMatcher createMatcher(ValueStore store) {
-        return new Field.Matcher(fXPath, store);
+    public XPathMatcher createMatcher(FieldActivator activator, ValueStore store) {
+        return new Field.Matcher(fXPath, activator, store);
     } // createMatcher(ValueStore):XPathMatcher
 
     //
@@ -153,6 +153,9 @@ public class Field {
         // Data
         //
 
+        /** Field activator. */
+        protected FieldActivator fFieldActivator;
+
         /** Value store for data values. */
         protected ValueStore fStore;
 
@@ -161,8 +164,9 @@ public class Field {
         //
 
         /** Constructs a field matcher. */
-        public Matcher(Field.XPath xpath, ValueStore store) {
+        public Matcher(Field.XPath xpath, FieldActivator activator, ValueStore store) {
             super(xpath);
+            fFieldActivator = activator;
             fStore = store;
         } // <init>(Field.XPath,ValueStore)
 
@@ -184,7 +188,7 @@ public class Field {
             // once we've stored the value for this field, we set the mayMatch
             // member to false so that, in the same scope, we don't match any more
             // values (and throw an error instead).
-            mayMatch = false;
+            fFieldActivator.setMayMatch(Field.this, Boolean.FALSE);
         } // matched(String)
 
         protected void handleContent(XSTypeDefinition type, boolean nillable, Object actualValue) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001, 2002,2004 The Apache Software Foundation.
+ * Copyright 2001,2002,2004 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,13 +46,31 @@ public interface FieldActivator {
     /** 
      * Request to activate the specified field. This method returns the
      * matcher for the field.
-     * It's also important for the implementor to ensure that the Field realizes that
-     * it is permitted to match a value--that is, to call the field's setMayMatch(boolean) method.
+     * It's also important for the implementor to ensure that it marks whether a Field
+     * is permitted to match a value--that is, to call the setMayMatch(Field, Boolean) method.
      *
      * @param field The field to activate.
-     * @param initialDepth  the 0-indexed depth in the instance document at which the Selector began to match.
+     * @param initialDepth the 0-indexed depth in the instance document at which the Selector began to match.
      */
     public XPathMatcher activateField(Field field, int initialDepth);
+    
+    /**
+     * Sets whether the given field is permitted to match a value.
+     * This should be used to catch instance documents that try 
+     * and match a field several times in the same scope.
+     * 
+     * @param field The field that may be permitted to be matched.
+     * @param state Boolean indiciating whether the field may be matched.
+     */
+    public void setMayMatch(Field field, Boolean state);
+    
+    /**
+     * Returns whether the given field is permitted to match a value.
+     * 
+     * @param field The field that may be permitted to be matched.
+     * @return Boolean indicating whether the field may be matched.
+     */
+    public Boolean mayMatch(Field field);
 
     /**
      * Ends the value scope for the specified identity constraint.
