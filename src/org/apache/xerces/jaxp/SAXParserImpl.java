@@ -84,7 +84,6 @@ import java.util.*;
  * <code>javax.xml.parsers.SAXParser</code>. 
  */
 public class SAXParserImpl extends javax.xml.parsers.SAXParser {
-    private SAXParserFactory spf = null;
     private XMLReader xmlReader;
     private Parser parser = null;
 
