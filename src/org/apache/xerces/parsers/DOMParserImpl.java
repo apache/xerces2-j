@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2000-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -212,14 +212,30 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         // turn off deferred DOM
         fConfiguration.setFeature (DEFER_NODE_EXPANSION, false);
         
-        // set default values
+        // Set values so that the value of the 
+        // infoset parameter is true (its default value).
+        //
+        // true: namespace-declarations, well-formed, 
+        // element-content-whitespace, comments, namespaces
+        //
+        // false: validate-if-schema, entities, 
+        // datatype-normalization, cdata-sections
+
+        fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
+        fConfiguration.setFeature(Constants.DOM_WELLFORMED, true);
+        fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, true);
+        fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
+        fConfiguration.setFeature(NAMESPACES, true);
+        
+        fConfiguration.setFeature(DYNAMIC_VALIDATION, false);
+        fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, false);
+        fConfiguration.setFeature(NORMALIZE_DATA, false);
+        fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, false);
+		
+        // set other default values
         fConfiguration.setFeature (Constants.DOM_CANONICAL_FORM, false);
-        fConfiguration.setFeature (Constants.DOM_CDATA_SECTIONS, true);
         fConfiguration.setFeature (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
-        fConfiguration.setFeature (Constants.DOM_INFOSET, true);
-        fConfiguration.setFeature (Constants.DOM_NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
-        fConfiguration.setFeature (Constants.DOM_WELLFORMED, true);
         fConfiguration.setFeature (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS, true);
         
         // REVISIT: by default Xerces assumes that input is certified.
@@ -353,11 +369,28 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 else if (name.equals (Constants.DOM_NAMESPACES)) {
                     fConfiguration.setFeature (NAMESPACES, state);
                 }
-                else if (name.equals (Constants.DOM_CDATA_SECTIONS)
-                || name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
+                else if (name.equals (Constants.DOM_INFOSET)) {
+                    // Setting false has no effect.
+                    if (state) {
+                        // true: namespaces, comments, element-content-whitespace
+                        fConfiguration.setFeature(NAMESPACES, true);
+                        fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, true);
+                        fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
+
+                        // false: validate-if-schema, entities,
+                        // datatype-normalization, cdata-sections
+                        fConfiguration.setFeature(DYNAMIC_VALIDATION, false);
+                        fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, false);
+                        fConfiguration.setFeature(NORMALIZE_DATA, false);
+                        fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, false);
+                    }
+                }
+                else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+                    fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, state);
+                }
+                else if (name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
                 || name.equals (Constants.DOM_WELLFORMED)
-                || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
-                || name.equals (Constants.DOM_INFOSET)) {
+                || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                     if (!state) { // false is not supported
                         String msg =
                         DOMMessageFormatter.formatMessage (
@@ -593,15 +626,30 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             return (fConfiguration.getFeature (DISALLOW_DOCTYPE_DECL_FEATURE))
             ? Boolean.TRUE
             : Boolean.FALSE;        	
-        }        
-        else if (
-        name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
-        || name.equals (Constants.DOM_CDATA_SECTIONS)
+        }
+        else if (name.equals (Constants.DOM_INFOSET)) {
+            // REVISIT: This is somewhat expensive to compute
+            // but it's possible that the user has a reference
+            // to the configuration and is changing the values
+            // of these features directly on it.
+            boolean infoset = fConfiguration.getFeature(NAMESPACES) &&
+                fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE) &&
+                fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE) && 
+                !fConfiguration.getFeature(DYNAMIC_VALIDATION) &&
+                !fConfiguration.getFeature(CREATE_ENTITY_REF_NODES) &&
+                !fConfiguration.getFeature(NORMALIZE_DATA) &&
+                !fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE);
+            return (infoset) ? Boolean.TRUE : Boolean.FALSE;	
+        }
+        else if (name.equals(Constants.DOM_CDATA_SECTIONS)) {
+            return (fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE))
+                ? Boolean.TRUE : Boolean.FALSE;
+        }
+        else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
         || name.equals (Constants.DOM_WELLFORMED)
         || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
         || name.equals (Constants.DOM_CANONICAL_FORM)
         || name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
-        || name.equals (Constants.DOM_INFOSET)
         || name.equals (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)) {
             return (fConfiguration.getFeature (name))
             ? Boolean.TRUE
@@ -657,21 +705,19 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 // true is not supported
                 return (state) ? false : true;
             }
-            else if (
-            name.equals (Constants.DOM_CDATA_SECTIONS)
-            || name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
+            else if (name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
             || name.equals (Constants.DOM_WELLFORMED)
-            || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
-            || name.equals (Constants.DOM_INFOSET)
-            || name.equals (Constants.DOM_DISALLOW_DOCTYPE) ) {
+            || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
                 // false is not supported
                 return (state) ? true : false;
             }
-            else if (
-            name.equals (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)
+            else if (name.equals (Constants.DOM_CDATA_SECTIONS)
+            || name.equals (Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING)
             || name.equals (Constants.DOM_COMMENTS)
             || name.equals (Constants.DOM_DATATYPE_NORMALIZATION)
+            || name.equals (Constants.DOM_DISALLOW_DOCTYPE)
             || name.equals (Constants.DOM_ENTITIES)
+            || name.equals (Constants.DOM_INFOSET)
             || name.equals (Constants.DOM_NAMESPACES)
             || name.equals (Constants.DOM_VALIDATE)
             || name.equals (Constants.DOM_VALIDATE_IF_SCHEMA)
