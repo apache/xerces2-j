@@ -37,6 +37,7 @@ Copyright:
     <property name='jar.apis' value='xmlParserAPIs.jar'/>
     <property name='jar.parser' value='xercesImpl.jar'/>
     <property name='jar.samples' value='xercesSamples.jar'/>
+    <property name='jar.dv' value='xercesDV.jar'/>
 
     <property name="year" value="1999-2002"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
@@ -115,6 +116,7 @@ Copyright:
     <echo message=" deprecatedjars --> generates xerces.jar and samples jar"/>
     <echo message=" dtdjars --> generates xercesImpl containing no schema support, xercesSamples &amp; xmlParserAPIs jars"/>
     <echo message=" tinyjars --> generates xercesImpl with no schema support or HTML/WML DOM, xercesSamples &amp; xmlParserAPIs jars"/>
+    <echo message=" dvjar --> generates a Schema datatype jar"/>
     <echo message=" pack-tools --> generates the tools distributions (zip and tar.gz)"/>
     <echo message=" pack-src   --> generates the source distributions (zip and tar.gz)"/>
     <echo message=" deprecated-bin --> generates the binary distributions (zip and tar.gz)"/>
@@ -274,7 +276,7 @@ Copyright:
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}"
-		 excludes="dom/rename/**, dom/dom3/**" />
+         excludes="dom/rename/**, dom/dom3/**" />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -887,9 +889,7 @@ Copyright:
                         org/apache/xerces/impl/xs/dom/**
                         org/apache/xerces/impl/xpath/**
                         org/apache/xerces/impl/xpath/regex/**
-                        org/apache/xerces/impl/dv/XS*.java
                         org/apache/xerces/impl/dv/Schema*.java
-                        org/apache/xerces/impl/dv/ValidatedInfo.java
                         org/apache/xerces/impl/msg/XMLSchema**
                         org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
@@ -904,6 +904,16 @@ Copyright:
         </fileset>
     </copy>
     
+    <!-- copy src files -->
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}"
+            includes="org/apache/xerces/impl/xs/psvi/**,
+                      org/apache/xerces/impl/xs/XSTypeDecl.java
+                     ">
+        </fileset>
+    </copy>
+    
     <!-- substitute tokens as needed -->
     <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
              token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
@@ -913,6 +923,76 @@ Copyright:
   <!-- Builds xercesImpl (tiny), xmlParserAPIs, and sample jars            -->
   <!-- =================================================================== -->
   <target name="tinyjars" depends="tinyjar, sampjar, apijar">
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build xercesDV jar                                                  -->
+  <!-- =================================================================== -->
+  <target name="dvjar" depends="dvcompile">
+    <jar jarfile="${build.dir}/${jar.dv}"
+         basedir="${build.dest}"
+         compress="true"
+         includes="org/apache/xerces/**"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the dv source directory                                    -->
+  <!-- =================================================================== -->
+  <target name="dvcompile" depends="dvprepare-src">
+    <copy todir="${build.dest}">
+      <fileset dir="${build.src}"
+        includes="**/*.properties">
+      </fileset>
+    </copy>
+
+    <javac srcdir="${build.src}"
+           destdir="${build.dest}"
+           debug="${debug}"
+           deprecation="${deprecation}"
+           optimize="${optimize}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the dv source code package                                 -->
+  <!-- =================================================================== -->
+  <target name="dvprepare-src">
+
+    <!-- copy src files -->
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}"
+            includes="org/apache/xerces/impl/dv/**,
+                      org/apache/xerces/impl/msg/XMLSchema**,
+                      org/apache/xerces/impl/xpath/regex/**,
+                      org/apache/xerces/impl/xs/XSTypeDecl.java,
+                      org/apache/xerces/impl/xs/psvi/StringList.java,
+                      org/apache/xerces/impl/xs/psvi/XSAnnotation.java,
+                      org/apache/xerces/impl/xs/psvi/XSConstants.java,
+                      org/apache/xerces/impl/xs/psvi/XSObject.java,
+                      org/apache/xerces/impl/xs/psvi/XSObjectList.java,
+                      org/apache/xerces/impl/xs/psvi/XSSimpleTypeDefinition.java,
+                      org/apache/xerces/impl/xs/psvi/XSTypeDefinition.java,
+                      org/apache/xerces/impl/xs/util/StringListImpl.java,
+                      org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
+                      org/apache/xerces/util/SymbolHash.java,
+                      org/apache/xerces/util/URI.java,
+                      org/apache/xerces/util/XMLChar.java,
+                      org/apache/xerces/xni/NamespaceContext.java,
+                      org/apache/xerces/xni/QName.java
+                     "
+            excludes="org/apache/xerces/impl/dv/DatatypeValidator.java
+                      org/apache/xerces/impl/dv/DTDDVFactory.java
+                      org/apache/xerces/impl/dv/dtd/**
+                      org/apache/xerces/impl/dv/xs/SchemaDVFactoryImpl.java
+                     ">
+        </fileset>
+    </copy>
+    
+    <!-- substitute tokens as needed -->
+    <replace file="${build.src}/org/apache/xerces/impl/dv/SchemaDVFactory.java" 
+             token="SchemaDVFactoryImpl" value="FullDVFactory"/>
   </target>
 
 
@@ -975,8 +1055,8 @@ Copyright:
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java **/v1/** **/v2/**
-              	       org/apache/xerces/dom3/*.java
-              	       org/apache/xerces/dom3/ls/**
+                       org/apache/xerces/dom3/*.java
+                       org/apache/xerces/dom3/ls/**
                        org/w3c/dom/*.java">
         </fileset>
     </copy>
