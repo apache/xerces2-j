@@ -720,8 +720,11 @@ public class OutputFormat
     {
         int i;
 
-        if ( _nonEscapingElements == null )
-            return false;
+        if ( _nonEscapingElements == null ) {
+            // non escaping was not set
+            // by default output value for elements as unescaped
+            return true;
+        }
         for ( i = 0 ; i < _nonEscapingElements.length ; ++i )
             if ( _nonEscapingElements[ i ].equals( tagName ) )
                 return true;
