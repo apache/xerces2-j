@@ -77,6 +77,9 @@ public class XMLEntityManager
     // Data
     //
 
+    private static XMLEntityManager fEntityManagerInstance = new XMLEntityManager();
+
+
     /** fEntityResolver */
     protected EntityResolver fEntityResolver;
 
@@ -90,7 +93,8 @@ public class XMLEntityManager
     /**
      * 
      */
-    public XMLEntityManager() {
+    private XMLEntityManager() {
+
     }
 
     //
@@ -177,6 +181,17 @@ public class XMLEntityManager
         return null;
     } // getEntityScanner
 
+
+    /**
+     * XMLEntityManager accessor
+     * 
+     * @return  Returns singlenton instance of  entity manager.
+     */
+    static public XMLEntityManager getEntityManager() {
+        return fEntityManagerInstance;//return the only instance of it
+    }
+
+
     //
     // XMLComponent methods
     //
@@ -209,5 +224,20 @@ public class XMLEntityManager
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
     } // setProperty
+
+    /* Unit test section 
+    public static void main( String argv[] ) {
+        System.out.println( "XMLEntityManager = " + XMLEntityManager.getEntityManager() );
+        System.out.println( "XMLEntityManager again = " + XMLEntityManager.getEntityManager() ); 
+        XMLEntityManager   ent = XMLEntityManager.getEntityManager();
+
+        ent.getEntityScanner();
+        
+        ent = new XMLEntityManager();
+
+
+    }
+
+   */
 
 } // class XMLEntityManager
