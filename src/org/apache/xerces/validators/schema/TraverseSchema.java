@@ -4377,7 +4377,6 @@ public class TraverseSchema implements
                 contentSpecIndex = traverseGroupDecl(referredGroup);
             }
             
-			System.err.println("group name being ref'd is " + ref + " and its contentSpec is " + contentSpecIndex);
             return contentSpecIndex;
         }
 		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
@@ -4405,7 +4404,11 @@ public class TraverseSchema implements
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
                               new Object [] { "group", childName });
         }
-System.err.println("we got here!");        
+        if (child != null && XUtil.getNextSiblingElement(child) != null) {
+            illegalChild = true;
+            reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                              new Object [] { "group", childName });
+        }
         if ( ! illegalChild && child != null) {
             index = expandContentModel( index, child);
         }
