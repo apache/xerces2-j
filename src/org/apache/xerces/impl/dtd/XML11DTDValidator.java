@@ -111,7 +111,7 @@ public class XML11DTDValidator extends XMLDTDValidator {
     } // isSpace(int):  boolean
 
     protected void init() {
-        if(fValidation) {
+        if(fValidation || fDynamicValidation) {
             super.init();
             // now overwrite some entries in parent:
 
