@@ -141,9 +141,6 @@ public abstract class NodeImpl
     protected final static short IGNORABLEWS  = 0x1<<6;
     protected final static short SETVALUE     = 0x1<<7;
 
-    /** NON-DOM FEATURE; see setUserData/getUserData. **/
-    protected Object userData;
-	
     //
     // Constructors
     //
@@ -263,9 +260,6 @@ public abstract class NodeImpl
         // REVISIT: What to do when readOnly? -Ac
         newnode.readOnly(false);
 
-        // REVISIT: Should the user data be cloned?
-        newnode.userData = null;
-    	
     	return newnode;
 
     } // cloneNode(boolean):Node
@@ -1229,12 +1223,12 @@ public abstract class NodeImpl
      * @returns the previous user object, or null if none.
      */
     public void setUserData(Object data) {
-        userData = data;
+        ownerDocument().setUserData(this, data);
     }
 
     /** Returns the user data associated to this node. */
     public Object getUserData() {
-        return userData;
+        return ownerDocument().getUserData(this);
     }
 
     //

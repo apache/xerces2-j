@@ -132,6 +132,12 @@ public class DocumentImpl
     // REVISIT: Should this be transient? -Ac
     protected Vector ranges;
     
+    /** Table for quick check of child insertion. */
+    protected static int[] kidOK;
+
+    /** Table for quick check of child insertion. */
+    protected Hashtable userData;
+
     // experimental
 
     /** Allow grammar access. */
@@ -139,9 +145,6 @@ public class DocumentImpl
 
     /** Bypass error checking. */
     protected boolean errorChecking = true;
-
-    /** Table for quick check of child insertion. */
-    protected static int[] kidOK;
 
     //
     // Static initialization
@@ -259,6 +262,7 @@ public class DocumentImpl
         newdoc.iterators = null;
         newdoc.treeWalkers = null;
         newdoc.ranges = null;
+        newdoc.userData = null;
 
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
@@ -1370,6 +1374,26 @@ public class DocumentImpl
     	return true;
     	
     } // isXMLName(String):boolean
+
+    /**
+     * Store user data related to a given node
+     */
+    protected void setUserData(NodeImpl n, Object data) {
+        if (userData == null) {
+            userData = new Hashtable();
+        }
+        userData.put(n, data);
+    }
+
+    /**
+     * Retreive user data related to a given node
+     */
+    protected Object getUserData(NodeImpl n) {
+        if (userData == null) {
+            return null;
+        }
+        return userData.get(n);
+    }
 
     //
     // Protected methods
