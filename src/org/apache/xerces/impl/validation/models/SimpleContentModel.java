@@ -101,7 +101,7 @@ public class SimpleContentModel
      * @param firstChild 
      * @param secondChild 
      */
-    public SimpleContentModel(short operator, QName firstChild, QName secondChild) {
+    public SimpleContentModel(short operator, QName firstChild, QName secondChild, boolean isDTD) {
     }
 
     //

@@ -91,7 +91,7 @@ public class MixedContentModel
      * @param children 
      * @param ordered 
      */
-    public MixedContentModel(int count, QName[] children, boolean ordered) {
+    public MixedContentModel(QName[] children, int[] type, int offset, int count , boolean ordered, boolean isDTD) {
     }
 
     //
