@@ -1419,6 +1419,7 @@ public class XMLSchemaValidator
                 if (!fValidationState.checkIDRefID()) {
                     reportSchemaError("ValidationRoot",null);
                 }
+                // REVISIT: is this the right place to check the 3 contraints?
             }
         }
         else {
@@ -1778,7 +1779,7 @@ public class XMLSchemaValidator
                 fChildCount == 0 && content.length() == 0 && !fNil) {
                 // 5.1.1 If the ·actual type definition· is a ·local type definition· then the canonical lexical representation of the {value constraint} value must be a valid default for the ·actual type definition· as defined in Element Default Valid (Immediate) (§3.3.6).
                 if (fCurrentType != fCurrentElemDecl.fType) {
-                    if (!XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.toString()))
+                    if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.toString()) == null)
                         reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getXSTypeName(), fCurrentElemDecl.fDefault.toString()});
                 }
                 // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its ·normalized value· must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).

@@ -116,6 +116,9 @@ public class XSElementDecl {
     }
 
     public void setConstraintType(short constraintType) {
+        // first clear the bits
+        fMiscFlags ^= (fMiscFlags & CONSTRAINT_MASK);
+        // then set the proper one
         fMiscFlags |= (constraintType & CONSTRAINT_MASK);
     }
     public void setIsNillable() {

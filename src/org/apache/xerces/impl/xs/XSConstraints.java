@@ -240,8 +240,51 @@ public class XSConstraints {
 
     /**
      * check whether a value is a valid default for some type
+     * returns the compiled form of the value
      */
-    public static boolean ElementDefaultValidImmediate(XSTypeDecl type, String value) {
-        return true;
+    public static Object ElementDefaultValidImmediate(XSTypeDecl type, String value) {
+
+        DatatypeValidator dv = null;
+
+        // e-props-correct
+        // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
+        // 1 If the type definition is a simple type definition, then the string must be ·valid· with respect to that definition as defined by String Valid (§3.14.4).
+        if (type.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+            dv = (DatatypeValidator)type;
+        }
+
+        // 2 If the type definition is a complex type definition, then all of the following must be true:
+        else {
+            // 2.1 its {content type} must be a simple type definition or mixed.
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
+            // 2.2 The appropriate case among the following must be true:
+            // 2.2.1 If the {content type} is a simple type definition, then the string must be ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+                dv = ctype.fDatatypeValidator;
+            }
+            // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be ·emptiable· as defined by Particle Emptiable (§3.9.6).
+            else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                if (!ctype.fParticle.emptiable())
+                    return null;
+            }
+            else {
+                return null;
+            }
+        }
+
+        // get the simple type declaration, and validate
+        Object actualValue = null;
+        if (dv != null) {
+            try {
+                // REVISIT:  we'll be able to do this once he datatype redesign is implemented
+                //actualValue = dv.validate(value, null);
+                dv.validate(value, null);
+                actualValue = value;
+            } catch (InvalidDatatypeValueException ide) {
+            }
+        }
+
+        return actualValue;
     }
+
 } // class XSContraints

@@ -218,6 +218,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         XSElementDecl element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
+        // set the scope of the element as global
         if (element != null)
             element.setIsGlobal();
 
@@ -422,9 +423,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 2 If there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in Element Default Valid (Immediate) (§3.3.6).
         if (element.fDefault != null) {
-            if (!checkDefaultValid(element)) {
+            Object actualValue = XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.toString());
+            if (actualValue == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault});
+                element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
             }
+            element.fDefault = actualValue;
         }
 
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple).
@@ -443,60 +447,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
         }
 
-        // Step 6: add substitutionGroup information to the handler
-        if (element.fSubGroup != null) {
-            fSubGroupHandler.addSubstitutionGroup(element);
-        }
-
         return element;
-    }
-
-    //private help functions
-
-    // return whether the constraint value is valid for the given type
-    boolean checkDefaultValid(XSElementDecl element) {
-
-        DatatypeValidator dv = null;
-
-        // e-props-correct
-        // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
-        // 1 If the type definition is a simple type definition, then the string must be ·valid· with respect to that definition as defined by String Valid (§3.14.4).
-        if (element.fType instanceof DatatypeValidator) {
-            dv = (DatatypeValidator)element.fType;
-        }
-
-        // 2 If the type definition is a complex type definition, then all of the following must be true:
-        else {
-            // 2.1 its {content type} must be a simple type definition or mixed.
-            XSComplexTypeDecl ctype = (XSComplexTypeDecl)element.fType;
-            // 2.2 The appropriate case among the following must be true:
-            // 2.2.1 If the {content type} is a simple type definition, then the string must be ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
-            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                dv = ctype.fDatatypeValidator;
-            }
-            // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be ·emptiable· as defined by Particle Emptiable (§3.9.6).
-            else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                if (!ctype.fParticle.emptiable())
-                    reportSchemaError ("cos-valid-default.2.2.2", new Object[]{element.fName});
-            }
-            else {
-                reportSchemaError ("cos-valid-default.2.1", new Object[]{element.fName});
-            }
-        }
-
-        // get the simple type declaration, and validate
-        boolean ret = true;
-        if (dv != null) {
-            try {
-                // REVISIT:  we'll be able to do this once he datatype redesign is implemented
-                //element.fDefault = dv.validate((String)element.fDefault, null);
-                dv.validate((String)element.fDefault, null);
-            } catch (InvalidDatatypeValueException ide) {
-                ret = false;
-            }
-        }
-
-        return ret;
     }
 
     void reset(XMLErrorReporter reporter, SymbolTable symbolTable) {
