@@ -918,21 +918,19 @@ public class DFAContentModel
 	for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
 	    for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
 		final QName leaf = fLeafList[leafIndex].getElement();
-final int leafType = fLeafListType[leafIndex];
+		final int leafType = fLeafListType[leafIndex];
 		final QName element = fElemMap[elemIndex];
 		if (fDTD) {
 		    if (leaf.rawname == element.rawname) {
-			fLeafSorter[fSortCount++] = leafIndex;
+				fLeafSorter[fSortCount++] = leafIndex;
 		    }
 		}
-		else {
-		    if (leaf.uri == element.uri &&
-			leaf.localpart == element.localpart) {
-        if (!((leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
-            (leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
-            (leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER))
-			fLeafSorter[fSortCount++] = leafIndex;
-}
+		else if (leaf.uri == element.uri &&
+					leaf.localpart == element.localpart) {
+        		if (!((leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY ||
+            			(leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL ||
+            			(leafType & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER))
+					fLeafSorter[fSortCount++] = leafIndex;
 		}
 	    }
 	    fLeafSorter[fSortCount++] = -1;
