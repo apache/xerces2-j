@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,16 +18,15 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
+ *    if any, must include the following acknowledgment:  
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
  *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Xerces" and "Apache Software Foundation" must
- *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written
- *    permission, please contact apache@apache.org.
+ * 4. The name "Apache Software Foundation" must not be used to endorse or
+ *    promote products derived from this software without prior written
+ *    permission. For written permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
  *    nor may "Apache" appear in their name, without prior written
@@ -49,10 +48,9 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999-2000, Pierpaolo
- * Fumagalli <mailto:pier@betaversion.org>, http://www.apache.org.
- * For more information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
+ * originally based on software copyright (c) 1999-2001, Sun Microsystems,
+ * Inc., http://www.sun.com.  For more information on the Apache Software
+ * Foundation, please see <http://www.apache.org/>.
  */
 
 package javax.xml.parsers;
@@ -67,43 +65,23 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 /**
- * The <code>DocumentBuilderFactory</code> defines a factory API that enables
- * applications to configure and obtain a parser to parse XML documents into
- * a DOM Document tree.
- * <br>
- * <br>
- * <b>ATTENTION:</b> THIS IMPLEMENTATION OF THE "JAVAX.XML.PARSER" CLASSES
- *   IS NOT THE OFFICIAL REFERENCE IMPLEMENTATION OF THE JAVA SPECIFICATION
- *   REQUEST 5 FOUND AT
- *   <a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_005_xml.html">
- *   http://java.sun.com/aboutJava/communityprocess/jsr/jsr_005_xml.html
- *   </a><br>
- *   THIS IMPLEMENTATION IS CONFORMANT TO THE "JAVA API FOR XML PARSING"
- *   SPECIFICATION VERSION 1.1 PUBLIC REVIEW 1 BY JAMES DUNCAN DAVIDSON
- *   PUBLISHED BY SUN MICROSYSTEMS ON NOV. 2, 2000 AND FOUND AT
- *   <a href="http://java.sun.com/xml">http://java.sun.com/xml</a>
- * <br>
- * <br>
- * <b>THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Defines a factory API that enables applications to obtain a
+ * parser that produces DOM object trees from XML documents.
  *
- * @author <a href="pier@betaversion.org">Pierpaolo Fumagalli</a>
- * @author Copyright &copy; 2000 The Apache Software Foundation.
- * @version 1.0 CVS $Revision$ $Date$
+ * An implementation of the <code>DocumentBuilderFactory</code> class is
+ * <em>NOT</em> guaranteed to be thread safe. It is up to the user application 
+ * to make sure about the use of the <code>DocumentBuilderFactory</code> from 
+ * more than one thread. Alternatively the application can have one instance 
+ * of the <code>DocumentBuilderFactory</code> per thread.
+ * An application can use the same instance of the factory to obtain one or 
+ * more instances of the <code>DocumentBuilder</code> provided the instance
+ * of the factory isn't being used in more than one thread at a time.
+ *
+ * @since JAXP 1.0
+ * @version 1.0
  */
-public abstract class DocumentBuilderFactory {
-    /** The default property name according to the JAXP spec */
-    private static final String defaultPropName =
-        "javax.xml.parsers.DocumentBuilderFactory";
 
+public abstract class DocumentBuilderFactory {
     private boolean validating = false;
     private boolean namespaceAware = false;
     private boolean whitespace = false;
@@ -118,15 +96,33 @@ public abstract class DocumentBuilderFactory {
     /**
      * Obtain a new instance of a
      * <code>DocumentBuilderFactory</code>. This static method creates
-     * a new factory instance based on a System property setting or
-     * uses the platform default if no property has been defined.<p>
-     *
-     * The system property that controls which Factory implementation
-     * to create is named
-     * &quot;javax.xml.parsers.DocumentBuilderFactory&quot;. This
-     * property names a class that is a concrete subclass of this
-     * abstract class. If no property is defined, a platform default
-     * will be used.<p>
+     * a new factory instance.
+     * This method uses the following ordered lookup procedure to determine
+     * the <code>DocumentBuilderFactory</code> implementation class to
+     * load:
+     * <ul>
+     * <li>
+     * Use the <code>javax.xml.parsers.DocumentBuilderFactory</code> system
+     * property.
+     * </li>
+     * <li>
+     * Use the properties file "lib/jaxp.properties" in the JRE directory.
+     * This configuration file is in standard <code>java.util.Properties
+     * </code> format and contains the fully qualified name of the
+     * implementation class with the key being the system property defined
+     * above.
+     * </li>
+     * <li>
+     * Use the Services API (as detailed in the JAR specification), if
+     * available, to determine the classname. The Services API will look
+     * for a classname in the file
+     * <code>META-INF/services/javax.xml.parsers.DocumentBuilderFactory</code>
+     * in jars available to the runtime.
+     * </li>
+     * <li>
+     * Platform default <code>DocumentBuilderFactory</code> instance.
+     * </li>
+     * </ul>
      *
      * Once an application has obtained a reference to a
      * <code>DocumentBuilderFactory</code> it can use the factory to
@@ -134,38 +130,30 @@ public abstract class DocumentBuilderFactory {
      *
      * @exception FactoryConfigurationError if the implementation is not
      * available or cannot be instantiated.
-     */    
+     */
     
-    public static DocumentBuilderFactory newInstance() {
-	String factoryImplName = findFactory(defaultPropName,
-					     "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-	// the default can be removed after services are tested well enough
-
-        if (factoryImplName == null) {
-            throw new FactoryConfigurationError(
-                "No default implementation found");
-        }
-
-        DocumentBuilderFactory factoryImpl;
+    public static DocumentBuilderFactory newInstance()
+        throws FactoryConfigurationError
+    {
         try {
-            Class clazz = Class.forName(factoryImplName);
-            factoryImpl = (DocumentBuilderFactory)clazz.newInstance();
-        } catch  (ClassNotFoundException cnfe) {
-	    throw new FactoryConfigurationError(cnfe);
-	} catch (IllegalAccessException iae) {
-	    throw new FactoryConfigurationError(iae);
-	} catch (InstantiationException ie) {
-	    throw new FactoryConfigurationError(ie);
-	}
-        return factoryImpl;
+            return (DocumentBuilderFactory) FactoryFinder.find(
+                /* The default property name according to the JAXP spec */
+                "javax.xml.parsers.DocumentBuilderFactory",
+                /* The fallback implementation class name */
+                null);
+        } catch (FactoryFinder.ConfigurationError e) {
+            throw new FactoryConfigurationError(e.getException(),
+                                                e.getMessage());
+        }
     }
     
     /**
-     * Creates a new instance of a DocumentBuilder using the
-     * currently configured parameters.
+     * Creates a new instance of a {@link javax.xml.parsers.DocumentBuilder}
+     * using the currently configured parameters.
      *
      * @exception ParserConfigurationException if a DocumentBuilder
-     * cannot be created which satisfies the configuration requested
+     * cannot be created which satisfies the configuration requested.
+     * @return A new instance of a DocumentBuilder.
      */
     
     public abstract DocumentBuilder newDocumentBuilder()
@@ -174,7 +162,11 @@ public abstract class DocumentBuilderFactory {
     
     /**
      * Specifies that the parser produced by this code will
-     * provide support for XML namespaces.
+     * provide support for XML namespaces. By default the value of this is set
+     * to <code>false</code>
+     *
+     * @param awareness true if the parser produced will provide support
+     *                  for XML namespaces; false otherwise.
      */
     
     public void setNamespaceAware(boolean awareness) {
@@ -183,7 +175,11 @@ public abstract class DocumentBuilderFactory {
 
     /**
      * Specifies that the parser produced by this code will
-     * validate documents as they are parsed.
+     * validate documents as they are parsed. By default the value of this
+     * is set to <code>false</code>.
+     *
+     * @param validating true if the parser produced will validate documents
+     *                   as they are parsed; false otherwise.
      */
     
     public void setValidating(boolean validating) {
@@ -191,18 +187,31 @@ public abstract class DocumentBuilderFactory {
     }
 
     /**
-     * Specifies that the parser produced by this code will
-     * ignore "ignorable whitespace" ONLY when the document is validated as 
-     * they are parsed.
+     * Specifies that the parsers created by this  factory must eliminate
+     * whitespace in element content (sometimes known loosely as
+     * 'ignorable whitespace') when parsing XML documents (see XML Rec
+     * 2.10). Note that only whitespace which is directly contained within
+     * element content that has an element only content model (see XML
+     * Rec 3.2.1) will be eliminated. Due to reliance on the content model
+     * this setting requires the parser to be in validating mode. By default
+     * the value of this is set to <code>false</code>.
+     *
+     * @param whitespace true if the parser created must eliminate whitespace
+     *                   in the element content when parsing XML documents;
+     *                   false otherwise.
      */
-    
+
     public void setIgnoringElementContentWhitespace(boolean whitespace) {
         this.whitespace = whitespace;
     }
 
     /**
      * Specifies that the parser produced by this code will
-     * expand entity reference nodes.
+     * expand entity reference nodes. By default the value of this is set to
+     * <code>true</code>
+     *
+     * @param expandEntityRef true if the parser produced will expand entity
+     *                        reference nodes; false otherwise.
      */
     
     public void setExpandEntityReferences(boolean expandEntityRef) {
@@ -211,7 +220,8 @@ public abstract class DocumentBuilderFactory {
 
     /**
      * Specifies that the parser produced by this code will
-     * ignore comments.
+     * ignore comments. By default the value of this is set to <code>false
+     * </code>
      */
     
     public void setIgnoringComments(boolean ignoreComments) {
@@ -220,8 +230,13 @@ public abstract class DocumentBuilderFactory {
 
     /**
      * Specifies that the parser produced by this code will
-     * convert CDATA nodes to Text nodes and append it to the 
-     * adjacent (if any) text node.
+     * convert CDATA nodes to Text nodes and append it to the
+     * adjacent (if any) text node. By default the value of this is set to
+     * <code>false</code>
+     *
+     * @param coalescing  true if the parser produced will convert CDATA nodes
+     *                    to Text nodes and append it to the adjacent (if any)
+     *                    text node; false otherwise.
      */
     
     public void setCoalescing(boolean coalescing) {
@@ -231,6 +246,9 @@ public abstract class DocumentBuilderFactory {
     /**
      * Indicates whether or not the factory is configured to produce
      * parsers which are namespace aware.
+     *
+     * @return  true if the factory is configured to produce parsers which
+     *          are namespace aware; false otherwise.
      */
     
     public boolean isNamespaceAware() {
@@ -240,6 +258,9 @@ public abstract class DocumentBuilderFactory {
     /**
      * Indicates whether or not the factory is configured to produce
      * parsers which validate the XML content during parse.
+     *
+     * @return  true if the factory is configured to produce parsers
+     *          which validate the XML content during parse; false otherwise.
      */
     
     public boolean isValidating() {
@@ -248,8 +269,11 @@ public abstract class DocumentBuilderFactory {
 
     /**
      * Indicates whether or not the factory is configured to produce
-     * parsers which ignore "ignorable whitespace" when validated in the XML 
-     * content during parse.
+     * parsers which ignore ignorable whitespace in element content.
+     *
+     * @return  true if the factory is configured to produce parsers
+     *          which ignore ignorable whitespace in element content;
+     *          false otherwise.
      */
     
     public boolean isIgnoringElementContentWhitespace() {
@@ -259,6 +283,9 @@ public abstract class DocumentBuilderFactory {
     /**
      * Indicates whether or not the factory is configured to produce
      * parsers which expand entity reference nodes.
+     *
+     * @return  true if the factory is configured to produce parsers
+     *          which expand entity reference nodes; false otherwise.
      */
     
     public boolean isExpandEntityReferences() {
@@ -268,6 +295,9 @@ public abstract class DocumentBuilderFactory {
     /**
      * Indicates whether or not the factory is configured to produce
      * parsers which ignores comments.
+     *
+     * @return  true if the factory is configured to produce parsers
+     *          which ignores comments; false otherwise.
      */
     
     public boolean isIgnoringComments() {
@@ -278,6 +308,10 @@ public abstract class DocumentBuilderFactory {
      * Indicates whether or not the factory is configured to produce
      * parsers which converts CDATA nodes to Text nodes and appends it to
      * the adjacent (if any) Text node.
+     *
+     * @return  true if the factory is configured to produce parsers
+     *          which converts CDATA nodes to Text nodes and appends it to
+     *          the adjacent (if any) Text node; false otherwise.
      */
     
     public boolean isCoalescing() {
@@ -285,122 +319,24 @@ public abstract class DocumentBuilderFactory {
     }
 
     /**
-     * Allows the user to set specific attributes on the underlying 
+     * Allows the user to set specific attributes on the underlying
      * implementation.
      * @param name The name of the attribute.
      * @param value The value of the attribute.
-     * @exception IllegalArgumentException thrown if the underlying 
+     * @exception IllegalArgumentException thrown if the underlying
      * implementation doesn't recognize the attribute.
      */
-    public abstract void setAttribute(String name, Object value) 
-    			throws IllegalArgumentException;
+    public abstract void setAttribute(String name, Object value)
+                throws IllegalArgumentException;
 
     /**
-     * Allows the user to retrieve specific attributes on the underlying 
+     * Allows the user to retrieve specific attributes on the underlying
      * implementation.
      * @param name The name of the attribute.
      * @return value The value of the attribute.
-     * @exception IllegalArgumentException thrown if the underlying 
+     * @exception IllegalArgumentException thrown if the underlying
      * implementation doesn't recognize the attribute.
      */
     public abstract Object getAttribute(String name)
-    			throws IllegalArgumentException;
-    
-    // -------------------- private methods --------------------
-    // This code is duplicated in all factories.
-    // Keep it in sync or move it to a common place 
-    // Because it's small probably it's easier to keep it here
-    /** Avoid reading all the files when the findFactory
-	method is called the second time ( cache the result of
-	finding the default impl )
-    */
-    private static String foundFactory=null;
-
-    /** Temp debug code - this will be removed after we test everything
-     */
-    private static final boolean debug=
-	System.getProperty( "jaxp.debug" ) != null;
-
-    /** Private implementation method - will find the implementation
-	class in the specified order.
-	@param factoryId   Name of the factory interface
-	@param xmlProperties Name of the properties file based on JAVA/lib
-	@param defaultFactory Default implementation, if nothing else is found
-    */
-    private static String findFactory(String factoryId, 
-				      String defaultFactory)
-    {
-	// Use the system property first
-	try {
-	    String systemProp =
-                System.getProperty( factoryId );
-	    if( systemProp!=null) {
-		if( debug ) 
-		    System.err.println("JAXP: found system property" +
-				       systemProp );
-		return systemProp;
-	    }
-	    
-	}catch (SecurityException se) {
-	}
-
-	if( foundFactory!=null)
-	    return foundFactory;
-	
-	// try to read from $java.home/lib/xml.properties
-	try {
-	    String javah=System.getProperty( "java.home" );
-	    String configFile = javah + File.separator +
-		"lib" + File.separator + "jaxp.properties";
-	    File f=new File( configFile );
-	    if( f.exists()) {
-		Properties props=new Properties();
-		props.load( new FileInputStream(f));
-		foundFactory=props.getProperty( factoryId );
-		if( debug )
-		    System.err.println("JAXP: found java.home property " +
-				       foundFactory );
-		if(foundFactory!=null )
-		    return foundFactory;
-	    }
-	} catch(Exception ex ) {
-	    if( debug ) ex.printStackTrace();
-	}
-
-	String serviceId = "META-INF/services/" + factoryId;
-	// try to find services in CLASSPATH
-	try {
-	    ClassLoader cl=DocumentBuilderFactory.class.getClassLoader();
-	    InputStream is=null;
-	    if( cl == null ) {
-		is=ClassLoader.getSystemResourceAsStream( serviceId );
-	    } else {
-		is=cl.getResourceAsStream( serviceId );
-	    }
-	    
-	    if( is!=null ) {
-		if( debug )
-		    System.err.println("JAXP: found  " +
-				       serviceId);
-		BufferedReader rd=new BufferedReader( new
-		    InputStreamReader(is));
-		
-		foundFactory=rd.readLine();
-		rd.close();
-
-		if( debug )
-		    System.err.println("JAXP: loaded from services: " +
-				       foundFactory );
-		if( foundFactory != null &&
-		    !  "".equals( foundFactory) ) {
-		    return foundFactory;
-		}
-	    }
-	} catch( Exception ex ) {
-	    if( debug ) ex.printStackTrace();
-	}
-
-	return defaultFactory;
-    }
-
+                throws IllegalArgumentException;
 }
