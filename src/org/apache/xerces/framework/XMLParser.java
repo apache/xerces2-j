@@ -345,6 +345,52 @@ public abstract class XMLParser
         return fEntityHandler;
     }
 
+    
+    /**
+     * return the locale               
+     *
+     * @return the locale
+     */
+    public final Locale getfLocale() {
+        return fLocale; 
+    }
+
+    /**
+     * return the XML Messages object               
+     *
+     * @return the parser's messages object
+     */
+    public final XMLMessageProvider getfgXMLMessages() {
+        return fgXMLMessages; 
+    }
+
+    /**
+     * return the Implementation Messages object               
+     *
+     * @return the parser's implementation messages
+     */
+    public final XMLMessageProvider getfgImplementationMessages() {
+        return fgImplementationMessages;
+    }
+
+    /**
+     * return the Schema Messages object               
+     *
+     * @return the parser's schema messages
+     */
+    public final XMLMessageProvider getfgSchemaMessages() {
+        return fgSchemaMessages;
+    }
+
+    /**
+     * return the Datatypes Messages object               
+     *
+     * @return the parser's datatypes messages
+     */
+    public final XMLMessageProvider getfgDatatypeMessages() {
+        return fgDatatypeMessages;
+    }
+
     /**
      * Set the reader factory.
      */
