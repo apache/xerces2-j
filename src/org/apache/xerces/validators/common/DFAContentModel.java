@@ -360,7 +360,10 @@ public class DFAContentModel
                         break;
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
-                    break;
+                    int uri = fElemMap[elemIndex].uri;
+                    if (uri == -1 || uri == curElem.uri) {
+                        break;
+                    }
                 }
                 else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
                     if (fElemMap[elemIndex].uri == -1) {

@@ -466,6 +466,7 @@ public class TraverseSchema implements
     private String resolvePrefixToURI (String prefix) throws Exception  {
         String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
         if (uriStr == null) {
+            // REVISIT: Localize
             reportGenericSchemaError("prefix : [" + prefix +"] can not be resolved to a URI");
         }
         return uriStr;
@@ -521,6 +522,7 @@ public class TraverseSchema implements
         fTargetNSURI = fStringPool.addSymbol(fTargetNSURIString);
 
         if (fGrammarResolver == null) {
+            // REVISIT: Localize
             reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchema");
         }
         else{
@@ -768,6 +770,7 @@ public class TraverseSchema implements
         if (root != null) {
             String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
             if (targetNSURI.length() > 0 && !targetNSURI.equals(fTargetNSURIString) ) {
+                // REVISIT: Localize
                 reportGenericSchemaError("included schema '"+location+"' has a different targetNameSpace '"
                                          +targetNSURI+"'");
             }
@@ -911,6 +914,7 @@ public class TraverseSchema implements
         if (root != null) {
             String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
             if (!targetNSURI.equals(namespaceString) ) {
+                // REVISIT: Localize
                 reportGenericSchemaError("included schema '"+location+"' has a different targetNameSpace '"
                                          +targetNSURI+"' from what is declared '"+namespaceString+"'.");
             }
@@ -1166,6 +1170,7 @@ public class TraverseSchema implements
 
             //first check if derivedBy is present
             if (derivedBy.length() == 0) {
+                // REVISIT: Localize
                 reportGenericSchemaError("derivedBy must be present when base is present in " 
                                          +SchemaSymbols.ELT_COMPLEXTYPE
                                          +" "+ typeName);
@@ -1230,6 +1235,7 @@ public class TraverseSchema implements
                                     baseIsSimpleSimple = true;
                                 }
                                 else {
+                                    // REVISIT: Localize
                                     reportGenericSchemaError("Base type could not be found : " + base);
                                 }
                             }
@@ -1242,6 +1248,7 @@ public class TraverseSchema implements
                 }
                         //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
                 if (baseIsSimpleSimple && derivedByRestriction) {
+                    // REVISIT: Localize
                     reportGenericSchemaError("base is a simpledType, can't derive by restriction in " + typeName); 
                 }
 
@@ -1272,6 +1279,7 @@ public class TraverseSchema implements
 
                 //Schema Spec : 5.11: Derivation Valid ( Extension ) 1.1.1
                 if (baseIsComplexSimple && !derivedByRestriction ) {
+                    // REVISIT: Localize
                     reportGenericSchemaError("base is ComplexSimple, can't derive by extension in " + typeName);
                 }
 
@@ -1342,6 +1350,7 @@ public class TraverseSchema implements
                 simpleTypeValidator = baseTypeValidator;
 
             if (child != null) {
+                // REVISIT: Localize
                 reportGenericSchemaError("Invalid child '"+child.getNodeName()+"' in complexType : '" + typeName 
                                          + "', because it restricts another complexSimpleType");
             }
@@ -1466,10 +1475,6 @@ public class TraverseSchema implements
                     break; // attr processing is done later on in this method
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-                    /***
-                    contentSpecType = fStringPool.addSymbol("ANY");
-                    left = -1;
-                    /***/
                     int anyIndex = -1;
                     String namespace = child.getAttribute("namespace").trim();
                     if (namespace.length() == 0 || namespace.equals("##any")) {
@@ -1518,13 +1523,19 @@ public class TraverseSchema implements
                         }
                     }
                     else {
+                        // REVISIT: Localize
                         reportGenericSchemaError("Empty namespace attribute for any element");
+                    }
+
+                    String processContents = child.getAttribute("processContents");
+                    if (processContents.length() > 0 && !processContents.equals("strict")) {
+                        // REVISIT: Localize
+                        reportGenericSchemaError("Only value of strict supported for processContents attribute");
                     }
 
                     index = anyIndex;
                     seeParticle = true;
                     seeOtherParticle = true;
-                    /***/
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                     //REVISIT, do nothing for annotation for now.
@@ -1540,6 +1551,7 @@ public class TraverseSchema implements
 
                 // if base is complextype with simpleType content, can't have any particle children at all.
                 if (baseIsComplexSimple && seeParticle) {
+                    // REVISIT: Localize
                     reportGenericSchemaError("In complexType "+typeName+", base type is complextype with simpleType content, can't have any particle children at all");
                     hadContent = false;
                     left = index = -2;
@@ -1554,6 +1566,7 @@ public class TraverseSchema implements
                 } //end of if (seeParticle)
 
                 if (seeAll && seeOtherParticle) {
+                    // REVISIT: Localize
                     reportGenericSchemaError ( " 'All' group needs to be the only child in Complextype : " + typeName);
                 }
 
@@ -1576,6 +1589,7 @@ public class TraverseSchema implements
                  && base.length() == 0 ) {
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE;
                 simpleTypeValidator = fDatatypeRegistry.getDatatypeValidator(SchemaSymbols.ATTVAL_STRING);
+                // REVISIT: Localize
                 reportGenericSchemaError ( " complexType '"+typeName+"' with a elementOnly or mixed content "
                                            +"need to have at least one particle child");
             }
@@ -1645,6 +1659,7 @@ public class TraverseSchema implements
 
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
+                    // REVISIT: Localize
                     reportGenericSchemaError("In complexType "+typeName+", base type has simpleType content and derivation method is 'restriction', can't have any attribute children at all");
                     break;
                 }
@@ -1652,6 +1667,7 @@ public class TraverseSchema implements
             } 
             else if ( childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) { 
                 if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
+                    // REVISIT: Localize
                     reportGenericSchemaError("In complexType "+typeName+", base type has simpleType content and derivation method is 'restriction', can't have any attribute children at all");
                     break;
                 }
@@ -1900,6 +1916,7 @@ public class TraverseSchema implements
                 return -1;
                 // TO DO
                 // REVISIT: different NS, not supported yet.
+                // REVISIT: Localize
                 //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
 
@@ -1908,6 +1925,7 @@ public class TraverseSchema implements
                 traverseAttributeDecl(referredAttribute, typeInfo);
             }
             else {
+                // REVISIT: Localize
                 reportGenericSchemaError ( "Couldn't find top level attribute " + ref);
             }
             return -1;
@@ -2007,6 +2025,7 @@ public class TraverseSchema implements
                       dv = fDatatypeRegistry.getDatatypeValidator(localpart);
                             //   TO DO:  the Default and fixed attribute handling should be here.
                       }else {
+                          // REVISIT: Localize
                       reportGenericSchemaError("simpleType not found : " + localpart);
                       }
                  }
@@ -2014,6 +2033,7 @@ public class TraverseSchema implements
 
 
         if (dv == null) {
+            // REVISIT: Localize
             reportGenericSchemaError("null validator for datatype : " 
                                      + fStringPool.toString(dataTypeSymbol));
         }
@@ -2098,12 +2118,14 @@ public class TraverseSchema implements
     private int addAttributeDeclFromAnotherSchema( String name, String uriStr, ComplexTypeInfo typeInfo) throws Exception {
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found : " + uriStr);
             return -1;
         }
 
         Hashtable attrRegistry = aGrammar.getAttirubteDeclRegistry();
         if (attrRegistry == null) {
+            // REVISIT: Localize
             reportGenericSchemaError("no attribute was defined in schema : " + uriStr);
             return -1;
         }
@@ -2111,6 +2133,7 @@ public class TraverseSchema implements
         XMLAttributeDecl tempAttrDecl = (XMLAttributeDecl) attrRegistry.get(name);
 
         if (tempAttrDecl == null) {
+            // REVISIT: Localize
             reportGenericSchemaError( "no attribute named \"" + name 
                                       + "\" was defined in schema : " + uriStr);
             return -1;
@@ -2164,6 +2187,7 @@ public class TraverseSchema implements
                 return -1;
                 // TO DO 
                 // REVISIST: different NS, not supported yet.
+                // REVISIT: Localize
                 //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
             Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
@@ -2171,6 +2195,7 @@ public class TraverseSchema implements
                 traverseAttributeGroupDecl(referredAttrGrp, typeInfo);
             }
             else {
+                // REVISIT: Localize
                 reportGenericSchemaError ( "Couldn't find top level attributegroup " + ref);
             }
             return -1;
@@ -2196,12 +2221,14 @@ public class TraverseSchema implements
         
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found : " + uriStr);
             return -1;
         }
         // attribute name
         Element attGrpDecl = (Element) aGrammar.topLevelAttrGrpDecls.get((Object)attGrpName);
         if (attGrpDecl == null) {
+            // REVISIT: Localize
             reportGenericSchemaError( "no attribute group named \"" + attGrpName 
                                       + "\" was defined in schema : " + uriStr);
             return -1;
@@ -2405,6 +2432,7 @@ public class TraverseSchema implements
             if (elementIndex == -1 ) {
                 Element targetElement = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT,localpart);
                 if (targetElement == null ) {
+                    // REVISIT: Localize
                     reportGenericSchemaError("Element " + localpart + " not found in the Schema");
                     //REVISIT, for now, the QName anyway
                     return eltName;
@@ -2426,6 +2454,7 @@ public class TraverseSchema implements
             equivClassElementDecl = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT, getLocalPart(equivClass));
             if (equivClassElementDecl == null) {
                 noErrorSoFar = false;
+                // REVISIT: Localize
                 reportGenericSchemaError("Equivclass affiliation element "
                                          +equivClass
                                          +" in element declaration " 
@@ -2451,6 +2480,7 @@ public class TraverseSchema implements
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
                     noErrorSoFar = false;
+                    // REVISIT: Localize
                     reportGenericSchemaError("anonymous complexType in element '" + name +"' has a name attribute"); 
                 }
                 else 
@@ -2461,6 +2491,7 @@ public class TraverseSchema implements
                 }
                 else {
                     noErrorSoFar = false;
+                    // REVISIT: Localize
                     reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
                 }
                 //System.out.println("typeInfo.scopeDefined : " + typeInfo.typeName+","+"["+typeInfo.scopeDefined+"]"
@@ -2471,6 +2502,7 @@ public class TraverseSchema implements
                 //   TO DO:  the Default and fixed attribute handling should be here.                
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
                     noErrorSoFar = false;
+                    // REVISIT: Localize
                     reportGenericSchemaError("anonymous simpleType in element '" + name +"' has a name attribute"); 
                 }
                 else 
@@ -2480,6 +2512,7 @@ public class TraverseSchema implements
                 }
                 else {
                     noErrorSoFar = false;
+                    // REVISIT: Localize
                     reportGenericSchemaError("traverse simpleType error in element '" + name +"'"); 
                 }
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE; 
@@ -2497,6 +2530,7 @@ public class TraverseSchema implements
 
         if (haveAnonType && (type.length()>0)) {
             noErrorSoFar = false;
+            // REVISIT: Localize
             reportGenericSchemaError( "Element '"+ name +
                                       "' have both a type attribute and a annoymous type child" );
         }
@@ -2556,6 +2590,7 @@ public class TraverseSchema implements
                             }
                             else {
                                 noErrorSoFar = false;
+                                // REVISIT: Localize
                                 reportGenericSchemaError("type not found : " + localpart);
                             }
 
@@ -2596,6 +2631,7 @@ public class TraverseSchema implements
             }
             else {
                 noErrorSoFar = false;
+                // REVISIT: Localize
                 reportGenericSchemaError ("untyped element : " + name );
             }
         }
@@ -2631,6 +2667,7 @@ public class TraverseSchema implements
         //There can never be two elements with the same name in the same scope.
         if (fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope) > -1) {
             noErrorSoFar = false;
+            // REVISIT: Localize
             reportGenericSchemaError("duplicate element decl in the same scope : " + 
                               fStringPool.toString(localpartIndex));
         }
@@ -2833,6 +2870,7 @@ public class TraverseSchema implements
             int contentSpecIndex = -1;
             Element referredGroup = getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart);
             if (referredGroup == null) {
+                // REVISIT: Localize
                 reportGenericSchemaError("Group " + localpart + " not found in the Schema");
                 //REVISIT, this should be some custom Exception
                 throw new Exception("Group " + localpart + " not found in the Schema");
@@ -2940,12 +2978,14 @@ public class TraverseSchema implements
         
         SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
         if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            // REVISIT: Localize
             reportGenericSchemaError("!!Schema not found : " + uriStr);
             return -1;
         }
         
         Element groupDecl = (Element) aGrammar.topLevelGroupDecls.get((Object)groupName);
         if (groupDecl == null) {
+            // REVISIT: Localize
             reportGenericSchemaError( "no group named \"" + groupName 
                                       + "\" was defined in schema : " + uriStr);
             return -1;
@@ -3485,6 +3525,7 @@ public class TraverseSchema implements
                     return SchemaSymbols.RESTRICTION;
             }  
             else {
+                // REVISIT: Localize
                     reportGenericSchemaError ("SimpleType: Invalid value for 'derivedBy'");
                     return -1;
             }
@@ -3499,6 +3540,7 @@ public class TraverseSchema implements
                     return SchemaSymbols.RESTRICTION;
             } 
             else {
+                // REVISIT: Localize
                     reportGenericSchemaError ( "ComplexType: Invalid value for 'derivedBy'" );
                     return -1;
             }
@@ -3522,16 +3564,19 @@ public class TraverseSchema implements
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ("restriction in set twice");
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( list == 0 ) {
                                             list = SchemaSymbols.LIST;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ("list in set twice");
                                     }
                             }
                             else {
+                                // REVISIT: Localize
                                 reportGenericSchemaError (  "Invalid value (" + 
                                                             finalString +
                                                             ")" );
@@ -3553,6 +3598,7 @@ public class TraverseSchema implements
             } else if ( contentString.equals (SchemaSymbols.ATTVAL_MIXED) ) {
                     return XMLElementDecl.TYPE_MIXED;
             } else {
+                // REVISIT: Localize
                     reportGenericSchemaError ( "Invalid value for content" );
                     return -1;
             }
@@ -3575,15 +3621,18 @@ public class TraverseSchema implements
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EXTENSION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "restriction already in set" );
                                     }
                             } else {
+                                // REVISIT: Localize
                                     reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
                             }
                     }
@@ -3609,27 +3658,32 @@ public class TraverseSchema implements
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EQUIVCLASS;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "'equivClass' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EXTENSION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.LIST;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "'list' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "restriction already in set" );
                                     }
                             } else {
+                                // REVISIT: Localize
                                     reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
                             }
                     }
@@ -3655,27 +3709,32 @@ public class TraverseSchema implements
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EQUIVCLASS;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "'equivClass' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.EXTENSION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.LIST;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "'list' already in set" );
                                     }
                             } else if ( token.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
                                     if ( restrict == 0 ) {
                                             restrict = SchemaSymbols.RESTRICTION;
                                     } else {
+                                        // REVISIT: Localize
                                             reportGenericSchemaError ( "restriction already in set" );
                                     }
                             } else {
+                                // REVISIT: Localize
                                     reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
                             }
                     }
