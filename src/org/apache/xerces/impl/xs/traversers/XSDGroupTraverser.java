@@ -111,8 +111,13 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             group = (XSGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr, elmNode);
         }
 
-        // no children are allowed
-        if (DOMUtil.getFirstChildElement(elmNode) != null) {
+        // no children other than "annotation?" are allowed
+        Element child = DOMUtil.getFirstChildElement(elmNode);
+        if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            child = DOMUtil.getNextSiblingElement(child);
+        }
+        if (child != null) {
             reportSchemaError("s4s-elt-must-match", new Object[]{"group (local)", "(annotation?)"}, elmNode);
         }
 
