@@ -256,16 +256,15 @@ public class XMLCatalogResolver
      * Where both a namespace and an external identifier exist, the namespace
      * takes precedence.</p>
      * 
-     * @param type  The type of the resource being resolved.
-     * @param namespaceURI  The namespace of the resource being resolved.
-     * @param publicId  The public identifier of the external entity being 
-     *   referenced, or <code>null</code> if no public identifier was 
-     *   supplied or if the resource is not an entity. 
-     * @param systemId  The system identifier, a URI reference, of the 
-     *   external resource being referenced, or <code>null</code> if no 
-     *   system identifier was supplied. 
-     * @param baseURI  The absolute base URI of the resource being parsed, or 
-     *   <code>null</code> if there is no base URI.
+     * @param type the type of the resource being resolved
+     * @param namespaceURI the namespace of the resource being resolved, 
+     * or <code>null</code> if none was supplied
+     * @param publicId the public identifier of the resource being resolved,
+     * or <code>null</code> if none was supplied
+     * @param systemId the system identifier of the resource being resolved,
+     * or <code>null</code> if none was supplied
+     * @param baseURI the absolute base URI of the resource being parsed, 
+     * or <code>null</code> if there is no base URI
      */
     public LSInput resolveResource(String type, String namespaceURI,
         String publicId, String systemId, String baseURI) {
