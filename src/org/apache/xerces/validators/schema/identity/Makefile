@@ -4,6 +4,7 @@ TARGETS=\
 	Field.class\
 	FieldActivator.class\
 	IdentityConstraint.class\
+	IDValue.class\
 	Key.class\
 	KeyRef.class\
 	Selector.class\

@@ -4909,13 +4909,13 @@ int aaaa= 1;
         
         // General Attribute Checking
         int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
-        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(icelem, scope);
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(icElem, scope);
 
         // check for <annotation> and get selector
         Element sElem = XUtil.getFirstChildElement(icElem);
         sElem = checkContent( icElem, sElem, false);
         // General Attribute Checking
-        attrValues = fGeneralAttrCheck.checkAttributes(selem, scope);
+        attrValues = fGeneralAttrCheck.checkAttributes(sElem, scope);
 
         if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
             // REVISIT: localize
@@ -4952,7 +4952,7 @@ int aaaa= 1;
 
         while (fElem != null) {
             // General Attribute Checking
-            attrValues = fGeneralAttrCheck.checkAttributes(felem, scope);
+            attrValues = fGeneralAttrCheck.checkAttributes(fElem, scope);
 
             if(!fElem.getLocalName().equals(SchemaSymbols.ELT_FIELD))
                 // REVISIT: localize

@@ -1,6 +1,7 @@
 # Makefile for directory ./org/apache/xerces/validators/schema
 
 TARGETS=\
+    GeneralAttrCheck.class\
 	SubstitutionGroupComparator.class\
 	SchemaGrammar.class\
 	SchemaMessageProvider.class\
