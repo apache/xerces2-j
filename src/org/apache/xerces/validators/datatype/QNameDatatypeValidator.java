@@ -112,9 +112,11 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
 
         setBasetype( base ); // Set base type 
 
+        fDerivedByList = derivedByList;
+
         // Set Facets if any defined
         if ( facets != null  ){
-            if ( derivedByList == false) {
+            if ( fDerivedByList == false) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -205,7 +207,6 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                                                            "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
             } else { //derived by list
-                fDerivedByList = true;
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {

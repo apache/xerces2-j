@@ -91,6 +91,8 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                  boolean derivedByList ) throws InvalidDatatypeFacetException {
         setBasetype( base ); // Set base type 
 
+        fDerivedByList = derivedByList;
+
         // Set Facets if any defined
         if ( facets != null  ) { 
             if ( derivedByList == false ) {
@@ -109,7 +111,6 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             } else { // By List
-                fDerivedByList = true;
 
             }
         }// End of facet setting

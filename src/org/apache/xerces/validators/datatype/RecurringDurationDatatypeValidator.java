@@ -109,6 +109,9 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
 
     public  RecurringDurationDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                                  boolean derivedByList ) throws InvalidDatatypeFacetException {
+
+        fDerivedByList = derivedByList;
+
         if ( base != null )
         {
             setBasetype( base ); // Set base type 
@@ -118,7 +121,7 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( derivedByList == false ) { // Restriction
+            if ( fDerivedByList == false ) { // Restriction
 
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
 
@@ -297,7 +300,6 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
 
 
             } else { //Derived by List TODO 
-                fDerivedByList = true;
 
             }
         }// End Facet definition

@@ -69,8 +69,8 @@ import java.util.Locale;
  * @version $Id$
  */
 public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator = null;
-    private boolean           fDerivedByList = false;
+    private DatatypeValidator fBaseValidator    = null;
+    private boolean           fDerivationByList = false;
 
     public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
       this( null, null, false ); // Native, No Facets defined, Restriction
@@ -78,7 +78,9 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
 
     public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
               boolean derivedByList  ) throws InvalidDatatypeFacetException {
-        ;
+
+        setBasetype( base ); // Set base type
+        fDerivationByList = derivedByList;
     }
 
 

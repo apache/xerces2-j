@@ -112,10 +112,12 @@ public class TimeDurationDatatypeValidator extends AbstractDatatypeValidator {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
+
+        fDerivedByList = derivedByList;
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( derivedByList == false ) { // Restriction
+            if ( fDerivedByList == false ) { // Restriction
                 if (fBaseValidator != null)
                     //if (!fBaseValidator.ensureFacetsAreConsistent(facets))
                       //  throw new InvalidDatatypeFacetException(

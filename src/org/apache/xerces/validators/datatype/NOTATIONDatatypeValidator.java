@@ -70,6 +70,7 @@ import java.util.Locale;
  */
 public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator fBaseValidator = null;
+    private boolean   fDerivedByList     = false; // Default is
 
     public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -77,6 +78,8 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
 
     public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
          boolean derivedByList ) throws InvalidDatatypeFacetException {
+         fDerivedByList = derivedByList;
+         setBasetype( base ); // Set base type 
     }
 
 

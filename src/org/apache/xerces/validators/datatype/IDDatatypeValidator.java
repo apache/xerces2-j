@@ -78,6 +78,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
             boolean derivedByList ) throws InvalidDatatypeFacetException  {
+        fDerivedByList = derivedByList;
     }
 
 

@@ -79,7 +79,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
 public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
     private DatatypeValidator fBaseValidator    = null; // Null means a native datatype
-    private boolean           fDerivationByList = false; //Derived by restriction is defaul
+    private boolean           fDerivedByList    = false; //Derived by restriction is defaul
     private BigDecimal[]      fEnumDecimal      = null;
     private String            fPattern          = null;
     private BigDecimal        fMaxInclusive     = null;
@@ -110,8 +110,10 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         setBasetype( base ); // Set base type 
 
 
+        fDerivedByList = derivedByList;
+
         if ( facets != null ) {   // Set Facet
-            if ( derivedByList == false ) { // Derivation by Constraint 
+            if ( fDerivedByList == false ) { // Derivation by Constraint 
                 Vector enumeration = null;
                 String value       = null;
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
@@ -221,7 +223,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
 
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
 
-        if ( fDerivationByList == false ) { //derived by restriction
+        if ( fDerivedByList == false ) { //derived by restriction
 
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
               if ( fRegex == null || fRegex.matches( content) == false )

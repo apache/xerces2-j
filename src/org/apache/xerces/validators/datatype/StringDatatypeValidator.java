@@ -107,14 +107,16 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
     public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                      boolean derivedByList ) throws InvalidDatatypeFacetException {
-
+        
         setBasetype( base ); // Set base type 
 
-        // Set Facets if any defined
+        fDerivedByList = derivedByList;
 
+        // Set Facets if any defined
         //fFacetsDefined = 0;
         if ( facets != null  ){
-            if ( derivedByList == false) {
+            if ( fDerivedByList == false) {
+
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -205,7 +207,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                                            "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
             } else { //derived by list
-                fDerivedByList = true;
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {

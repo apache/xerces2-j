@@ -99,12 +99,13 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
     public URIReferenceDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                            boolean derivedByList ) throws InvalidDatatypeFacetException {
+        fDerivedByList = derivedByList;
 
         setBasetype( base ); // Set base type 
 
         // Set Facets if any defined
         if ( facets != null  ){
-            if ( derivedByList == false) {
+            if ( fDerivedByList == false) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -167,7 +168,6 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             } else { //derived by list
-                fDerivedByList = true;
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {

@@ -79,6 +79,8 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
     public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
          boolean derivedByList ) throws InvalidDatatypeFacetException { 
+         fDerivedByList = derivedByList;
+         setBasetype( base ); // Set base type 
     }
 
 

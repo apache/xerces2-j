@@ -96,10 +96,12 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
         if( base != null )
             setBasetype( base ); // Set base type 
 
+        fDerivedByList = derivedByList;
+
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( derivedByList == false ) {
+            if ( fDerivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
                     if ( key.equals(SchemaSymbols.ELT_LENGTH ) ) {
@@ -162,7 +164,6 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             } else {  //Derivation by List 
-                fDerivedByList = true;
             }
         }// End of Facet setting
     }

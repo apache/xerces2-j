@@ -63,6 +63,8 @@ import java.util.Locale;
 import java.util.Vector;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
 
 /**
  *
@@ -76,7 +78,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator    fBaseValidator = null; // null means a native datatype
     private float[]   fEnumFloats           = null;
     private String    fPattern              = null;
-    private boolean   fDerivationByList     = false; // Default is restriction
+    private boolean   fDerivedByList     = false; // Default is restriction
     private float     fMaxInclusive         = Float.MAX_VALUE;
     private float     fMaxExclusive         = Float.MAX_VALUE;
     private float     fMinInclusive         = Float.MIN_VALUE;
@@ -101,10 +103,11 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
+        fDerivedByList = derivedByList; 
         // Set Facets if any defined
 
         if ( facets != null  )  {
-            if ( derivedByList == false ) {
+            if ( fDerivedByList == false ) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                     String key = (String) e.nextElement();
 
@@ -208,7 +211,8 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                     }
                 }
             } else { //derivation by list  - WORK TO DO
-                fDerivationByList = true;
+                System.out.println( "inside derive by list" );
+
             }
         }// End facet setup
     }
@@ -223,30 +227,17 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
 
     public Object validate(String content, Object state) 
     throws InvalidDatatypeValueException {
-        if ( fDerivationByList == false  ) {
-            if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-                if ( fRegex == null || fRegex.matches( content) == false )
-                    throw new InvalidDatatypeValueException("Value'"+content+
-                                                            "does not match regular expression facet" + fPattern );
-            }
-
-
-
-            float f = 0;
-            try {
-                f = Float.valueOf(content).floatValue();
-            } catch (NumberFormatException nfe) {
-                throw new InvalidDatatypeValueException(
-                                                       getErrorString(DatatypeMessageProvider.NotReal,
-                                                                      DatatypeMessageProvider.MSG_NONE,
-                                                                      new Object [] { content}));
-            }
-            boundsCheck(f);
-
-            if (((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
-                enumCheck(f);
+        if ( fDerivedByList == false  ) {
+            checkContent(  content );
         } else {
-            ;// TODO Derived by list 
+           StringTokenizer parsedList = new StringTokenizer( content );
+           try {
+               while ( parsedList.hasMoreTokens() ) {
+                   checkContent( parsedList.nextToken() );
+               }
+           } catch ( NoSuchElementException e ) {
+               e.printStackTrace();
+           }
         }
         return null;
     }
@@ -299,6 +290,9 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     }
 
 
+    
+
+
 
     public Hashtable getFacets(){
         return null;
@@ -323,4 +317,30 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     private void setBasetype(DatatypeValidator base) {
         fBaseValidator =  base;
     }
+
+    private  void checkContent( String content )throws InvalidDatatypeValueException {
+        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+                if ( fRegex == null || fRegex.matches( content) == false )
+                    throw new InvalidDatatypeValueException("Value'"+content+
+                                                            "does not match regular expression facet" + fPattern );
+            }
+
+
+            float f = 0;
+            try {
+                f = Float.valueOf(content).floatValue();
+                System.out.println("f = " + f );
+            } catch (NumberFormatException nfe) {
+                throw new InvalidDatatypeValueException(
+                                                       getErrorString(DatatypeMessageProvider.NotReal,
+                                                                      DatatypeMessageProvider.MSG_NONE,
+                                                                      new Object [] { content}));
+            }
+            boundsCheck(f);
+
+            if (((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
+                enumCheck(f);
+
+    }
+
 }
