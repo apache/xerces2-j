@@ -2057,7 +2057,7 @@ public class TraverseSchema implements
             else if (use.equals(SchemaSymbols.ATTVAL_PROHIBITED)) {
                 
                 attDefaultType = fStringPool.addSymbol("#PROHIBITED");
-                attDefaultValue = fStringPool.addString("");
+                //attDefaultValue = fStringPool.addString("");
             }
             else {
                 attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
@@ -2065,18 +2065,16 @@ public class TraverseSchema implements
 
             if (attType == XMLAttributeDecl.TYPE_SIMPLE && attDefaultValue != -1) {
                 try { 
-                    // REVISIT - integrate w/ error handling
-                    dv = fDatatypeRegistry.getDatatypeValidator(datatype);
                     if (dv != null) 
                         //REVISIT
                         dv.validate(fStringPool.toString(attDefaultValue), null);
                     else
                         reportSchemaError(SchemaMessageProvider.NoValidatorFor,
                                           new Object [] { datatype });
-                } /*catch (InvalidDatatypeValueException idve) {
+                } catch (InvalidDatatypeValueException idve) {
                     reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
                                       new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
-                } */catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Internal error in attribute datatype validation");
                 }
