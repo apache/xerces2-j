@@ -1301,7 +1301,7 @@ final class UTF8Reader extends XMLEntityReader {
     }
 
     public void scanQName(char fastcheck, QName qname) throws Exception {
-
+        int offset = fCurrentOffset;
         int ch = fMostRecentByte;
         if (ch < 0x80) {
             if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0) {
@@ -1317,12 +1317,14 @@ final class UTF8Reader extends XMLEntityReader {
                 XMLCharacterProperties.initCharFlags();
                 fCalledCharPropInit = true;
             }
+            ch = getMultiByteSymbolChar(ch);
+            fCurrentIndex--;
+            fCurrentOffset--;
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
                 qname.clear();
                 return;
             }
         }
-        int offset = fCurrentOffset;
         int index = fCurrentIndex;
         byte[] data = fMostRecentData;
         int prefixend = -1;
@@ -1386,6 +1388,12 @@ final class UTF8Reader extends XMLEntityReader {
                     XMLCharacterProperties.initCharFlags();
                     fCalledCharPropInit = true;
                 }
+                fCurrentIndex = index;
+                fMostRecentByte = ch;
+                ch = getMultiByteSymbolChar(ch);
+                fCurrentIndex--;
+                fCurrentOffset--;
+                index = fCurrentIndex;
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     break;
             }
