@@ -1708,6 +1708,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                         sb.setCharAt(j++, (char)0x20);
                 }
             }
+            sb.setLength(j);
         }
 
         return sb.toString();
