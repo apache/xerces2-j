@@ -164,6 +164,10 @@ public class XMLDocumentFragmentScannerImpl
     protected static final String NOTIFY_BUILTIN_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_BUILTIN_REFS_FEATURE;
     
+
+    protected static final String SYSTEM_PROPERTY_ELEMENT_ATTRIBUTE_LIMIT = "elementAttributeLimit" ;
+    protected static final int DEFAULT_ELEMENT_ATTRIBUTE_LIMIT = 10000;    
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -234,6 +238,9 @@ public class XMLDocumentFragmentScannerImpl
     /** Standalone. */
     protected boolean fStandalone;
 
+    //variable to restrict attribute limit
+    protected int fElementAttributeLimit;
+    
     // element information
 
     /** Current element. */
@@ -404,6 +411,19 @@ public class XMLDocumentFragmentScannerImpl
         fElementStack.clear();
         fHasExternalDTD = false;
         fStandalone = false;
+
+
+       //There is little overhead in doing this again and again but it allows to reset the value b/w parse
+        try{
+            String value = System.getProperty(SYSTEM_PROPERTY_ELEMENT_ATTRIBUTE_LIMIT);
+            if(value != null && !value.equals(""))
+                fElementAttributeLimit = Integer.parseInt(value);
+            else{
+                fElementAttributeLimit = DEFAULT_ELEMENT_ATTRIBUTE_LIMIT;
+            }
+        } catch (Exception ex){
+            fElementAttributeLimit = DEFAULT_ELEMENT_ATTRIBUTE_LIMIT;
+        }
 
         // setup dispatcher
         setScannerState(SCANNER_STATE_CONTENT);
@@ -799,7 +819,12 @@ public class XMLDocumentFragmentScannerImpl
 
             // attributes
             scanAttribute(fAttributes);
-
+            if (fAttributes.getLength() > fElementAttributeLimit){                
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                             "ElementAttributeLimit",
+                                             new Object[]{rawname,  new Integer(fElementAttributeLimit) },
+                                             XMLErrorReporter.SEVERITY_FATAL_ERROR );
+            }           
         } while (true);
 
         // call handler

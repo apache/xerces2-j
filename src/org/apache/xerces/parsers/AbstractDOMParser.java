@@ -1584,7 +1584,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                      prevIndex = childIndex;
                      childIndex = sibling;
                  }
-                 fDeferredDocumentImpl.setAsLastChild(parentIndex, lastChild);
+				 if(lastChild != -1){
+	                 fDeferredDocumentImpl.setAsLastChild(parentIndex, lastChild);
+                 }
+				else{ 
+                     sibling = fDeferredDocumentImpl.getRealPrevSibling(prevIndex, false);
+	                 fDeferredDocumentImpl.setAsLastChild(parentIndex, sibling); 
+				}
                  fCurrentNodeIndex = parentIndex;
              }
              fDeferredEntityDecl = -1;
