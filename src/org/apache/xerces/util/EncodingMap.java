@@ -536,6 +536,9 @@ public class EncodingMap {
         fIANA2JavaMap.put("EBCDIC-CP-CA",    "CP037");
         fIANA2JavaMap.put("EBCDIC-CP-NL",    "CP037");
         fIANA2JavaMap.put("EBCDIC-CP-WT",    "CP037");
+        fIANA2JavaMap.put("IBM273",    "CP273");
+        fIANA2JavaMap.put("CP273",    "CP273");
+        fIANA2JavaMap.put("CSIBM273",    "CP273");
         fIANA2JavaMap.put("IBM277",    "CP277");
         fIANA2JavaMap.put("CP277",    "CP277");
         fIANA2JavaMap.put("CSIBM277",    "CP277");
@@ -558,6 +561,10 @@ public class EncodingMap {
         fIANA2JavaMap.put("IBM285",    "CP285");
         fIANA2JavaMap.put("CP285",    "CP285");
         fIANA2JavaMap.put("CSIBM285",    "CP285");
+        fIANA2JavaMap.put("EBCDIC-JP-KANA",    "CP290");
+        fIANA2JavaMap.put("IBM290",    "CP290");
+        fIANA2JavaMap.put("CP290",    "CP290");
+        fIANA2JavaMap.put("CSIBM290",    "CP290");
         fIANA2JavaMap.put("EBCDIC-CP-FR",    "CP297");
         fIANA2JavaMap.put("IBM297",    "CP297");
         fIANA2JavaMap.put("CP297",    "CP297");
@@ -570,12 +577,66 @@ public class EncodingMap {
         fIANA2JavaMap.put("IBM424",    "CP424");
         fIANA2JavaMap.put("CP424",    "CP424");
         fIANA2JavaMap.put("CSIBM424",    "CP424");
+        fIANA2JavaMap.put("IBM437",    "CP437");
+        fIANA2JavaMap.put("437",    "CP437");
+        fIANA2JavaMap.put("CP437",    "CP437");
+        fIANA2JavaMap.put("CSPC8CODEPAGE437",    "CP437");
         fIANA2JavaMap.put("EBCDIC-CP-CH",    "CP500");
         fIANA2JavaMap.put("IBM500",    "CP500");
         fIANA2JavaMap.put("CP500",    "CP500");
         fIANA2JavaMap.put("CSIBM500",    "CP500");
         fIANA2JavaMap.put("EBCDIC-CP-CH",    "CP500");
         fIANA2JavaMap.put("EBCDIC-CP-BE",    "CP500"); 
+        fIANA2JavaMap.put("IBM775",    "CP775");
+        fIANA2JavaMap.put("CP775",    "CP775");
+        fIANA2JavaMap.put("CSPC775BALTIC",    "CP775");
+        fIANA2JavaMap.put("IBM850",    "CP850");
+        fIANA2JavaMap.put("850",    "CP850");
+        fIANA2JavaMap.put("CP850",    "CP850");
+        fIANA2JavaMap.put("CSPC850MULTILINGUAL",    "CP850");
+        fIANA2JavaMap.put("IBM852",    "CP852");
+        fIANA2JavaMap.put("852",    "CP852");
+        fIANA2JavaMap.put("CP852",    "CP852");
+        fIANA2JavaMap.put("CSPCP852",    "CP852");
+        fIANA2JavaMap.put("IBM855",    "CP855");
+        fIANA2JavaMap.put("855",    "CP855");
+        fIANA2JavaMap.put("CP855",    "CP855");
+        fIANA2JavaMap.put("CSIBM855",    "CP855");
+        fIANA2JavaMap.put("IBM857",    "CP857");
+        fIANA2JavaMap.put("857",    "CP857");
+        fIANA2JavaMap.put("CP857",    "CP857");
+        fIANA2JavaMap.put("CSIBM857",    "CP857");
+        fIANA2JavaMap.put("IBM00858",    "CP858");
+        fIANA2JavaMap.put("CP00858",    "CP858");
+        fIANA2JavaMap.put("CCSID00858",    "CP858");
+        fIANA2JavaMap.put("IBM860",    "CP860");
+        fIANA2JavaMap.put("860",    "CP860");
+        fIANA2JavaMap.put("CP860",    "CP860");
+        fIANA2JavaMap.put("CSIBM860",    "CP860");
+        fIANA2JavaMap.put("IBM861",    "CP861");
+        fIANA2JavaMap.put("861",    "CP861");
+        fIANA2JavaMap.put("CP861",    "CP861");
+        fIANA2JavaMap.put("CP-IS",    "CP861");
+        fIANA2JavaMap.put("CSIBM861",    "CP861");
+        fIANA2JavaMap.put("IBM862",    "CP862");
+        fIANA2JavaMap.put("862",    "CP862");
+        fIANA2JavaMap.put("CP862",    "CP862");
+        fIANA2JavaMap.put("CSPC862LATINHEBREW",    "CP862");
+        fIANA2JavaMap.put("IBM863",    "CP863");
+        fIANA2JavaMap.put("863",    "CP863");
+        fIANA2JavaMap.put("CP863",    "CP863");
+        fIANA2JavaMap.put("CSIBM863",    "CP863");
+        fIANA2JavaMap.put("IBM864",    "CP864");
+        fIANA2JavaMap.put("CP864",    "CP864");
+        fIANA2JavaMap.put("CSIBM864",    "CP864");
+        fIANA2JavaMap.put("IBM865",    "CP865");
+        fIANA2JavaMap.put("865",    "CP865");
+        fIANA2JavaMap.put("CP865",    "CP865");
+        fIANA2JavaMap.put("CSIBM865",    "CP865");
+        fIANA2JavaMap.put("IBM866",    "CP866");
+        fIANA2JavaMap.put("866",    "CP866");
+        fIANA2JavaMap.put("CP866",    "CP866");
+        fIANA2JavaMap.put("CSIBM866",    "CP866");
         fIANA2JavaMap.put("IBM868",    "CP868");
         fIANA2JavaMap.put("CP868",    "CP868");
         fIANA2JavaMap.put("CSIBM868",    "CP868");
@@ -597,6 +658,14 @@ public class EncodingMap {
         fIANA2JavaMap.put("CP918",    "CP918");
         fIANA2JavaMap.put("CSIBM918",    "CP918");
         fIANA2JavaMap.put("EBCDIC-CP-AR2",   "CP918");
+        fIANA2JavaMap.put("IBM00924",    "CP924");
+        fIANA2JavaMap.put("CP00924",    "CP924");
+        fIANA2JavaMap.put("CCSID00924",    "CP924");
+        // is this an error???
+        fIANA2JavaMap.put("EBCDIC-LATIN9--EURO",    "CP924");
+        fIANA2JavaMap.put("IBM1026",    "CP1026");
+        fIANA2JavaMap.put("CP1026",    "CP1026");
+        fIANA2JavaMap.put("CSIBM1026",    "CP1026");
         fIANA2JavaMap.put("IBM01140",    "Cp1140");
         fIANA2JavaMap.put("CP01140",    "Cp1140");
         fIANA2JavaMap.put("CCSID01140",    "Cp1140");
@@ -750,6 +819,61 @@ public class EncodingMap {
         fIANA2JavaMap.put("UTF-16BE",           "UnicodeBig");
         fIANA2JavaMap.put("UTF-16LE",           "UnicodeLittle");
 
+        // support for 1047, as proposed to be added to the 
+        // IANA registry in 
+        // http://lists.w3.org/Archives/Public/ietf-charset/2002JulSep/0049.html
+        fIANA2JavaMap.put("IBM-1047",    "Cp1047");
+        fIANA2JavaMap.put("IBM1047",    "Cp1047");
+        fIANA2JavaMap.put("CP1047",    "Cp1047");
+
+        // Adding new aliases as proposed in
+        // http://lists.w3.org/Archives/Public/ietf-charset/2002JulSep/0058.html
+        fIANA2JavaMap.put("IBM-37",    "CP037");
+        fIANA2JavaMap.put("IBM-273",    "CP273");
+        fIANA2JavaMap.put("IBM-277",    "CP277");
+        fIANA2JavaMap.put("IBM-278",    "CP278");
+        fIANA2JavaMap.put("IBM-280",    "CP280");
+        fIANA2JavaMap.put("IBM-284",    "CP284");
+        fIANA2JavaMap.put("IBM-285",    "CP285");
+        fIANA2JavaMap.put("IBM-290",    "CP290");
+        fIANA2JavaMap.put("IBM-297",    "CP297");
+        fIANA2JavaMap.put("IBM-420",    "CP420");
+        fIANA2JavaMap.put("IBM-424",    "CP424");
+        fIANA2JavaMap.put("IBM-437",    "CP437");
+        fIANA2JavaMap.put("IBM-500",    "CP500");
+        fIANA2JavaMap.put("IBM-775",    "CP775");
+        fIANA2JavaMap.put("IBM-850",    "CP850");
+        fIANA2JavaMap.put("IBM-852",    "CP852");
+        fIANA2JavaMap.put("IBM-855",    "CP855");
+        fIANA2JavaMap.put("IBM-857",    "CP857");
+        fIANA2JavaMap.put("IBM-858",    "CP858");
+        fIANA2JavaMap.put("IBM-860",    "CP860");
+        fIANA2JavaMap.put("IBM-861",    "CP861");
+        fIANA2JavaMap.put("IBM-862",    "CP862");
+        fIANA2JavaMap.put("IBM-863",    "CP863");
+        fIANA2JavaMap.put("IBM-864",    "CP864");
+        fIANA2JavaMap.put("IBM-865",    "CP865");
+        fIANA2JavaMap.put("IBM-866",    "CP866");
+        fIANA2JavaMap.put("IBM-868",    "CP868");
+        fIANA2JavaMap.put("IBM-869",    "CP869");
+        fIANA2JavaMap.put("IBM-870",    "CP870");
+        fIANA2JavaMap.put("IBM-871",    "CP871");
+        fIANA2JavaMap.put("IBM-918",    "CP918");
+        fIANA2JavaMap.put("IBM-924",    "CP924");
+        fIANA2JavaMap.put("IBM-1026",    "CP1026");
+        fIANA2JavaMap.put("IBM-1140",    "Cp1140");
+        fIANA2JavaMap.put("IBM-1141",    "Cp1141");
+        fIANA2JavaMap.put("IBM-1142",    "Cp1142");
+        fIANA2JavaMap.put("IBM-1143",    "Cp1143");
+        fIANA2JavaMap.put("IBM-1144",    "Cp1144");
+        fIANA2JavaMap.put("IBM-1145",    "Cp1145");
+        fIANA2JavaMap.put("IBM-1146",    "Cp1146");
+        fIANA2JavaMap.put("IBM-1147",    "Cp1147");
+        fIANA2JavaMap.put("IBM-1148",    "Cp1148");
+        fIANA2JavaMap.put("IBM-1149",    "Cp1149");
+        fIANA2JavaMap.put("IBM-819",      "ISO8859_1");
+        fIANA2JavaMap.put("IBM-367",        "ASCII");
+
         // REVISIT:
         //   j:CNS11643 -> EUC-TW?
         //   ISO-2022-CN? ISO-2022-CN-EXT?
@@ -767,17 +891,38 @@ public class EncodingMap {
         fJava2IANAMap.put("ISO8859_9",    "ISO-8859-9");
         fJava2IANAMap.put("Big5",      "BIG5");
         fJava2IANAMap.put("CP037",     "EBCDIC-CP-US");
+        fJava2IANAMap.put("CP273",     "IBM273");
+        fJava2IANAMap.put("CP277",     "EBCDIC-CP-DK");
         fJava2IANAMap.put("CP278",     "EBCDIC-CP-FI");
         fJava2IANAMap.put("CP280",     "EBCDIC-CP-IT");
         fJava2IANAMap.put("CP284",     "EBCDIC-CP-ES");
         fJava2IANAMap.put("CP285",     "EBCDIC-CP-GB");
+        fJava2IANAMap.put("CP290",     "EBCDIC-JP-KANA");
         fJava2IANAMap.put("CP297",     "EBCDIC-CP-FR");
         fJava2IANAMap.put("CP420",     "EBCDIC-CP-AR1");
         fJava2IANAMap.put("CP424",     "EBCDIC-CP-HE");
+        fJava2IANAMap.put("CP437",     "IBM437");
         fJava2IANAMap.put("CP500",     "EBCDIC-CP-CH");
+        fJava2IANAMap.put("CP775",     "IBM775");
+        fJava2IANAMap.put("CP850",     "IBM850");
+        fJava2IANAMap.put("CP852",     "IBM852");
+        fJava2IANAMap.put("CP855",     "IBM855");
+        fJava2IANAMap.put("CP857",     "IBM857");
+        fJava2IANAMap.put("CP858",     "IBM00858");
+        fJava2IANAMap.put("CP860",     "IBM860");
+        fJava2IANAMap.put("CP861",     "IBM861");
+        fJava2IANAMap.put("CP862",     "IBM862");
+        fJava2IANAMap.put("CP863",     "IBM863");
+        fJava2IANAMap.put("CP864",     "IBM864");
+        fJava2IANAMap.put("CP865",     "IBM865");
+        fJava2IANAMap.put("CP866",     "IBM866");
+        fJava2IANAMap.put("CP868",     "IBM868");
+        fJava2IANAMap.put("CP869",     "IBM869");
         fJava2IANAMap.put("CP870",     "EBCDIC-CP-ROECE");
         fJava2IANAMap.put("CP871",     "EBCDIC-CP-IS");
         fJava2IANAMap.put("CP918",     "EBCDIC-CP-AR2");
+        fJava2IANAMap.put("CP924",     "IBM00924");
+        fJava2IANAMap.put("CP1026",     "IBM1026");
         fJava2IANAMap.put("Cp01140",     "IBM01140");
         fJava2IANAMap.put("Cp01141",     "IBM01141");
         fJava2IANAMap.put("Cp01142",     "IBM01142");
@@ -804,6 +949,9 @@ public class EncodingMap {
         fJava2IANAMap.put("JIS0201",  "X0201");
         fJava2IANAMap.put("JIS0208",  "X0208");
         fJava2IANAMap.put("JIS0212",  "ISO-IR-159");
+
+        // proposed addition (see above for details):
+        fJava2IANAMap.put("CP1047",    "IBM1047");
 
     } // <clinit>()
 
