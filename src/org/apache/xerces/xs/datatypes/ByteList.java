@@ -18,8 +18,11 @@ package org.apache.xerces.xs.datatypes;
 import org.apache.xerces.xs.XSException;
 
 /**
- * EXPERIMENTAL: The <code>ByteList</code> is an immutable ordered collection of 
- * <code>byte</code>. 
+ * <p><b>EXPERIMENTAL: This interface should not be considered stable.
+ * It is likely it may be altered or replaced in the future.</b></p>
+ * 
+ * <p>The <code>ByteList</code> is an immutable ordered collection of 
+ * <code>byte</code>.</p>
  * 
  * @author Ankit Pasricha, IBM
  */

@@ -16,7 +16,10 @@
 package org.apache.xerces.xs.datatypes;
 
 /**
- * EXPERIMENTAL: Interface to expose value of the float datatype.
+ * <p><b>EXPERIMENTAL: This interface should not be considered stable.
+ * It is likely it may be altered or replaced in the future.</b></p>
+ * 
+ * <p>Interface to expose value of the float datatype.</p>
  * 
  * @author Ankit Pasricha, IBM
  */
