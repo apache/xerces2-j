@@ -132,6 +132,9 @@ public class XMLEntityManager
     /** Default buffer size before we've finished with the XMLDecl:  */
     public static final int DEFAULT_XMLDECL_BUFFER_SIZE = 64;
 
+    /** Default internal entity buffer size (1024). */
+    public static final int DEFAULT_INTERNAL_BUFFER_SIZE = 1024;
+
     // feature identifiers
 
     /** Feature identifier: validation. */
@@ -172,6 +175,10 @@ public class XMLEntityManager
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
 
+    /** property identifier: buffer size. */
+    protected static final String BUFFER_SIZE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.BUFFER_SIZE_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -189,6 +196,7 @@ public class XMLEntityManager
         ERROR_REPORTER,
         ENTITY_RESOLVER,
         VALIDATION_MANAGER,
+        BUFFER_SIZE
     };
 
     private static final String XMLEntity = "[xml]".intern();
@@ -276,8 +284,9 @@ public class XMLEntityManager
     // settings
 
     /**
-     * Buffer size. This feature does not have a feature identifier, yet.
-     * Should it?
+     * Buffer size. We get this value from a property. The default size
+     * is used if the input buffer size property is not specified.
+     * REVISIT: do we need a property for internal entity buffer size?
      */
     protected int fBufferSize = DEFAULT_BUFFER_SIZE;
 
@@ -977,6 +986,7 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fValidationManager = null;
         }
+        
         // initialize state
         fStandalone = false;
         fEntities.clear();
@@ -1092,6 +1102,12 @@ public class XMLEntityManager
             if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
                 fEntityResolver = (XMLEntityResolver)value;
                 return;
+            }
+            if (property.equals(Constants.BUFFER_SIZE_PROPERTY)) {
+                Integer bufferSize = (Integer)value;
+                if (bufferSize != null && bufferSize.intValue() > 0) {
+                    fBufferSize = bufferSize.intValue();
+                }
             }
         }
 
@@ -1795,7 +1811,7 @@ public class XMLEntityManager
         // buffer
 
         /** Character buffer. */
-        public char[] ch = new char[fBufferSize];
+        public char[] ch = null;
 
         /** Position in character buffer. */
         public int position;
@@ -1823,6 +1839,7 @@ public class XMLEntityManager
             this.literal = literal;
             this.mayReadChunks = mayReadChunks;
             this.isExternal = isExternal;
+            this.ch = new char[isExternal ? fBufferSize : DEFAULT_INTERNAL_BUFFER_SIZE];
         } // <init>(StringXMLResourceIdentifier,InputStream,Reader,String,boolean, boolean)
 
         //
@@ -3316,7 +3333,7 @@ public class XMLEntityManager
         private int fMark;
 
         public RewindableInputStream(InputStream is) {
-            fData = new byte[DEFAULT_BUFFER_SIZE];
+            fData = new byte[DEFAULT_XMLDECL_BUFFER_SIZE];
             fInputStream = is;
             fStartOffset = 0;
             fEndOffset = -1;

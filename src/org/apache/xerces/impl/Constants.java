@@ -261,6 +261,9 @@ public final class Constants {
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
 
+    /** Input buffer size property ("input-buffer-size"). */
+    public static final String BUFFER_SIZE_PROPERTY = "input-buffer-size";
+
     /** Entity resolver property ("internal/entity-resolver"). */
     public static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
 
