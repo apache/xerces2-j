@@ -126,6 +126,9 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                     } catch (NumberFormatException nfe) {
                         throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"' is invalid.");
                     }
+                    if ( fMinLength < 0 )
+                        throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
+                
                 } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
                     fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
@@ -134,6 +137,10 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                     } catch (NumberFormatException nfe) {
                         throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                     }
+                    if ( fMaxLength < 0 )
+                        throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"'  must be a nonNegativeInteger.");
+                
+
                 } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                     fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
