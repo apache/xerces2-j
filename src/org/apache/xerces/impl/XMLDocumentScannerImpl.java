@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -140,11 +140,11 @@ public class XMLDocumentScannerImpl
     // feature identifiers
 
     /** Feature identifier: load external DTD. */
-    protected static final String LOAD_EXTERNAL_DTD = 
+    protected static final String LOAD_EXTERNAL_DTD =
         Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
 
     // property identifiers
-    
+
     /** Property identifier: DTD scanner. */
     protected static final String DTD_SCANNER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
@@ -153,11 +153,11 @@ public class XMLDocumentScannerImpl
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
-        NAMESPACES, 
-        VALIDATION, 
+        NAMESPACES,
+        VALIDATION,
         LOAD_EXTERNAL_DTD,
         NOTIFY_BUILTIN_REFS,
-        NOTIFY_CHAR_REFS, 
+        NOTIFY_CHAR_REFS,
     };
 
     /** Recognized properties. */
@@ -239,8 +239,8 @@ public class XMLDocumentScannerImpl
     // XMLDocumentScanner methods
     //
 
-    /** 
-     * Sets the input source. 
+    /**
+     * Sets the input source.
      *
      * @param inputSource The input source.
      *
@@ -260,13 +260,13 @@ public class XMLDocumentScannerImpl
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
      * component.
-     * 
+     *
      * @param componentManager The component manager.
      *
      * @throws SAXException Thrown by component on initialization error.
      *                      For example, if a feature or property is
      *                      required for the operation of the component, the
-     *                      component manager may throw a 
+     *                      component manager may throw a
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
@@ -298,7 +298,7 @@ public class XMLDocumentScannerImpl
         // setup dispatcher
         setScannerState(SCANNER_STATE_XML_DECL);
         setDispatcher(fXMLDeclDispatcher);
-        
+
     } // reset(XMLComponentManager)
 
     /**
@@ -312,11 +312,11 @@ public class XMLDocumentScannerImpl
 
     /**
      * Sets the state of a feature. This method is called by the component
-     * manager any time after reset when a feature changes state. 
+     * manager any time after reset when a feature changes state.
      * <p>
      * <strong>Note:</strong> Components should silently ignore features
      * that do not affect the operation of the component.
-     * 
+     *
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
      *
@@ -329,7 +329,7 @@ public class XMLDocumentScannerImpl
         throws XMLConfigurationException {
 
         super.setFeature(featureId, state);
-            
+
         // Xerces properties
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
@@ -352,11 +352,11 @@ public class XMLDocumentScannerImpl
 
     /**
      * Sets the value of a property. This method is called by the component
-     * manager any time after reset when a property changes value. 
+     * manager any time after reset when a property changes value.
      * <p>
      * <strong>Note:</strong> Components should silently ignore properties
      * that do not affect the operation of the component.
-     * 
+     *
      * @param propertyId The property identifier.
      * @param value      The value of the property.
      *
@@ -367,7 +367,7 @@ public class XMLDocumentScannerImpl
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
-        
+
         super.setProperty(propertyId, value);
 
         // Xerces properties
@@ -389,7 +389,7 @@ public class XMLDocumentScannerImpl
      * This method notifies of the start of an entity. The DTD has the
      * pseudo-name of "[dtd]" parameter entity names start with '%'; and
      * general entities are just specified by their name.
-     * 
+     *
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity if the entity
      *                 is external, null otherwise.
@@ -405,7 +405,7 @@ public class XMLDocumentScannerImpl
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
+    public void startEntity(String name,
                             String publicId, String systemId,
                             String baseSystemId,
                             String encoding) throws XNIException {
@@ -428,9 +428,9 @@ public class XMLDocumentScannerImpl
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]" parameter entity names start with '%'; and general entities 
+     * of "[dtd]" parameter entity names start with '%'; and general entities
      * are just specified by their name.
-     * 
+     *
      * @param name The name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -445,7 +445,7 @@ public class XMLDocumentScannerImpl
                 fDocumentHandler.endDocument(fAugmentations);
             }
         }
-        
+
     } // endEntity(String)
 
     //
@@ -483,7 +483,7 @@ public class XMLDocumentScannerImpl
             fDoctypePublicId = fStrings[1];
             fEntityScanner.skipSpaces();
         }
-        
+
         fHasExternalDTD = fDoctypeSystemId != null;
 
         // call handler
@@ -540,26 +540,26 @@ public class XMLDocumentScannerImpl
      *
      * @author Andy Clark, IBM
      */
-    protected final class XMLDeclDispatcher 
+    protected final class XMLDeclDispatcher
         implements Dispatcher {
 
         //
         // Dispatcher methods
         //
 
-        /** 
+        /**
          * Dispatch an XML "event".
          *
          * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
+         *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this 
+         * @returns True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
          * @throws XNIException Thrown on parse error.
          */
-        public boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete)
             throws IOException, XNIException {
 
             // next dispatcher is prolog regardless of whether there
@@ -616,19 +616,19 @@ public class XMLDocumentScannerImpl
         // Dispatcher methods
         //
 
-        /** 
+        /**
          * Dispatch an XML "event".
          *
          * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
+         *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this 
+         * @returns True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
          * @throws XNIException Thrown on parse error.
          */
-        public boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete)
             throws IOException, XNIException {
 
             try {
@@ -690,12 +690,12 @@ public class XMLDocumentScannerImpl
                         case SCANNER_STATE_COMMENT: {
                             scanComment();
                             setScannerState(SCANNER_STATE_PROLOG);
-                            break;  
+                            break;
                         }
                         case SCANNER_STATE_PI: {
                             scanPI();
                             setScannerState(SCANNER_STATE_PROLOG);
-                            break;  
+                            break;
                         }
                         case SCANNER_STATE_DOCTYPE: {
                             if (fSeenDoctypeDecl) {
@@ -724,12 +724,14 @@ public class XMLDocumentScannerImpl
                         }
                     }
                 } while (complete || again);
-    
-                if (fEntityScanner.scanChar() != '<') {
-                    reportFatalError("RootElementRequired", null);
+
+                if (complete) {
+                    if (fEntityScanner.scanChar() != '<') {
+                        reportFatalError("RootElementRequired", null);
+                    }
+                    setScannerState(SCANNER_STATE_ROOT_ELEMENT);
+                    setDispatcher(fContentDispatcher);
                 }
-                setScannerState(SCANNER_STATE_ROOT_ELEMENT);
-                setDispatcher(fContentDispatcher);
             }
 
             // premature end of file
@@ -751,24 +753,24 @@ public class XMLDocumentScannerImpl
      */
     protected final class DTDDispatcher
         implements Dispatcher {
-        
+
         //
         // Dispatcher methods
         //
 
-        /** 
+        /**
          * Dispatch an XML "event".
          *
          * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
+         *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this 
+         * @returns True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
          * @throws XNIException Thrown on parse error.
          */
-        public boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete)
             throws IOException, XNIException {
 
             fEntityManager.setEntityHandler(null);
@@ -778,7 +780,7 @@ public class XMLDocumentScannerImpl
                     again = false;
                     switch (fScannerState) {
                         case SCANNER_STATE_DTD_INTERNAL_DECLS: {
-                            // REVISIT: Should there be a feature for 
+                            // REVISIT: Should there be a feature for
                             //          the "complete" parameter?
                             boolean completeDTD = true;
                             boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD);
@@ -810,7 +812,7 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DTD_EXTERNAL: {
-                            XMLInputSource xmlInputSource = 
+                            XMLInputSource xmlInputSource =
                                 fEntityManager.resolveEntity(fDoctypePublicId, fDoctypeSystemId, fDocumentSystemId);
                             fDTDScanner.setInputSource(xmlInputSource);
                             setScannerState(SCANNER_STATE_DTD_EXTERNAL_DECLS);
@@ -818,7 +820,7 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DTD_EXTERNAL_DECLS: {
-                            // REVISIT: Should there be a feature for 
+                            // REVISIT: Should there be a feature for
                             //          the "complete" parameter?
                             boolean completeDTD = true;
                             boolean moreToScan = fDTDScanner.scanDTDExternalSubset(completeDTD);
@@ -872,15 +874,15 @@ public class XMLDocumentScannerImpl
         // NOTE: These hook methods are added so that the full document
         //       scanner can share the majority of code with this class.
 
-        /** 
+        /**
          * Scan for DOCTYPE hook. This method is a hook for subclasses
-         * to add code to handle scanning for a the "DOCTYPE" string 
+         * to add code to handle scanning for a the "DOCTYPE" string
          * after the string "<!" has been scanned.
-         * 
+         *
          * @returns True if the "DOCTYPE" was scanned; false if "DOCTYPE"
          *          was not scanned.
          */
-        protected boolean scanForDoctypeHook() 
+        protected boolean scanForDoctypeHook()
             throws IOException, XNIException {
 
             if (fEntityScanner.skipString("DOCTYPE")) {
@@ -891,7 +893,7 @@ public class XMLDocumentScannerImpl
 
         } // scanForDoctypeHook():boolean
 
-        /** 
+        /**
          * Element depth iz zero. This methos is a hook for subclasses
          * to add code to handle when the element depth hits zero. When
          * scanning a document fragment, an element depth of zero is
@@ -900,7 +902,7 @@ public class XMLDocumentScannerImpl
          * the document after the end of the document's root element.
          *
          * @returns True if the caller should stop and return true which
-         *          allows the scanner to switch to a new scanning 
+         *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
          */
@@ -921,13 +923,13 @@ public class XMLDocumentScannerImpl
          * the scanner must handle the root element specially.
          *
          * @returns True if the caller should stop and return true which
-         *          allows the scanner to switch to a new scanning 
+         *          allows the scanner to switch to a new scanning
          *          dispatcher. A return value of false indicates that
          *          the content dispatcher should continue as normal.
          */
         protected boolean scanRootElementHook()
             throws IOException, XNIException {
-            
+
             if (scanStartElement()) {
                 setScannerState(SCANNER_STATE_TRAILING_MISC);
                 setDispatcher(fTrailingMiscDispatcher);
@@ -944,7 +946,7 @@ public class XMLDocumentScannerImpl
          * However, when scanning a full XML document, an end of file
          * is always premature.
          */
-        protected void endOfFileHook(EOFException e) 
+        protected void endOfFileHook(EOFException e)
             throws IOException, XNIException {
 
             reportFatalError("PrematureEOF", null);
@@ -967,19 +969,19 @@ public class XMLDocumentScannerImpl
         // Dispatcher methods
         //
 
-        /** 
+        /**
          * Dispatch an XML "event".
          *
          * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
+         *                 and dispatch as much as possible.
          *
-         * @returns True if there is more to dispatch either from this 
+         * @returns True if there is more to dispatch either from this
          *          or a another dispatcher.
          *
          * @throws IOException  Thrown on i/o error.
          * @throws XNIException Thrown on parse error.
          */
-        public boolean dispatch(boolean complete) 
+        public boolean dispatch(boolean complete)
             throws IOException, XNIException {
 
             try {
@@ -1054,6 +1056,9 @@ public class XMLDocumentScannerImpl
                             setScannerState(SCANNER_STATE_TRAILING_MISC);
                             break;
                         }
+                        case SCANNER_STATE_TERMINATED: {
+                            return false;
+                        }
                     }
                 } while (complete || again);
             }
@@ -1065,10 +1070,12 @@ public class XMLDocumentScannerImpl
                     reportFatalError("PrematureEOF", null);
                     throw e;
                 }
+
+                setScannerState(SCANNER_STATE_TERMINATED);
+                return false;
             }
 
-            setScannerState(SCANNER_STATE_TERMINATED);
-            return false;
+            return true;
 
         } // dispatch(boolean):boolean
 
