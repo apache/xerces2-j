@@ -482,12 +482,6 @@ public class TraverseSchema implements
         public DatatypeValidator datatypeValidator;
     }
 
-    private class baseInfo {
-        private DatatypeValidator baseDataTypeValidator;
-        private ComplexTypeInfo baseComplexTypeInfo;
-        private String baseTypeSchemaURI;
-    }
-
     //REVISIT: verify the URI.
     public final static String SchemaForSchemaURI = "http://www.w3.org/TR-1/Schema";
 
@@ -2802,22 +2796,17 @@ public class TraverseSchema implements
           reportGenericSchemaError("Must specify BASE attribute");
           return;
         }
-        baseInfo bInfo = new baseInfo(); 
-        findBaseTypeInfo(bInfo, base); 
+
+        QName baseQName = parseBase(base);
+        processBaseTypeInfo(baseQName,typeInfo);
        
-        // Initialize base dt validator and type info, and check 
-        // that the base isn't a complex type with complex content
-        if (bInfo.baseComplexTypeInfo != null)  {
-           if (bInfo.baseComplexTypeInfo.contentSpecHandle > -1) {
-               reportGenericSchemaError("Base type cannot have complexContent");
-               return;
-           }
-           typeInfo.baseDataTypeValidator = bInfo.baseComplexTypeInfo.datatypeValidator;
+        // check that the base isn't a complex type with complex content
+        if (typeInfo.baseComplexTypeInfo != null)  {
+             if (typeInfo.baseComplexTypeInfo.contentSpecHandle > -1) {
+                 reportGenericSchemaError("Base type cannot have complexContent");
+                 return;
+             }
         }
-        else {
-           typeInfo.baseDataTypeValidator = bInfo.baseDataTypeValidator;
-        }
-        typeInfo.baseComplexTypeInfo = bInfo.baseComplexTypeInfo;
            
         // -----------------------------------------------------------------------
         // Process the content of the derivation
@@ -2830,7 +2819,7 @@ public class TraverseSchema implements
             //
             //Schema Spec : 5.11: Complex Type Definition Properties Correct : 2
             //
-            if (bInfo.baseDataTypeValidator != null) {
+            if (typeInfo.baseDataTypeValidator != null) {
                 reportGenericSchemaError("base is a simpleType, can't derive by restriction in " + typeName); 
                 return;
             }
@@ -2915,7 +2904,7 @@ public class TraverseSchema implements
         // EXTENSION
         //
         else {
-            typeInfo.datatypeValidator = bInfo.baseDataTypeValidator;
+            typeInfo.datatypeValidator = typeInfo.baseDataTypeValidator;
 
             //
             // Look for attributes 
@@ -2951,7 +2940,7 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         // Process attributes                                          
         // -----------------------------------------------------------------------
-        processAttributes(attrNode,bInfo,typeInfo);
+        processAttributes(attrNode,baseQName,typeInfo);
 
     }  // end traverseSimpleContentDecl
 
@@ -3054,42 +3043,43 @@ public class TraverseSchema implements
           reportGenericSchemaError("Must specify BASE attribute");
           return;
         }
-        baseInfo bInfo = new baseInfo(); 
-        findBaseTypeInfo(bInfo, base); 
+
+        QName baseQName = parseBase(base);
+
+        // -------------------------------------------------------------
+        // check if the base is "anyType"                       
+        // -------------------------------------------------------------
+        String baseTypeURI = fStringPool.toString(baseQName.uri);
+        String baseLocalName = fStringPool.toString(baseQName.localpart);
+        if (!(baseTypeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+            baseLocalName.equals("anyType"))) {
+
+            processBaseTypeInfo(baseQName,typeInfo);
        
-        // Check that the base is a complex type                                  
-        if (bInfo.baseComplexTypeInfo == null)  {
-             reportGenericSchemaError("Base type must be complex");
-             return;
+            //Check that the base is a complex type                                  
+            if (typeInfo.baseComplexTypeInfo == null)  {
+                 reportGenericSchemaError("Base type must be complex");
+                 return;
+            }
         }
 
         // -----------------------------------------------------------------------
         // Process the elements that make up the content
         // -----------------------------------------------------------------------
-        processComplexContent(typeNameIndex,content,typeInfo,bInfo,isMixed);
+        processComplexContent(typeNameIndex,content,typeInfo,baseQName,isMixed);
 
 
     }  // end traverseComplexContentDecl
 
 
     /**
-     * Process "base" information                                   
+     * Parse base string                                            
      *  
-     * @param baseTypeInfo        
      * @param base
-     * @return 
+     * @return QName
      */
-    
-    private void findBaseTypeInfo(baseInfo bInfo, String base) throws Exception {
+    private QName parseBase(String base) throws Exception {
 
-        String baseTypeSchemaURI = null;
-        ComplexTypeInfo baseComplexTypeInfo = null;
-        DatatypeValidator baseDTValidator = null;
-        
-        int baseTypeSymbol = -1;
-        String fullBaseName = "";
-        Element baseTypeNode = null;
-     
         String prefix = "";
         String localpart = base;
         int colonptr = base.indexOf(":");
@@ -3097,9 +3087,63 @@ public class TraverseSchema implements
             prefix = base.substring(0,colonptr);
             localpart = base.substring(colonptr+1);
         }
-        int localpartIndex = fStringPool.addSymbol(localpart);
-        String typeURI = resolvePrefixToURI(prefix);
 
+        int nameIndex = fStringPool.addSymbol(base);
+        int prefixIndex = fStringPool.addSymbol(prefix);
+        int localpartIndex = fStringPool.addSymbol(localpart);
+        int URIindex = fStringPool.addSymbol(resolvePrefixToURI(prefix));
+        return new QName(prefixIndex,localpartIndex,nameIndex,URIindex);
+    }
+    
+    /**
+     * Check if base is from another schema                         
+     *  
+     * @param baseName
+     * @return boolean
+     */
+    private boolean baseFromAnotherSchema(QName baseName) throws Exception {
+
+        String typeURI = fStringPool.toString(baseName.uri);
+        if ( ! typeURI.equals(fTargetNSURIString) 
+             && ! typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
+             && typeURI.length() != 0 ) 
+             //REVISIT, !!!! a hack: for schema that has no 
+             //target namespace, e.g. personal-schema.xml
+          return true;
+        else
+          return false;
+                                        
+    }
+    
+    /**
+     * Process "base" information                                   
+     *  
+     * @param baseTypeInfo        
+     * @param baseName
+     * @param typeInfo
+     * @return 
+     */
+    
+    private void processBaseTypeInfo(QName baseName, ComplexTypeInfo typeInfo) throws Exception {
+
+        ComplexTypeInfo baseComplexTypeInfo = null;
+        DatatypeValidator baseDTValidator = null;
+        
+        String typeURI = fStringPool.toString(baseName.uri);
+        String localpart = fStringPool.toString(baseName.localpart);
+        String base = fStringPool.toString(baseName.rawname);
+        String fullBaseName;
+        Element baseTypeNode;
+        int baseTypeSymbol;
+
+        // -------------------------------------------------------------
+        // check if the base is "anyType"                       
+        // -------------------------------------------------------------
+        if (typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+            localpart.equals("anyType")) {
+           return;
+        }
+        
         // -------------------------------------------------------------
         // check if the base type is from the same Schema
         // -------------------------------------------------------------
@@ -3108,13 +3152,14 @@ public class TraverseSchema implements
              && typeURI.length() != 0 ) { 
             //REVISIT, !!!! a hack: for schema that has no target namespace, 
             // e.g. personal-schema.xml
-            baseTypeSchemaURI = typeURI;
             baseComplexTypeInfo = getTypeInfoFromNS(typeURI, localpart);
             if (baseComplexTypeInfo == null) {
                 baseDTValidator = getTypeValidatorFromNS(typeURI, localpart);
-                if (baseDTValidator == null)
+                if (baseDTValidator == null) {
                     reportGenericSchemaError("Could not find base type " +localpart 
                                        + " in schema " + typeURI);
+                    return;
+                }
             }
         }
 
@@ -3153,18 +3198,22 @@ public class TraverseSchema implements
                         else {
                             // REVISIT: Localize
                             reportGenericSchemaError("Base type could not be found : " + base);
+                            return;
                         }
                     }
                 }
             }
         } // end else (type must be from same schema)
 
-        bInfo.baseDataTypeValidator = baseDTValidator;
-        bInfo.baseComplexTypeInfo = baseComplexTypeInfo;
-        bInfo.baseTypeSchemaURI = baseTypeSchemaURI;
+        if (baseComplexTypeInfo != null) {
+           typeInfo.baseComplexTypeInfo = baseComplexTypeInfo;
+           typeInfo.baseDataTypeValidator = baseComplexTypeInfo.datatypeValidator;
+        }
+        else
+           typeInfo.baseDataTypeValidator = baseDTValidator;
 
 
-    } // end findBaseTypeInfo
+    } // end processBaseTypeInfo
 
     /**
      * Process content which is complex                             
@@ -3179,7 +3228,7 @@ public class TraverseSchema implements
      */
     
     private void processComplexContent(int typeNameIndex,
-               Element complexContentChild, ComplexTypeInfo typeInfo, baseInfo bInfo,
+               Element complexContentChild, ComplexTypeInfo typeInfo, QName baseName,
                boolean isMixed) throws Exception {
 
        Element attrNode = null;
@@ -3254,9 +3303,8 @@ public class TraverseSchema implements
        // -----------------------------------------------------------------------
        // Merge in information from base, if it exists           
        // -----------------------------------------------------------------------
-       if (bInfo != null) {
-           typeInfo.baseComplexTypeInfo = bInfo.baseComplexTypeInfo;
-           int baseContentSpecHandle = bInfo.baseComplexTypeInfo.contentSpecHandle;
+       if (typeInfo.baseComplexTypeInfo != null) {
+           int baseContentSpecHandle = typeInfo.baseComplexTypeInfo.contentSpecHandle;
 
            if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
               //
@@ -3268,9 +3316,10 @@ public class TraverseSchema implements
                // Compose the final content model by concatenating the base and the 
                // current in sequence
                //
-               if (bInfo.baseTypeSchemaURI != null) {
+               if (baseFromAnotherSchema(baseName)) {
+                   String baseSchemaURI = fStringPool.toString(baseName.uri);
                    SchemaGrammar aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(
-                                    bInfo.baseTypeSchemaURI);
+                                    baseSchemaURI);
                    baseContentSpecHandle = importContentSpec(aGrammar, baseContentSpecHandle);
                }
                if (typeInfo.contentSpecHandle == -2) {
@@ -3321,10 +3370,10 @@ public class TraverseSchema implements
            if (!isAttrOrAttrGroup(attrNode)) 
               reportGenericSchemaError("Invalid child of a complex type");
            else
-              processAttributes(attrNode,bInfo,typeInfo);
+              processAttributes(attrNode,baseName,typeInfo);
        }
-       else if (bInfo != null)
-           processAttributes(null,bInfo,typeInfo);
+       else if (typeInfo.baseComplexTypeInfo != null)
+           processAttributes(null,baseName,typeInfo);
 
 
     } // end processComplexContent
@@ -3337,12 +3386,9 @@ public class TraverseSchema implements
      * @return 
      */
     
-    private void processAttributes(Element attrNode, baseInfo bInfo,          
+    private void processAttributes(Element attrNode, QName baseName,            
                ComplexTypeInfo typeInfo) throws Exception {
 
-
-         
-        String baseTypeSchemaURI = (bInfo == null) ? null:bInfo.baseTypeSchemaURI;
 
         XMLAttributeDecl attWildcard = null;
         Vector anyAttDecls = new Vector();
@@ -3394,6 +3440,8 @@ public class TraverseSchema implements
         if (baseTypeInfo != null && baseTypeInfo.attlistHead > -1 ) {
             int attDefIndex = baseTypeInfo.attlistHead;
             SchemaGrammar aGrammar = fSchemaGrammar;
+            String baseTypeSchemaURI = baseFromAnotherSchema(baseName)? 
+                           fStringPool.toString(baseName.uri):null;
             if (baseTypeSchemaURI != null) {
                 aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(baseTypeSchemaURI);
             }
