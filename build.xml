@@ -176,11 +176,11 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
+            includes="javax/**, org/**" 
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
-                       **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java **/v1/** **/v2/**
+                       **/v1/** **/v2/**
+                       javax.xml.parsers.ConvertToURI.java
                        org/apache/xerces/dom3/ls/**">
         </fileset>
     </copy>
@@ -201,7 +201,6 @@ Copyright:
     </copy>
 
     <xjavac srcdir="${build.src}"
-           excludes="**/RevalidatingDOMParser.java"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
@@ -701,19 +700,6 @@ Copyright:
   <target name="deprecatedall" depends="pack-src, deprecated-bin, pack-tools">
   </target>
 
-  <target name="prepare-schema-src">
-    <copy todir="${build.src}">
-        <fileset 
-            dir="${src.dir}"
-            includes="**/v2/**/*.java **/v2/**/*.properties"
-            excludes="**/v2/new_datatypes/**">
-        </fileset>
-    </copy>
-  </target>
-  
-  <target name="schema-all" depends="prepare-src, prepare-schema-src, pack-src, pack-bin">
-  </target>
-
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
@@ -763,13 +749,11 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
+            includes="javax/**, org/**" 
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
-                       **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java 
                        **/v1/** **/v2/**
-                        **/RevalidatingDOMParser.java 
+                       javax.xml.parsers.ConvertToURI.java
                         org/apache/xerces/impl/xs/**
                         org/apache/xerces/impl/dv/xs/**
                         org/apache/xerces/impl/xs/identity/**
@@ -969,11 +953,11 @@ Copyright:
     <copy todir="${build.src}">
         <fileset 
             dir="${src.dir}"
-            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
+            includes="javax/**, org/**" 
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
-                       **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java **/v1/** **/v2/**
+                       **/v1/** **/v2/**
+                       javax.xml.parsers.ConvertToURI.java
                        org/apache/xerces/dom3/*.java
                        org/apache/xerces/dom3/ls/**
                        org/w3c/dom/*.java">
@@ -1043,7 +1027,6 @@ Copyright:
     </copy>
 
     <xjavac srcdir="${build.src}"
-           excludes="**/RevalidatingDOMParser.java"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
