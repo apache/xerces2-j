@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2004 The Apache Software Foundation.
+ * Copyright 2001-2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1251,10 +1251,22 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         if (!fDeferNodeExpansion) {
 
             // REVISIT: Should this happen after we call the filter?
-            if (fStorePSVI && augs != null) {
-                ElementPSVI elementPSVI = (ElementPSVI)augs.getItem (Constants.ELEMENT_PSVI);
+            if (augs != null && fDocumentImpl != null && (fNamespaceAware || fStorePSVI)) {
+                ElementPSVI elementPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
                 if (elementPSVI != null) {
-                    ((PSVIElementNSImpl)fCurrentNode).setPSVI (elementPSVI);
+                    // Updating TypeInfo. If the declared type is a union the
+                    // [member type definition] will only be available at the
+                    // end of an element.
+                    if (fNamespaceAware) {
+                        XSTypeDefinition type = elementPSVI.getMemberTypeDefinition();
+                        if (type == null) {
+                            type = elementPSVI.getTypeDefinition();
+                        }
+                        ((ElementNSImpl)fCurrentNode).setType(type);
+                    }
+                    if (fStorePSVI) {
+                        ((PSVIElementNSImpl)fCurrentNode).setPSVI (elementPSVI);
+                    }
                 }
             }
 
