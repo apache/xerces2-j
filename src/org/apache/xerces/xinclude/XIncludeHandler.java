@@ -277,6 +277,9 @@ public class XIncludeHandler
     // for SAX compatibility.
     // Has the value of the ALLOW_UE_AND_NOTATION_EVENTS feature
     private boolean fSendUEAndNotationEvents;
+    
+    // track the version of the document being parsed
+    private boolean fIsXML11;
 
     // Constructors
 
@@ -305,6 +308,7 @@ public class XIncludeHandler
         fNotations = new Vector();
         fUnparsedEntities = new Vector();
         fParentRelativeURI = null;
+        fIsXML11 = false;
 
         baseURIScope.clear();
         baseURI.clear();
@@ -544,6 +548,7 @@ public class XIncludeHandler
         String standalone,
         Augmentations augs)
         throws XNIException {
+        fIsXML11 = "1.1".equals(version);
         if (isRootDocument() && fDocumentHandler != null) {
             fDocumentHandler.xmlDecl(version, encoding, standalone, augs);
         }
@@ -1202,7 +1207,12 @@ public class XIncludeHandler
 
             XIncludeTextReader reader = null;
             try {
-                reader = new XIncludeTextReader(includedSource, this);
+                if (fIsXML11) {
+                    reader = new XInclude11TextReader(includedSource, this);
+                }
+                else {
+                    reader = new XIncludeTextReader(includedSource, this);
+                }
                 reader.setErrorReporter(fErrorReporter);
                 reader.parse();
             }

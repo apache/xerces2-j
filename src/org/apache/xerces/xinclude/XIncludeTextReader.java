@@ -77,7 +77,7 @@ import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
- * This class is used for reading files requested in &lt;include&gt; elements,
+ * This class is used for reading resources requested in &lt;include&gt; elements,
  * when the parse attribute of the &lt;include&gt; element is "text".  Using this
  * class will open the location, detect the encoding, and discard the byte order
  * mark, if applicable.
@@ -481,11 +481,12 @@ public class XIncludeTextReader {
     }
     
     /**
-     * Returns true if the specified character is a valid XML character.
+     * Returns true if the specified character is a valid XML character
+     * as per the rules of XML 1.0.
      *
      * @param ch The character to check.
      */
-    private boolean isValid(int ch) {
+    protected boolean isValid(int ch) {
         return XMLChar.isValid(ch);
     }
 }
