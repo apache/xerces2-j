@@ -17,7 +17,6 @@
 package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLDocumentFragmentScannerImpl;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;

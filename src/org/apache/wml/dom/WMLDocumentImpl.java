@@ -15,16 +15,14 @@
  */
 package org.apache.wml.dom;
 
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
-import org.w3c.dom.*;
-import org.w3c.dom.html.*;
+import java.lang.reflect.Constructor;
+import java.util.Hashtable;
+
+import org.apache.wml.WMLDocument;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.NodeImpl;
-import org.apache.xerces.dom.AttrImpl;
 import org.w3c.dom.DOMException;
-import org.apache.wml.*;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
 
 /**
  * @version $Id$
