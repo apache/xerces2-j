@@ -18,7 +18,12 @@ package org.apache.xerces.util;
 
 import java.io.IOException;
 
-import org.xml.sax.EntityResolver;
+/**
+ * Switch the following import statement once the real interface 
+ * (org.xml.sax.ext.EntityResolver2) is available.
+ */
+// import org.xml.sax.ext.EntityResolver2;
+import org.apache.xerces.util.EntityResolver2Wrapper.EntityResolver2;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -62,7 +67,7 @@ import org.apache.xml.resolver.readers.SAXCatalogReader;
  * @version $Id$
  */
 public class XMLCatalogResolver 
-    implements XMLEntityResolver, EntityResolver, LSResourceResolver {
+    implements XMLEntityResolver, EntityResolver2, LSResourceResolver {
     
     /** Internal catalog manager for Apache catalogs. **/
     private CatalogManager fResolverCatalogManager = null;
@@ -232,7 +237,7 @@ public class XMLCatalogResolver
      * @throws IOException thrown if some i/o error occurs
      */
     public InputSource resolveEntity(String publicId, String systemId)
-        throws SAXException, IOException {
+    	 throws SAXException, IOException {
         
         String resolvedId = null;
         if (publicId != null && systemId != null) {
@@ -249,6 +254,66 @@ public class XMLCatalogResolver
         }  
         return null;
     }
+    
+     /**
+      * <p>Resolves an external entity. If the entity cannot be
+      * resolved, this method should return <code>null</code>. This
+      * method returns an input source if an entry was found in the
+      * catalog for the given external identifier. It should be
+      * overrided if other behaviour is required.</p>
+      * 
+      * @param name the identifier of the external entity 
+      * @param publicId the public identifier, or <code>null</code> if none was supplied
+      * @param baseURI the URI with respect to which relative systemIDs are interpreted.
+      * @param systemId the system identifier
+      * 
+      * @throws SAXException any SAX exception, possibly wrapping another exception
+      * @throws IOException thrown if some i/o error occurs
+      */
+     public InputSource resolveEntity(String name, String publicId, 
+         String baseURI, String systemId) throws SAXException, IOException { 
+        
+         String resolvedId = null;
+         
+         if(!getUseLiteralSystemId() && baseURI != null){
+             
+             URI base_uri = new URI(baseURI);
+             URI uri = new URI(base_uri, systemId);
+             systemId = uri.toString();
+             
+         }
+         
+         if (publicId != null && systemId != null) {
+             resolvedId = resolvePublic(publicId, systemId);
+         }
+         else if (systemId != null) {
+             resolvedId = resolveSystem(systemId);
+         }
+        
+         if (resolvedId != null) {
+             InputSource source = new InputSource(resolvedId);
+             source.setPublicId(publicId);
+             return source;
+         }  
+         return null;
+    }
+
+     /**
+      * <p>Locates an external subset for documents which do not explicitly
+      * provide one. If no external subset is provided, this method should
+      * return <code>null</code>.</p>
+      * 
+      * @param name the identifier of the document root element 
+      * @param baseURI the document's base URI
+      * 
+      * @throws SAXException any SAX exception, possibly wrapping another exception
+      * @throws IOException thrown if some i/o error occurs
+      */
+     public InputSource getExternalSubset(String name, String baseURI)
+     	 throws SAXException, IOException {
+         
+         return null;
+     }
 
     /** 
      * <p>Resolves a resource using the catalog. This method interprets that 
