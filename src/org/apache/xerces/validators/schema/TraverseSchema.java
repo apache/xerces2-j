@@ -4895,9 +4895,8 @@ public class TraverseSchema implements
     private Element getTopLevelComponentByName(String componentCategory, String name) throws Exception {
         Element child = null;
         SchemaInfo curr = fSchemaInfoListRoot; 
-   for (SchemaInfo cur = fSchemaInfoListRoot; cur != null; cur = cur.getNext());
-        for (; curr != null; curr = curr.getNext()) {
-            curr.restore();
+        for (; curr != null || curr == fSchemaInfoListRoot; curr = curr.getNext()) {
+            if (curr != null) curr.restore();
             if ( componentCategory.equals(SchemaSymbols.ELT_GROUP) ) {
                 child = (Element) fSchemaGrammar.topLevelGroupDecls.get(name);
             }
@@ -4940,13 +4939,14 @@ public class TraverseSchema implements
                 }
                 child = XUtil.getNextSiblingElement(child);
             }
-            if (child != null) break;
+            if (child != null || fSchemaInfoListRoot == null) break;
         }
         // have to reset fSchemaInfoList
         if(curr != null) 
             curr.restore();
         else
-            fSchemaInfoListRoot.restore();
+            if (fSchemaInfoListRoot != null) 
+                fSchemaInfoListRoot.restore();
         return child;
     }
 
