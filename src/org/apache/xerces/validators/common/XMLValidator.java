@@ -933,7 +933,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         // if enclosing element's Schema is different, need to switch "context"
         if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
             fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
-            switchGrammar(fGrammarNameSpaceIndex);
+            if ( fValidating && fGrammarIsSchemaGrammar )
+                switchGrammar(fGrammarNameSpaceIndex);
         }
 
         if (fValidating) {
@@ -1801,17 +1802,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Switchs to correct validating symbol tables when Schema changes.*/
     
-    private void switchGrammar(int newGrammarNameSpaceIndex) {
+    private void switchGrammar(int newGrammarNameSpaceIndex) throws Exception {
         Grammar tempGrammar = fGrammarResolver.getGrammar(fStringPool.toString(newGrammarNameSpaceIndex));
         if (tempGrammar == null) {
-            // Assume that this is a case were namespaces are being
-            // used with a DTD grammar.
+            // This is a case where namespaces is on with a DTD grammar.
             tempGrammar = fGrammarResolver.getGrammar("");
-            //System.out.println("XMLValidator: tempGrammar="+tempGrammar);
         }
         if (tempGrammar == null) {
-            System.out.println(fStringPool.toString(newGrammarNameSpaceIndex) + " grammar not found");
-            //TO DO report error here
+            reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                      "Grammar with uri : " + fStringPool.toString(newGrammarNameSpaceIndex) 
+                                      + " , can not found");
         }
         else {
             fGrammar = tempGrammar;
@@ -1825,6 +1825,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
         }
     }
+
     /** Binds namespaces to the element and attributes. */
     private void bindNamespacesToElementAndAttributes(QName element, 
                                                       XMLAttrList attrList)
