@@ -121,6 +121,8 @@ public class SchemaMessages extends ListResourceBundle {
         {"AllContentLimited", "Error:  cos-all-limited.1.2: A group whose content is \"all\" must only appear as the content type of a complex type definition.  Saw group in \"{0}\"."},
         {"MinMaxOnGroupChild", "Error:  The child of a model group definition must not specify either the minOccurs or maxOccurs attribute."},
         {"BadMinMaxForAllGp", "Error:  cos-all-limited.1.2:  The {0} attribute of a model group with \"all\" compositor that is part of a pair that is the content type of a complex type definition must have the value one.  The value \"{1}\" is incorrect."},
+        {"SchemaLocation", "Value \"{0}\" is not valid 'schemaLocation' syntax. anyURI must be followed by schema file"},
+
     };
     
     /** Returns the list resource bundle contents. */

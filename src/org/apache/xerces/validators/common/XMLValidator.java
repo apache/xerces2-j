@@ -236,8 +236,14 @@ public final class XMLValidator
    private boolean fNormalizeAttributeValues = true;
    private boolean fLoadDTDGrammar = true;
 
+   // Private temporary variables
+   private Hashtable fLocationUriPairs = new Hashtable(10);
+
+
    // declarations
 
+   private String fExternalSchemas = null;
+   private String fExternalNoNamespaceSchema = null;
    private DOMParser fSchemaGrammarParser = null;
    private int fDeclaration[];
    private XMLErrorReporter fErrorReporter = null;
@@ -295,6 +301,7 @@ public final class XMLValidator
    private Grammar fGrammar = null;
    private int fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
    private GrammarResolver fGrammarResolver = null;
+
 
    // state and stuff
 
@@ -522,6 +529,14 @@ public final class XMLValidator
    public void setSchemaFullCheckingEnabled(boolean flag) {
       fSchemaValidationFullChecking = flag;
    }
+
+   public void setExternalSchemas(Object value){
+       fExternalSchemas = (String)value;
+   }
+   public void setExternalNoNamespaceSchema(Object value){
+       fExternalNoNamespaceSchema = (String)value;
+   }
+   
 
    /** Returns true if full Schema checking is on. */
    public boolean getSchemaFullCheckingEnabled() {
@@ -1052,7 +1067,7 @@ public final class XMLValidator
                 }
               fValueStoreCache.endDocument();
           }
-         fDocumentHandler.endDocument();
+         fDocumentHandler.endDocument();                                
       }
    }
 
@@ -1112,9 +1127,8 @@ public final class XMLValidator
       // (2) report error for PROHIBITED attrs that are present (V_TAGc)
       // (3) add default attrs (FIXED and NOT_FIXED)
       //
-
+      
       if (!fSeenRootElement) {
-         fSeenRootElement = true;
          rootElementSpecified(element);
          fStringPool.resetShuffleCount();
       }
@@ -1122,10 +1136,14 @@ public final class XMLValidator
       if (fGrammar != null && fGrammarIsDTDGrammar) {
          fAttrListHandle = addDTDDefaultAttributes(element, fAttrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
       }
-
+      
       fCheckedForSchema = true;
       if (fNamespacesEnabled) {
          bindNamespacesToElementAndAttributes(element, fAttrList);
+      }
+
+      if (!fSeenRootElement) {
+          fSeenRootElement = true;
       }
 
       validateElementAndAttributes(element, fAttrList);
@@ -1925,10 +1943,8 @@ public final class XMLValidator
       fGrammar = null;
       fGrammarNameSpaceIndex = StringPool.EMPTY_STRING;
 
-      // we will reset fGrammarResolver in XMLParser before passing it to Validator
-      /*if (fGrammarResolver != null) {
-         fGrammarResolver.clearGrammarResolver(); //This also clears the Datatype registry
-      }*/
+      // we reset fGrammarResolver in XMLParser before passing it to Validator
+      
       fGrammarIsDTDGrammar = false;
       fGrammarIsSchemaGrammar = false;
 
@@ -1939,7 +1955,10 @@ public final class XMLValidator
       fWhiteSpace = DatatypeValidator.COLLAPSE;
 
       fMatcherStack.clear();
-
+      
+      //REVISIT: fExternalSchemas/fExternalNoNamespaceSchema is not reset 'cause we don't have grammar cashing in Xerces-J
+      //         reconsider implementation when we have grammar chashing
+      //
       init();
 
    } // resetCommon(StringPool)
@@ -1949,7 +1968,6 @@ public final class XMLValidator
 
       fEmptyURI = fStringPool.addSymbol("");
       fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
-
 
       fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
       fANYSymbol = fStringPool.addSymbol("ANY");
@@ -1971,10 +1989,7 @@ public final class XMLValidator
       fDATATYPESymbol = fStringPool.addSymbol("<<datatype>>");
       fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
       fXMLLang = fStringPool.addSymbol("xml:lang");
-
-        //optimization - must be called ONLY if validation is turned off. -el
-        //initDataTypeValidators();
-
+   
    } // init()
 
     /**
@@ -2451,8 +2466,6 @@ public final class XMLValidator
 
       fNamespacesScope.increaseDepth();
 
-      //Vector schemaCandidateURIs = null;
-      Hashtable locationUriPairs = null;
 
       if (fAttrListHandle != -1) {
          int index = attrList.getFirstAttr(fAttrListHandle);
@@ -2482,28 +2495,50 @@ public final class XMLValidator
                         fXsiPrefix = nsPrefix;
                         seeXsi = true;
                      }
-
-                     if (!seeXsi) {
-                        /***
-                        if (schemaCandidateURIs == null) {
-                            schemaCandidateURIs = new Vector();
-                        }
-                        schemaCandidateURIs.addElement( fStringPool.toString(uri) );
-                        /***/
-                     }
                   }
                }
             }
             index = attrList.getNextAttr(index);
          }
+
+         String location = null;
+         String uri = null;
+
          // if validating, walk through the list again to deal with "xsi:...."
          if (fValidating && fSchemaValidation) {
+
+             fLocationUriPairs.clear();
+             if (!fSeenRootElement) {
+                 // we are at the root element
+                 // and user set property on the parser to include external schemas
+                 //
+                 if (fExternalSchemas != null && fExternalSchemas.length()!=0) {
+                    
+                     parseSchemaLocation(fExternalSchemas);
+                 }
+                 if (fExternalNoNamespaceSchema!=null && fExternalNoNamespaceSchema.length() !=0 ) {
+                     
+                     fLocationUriPairs.put(fExternalNoNamespaceSchema, "");
+                     
+                     //REVISIT: wrong solution  (see AndyC note below)
+                     if (fNamespacesScope != null) {
+                      //bind prefix "" to URI "" in this case
+                      fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                                                              fStringPool.addSymbol(""));
+                   }
+                 }
+                 parseSchemas();
+                 fLocationUriPairs.clear();
+             }
+
             fXsiTypeAttValue = -1;
             index = attrList.getFirstAttr(fAttrListHandle);
+            int attName;
+            int attPrefix;
             while (index != -1) {
 
-               int attName = attrList.getAttrName(index);
-               int attPrefix = attrList.getAttrPrefix(index);
+               attName = attrList.getAttrName(index);
+               attPrefix = attrList.getAttrPrefix(index);
 
                if (fStringPool.equalNames(attName, fNamespacesPrefix)) {
                   // REVISIT
@@ -2520,18 +2555,12 @@ public final class XMLValidator
                                            +","+fStringPool.toString(attName) );
                      }
 
-
                      int localpart = attrList.getAttrLocalpart(index);
                      if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_SCHEMALOCACTION)) {
-                        if (locationUriPairs == null) {
-                           locationUriPairs = new Hashtable();
-                        }
-                        parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)), locationUriPairs);
+                        parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)));
                      } else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION)) {
-                        if (locationUriPairs == null) {
-                           locationUriPairs = new Hashtable();
-                        }
-                        locationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
+                        fLocationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
+                        
                         /***/
                         // NOTE: This is the *wrong* solution to the problem
                         //       of finding the grammar associated to elements
@@ -2557,27 +2586,7 @@ public final class XMLValidator
                }
                index = attrList.getNextAttr(index);
             }
-
-            // try to resolve all the grammars here
-            if (locationUriPairs != null) {
-               Enumeration locations = locationUriPairs.keys();
-
-               while (locations.hasMoreElements()) {
-                  String loc = (String) locations.nextElement();
-                  String uri = (String) locationUriPairs.get(loc);
-                  resolveSchemaGrammar( loc, uri);
-                  //schemaCandidateURIs.removeElement(uri);
-               }
-            }
-            //TO DO: This should be a feature that can be turned on or off
-            /*****
-            for (int i=0; i< schemaCandidateURIs.size(); i++) {
-
-                String uri = (String) schemaCandidateURIs.elementAt(i);
-                resolveSchemaGrammar(uri);
-            }
-            /*****/
-
+            parseSchemas ();
          }
 
       }
@@ -2627,32 +2636,51 @@ public final class XMLValidator
 
    } // bindNamespacesToElementAndAttributes(QName,XMLAttrList)
 
-   void parseSchemaLocation(String schemaLocationStr, Hashtable locationUriPairs){
-      if (locationUriPairs != null) {
+   private void parseSchemas () throws Exception{
+      
+       // try to resolve all the grammars here
+       Enumeration locations = fLocationUriPairs.keys();
+       String location = null;
+       String uri = null;
+       while (locations.hasMoreElements()) {
+           location = (String) locations.nextElement();
+           uri = (String) fLocationUriPairs.get(location);
+           resolveSchemaGrammar( location, uri);
+       }       
+   }
+
+   private void parseSchemaLocation(String schemaLocationStr) throws Exception{
          StringTokenizer tokenizer = new StringTokenizer(schemaLocationStr, " \n\t\r", false);
          int tokenTotal = tokenizer.countTokens();
          if (tokenTotal % 2 != 0 ) {
-            // TO DO: report warning - malformed schemaLocation string
-         } else {
-            while (tokenizer.hasMoreTokens()) {
-               String uri = tokenizer.nextToken();
-               String location = tokenizer.nextToken();
+             fErrorReporter.reportError(fErrorReporter.getLocator(),
+                     SchemaMessageProvider.SCHEMA_DOMAIN,
+                     SchemaMessageProvider.SchemaLocation,
+                     SchemaMessageProvider.MSG_NONE,
+                     new Object[]{schemaLocationStr},
+                     XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
 
-               locationUriPairs.put(location, uri);
+         } else {
+             String uri = null;
+             String location = null;
+             while (tokenizer.hasMoreTokens()) {
+               uri = tokenizer.nextToken();
+               location = tokenizer.nextToken();
+               fLocationUriPairs.put(location, uri);
             }
          }
-      } else {
-         // TO DO: should report internal error here
-      }
 
    }// parseSchemaLocaltion(String, Hashtable)
 
 
    private void resolveSchemaGrammar( String loc, String uri) throws Exception {
+       SchemaGrammar grammar = null;       
+       
+       if (uri!=null) {       
+         grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
+       }
+       if (grammar == null) {
 
-      SchemaGrammar grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
-
-      if (grammar == null) {
           if (fSchemaGrammarParser == null) {
               //
               // creating a parser for schema only once per parser instance
@@ -2682,6 +2710,7 @@ public final class XMLValidator
             loc = fEntityHandler.expandSystemId(loc);
             source = new InputSource(loc);
          }
+         
          try {
             fSchemaGrammarParser.parse( source );
          } catch ( IOException e ) {
@@ -2706,7 +2735,7 @@ public final class XMLValidator
             if (root == null) {
                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Can't get back Schema document's root element :" + loc);
             } else {
-               if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
+               if (uri!=null && !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
                   reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Schema in " + loc + " has a different target namespace " +
                                             "from the one specified in the instance document :" + uri);
                }
@@ -2726,9 +2755,9 @@ public final class XMLValidator
                generalAttrCheck.checkNonSchemaAttributes(fGrammarResolver);
 
                //allowing xsi:schemaLocation to appear on any element
-               String targetNS =   root.getAttribute("targetNamespace");
+               
+               String targetNS =   root.getAttribute("targetNamespace");               
                fGrammarNameSpaceIndex = fStringPool.addSymbol(targetNS);
-
                fGrammarResolver.putGrammar(targetNS, grammar);
                fGrammar = (SchemaGrammar)grammar;
 
@@ -2782,11 +2811,6 @@ public final class XMLValidator
 
    }
 
-   private void resolveSchemaGrammar(String uri) throws Exception{
-
-      resolveSchemaGrammar(uri, uri);
-
-   }
 
    /*
     * for <notation> must resolve values "b:myNotation"

@@ -142,6 +142,8 @@ public abstract class XMLParser
         // SAX2 core
         "http://xml.org/sax/properties/xml-string",
         // Xerces
+        "http://apache.org/xml/properties/external-schemaLocation",
+        "http://apache.org/xml/properties/external-noNamespaceSchemaLocation"
     };
 
     // debugging
@@ -629,6 +631,51 @@ public abstract class XMLParser
         fValidator.setSchemaFullCheckingEnabled(schemaFullChecking);
     }
 
+
+    /**
+     * Allows the user to set a list of external XML Schemas (ex."http://example.com schema.xsd") 
+     * to be used by the parser.
+     * If two schemas with the same targetNamespace appear in both
+     * the list and a document, the one from the list will be picked up.
+     * See XML Schema REC: http://www.w3.org/TR/xmlschema-1/#schema-loc
+     * <P>
+     * This method is equivalent to the property:
+     * <PRE>http://apache.org/xml/properties/validation/external-schemaLocation</PRE>
+     * 
+     * @param value  The list of schemas.
+     * @exception SAXNotRecognizedException
+     * @exception SAXNotSupportedException
+     */
+    protected void setExternalSchemaLocation(Object value) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            // REVISIT: Localize message
+            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/external-schema-location:  parse is in progress");
+        }
+        fValidator.setExternalSchemas(value);
+    }
+
+    /**
+     * Allows the user to set external XML Schema with no target Namespace.
+     * This value overwrites the value on the _noNamespaceSchemaLocation_.
+     * See XML Schema REC: http://www.w3.org/TR/xmlschema-1/#schema-loc
+     * <P>
+     * This method is equivalent to the property:
+     * <PRE>http://apache.org/xml/properties/validation/external-noNamespaceSchemaLocation</PRE>
+     * 
+     * @param value  An XML Schema file name
+     * @exception SAXNotRecognizedException
+     * @exception SAXNotSupportedException
+     */
+    protected void setExternalNoNamespaceSchemaLocation(Object value) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            // REVISIT: Localize message
+            throw new SAXNotSupportedException("http://apache.org/xml/properties/validation/external-noNamespaceSchemaLocation:  parse is in progress");
+        }
+        fValidator.setExternalNoNamespaceSchema(value);
+    }
+    
     /**
      * Returns true if Schema support is turned on.
      *
@@ -1025,7 +1072,6 @@ public abstract class XMLParser
      */
     public void parse(InputSource source)
         throws SAXException, IOException {
-
         if (fParseInProgress) {
             throw new org.xml.sax.SAXException("FWK005 parse may not be called while parsing."); // REVISIT - need to add new error message
         }
@@ -1562,9 +1608,10 @@ public abstract class XMLParser
         //
         // SAX2 Properties
         //
-
+        String property;
         if (propertyId.startsWith(SAX2_PROPERTIES_PREFIX)) {
-            String property = propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
+            property = propertyId.substring(SAX2_PROPERTIES_PREFIX.length());
+                                                
             //
             // http://xml.org/sax/properties/namespace-sep
             // Value type: String
@@ -1611,13 +1658,22 @@ public abstract class XMLParser
         // Xerces Properties
         //
 
-        /*
-        else if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
-            //
-            // No properties defined yet that are common to all parsers.
-            //
+        
+        if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
+            property = propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
+            
+            if (property.equals("external-schemaLocation")) {
+                setExternalSchemaLocation(value);
+                return;
+            }
+            else if (property.equals("external-noNamespaceSchemaLocation")) {
+                setExternalNoNamespaceSchemaLocation(value);
+                return;
+            }
+                
+
         }
-        */
+        
 
         //
         // Not recognized

@@ -186,9 +186,10 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         AllContentLimited = 48,
         MinMaxOnGroupChild = 49,
         BadMinMaxForAllGp = 50,
+        SchemaLocation = 51,
         // ...
 
-        MSG_MAX_CODE = 51;
+        MSG_MAX_CODE = 52;
     //
     // Minor Codes
     //
@@ -248,6 +249,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "AllContentLimited",
         "MinMaxOnGroupChild",
         "BadMinMaxForAllGp",
+        "SchemaLocation",
         // END
     };
 }
