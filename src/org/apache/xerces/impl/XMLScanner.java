@@ -637,10 +637,11 @@ public abstract class XMLScanner
             }
         }
 
-        fStringBuffer.clear();
         // data
-        if (fEntityScanner.scanData("?>", fStringBuffer)) {
+        if (fEntityScanner.scanData("?>", data)) {
+            fStringBuffer.clear();
             do {
+                fStringBuffer.append(data);
                 int c = fEntityScanner.peekChar();
                 if (c != -1) {
                     if (XMLChar.isHighSurrogate(c)) {
@@ -652,7 +653,8 @@ public abstract class XMLScanner
                         fEntityScanner.scanChar();
                     }
                 }
-            } while (fEntityScanner.scanData("?>", fStringBuffer));
+            } while (fEntityScanner.scanData("?>", data));
+            fStringBuffer.append(data);
             data.setValues(fStringBuffer);
         }
 
@@ -677,7 +679,9 @@ public abstract class XMLScanner
         // text
         // REVISIT: handle invalid character, eof
         text.clear();
-        while (fEntityScanner.scanData("--", text)) {
+        while (fEntityScanner.scanData("--", fString)) {
+            text.append(fString);
+            /***/
             int c = fEntityScanner.peekChar();
             if (c != -1) {
                 if (XMLChar.isHighSurrogate(c)) {
@@ -690,6 +694,7 @@ public abstract class XMLScanner
                 }
             } 
         }
+        text.append(fString);
         if (!fEntityScanner.skipChar('>')) {
             reportFatalError("DashDashInComment", null);
         }

@@ -63,7 +63,6 @@ import java.io.IOException;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.util.XMLStringBuffer;
 
 /**
  * This class allows various parser scanners to scan basic XML constructs
@@ -289,7 +288,7 @@ public abstract class XMLEntityScanner
      * @throws IOException  Thrown if i/o error occurs.
      * @throws EOFException Thrown on end of file.
      */
-    public abstract boolean scanData(String delimiter, XMLStringBuffer data) 
+    public abstract boolean scanData(String delimiter, XMLString data) 
         throws IOException;
 
     /**
