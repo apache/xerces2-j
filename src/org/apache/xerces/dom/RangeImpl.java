@@ -53,7 +53,8 @@ public class RangeImpl  implements Range {
     Node fInsertNode = null;
     Node fDeleteNode = null;
     Node fSplitNode = null;
-    
+    // Was the Node inserted from the Range or the Document
+    boolean fInsertedFromRange = false; 
     
     /** The constructor. Clients must use DocumentRange.createRange(),
      *  because it registers the Range with the document, so it can 
@@ -622,7 +623,8 @@ public class RangeImpl  implements Range {
         Node cloneCurrent;
         Node current;
         int currentChildren = 0;
-
+        fInsertedFromRange = true;
+        
         //boolean MULTIPLE_MODE = false;
         if (fStartContainer.getNodeType() == Node.TEXT_NODE) {
         
@@ -676,11 +678,11 @@ public class RangeImpl  implements Range {
             }
             //update fEndOffset. ex:<body><p/></body>. Range(start;end): body,0; body,1
             // insert <h1>: <body></h1><p/></body>. Range(start;end): body,0; body,2
-            if ( fEndContainer == fStartContainer ) {     //update fEndOffset
+            if ( fEndContainer == fStartContainer && fEndOffset != 0 ) {     //update fEndOffset if not 0
                 fEndOffset += (fEndContainer.getChildNodes().getLength() - currentChildren);
             }
-
-        } 
+        }
+        fInsertedFromRange = false;
     }
     
     public void surroundContents(Node newParent)
@@ -947,6 +949,7 @@ public class RangeImpl  implements Range {
     public void insertedNodeFromDOM(Node node) {
         if (node == null) return;
         if (fInsertNode == node) return;
+        if (fInsertedFromRange) return; // Offsets are adjusted in Range.insertNode
         
         Node parent = node.getParentNode();
         

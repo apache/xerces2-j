@@ -1058,6 +1058,14 @@ public class DocumentImpl
                 dispatchAggregateEvents(node, savedEnclosingAttr);
             }
         }
+        
+        // notify the range of insertions
+        if (ranges != null) {
+            int size = ranges.size();
+            for (int i = 0; i != size; i++) {
+                ((RangeImpl)ranges.elementAt(i)).insertedNodeFromDOM(newInternal);
+            }
+        }        
     }
 
     /**
