@@ -1646,7 +1646,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 baseURI = ((EntityReferenceImpl)fCurrentNode).getBaseURI ();
                 if (baseURI !=null && fErrorHandler != null) {
                     DOMErrorImpl error = new DOMErrorImpl ();
-                    error.fType = "infoset-baseURI";
+                    error.fType = "pi-base-uri-not-preserved";
                     error.fRelatedData = baseURI;
                     error.fSeverity = DOMError.SEVERITY_WARNING;
                     fErrorHandler.getErrorHandler ().handleError (error);
@@ -1692,7 +1692,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
             if (baseURI != null && fErrorHandler != null) {
                 DOMErrorImpl error = new DOMErrorImpl ();
-                error.fType = "infoset-baseURI";
+                error.fType = "pi-base-uri-not-preserved";
                 error.fRelatedData = baseURI;
                 error.fSeverity = DOMError.SEVERITY_WARNING;
                 fErrorHandler.getErrorHandler ().handleError (error);
