@@ -2408,6 +2408,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                             validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                         }
+                        if (fGrammarIsSchemaGrammar && 
+                            (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
+                            fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF )
+                            ) {
+
+                            validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
+                        }
 
                         if (fTempAttDecl.datatypeValidator == null) {
                             Object[] args = { fStringPool.toString(element.rawname),
