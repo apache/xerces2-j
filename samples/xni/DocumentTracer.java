@@ -648,6 +648,7 @@ public class DocumentTracer
     public void attributeDecl(String elementName, String attributeName,
                               String type, String[] enumeration,
                               String defaultType, XMLString defaultValue, 
+                              XMLString nonNormalizedDefaultValue,
                               Augmentations augs) throws XNIException {
 
         printIndent();
