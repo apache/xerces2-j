@@ -52,6 +52,7 @@ import org.w3c.dom.html.HTMLTitleElement;
  * are direct document writing ({@link #open}, {@link #write}) and HTTP attribute
  * methods ({@link #getURL}, {@link #getCookie}).
  *
+ * @xerces.internal
  *
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>

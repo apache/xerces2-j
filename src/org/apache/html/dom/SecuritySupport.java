@@ -24,6 +24,8 @@ import java.io.*;
  * API.
  *
  * Base class with security related methods that work on JDK 1.1.
+ * 
+ * @xerces.internal
  */
 class SecuritySupport {
 

@@ -52,6 +52,7 @@ import org.w3c.dom.html.HTMLTableSectionElement;
  * document being changed as results are fetched; in all likelihood, the results
  * might be out dated, but not erroneous.
  * 
+ * @xerces.internal
  * 
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
@@ -472,6 +473,8 @@ class HTMLCollectionImpl
  * passed by value, this class servers to pass the index into each recursion
  * by reference. It encompasses all the operations that need be performed on
  * the index, although direct access is possible.
+ * 
+ * @xerces.internal
  * 
  * @see CollectionImpl#item
  */

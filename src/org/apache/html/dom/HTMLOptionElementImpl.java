@@ -25,6 +25,7 @@ import org.w3c.dom.html.HTMLSelectElement;
 
 
 /**
+ * @xerces.internal
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
  * @see org.w3c.dom.html.HTMLOptionElement

@@ -20,6 +20,7 @@ import org.w3c.dom.html.HTMLModElement;
 
 
 /**
+ * @xerces.internal
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see org.w3c.dom.html.HTMLModElement

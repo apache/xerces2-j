@@ -25,6 +25,8 @@ import org.w3c.dom.NodeList;
 /**
  * This class implements the DOM's NodeList behavior for
  * HTMLDocuemnt.getElementsByName().
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

@@ -35,6 +35,7 @@ import org.w3c.dom.html.HTMLFormElement;
  * <code>dir</code> and <code>class</code> attributes. Other elements
  * add their own specific attributes.
  * 
+ * @xerces.internal
  * 
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
