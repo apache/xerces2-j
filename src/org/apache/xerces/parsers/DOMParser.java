@@ -2301,7 +2301,7 @@ public class DOMParser
                 str.append("<!ENTITY % ");
                 str.append(fStringPool.toString(entityNameIndex));
                 str.append(" \"");
-                str.append(fStringPool.orphanString(entityValueIndex));
+                str.append(fStringPool.toString(entityValueIndex));
                 str.append("\">");
                 Node internalPEEntity = fDocumentImpl.createComment(str.toString());
                 Node schema = XUtil.getFirstChildElement(fDocumentType, "schema");
