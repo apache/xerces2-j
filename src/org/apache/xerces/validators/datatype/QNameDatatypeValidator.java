@@ -367,6 +367,13 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
     }
 
 
+  /**
+     * Returns a copy of this object.
+     */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
 
 
     private void checkContentList( String content )throws InvalidDatatypeValueException

@@ -299,6 +299,13 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
     public Hashtable getFacets(){
         return null;
     }
+  /**
+     * Returns a copy of this object.
+     */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
 
 
     private String getErrorString(int major, int minor, Object args[]) {

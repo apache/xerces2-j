@@ -173,6 +173,13 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
             return "Illegal Errorcode "+minor;
         }
     }
+  /**
+     * Returns a copy of this object.
+     */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
 
     /**
      * Checks content for validity.

@@ -118,6 +118,13 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
 
     // Private methods start here
 
+  /**
+     * Returns a copy of this object.
+     */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
 
     /**
      * 

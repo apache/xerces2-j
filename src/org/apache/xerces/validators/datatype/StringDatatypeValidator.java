@@ -100,15 +100,18 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
 
     public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
+        //System.out.println( "Inside constructor" );
         this( null, null, false ); // Native, No Facets defined, Restriction
+
     }
 
     public StringDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                  boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
 
         setBasetype( base ); // Set base type 
 
         // Set Facets if any defined
+
         if ( facets != null  ){
             if ( derivedByList == false) {
                 for (Enumeration e = facets.keys(); e.hasMoreElements();) {
@@ -167,10 +170,10 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -178,7 +181,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength < fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                      "must be greater that the value of maxLength" + fMaxLength );
+                                                                 "must be greater that the value of maxLength" + fMaxLength );
                     }
                 }
 
@@ -193,11 +196,11 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
                 if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                                                "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
                 }
                 if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                                                "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
             } else { //derived by list
                 fDerivedByList = true;
@@ -240,10 +243,10 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -251,7 +254,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength < fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                      "must be greater that the value of maxLength" + fMaxLength );
+                                                                 "must be greater that the value of maxLength" + fMaxLength );
                     }
                 }
             }
@@ -318,6 +321,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             }
         }
         if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+
+
             if ( fEnumeration.contains( content ) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }
@@ -369,7 +374,36 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         return collator.compare( content, facetValue );
     }
 
+    /**
+   * Returns a copy of this object.
+   */
+    public Object clone() throws CloneNotSupportedException  {
+        StringDatatypeValidator newObj = null;
+        try {
+            newObj = new StringDatatypeValidator();
 
+            newObj.fLocale           =  this.fLocale;
+            newObj.fBaseValidator    =  this.fBaseValidator;
+            newObj.fLength           =  this.fLength;
+            newObj.fMaxLength        =  this.fMaxLength;
+            newObj.fMinLength        =  this.fMinLength;
+            newObj.fPattern          =  this.fPattern;
+            newObj.fEnumeration      =  this.fEnumeration;
+            newObj.fMaxInclusive     =  this.fMaxInclusive;
+            newObj.fMaxExclusive     =  this.fMaxExclusive;
+            newObj.fMinInclusive     =  this.fMinInclusive;
+            newObj.fMinExclusive     =  this.fMinExclusive;
+            newObj.fFacetsDefined    =  this.fFacetsDefined;
+            newObj.fDerivedByList    =  this.fDerivedByList;
+            newObj.isMaxExclusiveDefined = this.isMaxExclusiveDefined;
+            newObj.isMaxInclusiveDefined = this.isMaxInclusiveDefined;
+            newObj.isMinExclusiveDefined = this.isMinExclusiveDefined;
+            newObj.isMinInclusiveDefined = this.isMinInclusiveDefined;
+        } catch ( InvalidDatatypeFacetException ex) {
+            ex.printStackTrace();
+        }
+        return newObj;
+    }
 
     // Private methods
     private void checkContentList( String content )throws InvalidDatatypeValueException

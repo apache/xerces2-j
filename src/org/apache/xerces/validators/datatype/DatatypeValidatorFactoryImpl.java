@@ -284,20 +284,22 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                                                      DatatypeValidator base, Hashtable facets, boolean list ){
 
         DatatypeValidator simpleType = null;
+
         if ( base != null ) {
             try {
+                Class validatorDef = base.getClass();
+
                 Class [] validatorArgsClass = new Class[] {  
                     org.apache.xerces.validators.datatype.DatatypeValidator.class,
                     java.util.Hashtable.class,
                     boolean.class};
 
+
+
                 Object [] validatorArgs     = new Object[] {
                     base, facets, new Boolean( list )};
 
 
-                Class validatorDef = 
-                Class.forName(
-                             "org.apache.xerces.validators.datatype.AbstractDatatypeValidator" );
 
 
                 Constructor validatorConstructor =
@@ -308,9 +310,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 ( DatatypeValidator ) createDatatypeValidator (
                                                    validatorConstructor, validatorArgs );
 
+
                 addValidator( typeName, simpleType );//register validator
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
@@ -341,20 +343,27 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
     public DatatypeValidator getDatatypeValidator(String type) {
-        DatatypeValidator simpleType = null;
+        AbstractDatatypeValidator simpleType = null;
         if ( fRegistry.containsKey( type ) == true ) {
-            simpleType = (DatatypeValidator) fRegistry.get(type);
-            if ( simpleType != null ) {
+
+            
+            simpleType = (AbstractDatatypeValidator) fRegistry.get(type);
+
+            if ( simpleType != null ) { // if not registered type to create one
                 try {
-                    simpleType = (DatatypeValidator) simpleType.getClass().newInstance(); 
-                } catch ( InstantiationException e ) {
-                    e.printStackTrace();
-                } catch ( IllegalAccessException e ) {
-                    e.printStackTrace();
-                }
+                    simpleType  = (AbstractDatatypeValidator) simpleType.clone();
+                } catch (CloneNotSupportedException cloneExc) {
+                    try {
+                        simpleType = (AbstractDatatypeValidator) simpleType.getClass().newInstance(); 
+                    } catch( InstantiationException e ) {
+                        e.printStackTrace();
+                    } catch( IllegalAccessException e ) {
+                        e.printStackTrace();
+                    }
+                 }
             }
         }
-        return simpleType;
+        return (DatatypeValidator) simpleType;
     }
 
     private void addValidator(String name, DatatypeValidator v) {

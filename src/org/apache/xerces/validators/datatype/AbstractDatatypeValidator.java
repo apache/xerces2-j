@@ -68,17 +68,23 @@ import java.util.Hashtable;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 
 
-class AbstractDatatypeValidator implements DatatypeValidator {
+public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
     private Hashtable fFacets; // Hashtable of Facets Strings.
 
-    public AbstractDatatypeValidator(){
-    }
-    public AbstractDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                                                    boolean list ){ 
+    //abstract public AbstractDatatypeValidator();
+    //public AbstractDatatypeValidator(){
+    //}
 
 
-    }
+    //abstract public AbstractDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+      //                                 boolean list ); 
+
+    //public AbstractDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+    //                                                                boolean list ){ 
+    //
+    //
+    //}
 
     /**
      * Checks that "content" string is valid
@@ -96,9 +102,16 @@ class AbstractDatatypeValidator implements DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state) throws InvalidDatatypeValueException{ 
-        return null;
-    }
+    abstract public Object validate(String content, Object state) throws InvalidDatatypeValueException;
+
+    //{ 
+     //   System.out.println( "Here in AbstracDatatype " + content );
+      //  return null;
+    //}
+
+
+    abstract public Object clone() throws CloneNotSupportedException ;
+
 
     /**
      * returns the datatype facet if any is set as a
@@ -107,7 +120,7 @@ class AbstractDatatypeValidator implements DatatypeValidator {
      * @return
      */
     public Hashtable getFacets() {
-        return null;
+        return null;  // Not implemented yet
     }
     /**
      * Compares content in the Domain value vs. lexical
@@ -120,6 +133,8 @@ class AbstractDatatypeValidator implements DatatypeValidator {
      * @return
      */
     public int compare(String value1, String valu2) {
-        return 0;
+        return 0;     //Not implemented yet 
     }
+
+
 }

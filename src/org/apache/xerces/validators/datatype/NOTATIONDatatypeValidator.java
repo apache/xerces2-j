@@ -123,6 +123,13 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
     public int compare( String content1, String content2){
         return -1;
     }
+  /**
+     * Returns a copy of this object.
+     */
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+    }
+
     /**
      * Name of base type as a string.
      * A Native datatype has the string "native"  as its
