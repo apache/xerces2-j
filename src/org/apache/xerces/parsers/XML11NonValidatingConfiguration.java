@@ -70,7 +70,7 @@ import org.apache.xerces.xni.parser.XMLPullParserConfiguration;
  * @version $Id$
  */
 public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
-    implements XMLPullParserConfiguration {
+    implements XMLPullParserConfiguration, XML11Configurable {
 
     //
     // Constants
@@ -80,23 +80,23 @@ public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
 
     // feature identifiers
 
-	/** Feature identifier: validation. */
-	protected static final String VALIDATION =
-		Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    /** Feature identifier: validation. */
+    protected static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
     
-	/** Feature identifier: namespaces. */
-	protected static final String NAMESPACES =
-		Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+    /** Feature identifier: namespaces. */
+    protected static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
     
-	/** Feature identifier: external general entities. */
-	protected static final String EXTERNAL_GENERAL_ENTITIES =
-		Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
+    /** Feature identifier: external general entities. */
+    protected static final String EXTERNAL_GENERAL_ENTITIES =
+        Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
     
-	/** Feature identifier: external parameter entities. */
-	protected static final String EXTERNAL_PARAMETER_ENTITIES =
-		Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
-		
-
+    /** Feature identifier: external parameter entities. */
+    protected static final String EXTERNAL_PARAMETER_ENTITIES =
+        Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
+    
+    
     /** Feature identifier: continue after fatal error. */
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
         Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
@@ -163,34 +163,34 @@ public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
     // 
     // Data
     //
-	protected SymbolTable fSymbolTable;
+    protected SymbolTable fSymbolTable;
     protected XMLInputSource fInputSource;
     protected ValidationManager fValidationManager;
-	protected XMLVersionDetector fVersionDetector;
+    protected XMLVersionDetector fVersionDetector;
     protected XMLLocator fLocator;
-	protected Locale fLocale;
-
-	/** XML 1.0 Components. */
-	protected ArrayList fComponents;
+    protected Locale fLocale;
     
-	/** XML 1.1. Components. */
-	protected ArrayList fXML11Components = null;
-	
-	/** Common components: XMLEntityManager, XMLErrorReporter */
-	protected ArrayList fCommonComponents = null;
-
-	/** The document handler. */
-	protected XMLDocumentHandler fDocumentHandler;
-
-	/** The DTD handler. */
-	protected XMLDTDHandler fDTDHandler;
-
-	/** The DTD content model handler. */
-	protected XMLDTDContentModelHandler fDTDContentModelHandler;
-
-	/** Last component in the document pipeline */     
-	protected XMLDocumentSource fLastComponent;
-
+    /** XML 1.0 Components. */
+    protected ArrayList fComponents;
+    
+    /** XML 1.1. Components. */
+    protected ArrayList fXML11Components = null;
+    
+    /** Common components: XMLEntityManager, XMLErrorReporter */
+    protected ArrayList fCommonComponents = null;
+    
+    /** The document handler. */
+    protected XMLDocumentHandler fDocumentHandler;
+    
+    /** The DTD handler. */
+    protected XMLDTDHandler fDTDHandler;
+    
+    /** The DTD content model handler. */
+    protected XMLDTDContentModelHandler fDTDContentModelHandler;
+    
+    /** Last component in the document pipeline */     
+    protected XMLDocumentSource fLastComponent;
+    
     /** 
      * True if a parse is in progress. This state is needed because
      * some features/properties cannot be set while parsing (e.g.
@@ -201,15 +201,15 @@ public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
     /** fConfigUpdated is set to true if there has been any change to the configuration settings, 
      * i.e a feature or a property was changed.
      */
-	protected boolean fConfigUpdated = false;
-
+    protected boolean fConfigUpdated = false;
+    
     //
     // XML 1.0 components
     //
-
+    
     /** The XML 1.0 Datatype validator factory. */
     protected DTDDVFactory fDatatypeValidatorFactory;
-
+    
     /** The XML 1.0 Document scanner that does namespace binding. */
     protected XMLNSDocumentScannerImpl fNamespaceScanner;
     
@@ -222,32 +222,32 @@ public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
     //
     // XML 1.1 components
     //
-
+    
     /** The XML 1.1 datatype factory. **/
     protected DTDDVFactory fXML11DatatypeFactory = null;
-
+    
     /** The XML 1.1 document scanner that does namespace binding. **/
     protected XML11NSDocumentScannerImpl fXML11NSDocScanner = null;
-
+    
     /** The XML 1.1 document scanner that does not do namespace binding. **/
     protected XML11DocumentScannerImpl fXML11DocScanner = null;
-
+    
     /** The XML 1.1 DTD scanner. **/
     protected XML11DTDScannerImpl fXML11DTDScanner = null;
-
+    
     //
     // Common components
     //
-
+    
     /** Grammar pool. */
     protected XMLGrammarPool fGrammarPool;
-
+    
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
-
+    
     /** Entity manager. */
     protected XMLEntityManager fEntityManager;
-
+    
     /** Current scanner */
     protected XMLDocumentScanner fCurrentScanner;
     
@@ -256,7 +256,7 @@ public class XML11NonValidatingConfiguration extends ParserConfigurationSettings
     
     /** Current DTD scanner. */
     protected XMLDTDScanner fCurrentDTDScanner;
-
+    
     
     /** Flag indiciating whether XML11 components have been initialized. */
     private boolean f11Initialized = false;
