@@ -176,7 +176,6 @@ public class XMLDTDLoader
         fDTDScanner = new XMLDTDScannerImpl(fSymbolTable, fErrorReporter, fEntityManager);
         fDTDScanner.setDTDHandler(this);
         fDTDScanner.setDTDContentModelHandler(this);
-        fEntityManager.setProperty(ERROR_REPORTER, fErrorReporter);
         reset();
     } // init(SymbolTable, XMLGrammarPool, XMLErrorReporter, XMLEntityResolver)
 
@@ -268,6 +267,7 @@ public class XMLDTDLoader
         } else if(propertyId.equals( ERROR_REPORTER)) {
             fErrorReporter = (XMLErrorReporter)value;
             fDTDScanner.setProperty(propertyId, value);
+            fEntityManager.setProperty(propertyId, value);
         } else if(propertyId.equals( ERROR_HANDLER)) {
             fErrorReporter.setProperty(propertyId, value);
         } else if(propertyId.equals( ENTITY_RESOLVER)) {
@@ -357,7 +357,6 @@ public class XMLDTDLoader
     public Grammar loadGrammar(XMLInputSource source)
             throws IOException, XNIException {
         reset();
-        fDTDScanner.reset();
         fDTDGrammar = new DTDGrammar(fSymbolTable, new XMLDTDDescription(source.getPublicId(), source.getSystemId(), source.getBaseSystemId(), fEntityManager.expandSystemId(source.getSystemId()), null));
         fGrammarBucket = new DTDGrammarBucket();
         fGrammarBucket.setStandalone(false);
@@ -377,5 +376,12 @@ public class XMLDTDLoader
         }
         return fDTDGrammar;
     } // loadGrammar(XMLInputSource):  Grammar
+
+    // reset all the components that we rely upon
+    protected void reset() {
+        super.reset();
+        fDTDScanner.reset();
+        fEntityManager.reset();
+    }
 
 } // class XMLDTDLoader

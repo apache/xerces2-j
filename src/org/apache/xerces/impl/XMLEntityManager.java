@@ -1199,7 +1199,16 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fSecurityManager = null;
         }
+
+        // reset general state
+        reset();
         
+    } // reset(XMLComponentManager)
+
+    // reset general state.  Should not be called other than by
+    // a class acting as a component manager but not
+    // implementing that interface for whatever reason.
+    public void reset() {
         fEntityExpansionLimit = (fSecurityManager != null)?fSecurityManager.getEntityExpansionLimit():0;
 
         // initialize state
