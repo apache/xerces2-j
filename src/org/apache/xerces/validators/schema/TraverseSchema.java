@@ -513,7 +513,7 @@ public class TraverseSchema implements
                            EntityResolver entityResolver,
                            boolean fullChecking,
                            GeneralAttrCheck generalAttrCheck,
-                           String externalSchemaLocations, String noNamespaceSchemaLocation 
+                           String externalSchemaLocations, String noNamespaceSchemaLocation
                            ) throws Exception {
         fErrorReporter = errorReporter;
         fCurrentSchemaURL = schemaURL;
@@ -1990,7 +1990,7 @@ public class TraverseSchema implements
         if(root == null) { // try our own schemaLocation
             Attr locationAttr = importDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
             if(locationAttr != null) {
-                location = locationAttr.getValue(); 
+                location = locationAttr.getValue();
                 root = openImportedSchema(location);
             }
          }
@@ -2016,7 +2016,7 @@ public class TraverseSchema implements
             }
          }
     }
-    
+
     private Element openImportedSchema(String location) throws Exception {
         // expand it before passing it to the parser
         InputSource source = null;
@@ -6765,15 +6765,15 @@ throws Exception {
                                 return tempQName;
                             }
                             else {
-                                // Squirrel away the baseTypeNameStack. 
+                                // Squirrel away the baseTypeNameStack.
                                 Stack savedbaseNameStack = null;
                                 if (!fBaseTypeNameStack.isEmpty()) {
-                                  savedbaseNameStack = fBaseTypeNameStack; 
+                                  savedbaseNameStack = fBaseTypeNameStack;
                                   fBaseTypeNameStack = new Stack();
                                 }
                                 typeNameIndex = traverseComplexTypeDecl( topleveltype, true );
                                 if (savedbaseNameStack != null)
-                                    fBaseTypeNameStack  = savedbaseNameStack; 
+                                    fBaseTypeNameStack  = savedbaseNameStack;
                                 typeInfo = (ComplexTypeInfo)
                                     fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
                             }
@@ -7596,12 +7596,11 @@ throws Exception {
                     noErrorSoFar = false;
                 }
             } else {
-                String eltBaseName = typeInfo.baseComplexTypeInfo.typeName;
-                ComplexTypeInfo subTypeInfo = substitutionGroupEltTypeInfo;
-                for (; subTypeInfo != null && !subTypeInfo.typeName.equals(eltBaseName); subTypeInfo = subTypeInfo.baseComplexTypeInfo);
+                ComplexTypeInfo subTypeInfo = typeInfo;
+                for (; subTypeInfo != null && subTypeInfo != substitutionGroupEltTypeInfo; subTypeInfo = subTypeInfo.baseComplexTypeInfo);
                 if (subTypeInfo == null) { // then this type isn't in the chain...
                     // REVISIT:  localize
-                    reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type whose base is " + eltBaseName + "; this basetype does not derive from the type of the element at the head of the substitution group");
+                    reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
                     noErrorSoFar = false;
                 } else { // type is fine; does substitutionElement allow this?
                     if((derivationMethod & finalSet) != 0) {
@@ -8132,7 +8131,7 @@ throws Exception {
           if (right != -2)
              findAndCreateElements(right,scope);
         }
-        
+
 	else if (type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
 	      || type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
 	      || type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
