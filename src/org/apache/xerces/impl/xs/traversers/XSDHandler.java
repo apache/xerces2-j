@@ -358,6 +358,7 @@ public class XSDHandler {
         //          we will get stack overflaw because
         //          XMLSchemaValidator will be instantiating XSDHandler...
         fSchemaParser = new DOMParser();
+        fSchemaGrammarDescription = new SchemaGrammarDescription();
 
         createTraversers();
     } // end constructor
@@ -397,8 +398,7 @@ public class XSDHandler {
         }
         fRoot = constructTrees(schemaRoot, is.getSystemId(), schemaNamespace, referType);
         if (fRoot == null) {
-            // REVISIT:  something went wrong; print error about no schema found
-            return null;
+            return fGrammarBucket.getGrammar(schemaNamespace);
         }
 
         // second phase:  fill global registries.
@@ -523,11 +523,11 @@ public class XSDHandler {
         // If the context is instance, the validator would have already consulted the pool
         if ((sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace)) == null && referType == XSDDescription.CONTEXT_PREPARSE) {
             if (fGrammarPool != null) {
-                grammarDescription = new SchemaGrammarDescription();
-                grammarDescription.setContextType(referType);
-                grammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
-                grammarDescription.setLocationHints(new String[] {locationHint});
-                sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(grammarDescription);
+                fSchemaGrammarDescription.reset();
+                fSchemaGrammarDescription.setContextType(referType);
+                fSchemaGrammarDescription.setTargetNamespace(currSchemaInfo.fTargetNamespace);
+                fSchemaGrammarDescription.setLocationHints(new String[] {locationHint});
+                sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(fSchemaGrammarDescription);
                 if (sg != null) {
                     fGrammarBucket.putGrammar(sg);
                 }
@@ -582,13 +582,15 @@ public class XSDHandler {
                 
                 // We first ask the GrammarBucket, then the GrammarPool and only then the EntityResolver is consulted
                 
+                fSchemaGrammarDescription.reset();
+                fSchemaGrammarDescription.setContextType(XSDDescription.CONTEXT_IMPORT);
+                fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
+                fSchemaGrammarDescription.setLocationHints(new String[] {schemaHint});
                 if (fGrammarBucket.getGrammar(schemaNamespace) != null) {
                     continue;
                 }
                 else {
                     if (fGrammarPool != null) {
-                        fSchemaGrammarDescription.reset();
-                        fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
                         sg = (SchemaGrammar)fGrammarPool.retrieveGrammar(fSchemaGrammarDescription);
                         if (sg != null) {
                             fGrammarBucket.putGrammar(sg);
@@ -597,6 +599,7 @@ public class XSDHandler {
                     }
                 }
                 grammarDescription = new SchemaGrammarDescription();
+                grammarDescription.setContextType(XSDDescription.CONTEXT_IMPORT);
                 grammarDescription.setTargetNamespace(schemaNamespace);
                 grammarDescription.setLocationHints(new String[] {schemaHint});
                 sg = new SchemaGrammar(fSymbolTable, schemaNamespace, grammarDescription);
@@ -1328,6 +1331,7 @@ public class XSDHandler {
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
         fGrammarPool = grammarPool;
+        fSchemaGrammarDescription.reset();
 
         EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
 

@@ -116,5 +116,31 @@ public class XMLDTDDescription implements XMLGrammarDescription {
     public String getInternalSubset () {
         return fInternalSubset;
     } // getInternalSubset():  String
+    
+    /**
+     * Compares this grammar with the given grammar. Currently, we compare 
+     * the root element names.
+     * 
+     * @param desc The description of the grammar to be compared with
+     * @return     True if they are equal, else false
+     */
+    public boolean equals(XMLGrammarDescription desc) {
+    	if (!getGrammarType().equals(desc.getGrammarType())) {
+    	    return false;
+    	}
+    	if (fRootName.equals(((XMLDTDDescription)desc).getRootName())) {
+    	    return true;
+    	}
+    	return false;
+    }
+    
+    /**
+     * Returns the hash code of this grammar
+     * 
+     * @return The hash code
+     */
+    public int hashCode() {
+        return fRootName.hashCode();
+    }
 } // class XMLDTDDescription
 

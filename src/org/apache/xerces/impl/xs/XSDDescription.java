@@ -207,6 +207,35 @@ public class XSDDescription extends XMLResourceIdentifierImpl
     }
     
     /**
+     * Compares this grammar with the given grammar. Currently, we compare 
+     * the target namespaces.
+     * 
+     * @param desc The description of the grammar to be compared with
+     * @return     True if they are equal, else false
+     */
+    public boolean equals(XMLGrammarDescription desc) {
+        if (!getGrammarType().equals(desc.getGrammarType())) {
+    	    return false;
+    	}
+    	if (fTargetNamespace != null && fTargetNamespace.equals(((XSDDescription)desc).getTargetNamespace())) {
+    	    return true;
+    	}
+    	else if (fTargetNamespace == null && ((XSDDescription)desc).getTargetNamespace() == null) {
+    	    return true;
+    	}
+    	return false;
+    }
+    
+    /**
+     * Returns the hash code of this grammar
+     * 
+     * @return The hash code
+     */
+    public int hashCode() {
+         return (fTargetNamespace == null) ? 0 : fTargetNamespace.hashCode();
+    }
+    
+    /**
      *  resets all the fields
      */
     protected void reset(){
