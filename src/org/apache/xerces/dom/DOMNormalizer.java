@@ -276,7 +276,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				                DOMMessageFormatter.DOM_DOMAIN, 
 				                "wf-invalid-character-in-node-name", 
 				                new Object[]{"Element", node.getNodeName()});
-                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, null, 
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, node, 
                                 "wf-invalid-character-in-node-name");                       
                     }
                 }
@@ -312,7 +312,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				                              "wf-invalid-character-in-node-name", 
 				                               new Object[]{"Attr",node.getNodeName()});
 				                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
-				                                null, "wf-invalid-character-in-node-name");
+				                                node, "wf-invalid-character-in-node-name");
                                     }
                                 }           
                             }
@@ -714,13 +714,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "NullLocalElementName", 
                         new Object[]{element.getNodeName()});
-                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, null, 
+                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, element, 
                         "NullLocalElementName");
                 } else {
                     String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "NullLocalElementName", 
                         new Object[]{element.getNodeName()});
-                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, null, 
+                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, element, 
                         "NullLocalElementName");
                 }
             } else { // uri=null and no colon (DOM L2 node)
@@ -786,7 +786,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				                            DOMMessageFormatter.DOM_DOMAIN, 
 				                            "wf-invalid-character-in-node-name", 
 				                            new Object[]{"Attribute", attr.getNodeName()});
-                                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, null, 
+                                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, attr, 
                                             "wf-invalid-character-in-node-name");  
                                 }
                         }
@@ -868,13 +868,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
                                 "NullLocalAttrName", new Object[]{attr.getNodeName()});
-                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, null, 
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, attr, 
                                 "NullLocalAttrName");
                         } else {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
                                 "NullLocalAttrName", new Object[]{attr.getNodeName()});
-                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, null, 
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, attr, 
                                 "NullLocalAttrName");
                         }
                     } else {
