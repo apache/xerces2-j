@@ -400,11 +400,15 @@ public class XMLDTDLoader
         // know which grammar it is, and we don't know the root name anyway...
 
         // actually start the parsing!
-        fDTDScanner.setInputSource(source);
         try {
+            fDTDScanner.setInputSource(source);
             fDTDScanner.scanDTDExternalSubset(true);
         } catch (EOFException e) {
             // expected behaviour...
+        }
+        finally {
+            // Close all streams opened by the parser.
+            fEntityManager.closeReaders();
         }
         if(fDTDGrammar != null && fGrammarPool != null) {
             fGrammarPool.cacheGrammars(XMLDTDDescription.XML_DTD, new Grammar[] {fDTDGrammar});
