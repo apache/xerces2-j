@@ -59,6 +59,7 @@ package org.apache.xerces.dom;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.io.Serializable;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -134,7 +135,7 @@ public class CoreDocumentImpl
     protected ElementImpl docElement;
 
     /** NodeListCache free list */
-    NodeListCache fFreeNLCache;
+    transient NodeListCache fFreeNLCache;
 
     /**Experimental DOM Level 3 feature: Document encoding */
     protected String encoding;
@@ -1561,7 +1562,7 @@ public class CoreDocumentImpl
     /*
      * a class to store some user data along with its handler
      */
-    class UserDataRecord {
+    class UserDataRecord implements Serializable {
         Object fData;
         UserDataHandler fHandler;
         UserDataRecord(Object data, UserDataHandler handler) {
