@@ -4086,11 +4086,17 @@ public class TraverseSchema implements
         }
 
         int uriIndex = -1;
-        if ( fTargetNSURIString.length() > 0 &&
-             ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fAttributeDefaultQualified || isAttrTopLevel  )
-             ) {
-            uriIndex = fTargetNSURI;
+        // refer to 4.3.1 in "XML Schema Part 1: Structures"
+        if ( fTargetNSURIString.length() > 0) {
+                if ( isAttrTopLevel) {
+                        uriIndex = fTargetNSURI;
+                }
+                else if ( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED)){
+                        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                            fAttributeDefaultQualified ) {
+                                uriIndex = fTargetNSURI;
+                        }
+                }
         }
 
         QName attQName = new QName(-1,attName,attName,uriIndex);
@@ -4754,18 +4760,18 @@ public class TraverseSchema implements
         int uriIndex = -1;
         int enclosingScope = fCurrentScope;
 
-        
-        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fElementDefaultQualified ) {
-            uriIndex = fTargetNSURI;
-        }
-
+        //refer to 4.3.2 in "XML Schema Part 1: Structures"
         if ( isTopLevel(elementDecl)) {
             uriIndex = fTargetNSURI;
             enclosingScope = TOP_LEVEL_SCOPE;
         }
-
-
+        else if ( !isQName.equals(SchemaSymbols.ATTVAL_UNQUALIFIED)){
+                if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                   fElementDefaultQualified ) {
+                        uriIndex = fTargetNSURI;
+                }
+        }
+        
         //There can never be two elements with the same name and different type in the same scope.
         int existSuchElementIndex = fSchemaGrammar.getElementDeclIndex(uriIndex, localpartIndex, enclosingScope);
         if ( existSuchElementIndex > -1) {
