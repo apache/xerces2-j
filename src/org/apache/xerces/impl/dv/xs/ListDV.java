@@ -89,17 +89,19 @@ public class ListDV extends TypeValidator{
         }
         
         public boolean contains(Object item) {
-        	for(int i = 0;i < data.length; i++) {
-        		if(item == data[i])
-        			return true;
-        	}
-        	return false;
+            for (int i = 0;i < data.length; i++) {
+                if (item == data[i]) {
+                    return true;
+                }
+            }
+            return false;
         }
         
         public Object item(int index) throws XSException {
-        	if(index < 0 || index > data.length - 1) 
-        		throw new XSException(XSException.INDEX_SIZE_ERR, null);
-        	return data[index];
+            if (index < 0 || index > data.length - 1) {
+                throw new XSException(XSException.INDEX_SIZE_ERR, null);
+            }
+            return data[index];
         }
     }
 } // class ListDV
