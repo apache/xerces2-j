@@ -85,6 +85,9 @@ public class XMLElementDecl {
 
     public XMLContentModel contentModelValidator;
 
+    // scope where this element is declared, should always be -1 with DTD Validation.
+    public int scope;
+
     //
     // Constructors
     //
@@ -107,6 +110,7 @@ public class XMLElementDecl {
         datatypeValidator = null;
         contentSpecIndex = -1;
         contentModelValidator = null;
+	scope = -1;
     }
 
     public void setValues(XMLElementDecl elementDecl) {
@@ -115,6 +119,7 @@ public class XMLElementDecl {
         datatypeValidator = elementDecl.datatypeValidator;
         contentSpecIndex = elementDecl.contentSpecIndex;
         contentModelValidator = elementDecl.contentModelValidator;
+	scope = elementDecl.scope;
     }
 
     //
