@@ -16,6 +16,7 @@
 
 package org.apache.xerces.dom;
 
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -163,6 +164,18 @@ public class DeferredDocumentImpl
     // Public methods
     //
 
+    /**
+     * Retrieve information describing the abilities of this particular
+     * DOM implementation. Intended to support applications that may be
+     * using DOMs retrieved from several different sources, potentially
+     * with different underlying representations.
+     */
+    public DOMImplementation getImplementation() {
+        // Currently implemented as a singleton, since it's hardcoded
+        // information anyway.
+        return DeferredDOMImplementationImpl.getDOMImplementation();
+    }
+    
     /** Returns the cached parser.getNamespaces() value.*/
     boolean getNamespacesEnabled() {
         return fNamespacesEnabled;

@@ -1669,6 +1669,17 @@ extends ParentNode implements Document  {
             // source node comes from a different DOMImplementation
             return null;
         }
+        
+        //Return null when the source node comes from a different implementation.
+        if (source == null ) {
+        	return null;
+        } else if (source != null && source.getOwnerDocument() != null) {
+        	if (this.getImplementation() != source.getOwnerDocument()
+        			.getImplementation()) {
+        		return null;
+        	}
+        }
+        
         switch (node.getNodeType()) {
             case ATTRIBUTE_NODE: {
                 AttrImpl attr = (AttrImpl) node;
