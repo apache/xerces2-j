@@ -200,7 +200,8 @@ public abstract class ChildAndParentNode
     }
 
     /**
-     * same as above but returns internal type
+     * same as above but returns internal type and this one is not overridden
+     * by DocumentImpl to return null
      */
     DocumentImpl ownerDocument() {
         return ownerDocument;
@@ -265,7 +266,7 @@ public abstract class ChildAndParentNode
 
     }   // getFirstChild():Node
 
-    /** The first child of this Node, or null if none. */
+    /** The last child of this Node, or null if none. */
     public Node getLastChild() {
 
         if (syncChildren()) {

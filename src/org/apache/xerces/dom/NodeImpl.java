@@ -283,14 +283,15 @@ public abstract class NodeImpl
         // if we have an owner simply forward the request
         // otherwise ownerNode is our ownerDocument
         if (owned()) {
-            return ownerNode.getOwnerDocument();
+            return ownerNode.ownerDocument();
         } else {
             return (Document) ownerNode;
         }
     }
 
     /**
-     * same as above but returns internal type
+     * same as above but returns internal type and this one is not overridden
+     * by DocumentImpl to return null 
      */
     DocumentImpl ownerDocument() {
         // if we have an owner simply forward the request

@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -210,7 +210,8 @@ public abstract class ParentNode
     }
 
     /**
-     * same as above but returns internal type
+     * same as above but returns internal type and this one is not overridden
+     * by DocumentImpl to return null
      */
     DocumentImpl ownerDocument() {
         return ownerDocument;
@@ -267,6 +268,7 @@ public abstract class ParentNode
 
     /** The first child of this Node, or null if none. */
     public Node getFirstChild() {
+
         if (syncChildren()) {
             synchronizeChildren();
         }
@@ -274,8 +276,9 @@ public abstract class ParentNode
 
     }   // getFirstChild():Node
 
-    /** The first child of this Node, or null if none. */
+    /** The last child of this Node, or null if none. */
     public Node getLastChild() {
+
         if (syncChildren()) {
             synchronizeChildren();
         }
