@@ -102,12 +102,12 @@ public class XSMessageFormatter implements MessageFormatter {
         
         if (fResourceBundle == null || locale != fLocale) {
             if (locale != null) {
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.SchemaMessages", locale);
+                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages", locale);
                 // memorize the most-recent locale
                 fLocale = locale;
             }
             if (fResourceBundle == null)
-                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.SchemaMessages");
+                fResourceBundle = PropertyResourceBundle.getBundle("org.apache.xerces.impl.msg.XMLSchemaMessages");
         }
         
         String msg = fResourceBundle.getString(key);
