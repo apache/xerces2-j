@@ -100,18 +100,28 @@ public class DOMParser
     extends AbstractDOMParser {
 
     //
-    // Constructors
+    // Constants
     //
 
-    /**
-     * Constructs a DOM parser using the dtd/xml schema parser configuration.
-     */
-    public DOMParser() {
-        super((XMLParserConfiguration)ObjectFactory.createObject(
-            "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.StandardParserConfiguration"
-            ));
-    } // <init>()
+    // properties
+
+    /** Property identifier: symbol table. */
+    protected static final String SYMBOL_TABLE =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+
+    /** Property identifier: XML grammar pool. */
+    protected static final String XMLGRAMMAR_POOL =
+        Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY;
+
+    /** Recognized properties. */
+    private static final String[] RECOGNIZED_PROPERTIES = {
+        SYMBOL_TABLE,
+        XMLGRAMMAR_POOL,
+    };
+
+    //
+    // Constructors
+    //
 
     /**
      * Constructs a DOM parser using the specified parser configuration.
@@ -121,14 +131,17 @@ public class DOMParser
     } // <init>(XMLParserConfiguration)
 
     /**
+     * Constructs a DOM parser using the dtd/xml schema parser configuration.
+     */
+    public DOMParser() {
+        this(null, null);
+    } // <init>()
+
+    /**
      * Constructs a DOM parser using the specified symbol table.
      */
     public DOMParser(SymbolTable symbolTable) {
-        super((XMLParserConfiguration)ObjectFactory.createObject(
-            "org.apache.xerces.xni.parser.XMLParserConfiguration",
-            "org.apache.xerces.parsers.StandardParserConfiguration"
-            ));
-        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
+        this(symbolTable, null);
     } // <init>(SymbolTable)
 
 
@@ -141,9 +154,17 @@ public class DOMParser
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
             "org.apache.xerces.parsers.StandardParserConfiguration"
             ));
-        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY, symbolTable);
-        fConfiguration.setProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.XMLGRAMMAR_POOL_PROPERTY, grammarPool);
-    }
+
+        // set properties
+        fConfiguration.addRecognizedProperties(RECOGNIZED_PROPERTIES);
+        if (symbolTable != null) {
+            fConfiguration.setProperty(SYMBOL_TABLE, symbolTable);
+        }
+        if (grammarPool != null) {
+            fConfiguration.setProperty(XMLGRAMMAR_POOL, grammarPool);
+        }
+
+    } // <init>(SymbolTable,XMLGrammarPool)
 
     //
     // XMLReader methods
@@ -484,7 +505,7 @@ public class DOMParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
        if (propertyId.equals(CURRENT_ELEMENT_NODE)) {
-           boolean deferred = true;
+           boolean deferred = false;
            try {
                deferred = getFeature(DEFER_NODE_EXPANSION);
            }

@@ -7,6 +7,17 @@
       This release fixes a number of bugs, and adds some functionality.
   </desc>
   <changes>
+    <update>
+     <note>
+      Improved handling of settings in parser classes making it easier
+      to re-use the parsers with other parser configurations. Previously,
+      the parser instances assumed that all configurations supported
+      various settings (i.e. the parser would set default values without 
+      first adding the recognized features and property identifiers to
+      the parser configuration).
+     </note>
+     <submitter name='Andy Clark'/>
+    </update>
     <fix>
      <note>
       Fixed bug in HTML DOM implementation that was causing xerces.dom

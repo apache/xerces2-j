@@ -136,6 +136,39 @@ public abstract class AbstractSAXParser
     protected static final String NORMALIZE_DATA = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
+    /** Feature id: string interning. */
+    protected static final String STRING_INTERNING =
+        Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE;
+    
+    /** Recognized features. */
+    private static final String[] RECOGNIZED_FEATURES = {
+        NAMESPACES,
+        NAMESPACE_PREFIXES,
+        NORMALIZE_DATA,
+        STRING_INTERNING,
+    };
+
+    // properties
+
+    /** Property id: lexical handler. */
+    protected static final String LEXICAL_HANDLER = 
+        Constants.SAX_PROPERTY_PREFIX + Constants.LEXICAL_HANDLER_PROPERTY;
+
+    /** Property id: declaration handler. */
+    protected static final String DECLARATION_HANDLER =
+        Constants.SAX_PROPERTY_PREFIX + Constants.DECLARATION_HANDLER_PROPERTY;
+
+    /** Property id: DOM node. */
+    protected static final String DOM_NODE = 
+        Constants.SAX_PROPERTY_PREFIX + Constants.DOM_NODE_PROPERTY;
+
+    /** Recognized properties. */
+    private static final String[] RECOGNIZED_PROPERTIES = {
+        LEXICAL_HANDLER,
+        DECLARATION_HANDLER,
+        DOM_NODE,
+    };
+
     //
     // Data
     //
@@ -195,19 +228,8 @@ public abstract class AbstractSAXParser
     protected AbstractSAXParser(XMLParserConfiguration config) {
         super(config);
 
-        final String[] recognizedFeatures = {
-            NAMESPACES,
-            NAMESPACE_PREFIXES,
-            Constants.SAX_FEATURE_PREFIX + Constants.STRING_INTERNING_FEATURE,
-        };
-        config.addRecognizedFeatures(recognizedFeatures);
-
-        final String[] recognizedProperties = {
-            Constants.SAX_PROPERTY_PREFIX + Constants.LEXICAL_HANDLER_PROPERTY,
-            Constants.SAX_PROPERTY_PREFIX + Constants.DECLARATION_HANDLER_PROPERTY,
-            Constants.SAX_PROPERTY_PREFIX + Constants.DOM_NODE_PROPERTY,
-        };
-        config.addRecognizedProperties(recognizedProperties);
+        config.addRecognizedFeatures(RECOGNIZED_FEATURES);
+        config.addRecognizedProperties(RECOGNIZED_PROPERTIES);
 
     } // <init>(XMLParserConfiguration)
 

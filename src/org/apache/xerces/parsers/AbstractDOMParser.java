@@ -148,6 +148,17 @@ public abstract class AbstractDOMParser
     protected static final String NORMALIZE_DATA = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
+    /** Recognized features. */
+    private static final String[] RECOGNIZED_FEATURES = {
+        NAMESPACES,
+        CREATE_ENTITY_REF_NODES,
+        INCLUDE_COMMENTS_FEATURE,
+        CREATE_CDATA_NODES_FEATURE,
+        INCLUDE_IGNORABLE_WHITESPACE,
+        DEFER_NODE_EXPANSION,
+        NORMALIZE_DATA,
+    };
+
     // property ids
 
     /** Property id: document class name. */
@@ -156,6 +167,12 @@ public abstract class AbstractDOMParser
 
     protected static final String  CURRENT_ELEMENT_NODE=  
         Constants.XERCES_PROPERTY_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
+
+    /** Recognized properties. */
+    private static final String[] RECOGNIZED_PROPERTIES = {
+        DOCUMENT_CLASS_NAME,
+        CURRENT_ELEMENT_NODE,
+    };
 
     // other
 
@@ -258,14 +275,7 @@ public abstract class AbstractDOMParser
         super(config);
 
         // add recognized features
-        final String[] recognizedFeatures = {
-            CREATE_ENTITY_REF_NODES,
-            INCLUDE_IGNORABLE_WHITESPACE,
-            DEFER_NODE_EXPANSION,
-            INCLUDE_COMMENTS_FEATURE,
-            CREATE_CDATA_NODES_FEATURE
-        };
-        fConfiguration.addRecognizedFeatures(recognizedFeatures);
+        fConfiguration.addRecognizedFeatures(RECOGNIZED_FEATURES);
 
         // set default values
         fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, true);
@@ -275,10 +285,7 @@ public abstract class AbstractDOMParser
         fConfiguration.setFeature(CREATE_CDATA_NODES_FEATURE, true);
 
         // add recognized properties
-        final String[] recognizedProperties = {
-            DOCUMENT_CLASS_NAME
-        };
-        fConfiguration.addRecognizedProperties(recognizedProperties);
+        fConfiguration.addRecognizedProperties(RECOGNIZED_PROPERTIES);
 
         // set default values
         fConfiguration.setProperty(DOCUMENT_CLASS_NAME,
