@@ -140,6 +140,13 @@ catch (SAXException e) {
     documents (1K, for example), you can also set it to a value less than 2K,
     to get the best performance.
    </note>
+   <note>
+    There are some conditions where the size of the parser's internal buffers 
+    may be increased beyond the size specified for the input buffer. This would 
+    happen in places where the text in the document cannot be split, for
+    instance if the document contains a name which is longer than the input
+    buffer.
+   </note>
   </property>
   <property name='http://apache.org/xml/properties/security-manager'
             id='security-manager'>
