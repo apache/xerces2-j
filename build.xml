@@ -59,10 +59,10 @@ Copyright:
 
   <target name="init">
     <property name="name" value="xerces"/>
-    <property name="Name" value="xerces-J"/>
-    <property name="version" value="2.0.0 (alpha)"/>
-    <property name="version_postfix" value=".2.0.0.alpha"/>
-    <property name="appendit" value="2_0_0_alpha"/>
+    <property name="Name" value="Xerces-J"/>
+    <property name="version" value="2.0.0 (beta)"/>
+    <property name="version_postfix" value=".2.0.0.beta"/>
+    <property name="appendit" value="2_0_0_beta"/>
     <property name="year" value="1999-2001"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
@@ -246,7 +246,7 @@ Copyright:
     <jar jarfile="${build.dir}/${name}Samples.jar"
          basedir="${build.dest}"
          compress="false"
-         includes="dom/**,sax/**,socket/**,ui/**"/>
+         includes="dom/**,sax/**,socket/**,ui/**,xni/**"/>
   </target>
 
   <!-- =================================================================== -->
