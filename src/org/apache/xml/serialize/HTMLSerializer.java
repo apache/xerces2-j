@@ -140,9 +140,10 @@ public class HTMLSerializer
     private boolean _xhtml;
 
 
-    public static final String XHTMLNamespace = "";
+    public static final String XHTMLNamespace = "http://www.w3.org/1999/xhtml";
 
-
+    // for users to override XHTMLNamespace if need be.
+    private String fUserXHTMLNamespace = null;
 
 
     /**
@@ -217,6 +218,10 @@ public class HTMLSerializer
         super.setOutputFormat( format != null ? format : new OutputFormat( Method.HTML, "ISO-8859-1", false ) );
     }
 
+    // Set  value for alternate XHTML namespace.
+    public void setXHTMLNamespace(String newNamespace) {
+        fUserXHTMLNamespace = newNamespace;
+    } // setXHTMLNamespace(String)
 
     //-----------------------------------------//
     // SAX content handler serializing methods //
@@ -278,7 +283,8 @@ public class HTMLSerializer
             if ( namespaceURI == null )
                 htmlName = rawName;
             else {
-                if ( namespaceURI.equals( XHTMLNamespace ) )
+                if ( namespaceURI.equals( XHTMLNamespace ) ||
+                        (fUserXHTMLNamespace != null && fUserXHTMLNamespace.equals(namespaceURI)) )
                     htmlName = localName;
                 else
                     htmlName = null;
@@ -420,7 +426,8 @@ public class HTMLSerializer
         if ( state.namespaceURI == null )
             htmlName = state.rawName;
         else {
-            if ( state.namespaceURI.equals( XHTMLNamespace ) )
+            if ( state.namespaceURI.equals( XHTMLNamespace ) ||
+                        (fUserXHTMLNamespace != null && fUserXHTMLNamespace.equals(state.namespaceURI)) )
                 htmlName = state.localName;
             else
                 htmlName = null;
