@@ -164,11 +164,9 @@ public final class StringPool {
     //
     // String interfaces
     //
-    private boolean ensureCapacity(int chunk, int index) {
-        try {
-            return fOffset[chunk][index] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            if (index == 0) {
+    private void ensureCapacity(int chunk, int index) {
+
+        if (chunk >= fOffset.length) {
                 String[][] newString = new String[chunk * 2][];
                 System.arraycopy(fString, 0, newString, 0, chunk);
                 fString = newString;
@@ -184,7 +182,9 @@ public final class StringPool {
                 newInt = new int[chunk * 2][];
                 System.arraycopy(fCharsOffset, 0, newInt, 0, chunk);
                 fCharsOffset = newInt;
-            } else {
+        } else if (fOffset[chunk] == null) {
+        }
+        else if (index >= fOffset[chunk].length) {
                 String[] newString = new String[index * 2];
                 System.arraycopy(fString[chunk], 0, newString, 0, index);
                 fString[chunk] = newString;
@@ -200,16 +200,16 @@ public final class StringPool {
                 newInt = new int[index * 2];
                 System.arraycopy(fCharsOffset[chunk], 0, newInt, 0, index);
                 fCharsOffset[chunk] = newInt;
-                return true;
-            }
-        } catch (NullPointerException ex) {
+                return;
+        } else {
+                return;
         }
         fString[chunk] = new String[INITIAL_CHUNK_SIZE];
         fStringProducer[chunk] = new StringPool.StringProducer[INITIAL_CHUNK_SIZE];
         fOffset[chunk] = new int[INITIAL_CHUNK_SIZE];
         fLength[chunk] = new int[INITIAL_CHUNK_SIZE];
         fCharsOffset[chunk] = new int[INITIAL_CHUNK_SIZE];
-        return true;
+        return;
     }
     public int addString(String str) {
         int chunk;
@@ -272,7 +272,6 @@ public final class StringPool {
         fShuffleCount = 0;
     }
     public void updateCacheLine(int symbolIndex, int totalMisses, int length) {
-//System.err.println("found symbol " + toString(symbolIndex) + " after " + totalMisses + " total misses (" + (totalMisses/length) + " misses per character).");
         if (++fShuffleCount > 200) {
 //            if (fShuffleCount == 201) System.out.println("Stopped shuffling...");
             return;
@@ -540,24 +539,19 @@ public final class StringPool {
     //
     // String list support
     //
-    private boolean ensureListCapacity(int chunk, int index) {
-        try {
-            return fStringList[chunk][index] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            if (index == 0) {
-                int[][] newInt = new int[chunk * 2][];
-                System.arraycopy(fStringList, 0, newInt, 0, chunk);
-                fStringList = newInt;
-            } else {
-                int[] newInt = new int[index * 2];
-                System.arraycopy(fStringList[chunk], 0, newInt, 0, index);
-                fStringList[chunk] = newInt;
-                return true;
-            }
-        } catch (NullPointerException ex) {
+    private void ensureListCapacity(int chunk, int index) {
+        if (chunk >= fStringList.length) {
+            int[][] newInt = new int[chunk * 2][];
+            System.arraycopy(fStringList, 0, newInt, 0, chunk);
+            fStringList = newInt;
+            fStringList[chunk] = new int[INITIAL_CHUNK_SIZE];
+        } else if (fStringList[chunk] == null) {
+            fStringList[chunk] = new int[INITIAL_CHUNK_SIZE];
+        } else if (index >= fStringList[chunk].length) {
+            int[] newInt = new int[index * 2];
+            System.arraycopy(fStringList[chunk], 0, newInt, 0, index);
+            fStringList[chunk] = newInt;
         }
-        fStringList[chunk] = new int[INITIAL_CHUNK_SIZE];
-        return true;
     }
     public int startStringList() {
         fActiveStringList = fStringListCount;

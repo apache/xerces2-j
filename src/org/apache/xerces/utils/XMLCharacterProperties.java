@@ -172,10 +172,10 @@ public final class XMLCharacterProperties {
 
     /*
      * from the namespace rec
-     * [5] NCName ::= (Letter | '_' | ':') (NameNCChar)*
+     * [4] NCName ::= (Letter | '_') (NCNameChar)*
      */
     /**
-     * Check to see if a string is a valid NCName according to [5]
+     * Check to see if a string is a valid NCName according to [4]
      * from the XML Namespaces 1.0 Recommendation
      *
      * @param name string to check

@@ -905,51 +905,42 @@ public class DTDGrammar
     // ensure capacity
 
     /** Ensures storage for element declaration mappings. */
-    private boolean ensureElementDeclCapacity(int chunk) {
-        try {
-            return fElementDeclMap[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureElementDeclCapacity(int chunk) {
+        if (chunk >= fElementDeclMap.length) {
             fElementDeclMap = resize(fElementDeclMap, 
                                      fElementDeclMap.length * 2);
             fElementDeclIsExternal = resize(fElementDeclIsExternal, 
                                      fElementDeclIsExternal.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fElementDeclMap[chunk] != null) {
+            return;
         }
         fElementDeclMap[chunk] = new int[CHUNK_SIZE];
         fElementDeclIsExternal[chunk] = new int[CHUNK_SIZE];
-        return true;
     }
 
     /** Ensures storage for attribute declaration mappings. */
-    private boolean ensureAttributeDeclCapacity(int chunk) {
-        try {
-            return fAttributeDeclMap[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureAttributeDeclCapacity(int chunk) {
+        if (chunk >= fAttributeDeclMap.length) {
             fAttributeDeclMap = resize(fAttributeDeclMap, 
                                        fAttributeDeclMap.length * 2);
             fAttributeDeclIsExternal = resize(fAttributeDeclIsExternal, 
                                        fAttributeDeclIsExternal.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fAttributeDeclMap[chunk] != null) {
+            return;
         }
         fAttributeDeclMap[chunk] = new int[CHUNK_SIZE];
         fAttributeDeclIsExternal[chunk] = new int[CHUNK_SIZE];
-        return true;
     }
 
     /** Ensures storage for content spec mappings. */
-    private boolean ensureContentSpecCapacity(int chunk) {
-        try {
-            return fContentSpecMap[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureContentSpecCapacity(int chunk) {
+        if (chunk >= fContentSpecMap.length) {
             fContentSpecMap = resize(fContentSpecMap, 
                                      fContentSpecMap.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fContentSpecMap[chunk] != null) {
+            return;
         }
         fContentSpecMap[chunk] = new int[CHUNK_SIZE];
-        return true;
     }
 
     // resize initial chunk

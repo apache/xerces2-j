@@ -1203,10 +1203,8 @@ public final class EntityPool {
     //
     //
     //
-    private boolean ensureCapacity(int chunk) {
-        try {
-            return fName[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureCapacity(int chunk) {
+        if (chunk >= fName.length) {
             int[][] newIntArray = new int[chunk * 2][];
             System.arraycopy(fName, 0, newIntArray, 0, chunk);
             fName = newIntArray;
@@ -1232,7 +1230,8 @@ public final class EntityPool {
             byte[][] newByteArray = new byte[chunk * 2][];
             System.arraycopy(fDeclIsExternal, 0, newByteArray, 0, chunk);
             fDeclIsExternal = newByteArray;
-        } catch (NullPointerException ex) {
+        } else if (fName[chunk] != null) {
+            return;
         }
         fName[chunk] = new int[CHUNK_SIZE];
         fValue[chunk] = new int[CHUNK_SIZE];
@@ -1241,7 +1240,6 @@ public final class EntityPool {
         fBaseSystemId[chunk] = new int[CHUNK_SIZE];
         fNotationName[chunk] = new int[CHUNK_SIZE];
         fDeclIsExternal[chunk] = new byte[CHUNK_SIZE];
-        return true;
     }
     public int addEntityDecl(int name, int value, int publicId, int systemId, int baseSystemId, int notationName, boolean isExternal) {
         int chunk = fEntityCount >> CHUNK_SHIFT;

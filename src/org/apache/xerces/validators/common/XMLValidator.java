@@ -3253,6 +3253,8 @@ public final class XMLValidator
             }
          }
 
+         final int oldElementIndex = elementIndex;
+
          contentSpecType =  getContentSpecType(elementIndex);
 
          if (fGrammarIsSchemaGrammar) {
@@ -3522,8 +3524,10 @@ public final class XMLValidator
 
              }
          }
-         // since the elementIndex could change since last time we query the content type, so do it again.
-         contentSpecType =  getContentSpecType(elementIndex);
+         // If the elementIndex changed since last time
+         // we queried the content type, query it again.
+         if (elementIndex != oldElementIndex)
+             contentSpecType =  getContentSpecType(elementIndex);
 
          if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
             reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,

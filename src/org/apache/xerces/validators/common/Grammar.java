@@ -997,10 +997,8 @@ implements XMLContentSpec.Provider {
 
     // ensure capacity
 
-    private boolean ensureElementDeclCapacity(int chunk) {
-        try {
-            return fElementDeclName[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureElementDeclCapacity(int chunk) {
+        if (chunk >= fElementDeclName.length) {
             fElementDeclName = resize(fElementDeclName, fElementDeclName.length * 2);
             fElementDeclType = resize(fElementDeclType, fElementDeclType.length * 2);
             fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
@@ -1010,8 +1008,8 @@ implements XMLContentSpec.Provider {
             fElementDeclUnique = resize(fElementDeclUnique, fElementDeclUnique.length * 2);
             fElementDeclKey = resize(fElementDeclKey, fElementDeclKey.length * 2);
             fElementDeclKeyRef = resize(fElementDeclKeyRef, fElementDeclKeyRef.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fElementDeclName[chunk] != null) {
+            return;
         }
         fElementDeclName[chunk] = new QName[CHUNK_SIZE];
         fElementDeclType[chunk] = new int[CHUNK_SIZE];
@@ -1022,31 +1020,25 @@ implements XMLContentSpec.Provider {
         fElementDeclUnique[chunk] = new Vector[CHUNK_SIZE];
         fElementDeclKey[chunk] = new Vector[CHUNK_SIZE];
         fElementDeclKeyRef[chunk] = new Vector[CHUNK_SIZE];
-        return true;
     }
 
-    private boolean ensureContentSpecCapacity(int chunk) {
-        try {
-            return fContentSpecType[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureContentSpecCapacity(int chunk) {
+        if (chunk >= fContentSpecType.length) {
             fContentSpecType = resize(fContentSpecType, fContentSpecType.length * 2);
             fContentSpecValue = resize(fContentSpecValue, fContentSpecValue.length * 2);
             fContentSpecOtherValue = resize(fContentSpecOtherValue, fContentSpecOtherValue.length * 2);
             fContentSpecValidator = resize(fContentSpecValidator, fContentSpecValidator.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fContentSpecType[chunk] != null) {
+            return;
         }
         fContentSpecType[chunk] = new int[CHUNK_SIZE];
         fContentSpecValue[chunk] = new int[CHUNK_SIZE];
         fContentSpecOtherValue[chunk] = new int[CHUNK_SIZE];
         fContentSpecValidator[chunk] = new XMLContentModel[CHUNK_SIZE];
-        return true;
     }
 
-    private boolean ensureAttributeDeclCapacity(int chunk) {
-        try {
-            return fAttributeDeclName[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureAttributeDeclCapacity(int chunk) {
+        if (chunk >= fAttributeDeclName.length) {
             fAttributeDeclName = resize(fAttributeDeclName, fAttributeDeclName.length * 2);
             fAttributeDeclType = resize(fAttributeDeclType, fAttributeDeclType.length * 2);
             fAttributeDeclEnumeration = resize(fAttributeDeclEnumeration, fAttributeDeclEnumeration.length * 2);
@@ -1054,8 +1046,8 @@ implements XMLContentSpec.Provider {
             fAttributeDeclDatatypeValidator = resize(fAttributeDeclDatatypeValidator, fAttributeDeclDatatypeValidator.length * 2);
             fAttributeDeclDefaultValue = resize(fAttributeDeclDefaultValue, fAttributeDeclDefaultValue.length * 2);
             fAttributeDeclNextAttributeDeclIndex = resize(fAttributeDeclNextAttributeDeclIndex, fAttributeDeclNextAttributeDeclIndex.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        } else if (fAttributeDeclName[chunk] != null) {
+            return;
         }
         fAttributeDeclName[chunk] = new QName[CHUNK_SIZE];
         fAttributeDeclType[chunk] = new int[CHUNK_SIZE];
@@ -1064,7 +1056,6 @@ implements XMLContentSpec.Provider {
         fAttributeDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
         fAttributeDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
         fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
-        return true;
     }
 
     // resize initial chunk

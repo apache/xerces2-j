@@ -687,11 +687,8 @@ public final class XMLAttrList
     //
 
     /* Expand our internal data structures as needed. */
-    private boolean ensureCapacity(int chunk, int index) {
-
-        try {
-            return fAttName[chunk][index] != 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureCapacity(int chunk, int index) {
+          if (chunk >= fAttPrefix.length) {
             int[][] newIntArray = new int[chunk * 2][];
             System.arraycopy(fAttPrefix, 0, newIntArray, 0, chunk);
             fAttPrefix = newIntArray;
@@ -713,7 +710,9 @@ public final class XMLAttrList
             byte[][] newByteArray = new byte[chunk * 2][];
             System.arraycopy(fAttFlags, 0, newByteArray, 0, chunk);
             fAttFlags = newByteArray;
-        } catch (NullPointerException ex) {
+        }
+        else if (fAttPrefix[chunk] != null) {
+            return;
         }
         fAttPrefix[chunk] = new int[CHUNK_SIZE];
         fAttLocalpart[chunk] = new int[CHUNK_SIZE];
@@ -722,8 +721,8 @@ public final class XMLAttrList
         fAttValue[chunk] = new int[CHUNK_SIZE];
         fAttType[chunk] = new int[CHUNK_SIZE];
         fAttFlags[chunk] = new byte[CHUNK_SIZE];
-        return true;
+        return;
 
-    } // ensureCapacity(int,int):boolean
+    } // ensureCapacity(int,int):void
 
 } // class XMLAttrList
