@@ -175,6 +175,9 @@ public class XMLDocumentScanner
     /** Debug content dispatcher scanning. */
     private static final boolean DEBUG_CONTENT_SCANNING = false;
 
+    /** Debug attribute entities. */
+    private static final boolean DEBUG_ATTR_ENTITIES = false;
+
     //
     // Data
     //
@@ -217,6 +220,12 @@ public class XMLDocumentScanner
 
     /** Element stack. */
     protected ElementStack fElementStack = new ElementStack();
+
+    /** Attribute entity stack. */
+    protected AttrEntityStack fAttributeEntityStack = new AttrEntityStack();
+
+    /** Attribute value offset. */
+    protected int fAttributeOffset;
 
     // features
 
@@ -462,6 +471,14 @@ public class XMLDocumentScanner
             setScannerState(SCANNER_STATE_TEXT_DECL);
         }
 
+        // keep track of entities appearing in attribute values
+        if (fScanningAttribute) {
+            if (DEBUG_ATTR_ENTITIES) {
+                System.out.println("*** pushAttrEntity("+name+','+fAttributeOffset+')');
+            }
+            fAttributeEntityStack.pushAttrEntity(name, fAttributeOffset);
+        }
+
         // call handler
         if (fDocumentHandler != null) {
             if (!fScanningAttribute) {
@@ -494,6 +511,14 @@ public class XMLDocumentScanner
             // REVISIT: report error
             throw new SAXException("internal error: startEntity(\""+entity.name+"\") "+
                                    "doesn't match endEntity(\""+name+"\")");
+        }
+
+        // keep track of entities appearing in attribute values
+        if (fScanningAttribute) {
+            if (DEBUG_ATTR_ENTITIES) {
+                System.out.println("*** popAttrEntity("+fAttributeOffset+") \""+name+'"');
+            }
+            fAttributeEntityStack.popAttrEntity(fAttributeOffset);
         }
 
         // check for un-balanced entity content
@@ -683,6 +708,7 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
+                        fStringBuffer.append((char)fEntityScanner.scanChar());
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
@@ -712,6 +738,7 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
+                        fStringBuffer.append((char)fEntityScanner.scanChar());
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
@@ -739,6 +766,7 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
+                        fStringBuffer.append((char)fEntityScanner.scanChar());
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
                     fStringBuffer.append(fString);
                     value = fStringBuffer;
@@ -949,20 +977,37 @@ public class XMLDocumentScanner
 
         // content
         final String CDATA = fSymbolTable.addSymbol("CDATA");
-        attributes.setAttribute(fAttributeQName, CDATA, null);
+        attributes.addAttribute(fAttributeQName, CDATA, null);
         XMLString value = fString;
         int c = fEntityScanner.scanLiteral(quote, fString);
         if (c != quote) {
             fScanningAttribute = true;
+            int attrIndex = attributes.getLength() - 1;
+            if (DEBUG_ATTR_ENTITIES) {
+                System.out.println("*** reset attribute entity stack");
+            }
+            fAttributeEntityStack.reset(attributes, attrIndex);
+            fAttributeOffset = 0;
+            if (DEBUG_ATTR_ENTITIES) {
+                System.out.println("*** set attribute offset: "+fAttributeOffset);
+            }
             fStringBuffer.clear();
             do {
                 fStringBuffer.append(fString);
+                fAttributeOffset += fString.length;
+                if (DEBUG_ATTR_ENTITIES) {
+                    System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                }
                 if (c == '&') {
                     fEntityScanner.skipChar('&');
                     if (fEntityScanner.skipChar('#')) {
                         int cv = scanCharReferenceValue();
                         if (cv != -1) {
                             fStringBuffer.append((char)cv);
+                            fAttributeOffset++;
+                            if (DEBUG_ATTR_ENTITIES) {
+                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                            }
                         }
                     }
                     else {
@@ -982,21 +1027,48 @@ public class XMLDocumentScanner
                         }
                         if (entityName == fAmpSymbol) {
                             fStringBuffer.append('&');
+                            fAttributeOffset++;
+                            if (DEBUG_ATTR_ENTITIES) {
+                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                            }
                         }
                         else if (entityName == fAposSymbol) {
                             fStringBuffer.append('\'');
+                            fAttributeOffset++;
+                            if (DEBUG_ATTR_ENTITIES) {
+                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                            }
                         }
                         else if (entityName == fLtSymbol) {
                             fStringBuffer.append('<');
+                            fAttributeOffset++;
+                            if (DEBUG_ATTR_ENTITIES) {
+                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                            }
                         }
                         else if (entityName == fGtSymbol) {
                             fStringBuffer.append('>');
+                            fAttributeOffset++;
+                            if (DEBUG_ATTR_ENTITIES) {
+                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                            }
                         }
                         else if (entityName == fQuotSymbol) {
                             fStringBuffer.append('"');
+                            fAttributeOffset++;
+                            if (DEBUG_ATTR_ENTITIES) {
+                                System.out.println("*** increment attribute offset: "+fAttributeOffset);
+                            }
                         }
                         else {
+                            int odepth = fEntityStack.size();
                             fEntityManager.startEntity(entityName, true);
+                            int ndepth = fEntityStack.size();
+                            // if we actually got a new entity and it's external
+                            // parse text decl if there is any
+                            if (odepth != ndepth && fEntityScanner.isExternal()) {
+                                scanXMLDeclOrTextDecl(true);
+                            }
                         }
                     }
                 }
@@ -1007,8 +1079,19 @@ public class XMLDocumentScanner
                 }
                 c = fEntityScanner.scanLiteral(quote, fString);
             } while (c != quote);
+            fAttributeOffset += fString.length;
             fStringBuffer.append(fString);
             value = fStringBuffer;
+            int attrEntityCount = fAttributeEntityStack.size();
+            if (DEBUG_ATTR_ENTITIES) {
+                System.out.println("*** add remaining attribute entities: "+attrEntityCount);
+            }
+            for (int i = 0; i < attrEntityCount; i++) {
+                if (DEBUG_ATTR_ENTITIES) {
+                    System.out.println("*** popAttrEntity("+fAttributeOffset+')');
+                }
+                fAttributeEntityStack.popAttrEntity(fAttributeOffset);
+            }
             fScanningAttribute = false;
         }
         attributes.setValue(attributes.getLength() - 1, value);
@@ -1482,9 +1565,100 @@ public class XMLDocumentScanner
         /** Clears the stack without throwing away existing QName objects. */
         public void clear() {
             fSize = 0;
-        }
+        } // clear()
 
     } // class ElementStack
+
+    /**
+     * A stack for keeping track of entity offsets and lengths in
+     * attribute values. This stack adds the attribute entities to
+     * a specified XMLAttribute object.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected static class AttrEntityStack {
+
+        //
+        // Data
+        //
+
+        /** Attributes. */
+        protected XMLAttributes fAttributes;
+
+        /** The index of the attribute where to add entities. */
+        protected int fIndex;
+
+        // stack information
+
+        /** The size of the stack. */
+        protected int fSize;
+
+        /** The entity names on the stack. */
+        protected String[] fNames = new String[4];
+
+        /** The entity offsets on the stack. */
+        protected int[] fOffsets = new int[fNames.length];
+
+        //
+        // Public methods
+        //
+
+        /** 
+         * Resets the attribute entity stack and sets the attributes
+         * object to add entities to.
+         *
+         * @param attributes The attributes object where new attribute
+         *                   entities are added.
+         * @param index      The index of the attribute where to add
+         *                   entities.
+         */
+        public void reset(XMLAttributes attributes, int index) {
+            fAttributes = attributes;
+            fIndex = index;
+            fSize = 0;
+        } // reset(XMLAttributes,int)
+
+        /** Returns the size of the stack. */
+        public int size() {
+            return fSize;
+        } // size():int
+
+        /** 
+         * Pushes a new entity onto the stack. 
+         *
+         * @param name        The entity name.
+         * @param startOffset The entity's starting offset.
+         */
+        public void pushAttrEntity(String name, int startOffset) {
+            if (fSize == fNames.length) {
+                String[] namearray = new String[fNames.length * 2];
+                System.arraycopy(fNames, 0, namearray, 0, fNames.length);
+                fNames = namearray;
+                int[] offsetarray = new int[fOffsets.length * 2];
+                System.arraycopy(fOffsets, 0, offsetarray, 0, fOffsets.length);
+                fOffsets = offsetarray;
+            }
+            fNames[fSize] = name;
+            fOffsets[fSize] = startOffset;
+            fSize++;
+        } // pushAttrEntity(String,int)
+
+        /**
+         * Pops the current entity off of the stack and adds it to the
+         * list of entities for the attribute in the XMLAttributes object.
+         *
+         * @param endOffset The entity's ending offset.
+         */
+        public void popAttrEntity(int endOffset) {
+            fSize--;
+            String name = fNames[fSize];
+            int offset = fOffsets[fSize];
+            int length = endOffset - offset;
+            // REVISIT: Should the entity be added if the length is zero?
+            fAttributes.addAttributeEntity(fIndex, name, offset, length);
+        } // popAttrEntity(int)
+
+    } // class AttrEntityStack
 
     /**
      * Entity for entity stack. 
@@ -1862,7 +2036,7 @@ public class XMLDocumentScanner
                             again = true;
                         }
                         else {
-                            while (complete) {
+                            do {
                                 int c = scanContent();
                                 if (c == '<') {
                                     fEntityScanner.scanChar();
@@ -1874,23 +2048,12 @@ public class XMLDocumentScanner
                                     setScannerState(SCANNER_STATE_REFERENCE);
                                     break;
                                 }
-                                else if (c == -1) {
-                                    /***
-                                    
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "ETagRequired",
-                                                               new Object[] {fCurrentElement.rawname},
-                                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
-
-                                    setScannerState(SCANNER_STATE_TERMINATED);
-                                    return false;
-                                    /***/
-                                }
-                                else if (XMLChar.isInvalid(c)) {
+                                else if (c != -1 && XMLChar.isInvalid(c)) {
                                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "InvalidCharInContent",
                                                                new Object[] {Integer.toString(c, 16)},
                                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                                 }
-                            }
+                            } while (complete);
                         }
                         break;
                     }

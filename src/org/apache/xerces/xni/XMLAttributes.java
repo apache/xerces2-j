@@ -129,7 +129,7 @@ public class XMLAttributes
      * 
      * @return 
      */
-    public int setAttribute(QName name, String type, XMLString value) {
+    public int addAttribute(QName name, String type, XMLString value) {
 
         // find attribute; create, if necessary
         int index = name.uri != null
@@ -152,22 +152,71 @@ public class XMLAttributes
         attribute.name.setValues(name);
         attribute.type = type;
         attribute.value = value != null ? value.toString() : null;
+        attribute.entityCount = 0;
 
         // return
         return index;
 
-    } // setAttribute(QName,String,XMLString)
+    } // addAttribute(QName,String,XMLString)
 
     /**
      * addAttributeEntity
+     * <p>
+     * <strong>Note:</strong> This method will make sure that the
+     * entities appear in increasing offset order. If the entities
+     * are added out of order (e.g. for entities that contain other
+     * entities), the appropriate entities are shifted down to make
+     * room.
      * 
-     * @param index 
+     * @param attrIndex 
      * @param name 
      * @param offset 
      * @param length 
      */
-    public void addAttributeEntity(int index, String name, int offset, int length) {
-        throw new RuntimeException("not implemented");
+    public void addAttributeEntity(int attrIndex, String name, int offset, int length) {
+
+        // create entity arrays, if needed
+        Attribute attribute = fAttributes[attrIndex];
+        if (attribute.entityName == null) {
+            attribute.entityName = new String[2];
+            attribute.entityOffset = new int[2];
+            attribute.entityLength = new int[2];
+        }
+
+        // resize entity arrays, if needed
+        if (attribute.entityCount == attribute.entityName.length) {
+            String[] names = new String[attribute.entityName.length * 2];
+            System.arraycopy(attribute.entityName, 0, names, 0, attribute.entityName.length);
+            attribute.entityName = names;
+            int[] offsets = new int[attribute.entityOffset.length * 2];
+            System.arraycopy(attribute.entityOffset, 0, offsets, 0, attribute.entityOffset.length);
+            attribute.entityOffset = offsets;
+            int[] lengths = new int[attribute.entityLength.length * 2];
+            System.arraycopy(attribute.entityLength, 0, lengths, 0, attribute.entityLength.length);
+            attribute.entityLength = lengths;
+        }
+
+        // find place where this entity belongs
+        int entityIndex = attribute.entityCount;
+        for (int i = entityIndex - 1; i >= 0; i--) {
+            if (offset < fAttributes[attrIndex].entityOffset[i]) {
+                entityIndex = i;
+            }
+        }
+
+        // shift values, if needed
+        if (entityIndex < attribute.entityCount) {
+            System.arraycopy(attribute.entityName, entityIndex, attribute.entityName, entityIndex + 1, attribute.entityCount - entityIndex);
+            System.arraycopy(attribute.entityOffset, entityIndex, attribute.entityOffset, entityIndex + 1, attribute.entityCount - entityIndex);
+            System.arraycopy(attribute.entityLength, entityIndex, attribute.entityLength, entityIndex + 1, attribute.entityCount - entityIndex);
+        }
+
+        // save values
+        attribute.entityName[entityIndex] = name;
+        attribute.entityOffset[entityIndex] = offset;
+        attribute.entityLength[entityIndex] = length;
+        attribute.entityCount++;
+
     } // addAttributeEntity(int,String,int,int)
 
     /**
@@ -254,7 +303,7 @@ public class XMLAttributes
      * @return 
      */
     public int getEntityCount(int attrIndex) {
-        throw new RuntimeException("not implemented");
+        return fAttributes[attrIndex].entityCount;
     } // getEntityCount(int):int
 
     /**
@@ -266,7 +315,7 @@ public class XMLAttributes
      * @return 
      */
     public String getEntityName(int attrIndex, int entityIndex) {
-        throw new RuntimeException("not implemented");
+        return fAttributes[attrIndex].entityName[entityIndex];
     } // getEntityName(int,int):String
 
     /**
@@ -278,7 +327,7 @@ public class XMLAttributes
      * @return 
      */
     public int getEntityOffset(int attrIndex, int entityIndex) {
-        throw new RuntimeException("not implemented");
+        return fAttributes[attrIndex].entityOffset[entityIndex];
     } // getEntityOffset(int,int):int
 
     /**
@@ -290,7 +339,7 @@ public class XMLAttributes
      * @return 
      */
     public int getEntityLength(int attrIndex, int entityIndex) {
-        throw new RuntimeException("not implemented");
+        return fAttributes[attrIndex].entityLength[entityIndex];
     } // getEntityLength(int,int):int
 
     //
@@ -565,6 +614,8 @@ public class XMLAttributes
         // Data
         //
 
+        // basic info
+
         /** Name. */
         public QName name = new QName();
 
@@ -573,6 +624,20 @@ public class XMLAttributes
 
         /** Value. */
         public String value;
+
+        // entity info
+
+        /** Entity count. */
+        public int entityCount;
+
+        /** Entity name. */
+        public String[] entityName;
+
+        /** Entity offset. */
+        public int[] entityOffset;
+
+        /** Entity length. */
+        public int[] entityLength;
 
     } // class Attribute
 

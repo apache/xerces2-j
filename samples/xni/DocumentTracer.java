@@ -171,6 +171,16 @@ public class DocumentTracer
                 System.out.print(fQName);
                 System.out.print("}=");
                 System.out.print(quoteString(attributes.getValue(i)));
+                int entityCount = attributes.getEntityCount(i);
+                for (int j = 0; j < entityCount; j++) {
+                    System.out.print(",[");
+                    System.out.print(quoteString(attributes.getEntityName(i, j)));
+                    System.out.print(',');
+                    System.out.print(attributes.getEntityOffset(i, j));
+                    System.out.print(',');
+                    System.out.print(attributes.getEntityLength(i, j));
+                    System.out.print(']');
+                }
             }
             System.out.print('}');
         }

@@ -234,7 +234,17 @@ public class DOMWriter {
                   out.print(' ');
                   out.print(attr.getNodeName());
                   out.print("=\"");
-                  out.print(normalize(attr.getNodeValue()));
+                  Node child = attr.getFirstChild();
+                  while (child != null) {
+                      int childType = child.getNodeType();
+                      if (childType == Node.TEXT_NODE) {
+                          out.print(normalize(child.getNodeValue()));
+                      }
+                      else if (childType == Node.ENTITY_REFERENCE_NODE) {
+                          print(child);
+                      }
+                      child = child.getNextSibling();
+                  }
                   out.print('"');
                }
                out.print('>');
