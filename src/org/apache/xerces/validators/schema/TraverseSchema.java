@@ -752,7 +752,7 @@ public class TraverseSchema implements
         //TO DO : !!!
     }
 
-    private void extractTopLevel3Components(Element root){
+    private void extractTopLevel3Components(Element root) throws Exception {
         
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
@@ -764,6 +764,10 @@ public class TraverseSchema implements
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 fSchemaGrammar.topLevelAttrDecls.put(compName, child);
             } else if ( name.equals(SchemaSymbols.ELT_GROUP) ) {
+                // Check if the group has already been declared
+                if (fSchemaGrammar.topLevelGroupDecls.get(compName) != null) 
+                   reportGenericSchemaError("sch-props-correct: Duplicate declaration for group " +
+                                             compName);
                 fSchemaGrammar.topLevelGroupDecls.put(compName, child);
             } else if ( name.equals(SchemaSymbols.ELT_NOTATION) ) {
                 fSchemaGrammar.topLevelNotationDecls.put(compName, child);
@@ -3286,12 +3290,19 @@ public class TraverseSchema implements
             if (content.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) { 
                 int simpleTypeNameIndex = traverseSimpleTypeDecl(content); 
                 if (simpleTypeNameIndex!=-1) {
-                    typeInfo.baseDataTypeValidator=fDatatypeRegistry.getDatatypeValidator(
+                    DatatypeValidator dv=fDatatypeRegistry.getDatatypeValidator(
                        fStringPool.toString(simpleTypeNameIndex));
-                    content = XUtil.getNextSiblingElement(content);
+                    
+                  //check that this datatype validator is validly derived from the base
+                  //according to derivation-ok-restriction 5.1.1
+                  if (!checkSimpleTypeDerivationOK(dv,typeInfo.baseDataTypeValidator)) {
+                    throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base"); 
+                  }
+                  typeInfo.baseDataTypeValidator = dv;
+                  content = XUtil.getNextSiblingElement(content);
                 }
                 else {
-                    throw new ComplexTypeRecoverableError();
+                  throw new ComplexTypeRecoverableError();
                 }
             }
 
@@ -7456,9 +7467,13 @@ throws Exception {
             if (isTopLevel(groupDecl)) 
                 // REVISIT:  localize 
                 reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
-                if (!groupName.equals(""))
+            if (!groupName.equals(""))
                 // REVISIT:  localize 
-                    reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
+                reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
+
+            // there should be no children for <group ref="...">
+            if (XUtil.getFirstChildElement(groupDecl)!=null) 
+                reportGenericSchemaError ( "A group with \"ref\" present must not have children");
             String prefix = "";
             String localpart = ref;
             int colonptr = ref.indexOf(":");
@@ -7548,7 +7563,12 @@ throws Exception {
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
                               new Object [] { "group", childName });
         }
-        if (child != null && XUtil.getNextSiblingElement(child) != null) {
+
+        //Must have all or choice or sequence child.
+        if (child == null) {
+            reportGenericSchemaError("Named group must contain an 'all', 'choice' or 'sequence' child");
+        }
+        else if (XUtil.getNextSiblingElement(child) != null) {
             illegalChild = true;
             reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
                               new Object [] { "group", childName });
