@@ -737,7 +737,12 @@ Copyright:
 
 
   <!-- =================================================================== -->
-  <!-- Compiles the DTD-only source code                                            -->
+  <!-- Compiles the DTD-only source code 
+        Need to include org.apache.xerces.impl.xs.XSTypeDecl and 
+       org.apache.xerces.impl.XSSimpleType to be able to ask isIDType() in 
+       DOM Parser. Need to come up with better way to query isIDType..
+       Also includes org.apache.xerces.impl.xs.psvi for same reason. 
+       -->
   <!-- =================================================================== -->
   <target name="dtdprepare-src" depends="prepare-common">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration"
@@ -753,8 +758,32 @@ Copyright:
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/DTDImporter.java 
                        **/v1/** **/v2/**
-                        **/RevalidatingDOMParser.java 
-                        org/apache/xerces/impl/xs/**
+                        **/RevalidatingDOMParser.java
+                        org/apache/xerces/impl/xs/AttributePSVImpl.java 
+                        org/apache/xerces/impl/xs/ElementPSVImpl.java
+                        org/apache/xerces/impl/xs/SchemaGrammar.java
+                        org/apache/xerces/impl/xs/SchemaNamespaceSupport.java
+                        org/apache/xerces/impl/xs/SchemaSymbols.java
+                        org/apache/xerces/impl/xs/SubstitutionGroupHandler.java
+                        org/apache/xerces/impl/xs/XSParticleDecl.java
+                        org/apache/xerces/impl/xs/XMLSchemaException.java
+                        org/apache/xerces/impl/xs/XMLSchemaLoader.java
+                        org/apache/xerces/impl/xs/XMLSchemaValidator.java
+                        org/apache/xerces/impl/xs/XSAttributeDecl.java
+                        org/apache/xerces/impl/xs/XSAttributeGroupDecl.java
+                        org/apache/xerces/impl/xs/XSAttributeUseImpl.java
+                        org/apache/xerces/impl/xs/XSComplexTypeDecl.java
+                        org/apache/xerces/impl/xs/XSConstraints.java
+                        org/apache/xerces/impl/xs/XSDDescription.java
+                        org/apache/xerces/impl/xs/XSDeclarationPool.java
+                        org/apache/xerces/impl/xs/XSElementDecl.java
+                        org/apache/xerces/impl/xs/XSGrammarBucket.java
+                        org/apache/xerces/impl/xs/XSGroupDecl.java
+                        org/apache/xerces/impl/xs/XSMessageFormatter.java
+                        org/apache/xerces/impl/xs/XSModelGroupImpl.java
+                        org/apache/xerces/impl/xs/XSModelImpl.java
+                        org/apache/xerces/impl/xs/XSNotationDecl.java
+                        org/apache/xerces/impl/xs/XSWildcardDecl.java
                         org/apache/xerces/impl/dv/xs/**
                         org/apache/xerces/impl/xs/identity/**
                         org/apache/xerces/impl/xs/traversers/**
@@ -763,9 +792,7 @@ Copyright:
                         org/apache/xerces/impl/xs/dom/**
                         org/apache/xerces/impl/xpath/**
                         org/apache/xerces/impl/xpath/regex/**
-                        org/apache/xerces/impl/dv/XS*.java
                         org/apache/xerces/impl/dv/Schema*.java
-                        org/apache/xerces/impl/dv/ValidatedInfo.java
                         org/apache/xerces/impl/msg/XMLSchema**
                         org/apache/xerces/impl/validation/XMLGrammarPoolImpl.java
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
