@@ -97,17 +97,20 @@ final class HTMLdtd
     private static Hashtable        _byName;
 
 
-    /**
-     * Locates the HTML entities file that is loaded upon initialization.
-     * This file is a resource loaded with the default class loader.
-     */
-    private static final String     ENTITIES_RESOURCE = "HTMLEntities.res";
+    private static Hashtable        _boolAttrs;
 
 
     /**
      * Holds element definitions.
      */
     private static Hashtable        _elemDefs;
+
+
+    /**
+     * Locates the HTML entities file that is loaded upon initialization.
+     * This file is a resource loaded with the default class loader.
+     */
+    private static final String     ENTITIES_RESOURCE = "HTMLEntities.res";
 
 
     /**
@@ -376,6 +379,28 @@ final class HTMLdtd
 
         
     /**
+     * Returns true if the specified attribute is a boolean and should be
+     * printed without the value. This applies to attributes that are true
+     * if they exist, such as selected (OPTION/INPUT). 
+     *
+     * @param tagName The element's tag name
+     * @param attrName The attribute's name
+     */
+    public static boolean isBoolean( String tagName, String attrName )
+    {
+	String[] attrNames;
+
+	attrNames = (String[]) _boolAttrs.get( tagName.toUpperCase() );
+	if ( attrNames == null )
+	    return false;
+	for ( int i = 0 ; i < attrNames.length ; ++i )
+	    if ( attrNames[ i ].equalsIgnoreCase( attrName ) )
+		return true;
+	return false;
+    }
+
+
+    /**
      * Returns the value of an HTML character reference by its name. If the
      * reference is not found or was not defined as a character reference,
      * returns EOF (-1).
@@ -520,6 +545,18 @@ final class HTMLdtd
     }
 
 
+    private static void defineBoolean( String tagName, String attrName )
+    {
+	defineBoolean( tagName, new String[] { attrName } );
+    }
+
+
+    private static void defineBoolean( String tagName, String[] attrNames )
+    {
+	_boolAttrs.put( tagName, attrNames );
+    }
+
+
     private static boolean isElement( String name, int flag )
     {
 	Integer flags;
@@ -585,6 +622,31 @@ final class HTMLdtd
 	defineElement( "TITLE", ALLOWED_HEAD );
 	defineElement( "TR", ELEM_CONTENT | OPT_CLOSING | CLOSE_TABLE );
 	defineElement( "UL", ELEM_CONTENT | CLOSE_P );
+
+	_boolAttrs = new Hashtable();
+	defineBoolean( "AREA", "href" );
+	defineBoolean( "BUTTON", "disabled" );
+	defineBoolean( "DIR", "compact" );
+	defineBoolean( "DL", "compact" );
+	defineBoolean( "FRAME", "noresize" );
+	defineBoolean( "HR", "noshade" );
+	defineBoolean( "IMAGE", "ismap" );
+	defineBoolean( "INPUT", new String[] { "defaultchecked", "checked", "readonly", "disabled" } );
+	defineBoolean( "LINK", "link" );
+	defineBoolean( "MENU", "compact" );
+	defineBoolean( "OBJECT", "declare" );
+	defineBoolean( "OL", "compact" );
+	defineBoolean( "OPTGROUP", "disabled" );
+	defineBoolean( "OPTION", new String[] { "default-selected", "selected", "disabled" } );
+	defineBoolean( "SCRIPT", "defer" );
+	defineBoolean( "SELECT", new String[] { "multiple", "disabled" } );
+	defineBoolean( "STYLE", "disabled" );
+	defineBoolean( "TD", "nowrap" );
+	defineBoolean( "TH", "nowrap" );
+	defineBoolean( "TEXTAREA", new String[] { "disabled", "readonly" } );
+	defineBoolean( "UL", "compact" );
+
+	initialize();
     }
 
 

@@ -945,7 +945,6 @@ public abstract class BaseMarkupSerializer
 		// All whitespaces will print as space characters.
 		printText( escape( text ), false );
 	    }
-
 	}
     }
 
