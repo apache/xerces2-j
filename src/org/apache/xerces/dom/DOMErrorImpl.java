@@ -65,17 +65,20 @@ import org.apache.xerces.dom3.DOMLocator;
 
 /**
  * <code>DOMErrorImpl</code> is an implementation that describes an error.
+ * <strong>Note:</strong> The error object that describes the error 
+ * might be reused by Xerces implementation, across multiple calls to the 
+ * handleEvent method on DOMErrorHandler interface.
+ * 
+ * 
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913'>Document Object Model (DOM) Level 3 Core Specification</a>.
- *
+ * 
  * @author Gopal Sharma, SUN Microsystems Inc.
+ * @author Elena Litani, IBM
  */
 
+// REVISIT: the implementation of ErrorReporter. 
+//          we probably should not pass XMLParseException
 //
-// REVISIT: 
-// implementation does not allow to reuse the DOMError obj
-// to allow reuse we need to implement setter methods 
-// we also create new DOMLocator for each error.  -- el
-// 
 
 public class DOMErrorImpl implements DOMError {
 
@@ -83,16 +86,21 @@ public class DOMErrorImpl implements DOMError {
     // Data
     //
 
-    short fSeverity = -1;
+    short fSeverity = DOMError.SEVERITY_WARNING;
     String fMessage = null;    
     DOMLocator fLocation = null;
     Exception fException = null;
 
 
     //
-    // Constructor
+    // Constructors
     //
 
+    /** Default constructor. */    
+    public DOMErrorImpl () {
+    }
+
+    /** Exctracts information from XMLParserException) */
     public DOMErrorImpl (short severity, XMLParseException exception) {
         fSeverity = severity;
         fException = exception;
@@ -144,5 +152,34 @@ public class DOMErrorImpl implements DOMError {
                                   exception.getSystemId()
                                  );
     } // createDOMLocator()
+
+    //
+    // non-DOM methods
+    // The setter methods allow to reuse DOMError object
+    //
+
+    public void setSeverity(short error){
+        fSeverity = error;
+    }
+
+    public void setMessage(String msg){
+        fMessage = msg;
+    }
+
+    public void setLocator(DOMLocator locator){
+        fLocation = locator;
+    }
+
+    public void setException(Exception ex){
+        fException = ex;
+    }
+
+    public void reset(){
+        fSeverity = DOMError.SEVERITY_WARNING; 
+        fMessage = null;    
+        fLocation = null;
+        fException = null;
+    }
+
 
 }// class DOMErrorImpl
