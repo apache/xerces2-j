@@ -407,14 +407,9 @@ public class XMLSchemaValidator
     //JAXP Schema Source property
     protected Object fJaxpSchemaSource = null;
 
-    //ResourceIdentifier for use in calling EntityResolver
-    final XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
-
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription();
     protected final Hashtable fLocationPairs = new Hashtable();
-
-
 
 
     // handlers
@@ -1260,9 +1255,14 @@ public class XMLSchemaValidator
         if (!parser_settings){
             // parser settings have not been changed
             fValidationManager.addValidationState(fValidationState);
+            // Re-parse external schema location properties.
+            XMLSchemaLoader.processExternalHints(
+                fExternalSchemas,
+                fExternalNoNamespaceSchema,
+                fLocationPairs,
+                fXSIErrorReporter.fErrorReporter);
             return;
         }
-
 
 
         // get symbol table. if it's a new one, add symbols to it.
@@ -1358,7 +1358,6 @@ public class XMLSchemaValidator
             fJaxpSchemaSource = null;
 
         }
-        fResourceIdentifier.clear();
 
         // clear grammars, and put the one for schema namespace there
         try {
