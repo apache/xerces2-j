@@ -1724,13 +1724,14 @@ public class SchemaValidator
             }
         } else {
             // 3.2 If the type definition is a complex type definition, then the element information item must be ·valid· with respect to the type definition as per Element Locally Valid (Complex Type) (§3.4.4);
-            elementLocallyValidComplexType(element, textContent);
+            retValue = elementLocallyValidComplexType(element, textContent);
         }
 
         return retValue;
     } // elementLocallyValidType
 
-    void elementLocallyValidComplexType(QName element, String textContent) {
+    Object elementLocallyValidComplexType(QName element, String textContent) {
+        Object actualValue = null;
         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
 
         // Element Locally Valid (Complex Type)
@@ -1744,7 +1745,7 @@ public class SchemaValidator
                 reportSchemaError("cvc-complex-type.2.1", new Object[]{element.rawname});
             }
             // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the ·normalized value· of the element information item is ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
-            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+            else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                 if (fChildCount != 0)
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 DatatypeValidator dv = ctype.fDatatypeValidator;
@@ -1756,9 +1757,12 @@ public class SchemaValidator
                 } catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 }
+                // eventually, this method should return the same actualValue as elementLocallyValidType...
+                // obviously it'll return null when the content is complex.
+                actualValue = content;
             }
             // 2.3 If the {content type} is element-only, then the element information item has no character information item [children] other than those whose [character code] is defined as a white space in [XML 1.0 (Second Edition)].
-            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
+            else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
                 // REVISIT: how to check whether there is any text content?
                 if (fSawCharacters) {
                     reportSchemaError("cvc-complex-type.2.3", new Object[]{element.rawname});
@@ -1778,6 +1782,7 @@ public class SchemaValidator
                 }
             }
         }
+        return actualValue;
     } // elementLocallyValidComplexType
 
     void reportSchemaError(String key, Object[] arguments) {
