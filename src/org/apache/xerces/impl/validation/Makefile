@@ -14,8 +14,8 @@ TARGETS=\
         XMLNotationDecl.class\
         XMLSimpleType.class
 
-DIRS = datatypes grammars models validators
-
+#DIRS = datatypes grammars models validators
+DIRS = datatypes grammars models
 
 TOP = ../../../../../..
 include $(TOP)/src/Makefile.incl

@@ -84,11 +84,8 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDocumentFilter;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDTDFilter;
 import org.apache.xerces.xni.XMLDTDHandler;
-import org.apache.xerces.xni.XMLDTDContentModelFilter;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -130,7 +127,7 @@ import java.util.StringTokenizer;
  */
 public class XMLValidator
     implements XMLComponent, 
-               XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter 
+               XMLDocumentHandler, XMLDTDHandler, XMLDTDContentModelHandler
     {
 
     //

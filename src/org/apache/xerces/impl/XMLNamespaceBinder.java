@@ -67,7 +67,6 @@ import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDocumentFilter;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLComponent;
@@ -96,7 +95,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLNamespaceBinder 
-    implements XMLComponent, XMLDocumentFilter {
+    implements XMLComponent {
 
     //
     // Constants

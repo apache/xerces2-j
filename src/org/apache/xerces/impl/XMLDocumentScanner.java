@@ -74,7 +74,6 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDocumentSource;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -108,7 +107,7 @@ import org.xml.sax.SAXNotSupportedException;
  */
 public class XMLDocumentScanner
     extends XMLScanner
-    implements XMLComponent, XMLDocumentSource, XMLEntityHandler {
+    implements XMLComponent, XMLEntityHandler {
 
     //
     // Constants

@@ -1,16 +1,13 @@
 # Makefile for directory ./org/apache/xerces/xni
 
 TARGETS=\
+	NamespaceContext.class\
 	QName.class\
         XMLAttributes.class\
-        XMLComponent.class\
-        XMLComponentManager.class\
-        XMLDTDContentModelHandler.class\
-        XMLDTDContentModelSource.class\
-        XMLDTDHandler.class\
-        XMLDTDSource.class\
+	XMLDocumentFragmentHandler.class\
         XMLDocumentHandler.class\
-        XMLDocumentSource.class\
+        XMLDTDContentModelHandler.class\
+        XMLDTDHandler.class\
         XMLString.class
 
 DIRS = parser

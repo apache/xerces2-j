@@ -71,9 +71,7 @@ import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
-import org.apache.xerces.xni.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XMLDTDHandler;
-import org.apache.xerces.xni.XMLDTDSource;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -94,7 +92,7 @@ import org.xml.sax.SAXNotSupportedException;
 public class XMLDTDScanner
     extends XMLScanner
     implements XMLComponent, 
-               XMLDTDSource, XMLDTDContentModelSource, XMLEntityHandler {
+               XMLEntityHandler {
 
     //
     // Constants
