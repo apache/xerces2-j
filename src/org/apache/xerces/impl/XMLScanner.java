@@ -746,10 +746,12 @@ public abstract class XMLScanner
      *                      false if undeclared entities should be reported as WFC violation.
      * @param eleName The name of element to which this attribute belongs.
      *
+     * @return true if the non-normalized and normalized value are the same
+     * 
      * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
      **/
-    protected void scanAttributeValue(XMLString value, 
+    protected boolean scanAttributeValue(XMLString value, 
                                       XMLString nonNormalizedValue,
                                       String atName,
                                       boolean checkEntities,String eleName)
@@ -769,6 +771,7 @@ public abstract class XMLScanner
             System.out.println("** scanLiteral -> \""
                                + value.toString() + "\"");
         }
+        
         fStringBuffer2.clear();
         fStringBuffer2.append(value);
         normalizeWhitespace(value);
@@ -953,6 +956,8 @@ public abstract class XMLScanner
         if (cquote != quote) {
 			reportFatalError("CloseQuoteExpected", new Object[]{eleName,atName});
         }
+        return nonNormalizedValue.equals(value.ch, value.offset, value.length);
+        
     } // scanAttributeValue()
 
 
@@ -1098,7 +1103,7 @@ public abstract class XMLScanner
      */
     protected void normalizeWhitespace(XMLString value) {
         int end = value.offset + value.length;
-        for (int i = value.offset; i < end; i++) {
+        for (int i = value.offset; i < end; ++i) {
             int c = value.ch[i];
             // Performance: For XML 1.0 documents take advantage of 
             // the fact that the only legal characters below 0x20 

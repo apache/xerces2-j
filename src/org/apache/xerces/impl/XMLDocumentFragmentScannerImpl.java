@@ -972,11 +972,16 @@ public class XMLDocumentFragmentScannerImpl
         }
         //REVISIT: one more case needs to be included: external PE and standalone is no
         boolean isVC =  fHasExternalDTD && !fStandalone;        
-        scanAttributeValue(fTempString, fTempString2,
-                           fAttributeQName.rawname, isVC, 
-                           fCurrentElement.rawname);
+        
+        // Scan attribute value and return true if the un-normalized and normalized value are the same
+        boolean isSameNormalizedAttr =  scanAttributeValue(fTempString, fTempString2,
+                fAttributeQName.rawname, isVC, fCurrentElement.rawname);
+        
         attributes.setValue(attrIndex, fTempString.toString());
-        attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());
+        // If the non-normalized and normalized value are the same, avoid creating a new string.
+        if (!isSameNormalizedAttr) {
+            attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());
+        }
         attributes.setSpecified(attrIndex, true);
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
