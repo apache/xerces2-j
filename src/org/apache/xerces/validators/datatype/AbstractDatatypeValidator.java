@@ -67,13 +67,15 @@
 package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
-
+import org.apache.xerces.utils.regex.RegularExpression;
 
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
     protected Hashtable fFacets; // Hashtable of Facets Strings.
-    protected DatatypeValidator fBaseValidator = null; // formerly private in every class!
-
+    protected DatatypeValidator fBaseValidator = null; 
+    protected String     fPattern         = null;
+    protected RegularExpression fRegex    = null;
+    protected short fFacetsDefined          = 0;
      /**
      * Checks that "content" string is valid
      * datatype.

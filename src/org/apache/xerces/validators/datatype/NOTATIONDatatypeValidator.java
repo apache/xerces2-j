@@ -75,15 +75,12 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version $Id$
  */
 public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
+    
     private Locale     fLocale          = null;
-
     private int        fLength          = 0;
     private int        fMaxLength       = Integer.MAX_VALUE;
     private int        fMinLength       = 0;
-    private String     fPattern         = null;
     private Vector     fEnumeration     = null;
-    private int        fFacetsDefined   = 0;
-    private RegularExpression fRegex    = null;
 
     // for the QName validator
     private static StringDatatypeValidator fgStrValidator  = null;
@@ -106,7 +103,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
         }
 
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -118,7 +115,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
                 String key = (String) e.nextElement();
 
                 if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                     String lengthValue = (String)facets.get(key);
                     try {
                         fLength     = Integer.parseInt( lengthValue );
@@ -130,7 +127,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
                         fMinLength     = Integer.parseInt( minLengthValue );
@@ -142,7 +139,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
                         throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
                         fMaxLength     = Integer.parseInt( maxLengthValue );
@@ -155,13 +152,13 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
 
 
                 } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     if( fPattern != null )
                         fRegex = new RegularExpression(fPattern, "X");
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else {
                     throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                 }
@@ -169,8 +166,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
 
             if ( base != null ) {
                 // check 2.3.19.c1 must: derived NOTATION
-                if ( base instanceof NOTATIONDatatypeValidator &&
-                     ((NOTATIONDatatypeValidator)base).fBaseValidator == null) {
+                if ( ((NOTATIONDatatypeValidator)base).fBaseValidator == null) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 )
                         throw new InvalidDatatypeFacetException( "Enumeration facet is required data types directly derived from NOTATION.");
                 }
@@ -209,7 +205,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
             }
 
             // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null && base instanceof NOTATIONDatatypeValidator) {
+            if (base != null) {
                 NOTATIONDatatypeValidator notationBase = (NOTATIONDatatypeValidator)base;
 
                 // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
@@ -273,28 +269,28 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
                 // inherit length
                 if ( (notationBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                         fLength = notationBase.fLength;
                     }
                 }
                 // inherit minLength
                 if ( (notationBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                         fMinLength = notationBase.fMinLength;
                     }
                 }
                 // inherit maxLength
                 if ( (notationBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                         fMaxLength = notationBase.fMaxLength;
                     }
                 }
                 // inherit enumeration
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
                      (notationBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration = notationBase.fEnumeration;
                 }
             }
@@ -327,11 +323,7 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof NOTATIONDatatypeValidator) {
-                ((NOTATIONDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
+           ((NOTATIONDatatypeValidator)fBaseValidator).checkContent(content, state, true);
         }
 
         // we check pattern first
@@ -400,15 +392,4 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     *
-     * @param base   the validator for this type's base type
-     */
-
-    private void setBasetype(DatatypeValidator base){
-        fBaseValidator = base;
-    }
 }

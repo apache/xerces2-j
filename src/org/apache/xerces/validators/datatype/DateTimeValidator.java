@@ -81,7 +81,6 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     private static final boolean DEBUG=false;
 
     //define facets allowed on schema date/time
-    protected String fPattern      = null;
     protected int[]  fMaxInclusive = null;
     protected int[]  fMaxExclusive = null;
     protected int[]  fMinInclusive = null;
@@ -90,8 +89,6 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     protected int  fEnumSize  = 0;
 
     //define shared variables for date/time
-    protected RegularExpression fRegex = null;
-    protected int fFacetsDefined = 0;
 
     //define constants
     protected final static int CY = 0,  M = 1, D = 2, h = 3, 
@@ -152,7 +149,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     public DateTimeValidator (DatatypeValidator base, Hashtable facets, boolean derivedByList ) 
     throws InvalidDatatypeFacetException {
         if ( base != null ) {
-            setBasetype( base ); // Set base type 
+            fBaseValidator = base; // Set base type 
             fFacets = facets;
         }
 
@@ -163,17 +160,17 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
 
                 String key = (String) e.nextElement();
                 if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     if ( fPattern != null )
                         fRegex = new RegularExpression(fPattern, "X" );
                 }
                 else if ( key.equals(SchemaSymbols.ELT_ENUMERATION) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     continue; //Treat the enumaration after this for loop
                 }
                 else if ( key.equals(SchemaSymbols.ELT_MAXINCLUSIVE) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXINCLUSIVE;
                     value = ((String)facets.get(key));
                     try {
                         fMaxInclusive = parse(value, null);
@@ -184,7 +181,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                     }
                 }
                 else if ( key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXEXCLUSIVE;
                     value  = ((String)facets.get(key));
                     try {
                         fMaxExclusive = parse(value, null);
@@ -195,7 +192,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                     }
                 }
                 else if ( key.equals(SchemaSymbols.ELT_MININCLUSIVE) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                    fFacetsDefined |= DatatypeValidator.FACET_MININCLUSIVE;
                     value  = ((String)facets.get(key));
                     try {
                         fMinInclusive = parse(value, null);
@@ -206,7 +203,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                     }
                 }
                 else if ( key.equals(SchemaSymbols.ELT_MINEXCLUSIVE) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
+                    fFacetsDefined |= DatatypeValidator.FACET_MINEXCLUSIVE;
                     value  = ((String)facets.get(key));
                     try {
                         fMinExclusive = parse(value, null);
@@ -378,14 +375,6 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             return;
         }
 
-    }
-
-    /**
-     * set the base type for this datatype
-     * @param base the validator for this type's base type
-     */
-    public void setBasetype(DatatypeValidator base) {
-        fBaseValidator = base;
     }
 
     public int compare( String content1, String content2) {

@@ -74,19 +74,13 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version $Id$
  */
 public class StringDatatypeValidator extends AbstractDatatypeValidator{
+    
     private Locale     fLocale          = null;
-
     private int        fLength          = 0;
     private int        fMaxLength       = Integer.MAX_VALUE;
     private int        fMinLength       = 0;
-    private String     fPattern         = null;
     private Vector     fEnumeration     = null;
-    private int        fFacetsDefined   = 0;
     private short      fWhiteSpace      = DatatypeValidator.PRESERVE;
-    private RegularExpression fRegex    = null;
-
-
-
 
     public  StringDatatypeValidator () throws InvalidDatatypeFacetException{
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -97,7 +91,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                      boolean derivedByList ) throws InvalidDatatypeFacetException {
 
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -109,7 +103,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 String key = (String) e.nextElement();
 
                 if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                     String lengthValue = (String)facets.get(key);
                     try {
                         fLength     = Integer.parseInt( lengthValue );
@@ -121,7 +115,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
                         fMinLength     = Integer.parseInt( minLengthValue );
@@ -133,7 +127,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
                         fMaxLength     = Integer.parseInt( maxLengthValue );
@@ -146,15 +140,15 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
 
 
                 } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     if( fPattern != null )
                         fRegex = new RegularExpression(fPattern, "X");
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else if (key.equals(SchemaSymbols.ELT_WHITESPACE)) {
-                    fFacetsDefined += DatatypeValidator.FACET_WHITESPACE;
+                    fFacetsDefined |= DatatypeValidator.FACET_WHITESPACE;
                     String ws = (String)facets.get(key);
                     // check 4.3.6.c0 must:
                     // whiteSpace = preserve || whiteSpace = replace || whiteSpace = collapse
@@ -182,11 +176,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                      (fEnumeration != null) ) {
                     int i = 0;
                     try {
-                        for ( ; i < fEnumeration.size(); i++) {
-                            if (base instanceof StringDatatypeValidator)
-                                ((StringDatatypeValidator)base).checkContent ((String)fEnumeration.elementAt(i), null, false);
-                            else
-                                base.validate ((String)fEnumeration.elementAt(i), null);
+                        for ( ; i < fEnumeration.size(); i++){
+                           ((StringDatatypeValidator)base).checkContent ((String)fEnumeration.elementAt(i), null, false);
                         }
                     } catch ( Exception idve ){
                         throw new InvalidDatatypeFacetException( "Value of enumeration = '" + fEnumeration.elementAt(i) +
@@ -214,7 +205,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             }
 
             // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null && base instanceof StringDatatypeValidator) {
+            if (base != null) {
                 StringDatatypeValidator strBase = (StringDatatypeValidator)base;
 
                 // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
@@ -292,34 +283,34 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 // inherit length
                 if ( (strBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                         fLength = strBase.fLength;
                     }
                 }
                 // inherit minLength
                 if ( (strBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                         fMinLength = strBase.fMinLength;
                     }
                 }
                 // inherit maxLength
                 if ( (strBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                         fMaxLength = strBase.fMaxLength;
                     }
                 }
                 // inherit enumeration
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
                      (strBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration = strBase.fEnumeration;
                 }
                 // inherit whiteSpace
                 if ( (fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) == 0 &&
                      (strBase.fFacetsDefined & DatatypeValidator.FACET_WHITESPACE) != 0 ) {
-                    fFacetsDefined += DatatypeValidator.FACET_WHITESPACE;
+                    fFacetsDefined |= DatatypeValidator.FACET_WHITESPACE;
                     fWhiteSpace = strBase.fWhiteSpace;
                 }
             }
@@ -361,11 +352,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof StringDatatypeValidator) {
                 ((StringDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
         }
 
         // we check pattern first
@@ -438,11 +425,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             ex.printStackTrace();
         }
         return newObj;
-    }
-
-    // Private methods
-    private void setBasetype( DatatypeValidator base) {
-        fBaseValidator = base;
     }
 
 }

@@ -76,14 +76,10 @@ import org.apache.xerces.utils.Base64;
  */
 public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
     private Locale     fLocale          = null;
-
     private int        fLength          = 0;
     private int        fMaxLength       = Integer.MAX_VALUE;
     private int        fMinLength       = 0;
-    private String     fPattern         = null;
     private Vector     fEnumeration     = null;
-    private int        fFacetsDefined   = 0;
-    private RegularExpression fRegex    = null;
 
 
     public  Base64BinaryDatatypeValidator () throws InvalidDatatypeFacetException{
@@ -95,7 +91,7 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
                                            boolean derivedByList ) throws InvalidDatatypeFacetException {
 
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -107,7 +103,7 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
                 String key = (String) e.nextElement();
 
                 if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                     String lengthValue = (String)facets.get(key);
                     try {
                         fLength     = Integer.parseInt( lengthValue );
@@ -119,7 +115,7 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
                         fMinLength     = Integer.parseInt( minLengthValue );
@@ -131,7 +127,7 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
                         fMaxLength     = Integer.parseInt( maxLengthValue );
@@ -144,13 +140,13 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
 
 
                 } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     if( fPattern != null )
                         fRegex = new RegularExpression(fPattern, "X");
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else {
                     throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                 }
@@ -191,7 +187,7 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
             }
 
             // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null && base instanceof Base64BinaryDatatypeValidator) {
+            if (base != null) {
                 Base64BinaryDatatypeValidator base64BBase = (Base64BinaryDatatypeValidator)base;
 
                 // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
@@ -255,28 +251,28 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
                 // inherit length
                 if ( (base64BBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                         fLength = base64BBase.fLength;
                     }
                 }
                 // inherit minLength
                 if ( (base64BBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                         fMinLength = base64BBase.fMinLength;
                     }
                 }
                 // inherit maxLength
                 if ( (base64BBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                         fMaxLength = base64BBase.fMaxLength;
                     }
                 }
                 // inherit enumeration
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
                      (base64BBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration = base64BBase.fEnumeration;
                 }
             }
@@ -311,11 +307,7 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof Base64BinaryDatatypeValidator) {
                 ((Base64BinaryDatatypeValidator)fBaseValidator).checkContent(content, state, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
         }
 
         // we check pattern first
@@ -393,10 +385,6 @@ public class Base64BinaryDatatypeValidator extends AbstractDatatypeValidator{
         return newObj;
     }
 
-    // Private methods
-    private void setBasetype( DatatypeValidator base) {
-        fBaseValidator = base;
-    }
 
 }
 

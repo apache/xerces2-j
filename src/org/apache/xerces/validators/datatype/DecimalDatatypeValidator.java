@@ -105,7 +105,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
     public DecimalDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                       boolean derivedByList ) throws InvalidDatatypeFacetException {
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -287,7 +287,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                 }
             }
 
-            if (base != null && base instanceof DecimalDatatypeValidator) {
+            if (base != null) {
                 DecimalDatatypeValidator numBase = (DecimalDatatypeValidator)base;
 
                 // check 4.3.7.c2 error:
@@ -491,11 +491,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof DecimalDatatypeValidator) {
-                ((DecimalDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
+            ((DecimalDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
         }
 
         // we check pattern first
@@ -670,11 +666,6 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             //REVISIT: should we throw exception??
             return -1;
         }
-    }
-
-
-    private void setBasetype(DatatypeValidator base) {
-        fBaseValidator =  base;
     }
 
     /**

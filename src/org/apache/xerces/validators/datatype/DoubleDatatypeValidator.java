@@ -75,18 +75,15 @@ import org.apache.xerces.utils.regex.RegularExpression;
 public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
     private Locale            fLocale           = null;
     private double[]          fEnumDoubles      = null;
-    private String            fPattern          = null;
     private double            fMaxInclusive     = Double.POSITIVE_INFINITY;
     private double            fMaxExclusive     = Double.POSITIVE_INFINITY;
     private double            fMinInclusive     = Double.NEGATIVE_INFINITY;
     private double            fMinExclusive     = Double.NEGATIVE_INFINITY;
-    private int               fFacetsDefined    = 0;
 
     private boolean           isMaxExclusiveDefined = false;
     private boolean           isMaxInclusiveDefined = false;
     private boolean           isMinExclusiveDefined = false;
     private boolean           isMinInclusiveDefined = false;
-    private RegularExpression      fRegex           = null;
 
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 
@@ -99,7 +96,7 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
     public DoubleDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                      boolean derivedByList ) throws InvalidDatatypeFacetException  {
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -254,7 +251,7 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
                 }
             }
 
-            if (base != null && base instanceof DoubleDatatypeValidator) {
+            if (base != null ) {
                 DoubleDatatypeValidator doubleBase = (DoubleDatatypeValidator)base;
 
                 // check 4.3.7.c2 error:
@@ -413,11 +410,7 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof DoubleDatatypeValidator) {
                 ((DoubleDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
         }
 
         // we check pattern first
@@ -585,11 +578,6 @@ public class DoubleDatatypeValidator extends AbstractDatatypeValidator {
         } catch (Exception e) {
             return "Illegal Errorcode "+minor;
         }
-    }
-
-
-    private void setBasetype(DatatypeValidator base) {
-        fBaseValidator =  base;
     }
 
     private static double dValueOf(String s) throws NumberFormatException {

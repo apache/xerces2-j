@@ -78,19 +78,16 @@ import java.util.NoSuchElementException;
 public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     private Locale    fLocale                   = null;
     private float[]   fEnumFloats               = null;
-    private String    fPattern                  = null;
     private float     fMaxInclusive             = Float.POSITIVE_INFINITY ;
     private float     fMaxExclusive             = Float.POSITIVE_INFINITY;
     private float     fMinInclusive             = Float.NEGATIVE_INFINITY;
     private float     fMinExclusive             = Float.NEGATIVE_INFINITY;
-    private int       fFacetsDefined            = 0;
 
     private boolean   isMaxExclusiveDefined             = false;
     private boolean   isMaxInclusiveDefined             = false;
     private boolean   isMinExclusiveDefined             = false;
     private boolean   isMinInclusiveDefined             = false;
     private DatatypeMessageProvider fMessageProvider    = new DatatypeMessageProvider();
-    private RegularExpression      fRegex               = null;
 
 
     public FloatDatatypeValidator () throws InvalidDatatypeFacetException{
@@ -100,7 +97,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     public FloatDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                     boolean derivedByList ) throws InvalidDatatypeFacetException {
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -114,30 +111,30 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                 String value = null;
                 try {
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                        fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                         fPattern = (String)facets.get(key);
                         if ( fPattern != null )
                             fRegex = new RegularExpression(fPattern, "X" );
                     } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                        fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                         enumeration = (Vector)facets.get(key);
                     } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXINCLUSIVE;
                         value  = ((String)facets.get(key));
                         isMaxInclusiveDefined = true;
                         fMaxInclusive = fValueOf(value);
                     } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXEXCLUSIVE;
                         value  = ((String)facets.get(key));
                         isMaxExclusiveDefined = true;
                         fMaxExclusive = fValueOf(value);
                     } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                        fFacetsDefined |= DatatypeValidator.FACET_MININCLUSIVE;
                         value  = ((String)facets.get(key));
                         isMinInclusiveDefined = true;
                         fMinInclusive  = fValueOf(value);
                     } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
+                        fFacetsDefined |= DatatypeValidator.FACET_MINEXCLUSIVE;
                         value  = ((String)facets.get(key));
                         isMinExclusiveDefined = true;
                         fMinExclusive  = fValueOf(value);
@@ -255,7 +252,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                 }
             }
 
-            if (base != null && base instanceof FloatDatatypeValidator) {
+            if (base != null) {
                 FloatDatatypeValidator floatBase = (FloatDatatypeValidator)base;
 
                 // check 4.3.7.c2 error:
@@ -345,35 +342,35 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                 // inherit enumeration
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
                      (floatBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumFloats = floatBase.fEnumFloats;
                 }
                 // inherit maxExclusive
                 if ( floatBase.isMaxExclusiveDefined &&
                      !isMaxExclusiveDefined && !isMaxInclusiveDefined ) {
                     isMaxExclusiveDefined = true;
-                    fFacetsDefined += FACET_MAXEXCLUSIVE;
+                    fFacetsDefined |= FACET_MAXEXCLUSIVE;
                     fMaxExclusive = floatBase.fMaxExclusive;
                 }
                 // inherit maxInclusive
                 if ( floatBase.isMaxInclusiveDefined &&
                      !isMaxExclusiveDefined && !isMaxInclusiveDefined ) {
                     isMaxInclusiveDefined = true;
-                    fFacetsDefined += FACET_MAXINCLUSIVE;
+                    fFacetsDefined |= FACET_MAXINCLUSIVE;
                     fMaxInclusive = floatBase.fMaxInclusive;
                 }
                 // inherit minExclusive
                 if ( floatBase.isMinExclusiveDefined &&
                      !isMinExclusiveDefined && !isMinInclusiveDefined ) {
                     isMinExclusiveDefined = true;
-                    fFacetsDefined += FACET_MINEXCLUSIVE;
+                    fFacetsDefined |= FACET_MINEXCLUSIVE;
                     fMinExclusive = floatBase.fMinExclusive;
                 }
                 // inherit minExclusive
                 if ( floatBase.isMinInclusiveDefined &&
                      !isMinExclusiveDefined && !isMinInclusiveDefined ) {
                     isMinInclusiveDefined = true;
-                    fFacetsDefined += FACET_MININCLUSIVE;
+                    fFacetsDefined |= FACET_MININCLUSIVE;
                     fMinInclusive = floatBase.fMinInclusive;
                 }
             }
@@ -422,11 +419,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof FloatDatatypeValidator) {
                 ((FloatDatatypeValidator)fBaseValidator).checkContent(content, state, enumeration, true);
-            } else {
-                this.fBaseValidator.validate( content, state );
-            }
         }
 
         // we check pattern first
@@ -597,12 +590,6 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
             return "Illegal Errorcode "+minor;
         }
     }
-
-
-    private void setBasetype(DatatypeValidator base) {
-        fBaseValidator =  base;
-    }
-
 
     private static float fValueOf(String s) throws NumberFormatException {
         float f;

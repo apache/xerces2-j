@@ -71,21 +71,21 @@ import java.util.Locale;
  * @version $Id$
  */
 public interface DatatypeValidator {
-    public static final int FACET_LENGTH       = 1;
-    public static final int FACET_MINLENGTH    = 1<<1;
-    public static final int FACET_MAXLENGTH    = 1<<2;
-    public static final int FACET_PATTERN      = 1<<3; 
-    public static final int FACET_ENUMERATION  = 1<<4;
-    public static final int FACET_MAXINCLUSIVE = 1<<5;
-    public static final int FACET_MAXEXCLUSIVE = 1<<6;
-    public static final int FACET_MININCLUSIVE = 1<<7;
-    public static final int FACET_MINEXCLUSIVE = 1<<8;
-    public static final int FACET_TOTALDIGITS  = 1<<9;
-    public static final int FACET_FRACTIONDIGITS = 1<<10;
-    public static final int FACET_ENCODING     = 1<<11;
-    public static final int FACET_DURATION     = 1<<12;
-    public static final int FACET_PERIOD       = 1<<13;
-    public static final int FACET_WHITESPACE   = 1<<14;
+    public static final short FACET_LENGTH       = 0x1<<0;
+    public static final short FACET_MINLENGTH    = 0x1<<1;
+    public static final short FACET_MAXLENGTH    = 0x1<<2;
+    public static final short FACET_PATTERN      = 0x1<<3; 
+    public static final short FACET_ENUMERATION  = 0x1<<4;
+    public static final short FACET_MAXINCLUSIVE = 0x1<<5;
+    public static final short FACET_MAXEXCLUSIVE = 0x1<<6;
+    public static final short FACET_MININCLUSIVE = 0x1<<7;
+    public static final short FACET_MINEXCLUSIVE = 0x1<<8;
+    public static final short FACET_TOTALDIGITS  = 0x1<<9;
+    public static final short FACET_FRACTIONDIGITS = 0x1<<10;
+    public static final short FACET_ENCODING     = 0x1<<11;
+    public static final short FACET_DURATION     = 0x1<<12;
+    public static final short FACET_PERIOD       = 0x1<<13;
+    public static final short FACET_WHITESPACE   = 0x1<<14;
 
     //2.4.2.6 whiteSpace - Datatypes 
     public static final short PRESERVE = 0;
@@ -100,10 +100,6 @@ public interface DatatypeValidator {
      * If invalid a Datatype validation exception is thrown.
      * 
      * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
      *                
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
@@ -113,6 +109,7 @@ public interface DatatypeValidator {
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException;
 
     public short getWSFacet ();
+    
     /**
      * returns the datatype facet if any is set as a
      * Hashtable

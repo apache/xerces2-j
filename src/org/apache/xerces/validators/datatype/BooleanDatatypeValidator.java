@@ -76,11 +76,8 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private Locale                  fLocale          = null;
-    private String                  fPattern         = null;
-    private int                     fFacetsDefined   = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
-    private RegularExpression       fRegex           = null;
 
     public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
        this( null, null, false ); // Native, No Facets defined, Restriction
@@ -88,7 +85,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     public BooleanDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                  boolean derivedByList ) throws InvalidDatatypeFacetException {
-        setBasetype( base ); // Set base type
+        fBaseValidator = base; // Set base type
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -100,7 +97,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                 String key = (String) e.nextElement();
 
                 if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     if( fPattern != null )
                        fRegex = new RegularExpression(fPattern, "X" );
@@ -154,17 +151,6 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     //Begin private method definitions
 
-    /**
-     * Sets the base datatype name.
-     *
-     * @param base
-     */
-
-    private  void setBasetype(DatatypeValidator base) {
-        fBaseValidator = base;
-    }
-
-
 
     private String getErrorString(int major, int minor, Object args[]) {
         try {
@@ -192,11 +178,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof BooleanDatatypeValidator) {
                 ((BooleanDatatypeValidator)fBaseValidator).checkContent(content, true);
-            } else {
-                this.fBaseValidator.validate( content, null );
-            }
         }
 
         // we check pattern first

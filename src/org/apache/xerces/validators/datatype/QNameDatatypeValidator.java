@@ -80,15 +80,12 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version $Id$
  */
 public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
+    
     private Locale    fLocale          = null;
-
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;
     private int       fMinLength       = 0;
-    private String    fPattern         = null;
     private Vector    fEnumeration     = null;
-    private int       fFacetsDefined   = 0;
-    private RegularExpression fRegex   = null;
 
     // for the NCName validator
     private static StringDatatypeValidator  fgStrValidator  = null;
@@ -109,7 +106,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         }
 
          // Set base type
-        setBasetype( base );
+        fBaseValidator = base;
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
         if ( derivedByList )
@@ -121,7 +118,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                 String key = (String) e.nextElement();
 
                 if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                     String lengthValue = (String)facets.get(key);
                     try {
                         fLength     = Integer.parseInt( lengthValue );
@@ -133,7 +130,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
                         fMinLength     = Integer.parseInt( minLengthValue );
@@ -145,7 +142,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                         throw new InvalidDatatypeFacetException("minLength value '"+minLengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
                         fMaxLength     = Integer.parseInt( maxLengthValue );
@@ -158,13 +155,13 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
 
 
                 } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     if( fPattern != null )
                         fRegex = new RegularExpression(fPattern, "X");
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fEnumeration = (Vector)facets.get(key);
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else {
                     throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
                 }
@@ -205,7 +202,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
             }
 
             // if base type is string, check facets against base.facets, and inherit facets from base
-            if (base != null && base instanceof QNameDatatypeValidator) {
+            if (base != null) {
                 QNameDatatypeValidator qNameBase = (QNameDatatypeValidator)base;
 
                 // check 4.3.1.c1 error: length & (base.maxLength | base.minLength)
@@ -269,28 +266,28 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                 // inherit length
                 if ( (qNameBase.fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                         fLength = qNameBase.fLength;
                     }
                 }
                 // inherit minLength
                 if ( (qNameBase.fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MINLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                         fMinLength = qNameBase.fMinLength;
                     }
                 }
                 // inherit maxLength
                 if ( (qNameBase.fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
                     if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) == 0 ) {
-                        fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                         fMaxLength = qNameBase.fMaxLength;
                     }
                 }
                 // inherit enumeration
                 if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) == 0 &&
                      (qNameBase.fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration = qNameBase.fEnumeration;
                 }
             }
@@ -324,11 +321,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
-            if (fBaseValidator instanceof QNameDatatypeValidator) {
                 ((QNameDatatypeValidator)fBaseValidator).checkContent(content, true);
-            } else {
-                this.fBaseValidator.validate( content, null );
-            }
         }
 
         // we check pattern first
@@ -394,9 +387,5 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
        */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
-
-    private void setBasetype( DatatypeValidator base) {
-        fBaseValidator = base;
     }
 }

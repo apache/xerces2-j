@@ -76,19 +76,14 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version $Id$
  */
 public class ListDatatypeValidator extends AbstractDatatypeValidator{
+    
     private Locale     fLocale          = null;
-    // moved to AbstractDatatypeValidator
-    // DatatypeValidator  fBaseValidator   = null; // Native datatypes have null
-
     private int        fLength           = 0;
     private int        fMaxLength        = Integer.MAX_VALUE;
     private int        fMinLength        = 0;
-    private String     fPattern          = null;
     private Vector     fEnumeration      = null;
-    private int        fFacetsDefined    = 0;
     private boolean    fDerivedByList    = false; //false: derivation by restriction
                                                   //true: list decl
-    private RegularExpression fRegex         = null;
 
     
 
@@ -100,7 +95,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     public ListDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
     boolean derivedByList ) throws InvalidDatatypeFacetException {
 
-        setBasetype( base ); // Set base type 
+        fBaseValidator = base; // Set base type 
 
         fDerivedByList = derivedByList;
 
@@ -108,7 +103,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                 String key = (String) e.nextElement();
                 if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_LENGTH;
                     String lengthValue = (String)facets.get(key);
                     try {
                         fLength     = Integer.parseInt( lengthValue );
@@ -119,7 +114,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
 
                 } else if (key.equals(SchemaSymbols.ELT_MINLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MINLENGTH;
                     String minLengthValue = (String)facets.get(key);
                     try {
                         fMinLength     = Integer.parseInt( minLengthValue );
@@ -127,7 +122,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("maxLength value '"+minLengthValue+"' is invalid.");
                     }
                 } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXLENGTH;
+                    fFacetsDefined |= DatatypeValidator.FACET_MAXLENGTH;
                     String maxLengthValue = (String)facets.get(key);
                     try {
                         fMaxLength     = Integer.parseInt( maxLengthValue );
@@ -135,7 +130,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                         throw new InvalidDatatypeFacetException("maxLength value '"+maxLengthValue+"' is invalid.");
                     }
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration    = (Vector)facets.get(key);
                 } else {
                     throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
@@ -409,11 +404,6 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
         return true;
     }
 
-
-    
-    private void setBasetype( DatatypeValidator base) {
-        fBaseValidator = base;
-    }
 
 }
 

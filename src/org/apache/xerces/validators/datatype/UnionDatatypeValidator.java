@@ -77,17 +77,12 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * Implements the September 22 XML Schema datatype Union Datatype type
  */
 public class UnionDatatypeValidator extends AbstractDatatypeValidator {
-    private Locale     fLocale          = null;
-    private Vector  fBaseValidators   = null;             // union collection of validators
-    // moved to AbstractDatatypeValidator
-    // private DatatypeValidator  fBaseValidator   = null;   // Native datatypes have null
+    
+    private Locale  fLocale          = null;
+    private Vector  fBaseValidators   = null; // union collection of validators
     private int fValidatorsSize = 0;
-    private String     fPattern          = null;
     private Vector     fEnumeration      = null;
-    private int        fFacetsDefined    = 0;
-
     private StringBuffer errorMsg = null;   
-    private RegularExpression fRegex         = null;
 
 
     public  UnionDatatypeValidator () throws InvalidDatatypeFacetException{
@@ -97,17 +92,17 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
 
     public UnionDatatypeValidator ( DatatypeValidator base, Hashtable facets, boolean derivedBy ) throws InvalidDatatypeFacetException {
-        setBasetype( base );  
+        fBaseValidator = base;  
         //facets allowed are: pattern & enumeration
         if ( facets != null ) {
             for ( Enumeration e = facets.keys(); e.hasMoreElements(); ) {
                 String key = (String) e.nextElement();
                 if ( key.equals(SchemaSymbols.ELT_ENUMERATION) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration    = (Vector)facets.get(key);
                 }
                 else if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
-                    fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     fPattern = (String)facets.get(key);
                     fRegex   = new RegularExpression(fPattern, "X");
 
@@ -323,11 +318,6 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
         if ( !valid ) {
             throw new InvalidDatatypeValueException( "Content '"+content+"' does not match any union types" );  
         }
-    }
-
-
-    private void setBasetype( DatatypeValidator base) {
-        fBaseValidator = base;
     }
 
 }
