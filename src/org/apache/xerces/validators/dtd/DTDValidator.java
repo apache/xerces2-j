@@ -286,6 +286,13 @@ public final class DTDValidator
          * @exception java.lang.Exception
          */
         public void endNamespaceDeclScope(int prefix) throws Exception;
+        
+        /**
+         * Supports DOM Level 2 internalSubset addition.
+         * Called when the internal subset is completely scanned.
+         */
+        public void internalSubset(int internalSubset);
+        
     }
     //
     //
@@ -408,6 +415,10 @@ public final class DTDValidator
     public void endNamespaceDeclScope(int prefix) throws Exception {
         fEventHandler.endNamespaceDeclScope(prefix);
     }
+    public void internalSubset(int internalSubset) {
+        fEventHandler.internalSubset(internalSubset);
+    }
+    
     public void setWarningOnDuplicateAttDef(boolean flag) {
         fWarningOnDuplicateAttDef = flag;
     }
@@ -563,7 +574,7 @@ public final class DTDValidator
         }
         if (fValidating) {
             if (fRootElementType != -1 && rootElementType != fRootElementType) {
-                reportRecoverableXMLError(XMLMessages.MSG_ROOT_ELEMENT_TYPE,
+                          reportRecoverableXMLError(XMLMessages.MSG_ROOT_ELEMENT_TYPE,
                                             XMLMessages.VC_ROOT_ELEMENT_TYPE,
                                             fRootElementType, rootElementType);
             }
