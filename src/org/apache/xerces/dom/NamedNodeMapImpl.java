@@ -353,18 +353,18 @@ public class NamedNodeMapImpl
      
     public NamedNodeMapImpl cloneMap(NodeImpl ownerNode) {
     	NamedNodeMapImpl newmap = new NamedNodeMapImpl(ownerNode);
-        cloneContent(newmap);
+        newmap.cloneContent(this);
     	return newmap;
     }
 
-    protected void cloneContent(NamedNodeMapImpl newmap) {
-    	if (nodes != null) {
-            newmap.nodes = new Vector(nodes.size());
-            for (int i = 0; i < nodes.size(); ++i) {
-                NodeImpl n = (NodeImpl) nodes.elementAt(i);
+    protected void cloneContent(NamedNodeMapImpl srcmap) {
+    	if (srcmap.nodes != null) {
+            nodes = new Vector(srcmap.nodes.size());
+            for (int i = 0; i < srcmap.nodes.size(); ++i) {
+                NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
                 NodeImpl clone = (NodeImpl) n.cloneNode(true);
                 clone.specified(n.specified());
-                newmap.setNamedItem(clone);
+                nodes.insertElementAt(clone, i);
             }
         }
     } // cloneMap():NamedNodeMapImpl

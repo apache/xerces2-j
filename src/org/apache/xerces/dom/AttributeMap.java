@@ -86,16 +86,10 @@ public class AttributeMap extends NamedNodeMapImpl {
     protected AttributeMap(ElementImpl ownerNode, NamedNodeMapImpl defaults) {
         super(ownerNode);
         if (defaults != null) {
-            hasDefaults(true);
             // initialize map with the defaults
-            if (defaults.nodes != null) {
-                nodes = new Vector(defaults.nodes.size());
-                for (int i = 0; i < nodes.size(); ++i) {
-                    NodeImpl node = (NodeImpl) defaults.nodes.elementAt(i);
-                    NodeImpl clone = (NodeImpl) node.cloneNode(true);
-                    clone.specified(false); // mark it as a default attr
-                    setNamedItem(clone);
-                }
+            cloneContent(defaults);
+            if (nodes != null) {
+                hasDefaults(true);
             }
         }
     }
@@ -445,7 +439,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     	AttributeMap newmap =
             new AttributeMap((ElementImpl) ownerNode, null);
         newmap.hasDefaults(hasDefaults());
-        cloneContent(newmap);
+        newmap.cloneContent(this);
     	return newmap;
     } // cloneMap():AttributeMap
 
