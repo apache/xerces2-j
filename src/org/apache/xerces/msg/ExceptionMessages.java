@@ -116,30 +116,60 @@ public class ExceptionMessages extends ListResourceBundle {
 	{ "DOM012", "Invalid node type" },
 	{ "DOM013", "Bad boundary points" },
 
-        // org.apache.xerces.readers
+    // org.apache.xerces.framework
+    { "FWK001", "{0}] scannerState: {1}" },
+    { "FWK002", "{0}] popElementType: fElementDepth-- == 0." },
+    { "FWK003", "TrailingMiscDispatcher.endOfInput moreToFollow" },
+    { "FWK004", "cannot happen: {0}" },
+    { "FWK005", "parse may not be called while parsing." },
+    { "FWK006", "setLocale may not be called while parsing." },
+    { "FWK007", "Unknown error domain \"{0}\"." },
+    { "FWK008", "Element stack underflow." },
+        
+    // org.apache.xerces.parsers
+    { "PAR001", "Fatal error constructing DOMParser." },
+    { "PAR002", "Class, \"{0}\", is not of type org.w3c.dom" },
+    { "PAR003", "Class, \"{0}\", not found." },
+    { "PAR004", "Cannot setFeature({0}): parse is in progress." },
+    { "PAR005", "Property, \"{0}\" is read-only." },
+    { "PAR006", "Property value must be of type java.lang.String." },
+    { "PAR007", "Current element node cannot be queried when node expansion is deferred." },
+    { "PAR008", "Fatal error getting document factory." },
+    { "PAR009", "Fatal error reading expansion mode." },
+    { "PAR010", "Can't copy node type, {0} ({1})." },
+    { "PAR011", "Feature {0} not supported during parse." },
+    { "PAR012", "For propertyId \"{0}\", the value \""+
+                "{1}\" cannot be cast to {2}." },
+    { "PAR013", "Property \"{0}\" is read only." },
+    { "PAR014", "Cannot getProperty(\"{0}\". No DOM tree exists." },
+    { "PAR015", "startEntityReference(): ENTITYTYPE_UNPARSED" },
+    { "PAR016", "endEntityReference(): ENTITYTYPE_UNPARSED" },
+    { "PAR017", "cannot happen: {0}" },
+    
+    // org.apache.xerces.readers
 
-        { "RDR001", "untested 1" },
-        { "RDR002", "cannot happen 7" },
-        { "RDR003", "cannot happen 8" },
-        { "RDR004", "cannot happen 9" },
+    { "RDR001", "untested 1" },
+    { "RDR002", "cannot happen 7" },
+    { "RDR003", "cannot happen 8" },
+    { "RDR004", "cannot happen 9" },
             
-        //org.apache.xerces.utils
+    //org.apache.xerces.utils
 
-        { "UTL001", "cannot happen 20" },
-        { "UTL002", "cannot happen 21" },
-        { "UTL003", "untested 1" },
-        { "UTL004", "untested 2" },
+    { "UTL001", "cannot happen 20" },
+    { "UTL002", "cannot happen 21" },
+    { "UTL003", "untested 1" },
+    { "UTL004", "untested 2" },
 
-        //org.apache.xerces.validators
+    //org.apache.xerces.validators
 
-        { "VAL001", "Element stack underflow" },
-        { "VAL002", "getValidatorForAttType ({0})" },
-        { "VAL003", "cannot happen 26" },
-        { "VAL004", "cannot happen 27" },
-        { "VAL005", "cannot happen 28" },
-        { "VAL006", "cannot happen 29" },
-        { "VAL007", "cannot happen 30" },
-        { "VAL008", "cannot happen 1" }
+    { "VAL001", "Element stack underflow" },
+    { "VAL002", "getValidatorForAttType ({0})" },
+    { "VAL003", "cannot happen 26" },
+    { "VAL004", "cannot happen 27" },
+    { "VAL005", "cannot happen 28" },
+    { "VAL006", "cannot happen 29" },
+    { "VAL007", "cannot happen 30" },
+    { "VAL008", "cannot happen 1" }
 
         
     };
