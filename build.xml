@@ -1277,6 +1277,8 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
      <replace file="${build.tests}/thread/Test.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+     <replace file="${build.tests}/dom/serialize/TestXmlns.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
 
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
