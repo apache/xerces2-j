@@ -139,10 +139,8 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
                             fRegex = new RegularExpression(fPattern, "X");
                     }
                     else {
-                        String msg = getErrorString(
-                                                   DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_LIST_FACET],
-                                                   new Object[] { key});
-                        throw new InvalidDatatypeFacetException();
+                        String msg = "list datatype, facet "+key+" with value "+(String)facets.get(key);
+                        throw new InvalidDatatypeFacetException(msg);
                     }
                 }
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 )) {

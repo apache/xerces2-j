@@ -473,11 +473,9 @@ abstract class XSDAbstractTraverser {
         if (content == null) {
             return content;
         }
-
-        if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
-
+        String tag = content.getLocalName();
+        if (tag != null && tag.equals(SchemaSymbols.ELT_ANNOTATION)) {
             traverseAnnotationDecl(content, parentAttrs, false, schemaDoc);
-
             content = DOMUtil.getNextSiblingElement(content);
         }
 

@@ -432,20 +432,26 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     // also throws an error if the base type won't allow itself to be used in this context.
     // REVISIT: can this code be re-used?
     private DatatypeValidator findDTValidator (Element elm, QName baseTypeStr, int baseRefContext ) {
-        if (baseTypeStr.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+        if (baseTypeStr.uri !=null &&  baseTypeStr.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
             baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYSIMPLETYPE) &&
             baseRefContext == SchemaSymbols.RESTRICTION) {
-            //REVISIT
-            //reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-            //                  new Object [] { DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE),
-            //                      DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME)});
-            return null;
+            String base = baseTypeStr.localpart;
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       "UnknownBaseDatatype",
+                                       new Object[] {
+                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME), DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE)}, 
+                                       XMLErrorReporter.SEVERITY_ERROR);
+
+            return  (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
         }
         DatatypeValidator baseValidator = null;
         baseValidator = (DatatypeValidator)fSchemaHandler.getGlobalDecl(fSchemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr);
         if (baseValidator != null) {
             if ((baseValidator.getFinalSet() & baseRefContext) != 0) {
-                reportGenericSchemaError("the base type " + baseTypeStr.rawname + " does not allow itself to be used as the base for a restriction and/or as a type in a list and/or union");
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           "RestrictionBaseFinal",
+                                           new Object[] { baseTypeStr.rawname }, 
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
         }
         return baseValidator;

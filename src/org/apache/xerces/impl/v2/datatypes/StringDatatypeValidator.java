@@ -115,9 +115,7 @@ public class StringDatatypeValidator extends AbstractStringValidator {
             }
         }
         else {
-            String msg = getErrorString(
-                    DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_STRING_FACET],
-                    new Object[] { key });
+            String msg = "string datatype, facet "+key+" with value "+(String)facets.get(key);
                 throw new InvalidDatatypeFacetException(msg);
         }
     }

@@ -98,9 +98,7 @@ public class DoubleDatatypeValidator extends AbstractNumericValidator {
     }
 
     protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
-        String msg = getErrorString(
-            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_DOUBLE_FACET],
-            new Object[] { key});
+        String msg = "double datatype, facet "+key+" with value "+(String)facets.get(key);
         throw new InvalidDatatypeFacetException(msg);
     }
     /**

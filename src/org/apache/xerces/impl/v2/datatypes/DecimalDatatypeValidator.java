@@ -83,7 +83,7 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
     protected int                 fTotalDigits;
     protected int                 fFractionDigits;
 
-    public DecimalDatatypeValidator ()   {
+    public DecimalDatatypeValidator () {
         this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
@@ -167,37 +167,37 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
 
     protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{
 
-        String value = null;
-        try {
-            if (key.equals(SchemaSymbols.ELT_TOTALDIGITS)) {
-                value = ((String) facets.get(key ));
-                fFacetsDefined |= DatatypeValidator.FACET_TOTALDIGITS;
+        String value = ((String) facets.get(key ));
+
+        String msg = "decimal datatype, facet "+key+" with value "+value;
+        if (key.equals(SchemaSymbols.ELT_TOTALDIGITS)) {
+            fFacetsDefined |= DatatypeValidator.FACET_TOTALDIGITS;
+            try {
                 fTotalDigits      = Integer.parseInt(value );
-                // check 4.3.11.c0 must: totalDigits > 0
-                if (fTotalDigits <= 0)
-                    throw new InvalidDatatypeFacetException("totalDigits value '"+fTotalDigits+"' must be a positiveInteger.");
             }
-            else if (key.equals(SchemaSymbols.ELT_FRACTIONDIGITS)) {
-                value = ((String) facets.get(key ));
-                fFacetsDefined |= DatatypeValidator.FACET_FRACTIONDIGITS;
-                fFractionDigits          = Integer.parseInt( value );
-                // check 4.3.12.c0 must: fractionDigits > 0
-                if (fFractionDigits < 0)
-                    throw new InvalidDatatypeFacetException("fractionDigits value '"+fFractionDigits+"' must be a positiveInteger.");
-            }
-            else {
-                String msg = getErrorString(
-                                           DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_DECIMAL_FACET],
-                                           new Object [] { value, key});
+            catch (Exception e) {
                 throw new InvalidDatatypeFacetException(msg);
             }
+            // check 4.3.11.c0 must: totalDigits > 0
+            if (fTotalDigits <= 0)
+                throw new InvalidDatatypeFacetException("totalDigits value '"+fTotalDigits+"' must be a positiveInteger.");
         }
-        catch (Exception ex) {
-            String msg = getErrorString(
-                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_FACET_VALUE],
-                                       new Object [] { value, key});
+        else if (key.equals(SchemaSymbols.ELT_FRACTIONDIGITS)) {
+            fFacetsDefined |= DatatypeValidator.FACET_FRACTIONDIGITS;
+            try {
+                fFractionDigits          = Integer.parseInt( value );
+            }
+            catch (Exception e) {
+                throw new InvalidDatatypeFacetException(msg);
+            }
+            // check 4.3.12.c0 must: fractionDigits > 0
+            if (fFractionDigits < 0)
+                throw new InvalidDatatypeFacetException("fractionDigits value '"+fFractionDigits+"' must be a positiveInteger.");
+        }
+        else {
             throw new InvalidDatatypeFacetException(msg);
         }
+
     }
 
     protected int compareValues (Object value1, Object value2) {

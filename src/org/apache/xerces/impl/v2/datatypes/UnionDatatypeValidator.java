@@ -111,9 +111,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
                 }
                 else {
-                    String msg = getErrorString(
-                        DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_UNION_FACET],
-                        new Object[] { key });
+                    String msg = "union datatype, facet "+key+" with value "+(String)facets.get(key);
                     throw new InvalidDatatypeFacetException(msg);                }
             } //end for
 

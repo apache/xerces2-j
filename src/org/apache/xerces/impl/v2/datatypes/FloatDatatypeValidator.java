@@ -102,9 +102,7 @@ public class FloatDatatypeValidator extends AbstractNumericValidator {
     }
 
     protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
-        String msg = getErrorString(
-            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_FLOAT_FACET],
-            new Object[] { key });
+        String msg = "float datatype, facet "+key+" with value "+(String)facets.get(key);
         throw new InvalidDatatypeFacetException(msg);
     }
 

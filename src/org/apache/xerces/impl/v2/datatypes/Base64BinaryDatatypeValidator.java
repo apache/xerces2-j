@@ -91,9 +91,7 @@ public class Base64BinaryDatatypeValidator extends AbstractStringValidator{
     }
 
     protected void assignAdditionalFacets(String key, Hashtable facets)  throws InvalidDatatypeFacetException{
-        String msg = getErrorString(
-            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_STRING_FACET],
-            new Object[] { key });
+        String msg = "base64Binary datatype, facet "+key+" with value "+(String)facets.get(key);
         throw new InvalidDatatypeFacetException(msg);    
     }
 
