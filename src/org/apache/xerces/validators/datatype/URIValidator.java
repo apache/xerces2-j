@@ -59,6 +59,7 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  *
@@ -69,7 +70,7 @@ import java.util.Locale;
  * @version Revision: %M% %I% %W% %Q%
  */
 
-public class URIValidator implements InternalDatatypeValidator {
+public class URIValidator implements DatatypeValidator {
 	
     private Locale fLocale = null;
 	

@@ -60,6 +60,8 @@ package org.apache.xerces.validators.datatype;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.xerces.validators.schema.SchemaSymbols;
+
 
 /**
  *
@@ -69,7 +71,7 @@ import java.util.Locale;
  * @version Revision: %M% %I% %W% %Q%
  */
 
-public class BinaryValidator implements InternalDatatypeValidator {
+public class BinaryValidator implements DatatypeValidator {
 
     private Locale fLocale;
     
@@ -95,10 +97,10 @@ public class BinaryValidator implements InternalDatatypeValidator {
     public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
-            if (key.equals(DatatypeValidator.LENGTH)) {
-            } else if (key.equals(DatatypeValidator.MINLENGTH)) {
-            } else if (key.equals(DatatypeValidator.MAXLENGTH)) {
-            } else if (key.equals(DatatypeValidator.ENCODING)) {
+            if (key.equals( SchemaSymbols.ELT_LENGTH)) {
+            } else if (key.equals(SchemaSymbols.ELT_MINLENGTH)) {
+            } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
+            } else if (key.equals(SchemaSymbols.ELT_ENCODING)) {
             } else {
                 throw new IllegalFacetException();
             }

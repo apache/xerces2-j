@@ -59,7 +59,7 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
-
+import org.apache.xerces.validators.schema.SchemaSymbols;
 /**
  *
  * BooleanValidator validates that content satisfies the W3C XML Datatype for Boolean
@@ -68,7 +68,7 @@ import java.util.Locale;
  * @version
  */
 
-public class BooleanValidator implements InternalDatatypeValidator {
+public class BooleanValidator implements DatatypeValidator {
     private Locale fLocale = null;
 	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 	/**

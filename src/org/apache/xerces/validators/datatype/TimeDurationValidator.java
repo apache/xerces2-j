@@ -64,6 +64,7 @@ import java.util.Locale;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.text.ParseException;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  *
@@ -73,7 +74,7 @@ import java.text.ParseException;
  * @version
  */
 
-public class TimeDurationValidator implements InternalDatatypeValidator {
+public class TimeDurationValidator implements DatatypeValidator {
 
 	public static final int CACHE_LIMIT = 300;
 	public static final int CACHE_INITIAL_SIZE = 307;
@@ -136,7 +137,7 @@ public class TimeDurationValidator implements InternalDatatypeValidator {
 	    for (Enumeration e = facets.keys(); e.hasMoreElements();) {
 	        String key = (String) e.nextElement();
 	        String value = null;
-	        if (key.equals(DatatypeValidator.ENUMERATION)) 
+	        if (key.equals(SchemaSymbols.ELT_ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
 	        long dValue = 0;
@@ -148,30 +149,27 @@ public class TimeDurationValidator implements InternalDatatypeValidator {
 								   DatatypeMessageProvider.MSG_NONE,
 								   new Object [] { value, key }));
 	        }
-	        if (key.equals(DatatypeValidator.MININCLUSIVE)) {
+	        if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
                 fIsMinInclusive = true;
 	            fMinInclusive = dValue;
-	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE)) {
+	        } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
 	            fIsMinExclusive = true;
 	            fMinExclusive = dValue;
-	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE)) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
 	            fIsMaxInclusive = true;
 	            fMaxInclusive = dValue;
-	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
 	            fIsMaxExclusive = true;
 	            fMaxExclusive = dValue;
-	        } else if (key.equals(DatatypeValidator.ENUMERATION)) {
-	        } else if (key.equals(DatatypeValidator.PRECISION) ||
-                     key.equals(DatatypeValidator.SCALE) ||
-                     key.equals(DatatypeValidator.LENGTH) ||
-                     key.equals(DatatypeValidator.MINLENGTH) ||
-                     key.equals(DatatypeValidator.MAXLENGTH) ||
-                     key.equals(DatatypeValidator.LITERAL) ||
-                     key.equals(DatatypeValidator.ENCODING) ||
-                     key.equals(DatatypeValidator.PERIOD) ||
-                     key.equals(DatatypeValidator.PATTERN) ||
-                     key.equals(DatatypeValidator.LEXICALREPRESENTATION) ||
-                     key.equals(DatatypeValidator.LEXICAL))
+	        } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+	        } else if (key.equals(SchemaSymbols.ELT_PRECISION) ||
+                     key.equals(SchemaSymbols.ELT_SCALE) ||
+                     key.equals(SchemaSymbols.ELT_LENGTH) ||
+                     key.equals(SchemaSymbols.ELT_MINLENGTH) ||
+                     key.equals(SchemaSymbols.ELT_MAXLENGTH) ||
+                     key.equals(SchemaSymbols.ELT_ENCODING) ||
+                     key.equals(SchemaSymbols.ELT_PERIOD) ||
+                     key.equals(SchemaSymbols.ELT_PATTERN) )
                 throw new IllegalFacetException(
 					getErrorString(DatatypeMessageProvider.IllegalIntegerFacet,
 								   DatatypeMessageProvider.MSG_NONE,
@@ -184,7 +182,7 @@ public class TimeDurationValidator implements InternalDatatypeValidator {
 	    }
 	    
         // check the enum values after any range constraints are in place
-        Vector v = (Vector) facets.get(DatatypeValidator.ENUMERATION);    
+        Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
 	    if (v != null) {
 	        fHasEnums = true;
 	        fEnumValues = new long[v.size()];
@@ -220,7 +218,7 @@ public class TimeDurationValidator implements InternalDatatypeValidator {
 	    for (Enumeration e = facets.keys(); facetsAreConsistent && e.hasMoreElements();) {
 	        String key = (String) e.nextElement();
 	        String value = null;
-	        if (key.equals(DatatypeValidator.ENUMERATION)) 
+	        if (key.equals(SchemaSymbols.ELT_ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
 	        long dValue = 0;
@@ -229,13 +227,13 @@ public class TimeDurationValidator implements InternalDatatypeValidator {
 	        } catch (InvalidDatatypeValueException nfe) {
                 facetsAreConsistent = false;
 	        }
-	        if (key.equals(DatatypeValidator.MININCLUSIVE) && fIsMinInclusive) {
+	        if (key.equals(SchemaSymbols.ELT_MININCLUSIVE) && fIsMinInclusive) {
                 facetsAreConsistent = fMinInclusive <= dValue;
-	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE) && fIsMinExclusive) {
+	        } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE) && fIsMinExclusive) {
 	            facetsAreConsistent = fMinExclusive < dValue;
-	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE) && fIsMaxInclusive) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE) && fIsMaxInclusive) {
 	            facetsAreConsistent = fMaxInclusive >= dValue;
-	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE) && fIsMaxExclusive) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE) && fIsMaxExclusive) {
 	            facetsAreConsistent = fMaxExclusive > dValue;
 	        }
 	    }

@@ -62,6 +62,7 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Enumeration;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  *
@@ -71,7 +72,7 @@ import java.util.Enumeration;
  * @version
  */
 
-public class StringValidator implements InternalDatatypeValidator {
+public class StringValidator implements DatatypeValidator {
 	
     private Locale fLocale = null;
     Hashtable facetData = null;
@@ -98,13 +99,13 @@ public class StringValidator implements InternalDatatypeValidator {
         Enumeration eee = facetData.keys();
         while(eee.hasMoreElements()) {
             String key = (String)eee.nextElement();
-            if (key.equals(DatatypeValidator.ENUMERATION)) {
+            if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                 Vector value = (Vector)facetData.get(key);
                 String vvv = value.toString();
                 if (!value.contains(content)) 
                     throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+vvv);
             }
-            else if (key.equals(DatatypeValidator.MAXLENGTH)) {
+            else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
                 if (fIsMaxLength && content.length() > fMaxLength)
                     throw new InvalidDatatypeValueException("Value '"+content+"' with length '"+content.length()+"' exceeds maximum length of "+fMaxLength+".");
             }
@@ -118,9 +119,9 @@ public class StringValidator implements InternalDatatypeValidator {
 	    facetData = new Hashtable(); // reset old facets
         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
             String key = (String) e.nextElement();
-            if (key.equals(DatatypeValidator.LENGTH)) {
-            } else if (key.equals(DatatypeValidator.MINLENGTH)) {
-            } else if (key.equals(DatatypeValidator.MAXLENGTH)) {
+            if (key.equals(SchemaSymbols.ELT_LENGTH)) {
+            } else if (key.equals(SchemaSymbols.ELT_MINLENGTH)) {
+            } else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
                 int vvv;
                 String value = (String)facetData.get(key);
                 try {
@@ -130,12 +131,12 @@ public class StringValidator implements InternalDatatypeValidator {
                 }
                 fMaxLength = vvv;
                 fIsMaxLength = true;
-            } else if (key.equals(DatatypeValidator.MAXINCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.MININCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.MINEXCLUSIVE)) {
-            } else if (key.equals(DatatypeValidator.PATTERN)) {
-            } else if (key.equals(DatatypeValidator.ENUMERATION)) {
+            } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+            } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+            } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+            } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+            } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+            } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                 facetData.put(key,facets.get(key));
             } else {
                 throw new IllegalFacetException();

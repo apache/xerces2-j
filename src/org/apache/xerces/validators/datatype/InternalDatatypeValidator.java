@@ -57,18 +57,24 @@
 
 package org.apache.xerces.validators.datatype;
 
+/**
+ * This interface is going away
+ * @deprecated
+ */
 interface InternalDatatypeValidator extends DatatypeValidator {
-	/**
-     * validate that a string matches a datatype
-     *
-     * validate returns true or false depending on whether the string content is an
-     * instance of the data type represented by this validator.
-     * 
-     * @param content A string containing the content to be validated
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *  invalid according to the rules for the validators
-     */
+        /**
+         * 
+         * validate that a string matches a datatype
+         * 
+         * validate returns true or false depending on whether the string content is an
+         * instance of the data type represented by this validator.
+         * 
+         * @param contentIndex
+         * @exception throws InvalidDatatypeException if the content is
+         *                   invalid according to the rules for the validators
+         * @exception InvalidDatatypeValueException
+         * @deprecated
+         */
 	public void validate(int contentIndex) throws InvalidDatatypeValueException;
 	
 	/**

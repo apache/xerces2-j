@@ -61,6 +61,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  *
@@ -70,7 +71,7 @@ import java.util.Vector;
  * @version
  */
 
-public class RealValidator implements InternalDatatypeValidator {
+public class RealValidator implements DatatypeValidator {
 	
 	double fMaxInclusive = 0;
 	boolean fIsMaxInclusive = false;
@@ -122,7 +123,7 @@ public class RealValidator implements InternalDatatypeValidator {
 	    for (Enumeration e = facets.keys(); facetsAreConsistent && e.hasMoreElements();) {
 	        String key = (String) e.nextElement();
 	        String value = null;
-	        if (key.equals(DatatypeValidator.ENUMERATION)) 
+	        if (key.equals(SchemaSymbols.ELT_ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
 	        double realValue = 0;
@@ -131,13 +132,13 @@ public class RealValidator implements InternalDatatypeValidator {
 	        } catch (NumberFormatException nfe) {
                 facetsAreConsistent = false;
 	        }
-	        if (key.equals(DatatypeValidator.MININCLUSIVE) && fIsMinInclusive) {
+	        if (key.equals(SchemaSymbols.ELT_MININCLUSIVE) && fIsMinInclusive) {
                 facetsAreConsistent = fMinInclusive <= realValue;
-	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE) && fIsMinExclusive) {
+	        } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE) && fIsMinExclusive) {
 	            facetsAreConsistent = fMinExclusive < realValue;
-	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE) && fIsMaxInclusive) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE) && fIsMaxInclusive) {
 	            facetsAreConsistent = fMaxInclusive >= realValue;
-	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE) && fIsMaxExclusive) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE) && fIsMaxExclusive) {
 	            facetsAreConsistent = fMaxExclusive > realValue;
 	        }
 	    }
@@ -156,7 +157,7 @@ public class RealValidator implements InternalDatatypeValidator {
 	    for (Enumeration e = facets.keys(); e.hasMoreElements();) {
 	        String key = (String) e.nextElement();
 	        String value = null;
-	        if (key.equals(DatatypeValidator.ENUMERATION)) 
+	        if (key.equals(SchemaSymbols.ELT_ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
 	        double realValue = 0;
@@ -168,26 +169,23 @@ public class RealValidator implements InternalDatatypeValidator {
 								   DatatypeMessageProvider.MSG_NONE,
 								   new Object [] { value, key }));
 	        }
-	        if (key.equals(DatatypeValidator.MININCLUSIVE)) {
+	        if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
                 fIsMinInclusive = true;
 	            fMinInclusive = realValue;
-	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE)) {
+	        } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
 	            fIsMinExclusive = true;
 	            fMinExclusive = realValue;
-	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE)) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
 	            fIsMaxInclusive = true;
 	            fMaxInclusive = realValue;
-	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
+	        } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
 	            fIsMaxExclusive = true;
 	            fMaxExclusive = realValue;
-	        } else if (key.equals(DatatypeValidator.ENUMERATION)) {
-	        } else if (key.equals(DatatypeValidator.PRECISION) ||
-                     key.equals(DatatypeValidator.SCALE) ||
-                     key.equals(DatatypeValidator.LENGTH) ||
-                     key.equals(DatatypeValidator.MAXLENGTH) ||
-                     key.equals(DatatypeValidator.LITERAL) ||
-                     key.equals(DatatypeValidator.LEXICALREPRESENTATION) ||
-                     key.equals(DatatypeValidator.LEXICAL))
+	        } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+	        } else if (key.equals(SchemaSymbols.ELT_PRECISION) ||
+                     key.equals(SchemaSymbols.ELT_SCALE) ||
+                     key.equals(SchemaSymbols.ELT_LENGTH) ||
+                     key.equals(SchemaSymbols.ELT_MAXLENGTH) )
                 throw new IllegalFacetException(
 					getErrorString(DatatypeMessageProvider.IllegalRealFacet,
 								   DatatypeMessageProvider.MSG_NONE,
@@ -200,7 +198,7 @@ public class RealValidator implements InternalDatatypeValidator {
 	    }
 	    
         // check the enum values after any range constraints are in place
-        Vector v = (Vector) facets.get(DatatypeValidator.ENUMERATION);    
+        Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
 	    if (v != null) {
 	        fHasEnums = true;
 	        fEnumValues = new double[v.size()];
