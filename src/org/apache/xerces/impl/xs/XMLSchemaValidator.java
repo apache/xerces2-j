@@ -379,6 +379,7 @@ public class XMLSchemaValidator
 
         // should be called when an attribute is done: get all errors of 
         // this attribute, but leave the errors to the containing element
+        // also called after an element was strictly assessed.
         public String[] mergeContext() {
             if (!fAugPSVI)
                 return null;
@@ -1117,11 +1118,14 @@ public class XMLSchemaValidator
     // REVISIT: what do we store here? QName, XPATH, some ID? use rawname now.
     String fValidationRoot;
 
-    /** Skip validation. */
+    /** Skip validation: anything below this level should be skipped */
     int fSkipValidationDepth;
 
-    /** Partial validation depth */
-    int fPartialValidationDepth;
+    /** anything above this level has validation_attempted != full */
+    int fNFullValidationDepth;
+
+    /** anything above this level has validation_attempted != none */
+    int fNNoneValidationDepth;
 
     /** Element depth: -2: validator not in pipeline; >= -1 current depth. */
     int fElementDepth;
@@ -1168,6 +1172,12 @@ public class XMLSchemaValidator
     /** stack to hold content model states */
     int[][] fCMStateStack = new int[INITIAL_STACK_SIZE][];
 
+    /** whether the curret element is strictly assessed */
+    boolean fStrictAssess = true;
+    
+    /** strict assess stack */
+    boolean[] fStrictAssessStack = new boolean[INITIAL_STACK_SIZE];
+    
     /** Temporary string buffers. */
     final StringBuffer fBuffer = new StringBuffer();
 
@@ -1395,7 +1405,8 @@ public class XMLSchemaValidator
         fCurrentCM = null;
         fCurrCMState = null;
         fSkipValidationDepth = -1;
-        fPartialValidationDepth = -1;
+        fNFullValidationDepth = -1;
+        fNNoneValidationDepth = -1;
         fElementDepth = -1;
         fChildCount = 0;
 
@@ -1503,14 +1514,18 @@ public class XMLSchemaValidator
             System.arraycopy(fCMStack, 0, newArrayC, 0, fElementDepth);
             fCMStack = newArrayC;
 
-            boolean[] newArrayD = new boolean[newSize];
-            System.arraycopy(fStringContent, 0, newArrayD, 0, fElementDepth);
-            fStringContent = newArrayD;
+            newArrayB = new boolean[newSize];
+            System.arraycopy(fStringContent, 0, newArrayB, 0, fElementDepth);
+            fStringContent = newArrayB;
 
-            newArrayD = new boolean[newSize];
-            System.arraycopy(fSawChildrenStack, 0, newArrayD, 0, fElementDepth);
-            fSawChildrenStack = newArrayD;
+            newArrayB = new boolean[newSize];
+            System.arraycopy(fSawChildrenStack, 0, newArrayB, 0, fElementDepth);
+            fSawChildrenStack = newArrayB;
 
+            newArrayB = new boolean[newSize];
+            System.arraycopy(fStrictAssessStack, 0, newArrayB, 0, fElementDepth);
+            fStrictAssessStack = newArrayB;
+            
             int[][] newArrayIA = new int[newSize][];
             System.arraycopy(fCMStateStack, 0, newArrayIA, 0, fElementDepth);
             fCMStateStack = newArrayIA;
@@ -1764,6 +1779,7 @@ public class XMLSchemaValidator
             fNilStack[fElementDepth] = fNil;
             fNotationStack[fElementDepth] = fNotation;
             fTypeStack[fElementDepth] = fCurrentType;
+            fStrictAssessStack[fElementDepth] = fStrictAssess;
             fCMStack[fElementDepth] = fCurrentCM;
             fCMStateStack[fElementDepth] = fCurrCMState;
             fStringContent[fElementDepth] = fSawCharacters;
@@ -1776,6 +1792,7 @@ public class XMLSchemaValidator
         fCurrentElemDecl = null;
         XSWildcardDecl wildcard = null;
         fCurrentType = null;
+        fStrictAssess = true;
         fNil = false;
         fNotation = null;
 
@@ -1856,8 +1873,16 @@ public class XMLSchemaValidator
                         augs = getEmptyAugs(augs);
                     return augs;
                 }
-                // report error, because it's root element
-                reportSchemaError("cvc-elt.1", new Object[]{element.rawname});
+                // We don't call reportSchemaError here, because the spec
+                // doesn't think it's invalid not to be able to find a
+                // declaration or type definition for an element. Xerces is
+                // reporting it as an error for historical reasons, but in
+                // PSVI, we shouldn't mark this element as invalid because
+                // of this. - SG
+                fXSIErrorReporter.fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                             "cvc-elt.1",
+                                                             new Object[]{element.rawname},
+                                                             XMLErrorReporter.SEVERITY_ERROR);
             }
             // if wildcard = strict, report error
             else if (wildcard != null &&
@@ -1869,6 +1894,11 @@ public class XMLSchemaValidator
             // Allowed by the spec, we can choose to either laxly assess this
             // element, or to skip it. Now we choose lax assessment.
             fCurrentType = SchemaGrammar.fAnyType;
+            fStrictAssess = false;
+            fNFullValidationDepth = fElementDepth;
+        }
+        else {
+            fNNoneValidationDepth = fElementDepth;
         }
 
         // make the current element validation root
@@ -2015,7 +2045,7 @@ public class XMLSchemaValidator
             if (fSkipValidationDepth == fElementDepth &&
                 fSkipValidationDepth > 0) {
                 // set the partial validation depth to the depth of parent
-                fPartialValidationDepth = fSkipValidationDepth-1;
+                fNFullValidationDepth = fSkipValidationDepth-1;
                 fSkipValidationDepth = -1;
                 fElementDepth--;
                 fChildCount = fChildCountStack[fElementDepth];
@@ -2024,6 +2054,7 @@ public class XMLSchemaValidator
                 fNotation = fNotationStack[fElementDepth];
                 fCurrentType = fTypeStack[fElementDepth];
                 fCurrentCM = fCMStack[fElementDepth];
+                fStrictAssess = fStrictAssessStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
                 fSawCharacters = fStringContent[fElementDepth];
                 fSawChildren = fSawChildrenStack[fElementDepth];
@@ -2090,14 +2121,10 @@ public class XMLSchemaValidator
             }
         }
         fValueStoreCache.endElement();
-
-
-        // decrease element depth and restore states
-        fElementDepth--;
         
         SchemaGrammar[] grammars = null;
         // have we reached the end tag of the validation root?
-        if (fElementDepth == -1) {
+        if (fElementDepth == 0) {
             // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
             String invIdRef = fValidationState.checkIDRefID();
             if (invIdRef != null) {
@@ -2118,6 +2145,10 @@ public class XMLSchemaValidator
         }
         else {
             augs = endElementPSVI(false, grammars, augs);
+
+            // decrease element depth and restore states
+            fElementDepth--;
+
             // get the states for the parent element.
             fChildCount = fChildCountStack[fElementDepth];
             fCurrentElemDecl = fElemDeclStack[fElementDepth];
@@ -2125,12 +2156,18 @@ public class XMLSchemaValidator
             fNotation = fNotationStack[fElementDepth];
             fCurrentType = fTypeStack[fElementDepth];
             fCurrentCM = fCMStack[fElementDepth];
+            fStrictAssess = fStrictAssessStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
             fSawChildren = fSawChildrenStack[fElementDepth];
+
+            // We should have a stack for whitespace value, and pop it up here.
+            // But when fWhiteSpace != -1, and we see a sub-element, it must be
+            // an error (at least for Schema 1.0). So for valid documents, the
+            // only value we are going to push/pop in the stack is -1.
+            // Here we just mimic the effect of popping -1. -SG
+            fWhiteSpace = -1;
         }
-
-
 
         return augs;
     } // handleEndElement(QName,boolean)*/
@@ -2147,35 +2184,53 @@ public class XMLSchemaValidator
             fCurrentPSVI.fNotation = this.fNotation;
             fCurrentPSVI.fValidationContext = this.fValidationRoot;
             // PSVI: validation attempted
-            if (fElementDepth <= fPartialValidationDepth) {
-                // the element had child with a content skip.
-                fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_PARTIAL;
-                if (fElementDepth == fPartialValidationDepth) {
-                    // set depth to the depth of the parent
-                    fPartialValidationDepth--;
-                }
-            }
-            else {
+            // nothing below or at the same level has none or partial
+            // (which means this level is strictly assessed, and all chidren
+            // are full), so this one has full
+            if (fElementDepth > fNFullValidationDepth) {
                 fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_FULL;
             }
-    
+            // nothing below or at the same level has full or partial
+            // (which means this level is not strictly assessed, and all chidren
+            // are none), so this one has none
+            else if (fElementDepth > fNNoneValidationDepth) {
+                fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_NONE;
+            }
+            // otherwise partial, and anything above this level will be partial
+            else {
+                fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_PARTIAL;
+                fNFullValidationDepth = fNNoneValidationDepth = fElementDepth-1;
+            }
+            
             if (fDefaultValue != null)
                 fCurrentPSVI.fSpecified = true;
             fCurrentPSVI.fNil = fNil;
             fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
             fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
 
-            // pop error reporter context: get all errors for the current
-            // element, and remove them from the error list
-            String[] errors = fXSIErrorReporter.popContext();
+            if (fStrictAssess) {
+                // get all errors for the current element, its attribute,
+                // and subelements (if they were strictly assessed).
+                // any error would make this element invalid.
+                // and we merge these errors to the parent element.
+                String[] errors = fXSIErrorReporter.mergeContext();
     
-            // PSVI: error codes
-            fCurrentPSVI.fErrorCodes = errors;
-            // PSVI: validity
-            fCurrentPSVI.fValidity = (errors == null) ?
-                                     ElementPSVI.VALIDITY_VALID :
-                                     ElementPSVI.VALIDITY_INVALID;
-    
+                // PSVI: error codes
+                fCurrentPSVI.fErrorCodes = errors;
+                // PSVI: validity
+                fCurrentPSVI.fValidity = (errors == null) ?
+                                         ElementPSVI.VALIDITY_VALID :
+                                         ElementPSVI.VALIDITY_INVALID;
+            }
+            else {
+                // PSVI: validity
+                fCurrentPSVI.fValidity = ElementPSVI.VALIDITY_UNKNOWN;
+                // Discard the current context: ignore any error happened within
+                // the sub-elements/attributes of this element, because those
+                // errors won't affect the validity of the parent elements.
+                fXSIErrorReporter.popContext();
+            }
+
             if (root) {
                 // store [schema information] in the PSVI
                 fCurrentPSVI.fSchemaInformation = new XSModelImpl(grammars);
