@@ -58,7 +58,6 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.*;
-import java.util.Enumeration;
 
 import org.apache.xerces.dom.events.MutationEventImpl;
 import org.w3c.dom.events.*;
@@ -124,7 +123,7 @@ public abstract class CharacterDataImpl
      * returns the content of this node
      */
     public String getNodeValue() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data;
@@ -141,27 +140,28 @@ public abstract class CharacterDataImpl
         /** flag to indicate whether setNodeValue was called by the
          *  client or from the DOM.
          */
-        setValue(true);
+        setValueCalled(true);
         setNodeValue(value);
-        setValue(false);
+        setValueCalled(false);
     }
     
     /**
-     * Sets the content, possibly firing related events, and updating ranges
+     * Sets the content, possibly firing related events,
+     * and updating ranges (via notification to the document)
      */
     public void setNodeValue(String value) {
-    	if (readOnly())
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly())
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         // revisit: may want to set the value in ownerDocument.
     	// Default behavior, overridden in some subclasses
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
             
         // Cache old value for DOMCharacterDataModified.
-        String oldvalue = value;
+        String oldvalue = this.data;
         EnclosingAttr enclosingAttr=null;
         if(MUTATIONEVENTS)
         {
@@ -177,14 +177,9 @@ public abstract class CharacterDataImpl
         } // End mutation preprocessing
             
     	this.data = value;
-    	if (!setValue()) {
-            // call out to any Ranges to set any boundary index to zero.
-            Enumeration ranges = ownerDocument().getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                   ((RangeImpl)ranges.nextElement()).receiveReplacedText(this);
-                }
-            }
+    	if (!setValueCalled()) {
+            // notify document
+            ownerDocument().replacedText(this);
         }
     	
         if(MUTATIONEVENTS)
@@ -195,10 +190,9 @@ public abstract class CharacterDataImpl
             if(lc.captures+lc.bubbles+lc.defaults>0)
             {
                 MutationEvent me= new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(
                                  MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
-                                     true,false,null,oldvalue,value,null);
+                                 true,false,null,oldvalue,value,null,(short)0);
                 dispatchEvent(me);
             }
             
@@ -222,7 +216,7 @@ public abstract class CharacterDataImpl
      * instead retrieve the data in chunks via the substring() operation.  
      */
     public String getData() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data;
@@ -233,7 +227,7 @@ public abstract class CharacterDataImpl
      * data. It may be 0, meaning that the value is an empty string. 
      */
     public int getLength() {   
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data.length();
@@ -249,13 +243,13 @@ public abstract class CharacterDataImpl
      */
     public void appendData(String data) {
 
-        if (readOnly()) {
-        	throw new DOMExceptionImpl(
+        if (isReadOnly()) {
+        	throw new DOMException(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR,
         		"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         
@@ -279,18 +273,18 @@ public abstract class CharacterDataImpl
     public void deleteData(int offset, int count) 
         throws DOMException {
 
-        if (readOnly()) {
-        	throw new DOMExceptionImpl(
+        if (isReadOnly()) {
+        	throw new DOMException(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
         }
 
         if (count < 0) {
-        	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
         	                           "DOM004 Index out of bounds");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         int tailLength = Math.max(data.length() - count - offset, 0);
@@ -300,16 +294,11 @@ public abstract class CharacterDataImpl
                                  (tailLength > 0 
 		? data.substring(offset + count, offset + count + tailLength) 
                                   : "") );
-            Enumeration ranges = ownerDocument().getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                    RangeImpl r = ((RangeImpl)ranges.nextElement());
-                    r.receiveDeletedText( this,  offset,  count);
-                }
-            }
+            // notify document
+            ownerDocument().deletedText(this, offset, count);
         }
         catch (StringIndexOutOfBoundsException e) {
-        	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
         	                           "DOM004 Index out of bounds");
         }
 
@@ -327,30 +316,25 @@ public abstract class CharacterDataImpl
     public void insertData(int offset, String data) 
         throws DOMException {
 
-        if (readOnly()) {
-        	throw new DOMExceptionImpl(
+        if (isReadOnly()) {
+        	throw new DOMException(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         try {
-       		// Handles mutation event generation, if any
+            // Handles mutation event generation, if any
             setNodeValueInternal(
                 new StringBuffer(this.data).insert(offset, data).toString()
                 );
-            Enumeration ranges = ownerDocument().getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                    RangeImpl r = ((RangeImpl)ranges.nextElement());
-                    r.receiveInsertedText( this,  offset,  data.length());
-                }
-            }
+            // notify document
+            ownerDocument().insertedText(this, offset, data.length());
         }
         catch (StringIndexOutOfBoundsException e) {
-        	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
         	                           "DOM004 Index out of bounds");
         }
 
@@ -427,13 +411,13 @@ public abstract class CharacterDataImpl
     public String substringData(int offset, int count) 
         throws DOMException {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         
         int length = data.length();
         if (count < 0 || offset < 0 || offset > length - 1) {
-            throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, 
                                        "DOM004 Index out of bounds");
         }
 

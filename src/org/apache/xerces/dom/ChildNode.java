@@ -140,7 +140,7 @@ public abstract class ChildNode
         // Need to break the association w/ original kids
     	newnode.previousSibling = null;
         newnode.nextSibling     = null;
-        newnode.firstChild(false);
+        newnode.isFirstChild(false);
 
     	return newnode;
 
@@ -152,7 +152,7 @@ public abstract class ChildNode
     public Node getParentNode() {
         // if we have an owner, ownerNode is our parent, otherwise it's
         // our ownerDocument and we don't have a parent
-        return owned() ? ownerNode : null;
+        return isOwned() ? ownerNode : null;
     }
 
     /*
@@ -161,7 +161,7 @@ public abstract class ChildNode
     final NodeImpl parentNode() {
         // if we have an owner, ownerNode is our parent, otherwise it's
         // our ownerDocument and we don't have a parent
-        return owned() ? ownerNode : null;
+        return isOwned() ? ownerNode : null;
     }
 
     /** The next child of this node's parent, or null if none */
@@ -173,7 +173,7 @@ public abstract class ChildNode
     public Node getPreviousSibling() {
         // if we are the firstChild, previousSibling actually refers to our
         // parent's lastChild, but we hide that
-        return firstChild() ? null : previousSibling;
+        return isFirstChild() ? null : previousSibling;
     }
 
     /*
@@ -182,20 +182,7 @@ public abstract class ChildNode
     final ChildNode previousSibling() {
         // if we are the firstChild, previousSibling actually refers to our
         // parent's lastChild, but we hide that
-        return firstChild() ? null : previousSibling;
-    }
-
-    //
-    // Protected methods
-    //
-
-    /** Denotes that this node has changed. */
-    protected void changed() {
-        // ++changes; we just let the parent know
-        NodeImpl parentNode = parentNode();
-    	if (parentNode != null) {
-            parentNode.changed();
-        }
+        return isFirstChild() ? null : previousSibling;
     }
 
 } // class ChildNode

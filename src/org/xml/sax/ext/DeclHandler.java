@@ -1,6 +1,6 @@
 // DeclHandler.java - Optional handler for DTD declaration events.
 // Public Domain: no warranty.
-// $Id: DeclHandler.java,v 1.2 2000/01/28 16:38:07 david Exp $
+// $Id: DeclHandler.java,v 1.3 2000/10/04 14:40:03 david Exp $
 
 package org.xml.sax.ext;
 
@@ -17,7 +17,8 @@ import org.xml.sax.SAXException;
  *
  * <p>This is an optional extension handler for SAX2 to provide
  * information about DTD declarations in an XML document.  XML
- * readers are not required to support this handler.</p>
+ * readers are not required to support this handler, and this
+ * handler is not included in the core SAX2 distribution.</p>
  *
  * <p>Note that data-related DTD declarations (unparsed entities and
  * notations) are already reported through the {@link
@@ -30,17 +31,17 @@ import org.xml.sax.SAXException;
  *
  * <p>To set the DeclHandler for an XML reader, use the
  * {@link org.xml.sax.XMLReader#setProperty setProperty} method
- * with the propertyId "http://xml.org/sax/handlers/DeclHandler".
+ * with the propertyId "http://xml.org/sax/properties/declaration-handler".
  * If the reader does not support declaration events, it will throw a
  * {@link org.xml.sax.SAXNotRecognizedException SAXNotRecognizedException}
  * or a
  * {@link org.xml.sax.SAXNotSupportedException SAXNotSupportedException}
  * when you attempt to register the handler.</p>
  *
- * @since SAX 2.0
+ * @since 1.0
  * @author David Megginson, 
  *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0beta
+ * @version 1.0
  * @see org.xml.sax.XMLReader
  */
 public interface DeclHandler
@@ -52,8 +53,11 @@ public interface DeclHandler
      * <p>The content model will consist of the string "EMPTY", the
      * string "ANY", or a parenthesised group, optionally followed
      * by an occurrence indicator.  The model will be normalized so
-     * that all whitespace is removed,and will include the enclosing
-     * parentheses.</p>
+     * that all parameter entities are fully resolved and all whitespace 
+     * is removed,and will include the enclosing parentheses.  Other
+     * normalization (such as removing redundant parentheses or 
+     * simplifying occurrence indicators) is at the discretion of the
+     * parser.</p>
      *
      * @param name The element type name.
      * @param model The content model as a normalized string.
@@ -69,8 +73,13 @@ public interface DeclHandler
      * <p>Only the effective (first) declaration for an attribute will
      * be reported.  The type will be one of the strings "CDATA",
      * "ID", "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY",
-     * "ENTITIES", or "NOTATION", or a parenthesized token group with 
-     * the separator "|" and all whitespace removed.</p>
+     * "ENTITIES", a parenthesized token group with 
+     * the separator "|" and all whitespace removed, or the word
+     * "NOTATION" followed by a space followed by a parenthesized
+     * token group with all whitespace removed.</p>
+     *
+     * <p>Any parameter entities in the attribute value will be
+     * expanded, but general entities will not.</p>
      *
      * @param eName The name of the associated element.
      * @param aName The name of the attribute.
@@ -94,7 +103,8 @@ public interface DeclHandler
      * Report an internal entity declaration.
      *
      * <p>Only the effective (first) declaration for each entity
-     * will be reported.</p>
+     * will be reported.  All parameter entities in the value
+     * will be expanded, but general entities will not.</p>
      *
      * @param name The name of the entity.  If it is a parameter
      *        entity, the name will begin with '%'.

@@ -1,7 +1,7 @@
 # $Id$
 #
 # @version $Revision$ $Date$
-# @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+# @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
 #
 # Character entity references for markup-significant
 #
@@ -258,8 +258,9 @@ diams 9830
 # Latin Extended-A
 OElig 338
 oelig 339
-Scaron 352
-scaron 353
+#-- Commented out. NN 4.7 does not seem to support these --
+#Scaron 352
+#scaron 353
 Yuml 376
 #
 # Spacing Modifier Letters

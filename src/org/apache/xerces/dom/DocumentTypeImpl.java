@@ -155,7 +155,7 @@ public class DocumentTypeImpl
      * @since WD-DOM-Level-2-19990923
      */
     public String getPublicId() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return publicID;
@@ -167,7 +167,7 @@ public class DocumentTypeImpl
      * @since WD-DOM-Level-2-19990923
      */
     public String getSystemId() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return systemID;
@@ -179,7 +179,7 @@ public class DocumentTypeImpl
      * Set the internalSubset given as a string.
      */
     public void setInternalSubset(String internalSubset) {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         this.internalSubset = internalSubset;
@@ -192,7 +192,7 @@ public class DocumentTypeImpl
      * @since WD-DOM-Level-2-19990923
      */
     public String getInternalSubset() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return internalSubset;
@@ -214,7 +214,7 @@ public class DocumentTypeImpl
      * Returns the document type name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -254,7 +254,7 @@ public class DocumentTypeImpl
      */
     public String getName() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return name;
@@ -284,7 +284,7 @@ public class DocumentTypeImpl
      * as XML or HTML, and hence DO NOT appear here.
      */
     public NamedNodeMap getEntities() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
             }
     	return entities;
@@ -296,7 +296,7 @@ public class DocumentTypeImpl
      * or is used to formally declare a Processing Instruction target.
      */
     public NamedNodeMap getNotations() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
             }
     	return notations;
@@ -313,7 +313,7 @@ public class DocumentTypeImpl
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
     	
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
             }
         setReadOnly(readOnly, deep);
@@ -330,7 +330,7 @@ public class DocumentTypeImpl
      * @see ElementDefinitionImpl
      */
     public NamedNodeMap getElements() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
     	return elements;

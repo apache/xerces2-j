@@ -121,7 +121,7 @@ parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", fal
 		</a>
 	</faq>
 	
-	<faq title="What does &quot;non-validating&quot; mean?">
+	<faq title="What does &quot;non-validating&quot; mean?">  
 		<q>Why does &quot;non-validating&quot; not mean &quot;well-formedness checking only&quot;?</q>
 		<a><p>Using a &quot;non-validating&quot; parser does not mean that only well-formedness 
         checking is done! There are still many things that the XML specification 
@@ -227,59 +227,149 @@ parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", fal
 			<note>Since the DOM Level 2 is still in the CR phase, some changes 
 			to these specs are still possible. The purpose of this phase is to 
 			provide feedback to the W3C, so that the specs can be clarified and 
-			implementation concerns can be addressed.</note>		
+        		implementation concerns can be addressed.</note>		
 		</a>
 	</faq>
 	
 	<faq title="How do I read data from a stream as it arrives?">
-		<q>How do I read data from a stream as it arrives?</q>
-		<a><p>For performance reasons, all the standard Xerces processing
-		uses readers which buffer the input.  In order to read data
-		from a stream as it arrives, you need to instruct Xerces to
-		use the <code>StreamingCharReader</code> class as its reader.
-		To do this, create a subclass of
-		<code>org.apache.xerces.readers.DefaultReaderFactory</code>
-		and override <code>createCharReader</code> and
-		<code>createUTF8Reader</code> as shown below.
-		</p>
-<source>public class StreamingCharFactory extends org.apache.xerces.readers.DefaultReaderFactory {
-  public XMLEntityHandler.EntityReader createCharReader(XMLEntityHandler entityHandler,
-                                                        XMLErrorReporter errorReporter,
-                                                        boolean sendCharDataAsCharArray,
-                                                        Reader reader,
-                                                        StringPool stringPool) throws Exception
+                     <q>How do I read data from a stream as it arrives?</q>
+                     <a><p>There are 3 problems you have to deal with:</p>
+
+<ol>
+<li>The Apache parsers read the entire data stream into a buffer before they start 
+   parsing; you need to change this behaviour, so that they analyse "on the fly"</li>
+<li>The Apache parsers terminate when they reach end-of-file; with a data stream, 
+    unless the sender drops the socket, you have no end-of-file, so you need to 
+    terminate in some other way</li>
+<li>The Apache parsers close the input stream on termination, and this closes the 
+    socket; you normally don't want this, because you'll want to send an ack to the 
+    data stream source, and you may want to have further exchanges on the socket 
+    anyway.</li>
+</ol>
+
+
+<p>Preventing the buffering</p>
+<p>To do this, create a subclass of org.apache.xerces.readers.DefaultReaderFactory 
+and override createCharReader and createUTF8Reader as shown below.</p>
+
+<source>
+package org.apache.xerces.readers;
+
+import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.utils.ChunkyByteArray;
+import org.apache.xerces.utils.StringPool;
+import org.xml.sax.InputSource;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.util.Stack;
+
+public class StreamingCharFactory extends org.apache.xerces.readers.DefaultReaderFactory {
+    public XMLEntityHandler.EntityReader createCharReader(XMLEntityHandler  entityHandler,
+                                                          XMLErrorReporter errorReporter,boolean sendCharDataAsCharArray,
+                                                          Reader reader,
+                                                          StringPool stringPool)
+    throws Exception
     {
-      return new org.apache.xerces.readers.StreamingCharReader(entityHandler, 
-                 errorReporter, sendCharDataAsCharArray, reader, stringPool);
+        return new org.apache.xerces.readers.StreamingCharReader(entityHandler,
+                                                                 errorReporter,
+                                                                 sendCharDataAsCharArray,
+                                                                 reader,
+                                                                 stringPool);
     }
 
-  public XMLEntityHandler.EntityReader createUTF8Reader(XMLEntityHandler entityHandler,
-                                                        XMLErrorReporter errorReporter,
-                                                        boolean sendCharDataAsCharArray,
-                                                        InputStream data,
-                                                        StringPool stringPool) throws Exception
+    public XMLEntityHandler.EntityReader createUTF8Reader(XMLEntityHandler entityHandler, 
+                                                          XMLErrorReporter errorReporter,
+                                                          boolean sendCharDataAsCharArray,
+                                                          InputStream data,StringPool stringPool)
+    throws Exception
     {
-      XMLEntityHandler.EntityReader reader;
-      reader = new org.apache.xerces.readers.StreamingCharReader(entityHandler,
-                   errorReporter, sendCharDataAsCharArray, 
-                   new InputStreamReader(data, "UTF8"), stringPool);
-      return reader;
+        XMLEntityHandler.EntityReader reader;
+        reader = new org.apache.xerces.readers.StreamingCharReader(entityHandler,
+                                                                   errorReporter,
+                                                                   sendCharDataAsCharArray,
+                                                                   new InputStreamReader(data, "UTF8"),
+                                                                   stringPool);
+        return reader;
+    }
+}
+</source>
+
+<p>
+In your program, after you instantiate a parser class, replace the
+DefaultReaderFactory with StreamingCharFactory. You'll need to instantiate your
+parser as a SAXParser, rather than simply as an XMLReader, because the XMLReader
+interface doesn't have the setReaderFactory method. Be sure to wrap the
+InputStream that you are reading from with an InputStreamReader.
+</p>
+
+<source>
+try {
+    SAXParser parser =
+    (SAXParser)Class.forName("org.apache.xerces.parsers.SAXParser").newInstance();
+    parser.setContentHandler(new DocProcessor(out));
+    parser.setReaderFactory(new StreamingCharFactory());
+    parser.parse(new InputSource(bufferedReader));
+} catch (Exception ex) {
+}
+</source>
+
+<p>Terminating the parse</p>
+<p>One way that works forSAX is to throw an exception when you detect the logical
+end-of-document.</p>
+<p>For instance, in your class extending DefaultHandler, you can have:</p>
+
+<source>
+public class DocProcessor extends DefaultHandler {
+    private int level;
+    .
+    .
+    public void startElement(String uri,
+                             String localName,
+                             String raw,
+                             Attributes attrs) throws SAXException
+    {
+        ++level;
     }
 
-}</source>
-		<p>In your program, after you instantiate a parser class, replace
-	    the <code>DefaultReaderFactory</code> with <code>StreamingCharFactory</code>, and be
-	    sure to wrap the <code>InputStream</code> that you are reading
-	    from with an <code>InputStreamReader</code>.</p>
-<source>InputStream in = ... ;
-SAXParser p = new SAXParser();
-DocumentHandler h = ... ;
-// set the correct reader factory
-p.setReaderFactory(((StreamingSAXClient)h).new StreamingCharFactory());
-p.setDocumentHandler(h);
+    public void endElement (String namespaceURI,
+                            String localName,
+                            String qName) throws SAXException
+    {
+        if ((--level) == 0) {
+            throw new SAXException ("Finished");
+        }
+    }
+</source>
 
-// be sure to wrap the input stream in an InputStreamReader.
-p.parse(new InputSource(new InputStreamReader(in)));</source>
-		</a>
-	</faq>
+<p>
+    Preventing the parser from closing the socket
+
+    One way is to subclass BufferedReader to provide an empty close method.
+
+    So, invoke the parser as follows:
+</p>
+
+<source>
+
+    Socket socket;
+
+    // code to set the socket
+
+    parser.parse(new InputSource(new MyBufferedReader(new InputStreamReader(socket.getInputStream()))));
+    .
+    .
+    class MyBufferedReader extends BufferedReader
+    {
+        public MyBufferedReader(InputStreamReader i) {
+            super(i);
+        }
+
+        public void close() {
+        }
+    }
+</source>
+
+</a></faq>
 </faqs>

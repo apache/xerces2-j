@@ -28,10 +28,6 @@
 		whether the APIs that we are providing are the right ones. Please 
 		direct your feedback to the &javaparsername; mailing list.</p>
 
-        <p>The &javaparserversion; release benefits from the
-        <jump href="http:://xml.apache.org">xml.apache.org</jump> collaboration.  
-		It includes Assaf Arkin&apos;s serialization and HTML DOM contributions. 
-		See the <link idref="releases">release</link> information.</p>
 	</s2>
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code
@@ -62,11 +58,12 @@
 		schema capabilities of this release. We intend to track the W3C XML 
 		Schema Language in subsequent updates of &javaparsername;.</p> -->
 	</s2>
-	<s2 title="DOM Level 2 (beta) Support">
-		<p>This release includes support for the 
-		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2</jump>.
-                As of this writing, the DOM Level 2 specification is now a
-                W3C Recommendation.</p>
+	<s2 title="DOM Level 2 Support">
+		<p>This release includes support for DOM Level 2 
+		<jump href="http://www.w3.org/TR/DOM-Level-2-Core">Core</jump>,
+		<jump href="http://www.w3.org/TR/DOM-Level-2-Events">Events</jump>,
+		and <jump href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range">Traversal and Range</jump> modules.
+                The DOM Level 2 specification is now a W3C Recommendation.</p>
 	</s2>
 	<s2 title="SAX 2 Support">
 		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/">
@@ -75,9 +72,9 @@
 	<s2 title="Configuration Mechanism">
 		<p>&javaparsername; &javaparserversion; uses a collection of methods to configure 
 		various settings in the parser. This release includes a new mechanism 
-		for setting parser switches. This mechanism uses the SAX2 Configurable 
-		interface. We have defined a series of 
-		<link idref="properties">properties</link> and 
+		for setting parser switches. This mechanism uses the SAX2 configuration
+		methods that are part of the XMLReader interface. We have defined a series 
+		of <link idref="properties">properties</link> and 
 		<link idref="features">features</link> for the &javaparsername; 
 		options. </p>
 	</s2>

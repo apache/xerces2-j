@@ -66,6 +66,9 @@ implements MutationEvent
 {
     Node relatedNode=null;
     String prevValue=null,newValue=null,attrName=null;
+    // REVISIT: The DOM Level 2 PR has a bug: the init method should let this
+    // attribute be specified. Since it doesn't we have to give write access.
+    public short attrChange;
     
     // NON-DOM CONSTANTS: Storage efficiency, avoid risk of typos.
     public static final String DOM_SUBTREE_MODIFIED = "DOMSubtreeModified";
@@ -83,6 +86,16 @@ implements MutationEvent
     public String getAttrName()
     {
         return attrName;
+    }
+
+    /**
+     *  <code>attrChange</code> indicates the type of change which triggered 
+     * the DOMAttrModified event. The values can be <code>MODIFICATION</code>
+     * , <code>ADDITION</code>, or <code>REMOVAL</code>. 
+     */
+    public short getAttrChange()
+    {
+        return attrChange;
     }
 
     /** @return the new string value of the Attr for DOMAttrModified events, or
@@ -118,12 +131,13 @@ implements MutationEvent
         */
     public void initMutationEvent(String typeArg, boolean canBubbleArg, 
         boolean cancelableArg, Node relatedNodeArg, String prevValueArg, 
-        String newValueArg, String attrNameArg)
+        String newValueArg, String attrNameArg, short attrChangeArg)
     {
         relatedNode=relatedNodeArg;
         prevValue=prevValueArg;
         newValue=newValueArg;
         attrName=attrNameArg;
+        attrChange=attrChangeArg;
         super.initEvent(typeArg,canBubbleArg,cancelableArg);
     }
 

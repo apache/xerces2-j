@@ -58,12 +58,10 @@
 package org.apache.xerces.dom;
 
 import java.io.*;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import org.w3c.dom.*;
 
-//import org.apache.xerces.domx.events.*;
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
 import org.w3c.dom.events.*;
@@ -239,7 +237,7 @@ public abstract class NodeImpl
      */
     public Node cloneNode(boolean deep) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
 	}
     	
@@ -255,10 +253,10 @@ public abstract class NodeImpl
     	
         // Need to break the association w/ original kids
     	newnode.ownerNode      = ownerDocument();
-        newnode.owned(false);
+        newnode.isOwned(false);
 
         // REVISIT: What to do when readOnly? -Ac
-        newnode.readOnly(false);
+        newnode.isReadOnly(false);
 
     	return newnode;
 
@@ -272,7 +270,7 @@ public abstract class NodeImpl
     public Document getOwnerDocument() {
         // if we have an owner simply forward the request
         // otherwise ownerNode is our ownerDocument
-        if (owned()) {
+        if (isOwned()) {
             return ownerNode.ownerDocument();
         } else {
             return (Document) ownerNode;
@@ -286,7 +284,7 @@ public abstract class NodeImpl
     DocumentImpl ownerDocument() {
         // if we have an owner simply forward the request
         // otherwise ownerNode is our ownerDocument
-        if (owned()) {
+        if (isOwned()) {
             return ownerNode.ownerDocument();
         } else {
             return (DocumentImpl) ownerNode;
@@ -298,12 +296,12 @@ public abstract class NodeImpl
      * set the ownerDocument of this node
      */
     void setOwnerDocument(DocumentImpl doc) {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         // if we have an owner we rely on it to have it right
         // otherwise ownerNode is our ownerDocument
-	if (!owned()) {
+	if (!isOwned()) {
             ownerNode = doc;
         }
     }
@@ -348,6 +346,17 @@ public abstract class NodeImpl
      */
     public NamedNodeMap getAttributes() {
     	return null; // overridden in ElementImpl
+    }
+
+    /**
+     *  Returns whether this node (if it is an element) has any attributes.
+     * @return <code>true</code> if this node has any attributes, 
+     *   <code>false</code> otherwise.
+     * @since DOM Level 2
+     * @see ElementImpl
+     */
+    public boolean hasAttributes() {
+        return false;           // overridden in ElementImpl
     }
 
     /**
@@ -429,7 +438,7 @@ public abstract class NodeImpl
      */
     public Node insertBefore(Node newChild, Node refChild) 
 	throws DOMException {
-	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+	throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
 				   "DOM006 Hierarchy request error");
     }
 
@@ -450,7 +459,7 @@ public abstract class NodeImpl
      */
     public Node removeChild(Node oldChild) 
 		throws DOMException {
-	throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+	throw new DOMException(DOMException.NOT_FOUND_ERR, 
 				   "DOM008 Not found");
     }
 
@@ -480,7 +489,7 @@ public abstract class NodeImpl
      */
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
-	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+	throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
 				   "DOM006 Hierarchy request error");
     }
 
@@ -556,7 +565,7 @@ public abstract class NodeImpl
      *                      specified feature is supported, false otherwise.
      * @since WD-DOM-Level-2-19990923
      */
-    public boolean supports(String feature, String version)
+    public boolean isSupported(String feature, String version)
     {
         return ownerDocument().getImplementation().hasFeature(feature,
                                                               version);
@@ -627,7 +636,7 @@ public abstract class NodeImpl
     public void setPrefix(String prefix)
         throws DOMException
     {
-	throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+	throw new DOMException(DOMException.NAMESPACE_ERR, 
 				   "DOM003 Namespace error");
     }
 
@@ -668,10 +677,6 @@ public abstract class NodeImpl
 	protected final static int MUTATION_LOCAL=0x01;
 	protected final static int MUTATION_AGGREGATE=0x02;
 	protected final static int MUTATION_ALL=0xffff;
-	/** NON-DOM INTERNAL: EventListeners currently registered at
-	 * THIS NODE; preferably null if none.
-	 */
-    Vector nodeListeners=null;
 	
 	/* NON-DOM INTERNAL: Class LEntry is just a struct used to represent
 	 * event listeners registered with this node. Copies of this object
@@ -720,7 +725,11 @@ public abstract class NodeImpl
 	    // Simplest way to code that is to zap the previous entry, if any.
 	    removeEventListener(type,listener,useCapture);
 	    
-	    if(nodeListeners==null) nodeListeners=new Vector();
+            Vector nodeListeners = ownerDocument().getEventListeners(this);
+	    if(nodeListeners==null) {
+                nodeListeners=new Vector();
+                ownerDocument().setEventListeners(this, nodeListeners);
+            }
 	    nodeListeners.addElement(new LEntry(type,listener,useCapture));
 	    
 	    // Record active listener
@@ -729,6 +738,7 @@ public abstract class NodeImpl
 	        ++lc.captures;
 	    else
 	        ++lc.bubbles;
+
 	} // addEventListener(String,EventListener,boolean) :void
 	
 	/** Introduced in DOM Level 2. <p>
@@ -744,6 +754,7 @@ public abstract class NodeImpl
 	public void removeEventListener(String type,EventListener listener,boolean useCapture)
 	{
 	    // If this couldn't be a valid listener registration, ignore request
+            Vector nodeListeners = ownerDocument().getEventListeners(this);
   	    if(nodeListeners==null || type==null || type.equals("") || listener==null)
 	        return;
 
@@ -757,21 +768,29 @@ public abstract class NodeImpl
             {
                 nodeListeners.removeElementAt(i);
                 // Storage management: Discard empty listener lists
-                if(nodeListeners.size()==0) nodeListeners=null;
+                if(nodeListeners.size()==0)
+                    ownerDocument().setEventListeners(this, null);
 
-	            // Remove active listener
-	            LCount lc=LCount.lookup(type);
-        	    if(useCapture)
-	                --lc.captures;
-        	    else
-	                --lc.bubbles;
-	                
+                // Remove active listener
+                LCount lc=LCount.lookup(type);
+                if(useCapture)
+                    --lc.captures;
+                else
+                    --lc.bubbles;
+
                 break;  // Found it; no need to loop farther.
             }
         }
 	} // removeEventListener(String,EventListener,boolean) :void
 	
-	/** NON-DOM INTERNAL:
+	/** COMMENTED OUT **
+            Now that event listeners are stored on the document with the node
+            as the key, nodes can't be finalized if they have any event
+            listener. This finalize method becomes useless... This is a place
+            where we could definitely use weak references!! If we did, then
+            this finalize method could be put back in (which is why I don't
+            remove if completely). - ALH
+         ** NON-DOM INTERNAL:
 	    A finalizer has added to NodeImpl in order to correct the event-usage
 	    counts of any remaining listeners before discarding the Node.
 	    This isn't absolutely required, and finalizers are of dubious
@@ -779,7 +798,7 @@ public abstract class NodeImpl
 	    But given the expense of event generation and distribution it 
 	    seems a worthwhile safety net.
 	    ***** RECONSIDER at some future point.
-	   */
+
 	protected void finalize() throws Throwable
 	{
 	    super.finalize();
@@ -794,6 +813,7 @@ public abstract class NodeImpl
 	                --lc.bubbles;
 	        }
 	}	
+	   */
 
     /**
      * Introduced in DOM Level 2. <p>
@@ -855,8 +875,8 @@ public abstract class NodeImpl
         // VALIDATE -- must have been initialized at least once, must have
         // a non-null non-blank name.
         if(!evt.initialized || evt.type==null || evt.type.equals(""))
-            throw new DOMExceptionImpl(DOMExceptionImpl.UNSPECIFIED_EVENT_TYPE,
-				       "DOM010 Unspecified event type");
+            throw new EventException(EventException.UNSPECIFIED_EVENT_TYPE_ERR,
+                                     "DOM010 Unspecified event type");
         
         // If nobody is listening for this event, discard immediately
         LCount lc=LCount.lookup(evt.getType());
@@ -902,10 +922,11 @@ public abstract class NodeImpl
                     
                 // Handle all capturing listeners on this node
                 NodeImpl nn=(NodeImpl)pv.elementAt(j);
-                evt.currentNode=nn;
-                if(nn.nodeListeners!=null)
+                evt.currentTarget=nn;
+                Vector nodeListeners = ownerDocument().getEventListeners(nn);
+                if(nodeListeners!=null)
                 {
-                    Vector nl=(Vector)(nn.nodeListeners.clone());
+                    Vector nl=(Vector)(nodeListeners.clone());
                     for(int i=nl.size()-1;i>=0;--i) // count-down more efficient
                     {
 	                    LEntry le=(LEntry)(nl.elementAt(i));
@@ -930,7 +951,8 @@ public abstract class NodeImpl
             //on the target node. Note that capturing listeners on the target node 
             //are _not_ invoked, even during the capture phase.
             evt.eventPhase=Event.AT_TARGET;
-            evt.currentNode=this;
+            evt.currentTarget=this;
+            Vector nodeListeners = ownerDocument().getEventListeners(this);
             if(!evt.stopPropagation && nodeListeners!=null)
             {
                 Vector nl=(Vector)nodeListeners.clone();
@@ -963,10 +985,11 @@ public abstract class NodeImpl
                     
                     // Handle all bubbling listeners on this node
                     NodeImpl nn=(NodeImpl)pv.elementAt(j);
-                    evt.currentNode=nn;
-                    if(nn.nodeListeners!=null)
+                    evt.currentTarget=nn;
+                    nodeListeners = ownerDocument().getEventListeners(nn);
+                    if(nodeListeners!=null)
                     {
-                        Vector nl=(Vector)(nn.nodeListeners.clone());
+                        Vector nl=(Vector)(nodeListeners.clone());
                         for(int i=nl.size()-1;i>=0;--i) // count-down more efficient
     	                {
 	                        LEntry le=(LEntry)(nl.elementAt(i));
@@ -993,7 +1016,7 @@ public abstract class NodeImpl
         if(lc.defaults>0 && (!evt.cancelable || !evt.preventDefault))
         {
             // evt.eventPhase=Event.DEFAULT_PHASE;
-            // evt.currentNode=this;
+            // evt.currentTarget=this;
             // DO_DEFAULT_OPERATION
         }
 
@@ -1012,27 +1035,28 @@ public abstract class NodeImpl
      * @param n node which was directly inserted or removed
      * @param e event to be sent to that node and its subtree
      */
-    void dispatchEventToSubtree(ChildNode n,Event e)
+    void dispatchEventToSubtree(Node n,Event e)
     {
-      if(MUTATIONEVENTS)
+      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
+          Vector nodeListeners = ownerDocument().getEventListeners(this);
 	    if(nodeListeners==null || n==null)
             return;
 
 	    // ***** Recursive implementation. This is excessively expensive,
 	    // and should be replaced in conjunction with optimization
 	    // mentioned above.
-	    n.dispatchEvent(e);
+	    ((NodeImpl)n).dispatchEvent(e);
 	    if(n.getNodeType()==Node.ELEMENT_NODE)
 	    {
 	        NamedNodeMap a=n.getAttributes();
 	        for(int i=a.getLength()-1;i>=0;--i)
-	            dispatchEventToSubtree(((ChildNode)a.item(i)),e);
+	            dispatchEventToSubtree(a.item(i),e);
 	    }
-	    dispatchEventToSubtree((ChildNode)n.getFirstChild(),e);
-	    dispatchEventToSubtree(n.nextSibling,e);
+	    dispatchEventToSubtree(n.getFirstChild(),e);
+	    dispatchEventToSubtree(n.getNextSibling(),e);
 	  }
-	} // dispatchEventToSubtree(NodeImpl,Event) :void
+	} // dispatchEventToSubtree(Node,Event) :void
 
     /** NON-DOM INTERNAL: Return object for getEnclosingAttr. Carries
      * (two values, the Attr node affected (if any) and its previous 
@@ -1052,7 +1076,7 @@ public abstract class NodeImpl
 	 */
 	EnclosingAttr getEnclosingAttr()
 	{
-      if(MUTATIONEVENTS)
+      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
         NodeImpl eventAncestor=this;
         while(true)
@@ -1086,9 +1110,10 @@ public abstract class NodeImpl
 	void dispatchAggregateEvents(EnclosingAttr ea)
 	{
 	    if(ea!=null)
-	        dispatchAggregateEvents(ea.node,ea.oldvalue);
-        else
-	        dispatchAggregateEvents(null,null);
+	        dispatchAggregateEvents(ea.node, ea.oldvalue,
+                                        MutationEvent.MODIFICATION);
+            else
+	        dispatchAggregateEvents(null,null,(short)0);
 	        
 	} // dispatchAggregateEvents(EnclosingAttr) :void
 
@@ -1111,16 +1136,16 @@ public abstract class NodeImpl
 	 * been changed as a result of the DOM operation. Null if none such.
 	 * @param oldValue The String value previously held by the
 	 * enclosingAttr. Ignored if none such.
+         * @param change Type of modification to the attr. See
+         * MutationEvent.attrChange
 	 */
-	void dispatchAggregateEvents(AttrImpl enclosingAttr,String oldvalue)
+	void dispatchAggregateEvents(AttrImpl enclosingAttr,
+                                     String oldvalue,
+                                     short change)
 	{
-      if(MUTATIONEVENTS)
+      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
-	    if(nodeListeners==null)
-            return;
-
-	    // If we have to send DOMAttrModified (determined earlier),
-	    // do so.
+	    // We have to send DOMAttrModified.
 	    NodeImpl owner=null;
 	    if(enclosingAttr!=null)
 	    {
@@ -1130,11 +1155,15 @@ public abstract class NodeImpl
                 owner=((NodeImpl)(enclosingAttr.getOwnerElement()));
                 if(owner!=null)
                 {
-                    MutationEvent me=
-                        new MutationEventImpl();
-                    //?????ownerDocument.createEvent("MutationEvents");
-                    me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,true,false,
-                       null,oldvalue,enclosingAttr.getNodeValue(),enclosingAttr.getNodeName());
+                    MutationEventImpl me= new MutationEventImpl();
+                    me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
+                                         true,false, null,oldvalue,
+                                         enclosingAttr.getNodeValue(),
+                                         enclosingAttr.getNodeName(),(short)0);
+                    // REVISIT: The DOM Level 2 PR has a bug: the init method
+                    // should let this attribute be specified. Since it doesn't
+                    // we have to set it directly.
+                    me.attrChange = change;
                     owner.dispatchEvent(me);
                 }
             }
@@ -1147,12 +1176,9 @@ public abstract class NodeImpl
         LCount lc=LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
         if(lc.captures+lc.bubbles+lc.defaults>0)
         {
-            MutationEvent me=
-                    new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
-            me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,true,false,
-               null,null,null,null);
-            
+            MutationEvent me= new MutationEventImpl();
+            me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
+                                 true,false,null,null,null,null,(short)0);
             
             // If we're within an Attr, DStM gets sent to the Attr
             // and to its owningElement. Otherwise we dispatch it
@@ -1194,10 +1220,10 @@ public abstract class NodeImpl
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-    	readOnly(readOnly);
+    	isReadOnly(readOnly);
 
     } // setReadOnly(boolean,boolean)
 
@@ -1207,10 +1233,10 @@ public abstract class NodeImpl
      */
     public boolean getReadOnly() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-        return readOnly();
+        return isReadOnly();
 
     } // getReadOnly():boolean
 
@@ -1245,16 +1271,21 @@ public abstract class NodeImpl
     /**
      * Denotes that this node has changed.
      */
-    protected void changed() {} // overridden in subclasses
+    protected void changed() {
+        // we do not actually store this information on every node, we only
+        // have a global indicator on the Document. Doing otherwise cost us too
+        // much for little gain.
+        ownerDocument().changed();
+    }
 
     /**
      * Returns the number of changes to this node.
      */
     protected int changes() {
-        // overridden in subclasses
-        throw new RuntimeException(
-                    "changes() called on a NodeImpl or one of its subclasses" +
-                    "which doesn't really implement it");
+        // we do not actually store this information on every node, we only
+        // have a global indicator on the Document. Doing otherwise cost us too
+        // much for little gain.
+        return ownerDocument().changes();
     }
 
     /**
@@ -1263,7 +1294,7 @@ public abstract class NodeImpl
      */
     protected void synchronizeData() {
         // By default just change the flag to avoid calling this method again
-        syncData(false);
+        needsSyncData(false);
     }
 
 
@@ -1271,67 +1302,68 @@ public abstract class NodeImpl
      * Flags setters and getters
      */
 
-    final boolean readOnly() {
+    final boolean isReadOnly() {
         return (flags & READONLY) != 0;
     }
 
-    final void readOnly(boolean value) {
+    final void isReadOnly(boolean value) {
         flags = (short) (value ? flags | READONLY : flags & ~READONLY);
     }
 
-    final boolean syncData() {
+    final boolean needsSyncData() {
         return (flags & SYNCDATA) != 0;
     }
 
-    final void syncData(boolean value) {
+    final void needsSyncData(boolean value) {
         flags = (short) (value ? flags | SYNCDATA : flags & ~SYNCDATA);
     }
 
-    final boolean syncChildren() {
+    final boolean needsSyncChildren() {
         return (flags & SYNCCHILDREN) != 0;
     }
 
-    final void syncChildren(boolean value) {
+    final void needsSyncChildren(boolean value) {
         flags = (short) (value ? flags | SYNCCHILDREN : flags & ~SYNCCHILDREN);
     }
 
-    final boolean owned() {
+    final boolean isOwned() {
         return (flags & OWNED) != 0;
     }
 
-    final void owned(boolean value) {
+    final void isOwned(boolean value) {
         flags = (short) (value ? flags | OWNED : flags & ~OWNED);
     }
 
-    final boolean firstChild() {
+    final boolean isFirstChild() {
         return (flags & FIRSTCHILD) != 0;
     }
 
-    final void firstChild(boolean value) {
+    final void isFirstChild(boolean value) {
         flags = (short) (value ? flags | FIRSTCHILD : flags & ~FIRSTCHILD);
     }
 
-    final boolean specified() {
+    final boolean isSpecified() {
         return (flags & SPECIFIED) != 0;
     }
 
-    final void specified(boolean value) {
+    final void isSpecified(boolean value) {
         flags = (short) (value ? flags | SPECIFIED : flags & ~SPECIFIED);
     }
 
-    final boolean ignorableWhitespace() {
+    // inconsistent name to avoid clash with public method on TextImpl
+    final boolean internalIsIgnorableWhitespace() {
         return (flags & IGNORABLEWS) != 0;
     }
 
-    final void ignorableWhitespace(boolean value) {
+    final void isIgnorableWhitespace(boolean value) {
         flags = (short) (value ? flags | IGNORABLEWS : flags & ~IGNORABLEWS);
     }
 
-    final boolean setValue() {
+    final boolean setValueCalled() {
         return (flags & SETVALUE) != 0;
     }
 
-    final void setValue(boolean value) {
+    final void setValueCalled(boolean value) {
         flags = (short) (value ? flags | SETVALUE : flags & ~SETVALUE);
     }
 
@@ -1352,7 +1384,7 @@ public abstract class NodeImpl
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize data
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         // write object

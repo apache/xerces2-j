@@ -111,7 +111,7 @@ public class ElementImpl
     public ElementImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
-        syncData(true);         // synchronizeData will initialize attributes
+        needsSyncData(true);    // synchronizeData will initialize attributes
     }
 
     // for ElementNSImpl
@@ -134,7 +134,7 @@ public class ElementImpl
      * Returns the element name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -148,7 +148,7 @@ public class ElementImpl
      */
     public NamedNodeMap getAttributes() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -167,7 +167,7 @@ public class ElementImpl
      */
     public Node cloneNode(boolean deep) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -207,7 +207,7 @@ public class ElementImpl
      */
     public String getAttribute(String name) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -228,7 +228,7 @@ public class ElementImpl
      */
     public Attr getAttributeNode(String name) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -266,7 +266,7 @@ public class ElementImpl
      * way in.
      */
     public String getTagName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return name;
@@ -287,25 +287,45 @@ public class ElementImpl
      * normal Text or with other CDATASections.
      */
     public void normalize() {
-
     	Node kid, next;
     	for (kid = getFirstChild(); kid != null; kid = next) {
     		next = kid.getNextSibling();
 
-    		// If kid and next are both Text nodes (but _not_ CDATASection,
-    		// which is a subclass of Text), they can be merged.
-    		if (next != null
-			 && kid.getNodeType() == Node.TEXT_NODE
-			 && next.getNodeType() == Node.TEXT_NODE)
-    	    {
-    			((Text)kid).appendData(next.getNodeValue());
-    			removeChild(next);
-    			next = kid; // Don't advance; there might be another.
-    		}
+            // If kid is a text node, we need to check for one of two
+            // conditions:
+            //   1) There is an adjacent text node
+            //   2) There is no adjacent text node, but kid is
+            //      an empty text node.
+            if ( kid.getNodeType() == Node.TEXT_NODE )
+            {
+                // If an adjacent text node, merge it with kid
+                if ( next!=null && next.getNodeType() == Node.TEXT_NODE )
+                {
+                    ((Text)kid).appendData(next.getNodeValue());
+                    removeChild( next );
+                    next = kid; // Don't advance; there might be another.
+                }
+                else
+                {
+                    // If kid is empty, remove it
+                    if ( kid.getNodeValue().length()==0 )
+                        removeChild( kid );
+                }
+            }
 
     		// Otherwise it might be an Element, which is handled recursively
     		else if (kid.getNodeType() ==  Node.ELEMENT_NODE) {
                 ((Element)kid).normalize();
+            }
+        }
+
+        // We must also normalize all of the attributes
+        if ( attributes!=null )
+        {
+            for( int i=0; i<attributes.getLength(); ++i )
+            {
+                Node attr = attributes.item(i);
+                attr.normalize();
             }
         }
 
@@ -331,13 +351,13 @@ public class ElementImpl
      */
     public void removeAttribute(String name) {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -370,18 +390,18 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
         if (attributes == null) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+            throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
         }
         return (Attr) attributes.removeNamedItem(oldAttr.getName());
@@ -410,13 +430,13 @@ public class ElementImpl
      */
     public void setAttribute(String name, String value) {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -427,9 +447,13 @@ public class ElementImpl
             if (attributes == null) {
                 attributes = new AttributeMap(this, null);
             }
+
+	    newAttr.setNodeValue(value);
             attributes.setNamedItem(newAttr);
         }
-    	newAttr.setNodeValue(value);
+	else {
+	    newAttr.setNodeValue(value);
+	}
 
     } // setAttribute(String,String)
  
@@ -450,19 +474,19 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     	
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
     	if (ownerDocument.errorChecking
             && newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "DOM005 Wrong document");
         }
 
@@ -487,14 +511,14 @@ public class ElementImpl
      *                      The namespace URI of the attribute to
      *                      retrieve.
      * @param localName     The local name of the attribute to retrieve.
-     * @return String       The Attr value as a string, or null
+     * @return String       The Attr value as a string, or empty string
      *                      if that attribute
      *                      does not have a specified or default value.
      * @since WD-DOM-Level-2-19990923
      */
     public String getAttributeNS(String namespaceURI, String localName) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -503,7 +527,7 @@ public class ElementImpl
         }
 
         Attr attr = (Attr)(attributes.getNamedItemNS(namespaceURI, localName));
-        return (attr == null) ? null : attr.getValue();
+        return (attr == null) ? "" : attr.getValue();
 
     } // getAttributeNS(String,String):String
     
@@ -549,13 +573,13 @@ public class ElementImpl
      */
     public void setAttributeNS(String namespaceURI, String localName, String value) {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -567,9 +591,12 @@ public class ElementImpl
             if (attributes == null) {
                 attributes = new AttributeMap(this, null);
             }
+	    newAttr.setNodeValue(value);
             attributes.setNamedItemNS(newAttr);
     	}
-    	newAttr.setNodeValue(value);
+	else {
+	    newAttr.setNodeValue(value);
+	}
 
     } // setAttributeNS(String,String,String)
     
@@ -590,13 +617,13 @@ public class ElementImpl
      */
     public void removeAttributeNS(String namespaceURI, String localName) {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -621,7 +648,7 @@ public class ElementImpl
      */
     public Attr getAttributeNodeNS(String namespaceURI, String localName){
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -661,19 +688,19 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     	
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
     	if (ownerDocument.errorChecking
             && newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
     		"DOM005 Wrong document");
         }
 
@@ -686,14 +713,24 @@ public class ElementImpl
     } // setAttributeNodeNS(Attr):Attr
     
     /**
-     * Introduced in DOM Level 2. <p>
+     * Introduced in DOM Level 2.
+     */
+    public boolean hasAttributes() {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        return (attributes != null && attributes.getLength() != 0);
+    }
+
+    /**
+     * Introduced in DOM Level 2.
      */
     public boolean hasAttribute(String name) {
         return getAttributeNode(name) != null;
     }
 
     /**
-     * Introduced in DOM Level 2. <p>
+     * Introduced in DOM Level 2.
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
         return getAttributeNodeNS(namespaceURI, localName) != null;
@@ -743,7 +780,7 @@ public class ElementImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // attributes
         setupDefaultAttributes();

@@ -56,6 +56,13 @@
  */
 
 
+// Aug 21, 2000:
+//  Fixed bug in startDocument not calling prepare.
+//  Reported by Mikael Staldal <d96-mst-ingen-reklam@d.kth.se>
+// Aug 21, 2000:
+//  Added ability to omit DOCTYPE declaration.
+
+
 package org.apache.xml.serialize;
 
 
@@ -98,7 +105,7 @@ import org.xml.sax.Attributes;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
 public final class XMLSerializer
@@ -125,7 +132,7 @@ public final class XMLSerializer
     public XMLSerializer( OutputFormat format )
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
-        format.setMethod( Method.XML );
+        _format.setMethod( Method.XML );
     }
 
 
@@ -140,7 +147,7 @@ public final class XMLSerializer
     public XMLSerializer( Writer writer, OutputFormat format )
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
-        format.setMethod( Method.XML );
+        _format.setMethod( Method.XML );
         setOutputCharStream( writer );
     }
 
@@ -156,7 +163,7 @@ public final class XMLSerializer
     public XMLSerializer( OutputStream output, OutputFormat format )
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
-        format.setMethod( Method.XML );
+        _format.setMethod( Method.XML );
         setOutputByteStream( output );
     }
 
@@ -346,14 +353,6 @@ public final class XMLSerializer
     //------------------------------------------//
 
 
-    public void startDocument()
-    {
-        if ( _printer == null )
-            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
-        // Nothing to do here. All the magic happens in startDocument(String)
-    }
-
-
     public void startElement( String tagName, AttributeList attrs )
     {
         int          i;
@@ -492,45 +491,47 @@ public final class XMLSerializer
                 _printer.breakLine();
             }
 
-            if ( _docTypeSystemId != null ) {
-                // System identifier must be specified to print DOCTYPE.
-                // If public identifier is specified print 'PUBLIC
-                // <public> <system>', if not, print 'SYSTEM <system>'.
-                _printer.printText( "<!DOCTYPE " );
-                _printer.printText( rootTagName );
-                if ( _docTypePublicId != null ) {
-                    _printer.printText( " PUBLIC " );
-                    printDoctypeURL( _docTypePublicId );
-                    if ( _indenting ) {
-                        _printer.breakLine();
-                        for ( i = 0 ; i < 18 + rootTagName.length() ; ++i )
+            if ( ! _format.getOmitDocumentType() ) {
+                if ( _docTypeSystemId != null ) {
+                    // System identifier must be specified to print DOCTYPE.
+                    // If public identifier is specified print 'PUBLIC
+                    // <public> <system>', if not, print 'SYSTEM <system>'.
+                    _printer.printText( "<!DOCTYPE " );
+                    _printer.printText( rootTagName );
+                    if ( _docTypePublicId != null ) {
+                        _printer.printText( " PUBLIC " );
+                        printDoctypeURL( _docTypePublicId );
+                        if ( _indenting ) {
+                            _printer.breakLine();
+                            for ( i = 0 ; i < 18 + rootTagName.length() ; ++i )
+                                _printer.printText( " " );
+                        } else
                             _printer.printText( " " );
-                    } else
-                        _printer.printText( " " );
                     printDoctypeURL( _docTypeSystemId );
-                }
-                else {
-                    _printer.printText( " SYSTEM " );
-                    printDoctypeURL( _docTypeSystemId );
-                }
-
-                // If we accumulated any DTD contents while printing.
-                // this would be the place to print it.
-                if ( dtd != null && dtd.length() > 0 ) {
+                    }
+                    else {
+                        _printer.printText( " SYSTEM " );
+                        printDoctypeURL( _docTypeSystemId );
+                    }
+                    
+                    // If we accumulated any DTD contents while printing.
+                    // this would be the place to print it.
+                    if ( dtd != null && dtd.length() > 0 ) {
+                        _printer.printText( " [" );
+                        printText( dtd, true, true );
+                        _printer.printText( ']' );
+                    }
+                    
+                    _printer.printText( ">" );
+                    _printer.breakLine();
+                } else if ( dtd != null && dtd.length() > 0 ) {
+                    _printer.printText( "<!DOCTYPE " );
+                    _printer.printText( rootTagName );
                     _printer.printText( " [" );
                     printText( dtd, true, true );
-                    _printer.printText( ']' );
+                    _printer.printText( "]>" );
+                    _printer.breakLine();
                 }
-
-                _printer.printText( ">" );
-                _printer.breakLine();
-            } else if ( dtd != null && dtd.length() > 0 ) {
-                _printer.printText( "<!DOCTYPE " );
-                _printer.printText( rootTagName );
-                _printer.printText( " [" );
-                printText( dtd, true, true );
-                _printer.printText( "]>" );
-                _printer.breakLine();
             }
         }
         _started = true;

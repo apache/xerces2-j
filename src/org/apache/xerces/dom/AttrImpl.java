@@ -58,6 +58,7 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.*;
+import org.w3c.dom.events.MutationEvent;
 import org.apache.xerces.dom.events.MutationEventImpl;
 
 /**
@@ -130,7 +131,7 @@ public class AttrImpl
     	super(ownerDocument);
         this.name = name;
         /** False for default attributes. */
-        specified(true);
+        isSpecified(true);
     }
 
     // for AttrNS
@@ -142,7 +143,7 @@ public class AttrImpl
     
     public Node cloneNode(boolean deep) {
         AttrImpl clone = (AttrImpl) super.cloneNode(deep);
-        clone.specified(true);
+        clone.isSpecified(true);
         return clone;
     }
 
@@ -158,7 +159,7 @@ public class AttrImpl
      * Returns the attribute name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -194,7 +195,7 @@ public class AttrImpl
      */
     public String getName() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return name;
@@ -208,15 +209,15 @@ public class AttrImpl
      */
     public void setValue(String value) {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
         LCount lc=null;
         String oldvalue="";
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION PREPROCESSING AND PRE-EVENTS:
             // Only DOMAttrModified need be produced directly.
@@ -230,11 +231,11 @@ public class AttrImpl
             
         } // End mutation preprocessing
 
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // Can no longer just discard the kids; they may have
             // event listeners waiting for them to disconnect.
-            if (syncChildren()) {
+            if (needsSyncChildren()) {
                 synchronizeChildren();
             }
             while(firstChild!=null)
@@ -246,11 +247,11 @@ public class AttrImpl
             if (firstChild != null) {
                 // remove ref from first child to last child
                 firstChild.previousSibling = null;
-                firstChild.firstChild(false);
+                firstChild.isFirstChild(false);
                 // then remove ref to first child
                 firstChild   = null;
             }
-            syncChildren(false);
+            needsSyncChildren(false);
         }
 
         // Create and add the new one, generating only non-aggregate events
@@ -258,7 +259,7 @@ public class AttrImpl
         // capture/bubble listeners on the Attr.
         // Note that aggregate events are NOT dispatched here,
         // since we need to combine the remove and insert.
-    	specified(true);
+    	isSpecified(true);
         if (value != null) {
             internalInsertBefore(ownerDocument.createTextNode(value),null,
                                  MUTATION_LOCAL);
@@ -266,10 +267,10 @@ public class AttrImpl
 		
     	changed(); // ***** Is this redundant?
 
-        if(MUTATIONEVENTS)
+        if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION POST-EVENTS:
-            dispatchAggregateEvents(this,oldvalue);            
+            dispatchAggregateEvents(this,oldvalue,MutationEvent.MODIFICATION);
         }
 		
     } // setValue(String)
@@ -280,7 +281,7 @@ public class AttrImpl
      */
     public String getValue() {
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         if (firstChild == null) {
@@ -312,10 +313,10 @@ public class AttrImpl
      */
     public boolean getSpecified() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-    	return specified();
+    	return isSpecified();
 
     } // getSpecified():boolean
 
@@ -335,7 +336,7 @@ public class AttrImpl
     public Element getElement() {
         // if we have an owner, ownerNode is our ownerElement, otherwise it's
         // our ownerDocument and we don't have an ownerElement
-        return (Element) (owned() ? ownerNode : null);
+        return (Element) (isOwned() ? ownerNode : null);
     }
 
     /**
@@ -347,26 +348,36 @@ public class AttrImpl
     public Element getOwnerElement() {
         // if we have an owner, ownerNode is our ownerElement, otherwise it's
         // our ownerDocument and we don't have an ownerElement
-        return (Element) (owned() ? ownerNode : null);
+        return (Element) (isOwned() ? ownerNode : null);
     }
     
     public void normalize() {
 
-    	Node kid, next;
-    	for (kid = firstChild; kid != null; kid = next) {
-    		next = kid.getNextSibling();
+        Node kid, next;
+        for (kid = firstChild; kid != null; kid = next) {
+            next = kid.getNextSibling();
 
-    		// If kid and next are both Text nodes (but _not_ CDATASection,
-    		// which is a subclass of Text), they can be merged.
-    		if (next != null
-			 && kid.getNodeType() == Node.TEXT_NODE
-			 && next.getNodeType() == Node.TEXT_NODE)
-    	    {
-    			((Text)kid).appendData(next.getNodeValue());
-    			removeChild(next);
-    			next = kid; // Don't advance; there might be another.
-    		}
-
+            // If kid is a text node, we need to check for one of two
+            // conditions:
+            //   1) There is an adjacent text node
+            //   2) There is no adjacent text node, but kid is
+            //      an empty text node.
+            if ( kid.getNodeType() == Node.TEXT_NODE )
+            {
+                // If an adjacent text node, merge it with kid
+                if ( next!=null && next.getNodeType() == Node.TEXT_NODE )
+                {
+                    ((Text)kid).appendData(next.getNodeValue());
+                    removeChild( next );
+                    next = kid; // Don't advance; there might be another.
+                }
+                else
+                {
+                    // If kid is empty, remove it
+                    if ( kid.getNodeValue().length()==0 )
+                        removeChild( kid );
+                }
+            }
         }
 
     } // normalize()
@@ -378,10 +389,10 @@ public class AttrImpl
     /** NON-DOM, for use by parser */
     public void setSpecified(boolean arg) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-    	specified(arg);
+    	isSpecified(arg);
 
     } // setSpecified(boolean)
 

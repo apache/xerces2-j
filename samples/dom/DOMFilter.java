@@ -69,12 +69,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+
 /**
  * A sample DOM filter. This sample program illustrates how to
  * use the Document#getElementsByTagName() method to quickly 
  * and easily locate elements by name.
  *
- * @version
+ * @version $Id$
  */
 public class DOMFilter {
 
@@ -84,12 +85,12 @@ public class DOMFilter {
 
     /** Default parser name. */
     private static final String 
-        DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
+    DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
     private static boolean setSchemaSupport = true;
-    private static boolean setDeferredDOM   = true;
+    //    private static boolean setDeferredDOM   = true;
 
 
 
@@ -104,7 +105,18 @@ public class DOMFilter {
         try {
             // parse document
             DOMParserWrapper parser = 
-                (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
+            (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
+
+//          parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+//                               setDeferredDOM );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                               setValidation );
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                               setNameSpaces );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                               setSchemaSupport );
+
+
             Document document = parser.parse(uri);
 
             // get elements that match
@@ -112,8 +124,7 @@ public class DOMFilter {
 
             // print nodes
             print(elements, attributeName);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -186,30 +197,30 @@ public class DOMFilter {
         for (int i = 0; i < len; i++) {
             char ch = s.charAt(i);
             switch (ch) {
-                case '<': {
+            case '<': {
                     str.append("&lt;");
                     break;
                 }
-                case '>': {
+            case '>': {
                     str.append("&gt;");
                     break;
                 }
-                case '&': {
+            case '&': {
                     str.append("&amp;");
                     break;
                 }
-                case '"': {
+            case '"': {
                     str.append("&quot;");
                     break;
                 }
-                case '\r':
-                case '\n': {
+            case '\r':
+            case '\n': {
                     str.append("&#");
                     str.append(Integer.toString(ch));
                     str.append(';');
                     break;
                 }
-                default: {
+            default: {
                     str.append(ch);
                 }
             }
@@ -237,7 +248,7 @@ public class DOMFilter {
                              "  -n | -N  Turn on/off namespace [default=on]",
                              "  -v | -V  Turn on/off validation [default=on]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
-                             "  -d | -D  Turn on/off deferred DOM [default=on]",
+//                           "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -h       This help screen."} );
 
         // is there anything to do?
@@ -276,12 +287,14 @@ outer:
                 case 'p':
                     parserName = argopt.getStringParameter();
                     break;
+/***
                 case 'd':
                     setDeferredDOM = true;
                     break;
                 case 'D':
                     setDeferredDOM = false;
                     break;
+/***/
                 case 's':
                     setSchemaSupport = true;
                     break;
@@ -306,12 +319,11 @@ outer:
                     break;
                 }
             }
-
             // print uri
             System.err.println(arg+':');
             print(parserName, arg, elementName, attributeName);
         }
-
     } // main(String[])
 
 } // class DOMFilter
+

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ import org.w3c.dom.Document;
 /**
  * Encapsulates a DOM parser.
  *
- * @version
+ * @version $id$
  */
 
 import org.xml.sax.SAXNotRecognizedException;

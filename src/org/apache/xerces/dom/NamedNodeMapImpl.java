@@ -207,12 +207,12 @@ public class NamedNodeMapImpl
     public Node setNamedItem(Node arg)
         throws DOMException {
 
-    	if (readOnly()) {
-            throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+    	if (isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
     	if (arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
@@ -246,13 +246,13 @@ public class NamedNodeMapImpl
     public Node setNamedItemNS(Node arg)
         throws DOMException {
 
-    	if (readOnly()) {
-            throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+    	if (isReadOnly()) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
     
     	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
@@ -289,14 +289,14 @@ public class NamedNodeMapImpl
     public Node removeNamedItem(String name)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	int i = findNamePoint(name,0);
     	if (i < 0) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
                                        "DOM008 Not found");
         }
 
@@ -324,14 +324,14 @@ public class NamedNodeMapImpl
      public Node removeNamedItemNS(String namespaceURI, String name)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	int i = findNamePoint(namespaceURI, name);
     	if (i < 0) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
                                        "DOM008 Not found");
         }
 
@@ -353,18 +353,18 @@ public class NamedNodeMapImpl
      
     public NamedNodeMapImpl cloneMap(NodeImpl ownerNode) {
     	NamedNodeMapImpl newmap = new NamedNodeMapImpl(ownerNode);
-        cloneContent(newmap);
+        newmap.cloneContent(this);
     	return newmap;
     }
 
-    protected void cloneContent(NamedNodeMapImpl newmap) {
-    	if (nodes != null) {
-            newmap.nodes = new Vector(nodes.size());
-            for (int i = 0; i < nodes.size(); ++i) {
-                NodeImpl n = (NodeImpl) nodes.elementAt(i);
+    protected void cloneContent(NamedNodeMapImpl srcmap) {
+    	if (srcmap.nodes != null) {
+            nodes = new Vector(srcmap.nodes.size());
+            for (int i = 0; i < srcmap.nodes.size(); ++i) {
+                NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
                 NodeImpl clone = (NodeImpl) n.cloneNode(true);
-                clone.specified(n.specified());
-                newmap.setNamedItem(clone);
+                clone.isSpecified(n.isSpecified());
+                nodes.insertElementAt(clone, i);
             }
         }
     } // cloneMap():NamedNodeMapImpl
@@ -386,7 +386,7 @@ public class NamedNodeMapImpl
      */
     void setReadOnly(boolean readOnly, boolean deep) {
 
-        readOnly(readOnly);
+        isReadOnly(readOnly);
     	if(deep && nodes != null) {
     		Enumeration e=nodes.elements();
     		while(e.hasMoreElements()) {
@@ -401,7 +401,7 @@ public class NamedNodeMapImpl
      *
      */
     boolean getReadOnly() {
-    	return readOnly();
+    	return isReadOnly();
     } // getReadOnly()
     
 
@@ -421,11 +421,11 @@ public class NamedNodeMapImpl
         }
     }
 
-    final boolean readOnly() {
+    final boolean isReadOnly() {
         return (flags & READONLY) != 0;
     }
 
-    final void readOnly(boolean value) {
+    final void isReadOnly(boolean value) {
         flags = (short) (value ? flags | READONLY : flags & ~READONLY);
     }
 
@@ -498,19 +498,30 @@ public class NamedNodeMapImpl
     protected int findNamePoint(String namespaceURI, String name) {
         
         if (nodes == null) return -1;
-        if (namespaceURI == null) return -1;
         if (name == null) return -1;
         
         // This is a linear search through the same nodes Vector.
         // The Vector is sorted on the DOM Level 1 nodename.
         // The DOM Level 2 NS keys are namespaceURI and Localname, 
         // so we must linear search thru it.
-        
+        // In addition, to get this to work with nodes without any namespace
+        // (namespaceURI and localNames are both null) we then use the nodeName
+        // as a seconday key.
         for (int i = 0; i < nodes.size(); i++) {
             NodeImpl a = (NodeImpl)nodes.elementAt(i);
-            if (namespaceURI.equals(a.getNamespaceURI())
-                && name.equals(a.getLocalName())
-                ) {
+            String aNamespaceURI = a.getNamespaceURI();
+            String aLocalName = a.getLocalName();
+            if (namespaceURI == null) {
+              if (aNamespaceURI == null
+                  &&
+                  (name.equals(aLocalName)
+                   ||
+                   (aLocalName == null && name.equals(a.getNodeName()))))
+                return i;
+            } else {
+              if (namespaceURI.equals(aNamespaceURI)
+                  &&
+                  name.equals(aLocalName))
                 return i;
             }
         }

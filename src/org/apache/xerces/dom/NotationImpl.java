@@ -130,7 +130,7 @@ public class NotationImpl
      * Returns the notation name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -146,7 +146,7 @@ public class NotationImpl
      */
     public String getPublicId() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return publicId;
@@ -159,7 +159,7 @@ public class NotationImpl
      */
     public String getSystemId() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return systemId;
@@ -176,12 +176,12 @@ public class NotationImpl
      */
     public void setPublicId(String id) {
 
-    	if (readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if (isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"DOM001 Modification not allowed");
         }
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         publicId = id;
@@ -194,12 +194,12 @@ public class NotationImpl
      */
     public void setSystemId(String id) {
 
-    	if(readOnly()) {
-    		throw new DOMExceptionImpl(
+    	if(isReadOnly()) {
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"DOM001 Modification not allowed");
         }
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	systemId = id;

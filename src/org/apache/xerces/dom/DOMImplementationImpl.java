@@ -105,19 +105,24 @@ public class DOMImplementationImpl
     public boolean hasFeature(String feature, String version) {
 
         // Currently, we support only XML Level 1 version 1.0
+        boolean anyVersion = version == null || version.length() == 0;
         return 
-            (feature.equalsIgnoreCase("XML") 
-            && (version == null
+            (feature.equalsIgnoreCase("Core") 
+            && (anyVersion
+		|| version.equals("1.0")
+		|| version.equals("2.0")))
+         || (feature.equalsIgnoreCase("XML") 
+            && (anyVersion
 		|| version.equals("1.0")
 		|| version.equals("2.0")))
          || (feature.equalsIgnoreCase("Events") 
-	     && (version == null
+	     && (anyVersion
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("MutationEvents") 
-	     && (version == null
+	     && (anyVersion
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("Traversal") 
-	     && (version == null
+	     && (anyVersion
 		 || version.equals("2.0")))
             ;
 
@@ -147,12 +152,12 @@ public class DOMImplementationImpl
                                                  String systemID)
     {
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         int index = qualifiedName.indexOf(':');
         if (index == 0 || index == qualifiedName.length() - 1) {
-	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+	    throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
 	}
     	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
@@ -183,7 +188,7 @@ public class DOMImplementationImpl
                                              throws DOMException
     {
     	if (doctype != null && doctype.getOwnerDocument() != null) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "DOM005 Wrong document");
         }
         DocumentImpl doc = new DocumentImpl(doctype);

@@ -72,6 +72,15 @@ try {
 									<br/><link idref="properties" anchor="namespace-sep">http://xml.org/sax/properties/namespace-sep</link></td></tr>
 		</table>
 		
+<!--
+		<anchor name="schema"/>
+		<p>http://apache.org/xml/features/validation/schema</p>
+		<table>
+			<tr><th>True:</th>		<td>Turn on XML Schema support.</td></tr>
+			<tr><th>False:</th>		<td>Turn off XML Schema support.</td></tr>
+			<tr><th>Default:</th>	<td>true</td></tr>
+		</table>
+-->
 		<anchor name="dynamic"/>
 		<p>http://apache.org/xml/features/validation/dynamic</p>
 		<table>
@@ -118,6 +127,29 @@ try {
 			<tr><th>False:</th><td>Stops parse on first fatal error.</td></tr>
 			<tr><th>Default:</th><td>false</td></tr>
 		</table>	
+		
+		<anchor name="load-dtd-grammar"/>
+		<p>http://apache.org/xml/features/nonvalidating/load-dtd-grammar</p>
+		<table>
+			<tr><th>True:</th><td>Load the DTD and use it to
+			                       add default attributes and set
+attribute types when parsing.</td></tr>
+			<tr><th>False:</th><td>Build the grammar but do not use
+the default attributes and attribute types information it contains.</td></tr>
+			<tr><th>Default:</th><td>true</td></tr>
+			<tr><th>Note:</th> <td>This feature is always on when
+validation is on.</td></tr>
+		</table>	
+
+		<anchor name="load-external-dtd"/>
+		<p>http://apache.org/xml/features/nonvalidating/load-external-dtd</p>
+		<table>
+			<tr><th>True:</th><td>Load the external DTD.</td></tr>
+			<tr><th>False:</th><td>Ignore the external DTD completely.</td></tr>
+			<tr><th>Default:</th><td>true</td></tr>
+			<tr><th>Note:</th>		<td>This feature is
+always on when validation is on.</td></tr>
+		</table>	
 	</s2>
 	<s2 title="DOM Features">
 		<anchor name="defer-node-expansion"/>
@@ -140,8 +172,8 @@ try {
 		<anchor name="create-entity-ref-nodes"/>
 		<p>http://apache.org/xml/features/dom/create-entity-ref-nodes</p>
 		<table>
-			<tr><th>True:</th>		<td>Create EntityReference nodes in the DOM tree.</td></tr>
-			<tr><th>False:</th>		<td>Do not create EntityReference nodes in the DOM tree.</td></tr>
+			<tr><th>True:</th>		<td>Create EntityReference nodes in the DOM tree. The EntityReference nodes and their child nodes will be read-only.</td></tr>
+			<tr><th>False:</th>		<td>Do not create EntityReference nodes in the DOM tree. No EntityReference nodes will be created, only the nodes corresponding to their fully expanded sustitution text will be created.</td></tr>
 			<tr><th>Default:</th>	<td>true</td></tr>
 			<tr><th>Note:</th>		<td>This feature only affects the appearance of EntityReference nodes in 
 					 				  the DOM tree. The document will always contain the entity reference 

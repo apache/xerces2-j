@@ -115,7 +115,7 @@ public class ElementDefinitionImpl
      * Returns the element definition name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -146,7 +146,7 @@ public class ElementDefinitionImpl
      */
     public NamedNodeMap getAttributes() {
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
     	return attributes;

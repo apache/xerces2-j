@@ -64,7 +64,7 @@ import org.w3c.dom.html.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.AttrImpl;
-import org.apache.xerces.dom.DOMExceptionImpl;
+import org.w3c.dom.DOMException;
 import org.apache.wml.*;
 
 /**

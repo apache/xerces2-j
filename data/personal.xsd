@@ -14,9 +14,9 @@
    <element ref="url"   minOccurs='0' maxOccurs='unbounded'/>
    <element ref="link"  minOccurs='0' maxOccurs='1'/>
 
-   <attribute name="id"  type="ID" minOccurs='1'/>
+   <attribute name="id"  type="ID" use='required'/>
    <attribute name="note" type="string"/>
-   <attribute name="contr" type="NMTOKEN" default="false">
+   <attribute name="contr" type="NMTOKEN" use='default' value="false">
     <simpleType base="string">
      <enumeration value="true"/>
      <enumeration value="false"/>
@@ -28,12 +28,10 @@
 
  <element name="name">
   <complexType content='elementOnly'>
-   <group>
-    <all>
+   <all>
     <element ref="family"/>
     <element ref="given"/>
-    </all>
-   </group>
+   </all>
   </complexType>
  </element>
 
@@ -59,10 +57,3 @@
  <notation name='gif' public='-//APP/Photoshop/4.0' system='photoshop.exe'/>
 
 </schema>
-
-
-
-
-
-
-

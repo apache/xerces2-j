@@ -56,7 +56,7 @@
  */
 
 package sax;                    
-                    
+
 import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -80,7 +80,7 @@ import org.xml.sax.helpers.ParserFactory;
  * @version
  */
 public class SAXCount 
-    extends HandlerBase {
+extends HandlerBase {
 
     //
     // Constants
@@ -88,7 +88,7 @@ public class SAXCount
 
     /** Default parser name. */
     private static final String 
-        DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
+    DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
 
     private static boolean setValidation    = false; //defaults
@@ -152,17 +152,14 @@ public class SAXCount
             parser.parse(uri);
             long after = System.currentTimeMillis();
             counter.printResults(uri, after - before);
-        }
-        catch (org.xml.sax.SAXParseException spe) {
+        } catch (org.xml.sax.SAXParseException spe) {
             spe.printStackTrace(System.err);
-        }
-        catch (org.xml.sax.SAXException se) {
+        } catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
             else
                 se.printStackTrace(System.err);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -260,7 +257,7 @@ public class SAXCount
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
-            if (index != -1) 
+            if (index != -1)
                 systemId = systemId.substring(index + 1);
             str.append(systemId);
         }
@@ -300,7 +297,7 @@ public class SAXCount
     // Main
     //
 
-    /** Main program entry point. */
+                            /** Main program entry point. */
     public static void main(String argv[]) {
 
         Arguments argopt = new Arguments();

@@ -56,7 +56,7 @@
  */
 
 package sax;                    
-                    
+
 import  util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -77,7 +77,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version $Id$
  */
 public class SAX2Count 
-    extends DefaultHandler {
+extends DefaultHandler {
 
     //
     // Constants
@@ -85,7 +85,7 @@ public class SAX2Count
 
     /** Default parser name. */
     private static final String 
-        DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
+    DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
 
     private static boolean setValidation    = false; //defaults
@@ -125,6 +125,9 @@ public class SAX2Count
             XMLReader parser = (XMLReader)Class.forName(parserName).newInstance();
             parser.setContentHandler(counter);
             parser.setErrorHandler(counter);
+
+
+
             //if (validate)
             //   parser.setFeature("http://xml.org/sax/features/validation", true);
 
@@ -134,13 +137,8 @@ public class SAX2Count
             parser.setFeature( "http://xml.org/sax/features/namespaces",
                                                setNameSpaces );
 
-            try {
-                parser.setFeature( "http://apache.org/xml/features/validation/schema",
-                                                   setSchemaSupport );
-            }
-            catch (SAXNotRecognizedException e) {
-                // parser may not recognize this feature but that's ok
-            }
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                                               setSchemaSupport );
 
             if (warmup) {
                 parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
@@ -151,17 +149,14 @@ public class SAX2Count
             parser.parse(uri);
             long after = System.currentTimeMillis();
             counter.printResults(uri, after - before);
-        }
-        catch (org.xml.sax.SAXParseException spe) {
+        } catch (org.xml.sax.SAXParseException spe) {
             spe.printStackTrace(System.err);
-        }
-        catch (org.xml.sax.SAXException se) {
+        } catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
             else
                 se.printStackTrace(System.err);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -259,7 +254,7 @@ public class SAX2Count
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
-            if (index != -1) 
+            if (index != -1)
                 systemId = systemId.substring(index + 1);
             str.append(systemId);
         }

@@ -103,9 +103,9 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/w3c/dom/events	
 	${CP}  ../src/org/w3c/dom/events/*.class			../class/org/w3c/dom/events
 
-#-src/org/w3c/dom/range
-	${MKDIR} ../class/org/w3c/dom/range	
-	${CP}  ../src/org/w3c/dom/range/*.class			../class/org/w3c/dom/range
+#-src/org/w3c/dom/ranges
+	${MKDIR} ../class/org/w3c/dom/ranges	
+	${CP}  ../src/org/w3c/dom/ranges/*.class			../class/org/w3c/dom/ranges
 
 #-src/org/w3c/dom/html
 #	${MKDIR} ../class/org/w3c/dom/html	
@@ -147,7 +147,7 @@ source: ../bin/${JARFILE}
 	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org javax; cd ../src
 
 ###################################
-#copy the .class files unser samples
+#copy the .class files under samples
 samples: ../bin/${SAMPLESJARFILE}
 ../bin/${SAMPLESJARFILE}: classfiles_updated
 
@@ -301,9 +301,9 @@ package_src:
 	${MKDIR} ../source/src/org/w3c/dom/events	
 	${CP}  ../src/org/w3c/dom/events/*.java				../source/src/org/w3c/dom/events
 
-#-src/org/w3c/dom/range
-	${MKDIR} ../source/src/org/w3c/dom/range	
-	${CP}  ../src/org/w3c/dom/range/*.java				../source/src/org/w3c/dom/range
+#-src/org/w3c/dom/ranges
+	${MKDIR} ../source/src/org/w3c/dom/ranges	
+	${CP}  ../src/org/w3c/dom/ranges/*.java				../source/src/org/w3c/dom/ranges
 
 #-src/org/w3c/dom/html
 #	${MKDIR} ../source/src/org/w3c/dom/html	
@@ -381,6 +381,13 @@ package_src:
 	${MKDIR}  ../source/samples/xni
 	${CP}  ../samples/xni/*.java  ../source/samples/xni
 
+#-samples/util
+
+	${MKDIR}  ../source/samples/util
+	${CP}  ../samples/util/*.java  ../source/samples/util
+
+
+
 #########################################
 #copy the Makefiles under src
 
@@ -439,8 +446,8 @@ package_src:
 #-src/org/w3c/dom/events
 	${CP}  ../src/org/w3c/dom/events/Makefile 			../source/src/org/w3c/dom/events
 
-#-src/org/w3c/dom/range
-	${CP}  ../src/org/w3c/dom/range/Makefile			../source/src/org/w3c/dom/range
+#-src/org/w3c/dom/ranges
+	${CP}  ../src/org/w3c/dom/ranges/Makefile			../source/src/org/w3c/dom/ranges
 
 #-src/org/w3c/dom/html
 #	${CP}  ../src/org/w3c/dom/html/Makefile				../source/src/org/w3c/dom/html
@@ -552,6 +559,12 @@ package_src:
 
 	${MKDIR}  ../source/samples/xni
 	${CP}  ../samples/xni/Makefile  ../source/samples/xni
+
+#-samples/util
+
+	${MKDIR}  ../source/samples/util
+	${CP}  ../samples/util/Makefile  ../source/samples/util
+
 
 ###
 #copy higher levels Makefiles

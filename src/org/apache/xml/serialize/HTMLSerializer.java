@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -54,6 +54,13 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
+
+// Aug 21, 2000:
+//  Fixed bug in startDocument not calling prepare.
+//  Reported by Mikael Staldal <d96-mst-ingen-reklam@d.kth.se>
+// Aug 21, 2000:
+//  Added ability to omit DOCTYPE declaration.
 
 
 package org.apache.xml.serialize;
@@ -110,7 +117,7 @@ import org.xml.sax.Attributes;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
 public class HTMLSerializer
@@ -450,15 +457,6 @@ public class HTMLSerializer
     }
     
     
-    public void startDocument()
-    {
-        // Do nothing for HTML/XHTML, browser might not respond
-        // well to <?xml ...?>
-        if ( _printer == null )
-            throw new IllegalStateException( "SER002 No writer supplied for serializer" );
-    }
-    
-    
     public void startElement( String tagName, AttributeList attrs )
     {
         int          i;
@@ -618,28 +616,30 @@ public class HTMLSerializer
                 }
             }
 
-            // XHTML: If public idnentifier and system identifier
-            //  specified, print them, else print just system identifier
-            // HTML: If public identifier specified, print it with
-            //  system identifier, if specified.
-            if ( _docTypePublicId != null && ( ! _xhtml || _docTypeSystemId != null )  ) {
-                _printer.printText( "<!DOCTYPE HTML PUBLIC " );
-                printDoctypeURL( _docTypePublicId );
-                if ( _docTypeSystemId != null ) {
-                    if ( _indenting ) {
-                        _printer.breakLine();
-                        _printer.printText( "                      " );
-                    } else
+            if ( ! _format.getOmitDocumentType() ) {
+                // XHTML: If public idnentifier and system identifier
+                //  specified, print them, else print just system identifier
+                // HTML: If public identifier specified, print it with
+                //  system identifier, if specified.
+                if ( _docTypePublicId != null && ( ! _xhtml || _docTypeSystemId != null )  ) {
+                    _printer.printText( "<!DOCTYPE HTML PUBLIC " );
+                    printDoctypeURL( _docTypePublicId );
+                    if ( _docTypeSystemId != null ) {
+                        if ( _indenting ) {
+                            _printer.breakLine();
+                            _printer.printText( "                      " );
+                        } else
                         _printer.printText( ' ' );
+                        printDoctypeURL( _docTypeSystemId );
+                    }
+                    _printer.printText( '>' );
+                    _printer.breakLine();
+                } else if ( _docTypeSystemId != null ) {
+                    _printer.printText( "<!DOCTYPE HTML SYSTEM " );
                     printDoctypeURL( _docTypeSystemId );
+                    _printer.printText( '>' );
+                    _printer.breakLine();
                 }
-                _printer.printText( '>' );
-                _printer.breakLine();
-            } else if ( _docTypeSystemId != null ) {
-                _printer.printText( "<!DOCTYPE HTML SYSTEM " );
-                printDoctypeURL( _docTypeSystemId );
-                _printer.printText( '>' );
-                _printer.breakLine();
             }
         }
         

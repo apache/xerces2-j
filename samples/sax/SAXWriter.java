@@ -56,7 +56,6 @@
  */
 
 package sax;                    
-                    
 
 import util.Arguments;
 import java.io.OutputStreamWriter;
@@ -71,6 +70,9 @@ import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.ParserFactory;
+import org.xml.sax.XMLReader;
+
+
 
 /**
  * A sample SAX writer. This sample program illustrates how to
@@ -80,7 +82,7 @@ import org.xml.sax.helpers.ParserFactory;
  * @version
  */
 public class SAXWriter 
-    extends HandlerBase {
+extends HandlerBase {
 
     //
     // Constants
@@ -88,7 +90,7 @@ public class SAXWriter
 
     /** Default parser name. */
     private static final String 
-        DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
+    DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
@@ -138,11 +140,25 @@ public class SAXWriter
             HandlerBase handler = new SAXWriter(canonical);
 
             Parser parser = ParserFactory.makeParser(parserName);
+
+
+            if ( parser instanceof XMLReader ){
+                ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
+                                                setValidation);
+                ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
+                                                setNameSpaces );
+                ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
+                                                setSchemaSupport );
+
+            }
+
+
+
+
             parser.setDocumentHandler(handler);
             parser.setErrorHandler(handler);
             parser.parse(uri);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -257,7 +273,7 @@ public class SAXWriter
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
-            if (index != -1) 
+            if (index != -1)
                 systemId = systemId.substring(index + 1);
             str.append(systemId);
         }
@@ -282,24 +298,24 @@ public class SAXWriter
         for (int i = 0; i < len; i++) {
             char ch = s.charAt(i);
             switch (ch) {
-                case '<': {
+            case '<': {
                     str.append("&lt;");
                     break;
                 }
-                case '>': {
+            case '>': {
                     str.append("&gt;");
                     break;
                 }
-                case '&': {
+            case '&': {
                     str.append("&amp;");
                     break;
                 }
-                case '"': {
+            case '"': {
                     str.append("&quot;");
                     break;
                 }
-                case '\r':
-                case '\n': {
+            case '\r':
+            case '\n': {
                     if (canonical) {
                         str.append("&#");
                         str.append(Integer.toString(ch));
@@ -308,7 +324,7 @@ public class SAXWriter
                     }
                     // else, default append char
                 }
-                default: {
+            default: {
                     str.append(ch);
                 }
             }
@@ -421,7 +437,7 @@ public class SAXWriter
                     break;
                 }
             }
-            // print uri
+            // print 
             System.err.println(arg+':');
             print(parserName, arg, canonical);
         }

@@ -71,7 +71,7 @@ import java.io.UnsupportedEncodingException;
  *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @see Serializer
  */
 public final class XHTMLSerializer

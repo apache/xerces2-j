@@ -98,7 +98,7 @@ public class ElementNSImpl
     {
     	super(ownerDocument, qualifiedName);
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
         }
 
@@ -118,7 +118,7 @@ public class ElementNSImpl
 	     (prefix.equals("xml") &&
 	      !namespaceURI.equals("http://www.w3.org/XML/1998/namespace")))) {
 
-	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+	    throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
 	}
 	this.namespaceURI = namespaceURI;
@@ -154,7 +154,7 @@ public class ElementNSImpl
      */
     public String getNamespaceURI()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return namespaceURI;
@@ -172,7 +172,7 @@ public class ElementNSImpl
      */
     public String getPrefix()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         int index = name.indexOf(':');
@@ -194,17 +194,17 @@ public class ElementNSImpl
     public void setPrefix(String prefix)
         throws DOMException
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 	if (namespaceURI == null ||
 	    (prefix != null && prefix.equals("xml") &&
 	     !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+    	    throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
         }
 	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
-    	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    	    throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
         }
         // update node name with new qualifiedName
@@ -219,7 +219,7 @@ public class ElementNSImpl
      */
     public String             getLocalName()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return localName;

@@ -64,7 +64,7 @@ import java.util.Vector;
 import org.w3c.dom.*;
 
 import org.w3c.dom.traversal.*;
-import org.w3c.dom.range.*;
+import org.w3c.dom.ranges.*;
 import org.w3c.dom.events.*;
 import org.apache.xerces.dom.events.*;
 
@@ -96,7 +96,7 @@ import org.apache.xerces.dom.events.*;
  */
 public class DocumentImpl
     extends ParentNode
-    implements Document, DocumentTraversal, DocumentEvent {
+    implements Document, DocumentTraversal, DocumentEvent, DocumentRange {
 
     //
     // Constants
@@ -131,8 +131,47 @@ public class DocumentImpl
     /** Table for quick check of child insertion. */
     protected static int[] kidOK;
 
-    /** Table for quick check of child insertion. */
+    /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
+
+    /** Table for event listeners registered to this document nodes. */
+    protected Hashtable eventListeners;
+
+    /**
+     * Number of alterations made to this document since its creation.
+     * Serves as a "dirty bit" so that live objects such as NodeList can
+     * recognize when an alteration has been made and discard its cached
+     * state information.
+     * <p>
+     * Any method that alters the tree structure MUST cause or be
+     * accompanied by a call to changed(), to inform it that any outstanding
+     * NodeLists may have to be updated.
+     * <p>
+     * (Required because NodeList is simultaneously "live" and integer-
+     * indexed -- a bad decision in the DOM's design.)
+     * <p>
+     * Note that changes which do not affect the tree's structure -- changing
+     * the node's name, for example -- do _not_ have to call changed().
+     * <p>
+     * Alternative implementation would be to use a cryptographic
+     * Digest value rather than a count. This would have the advantage that
+     * "harmless" changes (those producing equal() trees) would not force
+     * NodeList to resynchronize. Disadvantage is that it's slightly more prone
+     * to "false negatives", though that's the difference between "wildly
+     * unlikely" and "absurdly unlikely". IF we start maintaining digests,
+     * we should consider taking advantage of them.
+     *
+     * Note: This used to be done a node basis, so that we knew what
+     * subtree changed. But since only DeepNodeList really use this today,
+     * the gain appears to be really small compared to the cost of having
+     * an int on every (parent) node plus having to walk up the tree all the
+     * way to the root to mark the branch as changed everytime a node is
+     * changed.
+     * So we now have a single counter global to the document. It means that
+     * some objects may flush their cache more often than necessary, but this
+     * makes nodes smaller and only the document needs to be marked as changed.
+     */
+    protected int changes = 0;
 
     // experimental
 
@@ -141,6 +180,9 @@ public class DocumentImpl
 
     /** Bypass error checking. */
     protected boolean errorChecking = true;
+
+    /** Bypass mutation events firing. */
+    protected boolean mutationEvents = false;
 
     //
     // Static initialization
@@ -246,6 +288,11 @@ public class DocumentImpl
         DocumentImpl newdoc = new DocumentImpl();
 
         // then the children by importing them
+
+        if (needsSyncChildren()) {
+                synchronizeChildren();
+             }
+
         if (deep) {
             for (ChildNode n = firstChild; n != null; n = n.nextSibling) {
                 newdoc.appendChild(newdoc.importNode(n, true));
@@ -258,10 +305,12 @@ public class DocumentImpl
         newdoc.iterators = null;
         newdoc.ranges = null;
         newdoc.userData = null;
+        newdoc.eventListeners = null;
 
         // experimental
         newdoc.allowGrammarAccess = allowGrammarAccess;
         newdoc.errorChecking = errorChecking;
+        newdoc.mutationEvents = mutationEvents;
 
         // return new document
     	return newdoc;
@@ -270,15 +319,18 @@ public class DocumentImpl
 
     /**
      * Since a Document may contain at most one top-level Element child,
-  	 * and at most one DocumentType declaraction, we need to subclass our
-  	 * add-children methods to implement this constraint.
-	 * Since appendChild() is implemented as insertBefore(,null),
-	 * altering the latter fixes both.
-  	 * <p>
-  	 * While I'm doing so, I've taken advantage of the opportunity to
-  	 * cache documentElement and docType so we don't have to
-  	 * search for them.
-	 */
+     * and at most one DocumentType declaraction, we need to subclass our
+     * add-children methods to implement this constraint.
+     * Since appendChild() is implemented as insertBefore(,null),
+     * altering the latter fixes both.
+     * <p>
+     * While I'm doing so, I've taken advantage of the opportunity to
+     * cache documentElement and docType so we don't have to
+     * search for them.
+     *
+     * REVISIT: According to the spec it is not allowed to alter neither the
+     * document element nor the document type in any way
+     */
     public Node insertBefore(Node newChild, Node refChild)
         throws DOMException {
 
@@ -287,7 +339,7 @@ public class DocumentImpl
         if (errorChecking) {
             if((type == Node.ELEMENT_NODE && docElement != null) ||
                (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
-                throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
                                            "DOM006 Hierarchy request error");
             }
         }
@@ -308,11 +360,14 @@ public class DocumentImpl
 
     /**
      * Since insertBefore caches the docElement (and, currently, docType),
-	 * removeChild has to know how to undo the cache
+     * removeChild has to know how to undo the cache
+     *
+     * REVISIT: According to the spec it is not allowed to alter neither the
+     * document element nor the document type in any way
      */
     public Node removeChild(Node oldChild)
         throws DOMException {
-	    super.removeChild(oldChild);
+        super.removeChild(oldChild);
 	
     	// If remove succeeded, un-cache the kid appropriately
         int type = oldChild.getNodeType();
@@ -326,6 +381,28 @@ public class DocumentImpl
     	return oldChild;
 
     }   // removeChild(Node):Node
+
+    /**
+     * Since we cache the docElement (and, currently, docType),
+     * replaceChild has to update the cache
+     *
+     * REVISIT: According to the spec it is not allowed to alter neither the
+     * document element nor the document type in any way
+     */
+    public Node replaceChild(Node newChild, Node oldChild)
+        throws DOMException {
+	
+        super.replaceChild(newChild, oldChild);
+
+        int type = oldChild.getNodeType();
+        if(type == Node.ELEMENT_NODE) {
+    	    docElement = (ElementImpl)newChild;
+        }
+        else if (type == Node.DOCUMENT_TYPE_NODE) {
+    	    docType = (DocumentTypeImpl)newChild;
+        }
+        return oldChild;
+    }   // replaceChild(Node,Node):Node
 
     //
     // Document methods
@@ -347,7 +424,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if(errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR,
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
 
@@ -402,7 +479,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(tagName)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
 
@@ -424,7 +501,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
 
@@ -449,7 +526,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if(errorChecking && !isXMLName(target)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR,
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
 
@@ -475,7 +552,7 @@ public class DocumentImpl
 	 * it will be null.
 	 */
     public DocumentType getDoctype() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
 	    return docType;
@@ -491,7 +568,7 @@ public class DocumentImpl
 	 * (HTML not yet supported.)
      */
     public Element getDocumentElement() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
 	    return docElement;
@@ -557,6 +634,21 @@ public class DocumentImpl
         return errorChecking;
     }
 
+    /** 
+     * Sets whether the DOM implementation generates mutation events
+     * upon operations.
+     */
+    public void setMutationEvents(boolean set) {
+        mutationEvents = set;
+    }
+
+    /**
+     * Returns true if the DOM implementation generates mutation events.
+     */
+    public boolean getMutationEvents() {
+        return mutationEvents;
+    }
+
     // non-DOM factory methods
     
     /**
@@ -576,7 +668,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
     	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
@@ -601,7 +693,7 @@ public class DocumentImpl
         // REVISIT: Should we be checking XML name chars?
         /***
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         /***/
@@ -628,7 +720,7 @@ public class DocumentImpl
         // REVISIT: Should we be checking XML name chars?
         /***
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         /***/
@@ -647,7 +739,7 @@ public class DocumentImpl
         // REVISIT: Should we be checking XML name chars?
         /***
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         /***/
@@ -693,27 +785,46 @@ public class DocumentImpl
     	//	newnode.ownerDocument=this;
     	//}
     	//else
-        int type = source.getNodeType();
+
+        DOMImplementation  domImplementation     = 
+                  source.getOwnerDocument().getImplementation(); // get source implementation
+        boolean   domLevel20                     = 
+                  domImplementation.hasFeature("XML", "2.0" ); //DOM Level 2.0 implementation
+
+
+        int type                                 = source.getNodeType();
+
     	switch (type) {
     		
             case ELEMENT_NODE: {
 		Element newelement;
-		if (source.getLocalName() == null) {
-		    newelement = createElement(source.getNodeName());
-		} else {
-		    newelement = createElementNS(source.getNamespaceURI(),
+               
+                if( domLevel20 == true ){
+                    if( source.getLocalName() == null ){
+                         newelement = createElement(source.getNodeName());
+                    } else {
+                         newelement = createElementNS(source.getNamespaceURI(),
 						 source.getNodeName());
-		}
+                    }
+                } else {
+                    newelement = createElement( source.getNodeName() );
+
+                }
+
 		NamedNodeMap srcattr = source.getAttributes();
 		if (srcattr != null) {
                     for(int i = 0; i < srcattr.getLength(); i++) {
                         Attr attr = (Attr) srcattr.item(i);
                         if (attr.getSpecified()) { // not a default attribute
                             Attr nattr = (Attr) importNode(attr, true);
-                            if (attr.getLocalName() == null)
-                                newelement.setAttributeNode(nattr);
-                            else
-                                newelement.setAttributeNodeNS(nattr);
+                            if( domLevel20 == true ) {
+                                 if (attr.getLocalName() == null)
+                                     newelement.setAttributeNode(nattr);
+                                 else
+                                     newelement.setAttributeNodeNS(nattr);
+                            } else {
+                            newelement.setAttributeNode(nattr);
+                            }
                         }
                     }
                 }
@@ -722,12 +833,17 @@ public class DocumentImpl
             }
 
             case ATTRIBUTE_NODE: {
-		if (source.getLocalName() == null) {
-		    newnode = createAttribute(source.getNodeName());
-		} else {
-		    newnode = createAttributeNS(source.getNamespaceURI(),
-						source.getNodeName());
-		}
+
+                if( domLevel20 == true ){
+                    if (source.getLocalName() == null) {
+         	        newnode = createAttribute(source.getNodeName());
+         	    } else {
+          	        newnode = createAttributeNS(source.getNamespaceURI(),
+          					source.getNodeName());
+         	    }
+               } else {
+                   newnode = createAttribute(source.getNodeName());
+               }
                 deep = true;
 		// Kids carry value
 		break;
@@ -746,7 +862,7 @@ public class DocumentImpl
     	    case ENTITY_REFERENCE_NODE: {
 		newnode = createEntityReference(source.getNodeName());
                 // allow deep import temporarily
-                ((EntityReferenceImpl)newnode).readOnly(false);
+                ((EntityReferenceImpl)newnode).isReadOnly(false);
 		break;
             }
 
@@ -758,7 +874,7 @@ public class DocumentImpl
 		newentity.setSystemId(srcentity.getSystemId());
 		newentity.setNotationName(srcentity.getNotationName());
 		// Kids carry additional value
-                newentity.readOnly(false); // allow deep import temporarily
+                newentity.isReadOnly(false); // allow deep import temporarily
 		newnode = newentity;
 		break;
             }
@@ -824,7 +940,7 @@ public class DocumentImpl
 
     	    case DOCUMENT_NODE : // Document can't be child of Document
     	    default: {		// Unknown node type
-		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
+		throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
 					   "DOM006 Hierarchy request error");
             }
         }
@@ -857,7 +973,7 @@ public class DocumentImpl
      **/
     public void adoptNode(Node source) {
 	if (!(source instanceof NodeImpl)) {
-	    throw new DOMExceptionImpl(DOMException.NOT_SUPPORTED_ERR,
+	    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 		      "cannot move a node in from another DOM implementation");
 	}
 	Node parent = source.getParentNode();
@@ -899,7 +1015,7 @@ public class DocumentImpl
             return;
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -920,7 +1036,7 @@ public class DocumentImpl
      */
     public Element getIdentifier(String idName) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -941,7 +1057,7 @@ public class DocumentImpl
      */
     public void removeIdentifier(String idName) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -956,7 +1072,7 @@ public class DocumentImpl
     /** Returns an enumeration registered of identifier names. */
     public Enumeration getIdentifiers() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -1055,7 +1171,6 @@ public class DocumentImpl
      * removed to free up the DOM Nodes it references.
      * @see #removeNodeIterator
      * @see #removeNodeIterators
-     * @see #getNodeIterators
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -1074,7 +1189,6 @@ public class DocumentImpl
      * removed to free up the DOM Nodes it references.
      * @see #removeNodeIterator
      * @see #removeNodeIterators
-     * @see #getNodeIterators
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -1131,7 +1245,7 @@ public class DocumentImpl
                                        boolean entityReferenceExpansion)
     {
     	if( root==null) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NOT_SUPPORTED_ERR, 
 			"DOM007 Not supported");
         }
@@ -1161,13 +1275,6 @@ public class DocumentImpl
         iterators.removeElement(nodeIterator);
     }
 
-    /** Return an Enumeration of all NodeIterators. */
-    public Enumeration getNodeIterators() {
-        if (iterators == null) return null;
-
-        return iterators.elements();
-    }
-
     //
     // DocumentRange methods
     //
@@ -1187,13 +1294,6 @@ public class DocumentImpl
         
     }
     
-    /** Return an Enumeration of all Ranges. */
-    public Enumeration getRanges() {
-        if (ranges == null) return null;
-
-        return ranges.elements();
-    }
-    
     /** Not a client function. Called by Range.detach(),
      *  so a Range can remove itself from the list of
      *  Ranges.
@@ -1206,7 +1306,92 @@ public class DocumentImpl
         ranges.removeElement(range);
     }
     
-    
+    /**
+     * A method to be called when some text was changed in a text node,
+     * so that live objects can be notified.
+     */
+    void replacedText(Node node) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveReplacedText(node);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when some text was deleted from a text node,
+     * so that live objects can be notified.
+     */
+    void deletedText(Node node, int offset, int count) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveDeletedText(node,
+                                                                   offset,
+                                                                   count);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when some text was inserted into a text node,
+     * so that live objects can be notified.
+     */
+    void insertedText(Node node, int offset, int count) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveInsertedText(node,
+                                                                    offset,
+                                                                    count);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when a text node has been split,
+     * so that live objects can be notified.
+     */
+    void splitData(Node node, Node newNode, int offset) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveSplitData(node,
+                                                                 newNode,
+                                                                 offset);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when a node is removed from the tree so that live
+     * objects can be notified.
+     */
+    void removedChildNode(Node oldChild) {
+
+        // notify iterators
+        if (iterators != null) {
+            Enumeration enum = iterators.elements();
+            while (enum.hasMoreElements()) {
+                ((NodeIteratorImpl)enum.nextElement()).removeNode(oldChild);
+            }
+        }
+        
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).removeNode(oldChild);
+            }
+        }
+    }
+
+
     //
     // DocumentEvent methods
     //
@@ -1222,8 +1407,8 @@ public class DocumentImpl
 	 * as DOMNodeInserted. This parameter is case-sensitive.
 	 * @return an uninitialized Event object. Call the appropriate
 	 * <code>init...Event()</code> method before dispatching it.
-	 * @exception DOMException UNSUPPORTED_EVENT_TYPE if the requested
-	 * event set is not supported in this DOM.
+	 * @exception DOMException NOT_SUPPORTED_ERR if the requested
+	 * event type is not supported in this DOM.
      * @since WD-DOM-Level-2-19990923
      */
     public Event createEvent(String type) 
@@ -1233,7 +1418,7 @@ public class DocumentImpl
 	    if("MutationEvent".equals(type))
 	        return new MutationEventImpl();
 	    else
-	        throw new DOMExceptionImpl(DOMExceptionImpl.UNSUPPORTED_EVENT_TYPE,
+	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 					   "DOM007 Not supported");
 	}
      
@@ -1340,6 +1525,9 @@ public class DocumentImpl
 
     /**
      * Store user data related to a given node
+     * This is a place where we could use weak references! Indeed, the node
+     * here won't be GC'ed as long as some user data is attached to it, since
+     * the userData table will have a reference to the node.
      */
     protected void setUserData(NodeImpl n, Object data) {
         if (userData == null) {
@@ -1362,6 +1550,39 @@ public class DocumentImpl
         return userData.get(n);
     }
 
+    /**
+     * Store event listener registered on a given node
+     * This is another place where we could use weak references! Indeed, the
+     * node here won't be GC'ed as long as some listener is registered on it,
+     * since the eventsListeners table will have a reference to the node.
+     */
+    protected void setEventListeners(NodeImpl n, Vector listeners) {
+        if (eventListeners == null) {
+            eventListeners = new Hashtable();
+        }
+        if (listeners == null) {
+            eventListeners.remove(n);
+            if (eventListeners.isEmpty()) {
+                // stop firing events when there isn't any listener
+                mutationEvents = false;
+            }
+        } else {
+            eventListeners.put(n, listeners);
+            // turn mutation events on
+            mutationEvents = true;
+        }
+    }
+
+    /**
+     * Retreive event listener registered on a given node
+     */
+    protected Vector getEventListeners(NodeImpl n) {
+        if (eventListeners == null) {
+            return null;
+        }
+        return (Vector) eventListeners.get(n);
+    }
+
     //
     // Protected methods
     //
@@ -1375,6 +1596,20 @@ public class DocumentImpl
             return child.getNodeType() == Node.ELEMENT_NODE;
         }
     	return 0 != (kidOK[parent.getNodeType()] & 1 << child.getNodeType());
+    }
+
+    /**
+     * Denotes that this node has changed.
+     */
+    protected void changed() {
+        changes++;
+    }
+
+    /**
+     * Returns the number of changes to this node.
+     */
+    protected int changes() {
+        return changes;
     }
 
 } // class DocumentImpl

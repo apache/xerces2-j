@@ -90,8 +90,8 @@ import org.w3c.dom.Document;
  *   http://java.sun.com/aboutJava/communityprocess/jsr/jsr_005_xml.html
  *   </a><br>
  *   THIS IMPLEMENTATION IS CONFORMANT TO THE "JAVA API FOR XML PARSING"
- *   SPECIFICATION VERSION 1.0 PUBLIC RELEASE 1 BY JAMES DUNCAN DAVIDSON
- *   PUBLISHED BY SUN MICROSYSTEMS ON FEB. 18, 2000 AND FOUND AT
+ *   SPECIFICATION VERSION 1.1 PUBLIC REVIEW 1 BY JAMES DUNCAN DAVIDSON
+ *   PUBLISHED BY SUN MICROSYSTEMS ON NOV. 2, 2000 AND FOUND AT
  *   <a href="http://java.sun.com/xml">http://java.sun.com/xml</a>
  * <br>
  * <br>
@@ -112,113 +112,165 @@ import org.w3c.dom.Document;
  */
 public abstract class DocumentBuilder {
 
-    /**
-     * Implementors of this abstract class are not required to provide a
-     * public no-argument constructor, since instantiation is taken care
-     * by <code>DocumentBuilderFactory</code> implementations.
-     */
-    protected DocumentBuilder() {
-        super();
+    protected DocumentBuilder () {
     }
 
     /**
-     * Parses the contents of the given <code>InputStream</code> and returns
-     * a <code>Document</code> object.
+     * Parse the content of the given InputStream as an XML document
+     * and return a new DOM Document object.
      *
-     * @exception SAXException If there is a problem parsing the given XML
-     *                content.
-     * @exception IOException If any IO errors occur reading the given
-     *                <code>InputStream</code>.
-     * @exception  IllegalArgumentException If the given
-     *                <code>InputStream</code> is <b>null</b>.
+     * @param is InputStream containing the content to be parsed.
+     * @exception IOException If any IO errors occur.
+     * @exception SAXException If any parse errors occur.
+     * @exception IllegalArgumentException If the InputStream is null
+     * @see org.xml.sax.DocumentHandler
      */
-    public Document parse(InputStream stream)
-    throws SAXException, IOException, IllegalArgumentException {
-        if (stream==null) throw new IllegalArgumentException();
-        return(this.parse(new InputSource(stream)));
+    
+    public Document parse(InputStream is)
+        throws SAXException, IOException
+    {
+        if (is == null) {
+            throw new IllegalArgumentException("InputStream cannot be null");
+        }
+        
+        InputSource in = new InputSource(is);
+        return parse(in);
     }
 
     /**
-     * Parses the content of the given URI and returns a <code>Document</code>
-     * object.
+     * Parse the content of the given InputStream as an XML document
+     * and return a new DOM Document object.
      *
-     * @exception SAXException If there is a problem parsing the given XML
-     *                content.
-     * @exception IOException If any IO errors occur while reading content
-     *                located by the given URI.
-     * @exception IllegalArgumentException If the given URI is <b>null</b>.
+     * @param is InputStream containing the content to be parsed.
+     * @param systemId Provide a base for resolving relative URIs. 
+     * @exception IOException If any IO errors occur.
+     * @exception SAXException If any parse errors occur.
+     * @exception IllegalArgumentException If the InputStream is null
+     * @see org.xml.sax.DocumentHandler
      */
+    
+    public Document parse(InputStream is, String systemId)
+        throws SAXException, IOException
+    {
+        if (is == null) {
+            throw new IllegalArgumentException("InputStream cannot be null");
+        }
+        
+        InputSource in = new InputSource(is);
+	in.setSystemId(systemId);
+        return parse(in);
+    }
+
+    /**
+     * Parse the content of the given URI as an XML document
+     * and return a new DOM Document object.
+     *
+     * @param uri The location of the content to be parsed.
+     * @exception IOException If any IO errors occur.
+     * @exception SAXException If any parse errors occur.
+     * @exception IllegalArgumentException If the URI is null
+     * @see org.xml.sax.DocumentHandler
+     */
+    
     public Document parse(String uri)
-    throws SAXException, IOException, IllegalArgumentException {
-        if (uri==null) throw new IllegalArgumentException();
-        return(this.parse(new InputSource(uri)));
+        throws SAXException, IOException
+    {
+        if (uri == null) {
+            throw new IllegalArgumentException("URI cannot be null");
+        }
+        
+        InputSource in = new InputSource(uri);
+        return parse(in);
     }
 
     /**
-     * Parses the content of the given <code>File</code> and returns a
-     * <code>Document</code> object.
+     * Parse the content of the given file as an XML document
+     * and return a new DOM Document object.
      *
-     * @exception SAXException If there is a problem parsing the given XML
-     *                content.
-     * @exception IOException if any IO errors occur while reading content
-     *                from the given <code>File</code>.
-     * @exception IllegalArgumentException if the given <code>File</code> is
-     *                <b>null</b>.
+     * @param f The file containing the XML to parse
+     * @exception IOException If any IO errors occur.
+     * @exception SAXException If any parse errors occur.
+     * @exception IllegalArgumentException If the file is null
+     * @see org.xml.sax.DocumentHandler
      */
-    public Document parse(File file)
-    throws SAXException, IOException, IllegalArgumentException {
-        if (file==null) throw new IllegalArgumentException();
-        return(this.parse(new InputSource(file.getName())));
+    
+    public Document parse(File f)
+       throws SAXException, IOException
+    {
+        if (f == null) {
+            throw new IllegalArgumentException("File cannot be null");
+        }
+        
+        String uri = "file:" + f.getAbsolutePath();
+	if (File.separatorChar == '\\') {
+	    uri = uri.replace('\\', '/');
+	}
+        InputSource in = new InputSource(uri);
+        return parse(in);
     }
 
     /**
-     * Parses the content of the given <code>InputSource</code> and returns
-     * a <code>Document</code> object.
+     * Parse the content of the given input source as an XML document
+     * and return a new DOM Document object.
      *
-     * @exception SAXException If there is a problem parsing the given XML
-     *                content.
-     * @exception IOException if any IO Errors occur while reading content
-     *                from the given <code>InputSource</code>.
-     * @exception IllegalArgumentException if the given
-     *                <code>InputSource</code> is <b>null</b>.
+     * @param is InputSource containing the content to be parsed.
+     * @exception IOException If any IO errors occur.
+     * @exception SAXException If any parse errors occur.
+     * @exception IllegalArgumentException If the InputSource is null
+     * @see org.xml.sax.DocumentHandler
      */
-    public abstract Document parse(InputSource source)
-    throws SAXException, IOException, IllegalArgumentException;
+    
+    public abstract Document parse(InputSource is)
+        throws  SAXException, IOException;
 
+    
     /**
-     * Creates an new <code>Document</code> instance from the underlying DOM
-     * implementation.
+     * Indicates whether or not this parser is configured to
+     * understand namespaces.
      */
-    public abstract Document newDocument();
 
-    /**
-     * Returns whether or not this parser supports XML namespaces.
-     */
     public abstract boolean isNamespaceAware();
 
     /**
-     * Returns whether or not this parser supports validating XML content.
+     * Indicates whether or not this parser is configured to
+     * validate XML documents.
      */
+    
     public abstract boolean isValidating();
 
     /**
-     * Specifies the <code>EntityResolver</code> to be used by this
-     * <code>DocumentBuilder</code>.
-     * <br>
-     * Setting the <code>EntityResolver</code> to <b>null</b>, or not
-     * calling this method, will cause the underlying implementation to
-     * use its own default implementation and behavior.
+     * Specify the <code>EntityResolver</code> to be used to resolve
+     * entities present in the XML document to be parsed. Setting
+     * this to <code>null</code> will result in the underlying
+     * implementation using it's own default implementation and
+     * behavior.
      */
-    public abstract void setEntityResolver(EntityResolver er);
+
+    // XXX
+    // Add that the underlying impl doesn't have to use SAX, but
+    // must understand how to resolve entities from this object.
+    
+    public abstract void setEntityResolver(org.xml.sax.EntityResolver er);
 
     /**
-     * Specifies the <code>ErrorHandler</code> to be used by this
-     * <code>DocumentBuilder</code>.
-     *
-     * Setting the <code>ErrorHandler</code> to <b>null</b>, or not
-     * calling this method, will cause the underlying implementation to
-     * use its own default implementation and behavior.
+     * Specify the <code>ErrorHandler</code> to be used to resolve
+     * entities present in the XML document to be parsed. Setting
+     * this to <code>null</code> will result in the underlying
+     * implementation using it's own default implementation and
+     * behavior.
      */
-    public abstract void setErrorHandler(ErrorHandler eh);
-}
 
+    // XXX
+    // Add that the underlying impl doesn't have to use SAX, but
+    // must understand how to handle errors using this object.
+    
+    public abstract void setErrorHandler(org.xml.sax.ErrorHandler eh);
+
+    /**
+     * Obtain a new instance of a DOM Document object to build a DOM
+     * tree with.
+     */
+    
+    public abstract Document newDocument();
+
+}

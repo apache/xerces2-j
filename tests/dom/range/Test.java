@@ -61,8 +61,8 @@ import org.apache.xerces.dom.DocumentImpl;
 
 import org.w3c.dom.*;
 import org.w3c.dom.Element;
-import org.w3c.dom.range.*;
-import org.w3c.dom.range.RangeException;
+import org.w3c.dom.ranges.*;
+import org.w3c.dom.ranges.RangeException;
 
 import java.io.*;
 import dom.DOMWriter;
@@ -265,7 +265,7 @@ public class Test {
                     try {
                         System.out.println("surroundNode="+surroundNode);
                         range.surroundContents(surroundNode);
-                    } catch (org.w3c.dom.range.RangeException e) {
+                    } catch (org.w3c.dom.ranges.RangeException e) {
                         System.out.println(e);
                     }
                    String result = toString(document);

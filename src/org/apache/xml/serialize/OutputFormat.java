@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -56,6 +56,14 @@
  */
 
 
+// Aug 21, 2000:
+//  Added ability to omit DOCTYPE declaration.
+//  Reported by Lars Martin <lars@smb-tec.com>
+// Aug 25, 2000:
+//  Added ability to omit comments.
+//  Contributed by Anupam Bagchi <abagchi@jtcsv.com>
+
+
 package org.apache.xml.serialize;
 
 
@@ -81,11 +89,11 @@ import org.w3c.dom.html.HTMLDocument;
  *  compatible with the document type (XML, HTML, Text, etc), encoding and
  *  indentation
  * </ul>
- * 
+ *
  *
  * @version $Revision$ $Date$
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
- *         <a href="mailto:visco@exoffice.com">Keith Visco</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+ *         <a href="mailto:visco@intalio.com">Keith Visco</a>
  * @see Serializer
  * @see Method
  * @see LineSeparator
@@ -101,31 +109,31 @@ public class OutputFormat
          * Public identifier for HTML document type.
          */
         public static final String HTMLPublicId = "-//W3C//DTD HTML 4.0//EN";
-        
+
         /**
          * System identifier for HTML document type.
          */
         public static final String HTMLSystemId =
             "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
-        
+
         /**
          * Public identifier for XHTML document type.
          */
         public static final String XHTMLPublicId =
             "-//W3C//DTD XHTML 1.0 Strict//EN";
-        
+
         /**
          * System identifier for XHTML document type.
          */
         public static final String XHTMLSystemId =
             "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
-        
+
     }
-    
-    
+
+
     public static class Defaults
     {
-        
+
         /**
          * If indentation is turned on, the default identation
          * level is 4.
@@ -133,23 +141,23 @@ public class OutputFormat
          * @see #setIndenting(boolean)
          */
         public static final int Indent = 4;
-        
+
         /**
          * The default encoding for Web documents it UTF-8.
          *
          * @see #getEncoding()
          */
         public static final String Encoding = "UTF-8";
-        
+
         /**
          * The default line width at which to break long lines
          * when identing. This is set to 72.
          */
         public static final int LineWidth = 72;
-        
+
     }
-    
-    
+
+
     /**
      * Holds the output method specified for this document,
      * or null if no method was specified.
@@ -199,6 +207,24 @@ public class OutputFormat
      * Ture if the XML declaration should be ommited;
      */
     private boolean _omitXmlDeclaration = false;
+
+
+    /**
+     * Ture if the DOCTYPE declaration should be ommited;
+     */
+    private boolean _omitDoctype = false;
+
+
+    /**
+     * Ture if comments should be ommited;
+     */
+    private boolean _omitComments = false;
+
+
+    /**
+     * Ture if the comments should be ommited;
+     */
+    private boolean _stripComments = false;
 
 
     /**
@@ -284,7 +310,7 @@ public class OutputFormat
         setDoctype( whichDoctypePublic( doc ), whichDoctypeSystem( doc ) );
         setMediaType( whichMediaType( getMethod() ) );
     }
-    
+
 
     /**
      * Constructs a new output format with the proper method,
@@ -377,7 +403,7 @@ public class OutputFormat
     {
         return _indent;
     }
-    
+
 
     /**
      * Returns true if indentation was specified.
@@ -480,9 +506,11 @@ public class OutputFormat
 
     /**
      * Sets the document type public and system identifiers.
-     * No <tt>DOCTYPE</tt> will be serialized if both identifiers
-     * are null. A system identifier is required if a public
-     * identified is specified.
+     * Required only if the DOM Document or SAX events do not
+     * specify the document type, and one must be present in
+     * the serialized document. Any document type specified
+     * by the DOM Document or SAX events will override these
+     * values.
      *
      * @param publicId The public identifier, or null
      * @param systemId The system identifier, or null
@@ -511,6 +539,48 @@ public class OutputFormat
     public String getDoctypeSystem()
     {
         return _doctypeSystem;
+    }
+
+
+    /**
+     * Returns true if comments should be ommited.
+     * The default is false.
+     */
+    public boolean getOmitComments()
+    {
+        return _omitComments;
+    }
+
+
+    /**
+     * Sets comment omitting on and off.
+     *
+     * @param omit True if comments should be ommited
+     */
+    public void setOmitComments( boolean omit )
+    {
+        _omitComments = omit;
+    }
+
+
+    /**
+     * Returns true if the DOCTYPE declaration should
+     * be ommited. The default is false.
+     */
+    public boolean getOmitDocumentType()
+    {
+        return _omitDoctype;
+    }
+
+
+    /**
+     * Sets DOCTYPE declaration omitting on and off.
+     *
+     * @param omit True if DOCTYPE declaration should be ommited
+     */
+    public void setOmitDocumentType( boolean omit )
+    {
+        _omitDoctype = omit;
     }
 
 
@@ -579,7 +649,7 @@ public class OutputFormat
     public boolean isCDataElement( String tagName )
     {
         int i;
-        
+
         if ( _cdataElements == null )
             return false;
         for ( i = 0 ; i < _cdataElements.length ; ++i )
@@ -622,7 +692,7 @@ public class OutputFormat
     public boolean isNonEscapingElement( String tagName )
     {
         int i;
-        
+
         if ( _nonEscapingElements == null )
             return false;
         for ( i = 0 ; i < _nonEscapingElements.length ; ++i )
@@ -674,8 +744,8 @@ public class OutputFormat
         else
             _lineSeparator = lineSeparator;
     }
-    
-    
+
+
     /**
      * Returns true if the default behavior for this format is to
      * preserve spaces. All elements that do not specify otherwise
@@ -768,20 +838,20 @@ public class OutputFormat
         // method is html.
         if ( doc instanceof HTMLDocument )
             return Method.HTML;
-        
+
         // Lookup the root element and the text nodes preceding it.
         // If root element is html and all text nodes contain whitespace
         // only, the method is html.
-        
+
         // FIXME (SM) should we care about namespaces here?
-        
+
         node = doc.getFirstChild();
         while (node != null) {
             // If the root element is html, the method is html.
             if ( node.getNodeType() == Node.ELEMENT_NODE ) {
                 if ( node.getNodeName().equalsIgnoreCase( "html" ) ) {
                     return Method.HTML;
-                } else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {         
+                } else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {
                     return Method.FOP;
                 } else {
                     return Method.XML;
@@ -801,7 +871,7 @@ public class OutputFormat
         // Anything else, the method is xml.
         return Method.XML;
     }
-    
+
 
     /**
      * Returns the document type public identifier
@@ -810,7 +880,7 @@ public class OutputFormat
     public static String whichDoctypePublic( Document doc )
     {
         DocumentType doctype;
-        
+
         /* XXX  Delayed until DOM Level 2 is introduced into the code base
            doctype = doc.getDoctype();
            if ( doctype != null ) {
@@ -834,7 +904,7 @@ public class OutputFormat
     public static String whichDoctypeSystem( Document doc )
     {
         DocumentType doctype;
-        
+
         /* XXX  Delayed until DOM Level 2 is introduced into the code base
            doctype = doc.getDoctype();
            if ( doctype != null ) {

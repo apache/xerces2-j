@@ -71,7 +71,7 @@ import java.util.StringTokenizer;
  *
  * @version $Revision$ $Date$
  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
- * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
 public abstract class SerializerFactory
 {
@@ -109,7 +109,7 @@ public abstract class SerializerFactory
                 className = token.nextToken();
                 try {
                     factory = (SerializerFactory) Class.forName( className ).newInstance();
-                    if ( _factories.contains( factory.getSupportedMethod() ) )
+                    if ( _factories.containsKey( factory.getSupportedMethod() ) )
                         _factories.put( factory.getSupportedMethod(), factory );
                 } catch ( Exception except ) { }
             }

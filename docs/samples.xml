@@ -3,8 +3,6 @@
 
 <s1 title="Samples">
 	<s2 title="Introduction">
-		<p>There are two new samples to test and demonstrate the new DOM2 
-		Traversal implementation: </p>
 		<ul>
 			<li><link idref="domcount">DOMCount</link></li>
 			<li><link idref="domcount">SAXCount</link></li>
@@ -43,7 +41,6 @@
 		along with counts of elements, attributes, text characters, and ignorable 
 		whitespace characters. DOMCount displays errors and 
 		warnings that occur during parsing.</p>
-		<p>DOMCount uses either the validating or non-validating DOM parser.</p>
 	</s2>
 	
 	<s2 title="SAXCount Sample">
@@ -52,7 +49,6 @@
 		along with counts of elements, attributes, text characters, and 
 		ignorable whitespace characters. SAXCount displays errors and 
 		warnings that occur during parsing.</p>
-		<p>SAXCount uses either the validating or non-validating SAX parser.</p>
 	</s2>
 	
 	<s2 title="DOMWriter Sample">
@@ -61,7 +57,7 @@
 		The command line option, -c, is used to print files  in 
 		"canonical" XML format, so that two XML documents can be compared. 
 		They also display any errors or warnings that occurred during the 
-		parse. DOMWriter uses either the validating or non-validating DOM parser. 
+		parse.
 		DOMWriter also provides a feature to set the output Java encoding 
 		through the -e switch.</p>
 	</s2>
@@ -71,8 +67,7 @@
 		prints it out in XML format. The command 
 		line option, -c, is used to print files  in "canonical" XML format, 
 		so that two XML documents can be compared. They also display any 
-		errors or warnings that occurred during the parse. SAXWriter uses 
-		either the validating or non-validating SAX parser.</p>
+		errors or warnings that occurred during the parse.</p>
 	</s2>
 	
 	<s2 title="DOMFilter Sample">
