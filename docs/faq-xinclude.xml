@@ -44,6 +44,19 @@
     </a>
   </faq>
 
+  <faq title="XML Base Support">
+    <q>Does the Xerces XInclude processor recognize xml:base attributes?</q>
+    <a> 
+     <p>
+      Yes. The XInclude specification requires processors to use the base URI
+      (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
+      recommendation) to resolve relative IURIs to compute the
+      <jump href="http://www.w3.org/TR/xinclude#include-location">include location</jump>.
+      Support for XML Base was added to the XInclude implementation in Xerces 2.6.0.
+     </p>
+    </a>
+  </faq>
+  
   <faq title="Document Fragments">
     <q>Why doesn't including document fragments work?</q>
     <a>
@@ -55,19 +68,5 @@
      </p>
     </a>
   </faq>
-
-  <faq title="XML Base Support">
-    <q>Why doesn't Xerces recognize xml:base attributes?</q>
-    <a> 
-     <p>
-      The XInclude specification requires processors to use the base URI
-      (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
-      recommendation) to resolve relative IURIs to compute the
-      <jump href="http://www.w3.org/TR/xinclude#include-location">include location</jump>.
-      Currently, our implementation of XInclude is not fully complete, and we do
-      not support the XML Base recommendation.  We hope that in the future we
-      will have a fully compliant XInclude processor that can handle this feature.
-     </p>
-    </a>
-  </faq>
+ 
 </faqs>
