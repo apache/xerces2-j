@@ -1702,6 +1702,7 @@ public class XMLDTDScannerImpl
                                     fDTDHandler.characters(fLiteral);
                                     fDTDHandler.endConditional();
                                 }
+                                fReportEntity = true;
                                 return;
                             }
                         }
@@ -1711,6 +1712,7 @@ public class XMLDTDScannerImpl
                     int c = fEntityScanner.scanChar();
                     if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
                         reportFatalError("IgnoreSectUnterminated", null);
+                        fReportEntity = true;
                         return;
                     }
                     if (fDTDHandler != null) {
