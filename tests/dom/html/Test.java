@@ -54,7 +54,11 @@
  * <http://www.apache.org/>.
  */
 
-/* $Id*/
+/*
+ * $Id$
+ *
+ * @author Mark Diekhans
+ */
 
 package dom.html;
 import org.w3c.dom.*;
