@@ -822,22 +822,27 @@ public class XMLEntityManager
                 // read first four bytes and determine encoding
                 final byte[] b4 = new byte[4];
                 int count = stream.read(b4, 0, 4);
-                encoding = getEncodingName(b4, count);
+                if (count != -1) {
+                    encoding = getEncodingName(b4, count);
 
-                // push back the characters we read
-                if (DEBUG_ENCODINGS) {
-                    System.out.println("$$$ wrapping input stream in PushbackInputStream");
+                    // push back the characters we read
+                    if (DEBUG_ENCODINGS) {
+                        System.out.println("$$$ wrapping input stream in PushbackInputStream");
+                    }
+                    PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
+                    pbstream.unread(b4, 0, count);
+
+                    // REVISIT: Should save the original input stream instead of
+                    //          the pushback input stream so that when we swap out
+                    //          the OneCharReader, we don't still have a method
+                    //          indirection to get at the underlying bytes. -Ac
+
+                    // create reader from input stream
+                    reader = createReader(pbstream, encoding);
                 }
-                PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
-                pbstream.unread(b4, 0, count);
-
-                // REVISIT: Should save the original input stream instead of
-                //          the pushback input stream so that when we swap out
-                //          the OneCharReader, we don't still have a method
-                //          indirection to get at the underlying bytes. -Ac
-
-                // create reader from input stream
-                reader = createReader(pbstream, encoding);
+                else {
+                    reader = createReader(stream, encoding);
+                }
             }
 
             // use specified encoding
