@@ -1079,7 +1079,6 @@ public class DocumentImpl
      * removed to free up the DOM Nodes it references.
      * @see #removeNodeIterator
      * @see #removeNodeIterators
-     * @see #getNodeIterators
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -1098,7 +1097,6 @@ public class DocumentImpl
      * removed to free up the DOM Nodes it references.
      * @see #removeNodeIterator
      * @see #removeNodeIterators
-     * @see #getNodeIterators
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -1185,13 +1183,6 @@ public class DocumentImpl
         iterators.removeElement(nodeIterator);
     }
 
-    /** Return an Enumeration of all NodeIterators. */
-    public Enumeration getNodeIterators() {
-        if (iterators == null) return null;
-
-        return iterators.elements();
-    }
-
     //
     // DocumentRange methods
     //
@@ -1211,13 +1202,6 @@ public class DocumentImpl
         
     }
     
-    /** Return an Enumeration of all Ranges. */
-    public Enumeration getRanges() {
-        if (ranges == null) return null;
-
-        return ranges.elements();
-    }
-    
     /** Not a client function. Called by Range.detach(),
      *  so a Range can remove itself from the list of
      *  Ranges.
@@ -1230,7 +1214,92 @@ public class DocumentImpl
         ranges.removeElement(range);
     }
     
-    
+    /**
+     * A method to be called when some text was changed in a text node,
+     * so that live objects can be notified.
+     */
+    void replacedText(Node node) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveReplacedText(node);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when some text was deleted from a text node,
+     * so that live objects can be notified.
+     */
+    void deletedText(Node node, int offset, int count) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveDeletedText(node,
+                                                                   offset,
+                                                                   count);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when some text was inserted into a text node,
+     * so that live objects can be notified.
+     */
+    void insertedText(Node node, int offset, int count) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveInsertedText(node,
+                                                                    offset,
+                                                                    count);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when a text node has been split,
+     * so that live objects can be notified.
+     */
+    void splitData(Node node, Node newNode, int offset) {
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).receiveSplitData(node,
+                                                                 newNode,
+                                                                 offset);
+            }
+        }
+    }
+
+    /**
+     * A method to be called when a node is removed from the tree so that live
+     * objects can be notified.
+     */
+    void removedChildNode(Node oldChild) {
+
+        // notify iterators
+        if (iterators != null) {
+            Enumeration enum = iterators.elements();
+            while (enum.hasMoreElements()) {
+                ((NodeIteratorImpl)enum.nextElement()).removeNode(oldChild);
+            }
+        }
+        
+        // notify ranges
+        if (ranges != null) {
+            Enumeration enum = ranges.elements();
+            while (enum.hasMoreElements()) {
+                ((RangeImpl)enum.nextElement()).removeNode(oldChild);
+            }
+        }
+    }
+
+
     //
     // DocumentEvent methods
     //

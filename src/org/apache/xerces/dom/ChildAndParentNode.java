@@ -59,7 +59,6 @@
 package org.apache.xerces.dom;
 
 import java.io.*;
-import java.util.Enumeration;
 
 import org.w3c.dom.*;
 import org.w3c.dom.events.*;
@@ -569,22 +568,8 @@ public abstract class ChildAndParentNode
                                        "DOM008 Not found");
         }
 
-        // call out to any NodeIterators to remove the Node and fix them up
-        Enumeration iterators = ownerDocument.getNodeIterators();
-        if (iterators != null) {
-            while ( iterators.hasMoreElements()) {
-                ((NodeIteratorImpl)iterators.nextElement())
-                    .removeNode(oldChild);
-            }
-        }
-        
-        // call out to any Ranges to remove the Node and fix-up the Range.
-        Enumeration ranges = ownerDocument.getRanges();
-        if (ranges != null) {
-            while (ranges.hasMoreElements()) {
-                ((RangeImpl)ranges.nextElement()).removeNode(oldChild);
-            }
-        }
+        // notify document
+        ownerDocument.removedChildNode(oldChild);
 
         ChildNode oldInternal = (ChildNode) oldChild;
 

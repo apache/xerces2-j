@@ -64,7 +64,6 @@ import org.apache.xerces.dom.DOMExceptionImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.range.*;
 import java.util.Vector;
-import java.util.Enumeration;
 
 /** The RangeImpl class implements the org.w3c.dom.range.Range interface.
  *  <p> Please see the API documentation for the interface classes  
@@ -794,18 +793,13 @@ public class RangeImpl  implements Range {
     //
     
     /** Signal other Ranges to update their start/end 
-     *  containers/offsets. The data has already been
+     *  containers/offsets. The data has already been split
      *  into the two Nodes.
      */
     void signalSplitData(Node node, Node newNode, int offset) {
         fSplitNode = node;
-        // fix-up other Ranges
-        Enumeration ranges = fDocument.getRanges();
-        if (ranges != null) {
-            while ( ranges.hasMoreElements()) {
-                ((RangeImpl)ranges.nextElement()).receiveSplitData(node, newNode, offset);
-            }
-        }
+        // notify document
+        fDocument.splitData(node, newNode, offset);
         fSplitNode = null;
     }
     

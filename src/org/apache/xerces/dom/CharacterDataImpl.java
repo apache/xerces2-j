@@ -58,7 +58,6 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.*;
-import java.util.Enumeration;
 
 import org.apache.xerces.dom.events.MutationEventImpl;
 import org.w3c.dom.events.*;
@@ -147,7 +146,8 @@ public abstract class CharacterDataImpl
     }
     
     /**
-     * Sets the content, possibly firing related events, and updating ranges
+     * Sets the content, possibly firing related events,
+     * and updating ranges (via notification to the document)
      */
     public void setNodeValue(String value) {
     	if (readOnly())
@@ -178,13 +178,8 @@ public abstract class CharacterDataImpl
             
     	this.data = value;
     	if (!setValue()) {
-            // call out to any Ranges to set any boundary index to zero.
-            Enumeration ranges = ownerDocument().getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                   ((RangeImpl)ranges.nextElement()).receiveReplacedText(this);
-                }
-            }
+            // notify document
+            ownerDocument().replacedText(this);
         }
     	
         if(MUTATIONEVENTS)
@@ -300,13 +295,8 @@ public abstract class CharacterDataImpl
                                  (tailLength > 0 
 		? data.substring(offset + count, offset + count + tailLength) 
                                   : "") );
-            Enumeration ranges = ownerDocument().getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                    RangeImpl r = ((RangeImpl)ranges.nextElement());
-                    r.receiveDeletedText( this,  offset,  count);
-                }
-            }
+            // notify document
+            ownerDocument().deletedText(this, offset, count);
         }
         catch (StringIndexOutOfBoundsException e) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
@@ -337,17 +327,12 @@ public abstract class CharacterDataImpl
             synchronizeData();
         }
         try {
-       		// Handles mutation event generation, if any
+            // Handles mutation event generation, if any
             setNodeValueInternal(
                 new StringBuffer(this.data).insert(offset, data).toString()
                 );
-            Enumeration ranges = ownerDocument().getRanges();
-            if (ranges != null) {
-                while ( ranges.hasMoreElements()) {
-                    RangeImpl r = ((RangeImpl)ranges.nextElement());
-                    r.receiveInsertedText( this,  offset,  data.length());
-                }
-            }
+            // notify document
+            ownerDocument().insertedText(this, offset, data.length());
         }
         catch (StringIndexOutOfBoundsException e) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
