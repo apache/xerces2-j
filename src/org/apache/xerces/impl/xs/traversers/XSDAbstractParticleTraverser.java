@@ -120,8 +120,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL);
             }
             else {
-                Object[] args = { childName};
-                reportSchemaError("AllContentRestricted", args, child);
+                Object[] args = {"all", "(annotation?, element*)"};
+                reportSchemaError("s4s-elt-must-match", args, child);
             }
 
             if (left == null) {
@@ -272,14 +272,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                     // don't insert the "all" particle, otherwise we won't be
                     // able to create DFA from this content model
                     particle = null;
-                    Object [] args;
-                    if (choice) {
-                        args = new Object[]{SchemaSymbols.ELT_CHOICE};
-                    }
-                    else {
-                        args = new Object[]{SchemaSymbols.ELT_SEQUENCE};
-                    }
-                    reportSchemaError("AllContentLimited",args, child);
+                    reportSchemaError("cos-all-limited.1.2", null, child);
                 }
 
             }
@@ -295,12 +288,12 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             else {
                 Object [] args;
                 if (choice) {
-                    args = new Object[]{SchemaSymbols.ELT_CHOICE};
+                    args = new Object[]{"choice", "(annotation?, (element | group | choice | sequence | any)*)"};
                 }
                 else {
-                    args = new Object[]{SchemaSymbols.ELT_SEQUENCE};
+                    args = new Object[]{"sequence", "(annotation?, (element | group | choice | sequence | any)*)"};
                 }
-                reportSchemaError("SeqChoiceContentRestricted", args, child);
+                reportSchemaError("s4s-elt-must-match", args, child);
             }
 
 

@@ -724,7 +724,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 if (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_ALL ||
                     baseType.fParticle.fType == XSParticleDecl.PARTICLE_ALL) {
                     throw new ComplexTypeRecoverableError("cos-all-limited.1.2",
-                          new Object[]{typeName}, complexContent);
+                          null, complexContent);
                 }
                 XSParticleDecl temp = new XSParticleDecl();
                 temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;

@@ -526,11 +526,17 @@ abstract class XSDAbstractTraverser {
 
         // Neither minOccurs nor maxOccurs may be specified
         // for the child of a model group definition.
-        if (isGroupChild && (!defaultMin || !defaultMax)) {
-            Object[] args = new Object[]{parent.getAttribute(SchemaSymbols.ATT_NAME),
-                particleName};
-            reportSchemaError("MinMaxOnGroupChild", args, parent);
-            min = max = 1;
+        if (isGroupChild) {
+            if (!defaultMin) {
+                Object[] args = new Object[]{particleName, "minOccurs"};
+                reportSchemaError("s4s-att-not-allowed", args, parent);
+                min = 1;
+            }
+            if (!defaultMax) {
+                Object[] args = new Object[]{particleName, "maxOccurs"};
+                reportSchemaError("s4s-att-not-allowed", args, parent);
+                max = 1;
+            }
         }
 
         // If minOccurs=maxOccurs=0, no component is specified
@@ -544,38 +550,18 @@ abstract class XSDAbstractTraverser {
         // For a complex type definition that contains an <all> or a
         // reference a <group> whose model group is an all model group,
         // minOccurs and maxOccurs must be one.
-        if (processingAllEl || groupRefWithAll || processingAllGP) {
-            String errorMsg;
-            if ((processingAllGP||groupRefWithAll||min!=0) && min !=1) {
-                if (processingAllEl) {
-                    errorMsg = "BadMinMaxForAllElem";
-                }
-                else if (processingAllGP) {
-                    errorMsg = "BadMinMaxForAllGp";
-                }
-                else {
-                    errorMsg = "BadMinMaxForGroupWithAll";
-                }
-                Object[] args = new Object [] {"minOccurs", Integer.toString(min)};
-                reportSchemaError(errorMsg, args, parent);
-                min = 1;
-            }
-
+        if (processingAllEl) {
             if (max != 1) {
-
-                if (processingAllEl) {
-                    errorMsg = "BadMinMaxForAllElem";
-                }
-                else if (processingAllGP) {
-                    errorMsg = "BadMinMaxForAllGp";
-                }
-                else {
-                    errorMsg = "BadMinMaxForGroupWithAll";
-                }
-
-                Object[] args = new Object [] {"maxOccurs", Integer.toString(max)};
-                reportSchemaError(errorMsg, args, parent);
+                reportSchemaError("cos-all-limited.2", null, parent);
                 max = 1;
+                if (min > 1)
+                    min = 1;
+            }
+        }
+        else if (processingAllGP || groupRefWithAll) {
+            if (min != 1 || max != 1) {
+                reportSchemaError("cos-all-limited.1.2", null, parent);
+                min = max = 1;
             }
         }
 

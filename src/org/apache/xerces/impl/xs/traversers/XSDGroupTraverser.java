@@ -166,7 +166,9 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         if (l_elmChild == null) {
-            reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"}, elmNode);
+            reportSchemaError("s4s-elt-must-match",
+                              new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+                              elmNode);
         } else {
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -177,7 +179,9 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
 
             if (l_elmChild == null) {
-                reportSchemaError("s4s-elt-must-match", new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"}, elmNode);
+                reportSchemaError("s4s-elt-must-match",
+                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+                                  elmNode);
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             } else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
@@ -185,14 +189,16 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             } else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
             } else {
-                Object[] args = new Object [] { "group", childName};
-                reportSchemaError("GroupContentRestricted", args, l_elmChild);
+                reportSchemaError("s4s-elt-must-match",
+                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+                                  l_elmChild);
             }
 
             if (l_elmChild != null &&
                 DOMUtil.getNextSiblingElement(l_elmChild) != null) {
-                Object[] args = new Object [] { "group", childName};
-                reportSchemaError("GroupContentRestricted", args, l_elmChild);
+                reportSchemaError("s4s-elt-must-match",
+                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+                                  DOMUtil.getNextSiblingElement(l_elmChild));
             }
 
             // add global group declaration to the grammar
