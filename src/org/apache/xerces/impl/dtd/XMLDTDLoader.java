@@ -176,6 +176,7 @@ public class XMLDTDLoader
         fDTDScanner = new XMLDTDScannerImpl(fSymbolTable, fErrorReporter, fEntityManager);
         fDTDScanner.setDTDHandler(this);
         fDTDScanner.setDTDContentModelHandler(this);
+        fEntityManager.setProperty(ERROR_REPORTER, fErrorReporter);
         reset();
     } // init(SymbolTable, XMLGrammarPool, XMLErrorReporter, XMLEntityResolver)
 
@@ -371,9 +372,6 @@ public class XMLDTDLoader
         } catch (EOFException e) {
             // expected behaviour...
         }
-        // since we're not really in a DTD, the endDTD call never
-        // gets fired by the scanner...  This fakes it:
-        endDTD(null);
         if(fDTDGrammar != null && fGrammarPool != null) {
             fGrammarPool.cacheGrammars(XMLDTDDescription.XML_DTD, new Grammar[] {fDTDGrammar});
         }
