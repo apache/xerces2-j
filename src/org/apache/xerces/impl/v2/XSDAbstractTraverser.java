@@ -225,7 +225,6 @@ abstract class XSDAbstractTraverser {
             if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
                 numEnumerationLiterals++;
                 String enumVal =  DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE);
-                String localName;
                 if (baseValidator instanceof NOTATIONDatatypeValidator) {
                     fAttrChecker.checkAttributes(content, false, schemaDoc);
                     String prefix = fSchemaHandler.EMPTY_STRING;
@@ -236,16 +235,18 @@ abstract class XSDAbstractTraverser {
                         localpart = enumVal.substring(colonptr+1);
 
                     }
-                    String uriStr = schemaDoc.fNamespaceSupport.getURI(prefix);
+                    String uriStr = schemaDoc.fNamespaceSupport.getURI(fSymbolTable.addSymbol(prefix));
                     fQName.setValues(prefix, localpart, null, uriStr );
                     XSNotationDecl notation = (XSNotationDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.NOTATION_TYPE , fQName);
-
                     if (notation == null) {
                         reportGenericSchemaError("Notation '" + localpart +
                                                  "' not found in the grammar "+ uriStr);
 
                     }
-                    enumVal=simpleTypeName;
+                    // REVISIT: we need to store QNames in Notation validator to be able
+                    //          to validation notations. This is just a temp. fix.
+                    //String fullName = (uriStr!=null)?(uriStr+":"+localpart):localpart; 
+                    enumVal = localpart;
                 }
                 enumData.addElement(enumVal);
                 checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
