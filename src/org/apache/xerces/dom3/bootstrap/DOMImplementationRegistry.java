@@ -41,10 +41,7 @@ package org.apache.xerces.dom3.bootstrap;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.ClassLoader;
-import java.lang.String;
 import java.util.StringTokenizer;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import org.apache.xerces.dom3.DOMImplementationSource;
