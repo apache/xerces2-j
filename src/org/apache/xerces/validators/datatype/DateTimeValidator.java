@@ -679,7 +679,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
 
         //validate days
-        if ( data[D]>maxDayInMonthFor(data[CY], data[M]) ) {
+        if ( data[D]>maxDayInMonthFor(data[CY], data[M]) || data[D]==0 ) {
             throw new RuntimeException("The day must have values 1 to 31");
         }
 
