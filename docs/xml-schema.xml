@@ -77,5 +77,15 @@
 		Schema document instance namespace, as specified by the
 		Recommendation. See the sample provided in the
 		Usage section.</p>
+        <p> As of version 2.2.1, it is hoped that Xerces-J will always 
+        be able to parse the Schema for Schemas current at the time of the product's release.  As of version
+        2.2.1, this implies inserting special logic to permit the presence of
+        the built-in Schema datatypes in this particular schema; an
+        issue has been raised with the Schema Working Group, in hopes the document
+        will be modified so that the built-in types are no
+        longer presented as global components.  Thus, anyone planning
+        to rely on the Schema for Schemas should be aware that the
+        possibility exists that a change of this sort might be made in the future.  
+        </p>
 	</s2>
 </s1>
