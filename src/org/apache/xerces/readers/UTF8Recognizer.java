@@ -71,6 +71,7 @@ import java.io.UnsupportedEncodingException;
  * @version
  */
 final class UTF8Recognizer extends XMLDeclRecognizer {
+    private byte[] fUTF8BOM = {(byte)0xEF, (byte)0xBB, (byte)0xBF};
     //
     //
     //
@@ -83,6 +84,24 @@ final class UTF8Recognizer extends XMLDeclRecognizer {
                                                    boolean xmlDecl,
                                                    boolean allowJavaEncodingName) throws Exception {
         XMLEntityHandler.EntityReader reader = null;
+
+        //check to see if there is a UTF8 BOM, if see one, skip past it.
+        boolean seeBOM = false;
+        byte bom0 = data.byteAt(0);
+        if (bom0 == fUTF8BOM[0]) {
+            byte bom1 = data.byteAt(1);
+            if (bom1 == fUTF8BOM[1]) {
+                byte bom2 = data.byteAt(2);
+                if (bom2 == fUTF8BOM[2]) {
+                    seeBOM = true;
+                }
+            }
+        }
+        if (seeBOM) {
+            // it will have the same content anyway.
+            data.read(fUTF8BOM, 0, 3);
+        }
+
         byte b0 = data.byteAt(0);
         boolean debug = false;
 
