@@ -417,7 +417,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     checkBuiltIn(refName, schemaDoc.fTargetNamespace)) {
                     return null;
                 }
-                reportSchemaError("st-props-correct.4.1", new Object[]{baseTypeStr.rawname}, elm);
+                reportSchemaError("cos-st-restricts.1.1", new Object[]{baseTypeStr.rawname}, elm);
                 return SchemaGrammar.fAnySimpleType;
             }
             if ((baseType.getFinal() & baseRefContext) != 0) {
@@ -425,10 +425,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     reportSchemaError("st-props-correct.3", new Object[]{baseTypeStr.rawname}, elm);
                 }
                 else if (baseRefContext == XSConstants.DERIVATION_LIST) {
-                    reportSchemaError("st-props-correct.4.2.1", new Object[]{baseTypeStr.rawname}, elm);
+                    reportSchemaError("cos-st-restricts.2.3.1.1", new Object[]{baseTypeStr.rawname}, elm);
                 }
                 else if (baseRefContext == XSConstants.DERIVATION_UNION) {
-                    reportSchemaError("st-props-correct.4.2.2", new Object[]{baseTypeStr.rawname}, elm);
+                    reportSchemaError("cos-st-restricts.3.3.1.1", new Object[]{baseTypeStr.rawname}, elm);
                 }
             }
         }
