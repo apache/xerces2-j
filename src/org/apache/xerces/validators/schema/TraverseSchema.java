@@ -8126,7 +8126,10 @@ throws Exception {
           if (eltNdx <0)
             return;
 
-          fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope);
+          ComplexTypeInfo typeInfo = fSchemaGrammar.getElementComplexTypeInfo(eltNdx);
+          int scopeDefined = typeInfo != null ? typeInfo.scopeDefined : fCurrentScope;
+          
+          fSchemaGrammar.cloneElementDecl(eltNdx, fCurrentScope, scopeDefined);
 
         }
         else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||

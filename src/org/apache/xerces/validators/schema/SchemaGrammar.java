@@ -763,7 +763,7 @@ public class SchemaGrammar extends Grammar{
     }
 
     // Create a new elementdecl at a new scope, based on an existing decl
-    protected int cloneElementDecl(int eltNdx, int scope) {
+    protected int cloneElementDecl(int eltNdx, int enclosingScope, int scopeDefined) {
 
         getElementDecl(eltNdx,fTempElementDecl);
         TraverseSchema.ComplexTypeInfo typeInfo = getElementComplexTypeInfo(eltNdx);
@@ -775,8 +775,8 @@ public class SchemaGrammar extends Grammar{
         int attrListHead = getFirstAttributeDeclIndex(eltNdx);
         String anotherSchema = getElementFromAnotherSchemaURI(eltNdx);
 
-        fTempElementDecl.enclosingScope = scope;
-        int newElt= addElementDecl(fTempElementDecl.name,scope,scope,
+        fTempElementDecl.enclosingScope = enclosingScope;
+        int newElt= addElementDecl(fTempElementDecl.name,enclosingScope,scopeDefined, 
                  fTempElementDecl.type,fTempElementDecl.contentSpecIndex,
                  attrListHead,fTempElementDecl.datatypeValidator);
 
