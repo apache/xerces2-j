@@ -60,6 +60,7 @@ package org.apache.xerces.validators.common;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
+import org.apache.xerces.validators.schema.SchemaGrammar;
 
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 
@@ -165,6 +166,22 @@ public class SimpleContentModel
         fDTD = dtd;
     }
 
+    // Unique Particle Attribution
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+        // rename back
+        fFirstChild.uri = gram.getContentSpecOrgUri(fFirstChild.uri);
+        fSecondChild.uri = gram.getContentSpecOrgUri(fSecondChild.uri);
+
+        // only possible violation is when it's a choice
+        if (fOp == XMLContentSpec.CONTENTSPECNODE_CHOICE &&
+            ElementWildcard.conflict(XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                     fFirstChild.localpart, fFirstChild.uri,
+                                     XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                     fSecondChild.localpart, fSecondChild.uri,
+                                     comparator)) {
+        }
+    }
+    // Unique Particle Attribution
 
     //
     // XMLContentModel methods

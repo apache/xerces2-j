@@ -68,6 +68,7 @@ import org.apache.xerces.validators.schema.identity.IdentityConstraint;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.w3c.dom.Document;
 import java.util.Vector;
+import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 
 
 /**
@@ -241,8 +242,27 @@ implements XMLContentSpec.Provider {
         return true;
     }
 
+    protected void clearElementContentModel(int elementDeclIndex) {
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
+            return;
 
-    public XMLContentModel getElementContentModel(int elementDeclIndex) throws CMException {
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+
+        fElementDeclContentModelValidator[chunk][index] = null;
+    }
+
+    protected boolean existElementContentModel(int elementDeclIndex) {
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
+            return false;
+
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+
+        return (fElementDeclContentModelValidator[chunk][index] != null);
+    }
+
+    public XMLContentModel getElementContentModel(int elementDeclIndex, SubstitutionGroupComparator comparator) throws CMException {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
             return null;
@@ -328,6 +348,9 @@ implements XMLContentSpec.Provider {
         fElementDeclContentModelValidator[chunk][index] = contentModel;
 
         //build it  ..... in XMLValidator
+        if (contentModel != null)
+            contentModel.setSubstitutionGroupComparator(comparator);
+
         return contentModel;
     }
 

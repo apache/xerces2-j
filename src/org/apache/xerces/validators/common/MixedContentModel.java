@@ -61,6 +61,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
+import org.apache.xerces.validators.schema.SchemaGrammar;
 
 /**
  * MixedContentModel is a derivative of the abstract content model base
@@ -169,6 +170,17 @@ public class MixedContentModel
 
     } // <init>(QName[],int[],int,int,boolean,boolean)
     
+    // Unique Particle Attribution
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+        // rename back
+        for (int i = 0; i < fCount; i++)
+            fChildren[i].uri = gram.getContentSpecOrgUri(fChildren[i].uri);
+
+        // for mixed content model, it's only a sequence
+        // UPA checking is not necessary
+    }
+    // Unique Particle Attribution
+
     //
     // XMLContentModel methods
     //

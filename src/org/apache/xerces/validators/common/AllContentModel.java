@@ -60,6 +60,8 @@ import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.validators.schema.SchemaGrammar;
+import org.apache.xerces.framework.XMLContentSpec;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -141,6 +143,27 @@ public class AllContentModel implements XMLContentModel {
             System.out.println("Leaving AllContentModel#addElement");
         }
     }
+
+    // Unique Particle Attribution
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+        // rename back
+        for (int i = 0; i < fNumElements; i++)
+            fAllElements[i].uri = gram.getContentSpecOrgUri(fAllElements[i].uri);
+
+        // check whether there is conflict between any two leaves
+        for (int j = 0; j < fNumElements; j++) {
+            for (int k = j+1; k < fNumElements; k++) {
+                ElementWildcard.conflict(XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                         fAllElements[j].localpart,
+                                         fAllElements[j].uri,
+                                         XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                         fAllElements[k].localpart,
+                                         fAllElements[k].uri,
+                                         fComparator);
+            }
+        }
+    }
+    // Unique Particle Attribution
 
     /**
      * Check that the specified content is valid according to this

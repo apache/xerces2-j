@@ -62,6 +62,7 @@ import org.apache.xerces.utils.ImplementationMessages;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.validators.schema.SchemaGrammar;
 
 /**
  * DFAContentModel is the derivative of ContentModel that does
@@ -748,6 +749,49 @@ public class DFAContentModel
     public ContentLeafNameTypeVector getContentLeafNameTypeVector() {
         return fLeafNameTypeVector;
     }
+
+    // Unique Particle Attribution
+    // store the conflict results between any two elements in fElemMap
+    // -1: not compared; 0: no conflict; 1: conflict
+    private byte fConflictTable[][];
+
+    // check UPA after build the DFA
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+        // rename back
+        for (int i = 0; i < fElemMapSize; i++)
+            fElemMap[i].uri = gram.getContentSpecOrgUri(fElemMap[i].uri);
+
+        // initialize the conflict table
+        fConflictTable = new byte[fElemMapSize][fElemMapSize];
+        for (int j = 0; j < fElemMapSize; j++) {
+            for (int k = j+1; k < fElemMapSize; k++)
+                fConflictTable[j][k] = -1;
+        }
+
+        // for each state, check whether it has overlap transitions
+        for (int i = 0; i < fTransTable.length && fTransTable[i] != null; i++) {
+            for (int j = 0; j < fElemMapSize; j++) {
+                for (int k = j+1; k < fElemMapSize; k++) {
+                    if (fTransTable[i][j] != -1 &&
+                        fTransTable[i][k] != -1) {
+                        if (fConflictTable[j][k] == -1) {
+                            fConflictTable[j][k] = ElementWildcard.conflict
+                                                   (fElemMapType[j],
+                                                    fElemMap[j].localpart,
+                                                    fElemMap[j].uri,
+                                                    fElemMapType[k],
+                                                    fElemMap[k].localpart,
+                                                    fElemMap[k].uri,
+                                                    comparator) ? (byte)1 : (byte)0;
+                        }
+                    }
+                }
+            }
+        }
+
+        fConflictTable = null;
+    }
+    // Unique Particle Attribution
 
     //
     // Private methods

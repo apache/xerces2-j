@@ -59,6 +59,7 @@ package org.apache.xerces.validators.common;
 
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.validators.schema.SubstitutionGroupComparator;
+import org.apache.xerces.validators.schema.SchemaGrammar;
 
 /**
  * ContentModel is an interface that can be used by your own custom validators
@@ -175,5 +176,7 @@ public interface XMLContentModel {
 
     public ContentLeafNameTypeVector getContentLeafNameTypeVector() ;
 
-
+    // each kind of content model needs to provide a way to validate
+    // Unique Particle Attribution
+    public void checkUniqueParticleAttribution(SchemaGrammar gram);
 } // interface XMLContentModel

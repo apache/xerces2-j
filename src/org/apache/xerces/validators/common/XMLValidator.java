@@ -418,6 +418,9 @@ public final class XMLValidator
     /** Cache of value stores for identity constraint fields. */
     protected ValueStoreCache fValueStoreCache = new ValueStoreCache();
 
+    // store the substitution group comparator
+    protected SubstitutionGroupComparator fSGComparator = null;
+
    //
    // Constructors
    //
@@ -451,6 +454,10 @@ public final class XMLValidator
 
    public void setGrammarResolver(GrammarResolver grammarResolver){
       fGrammarResolver = grammarResolver;
+
+      fSGComparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
+      ElementWildcard.setErrReporter(fStringPool, fErrorReporter);
+
         if (fValidating) { //optimization -el
       initDataTypeValidators();
    }
@@ -2319,7 +2326,7 @@ public final class XMLValidator
       XMLContentModel contentModel = null;
       if ( elementIndex > -1) {
          if ( fGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
-            contentModel = fGrammar.getElementContentModel(elementIndex);
+            contentModel = fGrammar.getElementContentModel(elementIndex, fSGComparator);
          }
       }
       //return fGrammar.getElementContentModel(elementIndex);
@@ -4037,9 +4044,6 @@ public final class XMLValidator
             cmElem = getElementContentModel(elementIndex);
             int result = cmElem.validateContent(children, childOffset, childCount);
             if (result != -1 && fGrammarIsSchemaGrammar) {
-               // REVISIT: not optimized for performance, 
-               SubstitutionGroupComparator comparator = new SubstitutionGroupComparator(fGrammarResolver, fStringPool, fErrorReporter);
-               cmElem.setSubstitutionGroupComparator(comparator);
                result = cmElem.validateContentSpecial(children, childOffset, childCount);
             }
             return result;

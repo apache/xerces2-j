@@ -75,6 +75,7 @@ import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.common.Grammar;
+import org.apache.xerces.validators.common.DFAContentModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -139,8 +140,14 @@ public class SchemaGrammar extends Grammar{
 
     // Set if we defer min/max expansion for content trees.   This is required if we 
     // are doing particle derivation checking for schema.
-    private boolean deferContentSpecExpansion = false;
+    private boolean deferContentSpecExpansion = true;
  
+    // Set if we check Unique Particle Attribution
+    // This one onle takes effect when deferContentSpecExpansion is set
+    private boolean checkUniqueParticleAttribution = true;
+    private boolean checkingUPA = true;
+    // store the original uri
+    private int fContentSpecOrgUri[][] = new int[INITIAL_CHUNK_COUNT][];
 
     //
     // Public methods
@@ -152,6 +159,10 @@ public class SchemaGrammar extends Grammar{
 
     public boolean getDeferContentSpecExpansion() {
         return deferContentSpecExpansion;
+    }
+
+    public boolean getCheckUniqueParticleAttribution() {
+        return checkUniqueParticleAttribution;
     }
 
     public String getTargetNamespaceURI(){
@@ -286,6 +297,19 @@ public class SchemaGrammar extends Grammar{
             ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) ||
             ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) ||
             (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_LEAF)) {
+
+          // When checking Unique Particle Attribution, rename leaf elements
+          if (checkingUPA) {
+            contentSpecIndex = addContentSpecNode(fTempContentSpecNode.type,
+                                                  fTempContentSpecNode.value,
+                                                  fTempContentSpecNode.otherValue,
+                                                  false);
+            setContentSpecOrgUri(contentSpecIndex, fTempContentSpecNode.otherValue);
+            getContentSpec(contentSpecIndex, fTempContentSpecNode);
+            fTempContentSpecNode.otherValue = contentSpecIndex;
+            setContentSpec(contentSpecIndex, fTempContentSpecNode);
+          }
+
           return expandContentModel(contentSpecIndex,minOccurs,maxOccurs);
         }
         else if (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
@@ -303,10 +327,16 @@ public class SchemaGrammar extends Grammar{
 
           right =  convertContentSpecTree(right); 
 
+          // When checking Unique Particle Attribution, we always create new
+          // new node to store different name for different groups
+          if (checkingUPA) {
+              contentSpecIndex = addContentSpecNode (type, left, right, false);
+          } else {
           fTempContentSpecNode.type = type;
           fTempContentSpecNode.value = left;
           fTempContentSpecNode.otherValue = right;
           setContentSpec(contentSpecIndex, fTempContentSpecNode);
+          }
 
           return expandContentModel(contentSpecIndex, minOccurs, maxOccurs);
         }
@@ -314,10 +344,58 @@ public class SchemaGrammar extends Grammar{
           return contentSpecIndex;
     }
 
+    // Unique Particle Attribution
+    // overrides same method from Grammar, to do UPA checking
+    public XMLContentModel getElementContentModel(int elementDeclIndex, SubstitutionGroupComparator comparator) throws CMException {
+        // if the content model is already there, no UPA checking is necessary
+        if (existElementContentModel(elementDeclIndex))
+            return super.getElementContentModel(elementDeclIndex, comparator);
+
+        // if it's not there, we create a new one, do UPA checking,
+        // then throw it away. because UPA checking might result in NFA,
+        // but we need DFA for further checking
+        if (checkUniqueParticleAttribution) {
+            checkingUPA = true;
+            XMLContentModel contentModel = super.getElementContentModel(elementDeclIndex, comparator);
+            checkingUPA = false;
+
+            if (contentModel != null) {
+                contentModel.checkUniqueParticleAttribution(this);
+                clearElementContentModel(elementDeclIndex);
+            }
+        }
+
+        return super.getElementContentModel(elementDeclIndex, comparator);;
+    }
+
+    // Unique Particle Attribution
+    // set/get the original uri for a specific index
+    public void setContentSpecOrgUri(int contentSpecIndex, int orgUri) {
+        if (contentSpecIndex > -1 ) {
+            int chunk = contentSpecIndex >> CHUNK_SHIFT;
+            int index = contentSpecIndex & CHUNK_MASK;
+            ensureContentSpecCapacity(chunk);
+            fContentSpecOrgUri[chunk][index] = orgUri;
+        }
+    }
+    public int getContentSpecOrgUri(int contentSpecIndex) {
+        if (contentSpecIndex > -1 ) {
+            int chunk = contentSpecIndex >> CHUNK_SHIFT;
+            int index = contentSpecIndex & CHUNK_MASK;
+            return fContentSpecOrgUri[chunk][index];
+        } else {
+            return -1;
+        }
+    }
+
     public void setDeferContentSpecExpansion() {
         deferContentSpecExpansion = true;
     }
 
+    public void setCheckUniqueParticleAttribution() {
+        deferContentSpecExpansion = true;
+        checkUniqueParticleAttribution = true;
+    }
 
     protected void  setAttributeDeclRegistry(Hashtable attrReg){
         fAttributeDeclRegistry = attrReg;
@@ -442,31 +520,39 @@ public class SchemaGrammar extends Grammar{
     }
 
     protected void setContentSpecMinOccurs(int contentSpecIndex, int minOccurs) {
+        if (contentSpecIndex > -1 ) {
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
         ensureContentSpecCapacity(chunk);
-        if (contentSpecIndex > -1 ) {
             fContentSpecMinOccurs[chunk][index] = minOccurs;
         }
     }
 
     protected int getContentSpecMinOccurs(int contentSpecIndex) {
+        if (contentSpecIndex > -1 ) {
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
         return fContentSpecMinOccurs[chunk][index];
+        } else {
+            return -1;
+        }
     }
 
     protected int getContentSpecMaxOccurs(int contentSpecIndex) {
+        if (contentSpecIndex > -1 ) {
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
         return fContentSpecMaxOccurs[chunk][index];
+        } else {
+            return -1;
+        }
     }
 
     protected void setContentSpecMaxOccurs(int contentSpecIndex, int maxOccurs) {
+        if (contentSpecIndex > -1 ) {
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
         ensureContentSpecCapacity(chunk);
-        if (contentSpecIndex > -1 ) {
             fContentSpecMaxOccurs[chunk][index] = maxOccurs;
         }
     }
@@ -669,11 +755,13 @@ public class SchemaGrammar extends Grammar{
         } catch (ArrayIndexOutOfBoundsException ex) {
             fContentSpecMinOccurs = resize(fContentSpecMinOccurs, fContentSpecMinOccurs.length * 2);
             fContentSpecMaxOccurs = resize(fContentSpecMaxOccurs, fContentSpecMaxOccurs.length * 2);
+            fContentSpecOrgUri = resize(fContentSpecOrgUri, fContentSpecOrgUri.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
         fContentSpecMinOccurs[chunk] = new int[CHUNK_SIZE];
         fContentSpecMaxOccurs[chunk] = new int[CHUNK_SIZE];
+        fContentSpecOrgUri[chunk] = new int[CHUNK_SIZE];
         return true;
     }
 

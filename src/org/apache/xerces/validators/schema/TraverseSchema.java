@@ -523,8 +523,10 @@ public class TraverseSchema implements
         fSchemaRootElement = root;
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
-        if (fFullConstraintChecking) 
+        if (fFullConstraintChecking) {
           fSchemaGrammar.setDeferContentSpecExpansion();                           
+          fSchemaGrammar.setCheckUniqueParticleAttribution();
+        }
 
         fGrammarResolver = grammarResolver;
         fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
@@ -2279,7 +2281,8 @@ public class TraverseSchema implements
                                                   new Object [] {"The facet '" + facet + "' is defined more than once."} );
                              fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
                              
-                             if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals("true")){
+                             if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals("true") ||
+                                 content.getAttribute( SchemaSymbols.ATT_FIXED).equals("1")){
                                  // --------------------------------------------
                                  // set fixed facet flags
                                  // length - must remain const through derivation
@@ -4076,7 +4079,6 @@ public class TraverseSchema implements
                   }
                 }
 
-               
                 fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                           fTempAttributeDecl.name, fTempAttributeDecl.type, 
                                           fTempAttributeDecl.enumeration, fTempAttributeDecl.defaultType, 
@@ -4615,7 +4617,6 @@ public class TraverseSchema implements
 
     private void checkTypesOK(XMLElementDecl derived, XMLElementDecl base, int dndx, int bndx, SchemaGrammar aGrammar, String elementName) throws Exception {
       
-
       ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx); 
       if (derived.type == XMLElementDecl.TYPE_SIMPLE ) {
  
@@ -6439,8 +6440,7 @@ throws Exception {
             if(typeInfo != null &&
                (typeInfo.contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ||
                 typeInfo.contentType == XMLElementDecl.TYPE_MIXED_COMPLEX)) {
-                // ??? partical must be emptible
-                if (false)
+                if (particleEmptiable(typeInfo.contentSpecHandle))
                     reportGenericSchemaError ("e-props-correct.2.2.2: for element " + nameStr + ", the {content type} is mixed, then the {content type}'s particle must be emptiable");
             }
 
