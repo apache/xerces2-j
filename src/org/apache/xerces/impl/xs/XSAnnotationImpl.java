@@ -59,11 +59,38 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.xs.psvi.XSAnnotation;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.parsers.SAXParser;
+import org.apache.xerces.parsers.DOMParser;
+
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.InputSource;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import java.io.StringReader;
+import java.io.IOException;
 
 /**
  * This is an implementation of the XSAnnotation schema component.
  */
 public class XSAnnotationImpl implements XSAnnotation {
+
+    // Data
+
+    // the content of the annotation node, including all children, along
+    // with any non-schema attributes from its parent
+    private String fData = null;
+
+    // the grammar which owns this annotation; we get parsers
+    // from here when we need them
+    private SchemaGrammar fGrammar = null;
+
+    // constructors
+    public XSAnnotationImpl(String contents, SchemaGrammar grammar) {
+        fData = contents;
+        fGrammar = grammar;
+    }
 
     /**
      *  Write contents of the annotation to the specified DOM object. If the 
@@ -81,6 +108,13 @@ public class XSAnnotationImpl implements XSAnnotation {
      */
     public boolean writeAnnotation(Object target, 
                                    short targetType) {
+        if(targetType == XSAnnotation.W3C_DOM_ELEMENT || targetType == XSAnnotation.W3C_DOM_DOCUMENT) {
+            writeToDOM((Node)target, targetType);
+            return true;
+        } else if (targetType == SAX_CONTENTHANDLER) {
+            writeToSAX((ContentHandler)target);
+            return true;
+        }
         return false;
     }
 
@@ -88,7 +122,7 @@ public class XSAnnotationImpl implements XSAnnotation {
      * A text representation of annotation.
      */
     public String getAnnotationString() {
-        return null;
+        return fData;
     }
 
     // XSObject methods
@@ -118,12 +152,52 @@ public class XSAnnotationImpl implements XSAnnotation {
     }
 
     /**
-     * A namespace schema information itemcorresponding to the target 
+     * A namespace schema information item corresponding to the target 
      * namespace of the component, if it's globally declared; or null 
      * otherwise.
      */
     public XSNamespaceItem getNamespaceItem() {
         return null;
+    }
+
+    // private methods
+    private synchronized void writeToSAX(ContentHandler handler) {
+        // nothing must go wrong with this parse...
+        SAXParser parser = fGrammar.getSAXParser();
+        StringReader aReader = new StringReader(fData);
+        InputSource aSource = new InputSource(aReader);
+        parser.setContentHandler(handler);
+        try {
+            parser.parse(aSource);
+        } catch (SAXException e) {
+            // this should never happen!
+            // REVISIT:  what to do with this?; should really not
+            // eat it...
+        } catch (IOException i) {
+            // ditto with above
+        }
+    }
+
+    // this creates the new Annotation element as the first child
+    // of the Node
+    private synchronized void writeToDOM(Node target, short type){
+        Document futureOwner = (type == XSAnnotation.W3C_DOM_ELEMENT)?target.getOwnerDocument():(Document)target;
+        DOMParser parser = fGrammar.getDOMParser();
+        StringReader aReader = new StringReader(fData);
+        InputSource aSource = new InputSource(aReader);
+        try {
+            parser.parse(aSource);
+        } catch (SAXException e) {
+            // this should never happen!
+            // REVISIT:  what to do with this?; should really not
+            // eat it...
+        } catch (IOException i) {
+            // ditto with above
+        }
+        Document aDocument = parser.getDocument();
+        Element annotation = aDocument.getDocumentElement();
+        Node newElem = futureOwner.importNode(annotation, true);
+        target.insertBefore(newElem, target.getFirstChild());
     }
 
 }

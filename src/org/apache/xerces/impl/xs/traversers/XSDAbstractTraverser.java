@@ -80,6 +80,8 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
@@ -141,6 +143,7 @@ abstract class XSDAbstractTraverser {
         Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
+        String contents = null;
         for (Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
             child = DOMUtil.getNextSiblingElement(child)) {
@@ -151,6 +154,11 @@ abstract class XSDAbstractTraverser {
             if (!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
                   (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
                 reportSchemaError("src-annotation", new Object[]{name}, child);
+            } else { // the annotation, as we currently know it, is a Text child
+                Node textContent = child.getFirstChild();
+                if(textContent != null && textContent.getNodeType() == Node.TEXT_NODE) {
+                    contents = ((Text)textContent).getData();
+                }
             }
 
             // General Attribute Checking
@@ -159,8 +167,46 @@ abstract class XSDAbstractTraverser {
             attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc);
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         }
+        // if contents was null, must have been some kind of error;
+        // nothing to contribute to PSVI
+        if (contents == null) return null;
 
-        return null;
+        // find the grammar; fSchemaHandler must be known!
+        SchemaGrammar grammar = fSchemaHandler.getGrammar(schemaDoc.fTargetNamespace);
+        // fish out local attributes passed from parent
+        Vector annotationLocalAttrs = (Vector)parentAttrs[XSAttributeChecker.ATTIDX_NONSCHEMA];
+        // optimize for case where there are no local attributes
+        if(annotationLocalAttrs != null && !annotationLocalAttrs.isEmpty()) {
+            StringBuffer localStrBuffer = new StringBuffer(64);
+            localStrBuffer.append(" ");
+            // Vector should contain rawname value pairs
+            int i=0;
+            while(i<annotationLocalAttrs.size()) {
+                localStrBuffer.append((String)annotationLocalAttrs.elementAt(i++))
+                    .append("=\"");
+                String value = (String)annotationLocalAttrs.elementAt(i++);
+                // search for pesky "s and >s within attr value:
+                value = processAttValue(value);
+                localStrBuffer.append(value)
+                    .append("\"");
+            }
+            localStrBuffer.append(" ");
+            // and now splice it into place; immediately after the annotation token, for simplicity's sake
+            StringBuffer contentBuffer = new StringBuffer(contents.length() + localStrBuffer.length());
+            int annotationTokenEnd = contents.indexOf(SchemaSymbols.ELT_ANNOTATION);
+            // annotation must occur somewhere or we're in big trouble...
+            if(annotationTokenEnd == -1) return null;
+            annotationTokenEnd += SchemaSymbols.ELT_ANNOTATION.length();
+            contentBuffer.append(contents.substring(0,annotationTokenEnd));
+            contentBuffer.append(localStrBuffer.toString());
+            contentBuffer.append(contents.substring(annotationTokenEnd, contents.length()));
+            System.err.println("annotation is\n"+contentBuffer);
+            return new XSAnnotationImpl(contentBuffer.toString(), grammar);
+        } else {
+            System.err.println("annotation is\n"+contents);
+            return new XSAnnotationImpl(contents, grammar);
+        } 
+
     }
 
     // the QName simple type used to resolve qnames
@@ -586,5 +632,24 @@ abstract class XSDAbstractTraverser {
         particle.fMaxOccurs = max;
 
         return particle;
+    }
+
+    // this is not terribly performant!
+    private static String processAttValue(String original) {
+        // normally, nothing will happen
+        StringBuffer newVal = new StringBuffer(original.length());
+        for(int i=0; i<original.length(); i++) {
+            char currChar = original.charAt(i);
+            if(currChar == '"') {
+                newVal.append("&quot;");
+            } else if (currChar == '>') {
+                newVal.append("&gt;");
+            } else if (currChar == '&') {
+                newVal.append("&amp;");
+            } else {
+                newVal.append(currChar);
+            }
+        }
+        return newVal.toString();
     }
 }

@@ -83,7 +83,12 @@ import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
 import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.parsers.SAXParser;
+import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 
@@ -125,6 +130,12 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     // number of annotations declared
     int fNumAnnotations;
 
+    // symbol table for constructing parsers (annotation support)
+    private SymbolTable fSymbolTable = null;
+    // parsers for annotation support
+    private SAXParser fSAXParser = null;
+    private DOMParser fDOMParser = null;
+
     //
     // Constructors
     //
@@ -138,10 +149,13 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      * @param targetNamespace
      * @param grammarDesc the XMLGrammarDescription corresponding to this objec
      * 		at the least a systemId should always be known.
+     * @param symbolTable   needed for annotation support
      */
-    public SchemaGrammar(String targetNamespace, XSDDescription grammarDesc) {
+    public SchemaGrammar(String targetNamespace, XSDDescription grammarDesc,
+                SymbolTable symbolTable) {
         fTargetNamespace = targetNamespace;
         fGrammarDescription = grammarDesc;
+        fSymbolTable = symbolTable;
 
         // REVISIT: do we know the numbers of the following global decls
         // when creating this grammar? If so, we can pass the numbers in,
@@ -291,6 +305,14 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
         }
         public synchronized void addDocument(Object document, String location) {
             // ignore
+        }
+
+        // annotation support
+        synchronized DOMParser getDOMParser() {
+            return null;
+        }
+        synchronized SAXParser getSAXParser() {
+            return null;
         }
     }
 
@@ -735,6 +757,35 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      */
     public String getSchemaNamespace() {
         return fTargetNamespace;
+    }
+
+    // annotation support
+    synchronized DOMParser getDOMParser() {
+        if (fDOMParser != null) return fDOMParser;
+        // REVISIT:  when schema handles XML 1.1, will need to 
+        // revisit this (and the practice of not prepending an XML decl to the annotation string
+        IntegratedParserConfiguration config = new IntegratedParserConfiguration(fSymbolTable);
+        // note that this should never produce errors or require
+        // entity resolution, so just a barebones configuration with
+        // a couple of feature  set will do fine
+        config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE, true);
+        config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE, false);
+        fDOMParser = new DOMParser(config);
+        return fDOMParser;
+    }
+
+    synchronized SAXParser getSAXParser() {
+        if (fSAXParser != null) return fSAXParser;
+        // REVISIT:  when schema handles XML 1.1, will need to 
+        // revisit this (and the practice of not prepending an XML decl to the annotation string
+        IntegratedParserConfiguration config = new IntegratedParserConfiguration(fSymbolTable);
+        // note that this should never produce errors or require
+        // entity resolution, so just a barebones configuration with
+        // a couple of feature  set will do fine
+        config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE, true);
+        config.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE, false);
+        fSAXParser = new SAXParser(config);
+        return fSAXParser;
     }
 
     /**
