@@ -74,11 +74,8 @@ import org.apache.xerces.dom.NotationImpl;
 
 public class DOMMemTest {
 
-
     public static void main(String argv[])
 {
-    Assertion assertion = new Assertion();
-
     System.out.print("DOM Memory Test.\n");
 
     //
@@ -311,7 +308,7 @@ public class DOMMemTest {
         ((NotationImpl) nt1).setPublicId("Notation01PublicId");
         notationMap.setNamedItem (nt1);
         Notation    nt2 = (Notation)notationMap.getNamedItem("Notation01");
-        assertion.assert(nt1==nt2);
+        Assertion.assert(nt1==nt2);
         nt2 = new NotationImpl((DocumentImpl)doc, null);
         nt1 = null;
         nt2 = (Notation)notationMap.getNamedItem("Notation01");
@@ -327,20 +324,20 @@ public class DOMMemTest {
     
     {
         NamedNodeMap    nnm = null;
-        assertion.assert(nnm == null);
+        Assertion.assert(nnm == null);
 
         Document        doc = new DocumentImpl();
         nnm = doc.getAttributes();    // Should be null, because node type
                                       //   is not Element.
-        assertion.assert(nnm == null);
-        assertion.assert(!(nnm != null));
+        Assertion.assert(nnm == null);
+        Assertion.assert(!(nnm != null));
 
         Element el = doc.createElement("NamedNodeMap01");
         NamedNodeMap nnm2 = el.getAttributes();    // Should be an empty, but non-null map.
-        assertion.assert(nnm2 != null);
-        assertion.assert(nnm != nnm2);
+        Assertion.assert(nnm2 != null);
+        Assertion.assert(nnm != nnm2);
         nnm = nnm2;
-        assertion.assert(nnm == nnm2);
+        Assertion.assert(nnm == nnm2);
     }
     
 
@@ -355,13 +352,13 @@ public class DOMMemTest {
         
         Element     el1  = doc1.createElement("abc");
         doc1.appendChild(el1);
-        assertion.assert(el1.getParentNode() != null);
+        Assertion.assert(el1.getParentNode() != null);
         Node        el2  = doc2.importNode(el1, true);
-        assertion.assert(el2.getParentNode() == null);
+        Assertion.assert(el2.getParentNode() == null);
         String       tagName = el2.getNodeName();
-        assertion.equals(tagName, "abc");
-        assertion.assert(el2.getOwnerDocument() == doc2);
-        assertion.assert(doc1 != doc2);
+        Assertion.equals(tagName, "abc");
+        Assertion.assert(el2.getOwnerDocument() == doc2);
+        Assertion.assert(doc1 != doc2);
     }
     
 
@@ -381,15 +378,15 @@ public class DOMMemTest {
         el.appendChild(tx);
 
         int     textLength = tx.getLength();
-        assertion.assert(textLength == 5);
+        Assertion.assert(textLength == 5);
 
         NodeList      nl = tx.getChildNodes();
         int      nodeListLen = nl.getLength();
-        assertion.assert(nodeListLen == 0);
+        Assertion.assert(nodeListLen == 0);
 
         nl = el.getChildNodes();
         nodeListLen = nl.getLength();
-        assertion.assert(nodeListLen == 1);
+        Assertion.assert(nodeListLen == 1);
     }
 
 
@@ -400,24 +397,24 @@ public class DOMMemTest {
     {
         NodeList    nl = null;
         NodeList    nl2 = null;
-        assertion.assert(nl == null);
-        assertion.assert(!(nl != null));
-        assertion.assert(nl == nl2);
+        Assertion.assert(nl == null);
+        Assertion.assert(!(nl != null));
+        Assertion.assert(nl == nl2);
 
         Document        doc = new DocumentImpl();
         nl = doc.getChildNodes();    // Should be non-null, but empty
 
-        assertion.assert(nl != null);
+        Assertion.assert(nl != null);
         int len = nl.getLength();
-        assertion.assert(len == 0);
+        Assertion.assert(len == 0);
 
         Element el = doc.createElement("NodeList01");
         doc.appendChild(el);
         len = nl.getLength();
-        assertion.assert(len == 1);
-        assertion.assert(nl != nl2);
+        Assertion.assert(len == 1);
+        Assertion.assert(nl != nl2);
         nl2 = nl;
-        assertion.assert(nl == nl2);
+        Assertion.assert(nl == nl2);
     }
     
 
@@ -432,15 +429,15 @@ public class DOMMemTest {
          try
          {
              Element el = doc.createElement("!@@ bad element name");
-             assertion.assert(false);  // Exception above should prevent us reaching here.
+             Assertion.assert(false);  // Exception above should prevent us reaching here.
          }
          catch ( DOMException e)
          {
-             assertion.assert(e.code == DOMException.INVALID_CHARACTER_ERR);
+             Assertion.assert(e.code == DOMException.INVALID_CHARACTER_ERR);
          }
          catch ( Exception e )
          {
-             assertion.assert(false);  // Wrong exception thrown.
+             Assertion.assert(false);  // Wrong exception thrown.
          }
     }
     
@@ -458,12 +455,12 @@ public class DOMMemTest {
         Element n1, n2, n3;
         
         n1 = n2 = n3 = el;
-        assertion.assert(n1 == n2);
-        assertion.assert(n1 == n3);
-        assertion.assert(n1 == el);
-        assertion.assert(n1 != null);
+        Assertion.assert(n1 == n2);
+        Assertion.assert(n1 == n3);
+        Assertion.assert(n1 == el);
+        Assertion.assert(n1 != null);
         n1 = n2 = n3 = null;
-        assertion.assert(n1 == null);
+        Assertion.assert(n1 == null);
     }
     
 
@@ -480,19 +477,19 @@ public class DOMMemTest {
         root.setAttribute("CTestAttr", "CTestAttrValue");
 
         String s = root.getAttribute("CTestAttr");
-        assertion.equals(s, "CTestAttrValue");
+        Assertion.equals(s, "CTestAttrValue");
 
         Element     cloned = (Element)root.cloneNode(true);
         Attr a = cloned.getAttributeNode("CTestAttr");
-        assertion.assert(a != null);
+        Assertion.assert(a != null);
         s = a.getValue();
-        assertion.equals(s, "CTestAttrValue");
+        Assertion.equals(s, "CTestAttrValue");
         a = null;
 
         a = cloned.getAttributeNode("CTestAttr");
-        assertion.assert(a != null);
+        Assertion.assert(a != null);
         s = a.getValue();
-        assertion.equals(s, "CTestAttrValue");
+        Assertion.equals(s, "CTestAttrValue");
 
     }
     
@@ -509,25 +506,25 @@ public class DOMMemTest {
     
     {
         DOMImplementation  impl = DOMImplementationImpl.getDOMImplementation();
-        assertion.assert(impl.hasFeature("XML", "2.0")    == true);
-        assertion.assert(impl.hasFeature("XML", null)       == true);
+        Assertion.assert(impl.hasFeature("XML", "2.0")    == true);
+        Assertion.assert(impl.hasFeature("XML", null)       == true);
         //  We also support 1.0
-        assertion.assert(impl.hasFeature("XML", "1.0")    == true);
-        assertion.assert(impl.hasFeature("XML", "3.0")    == false);
-        assertion.assert(impl.hasFeature("Traversal", null) == true);
+        Assertion.assert(impl.hasFeature("XML", "1.0")    == true);
+        Assertion.assert(impl.hasFeature("XML", "3.0")    == false);
+        Assertion.assert(impl.hasFeature("Traversal", null) == true);
 
 
-        assertion.assert(impl.hasFeature("HTML", null)           == false);
-        assertion.assert(impl.hasFeature("Views", null)          == false);
-        assertion.assert(impl.hasFeature("StyleSheets", null)    == false);
-        assertion.assert(impl.hasFeature("CSS", null)            == false);
-        assertion.assert(impl.hasFeature("CSS2", null)           == false);
-        assertion.assert(impl.hasFeature("Events", null)         == true);
-        assertion.assert(impl.hasFeature("UIEvents", null)       == false);
-        assertion.assert(impl.hasFeature("MouseEvents", null)    == false);
-        assertion.assert(impl.hasFeature("MutationEvents", null) == true);
-        assertion.assert(impl.hasFeature("HTMLEvents", null)     == false);
-        assertion.assert(impl.hasFeature("Range", null)          == false);
+        Assertion.assert(impl.hasFeature("HTML", null)           == false);
+        Assertion.assert(impl.hasFeature("Views", null)          == false);
+        Assertion.assert(impl.hasFeature("StyleSheets", null)    == false);
+        Assertion.assert(impl.hasFeature("CSS", null)            == false);
+        Assertion.assert(impl.hasFeature("CSS2", null)           == false);
+        Assertion.assert(impl.hasFeature("Events", null)         == true);
+        Assertion.assert(impl.hasFeature("UIEvents", null)       == false);
+        Assertion.assert(impl.hasFeature("MouseEvents", null)    == false);
+        Assertion.assert(impl.hasFeature("MutationEvents", null) == true);
+        Assertion.assert(impl.hasFeature("HTMLEvents", null)     == false);
+        Assertion.assert(impl.hasFeature("Range", null)          == false);
     }
     
 
@@ -546,17 +543,17 @@ public class DOMMemTest {
         
         DocumentType dt = impl.createDocumentType(qName, pubId, sysId, intSubSet);
         
-        assertion.assert(dt != null);
-        assertion.assert(dt.getNodeType() == Node.DOCUMENT_TYPE_NODE);
-        assertion.equals(dt.getNodeName(), qName);
-        assertion.equals(dt.getPublicId(), pubId);
-        assertion.equals(dt.getSystemId(), sysId);
-        assertion.equals(dt.getInternalSubset(), intSubSet);
+        Assertion.assert(dt != null);
+        Assertion.assert(dt.getNodeType() == Node.DOCUMENT_TYPE_NODE);
+        Assertion.equals(dt.getNodeName(), qName);
+        Assertion.equals(dt.getPublicId(), pubId);
+        Assertion.equals(dt.getSystemId(), sysId);
+        Assertion.equals(dt.getInternalSubset(), intSubSet);
         
         NamedNodeMap nnm = dt.getEntities();
-        assertion.assert(nnm.getLength() == 0);
+        Assertion.assert(nnm.getLength() == 0);
         nnm = dt.getNotations();
-        assertion.assert(nnm.getLength() == 0);
+        Assertion.assert(nnm.getLength() == 0);
     }
     
     
@@ -578,21 +575,21 @@ public class DOMMemTest {
         String docNSURI = "http://document.namespace";
         Document doc = impl.createDocument(docNSURI, qName, dt);
 
-        assertion.assert(doc.getNodeType() == Node.DOCUMENT_NODE);
-        assertion.assert(doc.getDoctype() == dt);
-        assertion.equals(doc.getNodeName(), "#document");
-        assertion.assert(doc.getNodeValue() == null);
+        Assertion.assert(doc.getNodeType() == Node.DOCUMENT_NODE);
+        Assertion.assert(doc.getDoctype() == dt);
+        Assertion.equals(doc.getNodeName(), "#document");
+        Assertion.assert(doc.getNodeValue() == null);
 
         Element el = doc.getDocumentElement();
 
-        assertion.equals(el.getLocalName(), "docName");
-        assertion.equals(el.getNamespaceURI(), docNSURI);
-        assertion.equals(el.getNodeName(), qName);
-        assertion.assert(el.getOwnerDocument() == doc);
-        assertion.assert(el.getParentNode() == doc);
-        assertion.equals(el.getPrefix(), "foo");
-        assertion.equals(el.getTagName(), qName);
-        assertion.assert(el.hasChildNodes() == false);
+        Assertion.equals(el.getLocalName(), "docName");
+        Assertion.equals(el.getNamespaceURI(), docNSURI);
+        Assertion.equals(el.getNodeName(), qName);
+        Assertion.assert(el.getOwnerDocument() == doc);
+        Assertion.assert(el.getParentNode() == doc);
+        Assertion.equals(el.getPrefix(), "foo");
+        Assertion.equals(el.getTagName(), qName);
+        Assertion.assert(el.hasChildNodes() == false);
 
         //
         // Creating a second document with the same docType object should fail.
@@ -600,15 +597,15 @@ public class DOMMemTest {
         try
         {
             Document doc2 = impl.createDocument(docNSURI, qName, dt);
-            assertion.assert(false);  // should not reach here.
+            Assertion.assert(false);  // should not reach here.
         }
         catch ( DOMException e)
         {
-            assertion.assert(e.code == DOMException.WRONG_DOCUMENT_ERR);
+            Assertion.assert(e.code == DOMException.WRONG_DOCUMENT_ERR);
         }
         catch ( Exception e )
         {
-            assertion.assert(false);  // Wrong exception thrown.
+            Assertion.assert(false);  // Wrong exception thrown.
         }
     }
     
@@ -647,38 +644,44 @@ public class DOMMemTest {
         rootEl.appendChild(elb);
         rootEl.appendChild(elc);
 
-        assertion.equals(ela.getNodeName(), "a:ela");
-        assertion.equals(ela.getNamespaceURI(), "http://nsa");
-        assertion.equals(ela.getPrefix(), "a");
-        assertion.equals(ela.getLocalName(), "ela");
-        assertion.equals(ela.getTagName(), "a:ela");
+        Assertion.equals(ela.getNodeName(), "a:ela");
+        Assertion.equals(ela.getNamespaceURI(), "http://nsa");
+        Assertion.equals(ela.getPrefix(), "a");
+        Assertion.equals(ela.getLocalName(), "ela");
+        Assertion.equals(ela.getTagName(), "a:ela");
 
-        assertion.equals(elb.getNodeName(), "elb");
-        assertion.equals(elb.getNamespaceURI(), "http://nsb");
-        assertion.assert(elb.getPrefix() == null);
-        assertion.equals(elb.getLocalName(), "elb");
-        assertion.equals(elb.getTagName(), "elb");
+        Assertion.equals(elb.getNodeName(), "elb");
+        Assertion.equals(elb.getNamespaceURI(), "http://nsb");
+        Assertion.assert(elb.getPrefix() == null);
+        Assertion.equals(elb.getLocalName(), "elb");
+        Assertion.equals(elb.getTagName(), "elb");
 
-        assertion.equals(elc.getNodeName(), "elc");
-        assertion.equals(elc.getNamespaceURI(), "");
-        assertion.assert(elc.getPrefix() ==  null);
-        assertion.equals(elc.getLocalName(), "elc");
-        assertion.equals(elc.getTagName(), "elc");
+        Assertion.equals(elc.getNodeName(), "elc");
+        Assertion.equals(elc.getNamespaceURI(), "");
+        Assertion.assert(elc.getPrefix() ==  null);
+        Assertion.equals(elc.getLocalName(), "elc");
+        Assertion.equals(elc.getTagName(), "elc");
 
         // Badly formed qualified name
-        //EXCEPTION_TEST(doc.createElementNS("http://nsa", "a:a:a"), DOMException.NAMESPACE_ERR);     
+	try {
+	  doc.createElementNS("http://nsa", "a:a:a");
+	} catch (Exception e) {
+	  Assertion.assert(e instanceof DOMException
+			   && ((DOMException)e).code == DOMException.NAMESPACE_ERR);
+	}
 
         // Prefix == xml, namespace != http://www.w3.org/XML/1998/namespace
-        //EXCEPTION_TEST(doc.createElementNS("http://nsa", "xml:a", DOMException.NAMESPACE_ERR));     
+	try {
+	  doc.createElementNS("http://nsa", "xml:a");
+	} catch (Exception e) {
+	  Assertion.assert(e instanceof DOMException
+			   && ((DOMException)e).code == DOMException.NAMESPACE_ERR);
+	}
 
         // A couple of corner cases that should not fail.
-        assertion.assert(doc.createElementNS("http://www.w3.org/XML/1998/namespace", "xml:a") != null);
-	/*
-        assertion.assert(doc.createElementNS("http://www.w3.org/XML/1998/namespace", "")      != null);
-        assertion.assert(doc.createElementNS("http://www.w3.org/XML/1998/namespace", null)    != null);
-	*/
-
-
+        Assertion.assert(doc.createElementNS("http://www.w3.org/XML/1998/namespace", "xml:a") != null);
+        Assertion.assert(doc.createElementNS("", "xml:a")      != null);
+        Assertion.assert(doc.createElementNS(null, "xml:a")    != null);
 
     }
     
@@ -712,30 +715,29 @@ public class DOMMemTest {
         Attr attrb = doc.createAttributeNS("http://nsb", "attrb");         //  URI, no prefix.
         Attr attrc = doc.createAttributeNS("", "attrc");    // No URI, no prefix.
 
-        assertion.equals(attra.getNodeName(), "a:attra");
-        assertion.equals(attra.getNamespaceURI(), "http://nsa");
-        assertion.equals(attra.getPrefix(), "a");
-        assertion.equals(attra.getLocalName(), "attra");
-        assertion.equals(attra.getName(), "a:attra");
+        Assertion.equals(attra.getNodeName(), "a:attra");
+        Assertion.equals(attra.getNamespaceURI(), "http://nsa");
+        Assertion.equals(attra.getPrefix(), "a");
+        Assertion.equals(attra.getLocalName(), "attra");
+        Assertion.equals(attra.getName(), "a:attra");
 
-        assertion.equals(attrb.getNodeName(), "attrb");
-        assertion.equals(attrb.getNamespaceURI(), "http://nsb");
-        assertion.equals(attrb.getPrefix(), null);
-        assertion.equals(attrb.getLocalName(), "attrb");
-        assertion.equals(attrb.getName(), "attrb");
+        Assertion.equals(attrb.getNodeName(), "attrb");
+        Assertion.equals(attrb.getNamespaceURI(), "http://nsb");
+        Assertion.equals(attrb.getPrefix(), null);
+        Assertion.equals(attrb.getLocalName(), "attrb");
+        Assertion.equals(attrb.getName(), "attrb");
 
-        assertion.equals(attrc.getNodeName(), "attrc");
-        assertion.equals(attrc.getNamespaceURI(), "");
-        assertion.equals(attrc.getPrefix(), null);
-        assertion.equals(attrc.getLocalName(), "attrc");
-        assertion.equals(attrc.getName(), "attrc");
+        Assertion.equals(attrc.getNodeName(), "attrc");
+        Assertion.equals(attrc.getNamespaceURI(), "");
+        Assertion.equals(attrc.getPrefix(), null);
+        Assertion.equals(attrc.getLocalName(), "attrc");
+        Assertion.equals(attrc.getName(), "attrc");
 
     }
     
 
-
     //
-    //  getElementsByTagNameNS
+    //  getElementsByTagName*
     //
     
     {
@@ -769,16 +771,88 @@ public class DOMMemTest {
         rootEl.appendChild(ele);
 
 
+        // 
+        // Access with DOM Level 1 getElementsByTagName
+        //
+
+        NodeList nl = doc.getElementsByTagName("a:ela");
+        Assertion.assert(nl.getLength() == 1);
+        Assertion.assert(nl.item(0) == ela);
+
+        nl = doc.getElementsByTagName("elb");
+        Assertion.assert(nl.getLength() == 2);
+        Assertion.assert(nl.item(0) == elb);
+        Assertion.assert(nl.item(1) == ele);
+
+        nl = doc.getElementsByTagName("d:ela");
+        Assertion.assert(nl.getLength() == 1);
+        Assertion.assert(nl.item(0) == eld);
+
+        //
+        //  Access with DOM Level 2 getElementsByTagNameNS
+        //
+
+        nl = doc.getElementsByTagNameNS("", "elc");
+        Assertion.assert(nl.getLength() == 1);
+        Assertion.assert(nl.item(0) == elc);
+
+        nl = doc.getElementsByTagNameNS(null, "elc");
+        Assertion.assert(nl.getLength() == 1);
+        Assertion.assert(nl.item(0) == elc);
+       
+        nl = doc.getElementsByTagNameNS("http://nsa", "ela");
+        Assertion.assert(nl.getLength() == 2);
+        Assertion.assert(nl.item(0) == ela);
+        Assertion.assert(nl.item(1) == eld);
+
+        nl = doc.getElementsByTagNameNS("", "elb");
+        Assertion.assert(nl.getLength() == 0);
+
+        nl = doc.getElementsByTagNameNS("http://nsb", "elb");
+        Assertion.assert(nl.getLength() == 1);
+        Assertion.assert(nl.item(0) == elb);
+
+        nl = doc.getElementsByTagNameNS("*", "elb");
+        Assertion.assert(nl.getLength() == 2);
+        Assertion.assert(nl.item(0) == elb);
+        Assertion.assert(nl.item(1) == ele);
+
+        nl = doc.getElementsByTagNameNS("http://nsa", "*");
+        Assertion.assert(nl.getLength() == 2);
+        Assertion.assert(nl.item(0) == ela);
+        Assertion.assert(nl.item(1) == eld);
+
+        nl = doc.getElementsByTagNameNS("*", "*");
+        Assertion.assert(nl.getLength() == 6);     // Gets the document root element, plus 5 more
+
+        Assertion.assert(nl.item(6) == null);
+        // Assertion.assert(nl.item(-1) == 0);
+
+        nl = rootEl.getElementsByTagNameNS("*", "*");
+        Assertion.assert(nl.getLength() == 5);
+
+
+        nl = doc.getElementsByTagNameNS("http://nsa", "d:ela");
+        Assertion.assert(nl.getLength() == 0);
+
+
+        //
+        // Node lists are Live
+        //
+
+        nl = doc.getElementsByTagNameNS("*", "*");
+        NodeList nla = ela.getElementsByTagNameNS("*", "*");
+
+        Assertion.assert(nl.getLength() == 6); 
+        Assertion.assert(nla.getLength() == 0);
+
+        rootEl.removeChild(elc);
+        Assertion.assert(nl.getLength() == 5);
+        Assertion.assert(nla.getLength() == 0);
+
+        ela.appendChild(elc);
+        Assertion.assert(nl.getLength() == 6);
+        Assertion.assert(nla.getLength() == 1);
     }
-    
-
-
-
-
-    //
-    //  Print Final allocation stats for full test
-    //
-    //    DomMemDebug().print();
-    
     };
 }    
