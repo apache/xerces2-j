@@ -91,7 +91,7 @@ import java.io.Serializable;
 * @version  $Id$
 *
 **********************************************************************/
-public class URI implements Serializable {
+ public class URI implements Serializable {
 
   /*******************************************************************
   * MalformedURIExceptions are thrown in the process of building a URI
@@ -379,7 +379,8 @@ public class URI implements Serializable {
 
     // check for scheme
     if (uriSpec.indexOf(':') == -1) {
-      if (p_base == null) {
+      int fragmentIdx = uriSpec.indexOf('#');
+      if (p_base == null && fragmentIdx != 0 ) {//A standalone base is a valid URI according to spec
         throw new MalformedURIException("No scheme found in URI.");
       }
     }
