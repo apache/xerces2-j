@@ -247,7 +247,7 @@ public class DocumentTracer
     } // XMLLocator()
 
     /** XML Declaration. */
-    public void xmlDecl(String version, String encoding, String actualEncoding,
+    public void xmlDecl(String version, String encoding,
                         String standalone, Augmentations augs) throws XNIException {
 
         printIndent();
@@ -257,9 +257,6 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
-        fOut.print(',');
-        fOut.print("actualEncoding=");
-        printQuotedString(actualEncoding);
         fOut.print(',');
         fOut.print("standalone=");
         printQuotedString(standalone);
