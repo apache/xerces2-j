@@ -63,6 +63,18 @@
      <submitter name='Elena Litani'/>
    </fix>
 
+    <fix>
+     <note>Enabled processing of base 64-encoded material on OS/390.</note>
+     <submitter name='Neil Graham, Steve Dulin'/>
+   </fix>
+
+   <update>
+      <note>Modified XNI grammar interfaces such that Grammars now have 
+        an associated XMLGrammarDescription and XMLGrammarDescriptions record the
+        type of the grammar.  </note>
+      <submitter name="Neil Graham"/>
+   </update>
+
   </changes>
 </release>
 
