@@ -137,18 +137,100 @@ public class UTF8Reader
      * @exception  IOException  If an I/O error occurs
      */
     public int read() throws IOException {
+
         int c = fSurrogate;
-        fSurrogate = -1;
         if (fSurrogate == -1) {
             int b0 = fInputStream.read();
-            if ((b0 & 0x80) != 0) {
-                throw new RuntimeException("not implemented");
+            if (b0 == -1) {
+                return -1;
             }
+
+            // UTF-8:   [0xxx xxxx]
+            // Unicode: [0000 0000] [0xxx xxxx]
+            if (b0 < 0x80) {
+                c = (char)b0;
+            }
+
+            // UTF-8:   [110y yyyy] [10xx xxxx]
+            // Unicode: [0000 0yyy] [yyxx xxxx]
+            else if ((b0 & 0xE0) == 0xC0) {
+                int b1 = fInputStream.read();
+                if (b1 == -1) {
+                    expectedByte(2, 2);
+                }
+                if ((b1 & 0xC0) != 0x80) {
+                    invalidByte(2, 2, b1);
+                }
+                c = ((b0 >> 2) & 0x03) | ((b0 << 6) & 0xFF) | (b1 & 0x3F);
+            }
+
+            // UTF-8:   [1110 zzzz] [10yy yyyy] [10xx xxxx]
+            // Unicode: [zzzz yyyy] [yyxx xxxx]
+            else if ((b0 & 0xF0) == 0xE0) {
+                int b1 = fInputStream.read();
+                if (b1 == -1) {
+                    expectedByte(2, 3);
+                }
+                if ((b1 & 0xC0) != 0x80) {
+                    invalidByte(2, 3, b1);
+                }
+                int b2 = fInputStream.read();
+                if (b2 == -1) {
+                    expectedByte(3, 3);
+                }
+                if ((b2 & 0xC0) != 0x80) {
+                    invalidByte(3, 3, b2);
+                }
+                c = ((b0 << 4) & 0xF0) | ((b1 >> 2) & 0x0F) |
+                    ((b1 << 6) & 0xFC) | (b2 & 0x3F);
+            }
+
+            // UTF-8:   [1111 0uuu] [10uu zzzz] [10yy yyyy] [10xx xxxx]*
+            // Unicode: [1101 10ww] [wwzz zzyy] (high surrogate)
+            //          [1101 11yy] [yyxx xxxx] (low surrogate)
+            //          * uuuuu = wwww + 1
+            else if ((b0 & 0xF8) == 0xF0) {
+                int b1 = fInputStream.read();
+                if (b1 == -1) {
+                    expectedByte(2, 4);
+                }
+                if ((b1 & 0xC0) != 0x80) {
+                    invalidByte(2, 3, b1);
+                }
+                int b2 = fInputStream.read();
+                if (b2 == -1) {
+                    expectedByte(3, 4);
+                }
+                if ((b2 & 0xC0) != 0x80) {
+                    invalidByte(3, 3, b2);
+                }
+                int b3 = fInputStream.read();
+                if (b3 == -1) {
+                    expectedByte(4, 4);
+                }
+                if ((b3 & 0xC0) != 0x80) {
+                    invalidByte(4, 4, b3);
+                }
+                int uuuuu = ((b0 << 5) & 0xE0) | ((b1 >> 4) & 0x0F);
+                int wwww = uuuuu - 1;
+                int hs = 0xD800 | 
+                         ((wwww & 0x0C) << 8) | ((wwww & 0x03) << 6) |
+                         ((b1 << 2) & 0x3C) | ((b2 >> 4) & 0x03);
+                int ls = 0xDC00 | ((b2 & 0x0F) << 6) | (b3 & 0x3F);
+                c = hs;
+                fSurrogate = ls;
+            }
+
+            // error
             else {
-                c = b0;
+                invalidByte(1, 1, b0);
             }
         }
+        else {
+            fSurrogate = -1;
+        }
         return c;
+
     } // read():int
 
     /**
@@ -174,9 +256,15 @@ public class UTF8Reader
 
         // read bytes
         int count = fInputStream.read(fBuffer, fOffset, length);
+        if (count == -1) {
+            if (fOffset > 0) {
+                expectedByte(fOffset, 4 - fOffset);
+            }
+            return -1;
+        }
+        fOffset = 0;
 
         // convert bytes to characters
-        fOffset = 0;
         final int total = count;
         for (int in = 0, out = offset; in < total; in++) {
             int b0 = fBuffer[in];
@@ -317,7 +405,23 @@ public class UTF8Reader
      * @exception  IOException  If an I/O error occurs
      */
     public long skip(long n) throws IOException {
-        return fInputStream.skip(n);
+
+        long remaining = n;
+        final char[] ch = new char[fBuffer.length];
+        do {
+            int length = ch.length < remaining ? ch.length : (int)remaining;
+            int count = read(ch, 0, length);
+            if (count > 0) {
+                remaining -= count;
+            }
+            else {
+                break;
+            }
+        } while (remaining > 0);
+
+        long skipped = n - remaining;
+        return skipped;
+
     } // skip(long):long
 
     /**
@@ -337,7 +441,7 @@ public class UTF8Reader
      * Tell whether this stream supports the mark() operation.
      */
     public boolean markSupported() {
-	    return fInputStream.markSupported();
+	    return false;
     } // markSupported()
 
     /**
@@ -354,7 +458,7 @@ public class UTF8Reader
      *                          or if some other I/O error occurs
      */
     public void mark(int readAheadLimit) throws IOException {
-	    fInputStream.mark(readAheadLimit);
+	    throw new IOException("mark not supported");
     } // mark(int)
 
     /**
@@ -371,7 +475,8 @@ public class UTF8Reader
      *                          or if some other I/O error occurs
      */
     public void reset() throws IOException {
-        fInputStream.reset();
+        fOffset = 0;
+        fSurrogate = -1;
     } // reset()
 
     /**
@@ -381,30 +486,46 @@ public class UTF8Reader
      *
      * @exception  IOException  If an I/O error occurs
      */
-     public void close() throws IOException {
-         fInputStream.close();
-     } // close()
+    public void close() throws IOException {
+        fInputStream.close();
+    } // close()
 
-     //
-     // Private methods
-     //
+    //
+    // Private methods
+    //
 
-     /** Throws an exception for invalid byte. */
-     private void invalidByte(int position, int count, int c) 
+    /** Throws an exception for expected byte. */
+    private void expectedByte(int position, int count)
         throws UTFDataFormatException {
 
-         StringBuffer str = new StringBuffer();
-         str.append("invalid byte ");
-         str.append(position);
-         str.append(" of ");
-         str.append(count);
-         str.append("-byte UTF-8 sequence (0x");
-         str.append(Integer.toHexString(c));
-         str.append(')');
+        StringBuffer str = new StringBuffer();
+        str.append("expected byte ");
+        str.append(position);
+        str.append(" of ");
+        str.append(count);
+        str.append("-byte UTF-8 sequence");
 
-         String message = str.toString();
-         throw new UTFDataFormatException(message);
+        String message = str.toString();
+        throw new UTFDataFormatException(message);
 
-     } // invalidByte(int,int,int)
+    } // expectedByte(int,int)
+
+    /** Throws an exception for invalid byte. */
+    private void invalidByte(int position, int count, int c) 
+        throws UTFDataFormatException {
+
+        StringBuffer str = new StringBuffer();
+        str.append("invalid byte ");
+        str.append(position);
+        str.append(" of ");
+        str.append(count);
+        str.append("-byte UTF-8 sequence (0x");
+        str.append(Integer.toHexString(c));
+        str.append(')');
+
+        String message = str.toString();
+        throw new UTFDataFormatException(message);
+
+    } // invalidByte(int,int,int)
 
 } // class UTF8Reader
