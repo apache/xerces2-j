@@ -120,7 +120,6 @@ Copyright:
     <echo message=" tests-dom3    --> 'tests' + DOM Level 3 support."/>
     <echo message=" deprecatedjars --> generates xerces.jar and samples jar"/>
     <echo message=" dtdjars --> generates xercesImpl containing no schema support or WML/HTML DOM and xercesSamples &amp; xmlParserAPIs jars"/>
-    <echo message=" xml11jars --> EXPERIMENTAL!  Generates xercesImpl containing very preliminary XML 1.1 support, as well as xercesSamples &amp; xmlParserAPIs jars"/>
     <echo message=" dvjar --> generates a Schema datatype jar"/>
     <echo message=" pack-tools --> generates the tools distributions (zip and tar.gz)"/>
     <echo message=" pack-src   --> generates the source distributions (zip and tar.gz)"/>
@@ -183,8 +182,7 @@ Copyright:
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/v1/** **/v2/**
-                       javax.xml.parsers.ConvertToURI.java
-                       org/apache/xerces/dom3/ls/**">
+                       javax.xml.parsers.ConvertToURI.java">
         </fileset>
     </copy>
 
@@ -291,7 +289,7 @@ Copyright:
     </copy>
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
-           classpath="${build.dir}/classes:./tools/junit.jar"
+           classpath="${tools.dir}/${jar.apis}:${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"
            includeAntRuntime="false"
            includeJavaRuntime="true"/>
@@ -760,7 +758,15 @@ Copyright:
     <jar jarfile="${build.dir}/dtd-${jar.parser}"
          basedir="${build.dest}"
          compress="true"
-         includes="org/apache/**, META-INF/**"/>
+         includes="org/apache/**, META-INF/**
+                   org/w3c/dom/html/HTMLDOMImplementation.class
+                   org/w3c/dom/ls/**
+                   org/w3c/dom/DOMError.class
+                   org/w3c/dom/DOMErrorHandler.class
+                   org/w3c/dom/DOMImplementationSource.class
+                   org/w3c/dom/DOMImplementationRegistry.class
+                   org/w3c/dom/DOMLocator.class
+                   org/w3c/dom/UserDataHandler.class"/>
   </target>
 
   <!-- =================================================================== -->
@@ -838,7 +844,23 @@ Copyright:
                      ">
         </fileset>
     </copy>
-    
+
+    <!-- HACK: DOM implementation now is aware of type information
+         and thus is imports XSSimpleTypeDecl (for XML Schema type support)
+         Since in DTD jars we never going to have XSSimpleTypeDecl we can safely
+         replace it by String. The code after replacement may look a bit strange.. 
+         but there is nothing we can do at this point-->
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
+             token="import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;" value=""/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
+             token="XSSimpleTypeDecl" value="String"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
+             token="return ((String)type).getName();" value="return (String)type;"/>
+    <replace file="${build.dir}/src/org/apache/xerces/dom/AttrNSImpl.java" 
+             token="return ((String)type).getNamespace();" value="return null;"/>
+ 
+
+
     <!-- substitute tokens as needed -->
     <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
              token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
@@ -848,37 +870,6 @@ Copyright:
   <!-- Builds xercesImpl (dtd), xmlParserAPIs, and sample jars            -->
   <!-- =================================================================== -->
   <target name="dtdjars" depends="dtdjar, sampjar">
-    <!-- support xml-commons APIs -->
-    <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
-    <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${deprecatedjar.apis}"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Creates the XML 1.1-enabled implementation class package, excluding DOM Level 3     -->
-  <!-- REVISIT:  Once a release or so has gone by with XML 1.1 support being enabled by default, these targets should be
-    removed; as should the XML11ParserConfiguration file in the org/apache/xerces/parsers directory.  -->
-  <!-- =================================================================== -->
-  <target name="xml11jar" depends="compile">
-    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration"
-      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"
-      overwrite="yes"/>
-    <jar jarfile="${build.dir}/xml11-${jar.parser}"
-         basedir="${build.dest}"
-         compress="true"
-         includes="org/apache/**, META-INF/**
-                   org/w3c/dom/ls/**
-                   org/w3c/dom/DOMError.class
-                   org/w3c/dom/DOMErrorHandler.class
-                   org/w3c/dom/DOMImplementationSource.class
-                   org/w3c/dom/DOMImplementationRegistry.class
-                   org/w3c/dom/DOMLocator.class
-                   org/w3c/dom/UserDataHandler.class"/>
-  </target>
-
-  <!-- =================================================================== -->
-  <!-- Builds XML 1.1-enabled xercesImpl, xmlParserAPIs and sample jar files               -->
-  <!-- =================================================================== -->
-  <target name="xml11jars" depends="xml11jar, sampjar">
     <!-- support xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${deprecatedjar.apis}"/>
@@ -926,13 +917,29 @@ Copyright:
                       org/apache/xerces/impl/msg/XMLSchema**,
                       org/apache/xerces/impl/xpath/regex/**,
                       org/apache/xerces/impl/xs/XSTypeDecl.java,
-                      org/apache/xerces/impl/xs/psvi/StringList.java,
-                      org/apache/xerces/impl/xs/psvi/XSAnnotation.java,
-                      org/apache/xerces/impl/xs/psvi/XSConstants.java,
-                      org/apache/xerces/impl/xs/psvi/XSObject.java,
-                      org/apache/xerces/impl/xs/psvi/XSObjectList.java,
-                      org/apache/xerces/impl/xs/psvi/XSSimpleTypeDefinition.java,
-                      org/apache/xerces/impl/xs/psvi/XSTypeDefinition.java,
+			org/apache/xerces/impl/xs/psvi/StringList.java
+			org/apache/xerces/impl/xs/psvi/XSAnnotation.java
+			org/apache/xerces/impl/xs/psvi/XSAttributeDeclaration.java
+			org/apache/xerces/impl/xs/psvi/XSAttributeGroupDefinition.java
+			org/apache/xerces/impl/xs/psvi/XSAttributeUse.java
+			org/apache/xerces/impl/xs/psvi/XSComplexTypeDefinition.java
+			org/apache/xerces/impl/xs/psvi/XSConstants.java
+			org/apache/xerces/impl/xs/psvi/XSElementDeclaration.java
+			org/apache/xerces/impl/xs/psvi/XSIDCDefinition.java
+			org/apache/xerces/impl/xs/psvi/XSModel.java
+			org/apache/xerces/impl/xs/psvi/XSModelGroup.java
+			org/apache/xerces/impl/xs/psvi/XSModelGroupDefinition.java
+			org/apache/xerces/impl/xs/psvi/XSNamedMap.java
+			org/apache/xerces/impl/xs/psvi/XSNamespaceItem.java
+			org/apache/xerces/impl/xs/psvi/XSNamespaceItemList.java
+			org/apache/xerces/impl/xs/psvi/XSNotationDeclaration.java
+			org/apache/xerces/impl/xs/psvi/XSObject.java
+			org/apache/xerces/impl/xs/psvi/XSObjectList.java
+			org/apache/xerces/impl/xs/psvi/XSParticle.java
+			org/apache/xerces/impl/xs/psvi/XSSimpleTypeDefinition.java
+			org/apache/xerces/impl/xs/psvi/XSTerm.java
+			org/apache/xerces/impl/xs/psvi/XSTypeDefinition.java
+			org/apache/xerces/impl/xs/psvi/XSWildcard.java
                       org/apache/xerces/impl/xs/util/StringListImpl.java,
                       org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
                       org/apache/xerces/util/ObjectFactory.java,
@@ -1019,7 +1026,6 @@ Copyright:
                        javax.xml.parsers.ConvertToURI.java
                        org/apache/xerces/dom3/*.java
                        org/apache/xerces/dom3/bootstrap/*.java
-                       org/apache/xerces/dom3/ls/**
                        org/w3c/dom/*.java">
         </fileset>
     </copy>
