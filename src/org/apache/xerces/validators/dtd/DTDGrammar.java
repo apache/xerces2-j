@@ -580,8 +580,7 @@ public class DTDGrammar
      * @exception java.lang.Exception
      */
     public String getContentSpecNodeAsString(int nodeIndex) throws Exception {
-        // TODO
-        return "";
+        return XMLContentSpec.toString(this, fStringPool, nodeIndex);
     }
 
     /**
