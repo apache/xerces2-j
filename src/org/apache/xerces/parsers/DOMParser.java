@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.EntityResolverWrapper;
+import org.apache.xerces.util.EntityResolver2Wrapper;
+import org.apache.xerces.util.EntityResolver2Wrapper.EntityResolver2;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
@@ -56,6 +58,12 @@ public class DOMParser
     //
     // Constants
     //
+    
+    // features
+    
+    /** Feature identifier: EntityResolver2. */
+    protected static final String USE_ENTITY_RESOLVER2 =
+        Constants.SAX_FEATURE_PREFIX + Constants.USE_ENTITY_RESOLVER2_FEATURE;
 
     // properties
 
@@ -72,6 +80,15 @@ public class DOMParser
         SYMBOL_TABLE,
         XMLGRAMMAR_POOL,
     };
+    
+    //
+    // Data
+    //
+    
+    // features
+    
+    /** Use EntityResolver2. */
+    protected boolean fUseEntityResolver2 = true;
 
     //
     // Constructors
@@ -255,8 +272,14 @@ public class DOMParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
-            fConfiguration.setProperty(ENTITY_RESOLVER,
-                                       new EntityResolverWrapper(resolver));
+            if (fUseEntityResolver2 && resolver instanceof EntityResolver2) {
+                fConfiguration.setProperty(ENTITY_RESOLVER,
+                    new EntityResolver2Wrapper((EntityResolver2) resolver));
+            }
+            else {
+                fConfiguration.setProperty(ENTITY_RESOLVER,
+                    new EntityResolverWrapper(resolver));
+            }
         }
         catch (XMLConfigurationException e) {
             // do nothing
@@ -277,9 +300,15 @@ public class DOMParser
         try {
             XMLEntityResolver xmlEntityResolver =
                 (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
-            if (xmlEntityResolver != null &&
-                xmlEntityResolver instanceof EntityResolverWrapper) {
-                entityResolver = ((EntityResolverWrapper)xmlEntityResolver).getEntityResolver();
+            if (xmlEntityResolver != null) {
+                if (xmlEntityResolver instanceof EntityResolverWrapper) {
+                    entityResolver =
+                        ((EntityResolverWrapper) xmlEntityResolver).getEntityResolver();
+                }
+                else if (xmlEntityResolver instanceof EntityResolver2Wrapper) {
+                    entityResolver = 
+                        ((EntityResolver2Wrapper) xmlEntityResolver).getEntityResolver();
+                }
             }
         }
         catch (XMLConfigurationException e) {
@@ -362,6 +391,25 @@ public class DOMParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         try {
+            
+            // http://xml.org/sax/features/use-entity-resolver2
+            //   controls whether the methods of an object implementing
+            //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
+            //
+            // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
+            /** if (featureId.equals(USE_ENTITY_RESOLVER2)) {
+                if (state != fUseEntityResolver2) {
+                    fUseEntityResolver2 = state;
+                    // Refresh EntityResolver wrapper.
+                    setEntityResolver(getEntityResolver());
+                }
+                return;
+            }**/
+            
+            //
+            // Default handling
+            //
+            
             fConfiguration.setFeature(featureId, state);
         }
         catch (XMLConfigurationException e) {
@@ -394,6 +442,20 @@ public class DOMParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         try {
+
+            // http://xml.org/sax/features/use-entity-resolver2
+            //   controls whether the methods of an object implementing
+            //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
+            //
+            // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
+            /** if (featureId.equals(USE_ENTITY_RESOLVER2)) {
+                return fUseEntityResolver2;
+            }**/
+            
+            //
+            // Default handling
+            //
+            
             return fConfiguration.getFeature(featureId);
         }
         catch (XMLConfigurationException e) {
