@@ -167,31 +167,34 @@ public class NamedNodeMapImpl
      * @exception org.w3c.dom.DOMException The exception description.
      */
     public Node setNamedItem(Node arg)
-        throws DOMException {
-
-    	if (isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+    throws DOMException {
+        
+        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+            }
+            if (arg.getOwnerDocument() != ownerDocument) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
+            }
         }
-    	if (arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
-        }
-
-   	int i = findNamePoint(arg.getNodeName(),0);
-    	NodeImpl previous = null;
-    	if (i >= 0) {
+        
+        int i = findNamePoint(arg.getNodeName(),0);
+        NodeImpl previous = null;
+        if (i >= 0) {
             previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
-    	} else {
+        } else {
             i = -1 - i; // Insert point (may be end of list)
             if (null == nodes) {
                 nodes = new Vector(5, 10);
             }
             nodes.insertElementAt(arg, i);
         }
-    	return previous;
-
+        return previous;
+        
     } // setNamedItem(Node):Node
 
     /**
@@ -206,28 +209,31 @@ public class NamedNodeMapImpl
      *      one.
      */
     public Node setNamedItemNS(Node arg)
-        throws DOMException {
-
-    	if (isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+    throws DOMException {
+        
+        CoreDocumentImpl ownerDocument = ownerNode.ownerDocument();
+        if (ownerDocument.errorChecking) {
+            if (isReadOnly()) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
+            }
+            
+            if(arg.getOwnerDocument() != ownerDocument) {
+                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
+            }
         }
-    
-    	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
-        }
-
-    	int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
-    	NodeImpl previous = null;
-    	if (i >= 0) {
+        
+        int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
+        NodeImpl previous = null;
+        if (i >= 0) {
             previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
-    	} else {
-    	    // If we can't find by namespaceURI, localName, then we find by
-    	    // nodeName so we know where to insert.
-    	    i = findNamePoint(arg.getNodeName(),0);
-            if (i >=0) {
+        } else {
+            // If we can't find by namespaceURI, localName, then we find by
+            // nodeName so we know where to insert.
+            i = findNamePoint(arg.getNodeName(),0);
+            if (i >= 0) {
                 previous = (NodeImpl) nodes.elementAt(i);
                 nodes.insertElementAt(arg,i);
             } else {
@@ -238,9 +244,9 @@ public class NamedNodeMapImpl
                 nodes.insertElementAt(arg, i);
             }
         }
-    	return previous;
-
-    } // setNamedItem(Node):Node
+        return previous;
+        
+    } // setNamedItemNS(Node):Node
    
     /**
      * Removes a node specified by name.
