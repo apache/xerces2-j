@@ -132,14 +132,19 @@ public class Arguments {
         char []bufferOfToken = null;
         Object[] temp;
 
+        int  argLength = arguments.length;
+
         outer:
-        for ( int i = 0; i<arguments.length; i++ ){
+        for ( int i = 0; i<argLength; i++ ){
             bufferOfToken = arguments[i].toCharArray();
             lengthOfToken = bufferOfToken.length;
             if ( bufferOfToken[0] == '-' ){
                 int   token;
+                //System.out.println( "argv = " + arguments[i] );
+                //System.out.println( "leng = " + lengthOfToken );
                 for ( int j = 1; j<lengthOfToken; j++ ){
                     token = bufferOfToken[j];
+                    //System.out.println( "token = " + token );
                     queueOfSwitches.push( (Object ) new Integer( token ));
                     for ( int k = 0; k< argsWithOptions.length; k++) {
                         if ( token == argsWithOptions[k] ){
@@ -153,14 +158,13 @@ public class Arguments {
                     }
 
                 }
-                queueOfSwitches.push( (Object ) new Integer( -1 ));
+
+                if ( i+1 < argLength ){
+                    if ( !( arguments[i+1].charAt(0) == '-') ) //next argument not start '-'
+                        queueOfSwitches.push( (Object ) new Integer( -1 )); //put -1 marker 
+                }
 
             } else{
-                //for ( int j = 0; j< argsWithOptions.length; j++) {
-                //  if( bufferOfToken[i] == argsWithOptions[j] ){
-                //    queueStringParameters.push( arguments[i] );
-                //}
-                // }
                 queueOfOtherStringParameters.push( arguments[i] );
             }
         }
@@ -179,7 +183,14 @@ public class Arguments {
      * @return 
      */
     public  int getArguments(){
-        return queueOfSwitches.empty() ? -1:((Integer ) queueOfSwitches.pop()).intValue();
+        if ( this.fDbug ){
+            queueOfSwitches.print();
+        }
+        int value = ((Integer ) queueOfSwitches.pop()).intValue();
+        if ( this.fDbug ) {
+            System.out.println("value = " + value );
+        }
+        return queueOfSwitches.empty() ? 0:value;
     }
 
 
@@ -190,16 +201,23 @@ public class Arguments {
      */
     public String getStringParameter(){
         String    s = (String) queueStringParameters.pop();
+        if ( this.fDbug ){
+            queueStringParameters.print();
+        }
         if ( this.fDbug )  {
-                System.out.println( "string par = " + s );
-            }
+            System.out.println( "string par = " + s );
+        }
         return s;
     }
 
 
     public String getlistFiles(){
-        String    s = null;
-        s = (String) queueOfOtherStringParameters.pop(); 
+
+        if ( this.fDbug ) {
+            queueOfOtherStringParameters.print();
+        }
+
+        String s = (String) queueOfOtherStringParameters.pop(); 
         return s;
     }
 
@@ -224,70 +242,69 @@ public class Arguments {
 
     // Private inner classes
 
-private  class Queue   {
-       //private LinkedList queue;
-       private static final int  maxIncrement = 10;
-       private Object[]          queue;
-       private int               max;
-       private int               front; 
-       private int               rear;
-       private int               items;
+    private  class Queue   {
+        //private LinkedList queue;
+        private static final int  maxIncrement = 10;
+        private Object[]          queue;
+        private int               max;
+        private int               front; 
+        private int               rear;
+        private int               items;
 
 
-       public Queue( int size) {
+        public Queue( int size) {
             queue  = new Object[size];
             front  = 0;
             rear   = -1;
             items  = 0;
             max    = size;
-           //queue = new LinkedList();
-       }
-       public void push( Object token ) {
-           try {
-           queue[++rear] = token;
-           items++;
-           } catch( ArrayIndexOutOfBoundsException ex ){
-             Object[] holdQueue = new Object[max + maxIncrement]; 
-             System.arraycopy(queue, 0, holdQueue,0,max );
-             queue = holdQueue;
-             max   += maxIncrement;
-             queue[rear] = token;
-             items++;
-           }
+            //queue = new LinkedList();
+        }
+        public void push( Object token ) {
+            try {
+                queue[++rear] = token;
+                items++;
+            } catch ( ArrayIndexOutOfBoundsException ex ){
+                Object[] holdQueue = new Object[max + maxIncrement]; 
+                System.arraycopy(queue, 0, holdQueue,0,max );
+                queue = holdQueue;
+                max   += maxIncrement;
+                queue[rear] = token;
+                items++;
+            }
 
-           //queue.addLast( token );
-       }
-       public Object pop() {
-           Object token = null;
-           if( items != 0 ) {
-               token = queue[front++];
-               items--;
-           }
-           return token; 
-       }
-       public boolean empty(){
-           return (items==0);
-       }
+            //queue.addLast( token );
+        }
+        public Object pop() {
+            Object token = null;
+            if ( items != 0 ) {
+                token = queue[front++];
+                items--;
+            }
+            return token; 
+        }
+        public boolean empty(){
+            return(items==0);
+        }
 
-       public int size(){
-           return items;
-       }
+        public int size(){
+            return items;
+        }
 
-       public void clear(){
- //          queue.clear();
-           front  = 0;
-           rear   = -1;
-           items  = 0;
-       }
+        public void clear(){
+            front  = 0;
+            rear   = -1;
+            items  = 0;
+        }
 
 
-       public void print(){
-           for( int i = front; i <= rear;i++ ){ 
-                 System.out.println( "token[ " +  i
-                                   + "] = " +  queue[i] ) ;
-           }
+        public void print(){
+            for ( int i = front; i <= rear;i++ ){ 
+                System.out.println( "token[ " +  i
+                                    + "] = " +  queue[i] ) ;
+            }
 
-       }
+        }
 
-   }
+    }
 }
