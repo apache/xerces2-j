@@ -1639,7 +1639,7 @@ public class XMLDTDScanner
                                            "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
-            fEntityManager.startEntity("%" + name);
+            fEntityManager.startEntity(fSymbolTable.addSymbol("%" + name));
             fEntityScanner.skipSpaces();
             if (!fEntityScanner.skipChar('%'))
                 return true;
