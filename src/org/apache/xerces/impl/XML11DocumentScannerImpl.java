@@ -388,7 +388,7 @@ public class XML11DocumentScannerImpl
                                       XMLString nonNormalizedValue,
                                       String atName,
                                       XMLAttributes attributes, int attrIndex,
-                                      boolean checkEntities)
+                                      boolean checkEntities,String eleName)
         throws IOException, XNIException
     {
         // quote
@@ -564,7 +564,7 @@ public class XML11DocumentScannerImpl
                 }
                 else if (c != -1 && XML11Char.isXML11Invalid(c)) {
                     reportFatalError("InvalidCharInAttValue",
-                                     new Object[] {Integer.toString(c, 16)});
+                                     new Object[] {Integer.toString(c, 16),atName,eleName});
                     fEntityScanner.scanChar();
                     if (entityDepth == fEntityDepth) {
                         fStringBuffer2.append((char)c);

@@ -391,7 +391,7 @@ extends XMLDocumentScannerImpl {
         // REVISIT: it seems that this function should not take attributes, and length
         scanAttributeValue(this.fTempString, fTempString2,
                            fAttributeQName.rawname, attributes,
-                           oldLen, isVC);
+                           oldLen, isVC,fCurrentElement.rawname);
         String value = fTempString.toString();
         attributes.setValue(oldLen, value);
         attributes.setNonNormalizedValue(oldLen, fTempString2.toString());
