@@ -1417,6 +1417,7 @@ extends ParentNode implements Document  {
     Hashtable reversedIdentifiers)
     throws DOMException {
         Node newnode=null;
+		Hashtable userData = null;
 
         // Sigh. This doesn't work; too many nodes have private data that
         // would have to be manually tweaked. May be able to add local
@@ -1429,7 +1430,8 @@ extends ParentNode implements Document  {
         //  newnode.ownerDocument=this;
         // }
         // else
-
+		if(source instanceof NodeImpl)
+			userData = ((NodeImpl)source).getUserDataRecord();
         int type = source.getNodeType();
         switch (type) {
             case ELEMENT_NODE: {
@@ -1632,7 +1634,8 @@ extends ParentNode implements Document  {
             }
         }
 
-        callUserDataHandlers(source, newnode, UserDataHandler.NODE_IMPORTED);
+		if(userData != null)
+			callUserDataHandlers(source, newnode, UserDataHandler.NODE_IMPORTED,userData);
 
         // If deep, replicate and attach the kids.
         if (deep) {
@@ -1659,6 +1662,7 @@ extends ParentNode implements Document  {
      **/
     public Node adoptNode(Node source) {
         NodeImpl node;
+		Hashtable userData = null;
         try {
             node = (NodeImpl) source;
         } catch (ClassCastException e) {
@@ -1675,9 +1679,12 @@ extends ParentNode implements Document  {
                 }
                 //2. specified flag is set to true
                 attr.isSpecified(true);
+				userData = node.getUserDataRecord();
 
                 //3. change ownership
                 attr.setOwnerDocument(this);
+				if(userData != null )
+					setUserDataTable(node,userData);
                 break;
             }
             //entity, notation nodes are read only nodes.. so they can't be adopted.
@@ -1696,6 +1703,7 @@ extends ParentNode implements Document  {
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
             }
             case ENTITY_REFERENCE_NODE: {
+				userData = node.getUserDataRecord();
                 // remove node from wherever it is
                 Node parent = node.getParentNode();
                 if (parent != null) {
@@ -1708,6 +1716,8 @@ extends ParentNode implements Document  {
                 }
                 // change ownership
                 node.setOwnerDocument(this);
+				if(userData != null)
+					setUserDataTable(node,userData);
                 // set its new replacement value if any
                 if (docType == null) {
                     break;
@@ -1726,6 +1736,7 @@ extends ParentNode implements Document  {
                 break;
             }
             case ELEMENT_NODE: {
+				userData = node.getUserDataRecord();
                 // remove node from wherever it is
                 Node parent = node.getParentNode();
                 if (parent != null) {
@@ -1733,11 +1744,14 @@ extends ParentNode implements Document  {
                 }
                 // change ownership
                 node.setOwnerDocument(this);
+				if(userData != null)
+					setUserDataTable(node,userData);
                 // reconcile default attributes
                 ((ElementImpl)node).reconcileDefaultAttributes();
                 break;
             }
             default: {
+				userData = node.getUserDataRecord();
                 // remove node from wherever it is
                 Node parent = node.getParentNode();
                 if (parent != null) {
@@ -1745,12 +1759,15 @@ extends ParentNode implements Document  {
                 }
                 // change ownership
                 node.setOwnerDocument(this);
+				if(userData != null)
+					setUserDataTable(node,userData);
             }
         }
 
 		//DOM L3 Core CR
 		//http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#UserDataHandler-ADOPTED
-		callUserDataHandlers(source, null, UserDataHandler.NODE_ADOPTED);
+		if(userData != null)
+			callUserDataHandlers(source, null, UserDataHandler.NODE_ADOPTED,userData);
 
         return node;
     }
@@ -2205,7 +2222,18 @@ extends ParentNode implements Document  {
         return null;
     }
 
-    /**
+	protected Hashtable getUserDataRecord(Node n){
+        if (userData == null) {
+            return null;
+        }
+        Hashtable t = (Hashtable) userData.get(n);
+        if (t == null) {
+            return null;
+        }
+		return t;
+	}
+    
+	/**
      * Remove user data table for the given node.
      * @param n The node this operation applies to.
      * @return The removed table.
@@ -2223,6 +2251,8 @@ extends ParentNode implements Document  {
      * @param data The user data table.
      */
     void setUserDataTable(Node n, Hashtable data) {
+		if (userData == null)
+			userData = new Hashtable();
         if (data != null) {
             userData.put(n, data);
         }
@@ -2252,7 +2282,28 @@ extends ParentNode implements Document  {
         }
     }
 
-    /**
+	/**
+     * Call user data handlers when a node is deleted (finalized)
+     * @param n The node this operation applies to.
+     * @param c The copy node or null.
+     * @param operation The operation - import, clone, or delete.
+	 * @param handlers Data associated with n.
+	*/
+	void callUserDataHandlers(Node n, Node c, short operation,Hashtable userData) {
+        if (userData == null || userData.isEmpty()) {
+            return;
+        }
+        Enumeration keys = userData.keys();
+        while (keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            UserDataRecord r = (UserDataRecord) userData.get(key);
+            if (r.fHandler != null) {
+                r.fHandler.handle(operation, key, r.fData, n, c);
+            }
+        }
+    }
+    
+	/**
      * Call user data handlers to let them know the nodes they are related to
      * are being deleted. The alternative would be to do that on Node but
      * because the nodes are used as the keys we have a reference to them that
