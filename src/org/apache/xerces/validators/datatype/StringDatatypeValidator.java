@@ -373,7 +373,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             comparisonResult = compare( content, fMinInclusive );
             if ( comparisonResult <= 0 )
                 throw new InvalidDatatypeValueException( "Value '"+content+ "' must be" +
-                                                         "lexicographically greater or equal than" + fMinInclusive );
+                    "lexicographically greater or equal than '" + fMinInclusive  + "'." );
         }
 
 
@@ -381,7 +381,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             RegularExpression regex = new RegularExpression(fPattern, "X" );
             if ( regex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
-                                                        "does not match regular expression facet" + fPattern );
+                     "' does not match regular expression facet'" + fPattern + "'." );
         }
 
     }
