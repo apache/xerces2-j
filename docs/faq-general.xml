@@ -1,6 +1,28 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='General FAQs'>
+    <faq title="Jar file changes">
+    <q>What happened to xerces.jar</q>
+    <a>
+        <p>In order to take advantage of the fact that this parser is 
+        very often used in conjunction with other XML technologies, 
+        such as XSLT processors, which also rely on standard
+        API&apos;s like DOM and SAX, xerces.jar was split into two
+        jarfiles:
+        </p>
+        <ul>
+        <li><code>xmlParserAPIs.jar</code> contains the DOM level 2,
+        SAX 2.0 and JAXP 1.1 API&apos;s;</li>
+        <li><code>xercesImpl.jar</code> contains the implementation of
+        these API&apos;s as well as the XNI API.
+        </li>
+        </ul>
+        <p>For backwards compatibility, we have retained the ability
+        to generate old-style jarfiles.  For instructions, see <link
+        idref="install">the installation documentation</link>.
+        </p>
+    </a>
+ </faq>
  <faq title='Validation against DTD'>
   <q>How do I turn on DTD validation?</q>
   <a>

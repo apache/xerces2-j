@@ -45,6 +45,15 @@
     <submitter name='Elena Litani'/>
    </add>
 
+   <add>
+    <note>
+        Implemented split of xerces.jar file into an API-only jar file
+        (xmlParserAPIs.jar) and a jarfile containing only the API
+        implementation (xercesImpl.jar).
+     </note>
+     <submitter name="Neil Graham"/>
+    </add>
+
    <update>
     <note>
      Modified XNI document handler interface to include Augmentations as an
