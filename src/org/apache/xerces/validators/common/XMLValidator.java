@@ -127,7 +127,7 @@ public final class XMLValidator
 
     // debugging
 
-	private static XMLValidator schemaValidator = null;
+        private static XMLValidator schemaValidator = null;
     private static boolean DEBUG = false;
 
     // Element list
@@ -312,7 +312,7 @@ public final class XMLValidator
         fEntityHandler = entityHandler;
         fDocumentScanner = documentScanner;
 
-	//REVISIT: get the only instance of GrammarPool
+        //REVISIT: get the only instance of GrammarPool
         fGrammarPool = GrammarPool.instanceGrammarPool();
 
         // initialize
@@ -343,9 +343,9 @@ public final class XMLValidator
                              XMLDocumentHandler docHandler,
                              XMLDocumentHandler.DTDHandler dtdHandler) {
 
-		//****DEBUG****
-		if (DEBUG) print("(GEN) XMLValidator.initHandlers\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(GEN) XMLValidator.initHandlers\n");
+                //****DEBUG****
 
         fSendCharDataAsCharArray = sendCharDataAsCharArray;
         fEntityHandler.setSendCharDataAsCharArray(fSendCharDataAsCharArray);
@@ -580,18 +580,18 @@ public final class XMLValidator
         } 
         else {
             entityReader.scanQName(fastchar, element);
-			if (entityReader.lookingAtChar(':', false)) {
-				fErrorReporter.reportError(fErrorReporter.getLocator(),
-										   XMLMessages.XML_DOMAIN,
-										   XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-										   XMLMessages.P5_INVALID_CHARACTER,
-										   null,
-										   XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-				entityReader.skipPastNmtoken(' ');
-			}
-		}
+                        if (entityReader.lookingAtChar(':', false)) {
+                                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                                   XMLMessages.XML_DOMAIN,
+                                                                                   XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                                                                   XMLMessages.P5_INVALID_CHARACTER,
+                                                                                   null,
+                                                                                   XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                                entityReader.skipPastNmtoken(' ');
+                        }
+                }
 
-		//****DEBUG****
+                //****DEBUG****
         if (DEBUG) {
             String nsFlag = "";
             if ( fNamespacesEnabled ) {
@@ -599,7 +599,7 @@ public final class XMLValidator
             }
             print("(SCN) XMLValidator.scanElementType: " + param("elementType",element.rawname) + nsFlag + "\n");
         }
-		//****DEBUG****
+                //****DEBUG****
 
     } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
 
@@ -608,9 +608,9 @@ public final class XMLValidator
                                            char fastchar, QName element) 
         throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(SCN) XMLValidator.scanExpectedElementType ... \n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(SCN) XMLValidator.scanExpectedElementType ... \n");
+                //****DEBUG****
 
         if (fCurrentElementCharArrayRange == null) {
             fCurrentElementCharArrayRange = fStringPool.createCharArrayRange();
@@ -638,29 +638,29 @@ public final class XMLValidator
         } 
         else {
             entityReader.scanQName('=', attribute);
-			if (entityReader.lookingAtChar(':', false)) {
-				fErrorReporter.reportError(fErrorReporter.getLocator(),
-										   XMLMessages.XML_DOMAIN,
-										   XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-										   XMLMessages.P5_INVALID_CHARACTER,
-										   null,
-										   XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-				entityReader.skipPastNmtoken(' ');
-			}
-		}
+                        if (entityReader.lookingAtChar(':', false)) {
+                                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                                   XMLMessages.XML_DOMAIN,
+                                                                                   XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                                                                   XMLMessages.P5_INVALID_CHARACTER,
+                                                                                   null,
+                                                                                   XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                                entityReader.skipPastNmtoken(' ');
+                        }
+                }
 
-		//****DEBUG****
-		if (DEBUG) print("(SCN) XMLValidator.scanAttributeName: " + param("elementType",element.rawname) + param("attrName",attribute.rawname) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(SCN) XMLValidator.scanAttributeName: " + param("elementType",element.rawname) + param("attrName",attribute.rawname) + "\n");
+                //****DEBUG****
 
     } // scanAttributeName(XMLEntityHandler.EntityReader,QName,QName)
 
     /** Call start document. */
     public void callStartDocument() throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("\n(VAL) XMLValidator.callStartDocument\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("\n(VAL) XMLValidator.callStartDocument\n");
+                //****DEBUG****
 
         if (!fCalledStartDocument) {
             fDocumentHandler.startDocument();
@@ -671,9 +671,9 @@ public final class XMLValidator
     /** Call end document. */
     public void callEndDocument() throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.callEndDocument\n\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.callEndDocument\n\n");
+                //****DEBUG****
 
         if (fCalledStartDocument) {
             fDocumentHandler.endDocument();
@@ -699,9 +699,9 @@ public final class XMLValidator
         // (2) add default attrs (FIXED and NOT_FIXED)
         //
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.callStartElement: " + param("elementType",element.rawname) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.callStartElement: " + param("elementType",element.rawname) + "\n");
+                //****DEBUG****
 
         if (!fSeenRootElement) {
             fSeenRootElement = true;
@@ -741,14 +741,14 @@ public final class XMLValidator
         if (fElementDepth == fElementTypeStack.length) {
             int[] newStack = new int[fElementDepth * 2];
             
-	    // REVISIT: validation
-	    System.arraycopy(fScopeStack, 0, newStack, 0, fElementDepth);
+            // REVISIT: validation
+            System.arraycopy(fScopeStack, 0, newStack, 0, fElementDepth);
             fScopeStack = newStack;
             newStack = new int[fElementDepth * 2];
             System.arraycopy(fSchemaURIStack, 0, newStack, 0, fElementDepth);
             fSchemaURIStack = newStack;
             
-	    newStack = new int[fElementDepth * 2];
+            newStack = new int[fElementDepth * 2];
 
 
             System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
@@ -777,23 +777,23 @@ public final class XMLValidator
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
         fElementChildCount[fElementDepth] = 0;
 
-	//REVISIT: Validation
-	if ( fCurrentElementIndex > -1 ) {
-	    int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
-	    int index = fCurrentElementIndex & CHUNK_MASK;
-	    fCurrentScope = fScope[chunk][index];
-	}
-	fScopeStack[fElementDepth] = fCurrentScope;
-	fSchemaURIStack[fElementDepth] = fCurrentSchemaURI;
+        //REVISIT: Validation
+        if ( fCurrentElementIndex > -1 ) {
+            int chunk = fCurrentElementIndex >> CHUNK_SHIFT;
+            int index = fCurrentElementIndex & CHUNK_MASK;
+            fCurrentScope = fScope[chunk][index];
+        }
+        fScopeStack[fElementDepth] = fCurrentScope;
+        fSchemaURIStack[fElementDepth] = fCurrentSchemaURI;
 
     } // callStartElement(QName)
 
     /** Call end element. */
     public void callEndElement(int readerId) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
+                //****DEBUG****
 
         int prefixIndex = fCurrentElement.prefix;
         // REVISIT: Validation
@@ -825,7 +825,7 @@ public final class XMLValidator
             fNamespacesScope.decreaseDepth();
         }
 
-	// now pop this element off the top of the element stack
+        // now pop this element off the top of the element stack
         if (fElementDepth-- < 0) {
             throw new RuntimeException("FWK008 Element stack underflow");
         }
@@ -846,7 +846,7 @@ public final class XMLValidator
             return;
         }
 
-	//restore enclosing element to all the "current" variables
+        //restore enclosing element to all the "current" variables
         // REVISIT: Validation. This information needs to be stored.
         fCurrentElement.prefix = -1;
         fCurrentElement.localpart = fElementTypeStack[fElementDepth];
@@ -855,13 +855,13 @@ public final class XMLValidator
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
 
-	//REVISIT: Validation
-	fCurrentScope = fScopeStack[fElementDepth];
-	// if enclosing element's Schema is different, need to switch "context"
-	if ( fCurrentSchemaURI != fSchemaURIStack[fElementDepth] ) {
-	    fCurrentSchemaURI = fSchemaURIStack[fElementDepth];
-	    switchSchema(fCurrentSchemaURI);
-	}
+        //REVISIT: Validation
+        fCurrentScope = fScopeStack[fElementDepth];
+        // if enclosing element's Schema is different, need to switch "context"
+        if ( fCurrentSchemaURI != fSchemaURIStack[fElementDepth] ) {
+            fCurrentSchemaURI = fSchemaURIStack[fElementDepth];
+            switchSchema(fCurrentSchemaURI);
+        }
 
         if (fValidating) {
             fBufferDatatype = false;
@@ -873,9 +873,9 @@ public final class XMLValidator
     /** Returns true if the version number is valid. */
     public boolean validVersionNum(String version) {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.validVersionNum: version=" + version + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.validVersionNum: version=" + version + "\n");
+                //****DEBUG****
 
         return XMLCharacterProperties.validVersionNum(version);
     }
@@ -883,9 +883,9 @@ public final class XMLValidator
     /** Returns true if the encoding name is valid. */
     public boolean validEncName(String encoding) {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.validEncName: encoding=" + encoding + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.validEncName: encoding=" + encoding + "\n");
+                //****DEBUG****
 
         return XMLCharacterProperties.validEncName(encoding);
     }
@@ -893,9 +893,9 @@ public final class XMLValidator
     /** Call start CDATA section. */
     public void callStartCDATA() throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.callStartCDATA\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.callStartCDATA\n");
+                //****DEBUG****
 
         fDocumentHandler.startCDATA();
     }
@@ -903,9 +903,9 @@ public final class XMLValidator
     /** Call end CDATA section. */
     public void callEndCDATA() throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.callEndCDATA\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.callEndCDATA\n");
+                //****DEBUG****
 
         fDocumentHandler.endCDATA();
     }
@@ -913,9 +913,9 @@ public final class XMLValidator
     /** Call characters. */
     public void callCharacters(int ch) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.callCharacters: ... \n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.callCharacters: ... \n");
+                //****DEBUG****
 
         if (fCharRefData == null) {
             fCharRefData = new char[2];
@@ -954,13 +954,13 @@ public final class XMLValidator
     /** Scan doctype declaration. */
     public void scanDoctypeDecl(boolean standalone) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(SCN) XMLValidator.scanDoctypeDecl\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(SCN) XMLValidator.scanDoctypeDecl\n");
+                //****DEBUG****
 
-		//****DEBUG****
-		if (DEBUG) print("\n\n**** BEGIN DTD ****\n\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("\n\n**** BEGIN DTD ****\n\n");
+                //****DEBUG****
 
         fScanningDTD = true;
         fCheckedForSchema = true;
@@ -987,9 +987,9 @@ public final class XMLValidator
         }
         fScanningDTD = false;
 
-		//****DEBUG****
-		if (DEBUG) print("\n\n**** END DTD ****\n\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("\n\n**** END DTD ****\n\n");
+                //****DEBUG****
 
     } // scanDoctypeDecl(boolean)
 
@@ -1002,20 +1002,20 @@ public final class XMLValidator
             return XMLDocumentScanner.RESULT_FAILURE;
         }
 
-		//****DEBUG****
-		if (DEBUG) print("(SCN) XMLValidator.scanAttValue: " + param ("elementType",element.rawname) +  param ("attrName",attribute.rawname) + 
-							param ("attValue",attValue) + "\n" );
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(SCN) XMLValidator.scanAttValue: " + param ("elementType",element.rawname) +  param ("attrName",attribute.rawname) + 
+                                                        param ("attValue",attValue) + "\n" );
+                //****DEBUG****
 
-		//
-		// Check for Schema and load
-		//
+                //
+                // Check for Schema and load
+                //
 
         /*
         if (!fCheckedForSchema) {
             fCheckedForSchema = true;
             if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
-				
+                                
                 if (fSchemaImporter == null) {
                     fSchemaImporter = new SchemaImporter(fStringPool, fErrorReporter, fEntityHandler, this);
                 } else {
@@ -1028,15 +1028,15 @@ public final class XMLValidator
                     is = new InputSource(fs);
                 }
 
-				//****DEBUG****
-				if (DEBUG) print( "\n\n**** BEGIN SCHEMA ****\n\n" );
-				//****DEBUG****
+                                //****DEBUG****
+                                if (DEBUG) print( "\n\n**** BEGIN SCHEMA ****\n\n" );
+                                //****DEBUG****
 
                 fSchemaImporter.loadSchema(is);
 
-				//****DEBUG****
-				if (DEBUG) print( "\n\n**** END SCHEMA ****\n\n" );
-				//****DEBUG****
+                                //****DEBUG****
+                                if (DEBUG) print( "\n\n**** END SCHEMA ****\n\n" );
+                                //****DEBUG****
 
                 fSchemaDocument = fSchemaImporter.getSchemaDocument();
             }
@@ -1107,17 +1107,17 @@ public final class XMLValidator
 
     /** Start a new namespace declaration scope. */
     public void startNamespaceDeclScope(int prefix, int uri) throws Exception {
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.startNamespaceDeclScope: " + param("prefix",prefix) + param("uri",uri) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.startNamespaceDeclScope: " + param("prefix",prefix) + param("uri",uri) + "\n");
+                //****DEBUG****
         fDocumentHandler.startNamespaceDeclScope(prefix, uri);
     }
 
     /** End a namespace declaration scope. */
     public void endNamespaceDeclScope(int prefix) throws Exception {
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.endNamespaceDeclScope: " + param("prefix",prefix) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.endNamespaceDeclScope: " + param("prefix",prefix) + "\n");
+                //****DEBUG****
         fDocumentHandler.endNamespaceDeclScope(prefix);
     }
 
@@ -1128,10 +1128,10 @@ public final class XMLValidator
                                  int attValue, int attType, 
                                  int enumHandle) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.normalizeAttValue: " + param("elementType",element.rawname) + param("attValue",attValue) +
-							param("attType",attType) + param("enumHandle",enumHandle) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.normalizeAttValue: " + param("elementType",element.rawname) + param("attValue",attValue) +
+                                                        param("attType",attType) + param("enumHandle",enumHandle) + "\n");
+                //****DEBUG****
         AttributeValidator av = getValidatorForAttType(attType);
         return av.normalize(element, attribute, attValue, attType, enumHandle);
 
@@ -1161,9 +1161,9 @@ public final class XMLValidator
         //catch (Exception e) { e.printStackTrace(); }
         /***/
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addElement: " + param("elementType",element.rawname) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addElement: " + param("elementType",element.rawname) + "\n");
+                //****DEBUG****
 
         int elementIndex = getDeclaration(element);
         if (elementIndex != -1) {
@@ -1188,14 +1188,17 @@ public final class XMLValidator
     public int addElementDecl(QName elementDecl, int scopeDefined,
                               int contentSpecType, int contentSpec, 
                               boolean isExternal) {
-	int elementIndex = 
-	    addElementDecl(elementDecl,contentSpecType,contentSpec,isExternal);
+        int elementIndex = 
+            addElementDecl(elementDecl,contentSpecType,contentSpec,isExternal);
 
-	int chunk = elementIndex >> CHUNK_SHIFT;
-	int index = elementIndex & CHUNK_MASK;
-	fScope[chunk][index] = scopeDefined;
-	
-	return elementIndex;
+        if (elementIndex > -1) {
+ 
+            int chunk = elementIndex >> CHUNK_SHIFT;
+            int index = elementIndex & CHUNK_MASK;
+            fScope[chunk][index] = scopeDefined;
+        }
+        
+        return elementIndex;
 
     }
 
@@ -1214,11 +1217,11 @@ public final class XMLValidator
         //catch (Exception e) { e.printStackTrace(); }
         /***/
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addElementDecl: " + param("elementType",elementDecl.rawname) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addElementDecl: " + param("elementType",elementDecl.rawname) + "\n");
+                //****DEBUG****
 
-		int elementIndex = getDeclaration(elementDecl);
+                int elementIndex = getDeclaration(elementDecl);
         if (elementIndex != -1) {
             int chunk = elementIndex >> CHUNK_SHIFT;
             int index = elementIndex & CHUNK_MASK;
@@ -1321,9 +1324,9 @@ public final class XMLValidator
                                   int otherNodeValue, 
                                   boolean mustBeUnique) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addContentSpecNode: " + param("nodeType",nodeType) + param("nodeValue",nodeValue) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addContentSpecNode: " + param("nodeType",nodeType) + param("nodeValue",nodeValue) + "\n");
+                //****DEBUG****
 
         if (mustBeUnique) // REVISIT - merge these methods...
             return addContentSpecLeafNode(nodeValue);
@@ -1423,15 +1426,15 @@ public final class XMLValidator
 
     } // contentSpecNodeAsString(int):String
 
-	/** addAttDef. */
+        /** addAttDef. */
     public int addAttDef(QName elementDecl, QName attributeDecl, 
                          int attType, int enumeration, 
                          int attDefaultType, int attDefaultValue, 
                          boolean isExternal) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addAttDef\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addAttDef\n");
+                //****DEBUG****
 
         //
         // check fields
@@ -1617,7 +1620,7 @@ public final class XMLValidator
         // add to the attr list for this element
         //
         int nextIndex = -1;
-	/*        if (attDefaultValue != -1) {
+        /*        if (attDefaultValue != -1) {
             nextIndex = fAttlistHead[elemChunk][elemIndex];
             fAttlistHead[elemChunk][elemIndex] = fAttDefCount;
             if (nextIndex == -1) {
@@ -1634,20 +1637,20 @@ public final class XMLValidator
                 nextIndex = -1;
             }
         }*/
-	nextIndex = attlistHeadIndex;
+        nextIndex = attlistHeadIndex;
         fNextAttDef[chunk][index] = nextIndex;
         
-	//return fAttDefCount++;
-	return fAttDefCount++;
+        //return fAttDefCount++;
+        return fAttDefCount++;
 
     } // addAttDef(QName,QName,int,int,int,int,boolean):int
 
     /** Copy attributes. */
     public void copyAtts(QName fromElement, QName toElement) {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
+                //****DEBUG****
 
         // REVISIT: Validation.
         int fromElementIndex = getDeclaration(fromElement);
@@ -1682,9 +1685,9 @@ public final class XMLValidator
     // a hack for traverseElementDecl in Traverse Schema
     public void copyAttsForSchema(int fromAttDefIndex, QName toElement) {
 
-		//****DEBUG****
-		//if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                //if (DEBUG) print("(POP) XMLValidator.copyAtts: " + param("fromElementType",fromElement.rawname) + param("toElementType",toElement.rawname) + "\n");
+                //****DEBUG****
 
         // REVISIT: Validation.
         int toElementIndex = getDeclaration(toElement);
@@ -1693,9 +1696,9 @@ public final class XMLValidator
         }
 
         int chunk;
-	int index;
+        int index;
 
-	int attDefIndex = fromAttDefIndex;
+        int attDefIndex = fromAttDefIndex;
         while (attDefIndex != -1) {
             chunk = attDefIndex >> CHUNK_SHIFT;
             index = attDefIndex & CHUNK_MASK;
@@ -1886,9 +1889,9 @@ public final class XMLValidator
     protected int whatCanGoHere(int elementIndex, boolean fullyValid,
                                 InsertableElementsInfo info) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.whatCanGoHere: ...\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.whatCanGoHere: ...\n");
+                //****DEBUG****
 
         //
         //  Do some basic sanity checking on the info packet. First, make sure
@@ -1949,11 +1952,11 @@ public final class XMLValidator
     /** addId. */
     protected boolean addId(int idIndex) {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addId" + param("idIndex",idIndex) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addId" + param("idIndex",idIndex) + "\n");
+                //****DEBUG****
 
-		//System.err.println("addId(" + fStringPool.toString(idIndex) + ") " + idIndex);
+                //System.err.println("addId(" + fStringPool.toString(idIndex) + ") " + idIndex);
         Integer key = new Integer(idIndex);
         if (fIdDefs == null) {
             fIdDefs = new Hashtable();
@@ -1972,11 +1975,11 @@ public final class XMLValidator
     /** addIdRef. */
     protected void addIdRef(int idIndex) {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addIdRef" + param("idIndex",idIndex) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addIdRef" + param("idIndex",idIndex) + "\n");
+                //****DEBUG****
 
-		//System.err.println("addIdRef(" + fStringPool.toString(idIndex) + ") " + idIndex);
+                //System.err.println("addIdRef(" + fStringPool.toString(idIndex) + ") " + idIndex);
         Integer key = new Integer(idIndex);
         if (fIdDefs != null && fIdDefs.containsKey(key)) {
             return;
@@ -2008,9 +2011,9 @@ public final class XMLValidator
     /** Returns a locator implementation. */
     private LocatorImpl getLocatorImpl(LocatorImpl fillin) {
 
-		//****DEBUG****
-		if (DEBUG) print("(INF) XMLValidator.getLocatorImpl: ...\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(INF) XMLValidator.getLocatorImpl: ...\n");
+                //****DEBUG****
 
         Locator here = fErrorReporter.getLocator();
         if (fillin == null)
@@ -2034,9 +2037,9 @@ public final class XMLValidator
     private XMLContentModel createChildModel(int elementIndex) 
         throws CMException {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.createChildModel: " + param("elementIndex",elementIndex) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.createChildModel: " + param("elementIndex",elementIndex) + "\n");
+                //****DEBUG****
 
         //
         //  Get the content spec node for the element we are working on.
@@ -2128,9 +2131,9 @@ public final class XMLValidator
     private XMLContentModel getContentModel(int elementIndex) 
         throws CMException {
 
-		//****DEBUG****
-		if (DEBUG) print("(INF) XMLValidator.getContentModel: " + param("elementIndex",elementIndex) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(INF) XMLValidator.getContentModel: " + param("elementIndex",elementIndex) + "\n");
+                //****DEBUG****
 
         // See if a content model already exists first
         XMLContentModel cmRet = getElementContentModel(elementIndex);
@@ -2194,9 +2197,9 @@ public final class XMLValidator
     private CMNode buildSyntaxTree(int startNode, XMLContentSpec.Node specNode) 
         throws CMException {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.buildSyntaxTree: ... \n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.buildSyntaxTree: ... \n");
+                //****DEBUG****
 
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
@@ -2269,9 +2272,9 @@ public final class XMLValidator
     private void makeContentList(int startNode, XMLContentSpec.Node specNode) 
         throws CMException {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.makeContentList: ...\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.makeContentList: ...\n");
+                //****DEBUG****
 
         //
         //  Ok, we need to build up an array of the possible children
@@ -2313,9 +2316,9 @@ public final class XMLValidator
                                  XMLContentSpec.Node specNode) 
         throws CMException {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.buildContentList: ...\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.buildContentList: ...\n");
+                //****DEBUG****
 
         // Get the content spec for the passed start node
         getContentSpecNode(startNode, specNode);
@@ -2386,9 +2389,9 @@ public final class XMLValidator
     /** Reset common. */
     private void resetCommon(StringPool stringPool) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.resetCommon\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.resetCommon\n");
+                //****DEBUG****
         fStringPool = stringPool;
         fValidating = fValidationEnabled;
         fValidationEnabledByDynamic = false;
@@ -2413,9 +2416,9 @@ public final class XMLValidator
     /** Initialize. */
     private void init() {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.init\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.init\n");
+                //****DEBUG****
         fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
         fANYSymbol = fStringPool.addSymbol("ANY");
         fMIXEDSymbol = fStringPool.addSymbol("MIXED");
@@ -2444,9 +2447,9 @@ public final class XMLValidator
     private void appendContentSpecNode(int contentSpecIndex, 
                                        StringBuffer sb, boolean noParen) {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.appendContentSpecNode: ...\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.appendContentSpecNode: ...\n");
+                //****DEBUG****
 
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
@@ -2501,12 +2504,12 @@ public final class XMLValidator
 
     // default attribute
 
-	/** addDefaultAttributes. */
+        /** addDefaultAttributes. */
     private int addDefaultAttributes(int elementIndex, XMLAttrList attrList, int attrIndex, boolean validationEnabled, boolean standalone) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addDefaultAttributes\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addDefaultAttributes\n");
+                //****DEBUG****
 
         //
         // Check after all specified attrs are scanned
@@ -2612,11 +2615,11 @@ public final class XMLValidator
     } // addDefaultAttributes(int,XMLAttrList,int,boolean,boolean):int
 
     public void setCurrentScope(int scope) {
-	fCurrentScope = scope;
+        fCurrentScope = scope;
     }
 
     public int getCurrentScope() {
-	return fCurrentScope;
+        return fCurrentScope;
     }
 
     
@@ -2636,12 +2639,12 @@ public final class XMLValidator
         //          2)Should uri be checked if present? 
         int uri = qname.uri;
 
-	if (uri==-1) {
-	    fNameScopeToIndex.put(qname.localpart, fCurrentScope, decl);
-	}
-	else {
-	    fNameScopeToIndex.put(qname.localpart, TOP_LEVEL_SCOPE, decl);
-	}
+        if (uri==-1) {
+            fNameScopeToIndex.put(qname.localpart, fCurrentScope, decl);
+        }
+        else {
+            fNameScopeToIndex.put(qname.localpart, TOP_LEVEL_SCOPE, decl);
+        }
     }
 
     /** Returns the string pool to declaration mapping. */
@@ -2658,25 +2661,25 @@ public final class XMLValidator
     //REVISIT: ye
     private int getDeclaration(QName qname) {
     // REVISIT: should we pass in the scope? switchNS(uri) should be done
-	//      before we come in.
-	int uri = qname.uri;
-	if (uri == -1) {
-	    return fNameScopeToIndex.get(qname.localpart,fCurrentScope);
-	}
-	else {
-	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
-	}
-	/*else if ( uri == fCurrentSchemaURI ) {
-	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
-	}
-	else {
-	    switchNS(uri); //REVISIT: or this should be done before we come in.?? 
-	    return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
-	}*/
+        //      before we come in.
+        int uri = qname.uri;
+        if (uri == -1) {
+            return fNameScopeToIndex.get(qname.localpart,fCurrentScope);
+        }
+        else {
+            return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
+        }
+        /*else if ( uri == fCurrentSchemaURI ) {
+            return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
+        }
+        else {
+            switchNS(uri); //REVISIT: or this should be done before we come in.?? 
+            return fNameScopeToIndex.get(qname.localpart, TOP_LEVEL_SCOPE);
+        }*/
    }
 
    public int getDeclaration(int localpart, int scope) {
-	    return fNameScopeToIndex.get(localpart, scope);
+            return fNameScopeToIndex.get(localpart, scope);
    }
 
 
@@ -2685,9 +2688,9 @@ public final class XMLValidator
     /** Adds a content spec leaf node. */
     private int addContentSpecLeafNode(int nodeValue) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(POP) XMLValidator.addContentSpecLeafNode: " + param("nodeValue",nodeValue) + "\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(POP) XMLValidator.addContentSpecLeafNode: " + param("nodeValue",nodeValue) + "\n");
+                //****DEBUG****
 
         //
         // Check that we have not seen this value before...
@@ -2756,16 +2759,16 @@ public final class XMLValidator
             byte[][] newByteArray = new byte[chunk * 2][];
             System.arraycopy(fElementDeclIsExternal, 0, newByteArray, 0, chunk);
             fElementDeclIsExternal = newByteArray;
-	    //REVISIT: fElementType            
-	    int[][] newIntArray = new int[chunk * 2][];
+            //REVISIT: fElementType            
+            int[][] newIntArray = new int[chunk * 2][];
             System.arraycopy(fElementType, 0, newIntArray, 0, chunk);
             fElementType = newIntArray;
-	    //REVISIT: fElementQName           
-	    QName[][] newQNameArray = new QName[chunk * 2][];
+            //REVISIT: fElementQName           
+            QName[][] newQNameArray = new QName[chunk * 2][];
             System.arraycopy(fElementQName, 0, newQNameArray, 0, chunk);
             fElementQName = newQNameArray;
-	    //REVISIT: fScope             
-	    newIntArray = new int[chunk * 2][];
+            //REVISIT: fScope             
+            newIntArray = new int[chunk * 2][];
             System.arraycopy(fScope, 0, newIntArray, 0, chunk);
             fScope = newIntArray;
 
@@ -2788,13 +2791,13 @@ public final class XMLValidator
             // ignore
         }
         //REVISIT: fElementType, fElementQName, fScope
-	fElementType[chunk] = new int[CHUNK_SIZE];
-	fElementQName[chunk] = new QName[CHUNK_SIZE];
-	fScope[chunk] = new int[CHUNK_SIZE];
-	//by default, all the scope should be top-level
-	for (int i=0; i<CHUNK_SIZE; i++) {
-	    fScope[chunk][i] = TOP_LEVEL_SCOPE;
-	}
+        fElementType[chunk] = new int[CHUNK_SIZE];
+        fElementQName[chunk] = new QName[CHUNK_SIZE];
+        fScope[chunk] = new int[CHUNK_SIZE];
+        //by default, all the scope should be top-level
+        for (int i=0; i<CHUNK_SIZE; i++) {
+            fScope[chunk][i] = TOP_LEVEL_SCOPE;
+        }
 
         fElementDeclIsExternal[chunk] = new byte[CHUNK_SIZE];
         fContentSpecType[chunk] = new int[CHUNK_SIZE];
@@ -2807,7 +2810,7 @@ public final class XMLValidator
     } // ensureElementCapacity(int):boolean
 
     /** Ensures that there is enough storage for node information. */
-	private boolean ensureNodeCapacity(int chunk) {
+        private boolean ensureNodeCapacity(int chunk) {
 
         try {
             return fNodeType[chunk][0] == 0;
@@ -3077,14 +3080,14 @@ public final class XMLValidator
     /** Switchs to correct validating symbol tables when Schema changes.*/
 
     private void switchSchema (int schemaURI) {
-	Grammar newSchema = fGrammarPool.getGrammar(fStringPool.toString(schemaURI));
-	if ( newSchema == null ) {
-	    //REVISIT: should try to read the schema again here.
-	}
-	else {
-	    //REVISIT: copy all the reference the validating tables from the grammar to all the tables in hand.
-	    //         Don't forget to copy all the counters as well.
-	}
+        Grammar newSchema = fGrammarPool.getGrammar(fStringPool.toString(schemaURI));
+        if ( newSchema == null ) {
+            //REVISIT: should try to read the schema again here.
+        }
+        else {
+            //REVISIT: copy all the reference the validating tables from the grammar to all the tables in hand.
+            //         Don't forget to copy all the counters as well.
+        }
     }
     
 
@@ -3142,11 +3145,11 @@ public final class XMLValidator
             element.uri = elementURI;
         }
 
-	//REVISIT: is this the right place to check on if the Schema has changed?
-	if (element.uri != fCurrentSchemaURI) {
-	    fCurrentSchemaURI = element.uri;
-	    switchSchema(fCurrentSchemaURI);
-	}
+        //REVISIT: is this the right place to check on if the Schema has changed?
+        if (element.uri != fCurrentSchemaURI) {
+            fCurrentSchemaURI = element.uri;
+            switchSchema(fCurrentSchemaURI);
+        }
 
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);
@@ -3176,14 +3179,14 @@ public final class XMLValidator
 
     } // bindNamespacesToElementAndAttributes(QName,XMLAttrList)
 
-	/** Validates element and attributes. */
+        /** Validates element and attributes. */
     private void validateElementAndAttributes(QName element, 
                                               XMLAttrList attrList) 
         throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.validateElementAndAttributes: " + param("elementType",element.rawname) + " !!!!\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.validateElementAndAttributes: " + param("elementType",element.rawname) + " !!!!\n");
+                //****DEBUG****
 
         if (fElementDeclCount == 0 && fAttDefCount == 0 && 
             !fValidating && !fNamespacesEnabled) {
@@ -3260,9 +3263,9 @@ public final class XMLValidator
     /** Character data in content. */
     private void charDataInContent() {
 
-		//****DEBUG****
-		if (DEBUG) print("(???) XMLValidator.charDataInContent\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.charDataInContent\n");
+                //****DEBUG****
 
         int[] children = fElementChildren[fElementDepth];
         int childCount = fElementChildCount[fElementDepth];
@@ -3287,9 +3290,9 @@ public final class XMLValidator
     /** Peek child count. */
     private int peekChildCount() {
 
-		//****DEBUG****
-		if (DEBUG) print("(???) XMLValidator.peekChildCount\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.peekChildCount\n");
+                //****DEBUG****
 
         return fElementChildCount[fElementDepth];
     }
@@ -3297,9 +3300,9 @@ public final class XMLValidator
     /** Peek children. */
     private int[] peekChildren() {
 
-		//****DEBUG****
-		if (DEBUG) print("(???) XMLValidator.peekChildren\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.peekChildren\n");
+                //****DEBUG****
 
         return fElementChildren[fElementDepth];
     }
@@ -3343,9 +3346,9 @@ public final class XMLValidator
     private int checkContent(int elementIndex, 
                              int childCount, int[] children) throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(VAL) XMLValidator.checkContent: " + param("elementIndex",elementIndex) + "... \n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(VAL) XMLValidator.checkContent: " + param("elementIndex",elementIndex) + "... \n");
+                //****DEBUG****
 
         // Get the element name index from the element
         // REVISIT: Validation
@@ -3514,9 +3517,9 @@ public final class XMLValidator
      */
     private void checkIdRefs() throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(???) XMLValidator.checkIdRefs\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.checkIdRefs\n");
+                //****DEBUG****
 
         if (fIdRefs == null)
             return;
@@ -3543,9 +3546,9 @@ public final class XMLValidator
      */
     private void checkDeclaredElements() throws Exception {
 
-		//****DEBUG****
-		if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
+                //****DEBUG****
 
         for (int i = 0; i < fElementCount; i++) {
             int type = getContentSpecType(i);
@@ -3570,9 +3573,9 @@ public final class XMLValidator
     private void checkDeclaredElements(int elementIndex, 
                                        int contentSpecIndex) throws Exception {
         
-		//****DEBUG****
-		if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
-		//****DEBUG****
+                //****DEBUG****
+                if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
+                //****DEBUG****
 
         // get spec type and value
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
@@ -3631,22 +3634,22 @@ public final class XMLValidator
     // debugging
 
     /** Returns the string value for a string pool index. */
-	private String nameOf(int stringPoolIndex) {
-		return fStringPool.toString(stringPoolIndex);
-	}
+        private String nameOf(int stringPoolIndex) {
+                return fStringPool.toString(stringPoolIndex);
+        }
 
     /** Returns a contatenated name and its associated string pool value. */
-	private String param(String name, int stringPoolIndex) {
-		return name + "=\"" + fStringPool.toString(stringPoolIndex) + "\" ";
-	}
+        private String param(String name, int stringPoolIndex) {
+                return name + "=\"" + fStringPool.toString(stringPoolIndex) + "\" ";
+        }
 
     /** Prints a message to standard error. */
-	private void print(String message) {
-		if (this == schemaValidator ) {
-			System.err.println(message);
-		}
-	}
-	
+        private void print(String message) {
+                if (this == schemaValidator ) {
+                        System.err.println(message);
+                }
+        }
+        
     //
     // Interfaces
     //
@@ -3726,8 +3729,8 @@ public final class XMLValidator
 
     } // class ContentSpecImpl
 
-	/**
-	 * AttValidatorCDATA.
+        /**
+         * AttValidatorCDATA.
      */
     final class AttValidatorCDATA 
         implements AttributeValidator {
@@ -3746,7 +3749,7 @@ public final class XMLValidator
 
     } // class AttValidatorCDATA
 
-	/**
+        /**
      *  AttValidatorID.
      */
     final class AttValidatorID 
@@ -3964,7 +3967,7 @@ public final class XMLValidator
         }
 
     } // class AttValidatorIDREFS
-	
+        
     /**
      * AttValidatorENTITY.
      */
