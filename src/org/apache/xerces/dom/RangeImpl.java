@@ -1076,11 +1076,8 @@ public class RangeImpl  implements Range {
             // set the original text node to its new value
             if ( how != CLONE_CONTENTS )
             {
-                fStartContainer.setNodeValue(
-                    s.substring(0, fStartOffset ) +
-                    s.substring(fEndOffset)
-                );
-
+                ((TextImpl)fStartContainer).deleteData(fStartOffset,
+                     fEndOffset-fStartOffset) ;
                 // Nothing is partially selected, so collapse to start point
                 collapse( true );
             }
