@@ -203,6 +203,7 @@ public class UTF8Reader
                 }
                 int c = ((b0 >> 2) & 0x03) | ((b0 << 6) & 0xFF) | (b1 & 0x3F);
                 ch[out++] = (char)c;
+                count -= 1;
                 continue;
             }
 
@@ -233,6 +234,7 @@ public class UTF8Reader
                 int c = ((b0 << 4) & 0xF0) | ((b1 >> 2) & 0x0F) |
                         ((b1 << 6) & 0xFC) | (b2 & 0x3F);
                 ch[out++] = (char)c;
+                count -= 2;
                 continue;
             }
 
@@ -291,6 +293,7 @@ public class UTF8Reader
                 int ls = 0xDC00 | ((b2 & 0x0F) << 6) | (b3 & 0x3F);
                 ch[out++] = (char)hs;
                 ch[out++] = (char)ls;
+                count -= 3;
                 continue;
             }
 
