@@ -118,7 +118,7 @@ public class GetElementsByTagName {
     protected static final boolean DEFAULT_VALIDATION = false;
 
     /** Default Schema validation support (true). */
-    protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+    protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;

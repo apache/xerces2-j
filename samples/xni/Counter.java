@@ -60,6 +60,7 @@ package xni;
 import java.io.PrintWriter;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
@@ -139,7 +140,7 @@ public class Counter
     protected static final boolean DEFAULT_VALIDATION = false;
 
     /** Default Schema validation support (true). */
-    protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+    protected static final boolean DEFAULT_SCHEMA_VALIDATION = false;
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
@@ -237,7 +238,7 @@ public class Counter
     //
 
     /** Start document. */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
 
         fElements            = 0;
@@ -250,7 +251,7 @@ public class Counter
     } // startDocument(XMLLocator,String)
 
     /** Start element. */
-    public void startElement(QName element, XMLAttributes attrs)
+    public void startElement(QName element, XMLAttributes attrs, Augmentations augs)
         throws XNIException {
 
         fElements++;
@@ -273,7 +274,7 @@ public class Counter
     } // startElement(QName,XMLAttributes)
 
     /** Empty element. */
-    public void emptyElement(QName element, XMLAttributes attrs)
+    public void emptyElement(QName element, XMLAttributes attrs, Augmentations augs)
         throws XNIException {
 
         fElements++;
@@ -297,21 +298,21 @@ public class Counter
     } // startElement(QName,XMLAttributes)
 
     /** Characters. */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         fCharacters += text.length;
 
     } // characters(XMLString);
 
     /** Ignorable whitespace. */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
         fIgnorableWhitespace += text.length;
 
     } // ignorableWhitespace(XMLString);
 
     /** Processing instruction. */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
         fTagCharacters += 2; // "<?"
         fTagCharacters += target.length();
