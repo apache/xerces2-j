@@ -95,15 +95,14 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
 
         String  publicAttr = (String) attrValues[XSAttributeChecker.ATTIDX_PUBLIC];
         String  systemAttr = (String) attrValues[XSAttributeChecker.ATTIDX_SYSTEM];
-        if (nameAttr.length() == 0) {
-            //REVISIT: update error message
+        if (nameAttr == null) {
             reportGenericSchemaError("<notation> must have a name");
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
 
-        if (publicAttr.length() == 0 && systemAttr.length() == 0) {
-            reportGenericSchemaError("Invalid <notation> declaration");
+        if (publicAttr == null) {
+            reportGenericSchemaError("<notation> must have 'public' attribute");
         }
 
         XSNotationDecl notation = new XSNotationDecl();
@@ -128,7 +127,7 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
                                            "NotationContentRestricted",
                                            args,
                                            XMLErrorReporter.SEVERITY_ERROR);
-            
+
         }
         grammar.addGlobalNotationDecl(notation);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
