@@ -63,6 +63,7 @@ import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.psvi.ElementPSVI;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
@@ -243,8 +244,8 @@ public class Selector {
 
         } // startElement(QName,XMLAttrList,int)
 
-        public void endElement(QName element, XSElementDecl eDecl) {
-            super.endElement(element, eDecl);
+        public void endElement(QName element, XSElementDecl eDecl, ElementPSVI ePSVI) {
+            super.endElement(element, eDecl, ePSVI);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
                 fFieldActivator.endValueScopeFor(fIdentityConstraint);

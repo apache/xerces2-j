@@ -854,22 +854,6 @@ public class XMLSchemaValidator
         if (!allWhiteSpace) {
             fSawCharacters = true;
         }
-        //  call all active identity constraints
-        // REVISIT -IC: we need a matcher.characters(String)
-        int count = fMatcherStack.getMatcherCount();
-        XMLString text = null;
-        if (count > 0) {
-            //REVISIT-IC: Should we pass normalize data?
-            int bufLen = data.length();
-            char [] chars = new char[bufLen];
-            data.getChars(0, bufLen, chars, 0);
-            text = new XMLString(chars, 0, bufLen);
-        }
-        for (int i = 0; i < count; i++) {
-            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.characters(text);
-        }
-
         return allWhiteSpace;
     }
     
@@ -1158,7 +1142,7 @@ public class XMLSchemaValidator
 
     /**
      * Stack of active XPath matchers for identity constraints. All
-     * active XPath matchers are notified of startElement, characters
+     * active XPath matchers are notified of startElement
      * and endElement callbacks in order to perform their matches.
      * <p>
      * For each element with identity constraints, the selector of
@@ -1585,12 +1569,6 @@ public class XMLSchemaValidator
             fSawCharacters = true;
         }
 
-        // call all active identity constraints
-        int count = fMatcherStack.getMatcherCount();
-        for (int i = 0; i < count; i++) {
-            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.characters(text);
-        }
     } // handleCharacters(XMLString)
 
     /**
@@ -1697,13 +1675,6 @@ public class XMLSchemaValidator
 
         if (fSkipValidationDepth >= 0)
             return;
-
-        // call all active identity constraints
-        int count = fMatcherStack.getMatcherCount();
-        for (int i = 0; i < count; i++) {
-            XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.characters(text);
-        }
 
     } // handleIgnorableWhitespace(XMLString)
 
@@ -2108,7 +2079,7 @@ public class XMLSchemaValidator
         int oldCount = fMatcherStack.getMatcherCount();
         for (int i = oldCount - 1; i >= 0; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.endElement(element, fCurrentElemDecl);
+            matcher.endElement(element, fCurrentElemDecl, fCurrentPSVI);
         }
         if (fMatcherStack.size() > 0) {
             fMatcherStack.popContext();
@@ -2762,13 +2733,6 @@ public class XMLSchemaValidator
             char [] chars = new char[bufLen];
             fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
             defaultValue = new XMLString(chars, 0, bufLen);
-            // call all active identity constraints
-            int count = fMatcherStack.getMatcherCount();
-            for (int i = 0; i < count; i++) {
-                XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-                matcher.characters(defaultValue);
-            }
-
         }
         // fixed values are handled later, after xsi:type determined.
 

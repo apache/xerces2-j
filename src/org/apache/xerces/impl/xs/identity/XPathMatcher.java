@@ -74,6 +74,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.psvi.ElementPSVI;
 
 /**
  * XPath matcher.
@@ -269,13 +270,9 @@ public class XPathMatcher {
             fStepIndexes[i].clear();
             fCurrentStep[i] = 0;
             fNoMatchDepth[i] = 0;
-            fMatched[i]=false;
         }
 
         // keep values
-        /****
-        fNamespacesScope = context;
-        */
         fSymbolTable = symbolTable;
 
     } // startDocumentFragment(NamespaceContext)
@@ -470,30 +467,6 @@ public class XPathMatcher {
 
     } // startElement(QName,XMLAttrList,int)
 
-    /** Character content. */
-    public void characters(XMLString text)
-        throws XNIException {
-        if (DEBUG_METHODS) {
-            System.out.println(toString()+"#characters("+
-                               "text="+normalize(text.toString())+
-                               ")");
-        }
-
-        // collect match content
-        // so long as one of our paths is matching, store the content
-        for(int i=0; i<fLocationPaths.length; i++)
-            if (fBufferContent && fNoMatchDepth[i] == 0) {
-                if (!DEBUG_METHODS && DEBUG_METHODS2) {
-                    System.out.println(toString()+"#characters("+
-                                   "text="+normalize(text.toString())+
-                                   ")");
-                }
-                fMatchedBuffer.append(text);
-                break;
-            }
-
-    } // characters(char[],int,int)
-
     /**
      * The end of an element.
      *
@@ -502,7 +475,7 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void endElement(QName element, XSElementDecl eDecl) {
+    public void endElement(QName element, XSElementDecl eDecl, ElementPSVI ePSVI) {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
@@ -522,9 +495,7 @@ public class XPathMatcher {
                 if (j<i) continue;
                 if (fBufferContent) {
                     fBufferContent = false;
-                    fMatchedString = fMatchedBuffer.toString();
-                    // REVISIT: cache this.
-                    // REVISIT:  make sure type's from same schema!
+                    fMatchedString = ePSVI.getSchemaNormalizedValue();
                     // REVISIT:  make sure type is simple!
                     XSSimpleType val=null;
 
@@ -569,7 +540,6 @@ public class XPathMatcher {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#endDocumentFragment()");
         }
-        clear();
     } // endDocumentFragment()
 
     //
@@ -618,7 +588,7 @@ public class XPathMatcher {
         fBufferContent = false;
         fMatchedBuffer.setLength(0);
         fMatchedString = null;
-        for(int i = 0; i<fLocationPaths.length; i++)
+        for(int i = 0; i < fLocationPaths.length; i++) 
             fMatched[i] = false;
     } // clear()
 
