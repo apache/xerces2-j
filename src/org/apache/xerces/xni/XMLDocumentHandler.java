@@ -76,11 +76,11 @@ public interface XMLDocumentHandler {
 
     /**
      * The start of the document.
-     *
+     * 
      * @param locator  The document locator, or null if the document
-     *                 location cannot be reported during the parsing 
+     *                 location cannot be reported during the parsing
      *                 of this document. However, it is <em>strongly</em>
-     *                 recommended that a locator be supplied that can 
+     *                 recommended that a locator be supplied that can
      *                 at least report the system identifier of the
      *                 document.
      * @param encoding The auto-detected IANA encoding name of the entity
@@ -88,10 +88,11 @@ public interface XMLDocumentHandler {
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
-     *     
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs     Additional information that may include infoset augmentations
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
         throws XNIException;
 
     /**
@@ -103,34 +104,41 @@ public interface XMLDocumentHandler {
      * @param encoding   The IANA encoding name of the document, or null if
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs       Additional information that may include infoset augmentations
+     *                   
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void xmlDecl(String version, String encoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
         throws XNIException;
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
      * 
-     * @param rootElement The name of the root element.
-     * @param publicId    The public identifier if an external DTD or null
-     *                    if the external DTD is specified using SYSTEM.
-     * @param systemId    The system identifier if an external DTD, null
-     *                    otherwise.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param rootElement
+     *                 The name of the root element.
+     * @param publicId The public identifier if an external DTD or null
+     *                 if the external DTD is specified using SYSTEM.
+     * @param systemId The system identifier if an external DTD, null
+     *                 otherwise.
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void doctypeDecl(String rootElement, String publicId, String systemId)
+    public void doctypeDecl(String rootElement, String publicId, String systemId, Augmentations augs)
         throws XNIException;
 
     /**
      * A comment.
      * 
-     * @param text The text in the comment.
-     *
-     * @throws XNIException Thrown by application to signal an error.
+     * @param text   The text in the comment.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException;
+    public void comment(XMLString text, Augmentations augs) throws XNIException;
 
     /**
      * A processing instruction. Processing instructions consist of a
@@ -145,10 +153,12 @@ public interface XMLDocumentHandler {
      * 
      * @param target The target.
      * @param data   The data or null if none specified.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException;
 
     /**
@@ -157,10 +167,12 @@ public interface XMLDocumentHandler {
      * 
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
         throws XNIException;
 
     /**
@@ -168,10 +180,12 @@ public interface XMLDocumentHandler {
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs       Additional information that may include infoset augmentations
+     *                   
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException;
 
     /**
@@ -179,10 +193,12 @@ public interface XMLDocumentHandler {
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs       Additional information that may include infoset augmentations
+     *                   
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException;
 
     /**
@@ -196,20 +212,24 @@ public interface XMLDocumentHandler {
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param baseSystemId
+     *                 The base system identifier of the entity if
+     *                 the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
     public void startEntity(String name, 
                             String publicId, String systemId,
                             String baseSystemId,
-                            String encoding) throws XNIException;
+                            String encoding,
+                            Augmentations augs) throws XNIException;
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -224,10 +244,12 @@ public interface XMLDocumentHandler {
      * 
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException;
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException;
 
     /**
      * This method notifies the end of an entity.
@@ -235,20 +257,24 @@ public interface XMLDocumentHandler {
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      * 
-     * @param name The name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException;
+    public void endEntity(String name, Augmentations augs) throws XNIException;
 
     /**
      * Character content.
      * 
-     * @param text The content.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param text   The content.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException;
+    public void characters(XMLString text, Augmentations augs) throws XNIException;
 
     /**
      * Ignorable whitespace. For this method to be called, the document
@@ -258,50 +284,65 @@ public interface XMLDocumentHandler {
      * characters in the document are ignorable based on the element
      * content model.
      * 
-     * @param text The ignorable whitespace.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param text   The ignorable whitespace.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException;
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException;
 
     /**
      * The end of an element.
      * 
      * @param element The name of the element.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs    Additional information that may include infoset augmentations
+     *                
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException;
+    public void endElement(QName element, Augmentations augs) throws XNIException;
 
     /**
      * The end of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
      * 
      * @param prefix The namespace prefix.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException;
-
-    /** 
-     * The start of a CDATA section. 
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startCDATA() throws XNIException;
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException;
 
     /**
-     * The end of a CDATA section. 
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * The start of a CDATA section.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException;
+    public void startCDATA(Augmentations augs) throws XNIException;
+
+    /**
+     * The end of a CDATA section.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endCDATA(Augmentations augs) throws XNIException;
 
     /**
      * The end of the document.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
+     * 
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException;
+    public void endDocument(Augmentations augs) throws XNIException;
 
 } // interface XMLDocumentHandler

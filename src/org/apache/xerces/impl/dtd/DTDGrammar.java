@@ -302,7 +302,7 @@ public class DTDGrammar
 
     /**
      * This method notifies of the start of an entity. The DTD has the 
-     * pseudo-name of "[dtd]; and parameter entity names start with '%'.
+     * pseudo-name of "[dtd]" and parameter entity names start with '%'.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the start of the DTD entity by calling the
@@ -348,7 +348,7 @@ public class DTDGrammar
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; and parameter entity names start with '%'.
+     * of "[dtd]" and parameter entity names start with '%'.
      * <p>
      * <strong>Note:</strong> Since the DTD is an entity, the handler
      * will be notified of the end of the DTD entity by calling the

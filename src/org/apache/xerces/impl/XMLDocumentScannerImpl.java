@@ -387,7 +387,7 @@ public class XMLDocumentScannerImpl
 
     /**
      * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]; parameter entity names start with '%'; and
+     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
      * general entities are just specified by their name.
      * 
      * @param name     The name of the entity.
@@ -420,7 +420,7 @@ public class XMLDocumentScannerImpl
         // call handler
         if (fDocumentHandler != null) {
             if (name.equals("[xml]")) {
-                fDocumentHandler.startDocument(fEntityScanner, encoding);
+                fDocumentHandler.startDocument(fEntityScanner, encoding, fAugmentations);
             }
         }
 
@@ -428,7 +428,7 @@ public class XMLDocumentScannerImpl
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; parameter entity names start with '%'; and general entities 
+     * of "[dtd]" parameter entity names start with '%'; and general entities 
      * are just specified by their name.
      * 
      * @param name The name of the entity.
@@ -442,7 +442,7 @@ public class XMLDocumentScannerImpl
         // call handler
         if (fDocumentHandler != null) {
             if (name.equals("[xml]")) {
-                fDocumentHandler.endDocument();
+                fDocumentHandler.endDocument(fAugmentations);
             }
         }
         
@@ -493,7 +493,8 @@ public class XMLDocumentScannerImpl
             //       subset) is parsed correctly but SAX2 requires that
             //       it knows the root element name and public and system
             //       identifier for the startDTD call. -Ac
-            fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId);
+            fDocumentHandler.doctypeDecl(fDoctypeName, fDoctypePublicId, fDoctypeSystemId,
+                                         fAugmentations);
         }
 
         // is there an internal subset?

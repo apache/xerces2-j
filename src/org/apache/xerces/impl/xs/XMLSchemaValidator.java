@@ -78,6 +78,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.IntStack;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
@@ -315,13 +316,13 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
     throws XNIException {
 
         handleStartDocument(locator, encoding);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding);
+            fDocumentHandler.startDocument(locator, encoding, augs);
         }
 
     } // startDocument(XMLLocator,String)
@@ -338,12 +339,12 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void xmlDecl(String version, String encoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
     throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.xmlDecl(version, encoding, standalone);
+            fDocumentHandler.xmlDecl(version, encoding, standalone, augs);
         }
 
     } // xmlDecl(String,String,String)
@@ -359,12 +360,13 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void doctypeDecl(String rootElement, String publicId, String systemId)
+    public void doctypeDecl(String rootElement, String publicId, String systemId, 
+                            Augmentations augs)
     throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
+            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId, augs);
         }
 
     } // doctypeDecl(String,String,String)
@@ -378,13 +380,13 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
     throws XNIException {
 
         handleStartPrefix(prefix, uri);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri);
+            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
         }
 
     } // startPrefixMapping(String,String)
@@ -397,13 +399,13 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
         handleStartElement(element, attributes);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes);
+            fDocumentHandler.startElement(element, attributes, augs);
         }
 
     } // startElement(QName,XMLAttributes)
@@ -416,7 +418,7 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
     throws XNIException {
 
         handleStartElement(element, attributes);
@@ -426,13 +428,18 @@ public class XMLSchemaValidator
         XMLString defaultValue = handleEndElement(element);
         // call handlers
         if (fDocumentHandler != null) {
-            if (defaultValue == null) {
+            
+            fDocumentHandler.emptyElement(element, attributes, augs);
+            
+            // REVISIT: should we send default element value?
+            /*if (defaultValue == null) {
                 fDocumentHandler.emptyElement(element, attributes);
             } else {
                 fDocumentHandler.startElement(element, attributes);
                 fDocumentHandler.characters(defaultValue);
                 fDocumentHandler.endElement(element);
             }
+            */
         }
 
     } // emptyElement(QName,XMLAttributes)
@@ -444,12 +451,12 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         handleCharacters(text);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.characters(text);
+            fDocumentHandler.characters(text, augs);
         }
 
     } // characters(XMLString)
@@ -466,12 +473,12 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
         handleIgnorableWhitespace(text);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(text);
+            fDocumentHandler.ignorableWhitespace(text, augs);
         }
 
     } // ignorableWhitespace(XMLString)
@@ -483,16 +490,17 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
 
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, add a characters call.
         XMLString defaultValue = handleEndElement(element);
         // call handlers
         if (fDocumentHandler != null) {
-            if (defaultValue != null)
-                fDocumentHandler.characters(defaultValue);
-            fDocumentHandler.endElement(element);
+            // REVISIT: should we send default element values??
+            //if (defaultValue != null)
+            //    fDocumentHandler.characters(defaultValue);
+            fDocumentHandler.endElement(element, augs);
         }
 
     } // endElement(QName)
@@ -505,11 +513,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix);
+            fDocumentHandler.endPrefixMapping(prefix, augs);
         }
 
     } // endPrefixMapping(String)
@@ -519,11 +527,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startCDATA();
+            fDocumentHandler.startCDATA(augs);
         }
 
     } // startCDATA()
@@ -533,11 +541,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException {
+    public void endCDATA(Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endCDATA();
+            fDocumentHandler.endCDATA(augs);
         }
 
     } // endCDATA()
@@ -547,12 +555,12 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException {
+    public void endDocument(Augmentations augs) throws XNIException {
 
         handleEndDocument();
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endDocument();
+            fDocumentHandler.endDocument(augs);
         }
 
     } // endDocument()
@@ -563,13 +571,8 @@ public class XMLSchemaValidator
 
     /**
      * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]; parameter entity names start with '%'; and
+     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
      * general entity names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the start of the DTD entity by calling the
-     * startEntity method with the entity name "[dtd]" <em>before</em> calling
-     * the startDTD method.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -591,12 +594,13 @@ public class XMLSchemaValidator
     public void startEntity(String name,
                             String publicId, String systemId,
                             String baseSystemId,
-                            String encoding) throws XNIException {
+                            String encoding, 
+                            Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startEntity(name, publicId, systemId,
-                                         baseSystemId, encoding);
+                                         baseSystemId, encoding, augs);
         }
 
     } // startEntity(String,String,String,String,String)
@@ -617,11 +621,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) throws XNIException {
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.textDecl(version, encoding);
+            fDocumentHandler.textDecl(version, encoding, augs);
         }
 
     } // textDecl(String,String)
@@ -633,11 +637,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException {
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.comment(text);
+            fDocumentHandler.comment(text, augs);
         }
 
     } // comment(XMLString)
@@ -658,25 +662,20 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
     throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target, data);
+            fDocumentHandler.processingInstruction(target, data, augs);
         }
 
     } // processingInstruction(String,XMLString)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; parameter entity names start with '%'; and general entity
+     * of "[dtd]" parameter entity names start with '%'; and general entity
      * names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -685,11 +684,11 @@ public class XMLSchemaValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name);
+            fDocumentHandler.endEntity(name, augs);
         }
 
     } // endEntity(String)

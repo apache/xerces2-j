@@ -65,6 +65,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -391,16 +392,18 @@ public class XMLNamespaceBinder
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name,
                             String publicId, String systemId,
                             String baseSystemId,
-                            String encoding) throws XNIException {
+                            String encoding, 
+                            Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.startEntity(name, publicId, systemId,
-                                         baseSystemId, encoding);
+                                         baseSystemId, encoding, augs);
         }
     } // startEntity(String,String,String,String,String)
 
@@ -417,13 +420,14 @@ public class XMLNamespaceBinder
      *
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding)
+    public void textDecl(String version, String encoding, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.textDecl(version, encoding);
+            fDocumentHandler.textDecl(version, encoding, augs);
         }
     } // textDecl(String,String)
 
@@ -432,10 +436,10 @@ public class XMLNamespaceBinder
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startDocument(locator, encoding);
+            fDocumentHandler.startDocument(locator, encoding, augs);
         }
     } // startDocument(XMLLocator,String)
 
@@ -448,13 +452,14 @@ public class XMLNamespaceBinder
      * @param encoding   The IANA encoding name of the document, or null if
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void xmlDecl(String version, String encoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.xmlDecl(version, encoding, standalone);
+            fDocumentHandler.xmlDecl(version, encoding, standalone, augs);
         }
     } // xmlDecl(String,String,String)
 
@@ -466,14 +471,15 @@ public class XMLNamespaceBinder
      *                    if the external DTD is specified using SYSTEM.
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement,
-                            String publicId, String systemId)
+                            String publicId, String systemId, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
+            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId, augs);
         }
     } // doctypeDecl(String,String,String)
 
@@ -481,12 +487,13 @@ public class XMLNamespaceBinder
      * A comment.
      *
      * @param text The text in the comment.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException {
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.comment(text);
+            fDocumentHandler.comment(text, augs);
         }
     } // comment(XMLString)
 
@@ -503,13 +510,14 @@ public class XMLNamespaceBinder
      *
      * @param target The target.
      * @param data   The data or null if none specified.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.processingInstruction(target, data);
+            fDocumentHandler.processingInstruction(target, data, augs);
         }
     } // processingInstruction(String,XMLString)
 
@@ -519,10 +527,11 @@ public class XMLNamespaceBinder
      *
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
         throws XNIException {
 
         // REVISIT: Should prefix mapping from previous stage in
@@ -530,7 +539,7 @@ public class XMLNamespaceBinder
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri);
+            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
         }
 
     } // startPrefixMapping(String,String)
@@ -546,18 +555,20 @@ public class XMLNamespaceBinder
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
         if (fNamespaces) {
-            handleStartElement(element, attributes, false);
+            handleStartElement(element, attributes, augs, false);
         }
         else if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes);
+            fDocumentHandler.startElement(element, attributes, augs);
         }
+
 
     } // startElement(QName,XMLAttributes)
 
@@ -566,18 +577,19 @@ public class XMLNamespaceBinder
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
         if (fNamespaces) {
-            handleStartElement(element, attributes, true);
-            handleEndElement(element, true);
+            handleStartElement(element, attributes, augs, true);
+            handleEndElement(element, augs, true);
         }
         else if (fDocumentHandler != null) {
-            fDocumentHandler.emptyElement(element, attributes);
+            fDocumentHandler.emptyElement(element, attributes, augs);
         }
 
     } // emptyElement(QName,XMLAttributes)
@@ -586,12 +598,13 @@ public class XMLNamespaceBinder
      * Character content.
      *
      * @param text The content.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.characters(text);
+            fDocumentHandler.characters(text, augs);
         }
     } // characters(XMLString)
 
@@ -604,12 +617,13 @@ public class XMLNamespaceBinder
      * content model.
      *
      * @param text The ignorable whitespace.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.ignorableWhitespace(text);
+            fDocumentHandler.ignorableWhitespace(text, augs);
         }
     } // ignorableWhitespace(XMLString)
 
@@ -617,16 +631,17 @@ public class XMLNamespaceBinder
      * The end of an element.
      *
      * @param element The name of the element.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
 
         if (fNamespaces) {
-            handleEndElement(element, false);
+            handleEndElement(element, augs, false);
         }
         else if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(element);
+            fDocumentHandler.endElement(element, augs);
         }
 
     } // endElement(QName)
@@ -636,51 +651,55 @@ public class XMLNamespaceBinder
      * called when namespace processing is enabled.
      *
      * @param prefix The namespace prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
 
         // REVISIT: Should prefix mapping from previous stage in
         //          the pipeline affect the namespaces?
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix);
+            fDocumentHandler.endPrefixMapping(prefix, augs);
         }
 
     } // endPrefixMapping(String)
 
     /**
      * The start of a CDATA section.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startCDATA();
+            fDocumentHandler.startCDATA(augs);
         }
     } // startCDATA()
 
     /**
      * The end of a CDATA section.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException {
+    public void endCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.endCDATA();
+            fDocumentHandler.endCDATA(augs);
         }
     } // endCDATA()
 
     /**
-     * The end of the document.
+     * The end of the document.     
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException {
+    public void endDocument(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.endDocument();
+            fDocumentHandler.endDocument(augs);
         }
     } // endDocument()
 
@@ -692,12 +711,13 @@ public class XMLNamespaceBinder
      * appearing as part of attribute values.
      *
      * @param name The name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.endEntity(name);
+            fDocumentHandler.endEntity(name, augs);
         }
     } // endEntity(String)
 
@@ -706,7 +726,8 @@ public class XMLNamespaceBinder
     //
 
     /** Handles start element. */
-    protected void handleStartElement(QName element, XMLAttributes attributes,
+    protected void handleStartElement(QName element, XMLAttributes attributes, 
+                                      Augmentations augs, 
                                       boolean isEmpty) throws XNIException {
 
         // add new namespace context
@@ -739,7 +760,7 @@ public class XMLNamespaceBinder
 
                 // call handler
                 if (fDocumentHandler != null) {
-                    fDocumentHandler.startPrefixMapping(prefix, uri);
+                    fDocumentHandler.startPrefixMapping(prefix, uri, augs);
                 }
             }
         }
@@ -799,21 +820,22 @@ public class XMLNamespaceBinder
                 }
             }
         }
-
+       
         // call handler
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             if (isEmpty) {
-                fDocumentHandler.emptyElement(element, attributes);
+                fDocumentHandler.emptyElement(element, attributes, augs);
             }
             else {
-                fDocumentHandler.startElement(element, attributes);
+                fDocumentHandler.startElement(element, attributes, augs);
             }
         }
+
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
     /** Handles end element. */
-    protected void handleEndElement(QName element, boolean isEmpty)
+    protected void handleEndElement(QName element, Augmentations augs, boolean isEmpty)
         throws XNIException {
 
         // bind element
@@ -826,7 +848,7 @@ public class XMLNamespaceBinder
         // call handlers
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             if (!isEmpty) {
-                fDocumentHandler.endElement(element);
+                fDocumentHandler.endElement(element, augs);
             }
         }
 
@@ -835,7 +857,7 @@ public class XMLNamespaceBinder
             int count = fNamespaceSupport.getDeclaredPrefixCount();
             for (int i = count - 1; i >= 0; i--) {
                 String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
-                fDocumentHandler.endPrefixMapping(prefix);
+                fDocumentHandler.endPrefixMapping(prefix, augs);
             }
         }
 

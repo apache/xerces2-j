@@ -69,6 +69,7 @@ import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
@@ -348,13 +349,8 @@ public abstract class AbstractDOMParser
 
     /**
      * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]; parameter entity names start with '%'; and
+     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
      * general entity names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the start of the DTD entity by calling the
-     * startEntity method with the entity name "[dtd]" <em>before</em> calling
-     * the startDTD method.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -373,8 +369,12 @@ public abstract class AbstractDOMParser
      */
     public void startEntity(String name, String publicId, String systemId,
                             String baseSystemId,
-                            String encoding) throws XNIException {
+                            String encoding, 
+                            Augmentations augs) throws XNIException {
 
+        // REVISIT: investigate fInDTD & fInDocument flags
+        // this method now only called by DocumentHandler
+        // comment(), endEntity(), processingInstruction(), textDecl()
         if (fInDocument && !fInDTD && fCreateEntityRefNodes ) {
             if (!fDeferNodeExpansion) {
                 EntityReference er = fDocument.createEntityReference(name);
@@ -398,7 +398,7 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException {
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
 
         if (!fDeferNodeExpansion) {
             Comment comment = fDocument.createComment(text.toString());
@@ -428,7 +428,7 @@ public abstract class AbstractDOMParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
 
         if (!fDeferNodeExpansion) {
@@ -454,10 +454,11 @@ public abstract class AbstractDOMParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
 
         fInDocument = true;
@@ -511,11 +512,12 @@ public abstract class AbstractDOMParser
      *                    if the external DTD is specified using SYSTEM.
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement,
-                            String publicId, String systemId)
+                            String publicId, String systemId, Augmentations augs)
         throws XNIException {
 
         if (!fDeferNodeExpansion) {
@@ -540,10 +542,11 @@ public abstract class AbstractDOMParser
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
         if (!fDeferNodeExpansion) {
             Element el;
@@ -623,10 +626,11 @@ public abstract class AbstractDOMParser
      * Character content.
      *
      * @param text The content.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
         if (!fDeferNodeExpansion) {
             if (fInCDATASection) {
                 if (fCurrentCDATASection == null) {
@@ -685,10 +689,11 @@ public abstract class AbstractDOMParser
      * content model.
      *
      * @param text The ignorable whitespace.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
         if (!fIncludeIgnorableWhitespace) {
             return;
@@ -723,10 +728,11 @@ public abstract class AbstractDOMParser
      * The end of an element.
      *
      * @param element The name of the element.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
         if (!fDeferNodeExpansion) {
             fCurrentNode = fCurrentNode.getParentNode();
         }
@@ -743,28 +749,31 @@ public abstract class AbstractDOMParser
      * called when namespace processing is enabled.
      *
      * @param prefix The namespace prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
     } // endPrefixMapping(String)
 
     /**
      * The start of a CDATA section.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
 
         fInCDATASection = true;
     } // startCDATA()
 
     /**
      * The end of a CDATA section.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException {
+    public void endCDATA(Augmentations augs) throws XNIException {
 
         fInCDATASection = false;
         if (!fDeferNodeExpansion) {
@@ -785,10 +794,11 @@ public abstract class AbstractDOMParser
 
     /**
      * The end of the document.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException {
+    public void endDocument(Augmentations augs) throws XNIException {
 
         fInDocument = false;
         if (!fDeferNodeExpansion) {
@@ -806,22 +816,18 @@ public abstract class AbstractDOMParser
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; parameter entity names start with '%'; and general entity
+     * of "[dtd]" parameter entity names start with '%'; and general entity
      * names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
      *
      * @param name The name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
 
         if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {

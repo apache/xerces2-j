@@ -57,6 +57,7 @@
 
 package xni;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XNIException;
@@ -101,9 +102,9 @@ public class UpperCaseFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
-        super.startElement(toUpperCase(element), attributes);
+        super.startElement(toUpperCase(element), attributes, augs);
     } // startElement(QName,XMLAttributes)
     
     /**
@@ -114,9 +115,9 @@ public class UpperCaseFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
-        super.emptyElement(toUpperCase(element), attributes);
+        super.emptyElement(toUpperCase(element), attributes, augs);
     } // emptyElement(QName,XMLAttributes)
     
     /**
@@ -126,9 +127,9 @@ public class UpperCaseFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element)
+    public void endElement(QName element, Augmentations augs)
         throws XNIException {
-        super.endElement(toUpperCase(element));
+        super.endElement(toUpperCase(element), augs);
     } // endElement(QName)
     
     //

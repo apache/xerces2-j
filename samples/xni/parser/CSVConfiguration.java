@@ -64,9 +64,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.StringTokenizer;
 
+import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
@@ -122,6 +124,9 @@ public class CSVConfiguration
     
     /** An empty list of attributes. */
     protected static final XMLAttributes EMPTY_ATTRS = new XMLAttributesImpl();
+
+    /** An empty list of augmentations. */
+    protected final Augmentations fAugmentations = new AugmentationsImpl();
 
     /** A newline XMLString. */
     private final XMLString NEWLINE = new XMLStringBuffer("\n");
@@ -184,9 +189,9 @@ public class CSVConfiguration
 
         // start document
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(null, "UTF-8");
-            fDocumentHandler.xmlDecl("1.0", "UTF-8", "true");
-            fDocumentHandler.doctypeDecl("csv", null, null);
+            fDocumentHandler.startDocument(null, "UTF-8", fAugmentations);
+            fDocumentHandler.xmlDecl("1.0", "UTF-8", "true", fAugmentations);
+            fDocumentHandler.doctypeDecl("csv", null, null, fAugmentations);
         }
         if (fDTDHandler != null) {
             fDTDHandler.startDTD(null);
@@ -221,36 +226,36 @@ public class CSVConfiguration
             fDTDHandler.endDTD();
         }
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(CSV, EMPTY_ATTRS);
+            fDocumentHandler.startElement(CSV, EMPTY_ATTRS, fAugmentations);
         }
 
         // read lines
         String line;
         while ((line = bufferedReader.readLine()) != null) {
             if (fDocumentHandler != null) {
-                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE);
-                fDocumentHandler.startElement(ROW, EMPTY_ATTRS);
+                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE, fAugmentations);
+                fDocumentHandler.startElement(ROW, EMPTY_ATTRS, fAugmentations);
                 StringTokenizer tokenizer = new StringTokenizer(line, ",");
                 while (tokenizer.hasMoreTokens()) {
-                    fDocumentHandler.ignorableWhitespace(NEWLINE_TWO_SPACES);
-                    fDocumentHandler.startElement(COL, EMPTY_ATTRS);
+                    fDocumentHandler.ignorableWhitespace(NEWLINE_TWO_SPACES, fAugmentations);
+                    fDocumentHandler.startElement(COL, EMPTY_ATTRS, fAugmentations);
                     String token = tokenizer.nextToken();
                     fStringBuffer.clear();
                     fStringBuffer.append(token);
-                    fDocumentHandler.characters(fStringBuffer);
-                    fDocumentHandler.endElement(COL);
+                    fDocumentHandler.characters(fStringBuffer, fAugmentations);
+                    fDocumentHandler.endElement(COL, fAugmentations);
                 }
-                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE);
-                fDocumentHandler.endElement(ROW);
+                fDocumentHandler.ignorableWhitespace(NEWLINE_ONE_SPACE, fAugmentations);
+                fDocumentHandler.endElement(ROW, fAugmentations);
             }
         }
         bufferedReader.close();
 
         // end document
         if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(NEWLINE);
-            fDocumentHandler.endElement(CSV);
-            fDocumentHandler.endDocument();
+            fDocumentHandler.ignorableWhitespace(NEWLINE, fAugmentations);
+            fDocumentHandler.endElement(CSV, fAugmentations);
+            fDocumentHandler.endDocument(fAugmentations);
         }
 
     } // parse(XMLInputSource)

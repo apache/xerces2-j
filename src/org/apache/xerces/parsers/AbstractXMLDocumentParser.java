@@ -59,6 +59,7 @@ package org.apache.xerces.parsers;
 
 import java.io.IOException;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -129,11 +130,12 @@ public abstract class AbstractXMLDocumentParser
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
-     *                 parsed from a java.io.Reader).
+     *                 parsed from a java.io.Reader). 
+     * @param augs   Additional information that may include infoset augmentations    
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
         throws XNIException {
     } // startDocument(XMLLocator,String)
 
@@ -146,10 +148,11 @@ public abstract class AbstractXMLDocumentParser
      * @param encoding   The IANA encoding name of the document, or null if
      *                   not specified.
      * @param standalone The standalone value, or null if not specified.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void xmlDecl(String version, String encoding, String standalone)
+    public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
         throws XNIException {
     } // xmlDecl(String,String,String)
 
@@ -160,11 +163,12 @@ public abstract class AbstractXMLDocumentParser
      * @param publicId    The public identifier if an external DTD or null
      *                    if the external DTD is specified using SYSTEM.
      * @param systemId    The system identifier if an external DTD, null
+     * @param augs   Additional information that may include infoset augmentations
      *                    otherwise.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void doctypeDecl(String rootElement, String publicId, String systemId)
+    public void doctypeDecl(String rootElement, String publicId, String systemId, Augmentations augs)
         throws XNIException {
     } // doctypeDecl(String,String,String)
 
@@ -174,10 +178,11 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
         throws XNIException {
     } // startPrefixMapping(String,String)
 
@@ -188,10 +193,11 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
     } // startElement(QName,XMLAttributes)
 
@@ -200,14 +206,15 @@ public abstract class AbstractXMLDocumentParser
      * 
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
-        startElement(element, attributes);
-        endElement(element);
+        startElement(element, attributes, augs);
+        endElement(element, augs);
 
     } // emptyElement(QName,XMLAttributes)
 
@@ -215,10 +222,11 @@ public abstract class AbstractXMLDocumentParser
      * Character content.
      * 
      * @param text The content.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
     } // characters(XMLString)
 
     /**
@@ -230,20 +238,22 @@ public abstract class AbstractXMLDocumentParser
      * content model.
      * 
      * @param text The ignorable whitespace.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
     } // ignorableWhitespace(XMLString)
 
     /**
      * The end of an element.
      * 
      * @param element The name of the element.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
     } // endElement(QName)
 
     /**
@@ -251,43 +261,174 @@ public abstract class AbstractXMLDocumentParser
      * called when namespace processing is enabled.
      * 
      * @param prefix The namespace prefix.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
     } // endPrefixMapping(String)
 
     /** 
      * The start of a CDATA section. 
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
     } // startCDATA()
 
     /**
-     * The end of a CDATA section. 
+     * The end of a CDATA section.
+     * @param augs   Additional information that may include infoset augmentations 
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException {
+    public void endCDATA(Augmentations augs) throws XNIException {
     } // endCDATA()
 
     /**
      * The end of the document.
+     * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException {
+    public void endDocument(Augmentations augs) throws XNIException {
     } // endDocument()
 
+
+    /**
+     * This method notifies the start of an entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param baseSystemId
+     *                 The base system identifier of the entity if
+     *                 the entity is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal entities or a document entity that is
+     *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
+                            String encoding,
+                            Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * Notifies of the presence of a TextDecl line in an entity. If present,
+     * this method will be called immediately following the startEntity call.
+     * <p>
+     * <strong>Note:</strong> This method will never be called for the
+     * document entity; it is only called for external general entities
+     * referenced in document content.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param version  The XML version, or null if not specified.
+     * @param encoding The IANA encoding name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
+     *                 
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * This method notifies the end of an entity.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     * 
+     * @param name   The name of the entity.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void endEntity(String name, Augmentations augs) throws XNIException{
+    }
+
+
+    
+    /**
+     * A comment.
+     * 
+     * @param text   The text in the comment.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by application to signal an error.
+     */
+    public void comment(XMLString text, Augmentations augs) throws XNIException{
+    }
+
+    /**
+     * A processing instruction. Processing instructions consist of a
+     * target name and, optionally, text data. The data is only meaningful
+     * to the application.
+     * <p>
+     * Typically, a processing instruction's data will contain a series
+     * of pseudo-attributes. These pseudo-attributes follow the form of
+     * element attributes but are <strong>not</strong> parsed or presented
+     * to the application as anything other than text. The application is
+     * responsible for parsing the data.
+     * 
+     * @param target The target.
+     * @param data   The data or null if none specified.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
+        throws XNIException{
+    }
+
+
     //
-    // XMLDocumentHandler and XMLDTDHandler methods
+    // XMLDTDHandler methods
     //
+    
+    /**
+     * The start of the DTD.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startDTD(XMLLocator locator) throws XNIException {
+        fInDTD = true;
+    } // startDTD(XMLLocator)
+
+
+    /**
+     * Character content.
+     * 
+     * @param text   The content.
+     * @param augs   Additional information that may include infoset augmentations
+     *               
+     * @exception XNIException
+     *                   Thrown by handler to signal an error.
+     */
+     public void characters(XMLString text) throws XNIException{
+     }
 
     /**
      * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd]; 
+     * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd]" 
      * parameter entity names start with '%'; and general entity names are
      * just the entity name.
      * <p>
@@ -296,11 +437,6 @@ public abstract class AbstractXMLDocumentParser
      * startEntity method with the entity name "[xml]" <em>before</em> calling
      * the startDocument method. When exposing entity boundaries through the
      * XNI API, the document entity is never reported, however.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the start of the DTD entity by calling the
-     * startEntity method with the entity name "[dtd]" <em>before</em> calling
-     * the startDTD method.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -376,7 +512,7 @@ public abstract class AbstractXMLDocumentParser
 
     /**
      * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
+     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]" 
      * parameter entity names start with '%'; and general entity names are
      * just the entity name.
      * <p>
@@ -385,11 +521,6 @@ public abstract class AbstractXMLDocumentParser
      * endEntity method with the entity name "[xml]" <em>after</em> calling
      * the endDocument method. When exposing entity boundaries through the
      * XNI API, the document entity is never reported, however.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
@@ -400,19 +531,6 @@ public abstract class AbstractXMLDocumentParser
      */
     public void endEntity(String name) throws XNIException {
     } // endEntity(String)
-
-    //
-    // XMLDTDHandler methods
-    //
-
-    /**
-     * The start of the DTD.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startDTD(XMLLocator locator) throws XNIException {
-        fInDTD = true;
-    } // startDTD(XMLLocator)
 
     /**
      * An element declaration.

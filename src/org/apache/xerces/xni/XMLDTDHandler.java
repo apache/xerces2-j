@@ -110,12 +110,8 @@ public interface XMLDTDHandler {
 
     /**
      * This method notifies of the start of an entity. The DTD has the 
-     * pseudo-name of "[dtd]; and parameter entity names start with '%'.
+     * pseudo-name of "[dtd]" and parameter entity names start with '%'.
      * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the start of the DTD entity by calling the
-     * startEntity method with the entity name "[dtd]" <em>before</em> calling
-     * the startDTD method.
      * 
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity if the entity
@@ -152,12 +148,8 @@ public interface XMLDTDHandler {
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; and parameter entity names start with '%'.
+     * of "[dtd]" and parameter entity names start with '%'.
      * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
      * 
      * @param name The name of the entity.
      *

@@ -69,6 +69,7 @@ import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
@@ -223,10 +224,11 @@ public abstract class AbstractSAXParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
 
         try {
@@ -260,11 +262,12 @@ public abstract class AbstractSAXParser
      *                    if the external DTD is specified using SYSTEM.
      * @param systemId    The system identifier if an external DTD, null
      *                    otherwise.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement,
-                            String publicId, String systemId)
+                            String publicId, String systemId, Augmentations augs)
         throws XNIException {
         fInDTD = true;
 
@@ -280,16 +283,77 @@ public abstract class AbstractSAXParser
 
     } // doctypeDecl(String,String,String)
 
+        /**
+     * This method notifies of the start of an entity. The DTD has the
+     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
+     * general entity names are just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the start of the document entity by calling the
+     * startEntity method with the entity name "[xml]" <em>before</em> calling
+     * the startDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     *
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal parameter entities).
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startEntity(String name, String publicId, String systemId,
+                            String baseSystemId, String encoding, Augmentations augs)
+        throws XNIException {
+        
+        startEntity(name, publicId, systemId, baseSystemId, encoding);
+
+    } // startEntity(String,String,String,String,String)
+
+    /**
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]" parameter entity names start with '%'; and general entity
+     * names are just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the end of the document entity by calling the
+     * endEntity method with the entity name "[xml]" <em>after</em> calling
+     * the endDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     *
+     * @param name The name of the entity.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endEntity(String name, Augmentations augs) throws XNIException {
+
+        endEntity(name);
+
+    } // endEntity(String)
+
     /**
      * The start of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
      *
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
         throws XNIException {
 
         try {
@@ -311,10 +375,11 @@ public abstract class AbstractSAXParser
      *
      * @param element    The name of the element.
      * @param attributes The element attributes.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
         try {
@@ -356,14 +421,12 @@ public abstract class AbstractSAXParser
      * Character content.
      *
      * @param text The content.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
 
-        if (fInDTD) {
-            return;
-        }
 
         try {
             // SAX1
@@ -391,10 +454,11 @@ public abstract class AbstractSAXParser
      * content model.
      *
      * @param text The ignorable whitespace.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
         try {
             // SAX1
@@ -417,10 +481,12 @@ public abstract class AbstractSAXParser
      * The end of an element.
      *
      * @param element The name of the element.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
+        
 
         try {
             // SAX1
@@ -447,10 +513,11 @@ public abstract class AbstractSAXParser
      * called when namespace processing is enabled.
      *
      * @param prefix The namespace prefix.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix)  throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs)  throws XNIException {
 
         try {
             // SAX2
@@ -464,12 +531,92 @@ public abstract class AbstractSAXParser
 
     } // endPrefixMapping(String)
 
-    /**
-     * The end of the document.
+        /**
+     * The start of a CDATA section.
+     * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.startCDATA();
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // startCDATA()
+
+    /**
+     * The end of a CDATA section.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endCDATA(Augmentations augs) throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.endCDATA();
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // endCDATA()
+
+    /**
+     * A comment.
+     *
+     * @param text The text in the comment.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by application to signal an error.
+     */
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
+
+            comment (text);
+
+    } // comment(XMLString)
+
+    /**
+     * A processing instruction. Processing instructions consist of a
+     * target name and, optionally, text data. The data is only meaningful
+     * to the application.
+     * <p>
+     * Typically, a processing instruction's data will contain a series
+     * of pseudo-attributes. These pseudo-attributes follow the form of
+     * element attributes but are <strong>not</strong> parsed or presented
+     * to the application as anything other than text. The application is
+     * responsible for parsing the data.
+     *
+     * @param target The target.
+     * @param data   The data or null if none specified.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
+        throws XNIException {
+
+        processingInstruction (target, data);
+
+    } // processingInstruction(String,XMLString)
+
+
+    /**
+     * The end of the document.
+     * @param augs     Additional information that may include infoset augmentations
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endDocument(Augmentations augs) throws XNIException {
 
         try {
             // SAX1
@@ -488,152 +635,11 @@ public abstract class AbstractSAXParser
 
     } // endDocument()
 
+
     //
-    // XMLDocumentHandler and XMLDTDHandler methods
+    // XMLDTDHandler methods
     //
 
-    /**
-     * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]; parameter entity names start with '%'; and
-     * general entity names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the start of the document entity by calling the
-     * startEntity method with the entity name "[xml]" <em>before</em> calling
-     * the startDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the start of the DTD entity by calling the
-     * startEntity method with the entity name "[dtd]" <em>before</em> calling
-     * the startDTD method.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     *
-     * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
-     * @param encoding The auto-detected IANA encoding name of the entity
-     *                 stream. This value will be null in those situations
-     *                 where the entity encoding is not auto-detected (e.g.
-     *                 internal parameter entities).
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startEntity(String name, String publicId, String systemId,
-                            String baseSystemId, String encoding)
-        throws XNIException {
-
-        try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.startEntity(name);
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // startEntity(String,String,String,String,String)
-
-    /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; parameter entity names start with '%'; and general entity
-     * names are just the entity name.
-     * <p>
-     * <strong>Note:</strong> Since the document is an entity, the handler
-     * will be notified of the end of the document entity by calling the
-     * endEntity method with the entity name "[xml]" <em>after</em> calling
-     * the endDocument method. When exposing entity boundaries through the
-     * SAX API, the document entity is never reported, however.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
-     * <p>
-     * <strong>Note:</strong> This method is not called for entity references
-     * appearing as part of attribute values.
-     *
-     * @param name The name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endEntity(String name) throws XNIException {
-
-        try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.endEntity(name);
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // endEntity(String)
-
-    /**
-     * The start of a CDATA section.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startCDATA() throws XNIException {
-
-        try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.startCDATA();
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // startCDATA()
-
-    /**
-     * The end of a CDATA section.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endCDATA() throws XNIException {
-
-        try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.endCDATA();
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // endCDATA()
-
-    /**
-     * A comment.
-     *
-     * @param text The text in the comment.
-     *
-     * @throws XNIException Thrown by application to signal an error.
-     */
-    public void comment(XMLString text) throws XNIException {
-
-        try {
-            // SAX2 extension
-            if (fLexicalHandler != null) {
-                fLexicalHandler.comment(text.ch, 0, text.length);
-            }
-        }
-        catch (SAXException e) {
-            throw new XNIException(e);
-        }
-
-    } // comment(XMLString)
 
     /**
      * A processing instruction. Processing instructions consist of a
@@ -678,9 +684,103 @@ public abstract class AbstractSAXParser
 
     } // processingInstruction(String,XMLString)
 
-    //
-    // XMLDTDHandler methods
-    //
+
+
+    /**
+     * A comment.
+     *
+     * @param text The text in the comment.
+     *
+     * @throws XNIException Thrown by application to signal an error.
+     */
+    public void comment(XMLString text) throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.comment(text.ch, 0, text.length);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // comment(XMLString)
+
+
+    /**
+     * This method notifies of the start of an entity. The DTD has the
+     * pseudo-name of "[dtd]" parameter entity names start with '%'; and
+     * general entity names are just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the start of the document entity by calling the
+     * startEntity method with the entity name "[xml]" <em>before</em> calling
+     * the startDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     *
+     * @param name     The name of the entity.
+     * @param publicId The public identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param systemId The system identifier of the entity if the entity
+     *                 is external, null otherwise.
+     * @param encoding The auto-detected IANA encoding name of the entity
+     *                 stream. This value will be null in those situations
+     *                 where the entity encoding is not auto-detected (e.g.
+     *                 internal parameter entities).
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startEntity(String name, String publicId, String systemId,
+                            String baseSystemId, String encoding)
+        throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.startEntity(name);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // startEntity(String,String,String,String,String)
+
+    /**
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]" parameter entity names start with '%'; and general entity
+     * names are just the entity name.
+     * <p>
+     * <strong>Note:</strong> Since the document is an entity, the handler
+     * will be notified of the end of the document entity by calling the
+     * endEntity method with the entity name "[xml]" <em>after</em> calling
+     * the endDocument method. When exposing entity boundaries through the
+     * SAX API, the document entity is never reported, however.
+     * <p>
+     * <strong>Note:</strong> This method is not called for entity references
+     * appearing as part of attribute values.
+     *
+     * @param name The name of the entity.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endEntity(String name) throws XNIException {
+
+        try {
+            // SAX2 extension
+            if (fLexicalHandler != null) {
+                fLexicalHandler.endEntity(name);
+            }
+        }
+        catch (SAXException e) {
+            throw new XNIException(e);
+        }
+
+    } // endEntity(String)
 
     /**
      * An element declaration.

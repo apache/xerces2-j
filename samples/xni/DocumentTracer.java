@@ -64,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDTDHandler;
@@ -208,7 +209,7 @@ public class DocumentTracer
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
 
         fIndent = 0;
@@ -247,7 +248,7 @@ public class DocumentTracer
 
     /** XML Declaration. */
     public void xmlDecl(String version, String encoding, String actualEncoding,
-                        String standalone) throws XNIException {
+                        String standalone, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("xmlDecl(");
@@ -268,7 +269,7 @@ public class DocumentTracer
 
     /** Doctype declaration. */
     public void doctypeDecl(String rootElement, String publicId,
-                            String systemId) throws XNIException {
+                            String systemId, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("doctypeDecl(");
@@ -286,7 +287,7 @@ public class DocumentTracer
     } // doctypeDecl(String,String,String)
 
     /** Start prefix mapping. */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -302,7 +303,7 @@ public class DocumentTracer
     } // startPrefixMapping(String,String)
 
     /** Start element. */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -315,7 +316,7 @@ public class DocumentTracer
     } // startElement(QName,XMLAttributes)
 
     /** Empty element. */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
 
         printIndent();
@@ -326,8 +327,8 @@ public class DocumentTracer
 
     } // emptyElement(QName,XMLAttributes)
 
-    /** Characters. */
-    public void characters(XMLString text) throws XNIException {
+
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("characters(");
@@ -338,8 +339,10 @@ public class DocumentTracer
 
     } // characters(XMLString)
 
+
+
     /** Ignorable whitespace. */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("ignorableWhitespace(");
@@ -351,7 +354,7 @@ public class DocumentTracer
     } // ignorableWhitespace(XMLString)
 
     /** End element. */
-    public void endElement(QName element) throws XNIException {
+    public void endElement(QName element, Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -376,7 +379,7 @@ public class DocumentTracer
     } // endElement(QName)
 
     /** End prefix mapping. */
-    public void endPrefixMapping(String prefix) throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.print("endPrefixMapping(");
@@ -388,7 +391,7 @@ public class DocumentTracer
     } // endPrefixMapping(String)
 
     /** Start CDATA section. */
-    public void startCDATA() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
 
         printIndent();
         fOut.println("startCDATA()");
@@ -398,7 +401,7 @@ public class DocumentTracer
     } // startCDATA()
 
     /** End CDATA section. */
-    public void endCDATA() throws XNIException {
+    public void endCDATA(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -407,8 +410,95 @@ public class DocumentTracer
 
     } //  endCDATA()
 
+     /** Start entity. */
+    public void startEntity(String name,
+                            String publicId, String systemId,
+                            String baseSystemId,
+                            String encoding, Augmentations augs) throws XNIException {
+
+        printIndent();
+        fOut.print("startEntity(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.print(',');
+        fOut.print("publicId=");
+        printQuotedString(publicId);
+        fOut.print(',');
+        fOut.print("systemId=");
+        printQuotedString(systemId);
+        fOut.print(',');
+        fOut.print("baseSystemId=");
+        printQuotedString(baseSystemId);
+        fOut.print(',');
+        fOut.print("encoding=");
+        printQuotedString(encoding);
+        fOut.println(')');
+        fOut.flush();
+        fIndent++;
+
+    } // startEntity(String,String,String,String)
+
+    /** Text declaration. */
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
+
+        printIndent();
+        fOut.print("textDecl(");
+        fOut.print("version=");
+        printQuotedString(version);
+        fOut.print(',');
+        fOut.print("encoding=");
+        printQuotedString(encoding);
+        fOut.println(')');
+        fOut.flush();
+
+    } // textDecl(String,String)
+
+    /** Comment. */
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
+
+        printIndent();
+        fOut.print("comment(");
+        fOut.print("text=");
+        printQuotedString(text.ch, text.offset, text.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // comment(XMLText)
+
+    /** Processing instruction. */
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
+        throws XNIException {
+
+        printIndent();
+        fOut.print("processingInstruction(");
+        fOut.print("target=");
+        printQuotedString(target);
+        fOut.print(',');
+        fOut.print("data=");
+        printQuotedString(data.ch, data.offset, data.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // processingInstruction(String,XMLString)
+
+    /** End entity. */
+    public void endEntity(String name, Augmentations augs) throws XNIException {
+
+        fIndent--;
+        printIndent();
+        fOut.print("endEntity(");
+        fOut.print("name=");
+        printQuotedString(name);
+        fOut.println(')');
+        fOut.flush();
+
+    } // endEntity(String)
+
+
+
+
     /** End document. */
-    public void endDocument() throws XNIException {
+    public void endDocument(Augmentations augs) throws XNIException {
 
         fIndent--;
         printIndent();
@@ -418,9 +508,54 @@ public class DocumentTracer
     } // endDocument();
 
     //
-    // XMLDocumentHandler and XMLDTDHandler methods
+    // XMLDTDHandler
     //
+    /** Start DTD. */
+    public void startDTD(XMLLocator locator) throws XNIException {
 
+        printIndent();
+        fOut.print("startDTD(");
+        fOut.print("locator=");
+        if (locator == null) {
+            fOut.print("null");
+        }
+        else {
+            fOut.print('{');
+            fOut.print("publicId=");
+            printQuotedString(locator.getPublicId());
+            fOut.print(',');
+            fOut.print("systemId=");
+            printQuotedString(locator.getSystemId());
+            fOut.print(',');
+            fOut.print("baseSystemId=");
+            printQuotedString(locator.getBaseSystemId());
+            fOut.print(',');
+            fOut.print("lineNumber=");
+            fOut.print(locator.getLineNumber());
+            fOut.print(',');
+            fOut.print("columnNumber=");
+            fOut.print(locator.getColumnNumber());
+            fOut.print('}');
+        }
+        fOut.println(')');
+        fOut.flush();
+        fIndent++;
+
+    } // startDTD(XMLLocator)
+
+
+
+    /** Characters.*/
+    public void characters(XMLString text) throws XNIException {
+
+        printIndent();
+        fOut.print("characters(");
+        fOut.print("text=");
+        printQuotedString(text.ch, text.offset, text.length);
+        fOut.println(')');
+        fOut.flush();
+
+    } // characters(XMLString)
     /** Start entity. */
     public void startEntity(String name,
                             String publicId, String systemId,
@@ -505,44 +640,7 @@ public class DocumentTracer
 
     } // endEntity(String)
 
-    //
-    // XMLDTDHandler methods
-    //
-
-    /** Start DTD. */
-    public void startDTD(XMLLocator locator) throws XNIException {
-
-        printIndent();
-        fOut.print("startDTD(");
-        fOut.print("locator=");
-        if (locator == null) {
-            fOut.print("null");
-        }
-        else {
-            fOut.print('{');
-            fOut.print("publicId=");
-            printQuotedString(locator.getPublicId());
-            fOut.print(',');
-            fOut.print("systemId=");
-            printQuotedString(locator.getSystemId());
-            fOut.print(',');
-            fOut.print("baseSystemId=");
-            printQuotedString(locator.getBaseSystemId());
-            fOut.print(',');
-            fOut.print("lineNumber=");
-            fOut.print(locator.getLineNumber());
-            fOut.print(',');
-            fOut.print("columnNumber=");
-            fOut.print(locator.getColumnNumber());
-            fOut.print('}');
-        }
-        fOut.println(')');
-        fOut.flush();
-        fIndent++;
-
-    } // startDTD(XMLLocator)
-
-    /** Element declaration. */
+        /** Element declaration. */
     public void elementDecl(String name, String contentModel)
         throws XNIException {
 

@@ -1045,7 +1045,7 @@ public abstract class XMLScanner
 
     /**
      * This method notifies of the start of an entity. The document entity
-     * has the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
+     * has the pseudo-name of "[xml]" the DTD has the pseudo-name of "[dtd]" 
      * parameter entity names start with '%'; and general entities are just
      * specified by their name.
      * 
@@ -1076,7 +1076,7 @@ public abstract class XMLScanner
 
     /**
      * This method notifies the end of an entity. The document entity has
-     * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd]; 
+     * the pseudo-name of "[xml]" the DTD has the pseudo-name of "[dtd]" 
      * parameter entity names start with '%'; and general entities are just
      * specified by their name.
      * 

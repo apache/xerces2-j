@@ -353,6 +353,7 @@ public abstract class SAXParser {
         }
         
         Parser parser = this.getParser();
+
         if (hb != null) {
             parser.setDocumentHandler(hb);
             parser.setEntityResolver(hb);

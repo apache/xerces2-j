@@ -57,6 +57,7 @@
 
 package xni;
 
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -122,10 +123,10 @@ public class PassThroughFilter
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding)
+    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding);
+            fDocumentHandler.startDocument(locator, encoding, augs);
 	    }
     } // startDocument(XMLLocator,String)
     
@@ -142,9 +143,9 @@ public class PassThroughFilter
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void xmlDecl(String version, String encoding, 
-                        String standalone) throws XNIException {
+                        String standalone, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.xmlDecl(version, encoding, standalone);
+            fDocumentHandler.xmlDecl(version, encoding, standalone, augs);
 	    }
     } // xmlDecl(String,String,String
     
@@ -160,9 +161,9 @@ public class PassThroughFilter
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void doctypeDecl(String rootElement, String publicId, 
-                            String systemId) throws XNIException {
+                            String systemId, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
+            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId, augs);
         }
     } // doctypeDecl(String,String,String)
     
@@ -173,9 +174,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by application to signal an error.
      */
-    public void comment(XMLString text) throws XNIException {
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.comment(text);
+            fDocumentHandler.comment(text, augs);
         }
     } // comment(XMLString)
     
@@ -195,10 +196,10 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void processingInstruction(String target, XMLString data)
+    public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target, data);
+            fDocumentHandler.processingInstruction(target, data, augs);
         }
     } // processingInstruction(String,XMLString)
     
@@ -211,10 +212,10 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri);
+            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
         }
     } // startPrefixMapping(String,String)
     
@@ -226,9 +227,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endPrefixMapping(String prefix) throws XNIException {
+    public void endPrefixMapping(String prefix, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix);
+            fDocumentHandler.endPrefixMapping(prefix, augs);
         }
     } // endPrefixMapping(String)
     
@@ -240,10 +241,10 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes)
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes);
+            fDocumentHandler.startElement(element, attributes, augs);
         }
     } // startElement(QName,XMLAttributes)
     
@@ -255,10 +256,10 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void emptyElement(QName element, XMLAttributes attributes)
+    public void emptyElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.emptyElement(element, attributes);
+            fDocumentHandler.emptyElement(element, attributes, augs);
         }
     } // emptyElement(QName,XMLAttributes)
     
@@ -269,10 +270,10 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endElement(QName element)
+    public void endElement(QName element, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(element);
+            fDocumentHandler.endElement(element, augs);
         }
     } // endElement(QName)
     
@@ -299,11 +300,11 @@ public class PassThroughFilter
      */
     public void startEntity(String name, String publicId, 
                             String systemId, String baseSystemId,
-                            String encoding) throws XNIException {
+                            String encoding, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
             fDocumentHandler.startEntity(name, publicId, 
                                          systemId, baseSystemId,
-                                         encoding);
+                                         encoding, augs);
         }
     } // startEntity(String,String,String,String,String)
     
@@ -323,10 +324,10 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding)
+    public void textDecl(String version, String encoding, Augmentations augs)
         throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.textDecl(version, encoding);
+            fDocumentHandler.textDecl(version, encoding, augs);
         }
     } // textDecl(String,String)
     
@@ -340,9 +341,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void endEntity(String name, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name);
+            fDocumentHandler.endEntity(name, augs);
         }
     } // endEntity(String)
     
@@ -353,9 +354,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void characters(XMLString text) throws XNIException {
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.characters(text);
+            fDocumentHandler.characters(text, augs);
         }
     } // characters(XMLString)
     
@@ -371,9 +372,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void ignorableWhitespace(XMLString text) throws XNIException {
+    public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(text);
+            fDocumentHandler.ignorableWhitespace(text, augs);
         }
     } // ignorableWhitespace(XMLString)
     
@@ -382,9 +383,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startCDATA() throws XNIException {
+    public void startCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startCDATA();
+            fDocumentHandler.startCDATA(augs);
         }
     } // startCDATA()
     
@@ -393,9 +394,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endCDATA() throws XNIException {
+    public void endCDATA(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endCDATA();
+            fDocumentHandler.endCDATA(augs);
         }
     } // endCDATA()
     
@@ -404,9 +405,9 @@ public class PassThroughFilter
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endDocument() throws XNIException {
+    public void endDocument(Augmentations augs) throws XNIException {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endDocument();
+            fDocumentHandler.endDocument(augs);
         }
     } // endDocument()
     
