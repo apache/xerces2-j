@@ -283,7 +283,7 @@ public class CMBuilder {
                 }
                 for (int i=minOccurs; i<maxOccurs-1; i++) {
                     nodeRet = new XSCMBinOp(XSModelGroupImpl.MODELGROUP_SEQUENCE,
-                                            nodeRet, node);
+                                            nodeRet, copyNode(node));
                 }
             }
         }
