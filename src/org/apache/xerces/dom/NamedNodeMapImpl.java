@@ -743,10 +743,12 @@ public class NamedNodeMapImpl
      * set the ownerDocument of this node, and the attributes it contains
      */
     void setOwnerDocument(DocumentImpl doc) {
-	ownerDocument = doc;
-	for (int i = 0; i < nodes.size(); i++) {
-	    ((NodeImpl)item(i)).setOwnerDocument(doc);
-	}
+        ownerDocument = doc;
+        if (nodes != null) {
+            for (int i = 0; i < nodes.size(); i++) {
+                ((NodeImpl)item(i)).setOwnerDocument(doc);
+            }
+        }
     }
 
     //
