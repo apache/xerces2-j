@@ -196,6 +196,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
             Constants.DOM_NAMESPACE_DECLARATIONS,
             Constants.DOM_SUPPORTED_MEDIATYPES_ONLY,
             Constants.DOM_CERTIFIED,
+            Constants.DOM_WELLFORMED,
         };
 
         fConfiguration.addRecognizedFeatures(domRecognizedFeatures);
@@ -210,6 +211,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         fConfiguration.setFeature(Constants.DOM_INFOSET, false);
         fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
+        fConfiguration.setFeature(Constants.DOM_WELLFORMED, true);
         
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec
@@ -329,7 +331,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 						|| name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
 						|| name.equals(Constants.DOM_CANONICAL_FORM)) {
 					if (state) { // true is not supported
-						String msg =
+						String msg = 
 							DOMMessageFormatter.formatMessage(
 								DOMMessageFormatter.DOM_DOMAIN,
 								"FEATURE_NOT_SUPPORTED",
@@ -341,8 +343,9 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 				else if (name.equals(Constants.DOM_NAMESPACES)) {
 					fConfiguration.setFeature(NAMESPACES, state);
 				}
-				else if (name.equals(Constants.DOM_CDATA_SECTIONS)
-						|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+				else if (  name.equals(Constants.DOM_CDATA_SECTIONS)
+						|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+                        || name.equals(Constants.DOM_WELLFORMED) ) {
 					if (!state) { // false is not supported
 						String msg =
 							DOMMessageFormatter.formatMessage(
@@ -577,6 +580,7 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 		else if (
 			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_CDATA_SECTIONS)
+                || name.equals(Constants.DOM_WELLFORMED)
 				|| name.equals(Constants.DOM_CANONICAL_FORM)
 				|| name.equals(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
 				|| name.equals(Constants.DOM_INFOSET)
@@ -638,7 +642,8 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 			}
 			else if (
 				name.equals(Constants.DOM_CDATA_SECTIONS)
-					|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)) {
+					|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+                    || name.equals(Constants.DOM_WELLFORMED) ) {
 				// false is not supported
 				return (state) ? true : false;
 			}
