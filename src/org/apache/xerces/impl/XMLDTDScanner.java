@@ -1110,14 +1110,14 @@ public class XMLDTDScanner
      */
     private final void scanEntityDecl() throws IOException, SAXException {
 
-            // TODO: scan definition
-            while (fEntityScanner.scanData(">", fString)) {
-                // skip to end of internal subset
-            }
-
+        fString.clear();
+        // TODO: scan definition
+        while (fEntityScanner.scanData(">", fString)) {
+            // skip to end of internal subset
+        }
         // call handler
         if (fDTDHandler != null) {
-            //            fDTDHandler.(fStringBuffer);
+            fDTDHandler.internalEntityDecl("", fString);
         }
 
     } // scanEntityDecl()
@@ -1434,6 +1434,9 @@ public class XMLDTDScanner
                 fIncludeSectDepth--;
                 fEntityScanner.skipSpaces();
                 continue;
+            }
+            else if (!fScanningExtSubset && fEntityScanner.skipChar(']')) {
+                return false;
             }
             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                        "MarkupNotRecognizedInDTD",
