@@ -262,6 +262,29 @@ catch (SAXException e) {
    <see idref='validation'/>
    <see idref='nonvalidating.load-dtd-grammar'/>
   </feature>
+
+  <feature name='http://apache.org/xml/features/scanner/notify-char-refs'
+           id='scanner.notify-char-refs'>
+   <true>
+    Notifies the handler of character entity boundaries in the
+    document via the start/endEntity callbacks.
+   </true>
+   <false>Does not notify of character entity boundaries.</false>
+   <default value='false'/>
+   <see idref='scanner.notify-builtin-refs'/>
+  </feature>
+
+  <feature name='http://apache.org/xml/features/scanner/notify-builtin-refs'
+           id='scanner.notify-builtin-refs'>
+   <true>
+    Notifies the handler of built-in entity boundaries (e.g &amp;amp;)
+    in the document via the start/endEntity callbacks.
+   </true>
+   <false>Does not notify of built-in entity boundaries.</false>
+   <default value='false'/>
+   <see idref='scanner.notify-char-refs'/>
+  </feature>
+
  </fcategory>
  <fcategory name='DOM Features'>
   <feature name='http://apache.org/xml/features/dom/defer-node-expansion'
