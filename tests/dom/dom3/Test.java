@@ -341,18 +341,18 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 Assertion.assert(value!=null && 
                                  value.equals("http://child1"), "xmlns:NS2="+value);
 
-                value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS3");
+                value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
                 Assertion.assert(value!=null && 
-                                 value.equals("http://attr2"), "xmlns:NS3="+value);
+                                 value.equals("http://attr2"), "xmlns:NS1="+value);
 
 
                 // child3
                 
 
                 Assertion.assert(child3.getNodeName().equals("xsl:child3"), "xsl:child3");
-                value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS6");
+                value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
                 Assertion.assert(value!=null && 
-                                 value.equals("http://a2"), "xmlns:NS6="+value);
+                                 value.equals("http://a2"), "xmlns:NS1="+value);
 
 
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "a1");
@@ -366,15 +366,14 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
 
                 
                 Attr attr = child3.getAttributeNodeNS("http://a2", "attr2");
-                Assertion.assert(attr != null, "NS6:attr2 !=null");
+                Assertion.assert(attr != null, "NS1:attr2 !=null");
 
                 Assertion.assert(child3.getAttributes().getLength() == 5, "xsl:child3 has 5 attrs");
                 
                 // child 4
                 Attr temp = child4.getAttributeNodeNS("http://www.w3.org/2000/xmlns/", "xmlns");
                 Assertion.assert(temp.getNodeName().equals("xmlns"), "attribute name is xmlns");
-                Assertion.assert(temp.getNodeValue().length() == 0, "xmlns=''");
-                
+                Assertion.assert(temp.getNodeValue().length() == 0, "xmlns=''");                
                 /*
                 OutputFormat format = new OutputFormat((Document)doc);
                 format.setLineSeparator(LineSeparator.Windows);
@@ -459,18 +458,18 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 Assertion.assert(value!=null && 
                                  value.equals("http://child1"), "xmlns:NS2="+value);
 
-                value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS3");
+                value = child1.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
                 Assertion.assert(value!=null && 
-                                 value.equals("http://attr2"), "xmlns:NS3="+value);
+                                 value.equals("http://attr2"), "xmlns:NS1="+value);
 
 
                 // child3
                 
 
                 Assertion.assert(child3.getNodeName().equals("xsl:child3"), "xsl:child3");
-                value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS6");
+                value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "NS1");
                 Assertion.assert(value!=null && 
-                                 value.equals("http://a2"), "xmlns:NS6="+value);
+                                 value.equals("http://a2"), "xmlns:NS1="+value);
 
 
                 value = child3.getAttributeNS("http://www.w3.org/2000/xmlns/", "a1");
@@ -624,6 +623,7 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
         } catch ( Exception ex ) {
             ex.printStackTrace();
         }
+        System.out.println("done!");
     }
 
     StringBuffer fError = new StringBuffer();
