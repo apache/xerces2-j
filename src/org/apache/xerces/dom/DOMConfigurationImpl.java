@@ -971,8 +971,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			parameters.add(Constants.DOM_RESOURCE_RESOLVER);
 
 			//Add recognized xerces features and properties
-			parameters.addAll(fRecognizedFeatures);
-			parameters.addAll(fRecognizedProperties);
+			parameters.add(GRAMMAR_POOL);
+			parameters.add(SYMBOL_TABLE);
+			parameters.add(SEND_PSVI);
 
 			fRecognizedParameters = new DOMStringListImpl(parameters);
 
