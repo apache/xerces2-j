@@ -142,7 +142,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                             fMinInclusive   = new BigDecimal(value);
                         } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
                             value = ((String) facets.get(key ));
-                            fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                            fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
                             fMinExclusive   = new BigDecimal(value);
                         } else if (key.equals(SchemaSymbols.ELT_PRECISION)) {
                             value = ((String) facets.get(key ));
@@ -291,10 +291,12 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
         else
             maxOk = (!isMaxInclusiveDefined && ! isMaxExclusiveDefined);
 
+        
+
         if ( isMinInclusiveDefined)
             minOk = (d.compareTo(fMinInclusive) >= 0);
         else if ( isMinExclusiveDefined)
-            minOk = (d.compareTo(fMinInclusive) > 0);
+            minOk = (d.compareTo(fMinExclusive) > 0);
         else
             minOk = (!isMinInclusiveDefined && !isMinExclusiveDefined);
         if (!(minOk && maxOk))
