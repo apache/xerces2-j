@@ -203,7 +203,8 @@ public final class ChunkyByteArray extends InputStream {
      * @exception IOException
      */
     public void close() throws IOException {
-        fInputStream.close(); 
+        if( fInputStream != null )
+           fInputStream.close(); 
         }
 
 
