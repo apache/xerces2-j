@@ -587,7 +587,8 @@ public class XMLSchemaValidator
         Augmentations modifiedAugs = handleStartElement(element, attributes, augs);
 
         // we need to save PSVI information: because it will be reset in the
-        // handleEndElement(): type, notation, validation context
+        // handleEndElement(): decl, type, notation, validation context
+        XSElementDecl decl = fCurrentPSVI.fDeclaration;
         XSTypeDecl type = fCurrentPSVI.fTypeDecl;
         XSNotationDecl notation = fCurrentPSVI.fNotation;
         String vContext = fCurrentPSVI.fValidationContext;
@@ -599,6 +600,7 @@ public class XMLSchemaValidator
 
         // call handlers
         if (fDocumentHandler != null) {
+            fCurrentPSVI.fDeclaration = decl;
             fCurrentPSVI.fTypeDecl = type;
             fCurrentPSVI.fNotation = notation;
             fCurrentPSVI.fValidationContext = vContext;
