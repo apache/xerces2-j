@@ -2,6 +2,17 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title='July 17, 2000'>
+        <ul>
+           <li>Added "xsi:type" support for Schema [ericye]</li>
+           <li>Added full equivClass support for Schema [ericye]</li>
+           <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec [ericye]</li>
+           <li>Fixed "xml:space" bug in DTD validation [ericye, andyc]</li>
+           <li>Fixed "any" element bugs when there are multilple URIs [ericye]</li>
+           <li>Fixed misc. Schema bugs [ericye]</li>
+           <li>Fixed resolving Schema location bug in XMLValidator [David.Blankenship@kla_tencor.com, ericye]</li>
+        </ul>
+    </s2>
     <s2 title='June 21, 2000'>
         <ul>
            <li>Added "any" element content support for Schema [andyc]</li>

@@ -62,11 +62,12 @@
             <li>Nested element declaration</li>
             <li>Separate symbol spaces for elements, types, groups, and
                 attribute groups</li>
-            <li>Equivalency classes (partial)</li>
+            <li>Equivalency classes</li>
             <li>Target namespace</li>
             <li>"xsi:schemaLocation" and "xsl:noNamespacesSchemaLocation"</li>
             <li>Include</li>
             <li>Import</li>
+            <li>"xsi:type"</li>
         </ul>
     </s2>
     <s2 title='Features NOT Supported'>
@@ -75,7 +76,6 @@
             <li>Nullable</li>
             <li>Block</li>
             <li>Abstract</li>
-            <li>"xsi:type"</li>
         </ul>
     </s2>
     <s2 title='Datatypes Supported'>
