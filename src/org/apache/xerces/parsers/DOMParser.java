@@ -1038,9 +1038,7 @@ public class DOMParser
             if (nsEnabled) {
                 e = fDocument.createElementNS(
                         // REVISIT: Make sure uri is filled in by caller.
-                        fStringPool.toString(elementQName.uri),
-                        fStringPool.toString(elementQName.localpart)
-                    );
+                        fStringPool.toString(elementQName.uri), elementName);
             } else {
                 e = fDocument.createElement(elementName);
             }
