@@ -283,6 +283,38 @@ public class XMLDocumentScanner
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
 
+    // symbols
+
+    /** Symbol: "amp". */
+    private String fAmpSymbol;
+
+    /** Symbol: "lt". */
+    private String fLtSymbol;
+
+    /** Symbol: "gt". */
+    private String fGtSymbol;
+
+    /** Symbol: "quot". */
+    private String fQuotSymbol;
+
+    /** Symbol: "apos". */
+    private String fAposSymbol;
+
+    /** Symbol: "version". */
+    private String fVersionSymbol;
+
+    /** Symbol: "encoding". */
+    private String fEncodingSymbol;
+
+    /** Symbol: "standalone". */
+    private String fStandaloneSymbol;
+
+    /** Symbol: "xml". */
+    private String fXmlSymbol;
+
+    /** Symbol: "xmlns". */
+    private String fXmlnsSymbol;
+
     //
     // Constructors
     //
@@ -363,6 +395,18 @@ public class XMLDocumentScanner
         fSeenDoctypeDecl = false;
         fStandalone = false;
         fScanningDTD = false;
+
+        // save built-in entity names
+        fAmpSymbol = fSymbolTable.addSymbol("amp");
+        fLtSymbol = fSymbolTable.addSymbol("lt");
+        fGtSymbol = fSymbolTable.addSymbol("gt");
+        fQuotSymbol = fSymbolTable.addSymbol("quot");
+        fAposSymbol = fSymbolTable.addSymbol("apos");
+        fVersionSymbol = fSymbolTable.addSymbol("version");
+        fEncodingSymbol = fSymbolTable.addSymbol("encoding");
+        fStandaloneSymbol = fSymbolTable.addSymbol("standalone");
+        fXmlSymbol = fSymbolTable.addSymbol("xml");
+        fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
 
         // setup dispatcher
         setScannerState(SCANNER_STATE_XML_DECL);
@@ -559,7 +603,7 @@ public class XMLDocumentScanner
             String name = scanPseudoAttribute(fString);
             switch (state) {
                 case STATE_VERSION: {
-                    if (name.equals("version")) {
+                    if (name == fVersionSymbol) {
                         version = fString.toString();
                         state = STATE_ENCODING;
                         if (!version.equals("1.0")) {
@@ -569,7 +613,7 @@ public class XMLDocumentScanner
                                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
                     }
-                    else if (name.equals("encoding")) {
+                    else if (name == fEncodingSymbol) {
                         if (!scanningTextDecl) {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                                        "VersionInfoRequired", 
@@ -593,13 +637,13 @@ public class XMLDocumentScanner
                     break;
                 }
                 case STATE_ENCODING: {
-                    if (name.equals("encoding")) {
+                    if (name == fEncodingSymbol) {
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
                         // TODO: check encoding name; set encoding on
                         //       entity scanner
                     }
-                    else if (!scanningTextDecl && name.equals("standalone")) {
+                    else if (!scanningTextDecl && name == fStandaloneSymbol) {
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
@@ -616,7 +660,7 @@ public class XMLDocumentScanner
                     break;
                 }
                 case STATE_STANDALONE: {
-                    if (name.equals("standalone")) {
+                    if (name == fStandaloneSymbol) {
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
@@ -1122,12 +1166,44 @@ public class XMLDocumentScanner
             throw new SAXException("entity reference must end with semi-colon");
         }
 
+        // handle built-in entities
+        if (name == fAmpSymbol) {
+            handleCharacter('&');
+        }
+        else if (name == fLtSymbol) {
+            handleCharacter('<');
+        }
+        else if (name == fGtSymbol) {
+            handleCharacter('>');
+        }
+        else if (name == fQuotSymbol) {
+            handleCharacter('"');
+        }
+        else if (name == fAposSymbol) {
+            handleCharacter('\'');
+        }
+        
         // start entity
-        fEntityManager.startEntity(name);
+        else {
+            fEntityManager.startEntity(name);
+        }
 
     } // scanEntityReference()
 
     // utility methods
+
+    /** 
+     * Calls document handler with a single character. 
+     *
+     * @param c
+     */
+    protected void handleCharacter(char c) throws SAXException {
+        if (fDocumentHandler != null) {
+            fSingleChar[0] = c;
+            fString.setValues(fSingleChar, 0, 1);
+            fDocumentHandler.characters(fString);
+        }
+    } // handleCharacter(char)
 
     /**
      * Binds the namespaces. This method will handle calling the
@@ -1186,11 +1262,11 @@ public class XMLDocumentScanner
             String arawname = fAttributeQName.rawname;
             String aprefix = fAttributeQName.prefix != null 
                            ? fAttributeQName.prefix : "";
-            if (aprefix.equals("xml")) {
+            if (aprefix == fXmlSymbol) {
                 fAttributeQName.uri = NamespaceSupport.XMLNS;
                 attributes.setName(i, fAttributeQName);
             }
-            else if (!arawname.equals("xmlns") && !arawname.startsWith("xmlns:")) {
+            else if (arawname != fXmlnsSymbol && !arawname.startsWith("xmlns:")) {
                 if (fAttributeQName.prefix != null) {
                     fAttributeQName.uri = fNamespaceSupport.getURI(fAttributeQName.prefix);
                     if (fAttributeQName.uri == null) {
@@ -1225,7 +1301,7 @@ public class XMLDocumentScanner
 
         // make sure the elements match
         QName startElement = (QName)fElementStack.pop();
-        if (!element.rawname.equals(startElement.rawname)) {
+        if (element.rawname != startElement.rawname) {
             // REVISIT: report error
             throw new SAXException("end tag doesn't match start tag");
         }

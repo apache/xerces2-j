@@ -362,13 +362,6 @@ public class XMLEntityManager
         fEntities.clear();
         fEntityStack.removeAllElements();
 
-        // add default entities
-        addInternalEntity("lt", "<");
-        addInternalEntity("gt", ">");
-        addInternalEntity("amp", "&");
-        addInternalEntity("apos", "'");
-        addInternalEntity("quot", "\"");
-
     } // reset(XMLComponentManager)
 
     /**
@@ -473,7 +466,9 @@ public class XMLEntityManager
 
         // call handler
         if (fEntityHandler != null) {
-            String ianaEncoding = EncodingMap.getJava2IANAMapping(encoding);
+            String ianaEncoding = encoding != null
+                                ? EncodingMap.getJava2IANAMapping(encoding)
+                                : null;
             fEntityHandler.startEntity(name, publicId, systemId, ianaEncoding);
         }
 
