@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,6 +150,10 @@ public class XMLSchemaValidator
     /** Feature identifier: validate annotations. */
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
+    
+    /** Feature identifier: handle multiple imports. */
+    protected static final String HANDLE_MULTIPLE_IMPORTS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
 
     /** Feature identifier: whether to continue parsing a schema after a fatal error is encountered */
     protected static final String CONTINUE_AFTER_FATAL_ERROR =
@@ -211,7 +215,8 @@ public class XMLSchemaValidator
             CONTINUE_AFTER_FATAL_ERROR,
             STANDARD_URI_CONFORMANT_FEATURE,
             GENERATE_SYNTHETIC_ANNOTATIONS,
-            VALIDATE_ANNOTATIONS};
+            VALIDATE_ANNOTATIONS,
+            HANDLE_MULTIPLE_IMPORTS};
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = { null,
@@ -228,7 +233,8 @@ public class XMLSchemaValidator
         null, //Boolean.FALSE,
         null,
         null,
-        null };
+        null,
+        null};
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES =

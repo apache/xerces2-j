@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,11 +43,12 @@ import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
-import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.parsers.XML11Configuration;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
+import org.apache.xerces.util.URI.MalformedURIException;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -110,6 +111,10 @@ public class XSDHandler {
     /** Feature identifier: validate annotations. */
     protected static final String VALIDATE_ANNOTATIONS =
         Constants.XERCES_FEATURE_PREFIX + Constants.VALIDATE_ANNOTATIONS_FEATURE;
+    
+    /** Feature identifier: handle multiple imports. */
+    protected static final String HANDLE_MULTIPLE_IMPORTS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
     
     /** Property identifier: error handler. */
     protected static final String ERROR_HANDLER =
@@ -264,6 +269,9 @@ public class XSDHandler {
     
     // validate annotations feature
     private boolean fValidateAnnotations = false;
+    
+    //handle multiple import feature
+    private boolean fHandleMultipleImports = false;
 
     // the XMLErrorReporter
     private XMLErrorReporter fErrorReporter;
@@ -379,7 +387,12 @@ public class XSDHandler {
         // no namespace schema.
         if (referType != XSDDescription.CONTEXT_PREPARSE){
             // first try to find it in the bucket/pool, return if one is found
-            grammar = findGrammar(desc);
+            if(fHandleMultipleImports && referType == XSDDescription.CONTEXT_IMPORT && isExistingGrammar(desc)) {
+                grammar = fGrammarBucket.getGrammar(desc.getTargetNamespace());
+            }
+            else {
+                grammar = findGrammar(desc);
+            }
             if (grammar != null)
                 return grammar;
             schemaNamespace = desc.getTargetNamespace();
@@ -663,6 +676,13 @@ public class XSDHandler {
                 referType == XSDDescription.CONTEXT_REDEFINE) {
             sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
         }
+        else if(fHandleMultipleImports && referType == XSDDescription.CONTEXT_IMPORT) {
+            sg = findGrammar(desc);
+            if(sg == null) {
+                sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
+                fGrammarBucket.putGrammar(sg);
+            }
+        }
         else {
             sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
             fGrammarBucket.putGrammar(sg);
@@ -727,14 +747,15 @@ public class XSDHandler {
                 }
                 fAttributeChecker.returnAttrArray(importAttrs, currSchemaInfo);
                 
-                // if this namespace has been imported by this document,
-                // ignore the <import> statement
-                if (currSchemaInfo.isAllowedNS(schemaNamespace))
-                    continue;
-                
-                // a schema document can access it's imported namespaces
-                currSchemaInfo.addAllowedNS(schemaNamespace);
-                
+                // if this namespace has not been imported by this document,
+                //  then import if multiple imports support is enabled.
+                if(currSchemaInfo.isAllowedNS(schemaNamespace)) {
+                    if(!fHandleMultipleImports)
+                        continue;
+                }
+                else  {
+                    currSchemaInfo.addAllowedNS(schemaNamespace);
+                }
                 // also record the fact that one namespace imports another one
                 // convert null to ""
                 String tns = null2EmptyString(currSchemaInfo.fTargetNamespace);
@@ -758,9 +779,9 @@ public class XSDHandler {
                 fSchemaGrammarDescription.setLocationHints(new String[]{schemaHint});
                 fSchemaGrammarDescription.setTargetNamespace(schemaNamespace);
                 
-                // if a grammar with the same namespace exists (or being
+                // if a grammar with the same namespace and location exists (or being
                 // built), ignore this one (don't traverse it).
-                if (findGrammar(fSchemaGrammarDescription) != null)
+                if ((!fHandleMultipleImports && findGrammar(fSchemaGrammarDescription) != null) || isExistingGrammar(fSchemaGrammarDescription))
                     continue;
                 newSchemaRoot = resolveSchema(fSchemaGrammarDescription, false, child);
             }
@@ -874,6 +895,20 @@ public class XSDHandler {
         fDependencyMap.put(currSchemaInfo, dependencies);
         return currSchemaInfo;
     } // end constructTrees
+    
+    private boolean isExistingGrammar(XSDDescription desc) {
+        SchemaGrammar sg = fGrammarBucket.getGrammar(desc.getTargetNamespace());
+        if(sg == null) {
+            return findGrammar(desc) != null;
+        }
+        else {
+            try {
+                return sg.getDocumentLocations().contains(XMLEntityManager.expandSystemId(desc.getLiteralSystemId(), desc.getBaseSystemId(), false));
+            } catch (MalformedURIException e) {
+                return false;
+            }
+        }
+    }
     
     // This method builds registries for all globally-referenceable
     // names.  A registry will be built for each symbol space defined
@@ -1704,6 +1739,12 @@ public class XSDHandler {
             fValidateAnnotations = componentManager.getFeature(VALIDATE_ANNOTATIONS);
         } catch (XMLConfigurationException e) {
             fValidateAnnotations = false;
+        }
+        
+        try {
+            fHandleMultipleImports = componentManager.getFeature(HANDLE_MULTIPLE_IMPORTS);
+        } catch (XMLConfigurationException e) {
+            fHandleMultipleImports = false;
         }
 
         try {

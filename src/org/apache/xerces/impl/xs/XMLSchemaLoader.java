@@ -122,6 +122,10 @@ XSLoader, DOMConfiguration {
     protected static final String GENERATE_SYNTHETIC_ANNOTATIONS = 
         Constants.XERCES_FEATURE_PREFIX + Constants.GENERATE_SYNTHETIC_ANNOTATIONS_FEATURE;
     
+    /** Feature identifier: handle multiple imports. */
+    protected static final String HANDLE_MULTIPLE_IMPORTS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.HANDLE_MULTIPLE_IMPORTS_FEATURE;
+    
     
     protected static final String AUGMENT_PSVI = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
@@ -138,7 +142,8 @@ XSLoader, DOMConfiguration {
         STANDARD_URI_CONFORMANT_FEATURE, 
         DISALLOW_DOCTYPE,
         GENERATE_SYNTHETIC_ANNOTATIONS,
-        VALIDATE_ANNOTATIONS
+        VALIDATE_ANNOTATIONS,
+        HANDLE_MULTIPLE_IMPORTS
     };
     
     // property identifiers
@@ -1100,7 +1105,8 @@ XSLoader, DOMConfiguration {
                 name.equals(CONTINUE_AFTER_FATAL_ERROR) ||
                 name.equals(ALLOW_JAVA_ENCODINGS) ||
                 name.equals(STANDARD_URI_CONFORMANT_FEATURE) ||
-                name.equals(GENERATE_SYNTHETIC_ANNOTATIONS)) {
+                name.equals(GENERATE_SYNTHETIC_ANNOTATIONS) ||
+                name.equals(HANDLE_MULTIPLE_IMPORTS)) {
                 return true;
                 
             }
@@ -1175,6 +1181,7 @@ XSLoader, DOMConfiguration {
             v.add(STANDARD_URI_CONFORMANT_FEATURE);
             v.add(VALIDATE_ANNOTATIONS);
             v.add(GENERATE_SYNTHETIC_ANNOTATIONS);
+            v.add(HANDLE_MULTIPLE_IMPORTS);
             fRecognizedParameters = new DOMStringListImpl(v);      	
         }
         return fRecognizedParameters;
