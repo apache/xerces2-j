@@ -968,7 +968,8 @@ public class XMLEntityManager
         URI base = null;
         URI uri = null;
         try {
-            if (baseSystemId == null) {
+            if (baseSystemId == null || baseSystemId.length() == 0 ||
+                baseSystemId.equals(systemId)) {
                 String dir;
                 try {
                     dir = fixURI(System.getProperty("user.dir"));
