@@ -246,11 +246,9 @@ public class Grammar {
       /* Validators are null until we add that code */
       elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index];
 
-      /** TODO
-      elementDecl.contentModelValidator = getElementContentModelValidator(elementDeclIndex);
-      **/
+      
 
-      elementDecl.contentModelValidator = null;
+      //elementDecl.contentModelValidator = null;
 
 
       elementDecl.simpleType.datatypeValidator = fElementDeclDatatypeValidator[chunk][index];      
@@ -552,12 +550,25 @@ public class Grammar {
       int     scope       = elementDecl.scope;
 
 
-      fElementDeclName[chunk][index]              = elementName;
-      fElementDeclType[chunk][index]              = elementDecl.type; 
-      fElementDeclDatatypeValidator[chunk][index] =
-      elementDecl.simpleType.datatypeValidator;
-      fElementDeclContentModelValidator[chunk][index] =
-      elementDecl.contentModelValidator;
+      fElementDeclName[chunk][index]                  = elementName;
+      fElementDeclType[chunk][index]                  = elementDecl.type; 
+      fElementDeclDatatypeValidator[chunk][index]     =
+                        elementDecl.simpleType.datatypeValidator;
+     /*
+
+      if( elementDecl.type == XMLElementDecl.TYPE_ANY ){
+         elementDecl.contentModelValidator = 
+
+      } else if( elementDecl.type == XMLElementDecl.TYPE_CHILDREN ){
+
+      } else if( elementDecl.type == XMLElementDecl.TYPE_EMPTY ){
+      } else if( elementDecl.type == XMLElementDecl.TYPE_MIXED ){
+      } else if( elementDecl.type == XMLElementDecl.TYPE_SIMPLE ){
+      }
+      */
+
+      fElementDeclContentModelValidator[chunk][index] = elementDecl.contentModelValidator;
+         
 
       if (elementDecl.simpleType.list  == true ) {
          fElementDeclType[chunk][index] |= LIST_FLAG;
@@ -664,6 +675,8 @@ public class Grammar {
       int   chunk = contentSpecIndex >> CHUNK_SHIFT;
       int   index = contentSpecIndex & CHUNK_MASK;
 
+      System.out.println("idx spec = " + contentSpecIndex );
+                         
       fContentSpecType[chunk][index]       = contentSpec.type;
       fContentSpecValue[chunk][index]      = contentSpec.value;
       fContentSpecOtherValue[chunk][index] = contentSpec.otherValue;
@@ -685,8 +698,9 @@ public class Grammar {
       XMLElementDecl elementDecl = new XMLElementDecl();
       elementDecl.simpleType     = new XMLSimpleType();
       while (getElementDecl(elementDeclIndex++, elementDecl)) {
+
          System.out.println("element decl: "+elementDecl.name+
-                            ", "+ elementDecl.name.rawname );
+                            ", "+ elementDecl.name.rawname  );
 
          //                   ", "+ elementDecl.contentModelValidator.toString());
       }
