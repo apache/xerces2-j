@@ -353,11 +353,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
               //check that this datatype validator is validly derived from the base
               //according to derivation-ok-restriction 5.1.1
-              // Need to check with Elena/Sandy if there's a new method for this - REVISIT
-              //if  (!checkSimpleTypeDerivationOK(dv,baseValidator)) {
-              //    reportGenericSchemaError("ComplexType " + typeName + ": " + 
-              //    "derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base");
-              //   }
+
+              if (!XSConstraints.checkSimpleDerivationOk(dv, baseValidator, 
+                                           baseValidator.getFinalSet()) ) {
+                  reportGenericSchemaError("ComplexType " + typeName + ": " + 
+                  "derivation-ok-restriction.5.1.1:  The content type is not a valid restriction of the content type of the base");
+              }
               baseValidator = dv;
               simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
           }
@@ -581,15 +582,15 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
           }
 
-
           // Create the particle 
           if (typeInfo.fParticle == null) {
              typeInfo.fParticle = baseContent;
           }
+          else if (baseContent==null) {
+          }
           else {
-             if (typeInfo.fParticle!=null && baseContent!=null && 
-                 (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_ALL || 
-                 baseType.fParticle.fType == XSParticleDecl.PARTICLE_ALL)) {
+             if (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_ALL || 
+                 baseType.fParticle.fType == XSParticleDecl.PARTICLE_ALL) {
                reportGenericSchemaError("cos-all-limited.1.2:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition");
                throw new ComplexTypeRecoverableError();
              }
@@ -600,6 +601,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
              typeInfo.fParticle = temp;
           }
 
+          // Set the contentType
+          if (mixedContent) 
+             typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+          else if (typeInfo.fParticle == null)
+             typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_EMPTY;
+          else
+             typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
+          
           mergeAttributes(baseType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
 
        }
