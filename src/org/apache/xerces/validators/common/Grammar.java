@@ -58,7 +58,9 @@
 package org.apache.xerces.validators.common;
 
 import org.apache.xerces.framework.XMLContentSpec;
+import org.apache.xerces.utils.Hash2intTable;
 import org.apache.xerces.utils.QName;
+
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.w3c.dom.Document;
@@ -110,13 +112,15 @@ implements XMLContentSpec.Provider {
 
     private int fAttributeDeclCount;
     private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
-    private String   fAttributeDeclType[][] = new String[INITIAL_CHUNK_COUNT][];
+    private int   fAttributeDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
+    private String   fAttributeDeclDefaultType[][] = new String[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
     private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
     private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
 
     // scope mapping tables
 
+    private Hash2intTable fElementNameAndScopeToElementDeclIndexMapping = new Hash2intTable();
     // TODO
 
     //
@@ -128,7 +132,9 @@ implements XMLContentSpec.Provider {
     }
 
     public int getElementDeclIndex(int nameIndex, int scopeIndex) {//TODO
-
+	if (nameIndex > -1 && scopeIndex >-2 ) {
+	    return fElementNameAndScopeToElementDeclIndexMapping.get(nameIndex, scopeIndex);
+	}
         return -1;
     }
 
@@ -250,6 +256,10 @@ implements XMLContentSpec.Provider {
         fElementDeclDatatypeValidator[chunk][index]       = elementDecl.datatypeValidator;
         fElementDeclContentSpecIndex[chunk][index]        = elementDecl.contentSpecIndex;
         fElementDeclContentModelValidator[chunk][index]   = elementDecl.contentModelValidator;
+
+	// add the mapping information to the 
+        fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.localpart, elementDecl.enclosingScope, 
+							  elementDeclIndex);
         //fElementDeclFirstAttributeDeclIndex[chunk][index] = 
         //fElementDeclLastAttributeDeclIndex[chunk][index]  = 
     }
@@ -282,8 +292,9 @@ implements XMLContentSpec.Provider {
         int index = fAttributeDeclCount & CHUNK_MASK;
 
         if ( ensureAttributeDeclCapacity(chunk) == true ) { // create an AttributeDecl
-            fAttributeDeclName[chunk][index]                    = null; 
-            fAttributeDeclType[chunk][index]                    = null; 
+            fAttributeDeclName[chunk][index]                    = null;
+	    fAttributeDeclType[chunk][index]                    = -1;
+	    fAttributeDeclDefaultType[chunk][index]             = null; 
             fAttributeDeclDatatypeValidator[chunk][index]       = null;
             fAttributeDeclDefaultValue[chunk][index]            = null;
             fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
@@ -300,7 +311,8 @@ implements XMLContentSpec.Provider {
        int thisAttrIndex = attributeDeclIndex &  CHUNK_MASK; 
 
        fAttributeDeclName[thisAttrChunk][thisAttrIndex]  =  attributeDecl.name;
-       fAttributeDeclType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.defaultType;
+       fAttributeDeclType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.type;
+       fAttributeDeclDefaultType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.defaultType;
        fAttributeDeclDatatypeValidator[thisAttrChunk][thisAttrIndex] =  attributeDecl.datatypeValidator;
        fAttributeDeclDefaultValue[thisAttrChunk][thisAttrIndex]      =  attributeDecl.defaultValue;
 
