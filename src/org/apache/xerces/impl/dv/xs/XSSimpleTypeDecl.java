@@ -1800,12 +1800,28 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public StringList getLexicalPattern() {
-        if (fPatternStr == null)
+        if (fPatternType == SPECIAL_PATTERN_NONE && fPatternStr == null)
             return null;
 
         // REVISIT: fPattern should be of type StringListImpl
-        int size = fPatternStr.size();
-        String[] strs = new String[size];
+        int size = fPatternStr == null ? 0 : fPatternStr.size();
+        String[] strs;
+        if (fPatternType == SPECIAL_PATTERN_NMTOKEN) {
+            strs = new String[size+1];
+            strs[size] = "\\c+";
+        }
+        else if (fPatternType == SPECIAL_PATTERN_NAME) {
+            strs = new String[size+1];
+            strs[size] = "\\i\\c*";
+        }
+        else if (fPatternType == SPECIAL_PATTERN_NCNAME) {
+            strs = new String[size+2];
+            strs[size] = "\\i\\c*";
+            strs[size+1] = "[\\i-[:]][\\c-[:]]*";
+        }
+        else {
+            strs = new String[size];
+        }
         for (int i = 0; i < size; i++)
             strs[i] = (String)fPatternStr.elementAt(i);
         return new StringListImpl(strs, size);
