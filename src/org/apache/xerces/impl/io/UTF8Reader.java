@@ -161,7 +161,7 @@ public class UTF8Reader
                 if ((b1 & 0xC0) != 0x80) {
                     invalidByte(2, 2, b1);
                 }
-                c = ((b0 >> 2) & 0x03) | ((b0 << 6) & 0xFF) | (b1 & 0x3F);
+                c = ((b0 << 6) & 0x07C0) | (b1 & 0x003F);
             }
 
             // UTF-8:   [1110 zzzz] [10yy yyyy] [10xx xxxx]
@@ -181,8 +181,8 @@ public class UTF8Reader
                 if ((b2 & 0xC0) != 0x80) {
                     invalidByte(3, 3, b2);
                 }
-                c = ((b0 << 4) & 0xF0) | ((b1 >> 2) & 0x0F) |
-                    ((b1 << 6) & 0xFC) | (b2 & 0x3F);
+                c = ((b0 << 12) & 0xF000) | ((b1 << 6) & 0x0FC0) |
+                    (b2 & 0x003F);
             }
 
             // UTF-8:   [1111 0uuu] [10uu zzzz] [10yy yyyy] [10xx xxxx]*
@@ -211,12 +211,12 @@ public class UTF8Reader
                 if ((b3 & 0xC0) != 0x80) {
                     invalidByte(4, 4, b3);
                 }
-                int uuuuu = ((b0 << 5) & 0xE0) | ((b1 >> 4) & 0x0F);
+                int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
                 int wwww = uuuuu - 1;
                 int hs = 0xD800 | 
-                         ((wwww & 0x0C) << 8) | ((wwww & 0x03) << 6) |
-                         ((b1 << 2) & 0x3C) | ((b2 >> 4) & 0x03);
-                int ls = 0xDC00 | ((b2 & 0x0F) << 6) | (b3 & 0x3F);
+                         ((wwww << 6) & 0x03C0) | ((b1 << 2) & 0x003C) | 
+                         ((b2 >> 4) & 0x0003);
+                int ls = 0xDC00 | ((b2 << 6) & 0x03C0) | (b3 & 0x003F);
                 c = hs;
                 fSurrogate = ls;
             }
@@ -289,7 +289,7 @@ public class UTF8Reader
                 if ((b1 & 0xC0) != 0x80) {
                     invalidByte(2, 2, b1);
                 }
-                int c = ((b0 >> 2) & 0x03) | ((b0 << 6) & 0xFF) | (b1 & 0x3F);
+                int c = ((b0 << 6) & 0x07C0) | (b1 & 0x003F);
                 ch[out++] = (char)c;
                 count -= 1;
                 continue;
@@ -319,8 +319,8 @@ public class UTF8Reader
                 if ((b2 & 0xC0) != 0x80) {
                     invalidByte(3, 3, b2);
                 }
-                int c = ((b0 << 4) & 0xF0) | ((b1 >> 2) & 0x0F) |
-                        ((b1 << 6) & 0xFC) | (b2 & 0x3F);
+                int c = ((b0 << 12) & 0xF000) | ((b1 << 6) & 0x0FC0) |
+                        (b2 & 0x003F);
                 ch[out++] = (char)c;
                 count -= 2;
                 continue;
@@ -373,12 +373,12 @@ public class UTF8Reader
                     count -= fOffset;
                     break;
                 }
-                int uuuuu = ((b0 << 5) & 0xE0) | ((b1 >> 4) & 0x0F);
+                int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
                 int wwww = uuuuu - 1;
                 int hs = 0xD800 | 
-                         ((wwww & 0x0C) << 8) | ((wwww & 0x03) << 6) |
-                         ((b1 << 2) & 0x3C) | ((b2 >> 4) & 0x03);
-                int ls = 0xDC00 | ((b2 & 0x0F) << 6) | (b3 & 0x3F);
+                         ((wwww << 6) & 0x03C0) | ((b1 << 2) & 0x003C) | 
+                         ((b2 >> 4) & 0x0003);
+                int ls = 0xDC00 | ((b2 << 6) & 0x03C0) | (b3 & 0x003F);
                 ch[out++] = (char)hs;
                 ch[out++] = (char)ls;
                 count -= 3;
