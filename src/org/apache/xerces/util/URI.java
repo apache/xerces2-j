@@ -121,11 +121,13 @@ import java.io.Serializable;
   }
 
   /** reserved characters */
-  private static final String RESERVED_CHARACTERS = ";/?:@&=+$,";
+  //RFC 2732 added '[' and ']' as reserved characters
+  //private static final String RESERVED_CHARACTERS = ";/?:@&=+$,";
+  private static final String RESERVED_CHARACTERS = ";/?:@&=+$,[]";
 
   /** URI punctuation mark characters - these, combined with
       alphanumerics, constitute the "unreserved" characters */
-  private static final String MARK_CHARACTERS = "-_.!~*'() ";
+  private static final String MARK_CHARACTERS = "-_.!~*'()";
 
   /** scheme can be composed of alphanumerics and these characters */
   private static final String SCHEME_CHARACTERS = "+-.";
