@@ -59,6 +59,7 @@ package org.apache.xerces.impl.dtd;
 
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.parser.XMLInputSource;
 
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import java.util.Vector;
@@ -91,6 +92,13 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
         this.fPossibleRoots = null;
     } // init(XMLResourceIdentifier, String)
 
+    public XMLDTDDescription(XMLInputSource source) {
+        this.setValues(source.getPublicId(), source.getSystemId(),
+                source.getBaseSystemId(), null);
+        this.fRootName = null;
+        this.fPossibleRoots = null;
+    } // init(XMLInputSource)
+
     // XMLGrammarDescription methods
 
     public String getGrammarType () {
@@ -111,7 +119,7 @@ public class XMLDTDDescription extends XMLResourceIdentifierImpl
 
     // set possible roots
     public void setPossibleRoots(Vector possibleRoots) {
-        fPossibleRoots = (Vector)possibleRoots.clone();
+        fPossibleRoots = possibleRoots;
     } 
 
     /**

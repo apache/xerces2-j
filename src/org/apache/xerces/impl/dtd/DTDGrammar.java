@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.dtd;
 
 import java.util.Hashtable;
+import java.util.Vector;
 import java.util.Enumeration;
 import java.lang.Integer;
 
@@ -871,6 +872,20 @@ public class DTDGrammar
      */
     public void endDTD(Augmentations augs) throws XNIException {
         fIsImmutable = true;
+        // make sure our description contains useful stuff...
+        if(fGrammarDescription.getRootName() == null) {
+            // we don't know what the root is; so use possibleRoots...
+            int chunk, index = 0;
+            String currName = null;
+            Vector elements = new Vector();
+            for (int i=0; i < fElementDeclCount; i++) {
+                chunk = i >> CHUNK_SHIFT;
+                index = i & CHUNK_MASK;
+                currName = fElementDeclName[chunk][index].rawname;
+                elements.addElement(currName);
+            }
+            fGrammarDescription.setPossibleRoots(elements);
+        }
     } // endDTD()
 
     // no-op methods
@@ -1197,7 +1212,7 @@ public class DTDGrammar
      * @see #getElementDecl
      */
     public int getFirstElementDeclIndex() {
-        return fElementDeclCount > 0 ? fElementDeclCount : -1;
+        return fElementDeclCount >= 0 ? 0 : -1;
     } // getFirstElementDeclIndex():int
 
     /**

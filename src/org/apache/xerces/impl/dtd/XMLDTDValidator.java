@@ -203,23 +203,24 @@ public class XMLDTDValidator
 
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     /** Property identifier: error reporter. */
     protected static final String ERROR_REPORTER =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
     /** Property identifier: grammar pool. */
     protected static final String GRAMMAR_POOL =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
     /** Property identifier: datatype validator factory. */
     protected static final String DATATYPE_VALIDATOR_FACTORY =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
 
-
+    // property identifier:  ValidationManager
     protected static final String VALIDATION_MANAGER =
-    Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -701,6 +702,11 @@ public class XMLDTDValidator
         if(fDTDGrammar == null) {
             // we'll have to create it...
             fDTDGrammar = new DTDGrammar(fSymbolTable, grammarDesc);
+        } else {
+            // we've found a cached one;so let's make sure not to read
+            // any external subset!
+            System.err.println("we're cachin' now!");
+            fValidationManager.setCachedDTD(true);
         }
         fGrammarBucket.setActiveGrammar(fDTDGrammar);
 
