@@ -874,7 +874,7 @@ public class XMLEntityManager
         fCurrentEntity = fEntityStack.size() > 0
                        ? (ScannedEntity)fEntityStack.pop() : null;
         if (DEBUG_PRINT) {
-            System.out.println(")endEntity: ");
+            System.out.print(")endEntity: ");
             print();
             System.out.println();
         }
@@ -1024,47 +1024,52 @@ public class XMLEntityManager
     /** Prints the contents of the buffer. */
     final void print() {
         if (DEBUG_PRINT) {
-            System.out.print('[');
-            System.out.print(fCurrentEntity.count);
-            if (fCurrentEntity.count > 0) {
-                System.out.print(" \"");
-                for (int i = 0; i < fCurrentEntity.count; i++) {
-                    if (i == fCurrentEntity.position) {
+            if (fCurrentEntity != null) {
+                System.out.print('[');
+                System.out.print(fCurrentEntity.count);
+                if (fCurrentEntity.count > 0) {
+                    System.out.print(" \"");
+                    for (int i = 0; i < fCurrentEntity.count; i++) {
+                        if (i == fCurrentEntity.position) {
+                            System.out.print('^');
+                        }
+                        char c = fCurrentEntity.ch[i];
+                        switch (c) {
+                            case '\n': {
+                                System.out.print("\\n");
+                                break;
+                            }
+                            case '\r': {
+                                System.out.print("\\r");
+                                break;
+                            }
+                            case '\t': {
+                                System.out.print("\\t");
+                                break;
+                            }
+                            case '\\': {
+                                System.out.print("\\\\");
+                                break;
+                            }
+                            default: {
+                                System.out.print(c);
+                            }
+                        }
+                    }
+                    if (fCurrentEntity.position == fCurrentEntity.count) {
                         System.out.print('^');
                     }
-                    char c = fCurrentEntity.ch[i];
-                    switch (c) {
-                        case '\n': {
-                            System.out.print("\\n");
-                            break;
-                        }
-                        case '\r': {
-                            System.out.print("\\r");
-                            break;
-                        }
-                        case '\t': {
-                            System.out.print("\\t");
-                            break;
-                        }
-                        case '\\': {
-                            System.out.print("\\\\");
-                            break;
-                        }
-                        default: {
-                            System.out.print(c);
-                        }
-                    }
+                    System.out.print('"');
                 }
-                if (fCurrentEntity.position == fCurrentEntity.count) {
-                    System.out.print('^');
-                }
-                System.out.print('"');
+                System.out.print(']');
+                System.out.print(" @ ");
+                System.out.print(fCurrentEntity.lineNumber);
+                System.out.print(',');
+                System.out.print(fCurrentEntity.columnNumber);
             }
-            System.out.print(']');
-            System.out.print(" @ ");
-            System.out.print(fCurrentEntity.lineNumber);
-            System.out.print(',');
-            System.out.print(fCurrentEntity.columnNumber);
+            else {
+                System.out.print("*NO CURRENT ENTITY*");
+            }
         }
     } // print()
 

@@ -1801,43 +1801,6 @@ public class XMLDocumentScanner
             do {
                 again = false;
                 switch (fScannerState) {
-                    case SCANNER_STATE_ROOT_ELEMENT: {
-                        if (scanStartElement()) {
-                            setScannerState(SCANNER_STATE_TRAILING_MISC);
-                            setDispatcher(fTrailingMiscDispatcher);
-                            return complete;
-                        }
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;
-                    }
-                    case SCANNER_STATE_COMMENT: {
-                        scanComment();
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;  
-                    }
-                    case SCANNER_STATE_PI: {
-                        scanPI();
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;  
-                    }
-                    // REVISIT: Handle CDATA so that we can split up
-                    //          the processing over multiple callbacks.
-                    case SCANNER_STATE_CDATA: {
-                        if (scanCDATASection(complete)) {
-                            setScannerState(SCANNER_STATE_CONTENT);
-                        }
-                        break;
-                    }
-                    case SCANNER_STATE_REFERENCE: {
-                        if (fEntityScanner.skipChar('#')) {
-                            scanCharReference();
-                        }
-                        else {
-                            scanEntityReference();
-                        }
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;
-                    }
                     case SCANNER_STATE_CONTENT: {
                         if (fEntityScanner.skipChar('<')) {
                             setScannerState(SCANNER_STATE_START_OF_MARKUP);
@@ -1925,6 +1888,71 @@ public class XMLDocumentScanner
                                                        "MarkupNotRecognizedInContent",
                                                        null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
+                        break;
+                    }
+                    case SCANNER_STATE_COMMENT: {
+                        scanComment();
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;  
+                    }
+                    case SCANNER_STATE_PI: {
+                        scanPI();
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;  
+                    }
+                    // REVISIT: Handle CDATA so that we can split up
+                    //          the processing over multiple callbacks.
+                    case SCANNER_STATE_CDATA: {
+                        if (scanCDATASection(complete)) {
+                            setScannerState(SCANNER_STATE_CONTENT);
+                        }
+                        break;
+                    }
+                    case SCANNER_STATE_REFERENCE: {
+                        // NOTE: We need to set the state beforehand
+                        //       because the XMLEntityHandler#startEntity
+                        //       callback could set the state to
+                        //       SCANNER_STATE_TEXT_DECL and we don't want
+                        //       to override that scanner state.
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        if (fEntityScanner.skipChar('#')) {
+                            scanCharReference();
+                        }
+                        else {
+                            scanEntityReference();
+                        }
+                        break;
+                    }
+                    case SCANNER_STATE_TEXT_DECL: {
+                        // scan text decl
+                        if (fEntityScanner.skipString("<?xml")) {
+                            // NOTE: special case where entity starts with a PI
+                            //       whose name starts with "xml" (e.g. "xmlfoo")
+                            if (XMLChar.isName(fEntityScanner.peekChar())) {
+                                fStringBuffer.clear();
+                                fStringBuffer.append("xml");
+                                while (XMLChar.isName(fEntityScanner.peekChar())) {
+                                    fStringBuffer.append((char)fEntityScanner.scanChar());
+                                }
+                                String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
+                                scanPIData(target, fString);
+                            }
+            
+                            // standard text declaration
+                            else {
+                                scanXMLDeclOrTextDecl(true);
+                            }
+                        }
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;
+                    }
+                    case SCANNER_STATE_ROOT_ELEMENT: {
+                        if (scanStartElement()) {
+                            setScannerState(SCANNER_STATE_TRAILING_MISC);
+                            setDispatcher(fTrailingMiscDispatcher);
+                            return complete;
+                        }
+                        setScannerState(SCANNER_STATE_CONTENT);
                         break;
                     }
                     case SCANNER_STATE_DOCTYPE: {
