@@ -309,22 +309,20 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
 
-        if (right != null) {
-            temp = new XSParticleDecl();
-            if (choice)
-                temp.fType = XSParticleDecl.PARTICLE_CHOICE;
-            else
-                temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
-            temp.fValue = left;
-            temp.fOtherValue = right;
-            left = temp;
-        }
-
-
         // REVISIT: model group 
         // Quick fix for the case that particles <choice> | <sequence> do not have any children.
         // For now we return null. In the future we might want to return model group decl.
+
         if (left !=null) {
+            temp = new XSParticleDecl();
+            if (choice)
+              temp.fType = XSParticleDecl.PARTICLE_CHOICE;
+            else
+              temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
+            temp.fValue = left;
+            temp.fOtherValue = right;
+            left = temp;
+
             XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
             XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
             Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
