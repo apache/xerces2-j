@@ -60,12 +60,26 @@ event.
   </a>
   </faq>
   
+  <faq title='Ignorable Whitespace and XML Schemas'>
+    <q>Why doesn't the SAX parser report ignorable whitespace for XML Schemas?</q>
+    <a>
+      <p>SAX is very clear that ignorableWhitespace is only called for
+         <jump href="http://www.w3.org/TR/REC-xml/#sec-white-space">
+         element content whitespace</jump>, which is defined in the context of a DTD.
+         The result of schema validation is the Post-Schema-Validation Infoset (PSVI). 
+         Schema processors augment the base Infoset by adding new properties to 
+         element and attribute information items, but not character information items.
+         Schemas do not change whether a character is element content whitespace.
+      </p>
+    </a>
+  </faq>
+  
   <faq title="Namespace of xmlns attributes">
     <q>Why does the SAX parser report that xmlns attributes have no namespace?</q>
     <a>
        <p>An erratum for the Namespaces in XML recommendation put namespace declaration 
-          attributes in the namespace "http://www.w3.org/2000/xmlns/". SAX2 does not 
-          accept this change so conforming parsers must report that these 
+          attributes in the namespace "http://www.w3.org/2000/xmlns/". SAX2 (SAX 2.0.1)
+          does not agree with this change so conforming parsers must report that these 
           attributes have no namespace. Xerces behaves according to SAX2. Your code
           must handle this discrepancy when interacting with APIs such as DOM and
           applications which expect a namespace for xmlns attributes.</p>
