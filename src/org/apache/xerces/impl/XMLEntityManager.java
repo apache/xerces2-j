@@ -1566,13 +1566,13 @@ public class XMLEntityManager
                     load(1, false);
                 }
                 if (c == '\r') {
-                    if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
+                    if (fCurrentEntity.ch[fCurrentEntity.position++] != '\n') {
                         fCurrentEntity.position--;
                     }
                     c = '\n';
                 }
                 else {
-                    if (fCurrentEntity.ch[fCurrentEntity.position + 1] == '\r') {
+                    if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
                         fCurrentEntity.position++;
                     }
                 }
@@ -2164,15 +2164,15 @@ public class XMLEntityManager
             // load more characters, if needed
             int delimLen = delimiter.length();
             char charAt0 = delimiter.charAt(0); 
-            int limit = fCurrentEntity.count - delimLen + 1;
+            //int limit = fCurrentEntity.count - delimLen + 1;
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
             }
-            else if (fCurrentEntity.position == limit) {
+            else if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
                 System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
-                                 fCurrentEntity.ch, 0, delimLen - 1);
-                load(delimLen - 1, false);
+                                 fCurrentEntity.ch, 0, fCurrentEntity.count - fCurrentEntity.position);
+                load(fCurrentEntity.count - fCurrentEntity.position, false);
                 fCurrentEntity.position = 0;
             }
 
@@ -2250,29 +2250,25 @@ public class XMLEntityManager
                 }
             }
 
-            // iterate over buffer until there isn't enough chars left
-            // for the delimiter to be there
+            // iterate over buffer looking for delimiter
             boolean done = false;
-            while (fCurrentEntity.position < limit/*fCurrentEntity.count*/) {
+            OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if (c == charAt0) {
                     // looks like we just hit the delimiter
-                    int i;
-                    for (i = 1; i < delimLen; i++) {
-                        /***
+                    int delimOffset = fCurrentEntity.position - 1;
+                    for (int i = 1; i < delimLen; i++) {
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             fCurrentEntity.position -= i;
-                            break;
+                            break OUTER;
                         }
-                        /***/
                         c = fCurrentEntity.ch[fCurrentEntity.position++];
-                        if (c != delimiter.charAt(i)) {
-                            fCurrentEntity.position -= i;
+                        if (delimiter.charAt(i) != c) {
+                            fCurrentEntity.position--;
                             break;
                         }
                     }
-                    if (i == delimLen) {
-                        // that was it, we're all set
+                    if (fCurrentEntity.position == delimOffset + delimLen) {
                         done = true;
                         break;
                     }
@@ -2282,7 +2278,6 @@ public class XMLEntityManager
                     break;
                 }
                 else if (XMLChar.isInvalid(c)) {
-                    System.out.println(">>> invalid character in data");
                     fCurrentEntity.position--;
                     break;
                 }
