@@ -22,6 +22,8 @@ import java.util.Locale;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xs.PSVIProvider;
 import org.apache.xerces.util.EntityResolverWrapper;
+import org.apache.xerces.util.EntityResolver2Wrapper;
+import org.apache.xerces.util.EntityResolver2Wrapper.EntityResolver2;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SymbolHash;
@@ -143,6 +145,21 @@ public abstract class AbstractSAXParser
     
     /** Lexical handler parameter entities. */
     protected boolean fLexicalHandlerParameterEntities = true;
+    
+    /** Standalone document declaration. */
+    protected boolean fStandalone;
+    
+    /** Resolve DTD URIs. */
+    protected boolean fResolveDTDURIs = true;
+    
+    /** Use EntityResolver2. */
+    protected boolean fUseEntityResolver2 = true;
+    
+    /** 
+     * XMLNS URIs: Namespace declarations in the 
+     * http://www.w3.org/2000/xmlns/ namespace.
+     */
+    protected boolean fXMLNSURIs = false;
 
     // parser handlers
 
@@ -286,10 +303,10 @@ public abstract class AbstractSAXParser
      */
     public void xmlDecl(String version, String encoding, String standalone, Augmentations augs)
         throws XNIException {
-
         // the version need only be set once; if
         // document's XML 1.0|1.1, that's how it'll stay
         fVersion = version;
+        fStandalone = "yes".equals(standalone);
     } // xmlDecl(String,String,String)
 
     /**
@@ -448,15 +465,21 @@ public abstract class AbstractSAXParser
                     // we cannot use the declared prefix count for the current context
                     // to skip this section. -- mrglavas
                     int len = attributes.getLength();
-                    for (int i = len - 1; i >= 0; --i) {
-                        attributes.getName(i, fQName);    
-                        if ((fQName.prefix == XMLSymbols.PREFIX_XMLNS) || 
-                            (fQName.rawname == XMLSymbols.PREFIX_XMLNS)) {
-                            if (!fNamespacePrefixes) {
+                    if (!fNamespacePrefixes) {
+                        for (int i = len - 1; i >= 0; --i) {
+                            attributes.getName(i, fQName);    
+                            if ((fQName.prefix == XMLSymbols.PREFIX_XMLNS) || 
+                               (fQName.rawname == XMLSymbols.PREFIX_XMLNS)) {
                                 // remove namespace declaration attributes
                                 attributes.removeAttributeAt(i);
                             }
-                            else {
+                        }
+                    }
+                    else if (!fXMLNSURIs) {
+                        for (int i = len - 1; i >= 0; --i) {
+                            attributes.getName(i, fQName);    
+                            if ((fQName.prefix == XMLSymbols.PREFIX_XMLNS) || 
+                               (fQName.rawname == XMLSymbols.PREFIX_XMLNS)) {
                                 // localpart should be empty string as per SAX documentation:
                                 // http://www.saxproject.org/?selected=namespaces
                                 fQName.prefix = "";
@@ -981,13 +1004,13 @@ public abstract class AbstractSAXParser
      */
     public void externalEntityDecl(String name, XMLResourceIdentifier identifier,
                                    Augmentations augs) throws XNIException {
-
-        String publicId = identifier.getPublicId();
-        String literalSystemId = identifier.getLiteralSystemId();
         try {
             // SAX2 extension
             if (fDeclHandler != null) {
-                fDeclHandler.externalEntityDecl(name, publicId, literalSystemId);
+                String publicId = identifier.getPublicId();
+                String systemId = fResolveDTDURIs ? 
+                    identifier.getExpandedSystemId() : identifier.getLiteralSystemId();
+                fDeclHandler.externalEntityDecl(name, publicId, systemId);
             }
         }
         catch (SAXException e) {
@@ -1012,14 +1035,13 @@ public abstract class AbstractSAXParser
     public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier, 
                                    String notation,
                                    Augmentations augs) throws XNIException {
-
-        String publicId = identifier.getPublicId();
-        String expandedSystemId = identifier.getExpandedSystemId(); 
         try {
             // SAX2 extension
             if (fDTDHandler != null) {
-                fDTDHandler.unparsedEntityDecl(name, publicId,
-                                               expandedSystemId, notation);
+                String publicId = identifier.getPublicId();
+                String systemId = fResolveDTDURIs ? 
+                    identifier.getExpandedSystemId() : identifier.getLiteralSystemId();
+                fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation);
             }
         }
         catch (SAXException e) {
@@ -1041,13 +1063,13 @@ public abstract class AbstractSAXParser
      */
     public void notationDecl(String name, XMLResourceIdentifier identifier,
                              Augmentations augs) throws XNIException {
-
-        String publicId = identifier.getPublicId();
-        String expandedSystemId = identifier.getExpandedSystemId();
         try {
             // SAX1 and SAX2
             if (fDTDHandler != null) {
-                fDTDHandler.notationDecl(name, publicId, expandedSystemId);
+                String publicId = identifier.getPublicId();
+                String systemId = fResolveDTDURIs ? 
+                    identifier.getExpandedSystemId() : identifier.getLiteralSystemId();
+                fDTDHandler.notationDecl(name, publicId, systemId);
             }
         }
         catch (SAXException e) {
@@ -1241,8 +1263,14 @@ public abstract class AbstractSAXParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
-            fConfiguration.setProperty(ENTITY_RESOLVER,
-                                       new EntityResolverWrapper(resolver));
+            if (fUseEntityResolver2 && resolver instanceof EntityResolver2) {
+                fConfiguration.setProperty(ENTITY_RESOLVER,
+                    new EntityResolver2Wrapper((EntityResolver2) resolver));
+            }
+            else {
+                fConfiguration.setProperty(ENTITY_RESOLVER,
+                    new EntityResolverWrapper(resolver));
+            }
         }
         catch (XMLConfigurationException e) {
             // do nothing
@@ -1263,9 +1291,15 @@ public abstract class AbstractSAXParser
         try {
             XMLEntityResolver xmlEntityResolver =
                 (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
-            if (xmlEntityResolver != null &&
-                xmlEntityResolver instanceof EntityResolverWrapper) {
-                entityResolver = ((EntityResolverWrapper)xmlEntityResolver).getEntityResolver();
+            if (xmlEntityResolver != null) {
+                if (xmlEntityResolver instanceof EntityResolverWrapper) {
+                    entityResolver =
+                        ((EntityResolverWrapper) xmlEntityResolver).getEntityResolver();
+                }
+                else if (xmlEntityResolver instanceof EntityResolver2Wrapper) {
+                    entityResolver = 
+                        ((EntityResolver2Wrapper) xmlEntityResolver).getEntityResolver();
+                }
             }
         }
         catch (XMLConfigurationException e) {
@@ -1464,6 +1498,7 @@ public abstract class AbstractSAXParser
                     fNamespaces = state;
                     return;
                 }
+                
                 // http://xml.org/sax/features/namespace-prefixes
                 //   controls the reporting of raw prefixed names and Namespace
                 //   declarations (xmlns* attributes): when this feature is false
@@ -1476,6 +1511,7 @@ public abstract class AbstractSAXParser
                     fNamespacePrefixes = state;
                     return;
                 }
+                
                 // http://xml.org/sax/features/string-interning
                 //   controls the use of java.lang.String#intern() for strings
                 //   passed to SAX handlers.
@@ -1489,6 +1525,7 @@ public abstract class AbstractSAXParser
                     }
                     return;
                 }
+                
                 // http://xml.org/sax/features/lexical-handler/parameter-entities
                 //   controls whether the beginning and end of parameter entities
                 //   will be reported to the LexicalHandler.
@@ -1498,6 +1535,85 @@ public abstract class AbstractSAXParser
                     fLexicalHandlerParameterEntities = state;
                     return;
                 }
+                
+                // http://xml.org/sax/features/resolve-dtd-uris
+                //   controls whether system identifiers will be absolutized relative to
+                //   their base URIs before reporting.
+                //
+                if (suffixLength == Constants.RESOLVE_DTD_URIS_FEATURE.length() && 
+                    featureId.endsWith(Constants.RESOLVE_DTD_URIS_FEATURE)) {
+                    fResolveDTDURIs = state;
+                    return;
+                }
+                
+                // http://xml.org/sax/features/unicode-normalization-checking
+                //   controls whether Unicode normalization checking is performed
+                //   as per Appendix B of the XML 1.1 specification
+                //
+                if (suffixLength == Constants.UNICODE_NORMALIZATION_CHECKING_FEATURE.length() &&
+                    featureId.endsWith(Constants.UNICODE_NORMALIZATION_CHECKING_FEATURE)) {
+                    // REVISIT: Allow this feature to be set once Unicode normalization
+                    // checking is supported -- mrglavas.
+                    if (state) {
+                        throw new SAXNotSupportedException(
+                            SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                            "true-not-supported", new Object [] {featureId}));  
+                    }
+                    return;
+                }
+                
+                // http://xml.org/sax/features/xmlns-uris
+                //   controls whether the parser reports that namespace declaration
+                //   attributes as being in the namespace: http://www.w3.org/2000/xmlns/
+                //
+                if (suffixLength == Constants.XMLNS_URIS_FEATURE.length() &&
+                    featureId.endsWith(Constants.XMLNS_URIS_FEATURE)) {
+                    fXMLNSURIs = state;
+                    return;
+                }
+                
+                // http://xml.org/sax/features/use-entity-resolver2
+                //   controls whether the methods of an object implementing
+                //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
+                //
+                // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
+                /**if (suffixLength == Constants.USE_ENTITY_RESOLVER2_FEATURE.length() &&
+                    featureId.endsWith(Constants.USE_ENTITY_RESOLVER2_FEATURE)) {
+                    if (state != fUseEntityResolver2) {
+                        fUseEntityResolver2 = state;
+                        // Refresh EntityResolver wrapper.
+                        setEntityResolver(getEntityResolver());
+                    }
+                    return;
+                }**/
+                
+                //
+                // Read only features.
+                //
+                
+                // http://xml.org/sax/features/is-standalone
+                //   reports whether the document specified a standalone document declaration.
+                // http://xml.org/sax/features/use-attributes2
+                //   reports whether Attributes objects passed to startElement also implement
+                //   the org.xml.sax.ext.Attributes2 interface.
+                // http://xml.org/sax/features/use-locator2
+                //   reports whether Locator objects passed to setDocumentLocator also implement
+                //   the org.xml.sax.ext.Locator2 interface.
+                // http://xml.org/sax/features/xml-1.1
+                //   reports whether the parser supports both XML 1.1 and XML 1.0.
+                if ((suffixLength == Constants.IS_STANDALONE_FEATURE.length() &&
+                    featureId.endsWith(Constants.IS_STANDALONE_FEATURE)) ||
+                    (suffixLength == Constants.USE_ATTRIBUTES2_FEATURE.length() &&
+                    featureId.endsWith(Constants.USE_ATTRIBUTES2_FEATURE)) ||
+                    (suffixLength == Constants.USE_LOCATOR2_FEATURE.length() &&
+                    featureId.endsWith(Constants.USE_LOCATOR2_FEATURE)) ||
+                    (suffixLength == Constants.XML_11_FEATURE.length() &&
+                    featureId.endsWith(Constants.XML_11_FEATURE))) {
+                    throw new SAXNotSupportedException(
+                        SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
+                        "feature-read-only", new Object [] {featureId}));
+                }
+                
 
                 //
                 // Drop through and perform default processing
@@ -1584,14 +1700,84 @@ public abstract class AbstractSAXParser
                     return true;
                 }
                 
+                // http://xml.org/sax/features/is-standalone
+                //   reports whether the document specified a standalone document declaration.
+                //
+                if (suffixLength == Constants.IS_STANDALONE_FEATURE.length() &&
+                    featureId.endsWith(Constants.IS_STANDALONE_FEATURE)) {
+                    return fStandalone;
+                }
+                
+                // http://xml.org/sax/features/xml-1.1
+                //   reports whether the parser supports both XML 1.1 and XML 1.0.
+                //
+                if (suffixLength == Constants.XML_11_FEATURE.length() &&
+                    featureId.endsWith(Constants.XML_11_FEATURE)) {
+                    return (fConfiguration instanceof XML11Configuration);
+                }
+                
                 // http://xml.org/sax/features/lexical-handler/parameter-entities
                 //   controls whether the beginning and end of parameter entities
                 //   will be reported to the LexicalHandler.
                 //
                 if (suffixLength == Constants.LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE.length() &&
                     featureId.endsWith(Constants.LEXICAL_HANDLER_PARAMETER_ENTITIES_FEATURE)) {
-                    	return fLexicalHandlerParameterEntities;
+                    return fLexicalHandlerParameterEntities;
                 }
+                
+                // http://xml.org/sax/features/resolve-dtd-uris
+                //   controls whether system identifiers will be absolutized relative to
+                //   their base URIs before reporting.
+                if (suffixLength == Constants.RESOLVE_DTD_URIS_FEATURE.length() && 
+                    featureId.endsWith(Constants.RESOLVE_DTD_URIS_FEATURE)) {
+                    return fResolveDTDURIs;
+                }
+                
+                // http://xml.org/sax/features/xmlns-uris
+                //   controls whether the parser reports that namespace declaration
+                //   attributes as being in the namespace: http://www.w3.org/2000/xmlns/
+                //
+                if (suffixLength == Constants.XMLNS_URIS_FEATURE.length() &&
+                    featureId.endsWith(Constants.XMLNS_URIS_FEATURE)) {
+                    return fXMLNSURIs;
+                }
+                
+                // http://xml.org/sax/features/unicode-normalization-checking
+                //   controls whether Unicode normalization checking is performed
+                //   as per Appendix B of the XML 1.1 specification
+                //
+                if (suffixLength == Constants.UNICODE_NORMALIZATION_CHECKING_FEATURE.length() &&
+                    featureId.endsWith(Constants.UNICODE_NORMALIZATION_CHECKING_FEATURE)) {
+                    // REVISIT: Allow this feature to be set once Unicode normalization
+                    // checking is supported -- mrglavas.
+                    return false;
+                }
+                
+                // http://xml.org/sax/features/use-entity-resolver2
+                //   controls whether the methods of an object implementing
+                //   org.xml.sax.ext.EntityResolver2 will be used by the parser.
+                //
+                // TODO: Uncomment once SAX 2.0.2 is available. -- mrglavas
+                /** if (suffixLength == Constants.USE_ENTITY_RESOLVER2_FEATURE.length() &&
+                    featureId.endsWith(Constants.USE_ENTITY_RESOLVER2_FEATURE)) {
+                    return fUseEntityResolver2;
+                }**/
+                
+                // http://xml.org/sax/features/use-attributes2
+                //   reports whether Attributes objects passed to startElement also implement
+                //   the org.xml.sax.ext.Attributes2 interface.
+                // http://xml.org/sax/features/use-locator2
+                //   reports whether Locator objects passed to setDocumentLocator also implement
+                //   the org.xml.sax.ext.Locator2 interface.
+                //
+                if ((suffixLength == Constants.USE_ATTRIBUTES2_FEATURE.length() &&
+                    featureId.endsWith(Constants.USE_ATTRIBUTES2_FEATURE)) ||
+                    (suffixLength == Constants.USE_LOCATOR2_FEATURE.length() &&
+                    featureId.endsWith(Constants.USE_LOCATOR2_FEATURE))) {
+                    // REVISIT: Return true once SAX 2.0.2 interfaces are available. -- mrglavas
+                    return false;
+                }                
+                
 
                 //
                 // Drop through and perform default processing
@@ -1699,9 +1885,15 @@ public abstract class AbstractSAXParser
                 //   supports this property but is not currently visiting a DOM
                 //   node, it should return null (this is a good way to check for
                 //   availability before the parse begins).
+                // http://xml.org/sax/properties/document-xml-version
+                // Value type: java.lang.String
+                // Access: read-only
+                //   The literal string describing the actual XML version of the document. 
                 //
-                if (suffixLength == Constants.DOM_NODE_PROPERTY.length() && 
-                    propertyId.endsWith(Constants.DOM_NODE_PROPERTY)) {
+                if ((suffixLength == Constants.DOM_NODE_PROPERTY.length() && 
+                    propertyId.endsWith(Constants.DOM_NODE_PROPERTY)) ||
+                    (suffixLength == Constants.DOCUMENT_XML_VERSION_PROPERTY.length() &&
+                    propertyId.endsWith(Constants.DOCUMENT_XML_VERSION_PROPERTY))) {
                     throw new SAXNotSupportedException(
                         SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
                         "property-read-only", new Object [] {propertyId}));
@@ -1771,6 +1963,17 @@ public abstract class AbstractSAXParser
                 final int suffixLength = propertyId.length() - Constants.SAX_PROPERTY_PREFIX.length();
 
                 //
+                // http://xml.org/sax/properties/document-xml-version
+                // Value type: java.lang.String
+                // Access: read-only
+                //   The literal string describing the actual XML version of the document. 
+                //
+                if (suffixLength == Constants.DOCUMENT_XML_VERSION_PROPERTY.length() &&
+                    propertyId.endsWith(Constants.DOCUMENT_XML_VERSION_PROPERTY)) {
+                    return fVersion;
+                }
+                
+                //
                 // http://xml.org/sax/properties/lexical-handler
                 // Value type: org.xml.sax.ext.LexicalHandler
                 // Access: read/write, pre-parse only
@@ -1790,6 +1993,7 @@ public abstract class AbstractSAXParser
                     propertyId.endsWith(Constants.DECLARATION_HANDLER_PROPERTY)) {
                     return getDeclHandler();
                 }
+                
                 //
                 // http://xml.org/sax/properties/dom-node
                 // Value type: DOM Node
@@ -1807,6 +2011,7 @@ public abstract class AbstractSAXParser
                         SAXMessageFormatter.formatMessage(fConfiguration.getLocale(), 
                         "dom-node-read-not-supported", null));
                 }
+                
                 //
                 // Drop through and perform default processing
                 //
@@ -1968,6 +2173,7 @@ public abstract class AbstractSAXParser
         // reset state
         fInDTD = false;
         fVersion = "1.0";
+        fStandalone = false;
 
         // features
         fNamespaces = fConfiguration.getFeature(NAMESPACES);           
