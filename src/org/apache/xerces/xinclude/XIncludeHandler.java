@@ -145,6 +145,8 @@ public class XIncludeHandler
 
     public final static String XINCLUDE_NS_URI =
         "http://www.w3.org/2003/XInclude".intern();
+    public final static String XINCLUDE_NS_URI_OLD =
+        "http://www.w3.org/2001/XInclude".intern();
     public final static String XINCLUDE_INCLUDE = "include".intern();
     public final static String XINCLUDE_FALLBACK = "fallback".intern();
 
@@ -284,6 +286,10 @@ public class XIncludeHandler
     
     // track the version of the document being parsed
     private boolean fIsXML11;
+    
+    // track whether a warning has already been reported for
+    // use of the old http://www.w3.org/2001/XInclude namespace.
+    private boolean fOldNamespaceWarningIssued;
 
     // Constructors
 
@@ -313,6 +319,7 @@ public class XIncludeHandler
         fUnparsedEntities = new Vector();
         fParentRelativeURI = null;
         fIsXML11 = false;
+        fOldNamespaceWarningIssued = false;
 
         baseURIScope.clear();
         baseURI.clear();
@@ -1254,32 +1261,72 @@ public class XIncludeHandler
      * @return true if the element has the namespace "http://www.w3.org/2003/XInclude"
      */
     protected boolean hasXIncludeNamespace(QName element) {
+        // REVISIT: The namespace of this element should be bound
+        // already. Why are we looking it up from the namespace
+        // context? -- mrglavas
         return element.uri == XINCLUDE_NS_URI
             || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI;
+    }
+    
+    /**
+     * Returns true if the element has the namespace "http://www.w3.org/2001/XInclude"
+     * @param element the element to check
+     * @return true if the element has the namespace "http://www.w3.org/2001/XInclude"
+     */
+    protected boolean hasXInclude2001Namespace(QName element) {
+        // REVISIT: The namespace of this element should be bound
+        // already. Why are we looking it up from the namespace
+        // context? -- mrglavas
+        return element.uri == XINCLUDE_NS_URI_OLD
+            || fNamespaceContext.getURI(element.prefix) == XINCLUDE_NS_URI_OLD;
     }
 
     /**
      * Checks if the element is an &lt;include&gt; element.  The element must have
-     * the XInclude namespace, and a local name of "include"
+     * the XInclude namespace, and a local name of "include". If the local name
+     * is "include" and the namespace name is the old XInclude namespace
+     * "http://www.w3.org/2001/XInclude" a warning is issued the first time
+     * an element from the old namespace is encountered.
+     * 
      * @param element the element to check
      * @return true if the element is an &lt;include&gt; element
      * @see #hasXIncludeNamespace(QName)
      */
     protected boolean isIncludeElement(QName element) {
-        return element.localpart.equals(XINCLUDE_INCLUDE)
-            && hasXIncludeNamespace(element);
+        if (element.localpart.equals(XINCLUDE_INCLUDE)) {
+            if (hasXIncludeNamespace(element)) {
+                return true;
+            }
+            else if (!fOldNamespaceWarningIssued && hasXInclude2001Namespace(element)) {
+                reportError("OldXIncludeNamespace", null, XMLErrorReporter.SEVERITY_WARNING);
+                fOldNamespaceWarningIssued = true;
+            }
+        }
+        return false;
     }
 
     /**
      * Checks if the element is an &lt;fallback&gt; element.  The element must have
-     * the XInclude namespace, and a local name of "fallback"
+     * the XInclude namespace, and a local name of "fallback". If the local name
+     * is "fallback" and the namespace name is the old XInclude namespace
+     * "http://www.w3.org/2001/XInclude" a warning is issued the first time
+     * an element from the old namespace is encountered.
+     * 
      * @param element the element to check
      * @return true if the element is an &lt;fallback; element
      * @see #hasXIncludeNamespace(QName)
      */
     protected boolean isFallbackElement(QName element) {
-        return element.localpart.equals(XINCLUDE_FALLBACK)
-            && hasXIncludeNamespace(element);
+        if (element.localpart.equals(XINCLUDE_FALLBACK)) {
+            if (hasXIncludeNamespace(element)) {
+                return true;
+            }
+            else if (!fOldNamespaceWarningIssued && hasXInclude2001Namespace(element)) {
+                reportError("OldXIncludeNamespace", null, XMLErrorReporter.SEVERITY_WARNING);
+                fOldNamespaceWarningIssued = true;
+            }
+        }
+        return false; 
     }
 
     /**
