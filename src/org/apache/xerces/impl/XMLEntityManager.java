@@ -75,10 +75,10 @@ import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
+
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
-import org.apache.xerces.xni.XMLEntityHandler;
 import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.EntityResolver;

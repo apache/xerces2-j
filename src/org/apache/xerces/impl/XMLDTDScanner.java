@@ -74,7 +74,6 @@ import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDContentModelSource;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDSource;
-import org.apache.xerces.xni.XMLEntityHandler;
 import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.SAXException;

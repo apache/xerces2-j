@@ -66,16 +66,17 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLEntityScanner;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
+
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDocumentSource;
-import org.apache.xerces.xni.XMLEntityHandler;
 import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.SAXException;

@@ -5,6 +5,7 @@ TARGETS=\
         Version.class\
         XMLDocumentScanner.class\
         XMLDTDScanner.class\
+        XMLEntityHandler.class\
         XMLEntityManager.class\
         XMLEntityScanner.class\
         XMLErrorReporter.class\

@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.xni;
+package org.apache.xerces.impl;
 
 import  org.xml.sax.SAXException;
 

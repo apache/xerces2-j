@@ -11,7 +11,6 @@ TARGETS=\
         XMLDTDSource.class\
         XMLDocumentHandler.class\
         XMLDocumentSource.class\
-        XMLEntityHandler.class\
         XMLString.class
 
 DIRS =
