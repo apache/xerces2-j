@@ -120,6 +120,8 @@ public class XSModelImpl implements XSModel {
                                                   false,    // idc
                                                   true,     // notation
                                                   false,    // annotation
+                                                  false,    // facet
+                                                  false,    // multi value facet
                                                   true,     // complex type
                                                   true      // simple type
                                                  };
@@ -429,9 +431,9 @@ public class XSModelImpl implements XSModel {
     }
 
 
-	/**
-	 * @see org.apache.xerces.xs.XSModel#getNotationDeclaration(String, String)
-	 */
+    /**
+     * @see org.apache.xerces.xs.XSModel#getNotationDeclaration(String, String)
+     */
     public XSNotationDeclaration getNotationDeclaration(String name,
                                                  String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
