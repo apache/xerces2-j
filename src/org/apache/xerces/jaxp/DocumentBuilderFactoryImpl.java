@@ -139,7 +139,7 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
             try {
                 boolean result = domParser.getFeature(name);
                 // Must have been a feature
-                return new Boolean(result);
+                return result ? Boolean.TRUE : Boolean.FALSE;
             } catch (SAXException se2) {
                 // Not a property or a feature
                 throw new IllegalArgumentException(se1.getMessage());
