@@ -101,7 +101,7 @@ public class Assertion {
 	ex.printStackTrace(printer);
 	String buf = writer.toString();
 	// skip the first line as well as every line related to this class
-	int index = buf.lastIndexOf("dom.DOMMemTest.Assertion.");
+	int index = buf.lastIndexOf("dom.util.Assertion.");
 	index = buf.indexOf('\n', index);
 	return buf.substring(index + 1);
     }
