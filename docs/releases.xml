@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
@@ -29,14 +29,26 @@
      <note>
       Fixed various DOM Level 3 bugs.
      </note>
-     <submitter name='Neil Delima, Michael Glavassevich, Elena Litani, K. Venugopal'/>
+     <submitter name='Neil Delima, Kohsuke Kawaguchi, Michael Glavassevich, Elena Litani, K. Venugopal'/>
     </fix>
+    <update>
+     <note>
+      Implemented the well-formness checking for LSSerializer (DOM Level 3)
+     </note>
+     <submitter name='Elena Litani'/>
+    </update>
     <fix>
      <note>
       Modified the XJavac task used by the build file so that
       Xerces can be built on Mac OS X with Apple JDK 1.4.
      </note>
      <submitter name='Alex Milowski'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed possible security hole: the features and properties set on the parser were not propagated to the XMLSchemaLoader.
+     </note>
+     <submitter name='Elena Litani'/>
     </fix>
     <update>
      <note>
