@@ -362,4 +362,170 @@ public interface Document extends Node {
      */
     public Element getElementById(String elementId);
 
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying, as part of the XML declaration, the encoding 
+     * of this document. This is <code>null</code> when unspecified.
+     * @since DOM Level 3
+     */
+    public String getEncoding();
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying, as part of the XML declaration, the encoding 
+     * of this document. This is <code>null</code> when unspecified.
+     * @since DOM Level 3
+     */
+    public void setEncoding(String encoding);
+
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying, as part of the XML declaration, whether this 
+     * document is standalone.
+     * @since DOM Level 3
+     */
+    public boolean getStandalone();
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying, as part of the XML declaration, whether this 
+     * document is standalone.
+     * @since DOM Level 3
+     */
+    public void setStandalone(boolean standalone);
+
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying whether errors checking is enforced or not. 
+     * When set to <code>false</code>, the implementation is free to not 
+     * test every possible error case normally defined on DOM operations, 
+     * and not raise any <code>DOMException</code>. In case of error, the 
+     * behavior is undefined. This attribute is <code>true</code> by 
+     * defaults.
+     * @since DOM Level 3
+     */
+    public boolean getStrictErrorChecking();
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying whether errors checking is enforced or not. 
+     * When set to <code>false</code>, the implementation is free to not 
+     * test every possible error case normally defined on DOM operations, 
+     * and not raise any <code>DOMException</code>. In case of error, the 
+     * behavior is undefined. This attribute is <code>true</code> by 
+     * defaults.
+     * @since DOM Level 3
+     */
+    public void setStrictErrorChecking(boolean strictErrorChecking);
+
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying, as part of the XML declaration, the version 
+     * number of this document. This is <code>null</code> when unspecified.
+     * @since DOM Level 3
+     */
+    public String getVersion();
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * An attribute specifying, as part of the XML declaration, the version 
+     * number of this document. This is <code>null</code> when unspecified.
+     * @since DOM Level 3
+     */
+    public void setVersion(String version);
+
+    /**
+     * <p>EXPERIMENTAL! Based on the <a
+     * href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010605'>Document
+     * Object Model (DOM) Level 3 Core Working Draft of 5 June 2001.</a>.
+     * <p>
+     * Changes the <code>ownerDocument</code> of a node, its children, as well 
+     * as the attached attribute nodes if there are any. If the node has a 
+     * parent it is first removed from its parent child list. This 
+     * effectively allows moving a subtree from one document to another. The 
+     * following list describes the specifics for each type of node. 
+     * <dl>
+     * <dt>
+     * ATTRIBUTE_NODE</dt>
+     * <dd>The <code>ownerElement</code> attribute is set to 
+     * <code>null</code> and the <code>specified</code> flag is set to 
+     * <code>true</code> on the adopted <code>Attr</code>. The descendants 
+     * of the source <code>Attr</code> are recursively adopted.</dd>
+     * <dt>
+     * DOCUMENT_FRAGMENT_NODE</dt>
+     * <dd>The descendants of the source node are 
+     * recursively adopted.</dd>
+     * <dt>DOCUMENT_NODE</dt>
+     * <dd><code>Document</code> nodes cannot 
+     * be adopted.</dd>
+     * <dt>DOCUMENT_TYPE_NODE</dt>
+     * <dd><code>DocumentType</code> nodes cannot 
+     * be adopted.</dd>
+     * <dt>ELEMENT_NODE</dt>
+     * <dd>Specified attribute nodes of the source 
+     * element are adopted, and the generated <code>Attr</code> nodes. 
+     * Default attributes are discarded, though if the document being 
+     * adopted into defines default attributes for this element name, those 
+     * are assigned. The descendants of the source element are recursively 
+     * adopted.</dd>
+     * <dt>ENTITY_NODE</dt>
+     * <dd><code>Entity</code> nodes cannot be adopted.</dd>
+     * <dt>
+     * ENTITY_REFERENCE_NODE</dt>
+     * <dd>Only the <code>EntityReference</code> node 
+     * itself is adopted, the descendants are discarded, since the source 
+     * and destination documents might have defined the entity differently. 
+     * If the document being imported into provides a definition for this 
+     * entity name, its value is assigned.</dd>
+     * <dt>NOTATION_NODE</dt>
+     * <dd><code>Notation</code> 
+     * nodes cannot be adopted.</dd>
+     * <dt>PROCESSING_INSTRUCTION_NODE, TEXT_NODE, 
+     * CDATA_SECTION_NODE, COMMENT_NODE</dt>
+     * <dd>These nodes can all be adopted. No 
+     * specifics.</dd>
+     *  Should this method simply return null when it fails? How 
+     * "exceptional" is failure for this method?Stick with raising 
+     * exceptions only in exceptional circumstances, return null on failure 
+     * (F2F 19 Jun 2000).Can an entity node really be adopted?No, neither 
+     * can Notation nodes (Telcon 13 Dec 2000).Does this affect keys and 
+     * hashCode's of the adopted subtree nodes?If so, what about 
+     * readonly-ness of key and hashCode?if not, would appendChild affect 
+     * keys/hashCodes or would it generate exceptions if key's are duplicate?
+     * Update: Hashcodes have been dropped. Given that the key is only 
+     * unique within a document an adopted node needs to be given a new key, 
+     * but what does it mean for the application?
+     * @param source The node to move into this document.
+     * @return The adopted node, or <code>null</code> if this operation 
+     *   fails, such as when the source node comes from a different 
+     *   implementation.
+     * @exception DOMException
+     *   NOT_SUPPORTED_ERR: Raised if the source node is of type 
+     *   <code>DOCUMENT</code>, <code>DOCUMENT_TYPE</code>.
+     *   <br>NO_MODIFICATION_ALLOWED_ERR: Raised when the source node is 
+     *   readonly.
+     * @since DOM Level 3
+     */
+    public Node adoptNode(Node source)
+                          throws DOMException;
 }

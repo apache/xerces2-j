@@ -690,6 +690,13 @@ public class DocumentImpl
         errorChecking = check;
     }
 
+    /*
+     * DOM Level 3 WD - Experimental.
+     */
+    public void setStrictErrorChecking(boolean check) {
+        errorChecking = check;
+    }
+
     
     /**
       * DOM Level 3 WD - Experimental.
@@ -725,6 +732,14 @@ public class DocumentImpl
     public boolean getErrorChecking() {
         return errorChecking;
     }
+
+    /*
+     * DOM Level 3 WD - Experimental.
+     */
+    public boolean getStrictErrorChecking() {
+        return errorChecking;
+    }
+
 
     /** 
      * Sets whether the DOM implementation generates mutation events
@@ -1075,7 +1090,7 @@ public class DocumentImpl
     } // importNode(Node,boolean,Hashtable):Node
 
     /**
-     * DOM Level 3 Prototype:
+     * DOM Level 3 WD - Experimental
      * Change the node's ownerDocument, and its subtree, to this Document
      *
      * @param source The node to adopt.
