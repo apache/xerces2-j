@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xpath.regex;
 import java.util.Vector;
 
 /**
+ * @version $Id$
  */
 class Op {
     static final int DOT = 0;

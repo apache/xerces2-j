@@ -1,5 +1,4 @@
 /*
- * $Id$
  *
  * The Apache Software License, Version 1.1
  *
@@ -72,6 +71,7 @@ import org.apache.xerces.parsers.DOMParser;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
+ * @version $Id$
  */
 public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     /** These are DocumentBuilderFactory attributes not DOM attributes */

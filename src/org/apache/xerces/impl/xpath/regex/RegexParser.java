@@ -64,6 +64,8 @@ import java.util.Vector;
 
 /**
  * A Regular Expression Parser.
+ *
+ * @version $Id$
  */
 class RegexParser {
     static final int T_CHAR = 0;

@@ -1,5 +1,4 @@
 /*
- * $Id$
  *
  * The Apache Software License, Version 1.1
  *
@@ -67,6 +66,7 @@ package org.apache.xerces.jaxp;
  * in future JAXP spec versions, this interface can be removed.
  *
  * @author Edwin Goei
+ * @version $Id$
  */
 public interface JAXPConstants {
     static final String JAXP_SCHEMA_LANGUAGE =

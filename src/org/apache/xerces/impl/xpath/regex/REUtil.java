@@ -59,6 +59,10 @@ package org.apache.xerces.impl.xpath.regex;
 
 import java.text.CharacterIterator;
 
+/**
+ * @version $Id$
+ */
+
 public final class REUtil {
     private REUtil() {
     }

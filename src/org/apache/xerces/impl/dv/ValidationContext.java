@@ -62,6 +62,7 @@ package org.apache.xerces.impl.dv;
  * validation of: id, idref, entity, notation, qname
  *
  * @author Sandy Gao, IBM
+ * @version $Id$
  */
 public interface ValidationContext {
     // whether to validate against facets

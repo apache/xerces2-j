@@ -57,14 +57,16 @@
 
 package org.apache.xerces.util;
 
-    /**
-     * Synchronized symbol table.
-     *
-     * This class moved into the util package since it's needed by multiple
-     * other classes (CachingParserPool, XMLGrammarCachingConfiguration).
-     *
-     * @author Andy Clark, IBM
-     */
+/**
+ * Synchronized symbol table.
+ *
+ * This class moved into the util package since it's needed by multiple
+ * other classes (CachingParserPool, XMLGrammarCachingConfiguration).
+ *
+ * @author Andy Clark, IBM
+ * @version $Id$
+ */
+
 public final class SynchronizedSymbolTable
     extends SymbolTable {
         

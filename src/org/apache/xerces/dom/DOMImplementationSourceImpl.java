@@ -72,6 +72,8 @@ import java.util.StringTokenizer;
  * binding-specific list of available sources so that its
  * <code>DOMImplementation</code> objects are made available.
  * <p>See also the <a href='http://www.w3.org/2001/10/WD-DOM-Level-3-Core-20011017'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ *
+ * @version $Id$
  */
 public class DOMImplementationSourceImpl
     implements DOMImplementationSource {

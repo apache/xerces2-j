@@ -66,7 +66,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
  * 
  *
  * @author Elena Litani, IBM
- *
+ * @version $Id$
  */
 public interface RevalidationHandler extends XMLDocumentHandler{
 

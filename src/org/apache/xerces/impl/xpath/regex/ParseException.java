@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xpath.regex;
 /**
  *
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
+ * @version $Id$
  */
 public class ParseException extends RuntimeException {
     int location;

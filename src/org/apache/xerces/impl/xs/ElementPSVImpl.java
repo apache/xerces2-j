@@ -74,6 +74,7 @@ import org.apache.xerces.impl.xs.psvi.*;
  * default
  *
  * @author Elena Litani IBM
+ * @version $Id$
  */
 public class ElementPSVImpl implements ElementPSVI {
 

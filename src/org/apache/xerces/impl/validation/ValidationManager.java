@@ -69,6 +69,7 @@ import java.util.Vector;
  * that there are others and that some coordination is required.
  * 
  * @author Elena Litani, IBM
+ * @version $Id$
  */
 public class ValidationManager {
 

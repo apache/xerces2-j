@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
@@ -71,6 +70,8 @@ import org.apache.xerces.util.URI;
  * The qualified name is the node name, and we store localName which is also
  * used in all queries. On the other hand we recompute the prefix when
  * necessary.
+ *
+ * @version $Id$
  */
 public class ElementNSImpl
     extends ElementImpl {

@@ -74,6 +74,8 @@ import org.w3c.dom.Node;
  * 
  * @author Gopal Sharma, SUN Microsystems Inc.
  * @author Elena Litani, IBM
+ *
+ * @version $Id$
  */
 
 // REVISIT: the implementation of ErrorReporter. 

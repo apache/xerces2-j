@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
@@ -103,6 +102,7 @@ import org.w3c.dom.Text;
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
+ * @version $Id$
  */
 public abstract class ParentNode
     extends ChildNode {

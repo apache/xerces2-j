@@ -62,6 +62,10 @@ import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.TreeWalker;
 
 /** This class implements the TreeWalker interface. */
+/**
+ * @version $Id$
+ */
+
 public class TreeWalkerImpl implements TreeWalker {
     
     //

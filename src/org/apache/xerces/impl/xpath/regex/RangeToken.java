@@ -59,6 +59,8 @@ package org.apache.xerces.impl.xpath.regex;
 
 /**
  * This class represents a character class such as [a-z] or a period.
+ *
+ * @version $Id$
  */
 final class RangeToken extends Token implements java.io.Serializable {
 

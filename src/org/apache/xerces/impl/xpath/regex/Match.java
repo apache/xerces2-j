@@ -69,6 +69,7 @@ import java.text.CharacterIterator;
  * @see RegularExpression#matches(java.lang.String, int, int, Match)
  * @see RegularExpression#matches(java.lang.String, Match)
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
+ * @version $Id$
  */
 public class Match implements Cloneable {
     int[] beginpos = null;

@@ -60,6 +60,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * @version $Id$
+ */
+
 class DefaultValidationErrorHandler extends DefaultHandler {
     static private int ERROR_COUNT_LIMIT = 10;
     private int errorCount = 0;

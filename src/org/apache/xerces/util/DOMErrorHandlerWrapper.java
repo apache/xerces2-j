@@ -74,6 +74,7 @@ import java.io.PrintWriter;
  * @see DOMErrorHandler
  *
  * @author Gopal Sharma, SUN Microsystems Inc.
+ * @version $Id$
  */
 
 // REVISIT: current implementations wraps error several times:

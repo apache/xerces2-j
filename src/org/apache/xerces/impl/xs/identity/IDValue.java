@@ -71,7 +71,7 @@ import org.apache.xerces.impl.validation.ValidationState;
  * functionality to determine whether two instances are duplicates.</p>
  *
  * @author Neil Graham, IBM
- *
+ * @version $Id$
  */
 public class IDValue {
 

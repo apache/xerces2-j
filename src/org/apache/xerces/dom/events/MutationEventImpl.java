@@ -54,10 +54,15 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.dom.events;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.events.MutationEvent;
+
+/**
+ * @version $Id$
+ */
 
 public class MutationEventImpl 
 extends org.apache.xerces.dom.events.EventImpl 

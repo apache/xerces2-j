@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
@@ -69,6 +68,7 @@ import org.w3c.dom.DOMException;
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
+ * @version $Id$
  */
 public class AttrNSImpl
     extends AttrImpl {

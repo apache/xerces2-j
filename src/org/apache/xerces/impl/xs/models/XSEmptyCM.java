@@ -69,6 +69,7 @@ import org.apache.xerces.impl.xs.XMLSchemaException;
  *
  * @author Elena Litani, Lisa Martin
  * @author IBM
+ * @version $Id$
  */
 public class XSEmptyCM  implements XSCMValidator {
 

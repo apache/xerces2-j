@@ -71,6 +71,7 @@ import java.util.Vector;
  * The PSVI information for attributes will be available at the startElement call.
  *
  * @author Elena Litani IBM
+ * @version $Id$
  */
 public class AttributePSVImpl implements AttributePSVI {
 

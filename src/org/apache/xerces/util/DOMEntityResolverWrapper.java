@@ -78,7 +78,7 @@ import java.io.Reader;
  *
  * @author Gopal Sharma, SUN MicroSystems Inc.
  * @author Elena Litani, IBM 
- * 
+ * @version $Id$
  */
 public class DOMEntityResolverWrapper
     implements XMLEntityResolver {

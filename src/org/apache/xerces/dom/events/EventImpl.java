@@ -67,6 +67,9 @@ import org.w3c.dom.Node;
     I believe that is the DOM's intent but I don't see an explicit statement
     to this effect.
 */
+/**
+ * @version $Id$
+ */
 public class EventImpl implements Event
 {
     public String type=null;

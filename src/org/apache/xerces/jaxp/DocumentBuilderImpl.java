@@ -1,5 +1,4 @@
 /*
- * $Id$
  *
  * The Apache Software License, Version 1.1
  *
@@ -88,6 +87,7 @@ import org.apache.xerces.impl.Constants;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
+ * @version $Id$
  */
 public class DocumentBuilderImpl extends DocumentBuilder
         implements JAXPConstants

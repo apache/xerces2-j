@@ -59,6 +59,8 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  *  The <code>ObjectList</code> is an ordered collection of generic objects. 
+ *
+ * @version $Id$
  */
 public interface ObjectList {
     /**

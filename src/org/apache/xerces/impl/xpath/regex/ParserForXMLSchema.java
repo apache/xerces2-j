@@ -64,6 +64,7 @@ import java.util.Locale;
  * A regular expression parser for the XML Shema.
  *
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
+ * @version $Id$
  */
 class ParserForXMLSchema extends RegexParser {
 

@@ -61,8 +61,6 @@
  * DeferredAttrImpl.java at the same time.
  */
 
-/* $Id$ */
-
 
 package org.apache.xerces.dom;
 
@@ -71,6 +69,7 @@ package org.apache.xerces.dom;
  * AttrImpl. 
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM
+ * @version $Id$
  * @see DeferredAttrImpl
  */
 public final class DeferredAttrNSImpl

@@ -61,6 +61,8 @@ import java.text.CharacterIterator;
 
 /**
  * Boyer-Moore searcher.
+ *
+ * @version $Id$
  */
 public class BMPattern {
     char[] pattern;

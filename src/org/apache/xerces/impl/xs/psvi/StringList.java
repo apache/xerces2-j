@@ -60,6 +60,8 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  *  The <code>StringList</code> is an ordered collection of strings. 
+ *
+ * @version $Id$
  */
 public interface StringList {
     /**

@@ -76,6 +76,8 @@ import java.lang.reflect.InvocationTargetException;
  * feature and is designed to both compile and run on JDK version 1.1 and
  * later.  The code also runs both as part of an unbundled jar file and
  * when bundled as part of the JDK.
+ *
+ * @version $Id$
  */
 class FactoryFinder {
     /** Set to true for debugging */

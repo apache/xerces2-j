@@ -1,5 +1,4 @@
 /*
- * $Id$
  *
  * The Apache Software License, Version 1.1
  *
@@ -79,6 +78,7 @@ import java.util.*;
 /**
  * @author Rajiv Mordani
  * @author Edwin Goei
+ * @version $Id$
  */
 
 /**

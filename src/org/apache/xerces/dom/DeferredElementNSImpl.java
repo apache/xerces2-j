@@ -56,12 +56,12 @@
  */
 
 
-/* $Id$ */
-
 /*
  * WARNING: because java doesn't support multi-inheritance some code is
  * duplicated. If you're changing this file you probably want to change
  * DeferredElementImpl.java at the same time.
+ *
+ * @version $Id$
  */
 
 package org.apache.xerces.dom;

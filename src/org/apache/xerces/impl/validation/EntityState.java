@@ -64,6 +64,7 @@ package org.apache.xerces.impl.validation;
  * entity validator that will need to validate attributes of type entity.
  * 
  * @author Elena Litani, IBM
+ * @version $Id$
  */
 public interface EntityState {
     /**

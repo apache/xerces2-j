@@ -62,6 +62,8 @@ import java.util.Hashtable;
 
 /**
  * This class represents a node in parse tree.
+ *
+ * @version $Id$
  */
 class Token implements java.io.Serializable {
     static final boolean COUNTTOKENS = true;

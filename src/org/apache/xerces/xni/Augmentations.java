@@ -73,7 +73,9 @@ import java.util.Enumeration;
  * should not save any reference to the structure.
  * 
  * @author Elena Litani, IBM
+ * @version $Id$
  */
+
 public interface Augmentations {
     
     

@@ -67,7 +67,9 @@ package org.apache.xerces.util;
  * to the component using this table.
  * 
  * @author Andy Clark IBM
+ * @version $Id$
  */
+
 public final class ShadowedSymbolTable
 extends SymbolTable {
 

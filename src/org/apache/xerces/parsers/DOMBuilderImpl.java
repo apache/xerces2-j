@@ -99,7 +99,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * @author Pavani Mukthipudi, Sun Microsystems Inc.
  * @author Elena Litani, IBM
  * @author Rahul Srivastava, Sun Microsystems Inc.
- *
+ * @version $Id$
  */
 
 

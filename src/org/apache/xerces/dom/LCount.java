@@ -80,6 +80,10 @@ import java.util.Vector;
     Finer granularity would be even better, but would cost more cycles to
     resolve and might not save enough event traffic to be worth the investment.
 */
+/**
+ * @version $Id$
+ */
+
 class LCount 
 { 
     static java.util.Hashtable lCounts=new java.util.Hashtable();

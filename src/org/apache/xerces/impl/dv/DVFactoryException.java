@@ -58,8 +58,10 @@
 package org.apache.xerces.impl.dv;
 
 /**
- * A runtime exception that's thrown if an error happens when the applicatoin
- * try to get a DV factory instance.
+ * A runtime exception that's thrown if an error happens when the application
+ * tries to get a DV factory instance.
+ *
+ * @version $Id$
  */
 public class DVFactoryException extends RuntimeException {
     public DVFactoryException() {

@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
  * The Apache Software License, Version 1.1
  *
@@ -64,6 +63,8 @@ import java.io.Serializable;
  * This class is used, via a pool managed on CoreDocumentImpl, in ParentNode to
  * improve performance of the NodeList accessors, getLength() and item(i).
  * @author Arnaud  Le Hors, IBM
+ *
+ * @version $Id$
  */
 class NodeListCache implements Serializable {
     /** Cached node list length. */
