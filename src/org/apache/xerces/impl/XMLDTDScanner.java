@@ -1079,6 +1079,7 @@ public class XMLDTDScanner
             }
             fMarkUpDepth++;
             do {
+                skipSeparator(false, !scanningInternalSubset());
                 String aName = fEntityScanner.scanName();
                 if (aName == null) {
                     reportFatalError("MSG_NAME_REQUIRED_IN_NOTATIONTYPE",
@@ -1106,6 +1107,7 @@ public class XMLDTDScanner
             }
             fMarkUpDepth++;
             do {
+                skipSeparator(false, !scanningInternalSubset());
                 String token = fEntityScanner.scanNmtoken();
                 if (token == null) {
                     reportFatalError("MSG_NMTOKEN_REQUIRED_IN_ENUMERATION",
