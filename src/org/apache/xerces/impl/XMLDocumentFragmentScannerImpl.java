@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1605,8 +1605,15 @@ public class XMLDocumentFragmentScannerImpl
                                 if (isValidNameChar(fEntityScanner.peekChar())) {
                                     fStringBuffer.clear();
                                     fStringBuffer.append("xml");
-                                    while (isValidNameChar(fEntityScanner.peekChar())) {
-                                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                                    if (fNamespaces) {
+                                        while (isValidNCName(fEntityScanner.peekChar())) {
+                                            fStringBuffer.append((char)fEntityScanner.scanChar());
+                                        }
+                                    }
+                                    else {
+                                        while (isValidNameChar(fEntityScanner.peekChar())) {
+                                            fStringBuffer.append((char)fEntityScanner.scanChar());
+                                        }
                                     }
                                     String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
                                     scanPIData(target, fTempString);

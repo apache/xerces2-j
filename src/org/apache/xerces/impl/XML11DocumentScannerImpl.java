@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2003 The Apache Software Foundation.
+ * Copyright (c) 1999-2004 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -503,6 +503,13 @@ public class XML11DocumentScannerImpl
     protected boolean isValidNameStartChar(int value) {
         return (XML11Char.isXML11NameStart(value)); 
     } // isValidNameStartChar(int):  boolean
+    
+    // returns true if the given character is
+    // a valid NCName character with respect to the version of
+    // XML understood by this scanner.
+    protected boolean isValidNCName(int value) {
+        return (XML11Char.isXML11NCName(value));
+    } // isValidNCName(int):  boolean
     
     // returns true if the given character is 
     // a valid high surrogate for a nameStartChar 
