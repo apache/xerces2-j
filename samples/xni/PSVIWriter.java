@@ -1246,7 +1246,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                     sendElementEvent("psv:value", facet.getLexicalFacetValue());
                     sendElementEvent(
                         "psv:fixed",
-                        String.valueOf(facet.isFixed()));
+                        String.valueOf(facet.getFixed()));
                     processPSVIAnnotation(facet.getAnnotation());
                     sendUnIndentedElement("psv:" + name);
                 }
