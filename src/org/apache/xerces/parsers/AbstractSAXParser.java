@@ -392,18 +392,25 @@ public abstract class AbstractSAXParser
             // SAX2
             if (fContentHandler != null) {
 
-                if (!fNamespacePrefixes) {
-                    // remove namespace declaration attributes
-                    int len = attributes.getLength();
-                    for (int i = len - 1; i >= 0; i--) {
-                        attributes.getName(i, fQName);
-                        if (fQName.rawname == fXmlnsSymbol ||
-                            fQName.prefix == fXmlnsSymbol) {
+                int len = attributes.getLength();
+                for (int i = len - 1; i >= 0; i--) {
+                    attributes.getName(i, fQName);
+                    if (fQName.prefix == fXmlnsSymbol || 
+                        fQName.rawname == fXmlnsSymbol) {
+                        if (!fNamespacePrefixes) {
+                            // remove namespace declaration attributes
                             attributes.removeAttributeAt(i);
+                        }
+                        else if (fNamespaces && fNamespacePrefixes) {
+                            // localpart should be empty string as per SAX documentation:
+                            // http://www.saxproject.org/?selected=namespaces
+                            fQName.prefix = fEmptySymbol;
+                            fQName.localpart = fEmptySymbol;
+                            attributes.setName(i, fQName);
                         }
                     }
                 }
-
+                
                 String uri = element.uri != null ? element.uri : fEmptySymbol;
                 String localpart = fNamespaces ? element.localpart : fEmptySymbol;
                 fAttributesProxy.setAttributes(attributes);
