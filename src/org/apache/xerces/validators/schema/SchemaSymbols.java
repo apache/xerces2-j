@@ -68,8 +68,8 @@ package org.apache.xerces.validators.schema;
  * @author jeffrey rodriguez
  */
 public final  class SchemaSymbols {
-    public static final String URI_XSI =  "http://www.w3.org/2000/10/XMLSchema-instance";
-    public static final String URI_SCHEMAFORSCHEMA =  "http://www.w3.org/2000/10/XMLSchema";
+    public static final String URI_XSI =  "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String URI_SCHEMAFORSCHEMA =  "http://www.w3.org/2001/XMLSchema";
     public static final String XSI_SCHEMALOCACTION =  "schemaLocation";
     public static final String XSI_NONAMESPACESCHEMALOCACTION =  "noNamespaceSchemaLocation";
     public static final String XSI_TYPE =  "type";
