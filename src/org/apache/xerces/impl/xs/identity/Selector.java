@@ -246,9 +246,8 @@ public class Selector {
          * @param elementDecl:  The element declaration 
          *
          */
-        public void startElement(QName element, XMLAttributes attributes, 
-                                 XSTypeDefinition type) {
-            super.startElement(element, attributes, type);
+        public void startElement(QName element, XMLAttributes attributes) {
+            super.startElement(element, attributes);
             fElementDepth++;
             // activate the fields, if selector is matched
             int matched = isMatched();
@@ -261,7 +260,7 @@ public class Selector {
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
                     XPathMatcher matcher = fFieldActivator.activateField(field, fInitialDepth);
-                    matcher.startElement(element, attributes, type);
+                    matcher.startElement(element, attributes);
                 }
             }
 

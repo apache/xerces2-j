@@ -2013,10 +2013,7 @@ public class XMLSchemaValidator
 		int count = fMatcherStack.getMatcherCount();
 		for (int i = 0; i < count; i++) {
 			XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-			matcher.startElement(
-				element,
-				attributes,
-				(fCurrentElemDecl != null) ? fCurrentElemDecl.fType : null);
+			matcher.startElement( element, attributes);
 		}
 
 		if (fAugPSVI) {

@@ -240,8 +240,7 @@ public class XPathMatcher {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes,
-                             XSTypeDefinition type){
+    public void startElement(QName element, XMLAttributes attributes){
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#startElement("+
                                "element={"+element+"},"+
