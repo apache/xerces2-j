@@ -1445,6 +1445,7 @@ public class XMLDTDScannerImpl
         }
         if (systemId != null) {
             String baseSystemId = fEntityScanner.getBaseSystemId();
+            String expandedSystemId = XMLEntityManager.expandSystemId(systemId, baseSystemId);
             if (notation != null) {
                 fEntityManager.addUnparsedEntity(name, publicId, systemId, baseSystemId, notation);
             }
@@ -1453,13 +1454,13 @@ public class XMLDTDScannerImpl
                                                  baseSystemId);
             }
             if (fDTDHandler != null) {
+                fResourceIdentifier.setValues(publicId, systemId, baseSystemId, XMLEntityManager.expandSystemId(systemId, baseSystemId));
                 if (notation != null) {
-                    fDTDHandler.unparsedEntityDecl(name, publicId, systemId, 
-                                                   baseSystemId, notation, null);
+                    fDTDHandler.unparsedEntityDecl(name, fResourceIdentifier, 
+                                                   notation, null);
                 }
                 else {
-                    fDTDHandler.externalEntityDecl(name, publicId, systemId, 
-                                                   baseSystemId, null);
+                    fDTDHandler.externalEntityDecl(name, fResourceIdentifier, null);
                 }
             }
         }
@@ -1645,7 +1646,8 @@ public class XMLDTDScannerImpl
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId, baseSystemId, null);
+            fResourceIdentifier.setValues(publicId, systemId, baseSystemId, XMLEntityManager.expandSystemId(systemId, baseSystemId));
+            fDTDHandler.notationDecl(name, fResourceIdentifier, null);
         }
         fReportEntity = true;
 

@@ -65,6 +65,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLStringBuffer;
+import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLResourceIdentifier;
@@ -222,6 +223,9 @@ public abstract class XMLScanner
     /** String buffer. */
     private XMLStringBuffer fStringBuffer3 = new XMLStringBuffer();
 
+    // temporary location for Resource identification information.
+    protected XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+
     //
     // XMLComponent methods
     //
@@ -248,6 +252,7 @@ public abstract class XMLScanner
         // initialize vars
         fEntityDepth = 0;
         fReportEntity = true;
+        fResourceIdentifier.clear();
 
         // save built-in entity names
         fVersionSymbol = fSymbolTable.addSymbol("version");

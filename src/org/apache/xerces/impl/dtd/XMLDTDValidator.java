@@ -1620,48 +1620,38 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      * @param name     The name of the entity. Parameter entity names start
      *                 with '%', whereas the name of a general entity is just
      *                 the entity name.
-     * @param publicId The public identifier of the entity or null if the
-     *                 the entity was specified with SYSTEM.
-     * @param systemId The system identifier of the entity.
-     * @param baseSystemId The base system identifier where this entity
-     *                     is declared.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this external entity.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void externalEntityDecl(String name, 
-                                   String publicId, String systemId,
-                                   String baseSystemId,
+    public void externalEntityDecl(String name, XMLResourceIdentifier identifier,
                                    Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.externalEntityDecl(name, publicId, systemId, baseSystemId, augs);
+        fDTDGrammar.externalEntityDecl(name, identifier, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.externalEntityDecl(name, publicId, systemId,
-                                           baseSystemId, augs);
+            fDTDHandler.externalEntityDecl(name, identifier, augs);
         }
 
-    } // externalEntityDecl(String,String,String,String)
+    } // externalEntityDecl(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * An unparsed entity declaration.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the entity, or null if not
-     *                 specified.
-     * @param baseSystemId	URI of the entity by which this was referenced
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void unparsedEntityDecl(String name, 
-                                   String publicId, String systemId, 
-                                   String baseSystemId, String notation, 
+    public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier,
+                                   String notation, 
                                    Augmentations augs) throws XNIException {
 
         // VC: Notation declared,  in the production of NDataDecl
@@ -1670,37 +1660,34 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
 
         // call handlers
-        fDTDGrammar.unparsedEntityDecl(name, publicId, systemId, baseSystemId, notation, augs);
+        fDTDGrammar.unparsedEntityDecl(name, identifier, notation, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.unparsedEntityDecl(name, publicId, systemId, baseSystemId, notation, augs);
+            fDTDHandler.unparsedEntityDecl(name, identifier, notation, augs);
         }
 
-    } // unparsedEntityDecl(String,String,String,String,String,Augmentations)
+    } // unparsedEntityDecl(String,XMLResourceIdentifier,String,Augmentations)
 
     /**
      * A notation declaration
      * 
      * @param name     The name of the notation.
-     * @param publicId The public identifier of the notation, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the notation, or null if not
-     *                 specified.
-     * @param baseSystemId	URI of the entity by which this was referenced
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId,
-                             String baseSystemId, Augmentations augs) throws XNIException {
+    public void notationDecl(String name, XMLResourceIdentifier identifier,
+                             Augmentations augs) throws XNIException {
 
         // call handlers
-        fDTDGrammar.notationDecl(name, publicId, systemId, baseSystemId, augs);
+        fDTDGrammar.notationDecl(name, identifier, augs);
         if (fDTDHandler != null) {
-            fDTDHandler.notationDecl(name, publicId, systemId, baseSystemId, augs);
+            fDTDHandler.notationDecl(name, identifier, augs);
         }
 
-    } // notationDecl(String,String,String, String, Augmentations)
+    } // notationDecl(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * The start of a conditional section.

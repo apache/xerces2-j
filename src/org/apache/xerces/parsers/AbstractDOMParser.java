@@ -1259,22 +1259,19 @@ public abstract class AbstractDOMParser
      * @param name     The name of the entity. Parameter entity names start
      *                 with '%', whereas the name of a general entity is just
      *                 the entity name.
-     * @param publicId The public identifier of the entity or null if the
-     *                 the entity was specified with SYSTEM.
-     * @param systemId The system identifier of the entity.
-     * @param baseSystemId The base system identifier where this entity
-     *                     is declared.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void externalEntityDecl(String name, 
-                                   String publicId, String systemId,
-                                   String baseSystemId,
+    public void externalEntityDecl(String name, XMLResourceIdentifier identifier,
                                    Augmentations augs) throws XNIException {
 
         // internal subset string
+        String publicId = identifier.getPublicId();
+        String literalSystemId = identifier.getLiteralSystemId();
         if (fInternalSubset != null && !fInDTDExternalSubset) {
             fInternalSubset.append("<!ENTITY ");
             if (name.startsWith("%")) {
@@ -1293,7 +1290,7 @@ public abstract class AbstractDOMParser
             else {
                 fInternalSubset.append("SYSTEM '");
             }
-            fInternalSubset.append(systemId);
+            fInternalSubset.append(literalSystemId);
             fInternalSubset.append("'>\n");
         }
 
@@ -1311,7 +1308,7 @@ public abstract class AbstractDOMParser
             if (entity == null) {
                 entity = (EntityImpl)fDocumentImpl.createEntity(name);
                 entity.setPublicId(publicId);
-                entity.setSystemId(systemId);
+                entity.setSystemId(literalSystemId);
                 entities.setNamedItem(entity);
             }
         }
@@ -1333,34 +1330,32 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
-                                    name, publicId, systemId, null);
+                                    name, publicId, literalSystemId, null);
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }
     
-    } // externalEntityDecl(String,String,String,String)
+    } // externalEntityDecl(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * An unparsed entity declaration.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the entity, or null if not
-     *                 specified.
-     * @param baseSystemId	URI of the entity by which this one was referenced
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void unparsedEntityDecl(String name, 
-                                   String publicId, String systemId, 
-                                   String baseSystemId, String notation, Augmentations augs) 
+    public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier,
+                                   String notation, Augmentations augs) 
         throws XNIException {
 
         // internal subset string
+        String publicId = identifier.getPublicId();
+        String literalSystemId = identifier.getLiteralSystemId();
         if (fInternalSubset != null && !fInDTDExternalSubset) {
             fInternalSubset.append("<!ENTITY ");
             fInternalSubset.append(name);
@@ -1368,14 +1363,14 @@ public abstract class AbstractDOMParser
             if (publicId != null) {
                 fInternalSubset.append("PUBLIC '");
                 fInternalSubset.append(publicId);
-                if (systemId != null) {
+                if (literalSystemId != null) {
                     fInternalSubset.append("' '");
-                    fInternalSubset.append(systemId);
+                    fInternalSubset.append(literalSystemId);
                 }
             }
             else {
                 fInternalSubset.append("SYSTEM '");
-                fInternalSubset.append(systemId);
+                fInternalSubset.append(literalSystemId);
             }
             fInternalSubset.append("' NDATA ");
             fInternalSubset.append(notation);
@@ -1393,7 +1388,7 @@ public abstract class AbstractDOMParser
             if (entity == null) {
                 entity = (EntityImpl)fDocumentImpl.createEntity(name);
                 entity.setPublicId(publicId);
-                entity.setSystemId(systemId);
+                entity.setSystemId(literalSystemId);
                 entity.setNotationName(notation);
                 entities.setNamedItem(entity);
             }
@@ -1416,44 +1411,43 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int entityIndex = fDeferredDocumentImpl.createDeferredEntity(
-                                    name, publicId, systemId, notation);
+                                    name, publicId, literalSystemId, notation);
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, entityIndex);
             }
         }
     
-    } // unparsedEntityDecl(String,String,String,String, String, Augmentations)
+    } // unparsedEntityDecl(String,XMLResourceIdentifier, String, Augmentations)
 
     /**
      * A notation declaration
      * 
      * @param name     The name of the notation.
-     * @param publicId The public identifier of the notation, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the notation, or null if not
-     *                 specified.
-     * @param baseSystemId The base system identifier where this entity
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId,
-                             String baseSystemId, Augmentations augs) throws XNIException {
+    public void notationDecl(String name, XMLResourceIdentifier identifier,
+                             Augmentations augs) throws XNIException {
 
         // internal subset string
+        String publicId = identifier.getPublicId();
+        String literalSystemId = identifier.getLiteralSystemId();
         if (fInternalSubset != null && !fInDTDExternalSubset) {
             fInternalSubset.append("<!NOTATION ");
             if (publicId != null) {
                 fInternalSubset.append("PUBLIC '");
                 fInternalSubset.append(publicId);
-                if (systemId != null) {
+                if (literalSystemId != null) {
                     fInternalSubset.append("' '");
-                    fInternalSubset.append(systemId);
+                    fInternalSubset.append(literalSystemId);
                 }
             }
             else {
                 fInternalSubset.append("SYSTEM '");
-                fInternalSubset.append(systemId);
+                fInternalSubset.append(literalSystemId);
             }
             fInternalSubset.append("'>\n");
         }
@@ -1468,7 +1462,7 @@ public abstract class AbstractDOMParser
             if (notations.getNamedItem(name) == null) {
                 NotationImpl notation = (NotationImpl)fDocumentImpl.createNotation(name);
                 notation.setPublicId(publicId);
-                notation.setSystemId(systemId);
+                notation.setSystemId(literalSystemId);
                 notations.setNamedItem(notation);
             }
         }
@@ -1490,12 +1484,12 @@ public abstract class AbstractDOMParser
             }
             if (!found) {
                 int notationIndex = fDeferredDocumentImpl.createDeferredNotation(
-                                        name, publicId, systemId);
+                                        name, publicId, literalSystemId);
                 fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, notationIndex);
             }
         }
 
-    } // notationDecl(String,String,String, String, Augmentations)
+    } // notationDecl(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * An element declaration.

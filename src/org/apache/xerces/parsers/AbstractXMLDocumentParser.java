@@ -337,9 +337,9 @@ public abstract class AbstractXMLDocumentParser
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException{
-    }
-
+    public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
+    } // textDecl(String, String, Augmentations)
+    
     /**
      * This method notifies the end of an entity.
      * <p>
@@ -365,8 +365,8 @@ public abstract class AbstractXMLDocumentParser
      * @exception XNIException
      *                   Thrown by application to signal an error.
      */
-    public void comment(XMLString text, Augmentations augs) throws XNIException{
-    }
+    public void comment(XMLString text, Augmentations augs) throws XNIException {
+    } // comment (XMLString, Augmentations)
 
     /**
      * A processing instruction. Processing instructions consist of a
@@ -387,9 +387,8 @@ public abstract class AbstractXMLDocumentParser
      *                   Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data, Augmentations augs)
-        throws XNIException{
-    }
-
+        throws XNIException {
+    } // processingInstruction(String, XMLString, Augmentations)
 
     //
     // XMLDTDHandler methods
@@ -486,7 +485,8 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-     public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {}
+     public void ignoredCharacters(XMLString text, Augmentations augs) throws XNIException {
+     } // ignoredCharacters(XMLString, Augmentations)
 
     /**
      * An element declaration.
@@ -585,59 +585,48 @@ public abstract class AbstractXMLDocumentParser
      * @param name     The name of the entity. Parameter entity names start
      *                 with '%', whereas the name of a general entity is just
      *                 the entity name.
-     * @param publicId The public identifier of the entity or null if the
-     *                 the entity was specified with SYSTEM.
-     * @param systemId The system identifier of the entity.
-     * @param baseSystemId The base system identifier where this entity
-     *                     is declared.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void externalEntityDecl(String name, 
-                                   String publicId, String systemId,
-                                   String baseSystemId, Augmentations augs) throws XNIException {
-    } // externalEntityDecl(String,String,String,String)
+    public void externalEntityDecl(String name, XMLResourceIdentifier identifier,
+                                   Augmentations augs) throws XNIException {
+    } // externalEntityDecl(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * An unparsed entity declaration.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the entity, or null if not
-     *                 specified.
-     * @param baseSystemId	URI of the entity by which this one was referenced
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void unparsedEntityDecl(String name, 
-                                   String publicId, String systemId, 
-                                   String baseSystemId, String notation, Augmentations augs) throws XNIException {
-    } // unparsedEntityDecl(String,String,String,String, String, Augmentations)
+    public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier,
+                                   String notation, Augmentations augs) throws XNIException {
+    } // unparsedEntityDecl(String,XMLResourceIdentifier, String, Augmentations)
 
     /**
      * A notation declaration
      * 
      * @param name     The name of the notation.
-     * @param publicId The public identifier of the notation, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the notation, or null if not
-     *                 specified.
-     * @param baseSystemId	URI of the entity by which this one was referenced
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, 
-    	String systemId, String baseSystemId, Augmentations augs)
+    public void notationDecl(String name, XMLResourceIdentifier identifier, 
+    	Augmentations augs)
         throws XNIException {
-    } // notationDecl(String,String,String, String, Augmentations)
+    } // notationDecl(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * The start of a conditional section.
@@ -652,7 +641,7 @@ public abstract class AbstractXMLDocumentParser
      * @see #CONDITIONAL_INCLUDE
      * @see #CONDITIONAL_IGNORE
      */
-    public void startConditional(short type, Augmentations augs) throws XNIException {
+    public void startConditional(short type, Augmentations augs) throws XNIException  {
     } // startConditional(short)
 
     /**
@@ -693,7 +682,8 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startContentModel(String elementName, Augmentations augs) throws XNIException {}
+    public void startContentModel(String elementName, Augmentations augs) throws XNIException {
+    } // startContentModel(String, Augmentations)
 
     /** 
      * A content model of ANY. 
@@ -706,7 +696,8 @@ public abstract class AbstractXMLDocumentParser
      * @see #empty
      * @see #startGroup
      */
-    public void any(Augmentations augs) throws XNIException {}
+    public void any(Augmentations augs) throws XNIException {
+    } // any(Augmentations)
 
     /**
      * A content model of EMPTY.
@@ -719,7 +710,8 @@ public abstract class AbstractXMLDocumentParser
      * @see #any
      * @see #startGroup
      */
-    public void empty(Augmentations augs) throws XNIException {}
+    public void empty(Augmentations augs) throws XNIException {
+    } // empty(Augmentations)
 
     /**
      * A start of either a mixed or children content model. A mixed
@@ -735,7 +727,8 @@ public abstract class AbstractXMLDocumentParser
      * @see #any
      * @see #empty
      */
-    public void startGroup(Augmentations augs) throws XNIException {}
+    public void startGroup(Augmentations augs) throws XNIException {
+    } // stargGroup(Augmentations)
 
     /**
      * The appearance of "#PCDATA" within a group signifying a
@@ -749,7 +742,8 @@ public abstract class AbstractXMLDocumentParser
      *
      * @see #startGroup
      */
-    public void pcdata(Augmentations augs) throws XNIException {}
+    public void pcdata(Augmentations augs) throws XNIException {
+    } // pcdata(Augmentations)
 
     /**
      * A referenced element in a mixed or children content model.
@@ -760,7 +754,8 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void element(String elementName, Augmentations augs) throws XNIException {}
+    public void element(String elementName, Augmentations augs) throws XNIException {
+    } // element(String, Augmentations)
 
     /**
      * The separator between choices or sequences of a mixed or children
@@ -775,7 +770,8 @@ public abstract class AbstractXMLDocumentParser
      * @see #SEPARATOR_CHOICE
      * @see #SEPARATOR_SEQUENCE
      */
-    public void separator(short separator, Augmentations augs) throws XNIException {}
+    public void separator(short separator, Augmentations augs) throws XNIException {
+    } // separator(short, Augmentations)
 
     /**
      * The occurrence count for a child in a children content model or
@@ -792,7 +788,8 @@ public abstract class AbstractXMLDocumentParser
      * @see #OCCURS_ZERO_OR_MORE
      * @see #OCCURS_ONE_OR_MORE
      */
-    public void occurrence(short occurrence, Augmentations augs) throws XNIException {}
+    public void occurrence(short occurrence, Augmentations augs) throws XNIException {
+    } // occurence(short, Augmentations)
 
     /**
      * The end of a group for mixed or children content models.
@@ -802,7 +799,8 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endGroup(Augmentations augs) throws XNIException {}
+    public void endGroup(Augmentations augs) throws XNIException {
+    } // endGroup(Augmentations)
 
     /**
      * The end of a content model.
@@ -812,7 +810,8 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endContentModel(Augmentations augs) throws XNIException {}
+    public void endContentModel(Augmentations augs) throws XNIException {
+    } // endContentModel(Augmentations)
 
     //
     // Protected methods

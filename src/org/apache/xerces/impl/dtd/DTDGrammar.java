@@ -652,26 +652,23 @@ public class DTDGrammar
      * @param name     The name of the entity. Parameter entity names start
      *                 with '%', whereas the name of a general entity is just
      *                 the entity name.
-     * @param publicId The public identifier of the entity or null if the
-     *                 the entity was specified with SYSTEM.
-     * @param systemId The system identifier of the entity.
-     * @param baseSystemId The base system identifier of the entity if
-     *                     the entity is external, null otherwise.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this external entity declaration.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
-                                   String publicId, String systemId,
-                                   String baseSystemId,
+                                   XMLResourceIdentifier identifier,
                                    Augmentations augs) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
         boolean inExternal = fReadingExternalDTD;
        
-        entityDecl.setValues(name, publicId, systemId, baseSystemId, 
-                             null, null, isPE, inExternal);
+        entityDecl.setValues(name, identifier.getPublicId(), identifier.getLiteralSystemId(), 
+                                identifier.getBaseSystemId(), 
+                                null, null, isPE, inExternal);
 
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {
@@ -679,65 +676,61 @@ public class DTDGrammar
             setEntityDecl(entityIndex, entityDecl);
         }
 
-    } // externalEntityDecl(String,String,String)
+    } // externalEntityDecl(String, XMLResourceIdentifier, Augmentations)
 
     /**
      * An unparsed entity declaration.
      * 
      * @param name     The name of the entity.
-     * @param publicId The public identifier of the entity, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the entity, or null if not
-     *                 specified.
-     * @param baseSystemId	the URI of the entity that referred to this one.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this entity.
      * @param notation The name of the notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void unparsedEntityDecl(String name, String publicId, 
-                                   String systemId, String baseSystemId, String notation,
+    public void unparsedEntityDecl(String name, XMLResourceIdentifier identifier,
+                                   String notation,
                                    Augmentations augs) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
         boolean inExternal = fReadingExternalDTD;
 
-        entityDecl.setValues(name,publicId,systemId, baseSystemId, notation, 
-                             null, isPE, inExternal);
+        entityDecl.setValues(name,identifier.getPublicId(),identifier.getLiteralSystemId(), 
+                            identifier.getBaseSystemId(), notation, 
+                            null, isPE, inExternal);
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {
             entityIndex = createEntityDecl();
             setEntityDecl(entityIndex, entityDecl);
         }
 
-    } // unparsedEntityDecl(String,String,String,String)
+    } // unparsedEntityDecl(String,StringXMLResourceIdentifier,Augmentations)
 
     /**
      * A notation declaration
      * 
      * @param name     The name of the notation.
-     * @param publicId The public identifier of the notation, or null if not
-     *                 specified.
-     * @param systemId The system identifier of the notation, or null if not
-     *                 specified.
-     * @param baseSystemId	the URI of the entity that referred to this one.
+     * @param identifier    An object containing all location information 
+     *                      pertinent to this notation.
      * @param augs Additional information that may include infoset
      *                      augmentations.
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void notationDecl(String name, String publicId, String systemId,
-                             String baseSystemId, Augmentations augs) throws XNIException {
+    public void notationDecl(String name, XMLResourceIdentifier identifier,
+                             Augmentations augs) throws XNIException {
 
         XMLNotationDecl  notationDecl = new XMLNotationDecl();
-        notationDecl.setValues(name,publicId,systemId, baseSystemId);
+        notationDecl.setValues(name,identifier.getPublicId(),identifier.getLiteralSystemId(), 
+                identifier.getBaseSystemId());
         int notationIndex = getNotationDeclIndex(name);
         if (notationIndex == -1) {
             notationIndex = createNotationDecl();
             setNotationDecl(notationIndex, notationDecl);
         }
 
-    } // notationDecl(String,String,String)
+    } // notationDecl(String,XMLResourceIdentifier,Augmentations)
 
     /**
      * The end of the DTD.
