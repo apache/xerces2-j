@@ -277,9 +277,9 @@ implements Locator {
         int prefixIndex = strQname.indexOf(':');
         qname.clear();
         qname.rawname   = strQname;
-        if( prefixIndex != -1 ){
-           qname.prefix    = strQname.substring(0, prefixIndex-1 );
-           qname.localpart = strQname.substring(prefixIndex+1, length );
+        if ( prefixIndex != -1 ) {
+            qname.prefix    = strQname.substring(0, prefixIndex-1 );
+            qname.localpart = strQname.substring(prefixIndex+1, length );
         }
         return;
     } // scanQName
@@ -334,12 +334,16 @@ implements Locator {
      * skipString -  
      */
     public boolean skipString(String s) throws IOException {
-        /*
-        while (  XMLChar.isSpace( this.fPushbackReader.read() ) == false ) {
-           fCharPosition++;
-       }
-       */
-    return false;
+        int     charValue;
+        char[]  scanStringBuffer = s.toCharArray();
+
+        for( int i = 0; i< s.length(); i++ ) {
+            charValue = this.fPushbackReader.read();
+            fCharPosition++;
+            if( charValue != scanStringBuffer[i])
+                return false;
+        }
+        return true;
     } // skipString
 
     //
@@ -382,10 +386,11 @@ implements Locator {
         return this.getColumnNumber();
     } // getColumnNumber
 
-    protected void setXMLEntityReader( InputSource source ){
-        Reader inSource = source.getCharacterStream();
+    protected void setXMLEntityReader(){
+        Reader inSource =this.fInputSource.getCharacterStream();
         if ( inSource != null  ) {
             fPushbackReader = new PushbackReader(inSource);//One character reader
+            
         }
     }
 

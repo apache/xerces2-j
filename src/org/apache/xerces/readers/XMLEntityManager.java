@@ -110,6 +110,7 @@ public class XMLEntityManager
      * @param baseSystemId 
      */
     public void addGeneralEntity(String name, String publicId, String systemId, String baseSystemId) {
+        System.out.println("called addGeneralEntity" );
     } // addGeneralEntity
 
     /**
@@ -119,6 +120,7 @@ public class XMLEntityManager
      * @param text 
      */
     public void addGeneralEntity(String name, String text) {
+        System.out.println( "called addGeneralEntity" );
     } // addGeneralEntity
 
     /**
@@ -130,6 +132,7 @@ public class XMLEntityManager
      * @param baseSystemId 
      */
     public void addParameterEntity(String name, String publicId, String systemId, String baseSystemId) {
+        System.out.println("called addParameterEntity" );
     } // addParameterEntity
 
     /**
@@ -139,6 +142,7 @@ public class XMLEntityManager
      * @param text 
      */
     public void addParameterEntity(String name, String text) {
+        System.out.println("Called addParameterEntity" );
     } // addParameterEntity
 
     /**
@@ -152,6 +156,7 @@ public class XMLEntityManager
      */
     public InputSource resolveEntity(String publicId, String systemId, String baseSystemId)
         throws IOException, SAXException {
+        System.out.println("called resolveEntity" );
         return null;
     } // resolveEntity
 
@@ -163,7 +168,7 @@ public class XMLEntityManager
 
 
     public void startParameterEntity ( String entityName ){ 
-
+        System.out.println("Called startParameterEntity" );
     }
 
 
@@ -173,7 +178,8 @@ public class XMLEntityManager
     * @param inputSource 
     */
 
-    public void startGeneralEntity ( String entityName ){ 
+    public void startGeneralEntity ( String entityName ){
+        System.out.println("call entityName" );
     }
 
 
@@ -183,8 +189,10 @@ public class XMLEntityManager
      * @param inputSource 
      */
     public void startEntity(InputSource inputSource) {
+        System.out.println("called startEntity" );
         if( inputSource != null ){
             this.fEntityReader.fInputSource = inputSource;//Sets the entityReader Document entity InputSource
+            this.fEntityReader.setXMLEntityReader();
 
         }
 
@@ -223,6 +231,7 @@ public class XMLEntityManager
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+            System.out.println( "called setFeature" );
     } // setFeature
 
     /**
@@ -233,6 +242,7 @@ public class XMLEntityManager
      */
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+            System.out.println("Called setProperty" );
     } // setProperty
 
     /* Unit test section */
