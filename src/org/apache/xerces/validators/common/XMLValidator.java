@@ -1735,6 +1735,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     System.out.println("Oops! no grammar is found for validation");
                 }
                 
+                if  (fDynamicValidation && fGrammar==null) {
+                  fValidating = false;
+                }
+                
                 if (fGrammar != null) {
                     if (fGrammar instanceof DTDGrammar) {
                         fGrammarIsDTDGrammar = true;
