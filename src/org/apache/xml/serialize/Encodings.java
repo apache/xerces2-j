@@ -61,6 +61,7 @@ package org.apache.xml.serialize;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
+import java.util.Locale;
 
 import org.apache.xerces.util.EncodingMap;
 
@@ -110,7 +111,7 @@ public class Encodings
             return eInfo;
         }
         // need to convert it to upper case:
-        encoding = encoding.toUpperCase();
+        encoding = encoding.toUpperCase(Locale.ENGLISH);
         String jName = EncodingMap.getIANA2JavaMapping(encoding);
         if(jName == null) {
             // see if the encoding passed in is a Java encoding name.
