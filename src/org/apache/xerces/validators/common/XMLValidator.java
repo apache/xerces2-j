@@ -1972,8 +1972,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (!fStringPool.equalNames(attName, fNamespacesPrefix)) {
                     int attPrefix = attrList.getAttrPrefix(index);
                     if (attPrefix != fNamespacesPrefix) {
-                        if (attPrefix != -1) {
-                            int attrUri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
+                        prefix = attPrefix != -1 ? attPrefix : 0;
+                        int attrUri = fNamespacesScope.getNamespaceForPrefix(prefix);
+                        if (attPrefix != -1 || attrUri != -1) {
+                            //int attrUri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
                             if (attrUri == -1) {
                                 Object[] args = { fStringPool.toString(attPrefix) };
                                 fErrorReporter.reportError(fErrorReporter.getLocator(),
