@@ -151,7 +151,7 @@ Copyright:
   </target>
 
   <!-- =================================================================== -->
-  <!-- Compiles the source code                                            -->
+  <!-- Prepares the source code                                            -->
   <!-- =================================================================== -->
   <target name="prepare-src" depends="prepare-common">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
@@ -165,8 +165,10 @@ Copyright:
             excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
                        **/SchemaImporter.java **/RevalidatingDOMParser.java
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
-                       **/DTDImporter.java 
-                       **/v1/** **/v2/**">
+                       **/DTDImporter.java **/v1/** **/v2/**
+                       org/apache/xerces/dom/DOMImplementationSourceImpl.java
+                       org/apache/xerces/dom3/*.java
+                       org/apache/xerces/dom3/ls/*">
         </fileset>
     </copy>
     
@@ -231,10 +233,10 @@ Copyright:
   <target name="samples" depends="compile">
     <mkdir dir="${build.samples}"/>
     <copy todir="${build.samples}" >
-        <fileset dir="${samples.dir}" />
+        <fileset dir="${samples.dir}"
+           excludes="dom/DOMAddLines.java" />
     </copy>
     <javac srcdir="${build.samples}"
-           excludes="**/DOMAddLines.java "
            destdir="${build.dest}"
            classpath="${build.dir}/classes"
            debug="${debug}"
@@ -248,7 +250,8 @@ Copyright:
   <target name="tests" depends="samples">
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
-        <fileset dir="${tests.dir}" />
+        <fileset dir="${tests.dir}"
+           excludes="**/dom/registry" />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -889,5 +892,170 @@ Copyright:
       </classpath>
     </java>
 
+
+
   </target>
+  <!-- =================================================================== -->
+  <!-- Prepares the source code with DOM Level 3                           -->
+  <!-- =================================================================== -->
+  <target name="prepare-src-dom3" depends="prepare-common">
+    <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
+      tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
+
+    <!-- copy src files -->
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}"
+            includes="**/Makefile, **/Makefile.incl, javax/**, org/**" 
+            excludes="**/classfiles_updated **/CVS* **/.#* **/XMLMessages.java
+                       **/SchemaImporter.java **/RevalidatingDOMParser.java
+                       **/DatatypeContentModel.java **/ComplexTypeInfo.java
+                       **/DTDImporter.java **/v1/** **/v2/**
+              	       org/apache/xerces/dom3/*.java
+              	       org/apache/xerces/dom3/ls/*
+                       org/w3c/dom/*.java">
+        </fileset>
+    </copy>
+
+    <!-- copy dom 3 src files -->
+    <copy todir="${build.src}">
+        <fileset 
+            dir="${src.dir}/dom3"
+            includes="org/**" 
+            excludes="**/classfiles_updated **/CVS* **/.#*">
+        </fileset>
+    </copy>
+    
+    <!-- substitute tokens as needed -->
+    <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
+             token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the source directory with DOM Level 3                      -->
+  <!-- =================================================================== -->
+  <target name="compile-dom3" depends="prepare-src-dom3">
+    <copy todir="${build.dest}">
+      <fileset dir="${build.src}"
+        includes="**/*.res, **/*.properties">
+      </fileset>
+    </copy>
+
+    <javac srcdir="${build.src}"
+           excludes="**/RevalidatingDOMParser.java"
+           destdir="${build.dest}"
+           debug="${debug}"
+           deprecation="${deprecation}"
+           optimize="${optimize}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the samples with DOM Level 3                               -->
+  <!-- =================================================================== -->
+  <target name="samples-dom3" depends="compile-dom3">
+    <mkdir dir="${build.samples}"/>
+    <copy todir="${build.samples}" >
+        <fileset dir="${samples.dir}" />
+    </copy>
+    <javac srcdir="${build.samples}"
+           destdir="${build.dest}"
+           classpath="${build.dir}/classes"
+           debug="${debug}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the tests with DOM Level 3                                 -->
+  <!-- =================================================================== -->
+  <target name="tests-dom3" depends="samples-dom3">
+    <mkdir dir="${build.tests}"/>
+    <copy todir="${build.tests}">
+        <fileset dir="${tests.dir}" />
+    </copy>
+    <javac srcdir="${build.tests}"
+           destdir="${build.dest}"
+           classpath="${build.dir}/classes:./tools/junit.jar"
+           debug="${debug}"
+           includeAntRuntime="false"
+           includeJavaRuntime="true"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Do a sanity test using samples                                      -->
+  <!-- =================================================================== -->
+  <target name="test-dom3" depends="tests-dom3">
+    <echo message="Performing sanity test for ${parser.Name} ${parser.Version} ..." />
+    <echo message="Using classpath=&apos;${build.dir}/classes&apos;" />
+    <echo message="Running sax.Counter ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="sax.Counter"
+          failOnError="yes">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
+    <echo message="Running sax.Writer ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes" 
+          classname="sax.Writer"
+          failOnError="yes">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
+    <echo message="Running dom.Counter ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.Counter"
+          failOnError="yes">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
+    <echo message="Running dom.Writer ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes" 
+          classname="dom.Writer"
+          failOnError="yes">
+       <arg value="${data.dir}/personal.xml"/>
+    </java>
+    <!--
+    <echo message="Running DOMFilter ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.DOMFilter"
+          args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
+    -->
+    <!-- The following are samples but not command-line applications.
+    <echo message="Running IteratorView ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.traversal.IteratorView"
+          failOnError="yes"
+          args="${data.dir}/personal.xml"/>
+    <echo message="Running TreeWalkerView ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.traversal.TreeWalkerView"
+          failOnError="yes"
+          args="${data.dir}/personal.xml"/>
+    <echo message="Running TreeViewer ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.TreeViewer"
+          failOnError="yes"
+          args="${data.dir}/personal.xml"/>
+     -->
+    <echo message="Running dom.mem.Test ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.mem.Test"
+          failOnError="yes">
+    </java>
+    <echo message="Running dom.DTest ..." />
+    <java fork="yes"
+          classpath="${build.dir}/classes"
+          classname="dom.DTest"
+          failOnError="yes">
+    </java>
+  </target>
+
 </project>

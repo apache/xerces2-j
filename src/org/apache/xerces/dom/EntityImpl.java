@@ -57,7 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.dom3.Entity3;
+import org.w3c.dom.Entity;
 import org.w3c.dom.Node;
 
 
@@ -99,7 +99,7 @@ import org.w3c.dom.DOMException;
  */
 public class EntityImpl 
     extends ParentNode
-    implements Entity3 {
+    implements Entity {
 
     //
     // Constants

@@ -59,7 +59,6 @@ package dom;
 
 import java.io.*;
 
-import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -67,8 +66,6 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-
-import org.apache.xerces.dom3.Node3;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -122,7 +119,7 @@ public class DOMAddLines extends DOMParser  {
          return;
       }
 
-      String lineRowColumn = (String ) ((NodeImpl) node).getUserData("startLine");
+      String lineRowColumn = (String ) ((Node) node).getUserData("startLine");
 
       int type = node.getNodeType();
       switch ( type ) {
@@ -242,16 +239,15 @@ public class DOMAddLines extends DOMParser  {
     throws XNIException {
       super.startElement(elementQName, attrList, augs);
 
-      NodeImpl node = null;
+      Node node = null;
       try {
-      node = (NodeImpl) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
+      node = (Node) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
       //System.out.println( "The node = " + node );  TODO JEFF
       }
       catch( org.xml.sax.SAXException ex )
       {
           System.err.println( "except" + ex );;
       }
-      //NodeImpl node = (NodeImpl)getCurrentNode();       // Get current node
       if( node != null )
           node.setUserData( "startLine", String.valueOf( locator.getLineNumber() ), null ); // Save location String into node
    } //startElement 
@@ -263,9 +259,9 @@ public class DOMAddLines extends DOMParser  {
      //                               standAloneIndex);
      super.startDocument(locator, encoding, augs);
      this.locator = locator;
-     Node3 node = null ;
+     Node node = null ;
       try {
-      node = (Node3) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
+      node = (Node) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
       //System.out.println( "The node = " + node );
       }
      catch( org.xml.sax.SAXException ex )
@@ -273,7 +269,6 @@ public class DOMAddLines extends DOMParser  {
         System.err.println( "except" + ex );;
       }
      
-//     NodeImpl node = (NodeImpl)getCurrentNode();       // Get current node
      if( node != null )
           node.setUserData( "startLine", String.valueOf( locator.getLineNumber() ), null ); // Save location String into node
   } //startDocument 

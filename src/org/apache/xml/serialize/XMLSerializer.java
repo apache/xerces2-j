@@ -88,7 +88,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
 
