@@ -60,6 +60,7 @@ package org.apache.xerces.util;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 
@@ -80,6 +81,9 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  */
 public class ParserConfigurationSettings
     implements XMLComponentManager {
+    	
+	protected static final String PARSER_SETTINGS = 
+			Constants.XERCES_FEATURE_PREFIX + Constants.PARSER_SETTINGS;	
 
     //
     // Data
