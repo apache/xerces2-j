@@ -59,6 +59,7 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.utils.StringPool;
@@ -190,15 +191,33 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
                     throw error;
                 }
             } else {
-                /*
-                if (!this.fEntityHandler.isUnparsedEntity() ) {
+                StringTokenizer listOfEntities = new StringTokenizer(content);
+                StringBuffer sb = new StringBuffer(content.length());
+                boolean ok = true;
+                if (listOfEntities.hasMoreTokens()) {
+                    while (true) {
+                        String nextEntity = listOfEntities.nextToken();
+
+                        // ENTITIES - check that each value is an unparsed entity name (V_TAGa)
+
+                        if ( this.fEntityHandler.isUnparsedEntity(this.fStringPool.addSymbol(nextEntity) ) == false ) {
+                            ok = false;
+                        }
+                        sb.append(nextEntity);
+                        if (!listOfEntities.hasMoreTokens()) {
+                            break;
+                        }
+                        sb.append(' ');
+                    }
+                }
+                String errorContent = sb.toString();
+                if (!ok || errorContent.length() == 0) {
                     InvalidDatatypeValueException error = 
-                    new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
-                    error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
+                    new InvalidDatatypeValueException( errorContent );
+                    error.setMinorCode(XMLMessages.MSG_ENTITIES_INVALID );
                     error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
                     throw error;
                 }
-                */
 
             }
         }
