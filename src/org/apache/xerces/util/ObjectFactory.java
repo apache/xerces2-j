@@ -267,7 +267,8 @@ public class ObjectFactory {
         }
 
         try {
-            return (ClassLoader) m.invoke(Thread.currentThread(), null);
+            ClassLoader loader = (ClassLoader) m.invoke(Thread.currentThread(), null);
+            return loader != null ? loader : ObjectFactory.class.getClassLoader();
         } catch (IllegalAccessException e) {
             // assert(false)
             throw new ConfigurationError("Unexpected IllegalAccessException",
