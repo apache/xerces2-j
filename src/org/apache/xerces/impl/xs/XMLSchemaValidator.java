@@ -170,10 +170,20 @@ public class XMLSchemaValidator
 
     protected static final String VALIDATION_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+
     // REVISIT: this is just a temporary solution for entity resolver
     //          while we are making a decision
     protected static final String ENTITY_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+
+    /** Property identifier: schema location. */
+    protected static final String SCHEMA_LOCATION =
+    Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_LOCATION;
+
+    /** Property identifier: no namespace schema location. */
+    protected static final String SCHEMA_NONS_LOCATION =
+    Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -191,6 +201,8 @@ public class XMLSchemaValidator
         ERROR_REPORTER,
         ENTITY_RESOLVER,
         VALIDATION_MANAGER,
+        SCHEMA_LOCATION,
+        SCHEMA_NONS_LOCATION
     };
 
     //
@@ -207,7 +219,7 @@ public class XMLSchemaValidator
 
     /** current PSVI element info */
     protected ElementPSVImpl fCurrentPSVI = null;
-    
+
     // REVISIT: define constant here?
     protected final static String ELEM_PSVI = "ELEM_PSVI";
 
@@ -301,6 +313,10 @@ public class XMLSchemaValidator
     // updated during reset
     protected ValidationManager fValidationManager = null;
     protected ValidationState fValidationState = null;
+
+    // schema location property values
+    protected String fExternalSchemas = null;
+    protected String fExternalNoNamespaceSchema = null;
 
     // handlers
 
@@ -998,6 +1014,10 @@ public class XMLSchemaValidator
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.reset();
 
+        // get schema location properties
+        fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
+        fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
+
         // clear grammars, and put the one for schema namespace there
         fGrammarResolver.reset();
         fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
@@ -1006,7 +1026,9 @@ public class XMLSchemaValidator
         fSubGroupHandler.reset();
 
         // reset schema handler and all traversal objects
-        fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter, fEntityResolver, fSymbolTable);
+        fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter,
+                             fEntityResolver, fSymbolTable,
+                             fExternalSchemas, fExternalNoNamespaceSchema);
 
         // initialize state
         fCurrentElemDecl = null;
@@ -1227,6 +1249,9 @@ public class XMLSchemaValidator
             fValidationState.setNamespaceSupport(fNamespaceSupport);
             fValidationState.setSymbolTable(fSymbolTable);
 
+            // parse schemas specified via schema location properties
+            parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
+
             // REVISIT: is this a right place to do it?
             // put ElementPSVI item into Augmentations
             augs.putItem(ELEM_PSVI, fElemPSVI);
@@ -1359,7 +1384,7 @@ public class XMLSchemaValidator
         // PSVI: add element type
         //
         fCurrentPSVI.fTypeDecl = fCurrentType;
-        
+
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
         if (fCurrentType != null) {
@@ -1575,14 +1600,14 @@ public class XMLSchemaValidator
         // element, and remove them from the error list
         // REVISIT: PSVI should get error codes here
         String[] errors = fXSIErrorReporter.popContext();
-        
+
         // PSVI: error codes
         fCurrentPSVI.fErrorCodes = errors;
         // PSVI: validation attempted
         // REVISIT: element could be partially valid
         fCurrentPSVI.fValidationAttempted = ElementPSVI.FULL_VALIDATION;
         // PSVI: validity
-        fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALID_VALIDITY 
+        fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALID_VALIDITY
                                                   : ElementPSVI.INVALID_VALIDITY;
 
         return defaultValue;
@@ -1948,7 +1973,7 @@ public class XMLSchemaValidator
                 if (fChildCount != 0 || content.length() != 0){
                     reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
                     // PSVI: nil
-                    fCurrentPSVI.fNil = false;                    
+                    fCurrentPSVI.fNil = false;
                 } else {
                     fCurrentPSVI.fNil = true;
                 }

@@ -84,6 +84,7 @@ import org.w3c.dom.Element;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.StringTokenizer;
 import java.io.IOException;
 
 /**
@@ -192,8 +193,65 @@ public class XSDHandler {
     // the XSAttributeChecker
     private XSAttributeChecker fAttributeChecker;
 
-    // the XMLEntityResolver
-    private XMLEntityResolver fEntityResolver;
+    // this class is to make use of the schema location property values.
+    // we store the namespace/location pairs in a hashtable (use "" as the
+    // namespace of absent namespace). when resolving an entity, we first try
+    // to find in the hashtable whether there is a value for that namespace,
+    // if so, pass that location value to the user-defined entity resolver.
+    protected class LocationResolver {
+        // the user-defined entity resolver
+        public XMLEntityResolver fExternalResolver = null;
+        // namespace/location pairs
+        public Hashtable fLocationPairs = new Hashtable();
+
+        public void reset(XMLEntityResolver entityResolver,
+                          String sLocation, String nsLocation) {
+            fLocationPairs.clear();
+            fExternalResolver = entityResolver;
+
+            if (sLocation != null) {
+                StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
+                String namespace, location;
+                while (t.hasMoreTokens()) {
+                    namespace = t.nextToken ();
+                    if (!t.hasMoreTokens()) {
+                        break;
+                    }
+                    location = t.nextToken();
+                    fLocationPairs.put(namespace, location);
+                }
+            }
+            if (nsLocation != null) {
+                fLocationPairs.put(EMPTY_STRING, nsLocation);
+            }
+        }
+
+        public XMLInputSource resolveEntity(String namespace, String location, boolean useProperties) throws IOException {
+            if (fExternalResolver == null)
+                return null;
+
+            String loc = null;
+            // we consider the schema location properties for import
+            if (useProperties) {
+                // use empty string as the key for absent namespace
+                String ns = namespace == null ? EMPTY_STRING : namespace;
+                // get the location hint for that namespace
+                loc = (String)fLocationPairs.get(ns);
+            }
+
+            // if it's not import, or if the target namespace is not set
+            // in the schema location properties, use location hint
+            if (loc == null)
+                loc = location;
+
+            // REVISIT: resolve the entity. passing null as public id, instead
+            // of passing namespace value. -SG
+            return fExternalResolver.resolveEntity(null, loc, null);
+        }
+    }
+
+    // the schema location resolver
+    private LocationResolver fLocationResolver = new LocationResolver();
 
     // the symbol table
     private SymbolTable fSymbolTable;
@@ -281,7 +339,7 @@ public class XSDHandler {
                                      String schemaHint) {
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, schemaHint);
+        Document schemaRoot = getSchema(schemaNamespace, schemaHint, true);
         if (schemaRoot == null) {
             // something went wrong right off the hop
             reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
@@ -379,7 +437,7 @@ public class XSDHandler {
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
-                newSchemaRoot = getSchema(schemaNamespace, schemaHint);
+                newSchemaRoot = getSchema(schemaNamespace, schemaHint, true);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
                      (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
@@ -392,7 +450,7 @@ public class XSDHandler {
                 // schemaLocation is required on <include> and <redefine>
                 if (schemaHint == null)
                     reportGenericSchemaError("schemaLocation attribute must appear in <include> and <redefine>");
-                newSchemaRoot = getSchema(null, schemaHint);
+                newSchemaRoot = getSchema(null, schemaHint, false);
                 schemaNamespace = currSchemaInfo.fTargetNamespace;
             }
             else {
@@ -947,12 +1005,12 @@ public class XSDHandler {
     // otherwise.  schemaDoc is null if and only if no schema document
     // was resolved to.
     private Document getSchema(String schemaNamespace,
-                               String schemaHint) {
+                               String schemaHint, boolean useProperties) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         Document schemaDoc = null;
         try {
-            schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
+            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, useProperties);
             // REVISIT: when the system id of the input source is null, it's
             //          impossible to find the schema document. so we skip in
             //          this case. otherwise we'll receive some NPE or
@@ -1024,12 +1082,16 @@ public class XSDHandler {
     // (except those passed in via the constructor).
     public void reset(XMLErrorReporter errorReporter,
                       XMLEntityResolver entityResolver,
-                      SymbolTable symbolTable) {
-        fEntityResolver = entityResolver;
+                      SymbolTable symbolTable,
+                      String externalSchemaLocation,
+                      String externalNoNSSchemaLocation) {
+
         fErrorReporter = errorReporter;
         fSymbolTable = symbolTable;
 
         EMPTY_STRING = fSymbolTable.addSymbol(SchemaSymbols.EMPTY_STRING);
+
+        fLocationResolver.reset(entityResolver, externalSchemaLocation, externalNoNSSchemaLocation);
 
         try {
             fSchemaParser.setProperty(XMLSchemaValidator.ERROR_REPORTER, fErrorReporter);

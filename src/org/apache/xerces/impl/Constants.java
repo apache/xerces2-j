@@ -223,9 +223,14 @@ public final class Constants {
     /** Validator property ("internal/validator/schema"). */
     public static final String SCHEMA_VALIDATOR_PROPERTY = "internal/validator/schema";
 
+    /** No namespace schema location property ("schema/external-schemaLocation"). */
+    public static final String SCHEMA_LOCATION = "schema/external-schemaLocation";
+
+    /** Schema location property ("schema/external-noNamespaceSchemaLocation"). */
+    public static final String SCHEMA_NONS_LOCATION = "schema/external-noNamespaceSchemaLocation";
+
     /** Namespace binder property ("internal/namespace-binder"). */
     public static final String NAMESPACE_BINDER_PROPERTY = "internal/namespace-binder";
-
 
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
@@ -253,6 +258,7 @@ public final class Constants {
     /** Xerces features. */
     private static final String[] fgXercesFeatures = {
         SCHEMA_VALIDATION_FEATURE,
+        SCHEMA_FULL_CHECKING,
         DYNAMIC_VALIDATION_FEATURE,
         WARN_ON_DUPLICATE_ATTDEF_FEATURE,
         WARN_ON_UNDECLARED_ELEMDEF_FEATURE,
@@ -284,6 +290,8 @@ public final class Constants {
         DOCUMENT_SCANNER_PROPERTY,
         DTD_SCANNER_PROPERTY,
         VALIDATOR_PROPERTY,
+        SCHEMA_LOCATION,
+        SCHEMA_NONS_LOCATION,
         VALIDATION_MANAGER_PROPERTY
     };
 
