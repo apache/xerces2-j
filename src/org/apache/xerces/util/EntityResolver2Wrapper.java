@@ -159,12 +159,12 @@ public class EntityResolver2Wrapper
                 name = ((XMLEntityDescription) resourceIdentifier).getEntityName();
             }
             
-            // When all of the parameters are null, the user's entity resolver
+            // When both pubId and sysId are null, the user's entity resolver
             // can do nothing about it. We'd better not bother calling it.
             // This happens when the resourceIdentifier is a GrammarDescription,
             // which describes a schema grammar of some namespace, but without
             // any schema location hint. -Sg
-            if (pubId == null && sysId == null && baseURI == null && name == null) {
+            if (pubId == null && sysId == null) {
                 return null;
             }
             
