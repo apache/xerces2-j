@@ -100,9 +100,6 @@ public class SymbolTable {
     // Data
     //
 
-    /** Symbol hasher. */
-    protected SymbolHasher fSymbolHasher;
-
     /** Buckets. */
     protected Entry[] fBuckets = new Entry[TABLE_SIZE];
 
@@ -110,35 +107,13 @@ public class SymbolTable {
     // Constructors
     //
 
-    /** 
-     * Constructs a symbol table that uses the default hashing
-     * algorithm.
-     */
+    /** Constructs a symbol table. */
     public SymbolTable() {
-        this(new Hasher());
-    }
-
-    /**
-     * Constructs a symbol table with the specified symbol hasher.
-     * 
-     * @param symbolHasher The symbol hasher to use.
-     */
-    public SymbolTable(SymbolHasher symbolHasher) {
-        fSymbolHasher = symbolHasher;
     }
 
     //
     // Methods
     //
-
-    /**
-     * getSymbolHasher
-     * 
-     * @return 
-     */
-    public SymbolHasher getSymbolHasher() {
-        return fSymbolHasher;
-    }
 
     /**
      * addSymbol
@@ -150,7 +125,7 @@ public class SymbolTable {
     public String addSymbol(String symbol) {
 
         // search for identical symbol
-        int bucket = fSymbolHasher.hash(symbol) % TABLE_SIZE;
+        int bucket = hash(symbol) % TABLE_SIZE;
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             int length = symbol.length();
             if (length == entry.characters.length) {
@@ -182,7 +157,7 @@ public class SymbolTable {
     public String addSymbol(char[] buffer, int offset, int length) {
 
         // search for identical symbol
-        int bucket = fSymbolHasher.hash(buffer, offset, length) % TABLE_SIZE;
+        int bucket = hash(buffer, offset, length) % TABLE_SIZE;
         OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
             if (length == entry.characters.length) {
                 for (int i = 0; i < length; i++) {
