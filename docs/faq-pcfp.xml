@@ -49,7 +49,7 @@ you must make sure that your configuration inserts all needed validators in the 
     </li>
    </ul>
    <p>
-     An application may choose to create a configuration that does not have ia DTD 
+     An application may choose to create a configuration that does not have a DTD 
      validator but has an XML Schema validator. This will turn Xerces into a 
      non-compliant processor according to XML 1.0 and XML Schema specifications, 
      thus the validation/augmentation outcome is undefined.
@@ -62,8 +62,8 @@ you must make sure that your configuration inserts all needed validators in the 
   <a>
    <p>
      Currently this is impossible. We hope that JAXP 1.2 will provide this capability 
-     via iits schema language property. Otherwise, we might introduce a Xerces 
-     language property that will allow specifying the language against which validation will dbimust occur.
+     via its schema language property. Otherwise, we might introduce a Xerces 
+     language property that will allow specifying the language against which validation will occur.
    </p>
    </a>
  </faq>
