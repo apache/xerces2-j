@@ -167,7 +167,7 @@ public abstract class NodeImpl
     // public
 
     /** Element definition node type. */
-    public static final short ELEMENT_DEFINITION_NODE = -1;
+    public static final short ELEMENT_DEFINITION_NODE = 21;
 
     //
     // Data
