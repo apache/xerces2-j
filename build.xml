@@ -1013,6 +1013,8 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xml/serialize/DOMWriterImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
+    <replace file="${build.src}/org/apache/xml/serialize/XML11Serializer.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
     <replace file="${build.src}/org/w3c/dom/ls/DOMWriter.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/w3c/dom/ls/ParseErrorEvent.java"  
