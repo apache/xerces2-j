@@ -52,6 +52,34 @@
     <submitter name='Arun Yadav, Elena Litani, Sandy Gao'/>
    </add>
    
+   <add>
+    <note>
+     Added "external-schemaLocation" and "external-noNamespaceSchemaLocation" properties.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </add>
+
+   <add>
+    <note>
+     New schema simple type interface and implementation. It fixes various bugs in the old implementation, and provides enough informatin for PSVI support.
+    </note>
+    <submitter name='Sandy Gao, Neeraj Bajaj'/>
+   </add>
+
+   <update>
+    <note>
+     Internalize all symbols in SymbolTable using java.jang.String#intern(). Now applications can compare the symbols by reference.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </update>
+
+   <add>
+    <note>
+     Added "schema-full-checking" feature, and implemented "Unique Particle Attribution" constraint.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </add>
+
    <fix>
     <note>
      Changed the default configuration to standard parser configuration (that does not include XML Schema validator), modified how and when the pipeline is constructed.
