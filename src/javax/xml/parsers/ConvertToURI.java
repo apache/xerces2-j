@@ -49,10 +49,9 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
- * Business Machines, Inc., http://www.apache.org.  For more
- * information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
+ * originally based on software copyright (c) 1999-2001, Sun Microsystems,
+ * Inc., http://www.sun.com.  For more information on the Apache Software
+ * Foundation, please see <http://www.apache.org/>.
  */
 
 package javax.xml.parsers;
@@ -62,7 +61,7 @@ import java.io.File;
  * It escapes character sequences that doesn't correspond to printable character of US-ASCII coded character
  * set [00-1F and 7F hexadecimal] or any US-ASCII character that is disallowed like space ' '
  * As of right now this class doesn't not handle  non-US ASCII character. But it may be extended in future to
- * handle those cases. Most of the code in this class has been extracted from java.net.URI.
+ * handle those cases. Most of the code in this class has been extracted from Sun JDK 1.4 java.net.URI.
  *
  * @author Neeraj Bajaj
  */
