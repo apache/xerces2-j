@@ -127,12 +127,18 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                                  namespaceAware);
 
             // Set various parameters obtained from DocumentBuilderFactory
+            //
+            // XXX Note: Ignore features that are not yet implemented in
+            // Xerces 2.  This code is different than in Xerces 1!
+            try {
             domParser.setFeature(XERCES_FEATURE_PREFIX +
                                  INCLUDE_IGNORABLE_WHITESPACE,
                                  !dbf.isIgnoringElementContentWhitespace());
             domParser.setFeature(XERCES_FEATURE_PREFIX +
                                  CREATE_ENTITY_REF_NODES_FEATURE,
                                  !dbf.isExpandEntityReferences());
+            } catch (Exception e) {
+            }
 
             // XXX No way to control dbf.isIgnoringComments() or
             // dbf.isCoalescing()
@@ -147,11 +153,7 @@ public class DocumentBuilderImpl extends DocumentBuilder {
      * one
      */
     public Document newDocument() {
-        DOMImplementation di = getDOMImplementation();
-        // XXX What should the root element be named???
-        String qName = "root";
-        DocumentType docType = di.createDocumentType(qName, null, null);
-        return di.createDocument(null, qName, docType);
+        return new org.apache.xerces.dom.DocumentImpl();
     }
 
     public DOMImplementation getDOMImplementation() {
