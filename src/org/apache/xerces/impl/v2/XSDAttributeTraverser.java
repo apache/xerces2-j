@@ -225,10 +225,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
             else
                 attribute.fTargetNamespace = null;
-        } else if (schemaDoc.fAreLocalElementsQualified) {
+        } else if (schemaDoc.fAreLocalAttributesQualified) {
             attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
         } else {
-            attribute.fTargetNamespace = null; 
+            attribute.fTargetNamespace = null;
         }
 
         // get 'value constraint'
@@ -278,7 +278,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
 
         if (attrType == null) {
-            attrType = (DatatypeValidator)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_SIMPLE_TYPE);
+            attrType = SchemaGrammar.fAnySimpleType;
         }
 
         attribute.fType = attrType;
@@ -372,7 +372,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         try {
 
             //REVISIT:  Our validators don't return Objects yet, instead  return null
-            //         
+            //
             //attribute.fDefault = attribute.fType.validate((String)attribute.fDefault, null);
             attribute.fType.validate((String)attribute.fDefault, null);
         } catch (InvalidDatatypeValueException ide) {
@@ -390,7 +390,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         try {
 
             //REVISIT:  Our validators don't return Objects yet, instead  return null
-            //         
+            //
             //attrUse.fDefault = attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
             attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
         } catch (InvalidDatatypeValueException ide) {

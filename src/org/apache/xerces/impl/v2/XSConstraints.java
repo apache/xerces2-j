@@ -75,21 +75,23 @@ public class XSConstraints {
      */
     public static boolean checkTypeDerivationOk(XSTypeDecl derived, XSTypeDecl base, int block) {
         // if derived is anyType, then it's valid only if base is anyType too
-        if (derived.getXSType() == XSTypeDecl.ANY_TYPE)
+        if (derived == SchemaGrammar.fAnyType)
             return derived == base;
         // if derived is anySimpleType, then it's valid only if the base
         // is ur-type
-        if (derived.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE)
-            return (base.getXSType() & XSTypeDecl.UR_TYPE) != 0;
+        if (derived == SchemaGrammar.fAnySimpleType) {
+            return (base == SchemaGrammar.fAnyType ||
+                    base == SchemaGrammar.fAnySimpleType);
+        }
 
         // if derived is simple type
-        if ((derived.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+        if (derived.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             // if base is complex type
-            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
-                if (base.getXSType() == XSTypeDecl.ANY_TYPE)
-                    base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+                if (base == SchemaGrammar.fAnyType)
+                    base = SchemaGrammar.fAnySimpleType;
                 else
                     return false;
             }
@@ -107,15 +109,17 @@ public class XSConstraints {
     public static boolean checkSimpleDerivationOk(DatatypeValidator derived, XSTypeDecl base, int block) {
         // if derived is anySimpleType, then it's valid only if the base
         // is ur-type
-        if (derived.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE)
-            return (base.getXSType() & XSTypeDecl.UR_TYPE) != 0;
+        if (derived == SchemaGrammar.fAnySimpleType) {
+            return (base == SchemaGrammar.fAnyType ||
+                    base == SchemaGrammar.fAnySimpleType);
+        }
 
         // if base is complex type
-        if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+        if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
             // if base is anyType, change base to anySimpleType,
             // otherwise, not valid
-            if (base.getXSType() == XSTypeDecl.ANY_TYPE)
-                base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+            if (base == SchemaGrammar.fAnyType)
+                base = SchemaGrammar.fAnySimpleType;
             else
                 return false;
         }
@@ -129,7 +133,7 @@ public class XSConstraints {
      */
     public static boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
         // if derived is anyType, then it's valid only if base is anyType too
-        if (derived.getXSType() == XSTypeDecl.ANY_TYPE)
+        if (derived == SchemaGrammar.fAnyType)
             return derived == base;
         return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
     }
@@ -158,7 +162,7 @@ public class XSConstraints {
             return true;
 
         // 2.2.2 D's ·base type definition· is not the ·simple ur-type definition· and is validly derived from B given the subset, as defined by this constraint.
-        if (directBase.getXSType() != XSTypeDecl.ANYSIMPLE_TYPE &&
+        if (directBase != SchemaGrammar.fAnySimpleType &&
             checkSimpleDerivation(directBase, base, block)) {
             return true;
         }
@@ -166,7 +170,7 @@ public class XSConstraints {
         // 2.2.3 D's {variety} is list or union and B is the ·simple ur-type definition·.
         if ((derived instanceof ListDatatypeValidator ||
              derived instanceof UnionDatatypeValidator) &&
-            base.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE) {
+            base == SchemaGrammar.fAnySimpleType) {
             return true;
         }
 
@@ -205,24 +209,25 @@ public class XSConstraints {
             return true;
 
         // 2.3 All of the following must be true:
-        int directType = directBase.getXSType();
         // 2.3.1 D's {base type definition} must not be the ·ur-type definition·.
-        if ((directType & XSTypeDecl.UR_TYPE) != 0)
+        if (directBase == SchemaGrammar.fAnyType ||
+            directBase == SchemaGrammar.fAnySimpleType) {
             return false;
+        }
 
         // 2.3.2 The appropriate case among the following must be true:
         // 2.3.2.1 If D's {base type definition} is complex, then it must be validly derived from B given the subset as defined by this constraint.
-        if ((directType & XSTypeDecl.COMPLEX_TYPE) != 0)
+        if (directBase.getXSType() == XSTypeDecl.COMPLEX_TYPE)
             return checkComplexDerivation((XSComplexTypeDecl)directBase, base, block);
 
         // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (§3.14.6).
-        if ((directType & XSTypeDecl.SIMPLE_TYPE) != 0) {
+        if (directBase.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             // if base is complex type
-            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
-                if (base.getXSType() == XSTypeDecl.ANY_TYPE)
-                    base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+                if (base == SchemaGrammar.fAnyType)
+                    base = SchemaGrammar.fAnySimpleType;
                 else
                     return false;
             }

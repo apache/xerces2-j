@@ -93,13 +93,32 @@ public class XSParticleDecl {
     public int fMaxOccurs = 1;
 
 
-    private final StringBuffer fBuffer = new StringBuffer();
+    private StringBuffer fBuffer = null;
 
     public String toString() {
-        // build fBuffering
-        fBuffer.setLength(0);
-        appendParticle(fBuffer);
-        fBuffer.append(" with minOccurs="+fMinOccurs +", maxOccurs="+fMaxOccurs);
+        if (fBuffer == null) {
+            fBuffer = new StringBuffer();
+            appendParticle(fBuffer);
+            // REVISIT: what would be the best form?
+            // 1. do we output "element[1-1]" or just "element"?
+            // 2. do we output "element[3-3]" or "elment[3]"?
+            // 3. how to output "unbounded"?
+            /*if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
+                    fMinOccurs == 1 && fMaxOccurs == 1)) {
+                fBuffer.append("[" + fMinOccurs);
+                if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+                    fBuffer.append("-INF");
+                else if (fMinOccurs != fMaxOccurs)
+                    fBuffer.append("-" + fMaxOccurs);
+                fBuffer.append("]");
+            }*/
+            if (!(fMinOccurs == 0 && fMaxOccurs == 0)) {
+                if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+                    fBuffer.append("[" + fMinOccurs + "-UNBOUNDED]");
+                else
+                    fBuffer.append("[" + fMinOccurs + "-" + fMaxOccurs + "]");
+            }
+        }
         return fBuffer.toString();
     }
 
@@ -134,19 +153,6 @@ public class XSParticleDecl {
                 fBuffer.append(fOtherValue.toString());
             }
             fBuffer.append(')');
-            break;
-        case PARTICLE_ZERO_OR_ONE:
-        case PARTICLE_ZERO_OR_MORE:
-        case PARTICLE_ONE_OR_MORE:
-            fBuffer.append('(');
-            fBuffer.append(fValue.toString());
-            fBuffer.append(')');
-            if (fType == PARTICLE_ZERO_OR_ONE)
-                fBuffer.append('?');
-            if (fType == PARTICLE_ZERO_OR_MORE)
-                fBuffer.append('*');
-            if (fType == PARTICLE_ONE_OR_MORE)
-                fBuffer.append('+');
             break;
         }
     }

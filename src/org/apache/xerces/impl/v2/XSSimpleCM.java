@@ -154,7 +154,7 @@ implements XSCMValidator {
      * @return Start state of the content model
      */
     public int[] startContentModel(){
-        return (new int[] {STATE_START}); 
+        return (new int[] {STATE_START});
     }
 
 
@@ -174,16 +174,16 @@ implements XSCMValidator {
         }
 
         int state = currentState[0];
+        Object matchingDecl = null;
 
         switch (fOperator) {
         case XSParticleDecl.PARTICLE_ELEMENT :
         case XSParticleDecl.PARTICLE_ZERO_OR_ONE :
             if (state == STATE_START) {
-                if (fFirstElement.fTargetNamespace == elementName.uri &&
-                    fFirstElement.fName == elementName.localpart ||
-                    subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fFirstElement);
+                if (matchingDecl != null) {
                     currentState[0] = STATE_VALID;
-                    return fFirstElement;
+                    return matchingDecl;
                 }
                 //error
             }
@@ -191,28 +191,24 @@ implements XSCMValidator {
 
         case XSParticleDecl.PARTICLE_ZERO_OR_MORE :
         case XSParticleDecl.PARTICLE_ONE_OR_MORE :
-            if (fFirstElement.fTargetNamespace == elementName.uri &&
-                fFirstElement.fName == elementName.localpart ||
-                subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
+            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fFirstElement);
+            if (matchingDecl != null) {
                 currentState[0] = STATE_VALID;
-                return fFirstElement;
+                return matchingDecl;
             }
             break;
 
         case XSParticleDecl.PARTICLE_CHOICE :
             if (state == STATE_START) {
-                if (fFirstElement.fTargetNamespace == elementName.uri &&
-                    fFirstElement.fName == elementName.localpart ||
-                    subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fFirstElement);
+                if (matchingDecl != null) {
                     currentState[0] = STATE_VALID;
-                    return fFirstElement;
-
+                    return matchingDecl;
                 }
-                else if (fSecondElement.fTargetNamespace == elementName.uri &&
-                         fSecondElement.fName == elementName.localpart ||
-                         subGroupHandler.substitutionGroupOK(elementName, fSecondElement)) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fSecondElement);
+                if (matchingDecl != null) {
                     currentState[0] = STATE_VALID;
-                    return fSecondElement;
+                    return matchingDecl;
                 }
                 //error
             }
@@ -225,20 +221,18 @@ implements XSCMValidator {
             //  we stored, in the stored order.
             //
             if (state == STATE_START) {
-                if (fFirstElement.fTargetNamespace == elementName.uri &&
-                    fFirstElement.fName == elementName.localpart ||
-                    subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fFirstElement);
+                if (matchingDecl != null) {
                     currentState[0] = STATE_FIRST;
-                    return fFirstElement;
+                    return matchingDecl;
                 }
                 //error
             }
             else if (state == STATE_FIRST) {
-                if (fSecondElement.fTargetNamespace == elementName.uri &&
-                    fSecondElement.fName == elementName.localpart ||
-                    subGroupHandler.substitutionGroupOK(elementName, fSecondElement)) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fSecondElement);
+                if (matchingDecl != null) {
                     currentState[0] = STATE_VALID;
-                    return fSecondElement;
+                    return matchingDecl;
                 }
                 //error
             }

@@ -71,7 +71,6 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
 import java.lang.reflect.*;
-import java.util.Stack;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.StringTokenizer;
@@ -255,7 +254,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "InvalidSTContent",
                                        args, XMLErrorReporter.SEVERITY_ERROR);
-            
+
         }
 
         DatatypeValidator baseValidator = null;
@@ -403,7 +402,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (list) {
                 newDV = new ListDatatypeValidator(baseValidator, fFacetData, true, fErrorReporter);
         }
-        else if (restriction) {            
+        else if (restriction) {
             newDV = createRestrictedValidator(baseValidator, fFacetData, fErrorReporter);
         }
         else { //union
@@ -439,7 +438,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "UnknownBaseDatatype",
                                        new Object[] {
-                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME), DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE)}, 
+                                       DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_NAME), DOMUtil.getAttrValue(elm, SchemaSymbols.ATT_BASE)},
                                        XMLErrorReporter.SEVERITY_ERROR);
 
             return  (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
@@ -450,7 +449,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if ((baseValidator.getFinalSet() & baseRefContext) != 0) {
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            "RestrictionBaseFinal",
-                                           new Object[] { baseTypeStr.rawname }, 
+                                           new Object[] { baseTypeStr.rawname },
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
         }

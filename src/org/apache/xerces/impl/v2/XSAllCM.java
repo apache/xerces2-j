@@ -166,11 +166,12 @@ public class XSAllCM implements XSCMValidator {
      */
     public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler) {
 
+        Object matchingDecl = null;
+
         for (int i = 0; i < fNumElements; i++) {
 
-            if (fAllElements[i].fTargetNamespace == elementName.uri &&
-                fAllElements[i].fName == elementName.localpart ||
-                subGroupHandler.substitutionGroupOK(elementName, fAllElements[i])) {
+            matchingDecl = subGroupHandler.getMatchingElemDecl(elementName, fAllElements[i]);
+            if (matchingDecl != null) {
 
                 if (currentState[i+1] == STATE_START) {
                     currentState[i+1] = STATE_VALID;
@@ -188,7 +189,8 @@ public class XSAllCM implements XSCMValidator {
                 if (currentState[0] == STATE_START) {
                     currentState[0] = STATE_VALID;
                 }
-                return fAllElements[i];
+
+                return matchingDecl;
             }
         }
 

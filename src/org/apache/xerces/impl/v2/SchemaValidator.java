@@ -852,7 +852,7 @@ public class SchemaValidator
 
         // get error reporter
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-       
+
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.reset();
 
@@ -1010,7 +1010,7 @@ public class SchemaValidator
         if (DEBUG) {
             System.out.println("handleStartElement: " +element);
         }
-        
+
 
         // we receive prefix binding events before this one,
         // so at this point, the prefix bindings for this element is done,
@@ -1145,7 +1145,7 @@ public class SchemaValidator
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
         if (fCurrentType != null) {
-            if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                 if (ctype.isAbstractType()) {
                     reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
@@ -1156,7 +1156,7 @@ public class SchemaValidator
         // if the element decl is not found
         if (fCurrentType == null ) {
             if (fDoValidation) {
-            
+
             // if this is the root element, or wildcard = strict, report error
             if (fElementDepth == 0) {
                 // report error, because it's root element
@@ -1176,7 +1176,7 @@ public class SchemaValidator
         // then try to get the content model
         fCurrentCM = null;
         if (fCurrentType != null) {
-            if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                 fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
             }
         }
@@ -1197,7 +1197,7 @@ public class SchemaValidator
         // now validate everything related with the attributes
         // first, get the attribute group
         XSAttributeGroupDecl attrGrp = null;
-        if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+        if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
             attrGrp = ctype.fAttrGrp;
         }
@@ -1348,7 +1348,7 @@ public class SchemaValidator
             if (colonptr > 0) {
                 prefix = fSymbolTable.addSymbol(xsiType.substring(0,colonptr));
                 localpart = xsiType.substring(colonptr+1);
-            }                          
+            }
             // REVISIT: if we take the null approach (instead of ""),
             //          we need to chech the retrned value from getURI
             //          to see whether a binding is found.
@@ -1374,7 +1374,7 @@ public class SchemaValidator
         if (fCurrentType != null) {
             // 4.3 The ·local type definition· must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (§3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (§3.14.6) (if it is a simple type definition).
             int block = fCurrentElemDecl.fBlock;
-            if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+            if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE)
                 block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
             if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block))
                 reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType});
@@ -1415,8 +1415,7 @@ public class SchemaValidator
 
         // Element Locally Valid (Type)
         // 3.1.1 The element information item's [attributes] must be empty, excepting those whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation.
-        if (fCurrentType == null ||
-            (fCurrentType.getXSType()&XSTypeDecl.SIMPLE_TYPE) != 0) {
+        if (fCurrentType == null || fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             int attCount = attributes.getLength();
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
@@ -1678,7 +1677,7 @@ public class SchemaValidator
                     if (fChildCount != 0)
                         reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
                     // 5.2.2.2 The appropriate case among the following must be true:
-                    if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                    if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                         // 5.2.2.2.1 If the {content type} of the ·actual type definition· is mixed, then the ·initial value· of the item must match the canonical lexical representation of the {value constraint} value.
                         if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
@@ -1693,7 +1692,7 @@ public class SchemaValidator
                             if (ctype.fDatatypeValidator.compare((String)actualValue, (String)fCurrentElemDecl.fDefault) != 0)
                                 reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.toString()});
                         }
-                    } else if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+                    } else if (fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
                         DatatypeValidator sType = (DatatypeValidator)fCurrentType;
                         // REVISIT: compare should be equal, and takes object, instead of string
                         //          do it in the new datatype design
@@ -1713,7 +1712,7 @@ public class SchemaValidator
         // Element Locally Valid (Type)
         // 3 The appropriate case among the following must be true:
         // 3.1 If the type definition is a simple type definition, then all of the following must be true:
-        if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+        if (fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             // 3.1.2 The element information item must have no element information item [children].
             if (fChildCount != 0)
                 reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});

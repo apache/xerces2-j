@@ -112,23 +112,31 @@ class SubstitutionGroupHandler {
 
     // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
     // check whether one element decl matches an element with the given qname
-    boolean substitutionGroupOK(QName element, XSElementDecl exemplar) {
+    XSElementDecl getMatchingElemDecl(QName element, XSElementDecl exemplar) {
+        if (element.localpart == exemplar.fName &&
+            element.uri == exemplar.fTargetNamespace) {
+            return exemplar;
+        }
+
         // if the decl blocks substitution, return false
         if ((exemplar.fBlock & SchemaSymbols.SUBSTITUTION) != 0)
-            return false;
+            return null;
 
         // get grammar of the element
         SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri);
         if (sGrammar == null)
-            return false;
+            return null;
 
         // get the decl for the element
         XSElementDecl eDecl = sGrammar.getGlobalElementDecl(element.localpart);
         if (eDecl == null)
-            return false;
+            return null;
 
         // and check by using substitutionGroup information
-        return substitutionGroupOK(eDecl, exemplar, exemplar.fBlock);
+        if (substitutionGroupOK(eDecl, exemplar, exemplar.fBlock))
+            return eDecl;
+
+        return null;
     }
 
     // 3.3.6 Substitution Group OK (Transitive)
@@ -145,14 +153,14 @@ class SubstitutionGroupHandler {
 
         // initialize the derivation method to be that of the type of D
         XSTypeDecl type = element.fType;
-        if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+        if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE)
             devMethod = ((XSComplexTypeDecl)type).fDerivedBy;
         else
             devMethod = SchemaSymbols.RESTRICTION;
 
         // initialize disallowed substitution to the passed in blocking constraint
         type = exemplar.fType;
-        if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+        if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE)
             blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
 
         // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
@@ -161,7 +169,7 @@ class SubstitutionGroupHandler {
             // add the derivation method and disallowed substitution info
             // of the current type to the corresponding variables
             type = subGroup.fType;
-            if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                 devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
                 blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
             } else {

@@ -72,7 +72,7 @@ public class AnySimpleType extends AbstractDatatypeValidator {
     public  AnySimpleType() {
     }
 
-    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList, 
+    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList,
                          XMLErrorReporter reporter) {
 
         fBaseValidator = base;
@@ -88,7 +88,7 @@ public class AnySimpleType extends AbstractDatatypeValidator {
             }
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "DatatypeFacetError", new Object[]{msg},
-                                       XMLErrorReporter.SEVERITY_ERROR);                    
+                                       XMLErrorReporter.SEVERITY_ERROR);
 
         }
     }
@@ -99,6 +99,8 @@ public class AnySimpleType extends AbstractDatatypeValidator {
     }
 
     public int compare( String value1, String value2 ) {
+        if (value1.equals(value2))
+            return 0;
         return -1;
     }
 

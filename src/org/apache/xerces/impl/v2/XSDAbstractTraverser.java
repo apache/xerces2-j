@@ -81,16 +81,6 @@ import org.apache.xerces.util.DOMUtil;
  */
 abstract class XSDAbstractTraverser {
 
-    protected static final QName ANY_TYPE = new QName(null,
-                                                      SchemaSymbols.ATTVAL_ANYTYPE,
-                                                      SchemaSymbols.ATTVAL_ANYTYPE,
-                                                      SchemaSymbols.URI_SCHEMAFORSCHEMA);
-
-    protected static final QName ANY_SIMPLE_TYPE = new QName(null,
-                                                             SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
-                                                             SchemaSymbols.ATTVAL_ANYTYPE,
-                                                             SchemaSymbols.URI_SCHEMAFORSCHEMA);
-
     protected static final String NO_NAME      = "(no name)";
 
     // Flags for checkOccurrences to indicate any special
@@ -160,7 +150,7 @@ abstract class XSDAbstractTraverser {
         // REVISIT: an annotation decl should be returned when we support PSVI
     }
 
-    DatatypeValidator createRestrictedValidator(DatatypeValidator baseValidator, 
+    DatatypeValidator createRestrictedValidator(DatatypeValidator baseValidator,
                                                 Hashtable facetData, XMLErrorReporter reporter) {
 
         DatatypeValidator newDV=null;
@@ -168,7 +158,7 @@ abstract class XSDAbstractTraverser {
         Class [] validatorArgsClass = new Class[] {
             org.apache.xerces.impl.v2.datatypes.DatatypeValidator.class,
             java.util.Hashtable.class,
-            boolean.class, 
+            boolean.class,
             org.apache.xerces.impl.XMLErrorReporter.class};
         if (facetData != null) {
 
@@ -214,12 +204,12 @@ abstract class XSDAbstractTraverser {
         Element nodeAfterFacets;
     }
 
-    fFacetInfo traverseFacets(Element content, Object[] contentAttrs, String simpleTypeName, 
-                              DatatypeValidator baseValidator, XSDocumentInfo schemaDoc, 
+    fFacetInfo traverseFacets(Element content, Object[] contentAttrs, String simpleTypeName,
+                              DatatypeValidator baseValidator, XSDocumentInfo schemaDoc,
                               SchemaGrammar grammar) {
 
         fFacetInfo fi = new fFacetInfo();
-        Hashtable fFacetData = new Hashtable(10); 
+        Hashtable fFacetData = new Hashtable(10);
         short flags = 0; // flag facets that have fixed="true"
         int numEnumerationLiterals = 0;
         Vector enumData  = new Vector();
@@ -262,7 +252,7 @@ abstract class XSDAbstractTraverser {
             }
             else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //REVISIT:
-                Object[] args = {simpleTypeName}; 
+                Object[] args = {simpleTypeName};
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            "ListUnionRestrictionError",
                                            args,
@@ -314,7 +304,7 @@ abstract class XSDAbstractTraverser {
                     facetType= DatatypeValidator.FACET_TOTALDIGITS;
                 }
                 else if (facet.equals(SchemaSymbols.ELT_FRACTIONDIGITS)) {
-                    facetType = DatatypeValidator.FACET_FRACTIONDIGITS; 
+                    facetType = DatatypeValidator.FACET_FRACTIONDIGITS;
                 }
                 else if (facet.equals(SchemaSymbols.ELT_WHITESPACE)) {
 
@@ -325,7 +315,7 @@ abstract class XSDAbstractTraverser {
                 }
                 else {
                     break;   // a non-facet
-                } 
+                }
 
                 if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE) ||
                     content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE_1)) {
@@ -376,7 +366,7 @@ abstract class XSDAbstractTraverser {
                     attrGrp.addAttributeUse(tempAttrUse);
                 }
                 else {
-                    reportGenericSchemaError("Duplicate attribute " + 
+                    reportGenericSchemaError("Duplicate attribute " +
                                              tempAttrUse.fAttrDecl.fName + " found ");
                 }
             }
@@ -394,7 +384,7 @@ abstract class XSDAbstractTraverser {
                         attrGrp.addAttributeUse(attrUseS[i]);
                     }
                     else {
-                        reportGenericSchemaError("Duplicate attribute " + 
+                        reportGenericSchemaError("Duplicate attribute " +
                                                  existingAttrUse.fAttrDecl.fName + " found ");
                     }
                 }
@@ -504,7 +494,7 @@ abstract class XSDAbstractTraverser {
                                               String particleName, Element parent,
                                               int allContextFlags,
                                               long defaultVals) {
-            
+
 
         int min = particle.fMinOccurs;
         int max = particle.fMaxOccurs;

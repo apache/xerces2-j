@@ -316,38 +316,26 @@ public class XSDFACM
      */
     public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler) {
         int curState = state[0];
+
         if(curState == XSCMValidator.FIRST_ERROR || curState == XSCMValidator.SUBSEQUENT_ERROR) {
             // there was an error last time; so just go find correct Object in fElemmMap.
             // ... after resetting state[0].
             if(curState == XSCMValidator.FIRST_ERROR)
                 state[0] = XSCMValidator.SUBSEQUENT_ERROR;
-            int elemIndex = 0;
 
-            for (; elemIndex < fElemMapSize; elemIndex++) {
-                int type = fElemMapType[elemIndex] ;
-                if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                    if ((curElem.uri == ((XSElementDecl)fElemMap[elemIndex]).fTargetNamespace) &&
-                        (curElem.localpart == ((XSElementDecl)fElemMap[elemIndex]).fName) ||
-                        subGroupHandler.substitutionGroupOK(curElem, (XSElementDecl)fElemMap[elemIndex])) {
-                        return fElemMap[elemIndex];
-                    }
-                }
-                else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                    if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri))
-                        return fElemMap[elemIndex];
-                }
-            }
+            return findMatchingDecl(curElem, subGroupHandler);
         }
 
         int nextState = 0;
         int elemIndex = 0;
+        Object matchingDecl = null;
 
         for (; elemIndex < fElemMapSize; elemIndex++) {
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                if ((curElem.uri == ((XSElementDecl)fElemMap[elemIndex]).fTargetNamespace) &&
-                    (curElem.localpart == ((XSElementDecl)fElemMap[elemIndex]).fName) ||
-                    subGroupHandler.substitutionGroupOK(curElem, (XSElementDecl)fElemMap[elemIndex])) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+
+                if (matchingDecl != null) {
                     nextState = fTransTable[curState][elemIndex];
                     if (nextState != -1)
                         break;
@@ -355,6 +343,7 @@ public class XSDFACM
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
                 if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                    matchingDecl = fElemMap[elemIndex];
                     nextState = fTransTable[curState][elemIndex];
                     if (nextState != -1)
                       break;
@@ -366,12 +355,32 @@ public class XSDFACM
         // and return null
         if (elemIndex == fElemMapSize) {
             state[0] = XSCMValidator.FIRST_ERROR;
-            return null;
+            return findMatchingDecl(curElem, subGroupHandler);
         }
 
         state[0] = nextState;
-        return fElemMap[elemIndex];
-    } // oneTransition(QName, int[], SubstitutionGroup):  Object
+        return matchingDecl;
+    } // oneTransition(QName, int[], SubstitutionGroupHandler):  Object
+
+    Object findMatchingDecl(QName curElem, SubstitutionGroupHandler subGroupHandler) {
+        Object matchingDecl = null;
+
+        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+            int type = fElemMapType[elemIndex] ;
+            if (type == XSParticleDecl.PARTICLE_ELEMENT) {
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                if (matchingDecl != null) {
+                    return matchingDecl;
+                }
+            }
+            else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
+                if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri))
+                    return fElemMap[elemIndex];
+            }
+        }
+
+        return null;
+    }
 
     // This method returns the start states of the content model.
     public int[] startContentModel() {
@@ -563,6 +572,8 @@ public class XSDFACM
 
             // Get the current leaf's element
             final XSElementDecl element = fLeafList[outIndex].getElement();
+            if (element.fName == fEOCString)
+                continue;
 
             // See if the current leaf node's element index is in the list
             int inIndex = 0;

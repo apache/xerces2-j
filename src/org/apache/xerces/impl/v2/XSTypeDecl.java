@@ -68,9 +68,6 @@ public interface XSTypeDecl {
 
     public static final short COMPLEX_TYPE   = 1;
     public static final short SIMPLE_TYPE    = 2;
-    public static final short UR_TYPE        = 4;
-    public static final short ANY_TYPE       = UR_TYPE | COMPLEX_TYPE;
-    public static final short ANYSIMPLE_TYPE = UR_TYPE | SIMPLE_TYPE;
 
     // REVISIT: change XSTypeDecl to an class after the new datatype design
     // then we'll add common fields here: name, base, ...

@@ -280,7 +280,7 @@ class XSDHandler {
         Document schemaRoot = getSchema(schemaNamespace, schemaHint);
         if(schemaRoot == null) {
             // something went wrong right off the hop
-            fElementTraverser.reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
+            reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
             return null;
         }
         // handle empty string URI as null
@@ -293,7 +293,7 @@ class XSDHandler {
         fRoot = constructTrees(schemaRoot, schemaNamespace);
         if(fRoot == null) {
             // REVISIT:  something went wrong; print error about no schema found
-            fElementTraverser.reportGenericSchemaError("Could not locate a schema document");
+            reportGenericSchemaError("Could not locate a schema document");
             return null;
         }
 
@@ -343,7 +343,7 @@ class XSDHandler {
                 currSchemaInfo.fTargetNamespace = callerTNS;
                 currSchemaInfo.fIsChameleonSchema = true;
             } else if(callerTNS != currSchemaInfo.fTargetNamespace) {
-                fElementTraverser.reportSchemaError("src-include.2", new Object [] {callerTNS, currSchemaInfo.fTargetNamespace});
+                reportSchemaError("src-include.2", new Object [] {callerTNS, currSchemaInfo.fTargetNamespace});
             }
         }
         SchemaGrammar sg = null;
@@ -373,7 +373,7 @@ class XSDHandler {
                 if(schemaNamespace != null)
                     schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
                 if(schemaNamespace == currSchemaInfo.fTargetNamespace) {
-                    fElementTraverser.reportSchemaError("src-import.1.1", new Object [] {schemaNamespace});
+                    reportSchemaError("src-import.1.1", new Object [] {schemaNamespace});
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
@@ -459,13 +459,13 @@ class XSDHandler {
                 } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_INCLUDE) ||
                         DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_IMPORT)) {
                     if(!dependenciesCanOccur) {
-                        fElementTraverser.reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
+                        reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                     // we've dealt with this; mark as traversed
                     DOMUtil.setHidden(globalComp);
                 } else if(DOMUtil.getLocalName(globalComp).equals(SchemaSymbols.ELT_REDEFINE)) {
                     if(!dependenciesCanOccur) {
-                        fElementTraverser.reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
+                        reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                     for(Element redefineComp = DOMUtil.getFirstChildElement(globalComp);
                             redefineComp != null;
@@ -506,7 +506,7 @@ class XSDHandler {
                                 lName, targetLName);
                         } else {
                             // REVISIT:  report schema element ordering error
-                            fElementTraverser.reportSchemaError("src-redefine", new Object [] {componentType});
+                            reportSchemaError("src-redefine", new Object [] {componentType});
                         }
                     } // end march through <redefine> children
                     // and now set as traversed
@@ -534,7 +534,7 @@ class XSDHandler {
                     } else if(componentType.equals(SchemaSymbols.ELT_NOTATION)) {
                         checkForDuplicateNames(qName, fUnparsedNotationRegistry, globalComp, currSchemaDoc);
                     } else {
-                        fElementTraverser.reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
+                        reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                 }
             } // end for
@@ -663,68 +663,68 @@ class XSDHandler {
     protected Object getGlobalDecl(XSDocumentInfo currSchema,
                                    int declType,
                                    QName declToTraverse) {
-        XSDocumentInfo schemaWithDecl = null;
-        SchemaGrammar sGrammar = null;
-        Element decl = null;
-        Object retObj = null;
 
+        // from the schema spec, all built-in types are present in all schemas,
+        // so if the requested component is a type, and could be found in the
+        // default schema grammar, we should return that type.
+        // otherwise (since we would support user-defined schema grammar) we'll
+        // use the normal way to get the decl
         if (declToTraverse.uri != null &&
-            declToTraverse.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
-            sGrammar = SchemaGrammar.SG_SchemaNS;
-            if(currSchema.fTargetNamespace != SchemaSymbols.URI_SCHEMAFORSCHEMA) {
-                if(declType == TYPEDECL_TYPE) {
-                    retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
-                }
-                if (retObj == null) {
-                    fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " + declToTraverse.localpart);
-                    return null;
-                }
+            declToTraverse.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+            if (declType == TYPEDECL_TYPE) {
+                Object retObj = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(declToTraverse.localpart);
+                if (retObj != null)
+                    return retObj;
             }
-        } else {
-            String declKey = declToTraverse.uri == null? ","+declToTraverse.localpart:
-                    declToTraverse.uri+","+declToTraverse.localpart;
-            switch (declType) {
-            case ATTRIBUTE_TYPE :
-                decl = (Element)fUnparsedAttributeRegistry.get(declKey);
-                break;
-            case ATTRIBUTEGROUP_TYPE :
-                decl = (Element)fUnparsedAttributeGroupRegistry.get(declKey);
-                break;
-            case ELEMENT_TYPE :
-                decl = (Element)fUnparsedElementRegistry.get(declKey);
-                break;
-            case GROUP_TYPE :
-                decl = (Element)fUnparsedGroupRegistry.get(declKey);
-                break;
-            case IDENTITYCONSTRAINT_TYPE :
-                decl = (Element)fUnparsedIdentityConstraintRegistry.get(declKey);
-                break;
-            case NOTATION_TYPE :
-                decl = (Element)fUnparsedNotationRegistry.get(declKey);
-                break;
-            case TYPEDECL_TYPE :
-                decl = (Element)fUnparsedTypeRegistry.get(declKey);
-                break;
-            default:
-                // REVISIT: report internal error...
-                fElementTraverser.reportGenericSchemaError("XSDHandler asked to locate component of type " + declType + "; it does not recognize this type (internal error!)");
-            }
-            if (decl != null)
-                schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
-            else {
-                fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " + declToTraverse.localpart);
-                return null;
-            }
-
-            if (schemaWithDecl == null) {
-                // cannot get to this schema from the one containing the requesting decl
-                // REVISIT: report component not found error
-                fElementTraverser.reportGenericSchemaError("components from the schema document containing " + declToTraverse.localpart + " are not referenceable from schema document " + currSchema);
-                return null;
-            }
-            sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
         }
 
+        XSDocumentInfo schemaWithDecl = null;
+        Element decl = null;
+
+        String declKey = declToTraverse.uri == null? ","+declToTraverse.localpart:
+                declToTraverse.uri+","+declToTraverse.localpart;
+        switch (declType) {
+        case ATTRIBUTE_TYPE :
+            decl = (Element)fUnparsedAttributeRegistry.get(declKey);
+            break;
+        case ATTRIBUTEGROUP_TYPE :
+            decl = (Element)fUnparsedAttributeGroupRegistry.get(declKey);
+            break;
+        case ELEMENT_TYPE :
+            decl = (Element)fUnparsedElementRegistry.get(declKey);
+            break;
+        case GROUP_TYPE :
+            decl = (Element)fUnparsedGroupRegistry.get(declKey);
+            break;
+        case IDENTITYCONSTRAINT_TYPE :
+            decl = (Element)fUnparsedIdentityConstraintRegistry.get(declKey);
+            break;
+        case NOTATION_TYPE :
+            decl = (Element)fUnparsedNotationRegistry.get(declKey);
+            break;
+        case TYPEDECL_TYPE :
+            decl = (Element)fUnparsedTypeRegistry.get(declKey);
+            break;
+        default:
+            // REVISIT: report internal error...
+            reportGenericSchemaError("XSDHandler asked to locate component of type " + declType + "; it does not recognize this type (internal error!)");
+        }
+        if (decl != null)
+            schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
+        else {
+            reportGenericSchemaError("Could not locate a component corresponding to " + declToTraverse.localpart);
+            return null;
+        }
+
+        if (schemaWithDecl == null) {
+            // cannot get to this schema from the one containing the requesting decl
+            // REVISIT: report component not found error
+            reportGenericSchemaError("components from the schema document containing " + declToTraverse.localpart + " are not referenceable from schema document " + currSchema);
+            return null;
+        }
+        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
+
+        Object retObj = null;
         switch (declType) {
         case ATTRIBUTE_TYPE :
             retObj = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
@@ -752,15 +752,10 @@ class XSDHandler {
         if (retObj != null)
             return retObj;
 
-	// decl can be null, if the grammar picked was SG_SchemaNS
-	if (decl == null) {
-	        fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " +declToTraverse.uri+":"+declToTraverse.localpart);
-		return null;
-        }
-        else if (DOMUtil.isHidden(decl)) {
+        if (DOMUtil.isHidden(decl)) {
             // decl must not be null if we're here...
             //REVISIT: report an error: circular reference
-            fElementTraverser.reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
+            reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
             return null;
         }
 
@@ -1065,10 +1060,10 @@ class XSDHandler {
                 if(redefinedSchema == currSchema) { // object comp. okay here
                     // now have to do some renaming...
                     currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
-                    if(currSchema.fTargetNamespace == null) 
+                    if(currSchema.fTargetNamespace == null)
                         registry.put(","+newName, currComp);
                     else
-                        registry.put(currSchema.fTargetNamespace+","+newName, currComp); 
+                        registry.put(currSchema.fTargetNamespace+","+newName, currComp);
                     // and take care of nested redefines by calling recursively:
                     if(currSchema.fTargetNamespace == null)
                         checkForDuplicateNames(","+newName, registry, currComp, currSchema);
@@ -1076,17 +1071,17 @@ class XSDHandler {
                         checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
                 } else { // we may be redefining the wrong schema
                     if(collidedWithRedefine) {
-                        if(currSchema.fTargetNamespace == null) 
+                        if(currSchema.fTargetNamespace == null)
                             checkForDuplicateNames(","+newName, registry, currComp, currSchema);
-                        else 
+                        else
                             checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
                     } else {
                         // REVISIT:  error that redefined element in wrong schema
-                        fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
+                        reportSchemaError("src-redefine.1", new Object [] {qName});
                     }
-                } 
+                }
             } else { // we've just got a flat-out collision
-                fElementTraverser.reportSchemaError("sch-props-correct.2", new Object []{qName});
+                reportSchemaError("sch-props-correct.2", new Object []{qName});
             }
         }
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
@@ -1124,7 +1119,7 @@ class XSDHandler {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
                 // fRedefineSucceeded = false;
-                fElementTraverser.reportSchemaError("src-redefine.5", null);
+                reportSchemaError("src-redefine.5", null);
             } else {
                 String grandKidName = grandKid.getLocalName();
                 if(grandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -1133,16 +1128,16 @@ class XSDHandler {
                 }
                 if (grandKid == null) {
                     // fRedefineSucceeded = false;
-                    fElementTraverser.reportSchemaError("src-redefine.5", null);
+                    reportSchemaError("src-redefine.5", null);
                 } else if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
                     // fRedefineSucceeded = false;
-                    fElementTraverser.reportSchemaError("src-redefine.5", null);
+                    reportSchemaError("src-redefine.5", null);
                 } else {
                     String derivedBase = grandKid.getAttribute( SchemaSymbols.ATT_BASE );
                     String processedDerivedBase = findQName(derivedBase, currSchema);
                     if(!processedTypeName.equals(processedDerivedBase)) {
                         // fRedefineSucceeded = false;
-                        fElementTraverser.reportSchemaError("src-redefine.5", null);
+                        reportSchemaError("src-redefine.5", null);
                     } else {
                         // now we have to do the renaming...
                         int colonptr = derivedBase.indexOf(":");
@@ -1161,20 +1156,20 @@ class XSDHandler {
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
                 // fRedefineSucceeded = false;
-                fElementTraverser.reportSchemaError("src-redefine.5", null);
+                reportSchemaError("src-redefine.5", null);
             } else {
                 if(grandKid.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
                     grandKid = DOMUtil.getNextSiblingElement(grandKid);
                 }
                 if (grandKid == null) {
                     // fRedefineSucceeded = false;
-                    fElementTraverser.reportSchemaError("src-redefine.5", null);
+                    reportSchemaError("src-redefine.5", null);
                 } else {
                     // have to go one more level down; let another pass worry whether complexType is valid.
                     Element greatGrandKid = DOMUtil.getFirstChildElement(grandKid);
                     if (greatGrandKid == null) {
                         // fRedefineSucceeded = false;
-                        fElementTraverser.reportSchemaError("src-redefine.5", null);
+                        reportSchemaError("src-redefine.5", null);
                     } else {
                         String greatGrandKidName = greatGrandKid.getLocalName();
                         if(greatGrandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -1183,17 +1178,17 @@ class XSDHandler {
                         }
                         if (greatGrandKid == null) {
                             // fRedefineSucceeded = false;
-                            fElementTraverser.reportSchemaError("src-redefine.5", null);
+                            reportSchemaError("src-redefine.5", null);
                         } else if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) &&
                                 !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
                             // fRedefineSucceeded = false;
-                            fElementTraverser.reportSchemaError("src-redefine.5", null);
+                            reportSchemaError("src-redefine.5", null);
                         } else {
                             String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
                             String processedDerivedBase = findQName(derivedBase, currSchema);
                             if(!processedTypeName.equals(processedDerivedBase)) {
                                 // fRedefineSucceeded = false;
-                                fElementTraverser.reportSchemaError("src-redefine.5", null);
+                                reportSchemaError("src-redefine.5", null);
                             } else {
                                 // now we have to do the renaming...
                                 int colonptr = derivedBase.indexOf(":");
@@ -1215,7 +1210,7 @@ class XSDHandler {
             int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema);
             if(attGroupRefsCount > 1) {
                 // fRedefineSucceeded = false;
-                fElementTraverser.reportSchemaError("src-redefine.7.1", new Object []{new Integer(attGroupRefsCount)});
+                reportSchemaError("src-redefine.7.1", new Object []{new Integer(attGroupRefsCount)});
             } else if (attGroupRefsCount == 1) {
 //                return true;
             }  else
@@ -1229,7 +1224,7 @@ class XSDHandler {
             int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema);
             if(groupRefsCount > 1) {
                 // fRedefineSucceeded = false;
-                fElementTraverser.reportSchemaError("src-redefine.6.1.1", new Object []{new Integer(groupRefsCount)});
+                reportSchemaError("src-redefine.6.1.1", new Object []{new Integer(groupRefsCount)});
             } else if (groupRefsCount == 1) {
 //                return true;
             }  else {
@@ -1241,7 +1236,7 @@ class XSDHandler {
         } else {
             // fRedefineSucceeded = false;
             // REVISIT: Localize
-            fElementTraverser.reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
+            reportGenericSchemaError("internal Xerces error; please submit a bug with schema as testcase");
         }
         // if we get here then we must have reported an error and failed somewhere...
 //        return false;
@@ -1259,8 +1254,8 @@ class XSDHandler {
             prefix = name.substring(0, colonPtr);
         String uri = currNSMap.getURI(fSymbolTable.addSymbol(prefix));
         String localpart = (colonPtr == 0)?name:name.substring(colonPtr+1);
-        if(prefix == this.EMPTY_STRING && uri == null && schemaDoc.fIsChameleonSchema) 
-            uri = schemaDoc.fTargetNamespace; 
+        if(prefix == this.EMPTY_STRING && uri == null && schemaDoc.fIsChameleonSchema)
+            uri = schemaDoc.fTargetNamespace;
         if(uri == null)
             return ","+localpart;
         return uri+","+localpart;
@@ -1301,7 +1296,7 @@ class XSDHandler {
                             String maxOccurs = child.getAttribute( SchemaSymbols.ATT_MAXOCCURS );
                             if(!((maxOccurs.length() == 0 || maxOccurs.equals("1"))
                                     && (minOccurs.length() == 0 || minOccurs.equals("1")))) {
-                                fElementTraverser.reportSchemaError("src-redefine.6.1.2", new Object [] {ref});
+                                reportSchemaError("src-redefine.6.1.2", new Object [] {ref});
                             }
                         }
                     }
@@ -1354,6 +1349,21 @@ class XSDHandler {
         }
         // if it's visible already than so must be its children
     } // setSchemasVisible(XSDocumentInfo): void
+
+    // report schema error
+    void reportSchemaError (String key, Object[] args) {
+        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                   key, args,
+                                   XMLErrorReporter.SEVERITY_ERROR);
+    }
+
+    // REVISIT: is it how we want to handle error reporting?
+    void reportGenericSchemaError (String error) {
+        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                   "General",
+                                   new Object[]{error},
+                                   XMLErrorReporter.SEVERITY_ERROR);
+    }
 
     /******* only for testing!  ******/
     public static void main (String args[]) throws Exception {

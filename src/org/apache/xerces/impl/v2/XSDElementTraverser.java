@@ -93,11 +93,6 @@ import  org.w3c.dom.Element;
  */
 class XSDElementTraverser extends XSDAbstractTraverser {
 
-    protected static final QName ANY_TYPE        = new QName(null,
-                                                             SchemaSymbols.ATTVAL_ANYTYPE,
-                                                             SchemaSymbols.ATTVAL_ANYTYPE,
-                                                             SchemaSymbols.URI_SCHEMAFORSCHEMA);
-
     protected XSElementDecl  fTempElementDecl  = new XSElementDecl();
     protected XSParticleDecl fTempParticleDecl = new XSParticleDecl();
 
@@ -261,11 +256,11 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                 element.fTargetNamespace = schemaDoc.fTargetNamespace;
             else
-                element.fTargetNamespace = null; 
+                element.fTargetNamespace = null;
         } else if (schemaDoc.fAreLocalElementsQualified) {
             element.fTargetNamespace = schemaDoc.fTargetNamespace;
         } else {
-            element.fTargetNamespace = null; 
+            element.fTargetNamespace = null;
         }
 
         // get 'block', 'final', 'nillable', 'abstract'
@@ -330,7 +325,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         if (elementType == null) {
-            elementType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
+            elementType = SchemaGrammar.fAnyType;
         }
 
         element.fType = elementType;

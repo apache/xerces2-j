@@ -135,7 +135,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
 
-        if (right != null) {
+        if (left != null) {
             temp = new XSParticleDecl();
             temp.fType = XSParticleDecl.PARTICLE_ALL;
             temp.fValue = left;
@@ -143,8 +143,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             left = temp;
         }
 
-
-        // REVISIT: model group 
+        // REVISIT: model group
         // Quick fix for the case that particle <all> does not have any children.
         // For now we return null. In the future we might want to return model group decl.
         if (left != null) {
@@ -309,11 +308,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             }
         }
 
-        // REVISIT: model group 
+        // REVISIT: model group
         // Quick fix for the case that particles <choice> | <sequence> do not have any children.
         // For now we return null. In the future we might want to return model group decl.
 
-        if (left !=null) {
+        if (left != null) {
             temp = new XSParticleDecl();
             if (choice)
               temp.fType = XSParticleDecl.PARTICLE_CHOICE;
