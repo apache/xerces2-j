@@ -6,6 +6,9 @@
         <ul>
            <li>Fixed bug in Deferred DOM with multiple IDs on same element [andyc]</li>
            <li>Updates to improve DFA build-time performance. [ATOZAWA@jp.ibm.com]</li>
+           <li>Optimization of memory used by attribute nodes in the DOM. [Arnaud  Le Hors]</li>
+           <li>Fixed conflict between HTML DOM and Core DOM. [Mark Diekhans]</li>
+           <li>Optimized DOM normalize operation. [Jay Cain + Arnaud  Le Hors]</li>
         </ul>
   </s2>
   <s2 title='December 06, 2000'>
