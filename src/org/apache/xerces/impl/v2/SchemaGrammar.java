@@ -61,8 +61,7 @@ import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.validation.XSCMValidator;
-import org.apache.xerces.impl.validation.models.CMBuilder; 
+ 
 
 import java.util.Vector;
 import java.util.Hashtable;

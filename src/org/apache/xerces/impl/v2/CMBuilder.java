@@ -55,17 +55,15 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.validation.models;
+package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.v2.SchemaGrammar;
-import org.apache.xerces.impl.validation.XSCMValidator;
-import org.apache.xerces.impl.v2.XSParticleDecl;
-import org.apache.xerces.impl.v2.SchemaSymbols;
 
-/**This class constructs content models for a given grammar.
+/**
+ * This class constructs content models for a given grammar.
  * 
- * @author Elena Litani, IBM
+ * @author Elena Litani
+ * @author IBM
  * @version $Id$
  */
 public class CMBuilder {
