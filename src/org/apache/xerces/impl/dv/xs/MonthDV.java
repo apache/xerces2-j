@@ -108,8 +108,15 @@ public class MonthDV extends AbstractDateTimeDV {
         int stop = 4;
         date[M]=parseInt(str,2,stop);
 
-        if ( MONTH_SIZE<len ) {
-            int sign = findUTCSign(str, MONTH_SIZE, len);
+        // REVISIT: allow both --MM and --MM-- now.
+        // need to remove the following 4 lines to disallow --MM--
+        // when the errata is offically in the rec.
+        if (str.length() >= stop+2 &&
+            str.charAt(stop) == '-' && str.charAt(stop+1) == '-') {
+            stop += 2;
+        }
+        if (stop < len) {
+            int sign = findUTCSign(str, stop, len);
             if ( sign<0 ) {
                 throw new SchemaDateTimeException ("Error in month parsing: "+str);
             }
