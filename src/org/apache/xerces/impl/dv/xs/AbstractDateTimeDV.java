@@ -17,6 +17,7 @@
 package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.datatypes.XSDateTime;
 
 /**
@@ -610,6 +611,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			temp=date.month+carry;
 			date.month=modulo(temp, 1, 13);
 			date.year=date.year+fQuotient(temp, 1, 13);
+            if(date.year == 0 && !Constants.SCHEMA_1_1_SUPPORT) {
+                date.year = (date.timezoneHr < 0 || date.timezoneMin < 0)?1:-1;
+            }
 		}
 		date.utc='Z';
 	}
