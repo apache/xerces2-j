@@ -415,18 +415,39 @@ public class RangeImpl  implements Range {
             }
         }
         // case 4: preorder traversal of context tree.
-        Node ancestor = getCommonAncestorContainer();
-        Node current = ancestor;
-                
-        do {
-            if (current == endPointA) return -1;
-            if (current == endPointB) return 1;
-            current = nextNode(current, true);// REVIST this...
+        // Instead of literally walking the context tree in pre-order,
+        // we use relative node depth walking which is usually faster
+
+        int depthDiff = 0;
+        for ( Node n = endPointA; n != null; n = n.getParentNode() )
+            depthDiff++;
+        for ( Node n = endPointB; n != null; n = n.getParentNode() )
+            depthDiff--;
+        while (depthDiff > 0) {
+            endPointA = endPointA.getParentNode();
+            depthDiff--;
         }
-        while (current!=null && current!=ancestor); 
-        
-        // REVISIT: this should never happen?!?!?!?
-        return -2;
+        while (depthDiff < 0) {
+            endPointB = endPointB.getParentNode();
+            depthDiff++;
+        }
+        for (Node pA = endPointA.getParentNode(),
+             pB = endPointB.getParentNode();
+             pA != pB;
+             pA = pA.getParentNode(), pB = pB.getParentNode() )
+        {
+            endPointA = pA;
+            endPointB = pB;
+        }
+        for ( Node n = endPointA.getNextSibling();
+             n != null;
+             n = n.getNextSibling() )
+        {
+            if (n == endPointB) {
+                return -1;
+            }
+        }
+        return 1;
     }
     
     public void deleteContents()
