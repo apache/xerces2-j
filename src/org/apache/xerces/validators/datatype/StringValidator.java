@@ -128,6 +128,10 @@ public class StringValidator implements DatatypeValidator {
     public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException,
     IllegalFacetException, IllegalFacetValueException, ConstrainException 
     {
+        if( facets == null )
+            return;// No facets to set.
+
+
         if( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION )){
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
                 String key = (String) e.nextElement();
