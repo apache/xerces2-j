@@ -250,17 +250,17 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             }
             // check 4.3.9.c2 must: minExclusive < maxInclusive
             if ( isMaxInclusiveDefined && isMinExclusiveDefined ){
-                int compareTo = this.fMinInclusive.compareTo( this.fMaxExclusive );
-                if ( compareTo != -1 )
-                    throw new InvalidDatatypeFacetException( "minInclusive value ='" + this.fMinInclusive + "'must be < maxExclusive value ='" +
-                                                             this.fMaxExclusive + "'. " );
-            }
-            // check 4.3.10.c1 must: minInclusive < maxExclusive
-            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
                 int compareTo = this.fMinExclusive.compareTo( this.fMaxInclusive );
                 if ( compareTo != -1 )
                     throw new InvalidDatatypeFacetException( "minExclusive value ='" + this.fMinExclusive + "'must be > maxInclusive value ='" +
                                                              this.fMaxInclusive + "'. " );
+            }
+            // check 4.3.10.c1 must: minInclusive < maxExclusive
+            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
+                int compareTo = this.fMinInclusive.compareTo( this.fMaxExclusive );
+                if ( compareTo != -1 )
+                    throw new InvalidDatatypeFacetException( "minInclusive value ='" + this.fMinInclusive + "'must be < maxExclusive value ='" +
+                                                             this.fMaxExclusive + "'. " );
             }
             // check 4.3.12.c1 must: fractionDigits <= totalDigits
             if ( isFractionDigitsDefined && isTotalDigitsDefined ){

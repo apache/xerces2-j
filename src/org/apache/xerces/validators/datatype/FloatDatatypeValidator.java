@@ -228,15 +228,15 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
             }
             // check 4.3.9.c2 must: minExclusive < maxInclusive
             if ( isMaxInclusiveDefined && isMinExclusiveDefined ){
-                if ( fMinInclusive >= fMaxExclusive )
-                    throw new InvalidDatatypeFacetException( "minInclusive value ='" + this.fMinInclusive + "'must be < maxExclusive value ='" +
-                                                             this.fMaxExclusive + "'. " );
-            }
-            // check 4.3.10.c1 must: minInclusive < maxExclusive
-            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
                 if ( fMinExclusive >= fMaxInclusive )
                     throw new InvalidDatatypeFacetException( "minExclusive value ='" + this.fMinExclusive + "'must be < maxInclusive value ='" +
                                                              this.fMaxInclusive + "'. " );
+            }
+            // check 4.3.10.c1 must: minInclusive < maxExclusive
+            if ( isMaxExclusiveDefined && isMinInclusiveDefined ){
+                if ( fMinInclusive >= fMaxExclusive )
+                    throw new InvalidDatatypeFacetException( "minInclusive value ='" + this.fMinInclusive + "'must be < maxExclusive value ='" +
+                                                             this.fMaxExclusive + "'. " );
             }
 
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
