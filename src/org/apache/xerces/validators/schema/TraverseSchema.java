@@ -1586,7 +1586,7 @@ public class TraverseSchema implements
         if (isNamedType) {
             fCurrentTypeNameStack.pop();
             checkRecursingComplexType();
-            fCurrentTypeNameStack.clear();
+            fElementRecurseComplex.clear();
         }
 
         typeNameIndex = fStringPool.addSymbol(typeName);
