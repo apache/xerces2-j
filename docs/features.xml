@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
   
 DOMParser parser = new DOMParser();
 try {
-    parser.setFeature("http://xml.org/sax/features/allow-java-encodings", 
+    parser.setFeature("http://apache.org/xml/features/allow-java-encodings", 
                       true);
 } 
 catch (SAXException e) {
