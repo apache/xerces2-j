@@ -20,8 +20,8 @@ This implementation is experimental: it should not be considered as complete or 
 <p>
       The &ParserNameLong; &ParserVersion; contains an implementation of a subset of the 
       W3C DOM Level 3 as specified in 
-      <jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/">Core</jump>, 
-      <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>
+      <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html">Core</jump>, 
+      <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725/">
 	Load and Save</jump>, and  
       <jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html">Abstract Schemas</jump> [<strong>deprecated</strong>]. 
 
@@ -30,13 +30,20 @@ This implementation is experimental: it should not be considered as complete or 
     The DOM Level 3 methods for which implementation is not provide will throw <code>DOMException NOT_SUPPORTED_ERR</code> exception.  
 </p>
 
-<note>To find out how to access <em>DOM Level 3 functionality</em>, please refer to the  <link idref='faq-write'>FAQ</link>.</note>
+<note>To find out how to access <em>DOM Level 3 functionality</em>, please refer to the  <link idref='faq-dom'>FAQ</link>.</note>
 </s2>
 
 <s2 title='Implementation of DOM Level 3 Core'>
 <p>Most of the DOM Level 3 functionality is implemented, including:</p>
 
 <ul>
+    <li><strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725/load-save.html#LS-DOMBuilderFilter">filter</jump> -- if an application provides 
+a filter, the parser will call this filter  at the completion of the construction of each
+<code>Element</code> node.
+      </li>
+<li><strong>DOMWriter</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725/load-save.html#LS-DOMWriterFilter">filter</jump> -- if an application provides 
+a filter, the serializer will call this filter before serializing each <code>Node</code>.
+      </li>
     <li><strong>Document</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-normalizeDocument">normalizeDocument</jump> -- this method normalizes Text nodes, makes the document "namespace wellformed" by adding missing namespace declaration attributes and adding or changing namespace prefixes, updates the replacement tree of EntityReference nodes, normalizes attribute values, etc. The actual result depends on the features being set and governing what operations actually take place. The methods <code>setNormalizationFeature, getNormalizationFeature, canSetNormalizationFeature</code> are also supported.
     </li>
 
@@ -67,7 +74,7 @@ The <code>normalization features</code> supported are:</p>
 <li><strong>whitespace-in-element-content</strong> [<em>true</em>]</li>
 <li><strong>datatype-normalization</strong> [<em>true/false</em>] -- the XML Schema normalized values will not be exposed via the DOM even if the value of this feature is set to true (to be implemented). </li> 
 <li><strong>discard-default-content</strong> [<em>true/false</em>] -- the removal of default content depends on <code>isSpecified</code> flag. </li>
-<li><strong>validate</strong> [<em>true/false</em>] -- revalidation is supported only against XML Schemas. For more information, please refer to <link idref='faq-write'>How to revalidate DOM in memory?</link>.</li>
+<li><strong>validate</strong> [<em>true/false</em>] -- revalidation is supported only against XML Schemas. For more information, please refer to <link idref='faq-dom'>How to revalidate DOM in memory?</link>.</li>
 </ul>
 </s2> 
 
@@ -75,14 +82,9 @@ The <code>normalization features</code> supported are:</p>
 <p>Most of the functionality is implemented. Here is the list of limitations:</p>
 <ul>
     <li><strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#ID-LS-DOMBuilder-parseWithContext">parserWithContext</jump>
- -- no implementation is provided.</li>
-    <li><strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#ID-LS-DOMBuilder-filter">filter</jump> -- no implementation is provided
 </li>
-
-    <li><strong>DOMWriter</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#LS-Interfaces-DOMWriterFilter">filter</jump> --
-no implementation is provided.
+<li><strong>DOMImplementationLS</strong> <jump href="">MODE_ASYNCHRONOUS</jump> -- not supported.
 </li>
-
     <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#createDOMBuilder">createDOMBuilder</jump> -- if 
 <code>schemaType</code> has value of <em>"http://www.w3.org/2001/XMLSchema"</em> the parser created will attempt to validate against DTD if one is found. If DTD is not found the parser will validate against XML Schemas.
     </li>

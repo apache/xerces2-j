@@ -15,6 +15,12 @@
           <submitter name='Sandy Gao'/>
         </add>
         <add>
+          <note>Provide access to PSVI via SAX using 
+                 org.apache.xerces.impl.xs.psvi.PSVIProvider interface.
+          </note>
+          <submitter name='Elena Litani'/>
+        </add>
+        <add>
           <note>Provided a way to convert preparsed schema grammars to XSModels.
           </note>
           <submitter name='Sandy Gao'/>
@@ -62,6 +68,26 @@
             </note>
             <submitter name="Kent Tamura, Neil Graham"/>
         </fix>
+        <add>
+          <note>Provide implementation for DOM Level 3 DOMBuilderFilter and DOMWriterFilter.
+          </note>
+          <submitter name='Elena Litani'/>
+        </add>
+        <update>
+          <note>Reorganize the code again to allow to build Xerces with DOM Level 3 support and 
+             modifying the build.xml to replace import statements in the source code.
+          </note>
+          <submitter name='Elena Litani'/>
+        </update>
+
+        <update>
+          <note>
+          Added xni.XMLDocumentHandler.setDocumentSource/getDocumentSource and
+          XMLDocumentSource.getDocumentHandler methods to allow to modify Xerces 
+          pipeline dynamically.
+          </note>
+          <submitter name='Elena Litani'/>
+        </update>
         <fix>
             <note>General bug fixes.
             </note>

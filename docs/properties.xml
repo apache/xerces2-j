@@ -141,7 +141,8 @@ catch (SAXException e) {
   <property name='http://apache.org/xml/properties/dom/document-class-name'
             id='dom.document-class-name'>
    <desc>
-    The fully qualified class name of the DOM implementation. The
+    The fully qualified name of the class implementing 
+    the <code>org.w3c.dom.Document</code> interface. The
     implementation used must have a zero argument constructor.  
    </desc>
    <type>java.lang.String</type>

@@ -25,8 +25,6 @@
  <!--
  <external label='API JavaDoc' href='apiDocs/index.html'/>
  -->
- <document label='XNI Manual' title='Xerces Native Interface'
-           id='xni' source='xni.xml'/>
  <hidden title='XNI Design Details' 
          id='xni-design' source='xni-design.xml'/>
  <hidden title='XNI Core Interfaces' 
@@ -44,6 +42,10 @@
        id='faq-build' source='faq-build.xml'/>
   <faq title='Writing Applications FAQs' 
        id='faq-write' source='faq-write.xml'/>
+  <faq title='Programming with DOM' 
+       id='faq-dom' source='faq-dom.xml'/>
+  <faq title='Using XML Schemas' 
+       id='faq-xs' source='faq-xs.xml'/>
   <faq title='Performance FAQs' 
        id='faq-performance' source='faq-performance.xml'/>
   <faq title='FAQs for Developers and Prospective Contributors' id='faq-contributing' source='faq-contributing.xml'/>
@@ -54,12 +56,20 @@
  <settings title='Parser Properties' label='Properties' 
            id='properties' source='properties.xml'/>
  <separator/>
- <releases label='Release Info' title='Release Information'
-           id='releases' source='releases.xml'/>
+
+ <document label='XNI Manual' title='Xerces Native Interface'
+           id='xni' source='xni.xml'/>
+ <document   label='XML Schema' title='XML Schema' id='xml-schema' source='xml-schema.xml'/>
+ <document label ='DOM' title='The Document Object Model' id='dom' source='dom.xml'/>
+ <hidden title='DOM Level 3 Implementation' id='dom3' source='dom3.xml'/>
  <document label='Limitations' title='Parser Limitations'
            id='limitations' source='limitations.xml'/>
- <hidden   title='XML Schema' id='xml-schema' source='xml-schema.xml'/>
- <hidden   title='DOM Level 3 Implementation' id='dom3' source='dom3.xml'/>
+ <separator/>
+
+ <releases label='Release Info' title='Release Information'
+           id='releases' source='releases.xml'/>
+
+
  <external label='Report a Bug' 
            href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'/>
 </book>

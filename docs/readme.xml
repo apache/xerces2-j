@@ -35,10 +35,11 @@
     </p>
 
     <p>
-      Please use 
-      <jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>
-      to report any bugs that you find.
+      Before reporting a bug in 
+<jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>, 
+please read the <link idref='faq-general'>Bugzilla</link> FAQ. 
     </p>
+
     <p>You can find the latest Xerces 2 jars
       <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>here</jump>.
     </p>
@@ -105,9 +106,10 @@
     </p>
     
     <ul>
-      <li>Added XMLResourceIdentifier to xni.XMLDTDHandler.startExternalSubset()</li>
-      <li>Added implementation to XML Schema Component / PSVI interfaces.</li>
-      <li>Added DOM Level 3 revalidation support against XML Schemas.</li>
+      <li>Added xni.XMLDocumentHandler.setDocumentSource/getDocumentSource and
+          XMLDocumentSource.getDocumentHandler methods. </li>
+      <li>Expose PSVI via DOM and SAX.</li>
+      <li>Added DOM Level 3 DOMBuilderFilter and DOMBuilderWriter implementation.</li>
     </ul>
     <p>
       

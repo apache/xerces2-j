@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
+<faqs title='Using XML Schemas'>
+
+  <faq title="Usage">
+    <q>How do I validate against XML schema?</q>
+    <a>
+      <p>In this release, schema validation has been integrated with the 
+	regular SAXParser and DOMParser classes. No special classes are 
+	required to parse documents that use a schema.</p>
+      <p>Each document that uses XML Schema grammars must specify the location of the
+	grammars it uses by using an xsi:schemaLocation attribute if they use
+	namespaces, and an xsi:noNamespaceSchemaLocation attribute
+	otherwise.  These are usually placed on the root / top-level element 
+	in the document, though they may occur on any element; for more details see XML
+	Schema Part 1 section 4.3.2. 
+	Here is an example with no target namespace: </p>
+      <source>&lt;document
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xsi:noNamespaceSchemaLocation='document.xsd'&gt;
+	...
+	&lt;/document&gt;</source>
+      <p>Here is an example with a target namespace. Note that it is an
+	error to specify a different namespace than the target namespace
+	defined in the Schema.</p>
+      <source>&lt;document
+	xmlns='http://my.com'
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+	xsi:schemaLocation='http://my.com document.xsd'&gt;
+	...
+	&lt;/document&gt;</source>
+      <p>Review the sample file, 'data/personal.xsd' for an example of an XML 
+	Schema grammar.</p>
+      
+    </a>
+  </faq>
+
+  <faq title="Using Entities and CDATA Sections">
+    <q>How does XML Schema processor treats entities and CDATA secptions?</q>
+    <a> 
+      <p>According to the XML Infoset the infoset items contributing to the 
+	<jump href='http://www.w3.org/TR/xml-infoset/#infoitem.character'>[character
+	  information item]</jump> are: characters in the document, whether literally, as
+	a character reference, or within a CDATA section, or within Entity
+	Reference. The XML Schema specification 
+	"requires as a precondition for assessment
+	an information set as defined in [XML-Infoset]" 
+	<jump href='http://www.w3.org/TR/xmlschema-1/#infoset'>(Appendix D)</jump> and thus Xerces might attempt to normalize data in an entity
+	reference or CDATA section.  To preserve character data within entity references and 
+	CDATA sections, 
+	turn off http://apache.org/xml/features/validation/schema/normalized-value feature.
+      </p>
+    </a>
+  </faq>
+
+  <faq title="XML Schema API">
+    <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
+    <a>
+      <p>
+	Xerces defines a set of objects and interfaces for accessing and querying the post 
+	schema validation infoset (PSVI) defined in 
+	<jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
+	  Contributions to the post-schema-validation infoset (Appendix C.2)</jump>. 
+	The interfaces defined in the <code>org.apache.xerces.impl.xs.psvi</code> allow 
+	developers to access the XML Schema components, which follow as a consequence 
+	of validation and/or assessment. 
+	The interfaces defined in the <code>>org.apache.xerces.xni.psvi</code> defines a 
+	set of interfaces for accessing the PSVI from a document instance. 
+      </p>
+      <note>The set of above interfaces is <strong>experimental</strong> 
+	and may change in the future.
+      </note>
+    </a>
+  </faq>
+
+  <faq title="Accessing PSVI via XNI">
+    <q>How do I access PSVI via XNI?</q>
+    <a> <p>From within an <code>XMLDocumentHandler</code>, one can retrieve PSVI
+	information while in the scope of the document handler start/end element calls:</p>
+      <source>import org.apache.xerces.xni.psvi.*;
+
+	...
+
+	public void startElement(QName element, XMLAttributes attributes,
+	Augmentations augs) {
+	ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
+	// get PSVI items of this element out of elemPSVI
+	short attemp = elemPSVI.getValidationAttempted();
+	short validity = elemPSVI.getValidity();
+	...
+	}</source>
+      <note>For more information, please refer to the API documentation
+	of the PSVI interfaces.</note>
+      
+      <p>The above code shows how to retrieve PSVI information after
+	elements/attributes are assessed. The other kind of information PSVI
+	offers is the property
+	<jump href="http://www.w3.org/TR/xmlschema-1/#e-schema_information">[schema information]</jump>.
+	This property exposes all schema components in the schema that's used for
+	assessment. These components and the schema itself are represented by
+	interfaces in the <code>org.apache.xerces.impl.xs.psvi</code> package.</p>
+      <p>[schema information] property is only available on the
+	<code>endElement</code> method for the validation root. When this method
+	is called, information about various components can be retrieved by</p>
+      <source>import org.apache.xerces.xni.psvi.*;
+	import org.apache.xerces.impl.xs.psvi.*;
+
+	...
+
+	public void endElement(QName element, Augmentations augs) {
+	ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
+	XSModel xsModel = elemPSVI.getSchemaInformation();
+	// get a list of [namespace schema information information item]s,
+	// one for each namespace.
+	ObjectList nsItems = xsModel.getNamespaceItems();
+	// get an element declaration of the specified name and namespace
+	XSElementDeclaration elemDecl = xsModel.getElementDeclaration
+	(name, namespace);
+	...
+	
+	}</source>
+
+    </a>
+  </faq>
+
+
+  <faq title="Accessing PSVI via DOM">
+    <q>How do I access PSVI via DOM?</q>
+    <a> <p>Use  
+	<jump href="">http://apache.org/xml/properties/dom/document-class-name</jump> property
+	to set <code>org.apache.xerces.dom.PSVIDocumentImpl</code> document 
+        interfaces implementation. In the resulting DOM tree, you may cast 
+        <code>org.w3c.dom.Element</code> to the 
+        <code>org.apache.xerces.xni.psvi.ElementPSVI</code> and  
+        <code>org.w3c.dom.Attr</code> to the 
+        <code>org.apache.xerces.xni.psvi.AttributePSVI</code>. 
+      </p>
+      <source>import org.apache.xerces.xni.psvi.*;
+	import org.apache.xerces.impl.xs.psvi.XSModel;
+	import org.apache.xerces.impl.xs.psvi.XSNamedMap;
+	...
+	Document document = parser.getDocument();
+	Element root = document.getDocumentElement();
+
+	// retrieve PSVI for the root element
+	ElementPSVI rootPSVI = (ElementPSVI)root;
+
+	// retrieve the schema used in validation of this document
+	XSModel schema = rootPSVI.getSchemaInformation();
+	XSNamedMap elementDeclarations = schema.getComponents(XSConstants.ELEMENT_DECLARATION);
+
+	// get schema normalized value
+	String normalizedValue = rootPSVI.getSchemaNormalizedValue();    
+      </source>
+    </a>
+  </faq>
+
+
+  <faq title="Accessing PSVI via SAX">
+    <q>How do I access PSVI via SAX?</q>
+    <a> <p>Xerces SAX parser also implements 
+	<code>org.apache.xerces.impl.xs.psvi.PSVIProvider</code> interface.
+	Within the scope of the methods handling the start and end of an element, i.e.
+	org.xml.sax.ContentHandler.startElement (..), 
+	an application can use the PSVIProvider to retrieve the PSVI related to that 
+	element and its attributes.  
+      </p>
+      <source>import org.apache.xerces.impl.xs.psvi.PSVIProvider;
+	import javax.xml.parsers.SAXParser;
+	import javax.xml.parsers.SAXParserFactory;
+
+	...
+	SAXParserFactory factory = SAXParserFactory.newInstance();
+	SAXParser parser = factory.newSAXParser();
+	PSVIProvider psviProvider = (PSVIProvider)parser;
+      </source>
+    </a>
+  </faq>
+
+
+</faqs>

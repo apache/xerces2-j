@@ -17,6 +17,17 @@
         Please read this document before using this package.
         </p>
 	</s2>
+
+<s2 title="XML Schema Programmer's Guide">
+<p>This section provides the following topics:</p>
+
+<ul>
+<li><jump href='#schema-limitations'>Limitations and known bugs</jump></li>
+<li><link idref='faq-xs'>How do I?</link> -- the most frequently asked questions
+    about DOM that include some sample code.</li>
+</ul>
+</s2>
+<anchor name='schema-limitations'/>
 	<s2 title="Limitations">
         <ul>
             <li> Length, minLength, and maxLength facets are limited to the value 
@@ -65,84 +76,5 @@
 		Schema document instance namespace, as specified by the
 		Recommendation. See the sample provided in the
 		Usage section.</p>
-	</s2>
-	<s2 title="Usage">
-		<p>In this release, schema validation has been integrated with the 
-		regular SAXParser and DOMParser classes. No special classes are 
-		required to parse documents that use a schema.</p>
-                <p>Each document that uses XML Schema grammars must specify the location of the
-                grammars it uses by using an xsi:schemaLocation attribute if they use
-        	namespaces, and an xsi:noNamespaceSchemaLocation attribute
-	        otherwise.  These are usually placed on the root / top-level element 
-		in the document, though they may occur on any element; for more details see XML
-                Schema Part 1 section 4.3.2. 
-		Here is an example with no target namespace: </p>
-<source>&lt;document
-  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-  xsi:noNamespaceSchemaLocation='document.xsd'&gt;
-...
-&lt;/document&gt;</source>
-		<p>Here is an example with a target namespace. Note that it is an
-		error to specify a different namespace than the target namespace
-		defined in the Schema.</p>
-<source>&lt;document
-  xmlns='http://my.com'
-  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
-  xsi:schemaLocation='http://my.com document.xsd'&gt;
-...
-&lt;/document&gt;</source>
-		<p>Review the sample file, 'data/personal.xsd' for an example of an XML 
-		Schema grammar.</p>
-	</s2>
-
-	<s2 title="PSVI and Schema Component API">
-        <p>Xerces provides experimental PSVI support. The PSVI augmentations can
-          be accessed via interfaces in the <code>org.apache.xerces.xni.psvi</code>
-          package.</p>
-        <p>From within an <code>XMLDocumentHandler</code>, one can retrieve PSVI
-          information when certain methods are called. For example,</p>
-        <source>import org.apache.xerces.xni.psvi.*;
-
-  ...
-
-public void startElement(QName element, XMLAttributes attributes,
-                         Augmentations augs) {
-    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
-    // get PSVI items of this element out of elemPSVI
-    short attemp = elemPSVI.getValidationAttempted();
-    short validity = elemPSVI.getValidity();
-    ...
-}</source>
-        <p>Certain PSVI item is only available on certain <code>XMLDocumentHandler</code>
-          methods. For more information, please refer to the API documentation
-          of the PSVI interfaces.</p>
-        <p/>
-        <p>The above code shows how to retrieve PSVI information after
-          elements/attributes are assessed. The other kind of information PSVI
-          offers is the property
-          <jump href="http://www.w3.org/TR/xmlschema-1/#e-schema_information">[schema information]</jump>.
-          This property exposes all schema components in the schema that's used for
-          assessment. These components and the schema itself are represented by
-          interfaces in the <code>org.apache.xerces.impl.xs.psvi</code> package.</p>
-          <p>[schema information] property is only available on the
-          <code>endElement</code> method for the validation root. When this method
-          is called, information about various components can be retrieved by</p>
-        <source>import org.apache.xerces.xni.psvi.*;
-import org.apache.xerces.impl.xs.psvi.*;
-
-  ...
-
-public void endElement(QName element, Augmentations augs) {
-    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem("ELEMENT_PSVI");
-    XSModel xsModel = elemPSVI.getSchemaInformation();
-    // get a list of [namespace schema information information item]s,
-    // one for each namespace.
-    ObjectList nsItems = xsModel.getNamespaceItems();
-    // get an element declaration of the specified name and namespace
-    XSElementDeclaration elemDecl = xsModel.getElementDeclaration
-                                    (name, namespace);
-    ...
-    
-}</source>
 	</s2>
 </s1>

@@ -272,7 +272,10 @@ catch (SAXException e) {
    <false>
     Fully expand the DOM nodes.
    </false>
-   <default value='true'/>
+   <default value='true**'/>
+   <note>In the <code>DOMBuilder</code> implementation the default value of 
+    this feature is <strong>false</strong>. 
+   </note>
    <note>
 <!--
     This feature only applies when the <link idref="properties"
@@ -284,7 +287,8 @@ catch (SAXException e) {
     are expanded as the tree is traversed. This allows the parser to return a
     document faster than if the tree is fully expanded during parsing and
     improves memory usage when the whole tree is not traversed.
-   </note>
+    </note>
+
   </feature>
   <feature name='http://apache.org/xml/features/dom/create-entity-ref-nodes'
            id='dom.create-entity-ref-nodes'>
