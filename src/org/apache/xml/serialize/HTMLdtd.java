@@ -111,9 +111,9 @@ final class HTMLdtd
 
 
     /**
-     * Element is empty.
+     * Only opening tag should be printed.
      */
-    private static final int EMPTY        = 0x0001;
+    private static final int ONLY_OPENING = 0x0001;
 
     /**
      * Element contains element content only.
@@ -131,9 +131,9 @@ final class HTMLdtd
     private static final int OPT_CLOSING  = 0x0008;
 
     /**
-     * Only opening tag should be printed.
+     * Element is empty (also means only opening tag)
      */
-    private static final int ONLY_OPENING = 0x0010;
+    private static final int EMPTY        = 0x0010 | ONLY_OPENING;
 
     /**
      * Allowed to appear in head.

@@ -293,7 +293,13 @@ public class HTMLSerializer
 	// Now it's time to enter a new element state
 	// with the tag name and space preserving.
 	// We still do not change the curent element state.
-	enterElementState( tagName, preserveSpace );
+	state = enterElementState( tagName, preserveSpace );
+
+	// Temporary hack to prevent line breaks inside A/TD
+	if ( tagName.equalsIgnoreCase( "A" ) || tagName.equalsIgnoreCase( "TD" ) ) {
+	    state.empty = false;
+	    printText( ">" );
+	}
 
 	// Handle SCRIPT and STYLE specifically by changing the
 	// state of the current element to CDATA (XHTML) or
@@ -302,10 +308,10 @@ public class HTMLSerializer
 	     tagName.equalsIgnoreCase( "STYLE" ) ) {
 	    if ( _xhtml ) {
 		// XHTML: Print contents as CDATA section
-		getElementState().doCData = true;
+		state.doCData = true;
 	    } else {
 		// HTML: Print contents unescaped
-		getElementState().unescaped = true;
+		state.unescaped = true;
 	    }
 	}
     }
@@ -339,8 +345,7 @@ public class HTMLSerializer
 	    // [keith] Provided this is not an anchor.
 	    // HTML: some elements do not print closing tag (e.g. LI)
 	    if ( ! HTMLdtd.isOnlyOpening( tagName ) ) {
-		if ( ! tagName.equalsIgnoreCase( "A" )  && _format.getIndenting() &&
-		     ! state.preserveSpace && state.afterElement )
+		if ( _format.getIndenting() && ! state.preserveSpace && state.afterElement )
 		    breakLine();
 		// Must leave CData section first (Illegal in HTML, but still)
 		if ( state.inCData )
@@ -352,8 +357,12 @@ public class HTMLSerializer
 	// (if we're not root) to not empty and after element.
 	state = leaveElementState();
 	if ( state != null ) {
-	    state.afterElement = true;
+	    // Temporary hack to prevent line breaks inside A/TD
+	    if ( ! state.tagName.equalsIgnoreCase( "A" ) && ! state.tagName.equalsIgnoreCase( "TD" ) )
+		state.afterElement = true;
+	    // state.afterElement = true;
 	    state.empty = false;
+	    // Temporary hack to prevent line breaks inside A/TD
 	} else {
 	    // [keith] If we're done printing the document but don't
 	    // get to call endDocument(), the buffer should be flushed.
@@ -566,25 +575,17 @@ public class HTMLSerializer
     }
 
 
-    /*
+
     protected void characters( String text, boolean unescaped )
     {
-	ElementState state;
+ 	ElementState state;
 
-	// Override for special HTML/XHTML case of SCRIPT/STYLE elements:
-	// XHTML: print their text contents as CDATA
-	// HTML: print their text contents unescaped
+	// HTML: no CDATA section
 	state = content();
-	if ( state != null && ( state.tagName.equalsIgnoreCase( "SCRIPT" ) ||
-				state.tagName.equalsIgnoreCase( "STYLE" ) ) ) {
-	    if ( _xhtml )
-		super.characters( text, true, false );
-	    else
-		super.characters( text, false, true );
-	} else
-	    super.characters( text, unescaped );
+	if ( state != null )
+	    state.doCData = false;
+	super.characters( text, unescaped );
     }
-    */
 
 
     protected String getEntityRef( char ch )

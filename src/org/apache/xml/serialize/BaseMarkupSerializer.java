@@ -198,7 +198,7 @@ public abstract class BaseMarkupSerializer
      * it's state is not removed but reused when later returning
      * to the same nesting level.
      */
-    private ElementState[]  _elementStates = new ElementState[ 5 ];
+    private ElementState[]  _elementStates;
 
 
     /**
@@ -255,6 +255,7 @@ public abstract class BaseMarkupSerializer
     {
 	int i;
 
+	_elementStates = new ElementState[ 10 ];
 	for ( i = 0 ; i < _elementStates.length ; ++i )
 	    _elementStates[ i ] = new ElementState();
     }
