@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,65 +49,58 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.util;
+package org.apache.xerces.impl.xs.psvi;
 
-import org.apache.xerces.impl.xs.psvi.ObjectList;
-import java.util.Vector;
 /**
- * Containts a list of Object's.
- *
- * @author Sandy Gao, IBM
- *
- * @version $Id$
+ * This interface represents the Identity-constraint Definition schema 
+ * component.
  */
-public class ObjectListImpl implements ObjectList {
-
-    // The array to hold all data
-    private Object[] fArray = null;
-    // Number of elements in this list
-    private int fLength = 0;
-
-    // REVISIT: this is temp solution. In general we need to use this class
-    //          instead of the Vector.
-    private Vector fVector;
-
-    public ObjectListImpl(Vector v) {
-        fVector = v;        
-        fLength = v.size();
-    }
-
+public interface XSIDCDefinition extends XSObject {
+    // Identity Constraints
     /**
-     * Construct an ObjectList implementation
      * 
-     * @param array     the data array
-     * @param length    the number of elements
      */
-    public ObjectListImpl(Object[] array, int length) {
-        fArray = array;
-        fLength = length;
-    }
+    public static final short IC_KEY                    = 1;
+    /**
+     * 
+     */
+    public static final short IC_KEYREF                 = 2;
+    /**
+     * 
+     */
+    public static final short IC_UNIQUE                 = 3;
 
     /**
-     * The number of <code>Objects</code> in the list. The range of valid
-     * child node indices is 0 to <code>length-1</code> inclusive.
+     * [identity-constraint category]: one of key, keyref or unique. 
      */
-    public int getLength() {
-        return fLength;
-    }
+    public short getCategory();
 
-    public Object item(int index) {
-        if (index < 0 || index >= fLength)
-            return null;
-        if (fVector != null) {
-            return fVector.elementAt(index);
-        }
-        return fArray[index];
-    }
+    /**
+     * [selector]: a restricted  expression. 
+     */
+    public String getSelectorStr();
 
-} // class XSParticle
+    /**
+     * [fields]: a non-empty list of restricted XPath ([XPath]) expressions. 
+     */
+    public StringList getFieldStrs();
+
+    /**
+     * [referenced key]: required if [identity-constraint category] is keyref, 
+     * forbidden otherwise. An identity-constraint definition with [
+     * identity-constraint category] equal to key or unique. 
+     */
+    public XSIDCDefinition getRefKey();
+
+    /**
+     * Optional. An [annotation]. 
+     */
+    public XSAnnotation getAnnotation();
+
+}

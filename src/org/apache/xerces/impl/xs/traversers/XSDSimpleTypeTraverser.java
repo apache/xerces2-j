@@ -57,31 +57,21 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
+import java.util.Vector;
+
+import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
-import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
-
-import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.util.NamespaceSupport;
-
 import org.w3c.dom.Element;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
-
-import java.lang.reflect.*;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.StringTokenizer;
 
 /**
  * The simple type definition schema component traverser.
@@ -274,7 +264,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
                         dvs = dv.getMemberTypes();
                         for (int j = 0; j < dvs.getLength(); j++)
-                            dTValidators.addElement(dvs.getItem(j));
+                            dTValidators.addElement(dvs.item(j));
                     } else {
                         dTValidators.addElement(dv);
                     }
@@ -313,7 +303,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
                             dvs = dv.getMemberTypes();
                             for (int j = 0; j < dvs.getLength(); j++)
-                                dTValidators.addElement(dvs.getItem(j));
+                                dTValidators.addElement(dvs.item(j));
                         } else {
                             dTValidators.addElement(dv);
                         }
@@ -415,10 +405,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (baseTypeStr == null)
             return null;
 
-        XSTypeDecl baseType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr, elm);
+        XSTypeDefinition baseType = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr, elm);
         if (baseType != null) {
             // if it's a complex type, or if its restriction of anySimpleType
-            if (baseType.getTypeCategory() != XSTypeDecl.SIMPLE_TYPE ||
+            if (baseType.getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE ||
                 baseType == SchemaGrammar.fAnySimpleType &&
                 baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
                 // if the base type is anySimpleType and the current type is
@@ -464,7 +454,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (validator.getVariety() == XSSimpleType.VARIETY_UNION) {
             XSObjectList temp = validator.getMemberTypes();
             for (int i = 0; i < temp.getLength(); i++) {
-                if (((XSSimpleType)temp.getItem(i)).getVariety() == XSSimpleType.VARIETY_LIST) {
+                if (((XSSimpleType)temp.item(i)).getVariety() == XSSimpleType.VARIETY_LIST) {
                     return true;
                 }
             }

@@ -57,7 +57,10 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSParticle;
+import org.apache.xerces.impl.xs.psvi.XSTerm;
 
 /**
  * Store schema particle declaration.
@@ -231,7 +234,7 @@ public class XSParticleDecl implements XSParticle {
     /**
      * {max occurs} whether the maxOccurs value is unbounded.
      */
-    public boolean getIsMaxOccursUnbounded() {
+    public boolean getMaxOccursUnbounded() {
         return fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED;
     }
 
@@ -248,5 +251,12 @@ public class XSParticleDecl implements XSParticle {
     public XSTerm getTerm() {
         return fValue;
     }
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+		return null;
+	}
 
 } // class XSParticle

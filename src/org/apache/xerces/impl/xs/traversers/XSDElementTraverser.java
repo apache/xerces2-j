@@ -57,23 +57,21 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.dv.ValidationContext;
-import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.XSTypeDecl;
-import org.apache.xerces.util.DOMUtil;
-import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
-import  org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 /**
  * The element declaration schema component traverser.
@@ -324,7 +322,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         // get 'type definition'
-        XSTypeDecl elementType = null;
+        XSTypeDefinition elementType = null;
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
@@ -345,7 +343,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // Handler type attribute
         if (elementType == null && typeAtt != null) {
-            elementType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, elmDecl);
+            elementType = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, elmDecl);
         }
 
         // Get it from the substitutionGroup declaration
@@ -458,9 +456,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 4 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}.
         if (element.fDefault != null) {
-            if ((elementType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE &&
+            if ((elementType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE &&
                  ((XSSimpleType)elementType).isIDType()) ||
-                (elementType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE &&
+                (elementType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE &&
                  ((XSComplexTypeDecl)elementType).containsTypeID())) {
                 reportSchemaError ("e-props-correct.4", new Object[]{element.fName}, elmDecl);
             }

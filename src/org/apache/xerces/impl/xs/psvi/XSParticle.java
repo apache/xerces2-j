@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,30 +58,27 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.9.1 The Particle Schema Component
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Particle schema component.
  */
 public interface XSParticle extends XSObject {
-
     /**
-     * {min occurs} determines the minimum number of terms that can occur.
+     * [min occurs]: determines the minimum number of terms that can occur. 
      */
     public int getMinOccurs();
 
     /**
-     * {max occurs} whether the maxOccurs value is unbounded.
-     */
-    public boolean getIsMaxOccursUnbounded();
-
-    /**
-     * {max occurs} determines the maximum number of terms that can occur.
+     * [max occurs] determines the maximum number of terms that can occur. To 
+     * query for value of unbounded use <code>maxOccursUnbounded</code>. 
      */
     public int getMaxOccurs();
 
     /**
-     * {term} One of a model group, a wildcard, or an element declaration.
+     * [max occurs] whether the maxOccurs value is unbounded.
+     */
+    public boolean getMaxOccursUnbounded();
+
+    /**
+     * [term]: one of a model group, a wildcard, or an element declaration. 
      */
     public XSTerm getTerm();
 

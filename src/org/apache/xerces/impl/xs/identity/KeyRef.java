@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.identity;
 
-import org.apache.xerces.impl.xs.psvi.XSIDConstraintDefinition;
+import org.apache.xerces.impl.xs.psvi.XSIDCDefinition;
 
 /**
  * Schema key reference identity constraint.
@@ -101,7 +101,7 @@ public class KeyRef
      * forbidden otherwise. An identity-constraint definition with
      * {identity-constraint category} equal to key or unique.
      */
-    public XSIDConstraintDefinition getRefKey() {
+    public XSIDCDefinition getRefKey() {
         return fKey;
     }
 

@@ -57,8 +57,11 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSAttributeUse;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
 
 /**
  * The XML representation for an attribute use
@@ -114,7 +117,7 @@ public class XSAttributeUseImpl implements XSAttributeUse {
      * requires an appropriate attribute information item to be present, or
      * merely allows it.
      */
-    public boolean getIsRequired() {
+    public boolean getRequired() {
         return fUse == SchemaSymbols.USE_REQUIRED;
     }
 
@@ -143,5 +146,12 @@ public class XSAttributeUseImpl implements XSAttributeUse {
                null :
                fDefault.actualValue.toString();
     }
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+		return null;
+	}
 
 } // class XSAttributeUseImpl

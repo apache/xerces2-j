@@ -57,12 +57,43 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.util.XMLSymbols;
-import org.apache.xerces.impl.xs.util.*;
 import java.util.Vector;
 
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.impl.xs.psvi.XSModelGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSNamedMap;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItemList;
+import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.NSItemListImpl;
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.util.XMLSymbols;
+
+/**
+ * @author elitani
+ *
+ * To change this generated comment edit the template variable "typecomment":
+ * Window>Preferences>Java>Templates.
+ * To enable and disable the creation of type comments go to
+ * Window>Preferences>Java>Code Generation.
+ */
+/**
+ * @author elitani
+ *
+ * To change this generated comment edit the template variable "typecomment":
+ * Window>Preferences>Java>Templates.
+ * To enable and disable the creation of type comments go to
+ * Window>Preferences>Java>Code Generation.
+ */
 /**
  * Implements XSModel:  a read-only interface that represents an XML Schema,
  * which could be components from different namespaces.
@@ -183,17 +214,11 @@ public class XSModelImpl implements XSModel {
         return new StringListImpl(fNamespaces, fGrammarCount);
     }
 
-    /**
-     * Convenience method. Returns a list of all [namespace schema information
-     * item]s. There is one such item for each namespace (including the null
-     * namespace). Enties of the returned enumeration are instances of
-     * XSNamespaceItem interface.
-     * @return A list of namespace items that belong to this schema.
-     */
-    public ObjectList getNamespaceItems() {
 
-        // REVISIT: should the type of fGrammarList be ObjectListImpl?
-        return new ObjectListImpl(fGrammarList, fGrammarCount);
+    public XSNamespaceItemList getNamespaceItems() {
+
+        // REVISIT: should the type of fGrammarList be NSItemListImpl?
+        return new NSItemListImpl(fGrammarList, fGrammarCount);
     }
 
     /**
@@ -341,7 +366,7 @@ public class XSModelImpl implements XSModel {
      * @return A top-level attribute declaration or null if such declaration
      *   does not exist.
      */
-    public XSAttributeDeclaration getAttributeDecl(String name,
+    public XSAttributeDeclaration getAttributeDeclaration(String name,
                                                    String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
@@ -356,7 +381,7 @@ public class XSModelImpl implements XSModel {
      * @return A top-level element declaration or null if such declaration
      *   does not exist.
      */
-    public XSElementDeclaration getElementDecl(String name,
+    public XSElementDeclaration getElementDeclaration(String name,
                                                String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
@@ -395,15 +420,11 @@ public class XSModelImpl implements XSModel {
         return (XSModelGroupDefinition)sg.fGlobalGroupDecls.get(name);
     }
 
-    /**
-     * Convenience method. Returns a top-level notation declaration.
-     *
-     * @param name      The name of the declaration.
-     * @param namespace The namespace of the definition, otherwise null.
-     * @return A top-level notation declaration or null if such declaration
-     *         does not exist.
-     */
-    public XSNotationDeclaration getNotationDecl(String name,
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSModel#getNotationDeclaration(String, String)
+	 */
+    public XSNotationDeclaration getNotationDeclaration(String name,
                                                  String namespace) {
         SchemaGrammar sg = (SchemaGrammar)fGrammarMap.get(null2EmptyString(namespace));
         if (sg == null)
@@ -423,4 +444,5 @@ public class XSModelImpl implements XSModel {
         return str == null ? XMLSymbols.EMPTY_STRING : str;
     }
     
+
 } // class XSModelImpl

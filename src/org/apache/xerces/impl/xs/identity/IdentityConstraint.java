@@ -66,7 +66,7 @@ import org.apache.xerces.impl.xs.util.StringListImpl;
  * @author Andy Clark, IBM
  * @version $Id$
  */
-public abstract class IdentityConstraint implements XSIDConstraintDefinition {
+public abstract class IdentityConstraint implements XSIDCDefinition {
 
     //
     // Data
@@ -239,7 +239,7 @@ public abstract class IdentityConstraint implements XSIDConstraintDefinition {
      * forbidden otherwise. An identity-constraint definition with
      * {identity-constraint category} equal to key or unique.
      */
-    public XSIDConstraintDefinition getRefKey() {
+    public XSIDCDefinition getRefKey() {
         return null;
     }
 
@@ -251,4 +251,12 @@ public abstract class IdentityConstraint implements XSIDConstraintDefinition {
         return null;
     }
     
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        // REVISIT: implement
+		return null;
+	}
+
 } // class IdentityConstraint

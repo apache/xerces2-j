@@ -67,7 +67,6 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.DOMUtil;
@@ -75,6 +74,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.w3c.dom.Element;
 
@@ -316,8 +316,8 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // Handler type attribute
         if (attrType == null && typeAtt != null) {
-            XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, attrDecl);
-            if (type != null && type.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE)
+            XSTypeDefinition type = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, attrDecl);
+            if (type != null && type.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE)
                 attrType = (XSSimpleType)type;
             else
                 reportSchemaError("src-resolve", new Object[]{typeAtt.rawname, "simpleType definition"}, attrDecl);

@@ -156,7 +156,7 @@ public class XSNamedMapImpl implements XSNamedMap {
      *   name and namespace URI, or <code>null</code> if they do not
      *   identify any <code>XSObject</code> in this map.
      */
-    public XSObject getNSItem(String namespace, String localName) {
+    public XSObject itemByName(String namespace, String localName) {
         if (namespace != null)
             namespace = namespace.intern();
         for (int i = 0; i < fNSNum; i++) {
@@ -189,7 +189,7 @@ public class XSNamedMapImpl implements XSNamedMap {
      *   in the <code>XSNamedMap</code>, or <code>null</code> if that is
      *   not a valid index.
      */
-    public synchronized XSObject getItem(int index) {
+    public synchronized XSObject item(int index) {
         if (fArray == null) {
             // calculate the total number of elements
             getMapLength();

@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.dv;
 
 import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
-import org.apache.xerces.impl.xs.XSTypeDecl;
 
 /**
  * This interface <code>XSSimpleType</code> represents the simple type
@@ -71,7 +70,7 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
  *
  * @version $Id$
  */
-public interface XSSimpleType extends XSTypeDecl, XSSimpleTypeDefinition {
+public interface XSSimpleType extends XSSimpleTypeDefinition {
 
     /**
      * constants defined for the values of 'whitespace' facet.

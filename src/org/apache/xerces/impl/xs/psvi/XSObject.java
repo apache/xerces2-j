@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,38 +49,41 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * The <code>XSObject</code> is a base object for XML Schema component model.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * The <code>XSObject</code> is a base object for the XML Schema component 
+ * model. 
  */
 public interface XSObject {
-
     /**
-     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     *  The <code>type</code> of this object, i.e. 
+     * <code>ELEMENT_DECLARATION</code>. 
      */
     public short getType();
 
     /**
-     * The <code>name</code> of this <code>XSObject</code> depending on the
-     * <code>XSObject</code> type.
+     * The name of type <code>NCName</code> of this declaration as defined in 
+     * XML Namespaces.
      */
     public String getName();
 
     /**
-     * The namespace URI of this node, or <code>null</code> if it is
-     * unspecified.  defines how a namespace URI is attached to schema
-     * components.
+     *  The [target namespace] of this object, or <code>null</code> if it is 
+     * unspecified. 
      */
     public String getNamespace();
+
+    /**
+     * A namespace schema information itemcorresponding to the target 
+     * namespace of the component, if it's globally declared; or null 
+     * otherwise.
+     */
+    public XSNamespaceItem getNamespaceItem();
 
 }

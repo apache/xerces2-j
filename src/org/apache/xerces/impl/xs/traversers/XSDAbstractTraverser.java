@@ -57,30 +57,27 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSFacets;
+import java.util.Vector;
+
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
+import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSMessageFormatter;
-import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
-import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
-import org.apache.xerces.xni.QName;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.NamespaceSupport;
-import org.apache.xerces.impl.validation.ValidationState;
-import org.w3c.dom.Element;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.lang.reflect.*;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.QName;
+import org.w3c.dom.Element;
 
 /**
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
@@ -385,7 +382,7 @@ abstract class XSDAbstractTraverser {
         else if (type.getVariety() == XSSimpleType.VARIETY_UNION) {
             XSObjectList members = type.getMemberTypes();
             for (int i = 0; i < members.getLength(); i++) {
-                if (containsQName((XSSimpleType)members.getItem(i)))
+                if (containsQName((XSSimpleType)members.item(i)))
                     return true;
             }
         }
@@ -439,7 +436,7 @@ abstract class XSDAbstractTraverser {
                 XSAttributeUseImpl existingAttrUse = null, oneAttrUse;
                 int attrCount = attrUseS.getLength();
                 for (int i=0; i<attrCount; i++) {
-                    oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
+                    oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
                     existingAttrUse = attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
                                                               oneAttrUse.fAttrDecl.getName());
                     if (existingAttrUse == null) {
@@ -505,7 +502,7 @@ abstract class XSDAbstractTraverser {
      * Element/Attribute traversers call this method to check whether
      * the type is NOTATION without enumeration facet
      */
-    void checkNotationType(String refName, XSTypeDecl typeDecl, Element elem) {
+    void checkNotationType(String refName, XSTypeDefinition typeDecl, Element elem) {
         if (typeDecl.getTypeCategory() == typeDecl.SIMPLE_TYPE &&
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
             ((XSSimpleType)typeDecl).getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {

@@ -57,21 +57,35 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.dv.SchemaDVFactory;
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.ValidatedInfo;
-import org.apache.xerces.impl.xs.identity.IdentityConstraint;
-import org.apache.xerces.impl.xs.util.*;
-import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.SymbolHash;
-
-import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.xni.grammars.XSGrammar;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-
-import java.util.Hashtable;
 import java.util.Vector;
+
+import org.apache.xerces.impl.dv.SchemaDVFactory;
+import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.impl.xs.psvi.XSModelGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSNamedMap;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSParticle;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSWildcard;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XSGrammar;
 
 /**
  * This class is to hold all schema component declaration that are declared
@@ -254,7 +268,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
         public void addGlobalNotationDecl(XSNotationDecl decl) {
             // ignore
         }
-        public void addGlobalTypeDecl(XSTypeDecl decl) {
+        public void addGlobalTypeDecl(XSTypeDefinition decl) {
             // ignore
         }
         public void addComplexTypeDecl(XSComplexTypeDecl decl, SimpleLocator locator) {
@@ -344,7 +358,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
     /**
      * register one global type
      */
-    public void addGlobalTypeDecl(XSTypeDecl decl) {
+    public void addGlobalTypeDecl(XSTypeDefinition decl) {
         fGlobalTypeDecls.put(decl.getName(), decl);
     }
 
@@ -394,8 +408,8 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
     /**
      * get one global type
      */
-    public final XSTypeDecl getGlobalTypeDecl(String declName) {
-        return(XSTypeDecl)fGlobalTypeDecls.get(declName);
+    public final XSTypeDefinition getGlobalTypeDecl(String declName) {
+        return(XSTypeDefinition)fGlobalTypeDecls.get(declName);
     }
 
     /**
@@ -535,7 +549,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
 
         // overridden methods
         public void setValues(String name, String targetNamespace,
-                XSTypeDecl baseType, short derivedBy, short schemaFinal, 
+                XSTypeDefinition baseType, short derivedBy, short schemaFinal, 
                 short block, short contentType,
                 boolean isAbstract, XSAttributeGroupDecl attrGrp, 
                 XSSimpleType simpleType, XSParticleDecl particle) {
@@ -682,7 +696,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
     private XSNamedMap[] fComponents = null;
 
     // store the documents and their locations contributing to this namespace
-    // REVISIT: use StringList and ObjectList for there fields.
+    // REVISIT: use StringList and XSObjectList for there fields.
     private Vector fDocuments = null;
     private Vector fLocations = null;
     
@@ -782,7 +796,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
      * @return A top-level attribute declaration or null if such declaration
      *   does not exist.
      */
-    public XSAttributeDeclaration getAttributeDecl(String name) {
+    public XSAttributeDeclaration getAttributeDeclaration(String name) {
         return getGlobalAttributeDecl(name);
     }
 
@@ -792,7 +806,7 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
      * @return A top-level element declaration or null if such declaration
      *   does not exist.
      */
-    public XSElementDeclaration getElementDecl(String name) {
+    public XSElementDeclaration getElementDeclaration(String name) {
         return getGlobalElementDecl(name);
     }
 
@@ -824,18 +838,10 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
      * @return A top-level notation declaration or null if such declaration
      *         does not exist.
      */
-    public XSNotationDeclaration getNotationDecl(String name) {
+    public XSNotationDeclaration getNotationDeclaration(String name) {
         return getGlobalNotationDecl(name);
     }
 
-    /**
-     * [document]
-     * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document">[document]</a>
-     * @return a list of document information item
-     */
-    public ObjectList getDocuments() {
-        return new ObjectListImpl(fDocuments);
-    }
 
     /**
      * [document location]
@@ -855,5 +861,13 @@ public class SchemaGrammar implements Grammar, XSGrammar, XSNamespaceItem {
     public XSModel toXSModel() {
         return new XSModelImpl(new SchemaGrammar[]{this});
     }
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSNamespaceItem#getAnnotations()
+	 */
+	public XSObjectList getAnnotations() {
+        // REVISIT: implement
+		return null;
+	}
 
 } // class SchemaGrammar

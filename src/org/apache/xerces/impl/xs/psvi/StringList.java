@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,24 +49,21 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
-
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- *  The <code>StringList</code> is an ordered collection of strings. 
- *
- * @version $Id$
+ *  The <code>StringList</code> is an ordered collection of 
+ * <code>GenericString</code>. 
  */
 public interface StringList {
     /**
-     *  The number of <code>String</code> in the list. The range of valid 
-     * child object indices is 0 to <code>length-1</code> inclusive. 
+     *  The number of <code>GenericString</code> in the list. The range of 
+     * valid child object indices is 0 to <code>length-1</code> inclusive. 
      */
     public int getLength();
 
@@ -75,9 +72,9 @@ public interface StringList {
      * starts at 0. If <code>index</code> is greater than or equal to the 
      * number of objects in the list, this returns <code>null</code>. 
      * @param index  index into the collection. 
-     * @return  The <code>String</code>at the <code>index</code>th position 
-     *   in the <code>StringList</code>, or <code>null</code> if that is 
-     *   not a valid index. 
+     * @return  The <code>GenericString</code> at the <code>index</code>th 
+     *   position in the <code>StringList</code>, or <code>null</code> if 
+     *   that is not a valid index. 
      */
     public String item(int index);
 

@@ -57,22 +57,28 @@
 
 package org.apache.xerces.impl.dv.xs;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSFacets;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
 import org.apache.xerces.impl.dv.DatatypeException;
-import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
+import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.ValidationContext;
-import org.apache.xerces.impl.xs.XSTypeDecl;
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xpath.regex.RegularExpression;
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.xni.NamespaceContext;
-import java.util.Vector;
-import java.util.StringTokenizer;
 
 /**
  * @author Sandy Gao, IBM
@@ -484,7 +490,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fFinalSet;
     }
 
-    public boolean getIsFinal(short derivation) {
+    public boolean isFinal(short derivation) {
         return (fFinalSet & derivation) != 0;
     }
 
@@ -492,7 +498,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fBase;
     }
 
-    public boolean getIsAnonymous() {
+    public boolean getAnonymous() {
         return fTypeName == null;
     }
 
@@ -1727,19 +1733,19 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fOrdered;
     }
 
-    public boolean getIsBounded(){
+    public boolean getBounded(){
         return fBounded;
     }
 
-    public boolean getIsFinite(){
+    public boolean getFinite(){
         return fFinite;
     }
 
-    public boolean getIsNumeric(){
+    public boolean getNumeric(){
         return fNumeric;
     }
 
-    public boolean getIsDefinedFacet(short facetName) {
+    public boolean isDefinedFacet(short facetName) {
         return (fFacetsDefined & facetName) != 0;
     }
 
@@ -1747,7 +1753,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fFacetsDefined;
     }
 
-    public boolean getIsFixedFacet(short facetName) {
+    public boolean isFixedFacet(short facetName) {
         return (fFixedFacet & facetName) != 0;
     }
 
@@ -1781,7 +1787,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return null;
     }
 
-    public StringList getLexicalEnumerations() {
+    public StringList getLexicalEnumeration() {
         if (fEnumeration == null)
             return null;
         
@@ -1793,7 +1799,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return new StringListImpl(strs, size);
     }
 
-    public StringList getLexicalPatterns() {
+    public StringList getLexicalPattern() {
         if (fPatternStr == null)
             return null;
 
@@ -1874,7 +1880,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         else if(fVariety == VARIETY_UNION){
             XSSimpleType[] memberTypes = fMemberTypes;
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if(!memberTypes[i].getIsNumeric() ){
+                if(!memberTypes[i].getNumeric() ){
                     this.fNumeric = false;
                     return;
                 }
@@ -1914,7 +1920,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
 
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if(!memberTypes[i].getIsBounded() || (ancestorId != getPrimitiveDV(memberTypes[i].fValidationDV)) ){
+                if(!memberTypes[i].getBounded() || (ancestorId != getPrimitiveDV(memberTypes[i].fValidationDV)) ){
                     this.fBounded = false;
                     return;
                 }
@@ -1971,7 +1977,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         else if(fVariety == VARIETY_UNION){
             XSSimpleType [] memberTypes = fMemberTypes;
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if(!(memberTypes[i].getIsFinite()) ){
+                if(!(memberTypes[i].getFinite()) ){
                     this.fFinite = false;
                     return;
                 }
@@ -1995,7 +2001,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     }//getPrimitiveDV()
 
-    public boolean derivedFrom(XSTypeDefinition ancestor) {
+    public boolean derivedFromType(XSTypeDefinition ancestor, short derivation) {
+        // REVISIT: implement according to derivation
+        
         // ancestor is null, retur false
         if (ancestor == null)
             return false;
@@ -2013,7 +2021,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return type == ancestor;
     }
     
-    public boolean derivedFrom(String ancestorNS, String ancestorName) {
+    public boolean derivedFrom(String ancestorNS, String ancestorName, short derivation) {
+        // REVISIT: implement according to derivation
+        
         // ancestor is null, retur false
         if (ancestorName == null)
             return false;
@@ -2024,12 +2034,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
 
         // recursively get base, and compare it with ancestor
-        XSTypeDecl type = this;
+        XSTypeDefinition type = this;
         while (!(ancestorName.equals(type.getName()) &&
                  ((ancestorNS == null && type.getNamespace() == null) ||
                   (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
                type != fAnySimpleType) {  // reached anySimpleType
-            type = (XSTypeDecl)type.getBaseType();
+            type = (XSTypeDefinition)type.getBaseType();
         }
 
         return type != fAnySimpleType;
@@ -2173,4 +2183,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         // REVISIT: reset for fundamental facets
     }
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        // REVISIT: implement
+		return null;
+	}
+
 } // class XSSimpleTypeDecl

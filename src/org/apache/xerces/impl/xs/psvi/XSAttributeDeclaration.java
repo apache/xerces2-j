@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,56 +49,48 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.2.1 The Attribute Declaration Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * The interfaces represents the Attribute Declaration schema component.
  */
 public interface XSAttributeDeclaration extends XSObject {
-
     /**
-     * A simple type definition
+     * [type definition]: A simple type definition 
      */
     public XSSimpleTypeDefinition getTypeDefinition();
 
     /**
-     * Optional. Either global or a complex type definition (
-     * <code>ctDefinition</code>). This property is absent in the case of
-     * declarations within attribute group definitions: their scope will be
-     * determined when they are used in the construction of complex type
-     * definitions.
+     * Optional. One of <code>SCOPE_GLOBAL</code>, <code>SCOPE_LOCAL</code>, 
+     * or <code>SCOPE_ABSENT</code>. If the scope is local, then the 
+     * <code>enclosingCTDefinition</code> is present. 
      */
     public short getScope();
 
     /**
-     * Locally scoped declarations are available for use only within the
-     * complex type definition identified by the <code>scope</code>
-     * property.
+     * The complex type definition for locally scoped declarations (see 
+     * <code>scope</code>). 
      */
     public XSComplexTypeDefinition getEnclosingCTDefinition();
 
     /**
-     * Value constraint: one of default, fixed.
+     * Value constraint: one of <code>VC_NONE, VC_DEFAULT, VC_FIXED</code>. 
      */
     public short getConstraintType();
 
     /**
-     * Value constraint: The actual value (with respect to the {type
-     * definition}) Should we return Object instead of DOMString?
+     * Value constraint: The actual value with respect to the [type definition
+     * ]. 
      */
     public String getConstraintValue();
 
     /**
-     * Optional. Annotation.
+     * Optional. Annotation. 
      */
     public XSAnnotation getAnnotation();
 

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,109 +58,107 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.3.1 The Element Declaration Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * The interfaces represents the Element Declaration schema component. 
  */
 public interface XSElementDeclaration extends XSTerm {
-
     /**
-     * Either a simple type definition or a complex type definition.
+     * [type definition]: either a simple type definition or a complex type 
+     * definition. 
      */
     public XSTypeDefinition getTypeDefinition();
 
     /**
-     * Optional. Either global or a complex type definition (
-     * <code>ctDefinition</code>). This property is absent in the case of
-     * declarations within named model groups: their scope will be
-     * determined when they are used in the construction of complex type
-     * definitions.
+     * Optional. One of <code>SCOPE_GLOBAL</code>, <code>SCOPE_LOCAL</code>, 
+     * or <code>SCOPE_ABSENT</code>. If the scope is local, then the 
+     * <code>enclosingCTDefinition</code> is present. 
      */
     public short getScope();
 
     /**
-     * Locally scoped declarations are available for use only within the
-     * complex type definition identified by the <code>scope</code>
-     * property.
+     * The complex type definition for locally scoped declarations (see 
+     * <code>scope</code>). 
      */
     public XSComplexTypeDefinition getEnclosingCTDefinition();
 
     /**
-     * A value constraint: one of default, fixed.
+     * [Value constraint]: one of <code>VC_NONE, VC_DEFAULT, VC_FIXED</code>. 
      */
     public short getConstraintType();
 
     /**
-     * A value constraint: The actual value (with respect to the {type
-     * definition})
+     * [Value constraint]: the actual value with respect to the [type 
+     * definition]. 
      */
     public String getConstraintValue();
 
     /**
-     * If {nillable} is true, then an element may also be valid if it carries
-     * the namespace qualified attribute with [local name] nil from
-     * namespace http://www.w3.org/2001/XMLSchema-instance and value true
-     * (see xsi:nil (2.6.2)) even if it has no text or element content
-     * despite a {content type} which would otherwise require content.
+     *  If nillable is true, then an element may also be valid if it carries 
+     * the namespace qualified attribute with local name <code>nil</code> 
+     * from namespace <code>http://www.w3.org/2001/XMLSchema-instance</code> 
+     * and value <code>true</code> (xsi:nil) even if it has no text or 
+     * element content despite a <code>content type</code> which would 
+     * otherwise require content. 
      */
-    public boolean getIsNillable();
+    public boolean getNillable();
 
     /**
-     * {identity-constraint definitions} A set of constraint definitions.
+     * identity-constraint definitions: a set of constraint definitions. 
      */
     public XSNamedMap getIdentityConstraints();
 
     /**
-     * {substitution group affiliation} Optional. A top-level element
-     * definition.
+     * [substitution group affiliation]: optional. A top-level element 
+     * definition. 
      */
     public XSElementDeclaration getSubstitutionGroupAffiliation();
 
     /**
-     * Convenience method. Check if <code>exclusion</code> is a substitution
-     * group exclusion for this element declaration.
-     * @param exclusion Extension, restriction or none. Represents final
-     *   set for the element.
-     * @return True if <code>exclusion</code> is a part of the substitution
-     *   group exclusion subset.
+     * Convenience method. Check if <code>exclusion</code> is a substitution 
+     * group exclusion for this element declaration. 
+     * @param exclusion  
+     *   <code>DERIVATION_EXTENSION, DERIVATION_RESTRICTION</code> or 
+     *   <code>DERIVATION_NONE</code>. Represents final set for the element.
+     * @return True if <code>exclusion</code> is a part of the substitution 
+     *   group exclusion subset. 
      */
-    public boolean getIsSubstitutionGroupExclusion(short exclusion);
+    public boolean isSubstitutionGroupExclusion(short exclusion);
 
     /**
-     * Specifies if this declaration can be nominated as
-     * the {substitution group affiliation} of other
-     * element declarations having the same {type definition}
-     * or types derived therefrom.
-     *
-     * @return A bit flag representing {extension, restriction} or NONE.
+     *  [substitution group exclusions]: the returned value is a bit 
+     * combination of the subset of {
+     * <code>DERIVATION_EXTENSION, DERIVATION_RESTRICTION</code>} or 
+     * <code>DERIVATION_NONE</code>. 
      */
     public short getSubstitutionGroupExclusions();
 
     /**
-     * Convenience method. Check if <code>disallowed</code> is a disallowed
-     * substitution for this element declaration.
-     * @param disallowed Substitution, extension, restriction or none.
-     *   Represents a block set for the element.
-     * @return True if <code>disallowed</code> is a part of the substitution
-     *   group exclusion subset.
+     * Convenience method. Check if <code>disallowed</code> is a disallowed 
+     * substitution for this element declaration. 
+     * @param disallowed {
+     *   <code>DERIVATION_SUBSTITUTION, DERIVATION_EXTENSION, DERIVATION_RESTRICTION</code>
+     *   } or <code>DERIVATION_NONE</code>. Represents a block set for the 
+     *   element.
+     * @return True if <code>disallowed</code> is a part of the substitution 
+     *   group exclusion subset. 
      */
-    public boolean getIsDisallowedSubstition(short disallowed);
+    public boolean isDisallowedSubstitution(short disallowed);
 
     /**
-     * The supplied values for {disallowed substitutions}
-     *
-     * @return A bit flag representing {substitution, extension, restriction} or NONE.
+     *  [disallowed substitutions]: the returned value is a bit combination of 
+     * the subset of {
+     * <code>DERIVATION_SUBSTITUTION, DERIVATION_EXTENSION, DERIVATION_RESTRICTION</code>
+     * } corresponding to substitutions disallowed by this 
+     * <code>XSElementDeclaration</code> or <code>DERIVATION_NONE</code>. 
      */
     public short getDisallowedSubstitutions();
 
     /**
-     * {abstract} A boolean.
+     * {abstract} A boolean. 
      */
-    public boolean getIsAbstract();
+    public boolean getAbstract();
 
     /**
-     * Optional. Annotation.
+     * Optional. Annotation. 
      */
     public XSAnnotation getAnnotation();
 

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -57,211 +57,193 @@
 
 package org.apache.xerces.impl.xs.psvi;
 
-
 /**
- * 4.1.1 The Simple Type Definition Schema Component (XML Schema Part 2).
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Simple Type Definition schema component.
  */
 public interface XSSimpleTypeDefinition extends XSTypeDefinition {
-
+    // Variety definitions
     /**
-     * <code>XSSimpleType</code> variety
+     * The variety is absent for the anySimpleType definition.
      */
-    public static final short VARIETY_ABSENT        = 0;
+    public static final short VARIETY_ABSENT            = 0;
     /**
-     * <code>XSSimpleType</code> variety
+     * <code>Atomic</code> type.
      */
-    public static final short VARIETY_ATOMIC        = 1;
+    public static final short VARIETY_ATOMIC            = 1;
     /**
-     * <code>XSSimpleType</code> variety
+     * <code>List</code> type.
      */
-    public static final short VARIETY_LIST          = 2;
+    public static final short VARIETY_LIST              = 2;
     /**
-     * <code>XSSimpleType</code> variety
+     * <code>Union</code> type.
      */
-    public static final short VARIETY_UNION         = 3;
-
-    /**
-     * constants defined for the 'ordered' fundamental facet.
-     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-fund-facets'> XML
-     * Schema Part 2: Datatypes </a>
-     */
-    /** not ordered */
-    public static final short ORDERED_FALSE         = 0;
-    /** partically ordered */
-    public static final short ORDERED_PARTIAL       = 1;
-    /** totally ordered */
-    public static final short ORDERED_TOTAL         = 2;
+    public static final short VARIETY_UNION             = 3;
 
     // Facets
     /**
-     * none
+     * No facets defined.
      */
-    public static final short FACET_NONE            = 0;
+    public static final short FACET_NONE                = 0;
     /**
      * 4.3.1 Length
      */
-    public static final short FACET_LENGTH          = 1<<1;
+    public static final short FACET_LENGTH              = 1;
     /**
-     * 4.3.2 minLength.
+     * 4.3.2 minLength. 
      */
-    public static final short FACET_MINLENGTH       = 1<<2;
+    public static final short FACET_MINLENGTH           = 2;
     /**
      * 4.3.3 maxLength.
      */
-    public static final short FACET_MAXLENGTH       = 1<<3;
+    public static final short FACET_MAXLENGTH           = 4;
     /**
      * 4.3.4 pattern.
      */
-    public static final short FACET_PATTERN         = 1<<4;
+    public static final short FACET_PATTERN             = 8;
     /**
-     * 4.3.5 enumeration.
+     * 4.3.5 whitespace.
      */
-    public static final short FACET_ENUMERATION     = 1<<5;
-    /**
-     * 4.3.6 whitespace.
-     */
-    public static final short FACET_WHITESPACE      = 1<<6;
+    public static final short FACET_WHITESPACE          = 16;
     /**
      * 4.3.7 maxInclusive.
      */
-    public static final short FACET_MAXINCLUSIVE    = 1<<7;
+    public static final short FACET_MAXINCLUSIVE        = 32;
     /**
      * 4.3.9 maxExclusive.
      */
-    public static final short FACET_MAXEXCLUSIVE    = 1<<8;
+    public static final short FACET_MAXEXCLUSIVE        = 64;
     /**
      * 4.3.9 minExclusive.
      */
-    public static final short FACET_MINEXCLUSIVE    = 1<<9;
+    public static final short FACET_MINEXCLUSIVE        = 128;
     /**
      * 4.3.10 minInclusive.
      */
-    public static final short FACET_MININCLUSIVE    = 1<<10;
+    public static final short FACET_MININCLUSIVE        = 256;
     /**
      * 4.3.11 totalDigits .
      */
-    public static final short FACET_TOTALDIGITS     = 1<<11;
+    public static final short FACET_TOTALDIGITS         = 512;
     /**
      * 4.3.12 fractionDigits.
      */
-    public static final short FACET_FRACTIONDIGITS  = 1<<12;
-
+    public static final short FACET_FRACTIONDIGITS      = 1024;
     /**
-     * {Facets} Check whether a facet is defined on this type.
-     * @param facetName The name of the facet.
-     * @return          true if the facet is defined; false othereise.
+     * 4.3.5 enumeration.
      */
-    public boolean getIsDefinedFacet(short facetName);
+    public static final short FACET_ENUMERATION         = 2048;
 
     /**
-     * {Facets} Get all facets defined on this type.
-     * @return  bit combination of FACET_XXX constants of all defined facets.
+     * A constant defined for the 'ordered' fundamental facet: Not ordered.
      */
-    public short getDefinedFacets();
-
+    public static final short ORDERED_FALSE             = 0;
     /**
-     * {Facets} Check whether a facet is defined and fixed on this type.
-     * @param facetName The name of the facet.
-     * @return          true if the facet is defined and fixed; false othereise.
+     * A constant defined for the 'ordered' fundamental facet: partially 
+     * ordered.
      */
-    public boolean getIsFixedFacet(short facetName);
-
+    public static final short ORDERED_PARTIAL           = 1;
     /**
-     * {Facets} Get all facets defined and fixed on this type.
-     * @return  bit combination of FACET_XXX constants of all fixed facets.
+     * A constant defined for the 'ordered' fundamental facet: total ordered.
      */
-    public short getFixedFacets();
-
+    public static final short ORDERED_TOTAL             = 2;
     /**
-     * Convenience method. Returns a value of a single constraining facet for
-     * this simple type definition. This method must not be used to retrieve
-     * values for <code>enumeration</code> and <code>pattern</code> facets.
-     * @param facetName The name of the facet, i.e.
-     *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see
-     *   <code>XSConstants</code>).To retrieve value for pattern or
-     *   enumeration, see <code>enumeration</code> and <code>pattern</code>.
-     * @return A value of the facet specified in <code>facetName</code> for
-     *   this simple type definition or <code>null</code>.
-     */
-    public String getLexicalFacetValue(short facetName);
-
-    /**
-     * Returns a list of enumeration values, as <code>String</code>'s.
-     */
-    public StringList getLexicalEnumerations();
-
-    /**
-     * Returns a list of pattern values, as <code>String</code>'s.
-     */
-    public StringList getLexicalPatterns();
-
-    /**
-     * Fundamental Facet: [Definition:] An order relation on a value space is
-     * a mathematical relation that imposes a total order or a partial order
-     * on the members of the value space.
-     */
-    public short getOrdered();
-
-    /**
-     * Fundamental Facet: [Definition:] Every value space has associated with
-     * it the concept of cardinality. Some value spaces are finite, some are
-     * countably infinite while still others could conceivably be
-     * uncountably infinite (although no value space defined by this
-     * specification is uncountable infinite). A datatype is said to have
-     * the cardinality of its value space.
-     */
-    public boolean getIsFinite();
-
-    /**
-     * Fundamental Facet: [Definition:] A datatype is bounded if its value
-     * space has either an inclusive upper bound or an exclusive upper bound
-     * and either an inclusive lower bound and an exclusive lower bound.
-     * Should bounded be of type boolean? Should this facet provide more
-     * information (discontinuous)?
-     */
-    public boolean getIsBounded();
-
-    /**
-     * Fundamental Facet: [Definition:] A datatype is said to be numeric if
-     * its values are conceptually quantities (in some mathematical number
-     * system). [Definition:] A datatype whose values are not numeric is
-     * said to be non-numeric.
-     */
-    public boolean getIsNumeric();
-
-    /**
-     * {variety} One of {atomic, list, union}. The valid constant values
-     * defined in <code>XSConstants</code> are <code>UNION</code>,
-     * <code>LIST</code>, <code>ATOMIC</code>.
+     * [variety]: one of {atomic, list, union} or absent 
      */
     public short getVariety();
 
     /**
-     * If variety is <code>atomic</code> the primitive type definition (a
-     * built-in primitive datatype definition or the simple ur-type
-     * definition) is available, otherwise <code>null</code>.
+     * If variety is <code>atomic</code> the primitive type definition (a 
+     * built-in primitive datatype definition or the simple ur-type 
+     * definition) is available, otherwise <code>null</code>. 
      */
     public XSSimpleTypeDefinition getPrimitiveType();
 
     /**
-     * If variety is <code>list</code> the item type definition (an atomic or
-     * union simple type definition) is available, otherwise
-     * <code>null</code>.
+     * If variety is <code>list</code> the item type definition (an atomic or 
+     * union simple type definition) is available, otherwise 
+     * <code>null</code>. 
      */
     public XSSimpleTypeDefinition getItemType();
 
     /**
-     * If variety is <code>union</code> the list of member type definitions (a
-     * non-empty sequence of simple type definitions) is available,
-     * otherwise <code>null</code>.
+     * If variety is <code>union</code> the list of member type definitions (a 
+     * non-empty sequence of simple type definitions) is available, 
+     * otherwise <code>null</code>. 
      */
     public XSObjectList getMemberTypes();
 
     /**
-     * Optional. Annotation.
+     * [facets]: get all facets defined on this type. The value is a bit 
+     * combination of FACET_XXX constants of all defined facets. 
+     */
+    public short getDefinedFacets();
+
+    /**
+     * Convenience method. [Facets]: check whether a facet is defined on this 
+     * type.
+     * @param facetName  The name of the facet. 
+     * @return  True if the facet is defined, false otherwise.
+     */
+    public boolean isDefinedFacet(short facetName);
+
+    /**
+     * [facets]: get all facets defined and fixed on this type.
+     */
+    public short getFixedFacets();
+
+    /**
+     * Convenience method. [Facets]: check whether a facet is defined and 
+     * fixed on this type. 
+     * @param facetName  The name of the facet. 
+     * @return  True if the facet is fixed, false otherwise.
+     */
+    public boolean isFixedFacet(short facetName);
+
+    /**
+     * Convenience method. Returns a value of a single constraining facet for 
+     * this simple type definition. This method must not be used to retrieve 
+     * values for <code>enumeration</code> and <code>pattern</code> facets. 
+     * @param facetName The name of the facet, i.e. 
+     *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see 
+     *   <code>XSConstants</code>).To retrieve value for pattern or 
+     *   enumeration, see <code>enumeration</code> and <code>pattern</code>.
+     * @return A value of the facet specified in <code>facetName</code> for 
+     *   this simple type definition or <code>null</code>. 
+     */
+    public String getLexicalFacetValue(short facetName);
+
+    /**
+     * Returns a list of enumeration values. 
+     */
+    public StringList getLexicalEnumeration();
+
+    /**
+     * Returns a list of pattern values. 
+     */
+    public StringList getLexicalPattern();
+
+    /**
+     *  Fundamental Facet: ordered 
+     */
+    public short getOrdered();
+
+    /**
+     * Fundamental Facet: cardinality. 
+     */
+    public boolean getFinite();
+
+    /**
+     * Fundamental Facet: bounded. 
+     */
+    public boolean getBounded();
+
+    /**
+     * Fundamental Facet: numeric. 
+     */
+    public boolean getNumeric();
+
+    /**
+     * Optional. An [annotation]. 
      */
     public XSAnnotation getAnnotation();
 

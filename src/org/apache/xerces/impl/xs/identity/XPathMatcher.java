@@ -61,8 +61,8 @@ import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -385,9 +385,9 @@ public class XPathMatcher {
                     // but is it right?
                     XSAttributeGroupDecl attrGrp = null;
                     if (elementDecl != null) {
-                        XSTypeDecl type = elementDecl.fType;
+                        XSTypeDefinition type = elementDecl.fType;
                         if (type != null) {
-                          if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+                          if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                             XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
                             attrGrp = ctype.getAttrGrp();
                           }

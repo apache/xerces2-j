@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -59,57 +59,85 @@ package org.apache.xerces.impl.xs.psvi;
 
 /**
  * This interface represents a complex or simple type definition.
- *
- * @author Elena Litani, IBM
- * @version $Id$
  */
 public interface XSTypeDefinition extends XSObject {
-
     /**
      * This constant value signifies a complex type.
      */
-    public static final short COMPLEX_TYPE   = XSConstants.ANNOTATION+1;
+    public static final short COMPLEX_TYPE              = 13;
     /**
      * This constant value signifies a simple type.
      */
-    public static final short SIMPLE_TYPE    = XSConstants.ANNOTATION+2;
-
+    public static final short SIMPLE_TYPE               = 14;
     /**
      * Return whether this type definition is a simple type or complex type.
      */
     public short getTypeCategory();
-    
+
     /**
-     * {base type definition} Either a simple type definition or a complex
-     * type definition.
+     * {base type definition}: either a simple type definition or a complex 
+     * type definition. 
      */
     public XSTypeDefinition getBaseType();
 
     /**
-     * {final} For complex type definition it is a subset of {extension,
-     * restriction}. For simple type definition it is a subset of
-     * {extension, list, restriction, union}.
-     * @param derivation  Extension, restriction, list, union constants
-     *   (defined in <code>XSConstants</code>).
-     * @return True if derivation is in the final set, otherwise false.
+     * {final}. For complex type definition it is a subset of {extension, 
+     * restriction}. For simple type definition it is a subset of 
+     * {extension, list, restriction, union}. 
+     * @param restriction  Extension, restriction, list, union constants 
+     *   (defined in <code>XSConstants</code>). 
+     * @return True if restriction is in the final set, otherwise false.
      */
-    public boolean getIsFinal(short derivation);
+    public boolean isFinal(short restriction);
 
     /**
-     * {final} For complex type definition it is a subset of {extension,
-     * restriction}. For simple type definition it is a subset of
-     * {extension, list, restriction, union}.
-     * @return A bit flag that represents:
-     *         {extension, restriction) or none for complexTypes;
-     *         {extension, list, restriction, union} or none for simpleTypes;
+     * For complex types the returned value is a bit combination of the subset 
+     * of {<code>DERIVATION_EXTENSION, DERIVATION_RESTRICTION</code>} 
+     * corresponding to <code>final</code> set of this type or 
+     * <code>DERIVATION_NONE</code>. For simple types the returned value is 
+     * a bit combination of the subset of { 
+     * <code>DERIVATION_RESTRICTION, DERIVATION_EXTENSION, DERIVATION_UNION, DERIVATION_LIST</code>
+     * } corresponding to <code>final</code> set of this type or 
+     * <code>DERIVATION_NONE</code>. 
      */
     public short getFinal();
 
     /**
-     * A boolean that specifies if the type definition is anonymous.
-     * Convenience attribute. This is a field is not part of
-     * XML Schema component model.
+     *  Convenience. A boolean that specifies if the type definition is 
+     * anonymous. Convenience attribute. 
      */
-    public boolean getIsAnonymous();
+    public boolean getAnonymous();
+
+    /**
+     * Convenience method: check if this type is derived from the given 
+     * <code>ancestorType</code>. 
+     * @param ancestorType  An ancestor type definition. 
+     * @param derivationMethod  A bit combination representing a subset of {
+     *   <code>DERIVATION_RESTRICTION, DERIVATION_EXTENSION, DERIVATION_UNION, DERIVATION_LIST</code>
+     *   }. 
+     * @return  Return true if this type is derived from 
+     *   <code>ancestorType</code> using only derivation methods from the 
+     *   <code>derivationMethod</code>. Return true if this type is derived 
+     *   from <code>ancestorType</code>.
+     */
+    public boolean derivedFromType(XSTypeDefinition ancestorType, 
+                                   short derivationMethod);
+
+    /**
+     * Convenience method: check if this type is derived from the given 
+     * ancestor type. 
+     * @param namespace  An ancestor type namespace. 
+     * @param name  An ancestor type name. 
+     * @param derivationMethod  A bit combination representing a subset of {
+     *   <code>DERIVATION_RESTRICTION, DERIVATION_EXTENSION, DERIVATION_UNION, DERIVATION_LIST</code>
+     *   }. 
+     * @return  Return true if this type is derived from 
+     *   <code>ancestorType</code> using only derivation methods from the 
+     *   <code>derivationMethod</code>. Return true if this type is derived 
+     *   from <code>ancestorType</code>.
+     */
+    public boolean derivedFrom(String namespace, 
+                               String name, 
+                               short derivationMethod);
 
 }

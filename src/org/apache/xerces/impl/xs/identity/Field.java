@@ -58,17 +58,12 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.xpath.*;
-import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.xpath.XPathException;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.NamespaceContext;
-import org.apache.xerces.xni.psvi.ElementPSVI;
-
-import org.xml.sax.SAXException;
 
 /**
  * Schema identity constraint field.
@@ -233,9 +228,9 @@ public class Field {
             XSSimpleType val=null;
 
             if (eDecl!=null) {
-                XSTypeDecl type = eDecl.fType;
+                XSTypeDefinition type = eDecl.fType;
                 if (type != null) {
-                    if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+                    if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                         XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
                         val = (XSSimpleType)ctype.getSimpleType();
                     }
@@ -254,7 +249,7 @@ public class Field {
             }
             fMatchedString = value;
             if(eDecl != null) {
-                matched(fMatchedString, val, (eDecl.getIsNillable()));
+                matched(fMatchedString, val, (eDecl.getNillable()));
             } else {
                 matched(fMatchedString, val, false); 
             }

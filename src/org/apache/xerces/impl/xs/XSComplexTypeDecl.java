@@ -70,7 +70,7 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
+public class XSComplexTypeDecl implements XSComplexTypeDefinition {
 
     // name of the complexType
     String fName = null;
@@ -79,7 +79,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
     String fTargetNamespace = null;
 
     // base type of the complexType
-    XSTypeDecl fBaseType = null;
+    XSTypeDefinition fBaseType = null;
 
     // derivation method of the complexType
     short fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
@@ -114,7 +114,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
     }
 
     public void setValues(String name, String targetNamespace,
-            XSTypeDecl baseType, short derivedBy, short schemaFinal, 
+            XSTypeDefinition baseType, short derivedBy, short schemaFinal, 
             short block, short contentType,
             boolean isAbstract, XSAttributeGroupDecl attrGrp, 
             XSSimpleType simpleType, XSParticleDecl particle) {
@@ -201,7 +201,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
             str.append(" base type name='" + fBaseType.getName() + "', ");
 
         str.append(" content type='" + contentType[fContentType] + "', ");
-        str.append(" isAbstract='" + getIsAbstract() + "', ");
+        str.append(" isAbstract='" + getAbstract() + "', ");
         str.append(" hasTypeId='" + containsTypeID() + "', ");
         str.append(" final='" + fFinal + "', ");
         str.append(" block='" + fBlock + "', ");
@@ -211,7 +211,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
 
     }
 
-    public boolean derivedFrom(XSTypeDefinition ancestor) {
+    public boolean derivedFromType(XSTypeDefinition ancestor, short derivationMethod) {
         // ancestor is null, retur false
         if (ancestor == null)
             return false;
@@ -220,7 +220,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
             return true;
         // recursively get base, and compare it with ancestor
         XSTypeDefinition type = this;
-        while (type != ancestor &&                      // compare with ancestor
+        while (type != ancestor &&                     // compare with ancestor
                type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
                type != SchemaGrammar.fAnyType) {        // reached anyType
             type = type.getBaseType();
@@ -229,7 +229,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
         return type == ancestor;
     }
 
-    public boolean derivedFrom(String ancestorNS, String ancestorName) {
+    public boolean derivedFrom(String ancestorNS, String ancestorName, short derivationMethod) {
         // ancestor is null, retur false
         if (ancestorName == null)
             return false;
@@ -241,13 +241,13 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
         }
 
         // recursively get base, and compare it with ancestor
-        XSTypeDecl type = this;
+        XSTypeDefinition type = this;
         while (!(ancestorName.equals(type.getName()) &&
                  ((ancestorNS == null && type.getNamespace() == null) ||
                   (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
                type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
                type != SchemaGrammar.fAnyType) {        // reached anyType
-            type = (XSTypeDecl)type.getBaseType();
+            type = (XSTypeDefinition)type.getBaseType();
         }
 
         return type != SchemaGrammar.fAnySimpleType &&
@@ -284,7 +284,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
      * <code>XSObject</code> type.
      */
     public String getName() {
-        return getIsAnonymous() ? null : fName;
+        return getAnonymous() ? null : fName;
     }
 
     /**
@@ -292,7 +292,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
      * Convenience attribute. This is a field is not part of
      * XML Schema component model.
      */
-    public boolean getIsAnonymous() {
+    public boolean getAnonymous() {
         return((fMiscFlags & CT_IS_ANONYMOUS) != 0);
     }
 
@@ -329,7 +329,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
      *   (defined in <code>XSConstants</code>).
      * @return True if derivation is in the final set, otherwise false.
      */
-    public boolean getIsFinal(short derivation) {
+    public boolean isFinal(short derivation) {
         return (fFinal & derivation) != 0;
     }
 
@@ -349,7 +349,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
      * not be used as the {type definition} for the validation of element
      * information items.
      */
-    public boolean getIsAbstract() {
+    public boolean getAbstract() {
         return((fMiscFlags & CT_IS_ABSTRACT) != 0);
     }
 
@@ -399,7 +399,7 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
      * @return True if prohibited is a prohibited substitution, otherwise
      *   false.
      */
-    public boolean getIsProhibitedSubstitution(short prohibited) {
+    public boolean isProhibitedSubstitution(short prohibited) {
         return (fBlock & prohibited) != 0;
     }
 
@@ -420,4 +420,12 @@ public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
         return null;
     }
     
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        // REVISIT: implement
+		return null;
+	}
+
 } // class XSComplexTypeDecl

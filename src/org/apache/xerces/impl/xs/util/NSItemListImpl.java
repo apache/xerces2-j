@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,29 +55,62 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.impl.xs.util;
 
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItemList;
+import org.apache.xerces.impl.xs.psvi.XSObject;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import java.util.Vector;
 /**
- *  The <code>ObjectList</code> is an ordered collection of generic objects. 
+ * Containts a list of Object's.
+ *
+ * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public interface ObjectList {
-    /**
-     *  The number of <code>Object</code> in the list. The range of valid 
-     * child object indices is 0 to <code>length-1</code> inclusive. 
-     */
-    public int getLength();
+public class NSItemListImpl implements XSNamespaceItemList {
+
+    // The array to hold all data
+    private XSNamespaceItem[] fArray = null;
+    // Number of elements in this list
+    private int fLength = 0;
+
+    // REVISIT: this is temp solution. In general we need to use this class
+    //          instead of the Vector.
+    private Vector fVector;
+
+    public NSItemListImpl(Vector v) {
+        fVector = v;        
+        fLength = v.size();
+    }
 
     /**
-     *  Returns the <code>index</code>th item in the collection. The index 
-     * starts at 0. If <code>index</code> is greater than or equal to the 
-     * number of objects in the list, this returns <code>null</code>. 
-     * @param index  index into the collection. 
-     * @return  The <code>Object</code>at the <code>index</code>th position 
-     *   in the <code>ObjectList</code>, or <code>null</code> if that is 
-     *   not a valid index. 
+     * Construct an XSNamespaceItemList implementation
+     * 
+     * @param array     the data array
+     * @param length    the number of elements
      */
-    public Object item(int index);
+    public NSItemListImpl(XSNamespaceItem[] array, int length) {
+        fArray = array;
+        fLength = length;
+    }
 
-}
+    /**
+     * The number of <code>Objects</code> in the list. The range of valid
+     * child node indices is 0 to <code>length-1</code> inclusive.
+     */
+    public int getLength() {
+        return fLength;
+    }
+
+    public XSNamespaceItem item(int index) {
+        if (index < 0 || index >= fLength)
+            return null;
+        if (fVector != null) {
+            return (XSNamespaceItem)fVector.elementAt(index);
+        }
+        return fArray[index];
+    }
+
+} // class XSParticle

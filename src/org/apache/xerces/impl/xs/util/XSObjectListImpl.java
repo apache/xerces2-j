@@ -102,7 +102,7 @@ public class XSObjectListImpl implements XSObjectList {
      *   <code>XSObjectList</code>, or <code>null</code> if that is not a
      *   valid index.
      */
-    public XSObject getItem(int index) {
+    public XSObject item(int index) {
         if (index < 0 || index >= fLength)
             return null;
         return fArray[index];

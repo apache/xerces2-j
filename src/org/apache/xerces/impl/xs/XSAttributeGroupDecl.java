@@ -57,9 +57,14 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSAttributeGroupDefinition;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSWildcard;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 
 /**
  * The XML representation for an attribute group declaration
@@ -356,4 +361,12 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         return null;
     }
     
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        //REVISIT: implement
+		return null;
+	}
+
 } // class XSAttributeGroupDecl

@@ -56,28 +56,26 @@
  */
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSFacets;
-import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
-import org.apache.xerces.impl.xs.XSConstraints;
+import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
-import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUseImpl;
-import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
+import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
-import org.apache.xerces.util.DOMUtil;
-import org.apache.xerces.impl.xs.util.XInt;
-import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
-import java.util.Hashtable;
 
 /**
  * A complex type definition schema component traverser.
@@ -109,7 +107,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private short fFinal = XSConstants.DERIVATION_NONE;
     private short fBlock = XSConstants.DERIVATION_NONE;
     private short fContentType = XSComplexTypeDecl.CONTENTTYPE_EMPTY;
-    private XSTypeDecl fBaseType = null;
+    private XSTypeDefinition fBaseType = null;
     private XSAttributeGroupDecl fAttrGrp = null;
     private XSSimpleType fXSSimpleType = null;
     private XSParticleDecl fParticle = null;
@@ -384,7 +382,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                             new Object[]{fName}, simpleContent);
         }
 
-        XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc,
+        XSTypeDefinition type = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc,
                                       XSDHandler.TYPEDECL_TYPE, baseTypeName,
                                       simpleContent);
         if (type==null)
@@ -397,7 +395,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         int baseFinalSet = 0;
 
         // If the base type is complex, it must have simpleContent
-        if ((type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)) {
+        if ((type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)) {
 
             baseComplexType = (XSComplexTypeDecl)type;
             if (baseComplexType.getContentType() != XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
@@ -638,7 +636,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                       new Object[]{fName}, complexContent);
         }
 
-        XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc,
+        XSTypeDefinition type = (XSTypeDefinition)fSchemaHandler.getGlobalDecl(schemaDoc,
                                                                    XSDHandler.TYPEDECL_TYPE,
                                                                    baseTypeName,
                                                                    complexContent);
@@ -800,7 +798,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         XSAttributeUseImpl existingAttrUse, duplicateAttrUse =  null, oneAttrUse;
         int attrCount = attrUseS.getLength();
         for (int i=0; i<attrCount; i++) {
-            oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
+            oneAttrUse = (XSAttributeUseImpl)attrUseS.item(i);
             existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.getNamespace(),
                                                         oneAttrUse.fAttrDecl.getName());
             if (existingAttrUse == null) {
@@ -1031,7 +1029,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fXSSimpleType = (XSSimpleType)fGlobalStore[--fGlobalStorePos];
         fParticle = (XSParticleDecl)fGlobalStore[--fGlobalStorePos]; 
         fAttrGrp = (XSAttributeGroupDecl)fGlobalStore[--fGlobalStorePos];
-        fBaseType = (XSTypeDecl)fGlobalStore[--fGlobalStorePos];
+        fBaseType = (XSTypeDefinition)fGlobalStore[--fGlobalStorePos];
         int i = ((Integer)(fGlobalStore[--fGlobalStorePos])).intValue();
         fBlock = (short)(i >> 16);
         fContentType = (short)i;

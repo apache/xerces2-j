@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,26 +58,23 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.12.1 The Notation Declaration Schema Component
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ *  This interface represents the Notation Declaration schema component. 
  */
 public interface XSNotationDeclaration extends XSObject {
-
     /**
-     * Optional if {public identifier} is present. A URI reference.
+     *  The URI reference representing the system identifier for the notation 
+     * declaration, if present, <code>null</code> otherwise. 
      */
     public String getSystemId();
 
     /**
-     * Optional if {system identifier} is present. A public identifier,
-     * as defined in [XML 1.0 (Second Edition)]. 
+     *  The string representing the public identifier for this notation 
+     * declaration, if present; <code>null</code> otherwise. 
      */
     public String getPublicId();
 
     /**
-     * Optional. Annotation.
+     * Optional. An [annotation]. 
      */
     public XSAnnotation getAnnotation();
 

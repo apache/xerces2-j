@@ -72,6 +72,7 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -876,7 +877,7 @@ public class XMLSchemaValidator
         // When it's a complex type with element-only content, we need to
         // find out whether the content contains any non-whitespace character.
         boolean allWhiteSpace = true;
-        if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
                 // data outside of element content
@@ -1117,10 +1118,10 @@ public class XMLSchemaValidator
     XSNotationDecl[] fNotationStack = new XSNotationDecl[INITIAL_STACK_SIZE];
 
     /** Current type. */
-    XSTypeDecl fCurrentType;
+    XSTypeDefinition fCurrentType;
 
     /** type stack. */
-    XSTypeDecl[] fTypeStack = new XSTypeDecl[INITIAL_STACK_SIZE];
+    XSTypeDefinition[] fTypeStack = new XSTypeDefinition[INITIAL_STACK_SIZE];
 
     /** Current content model. */
     XSCMValidator fCurrentCM;
@@ -1484,7 +1485,7 @@ public class XMLSchemaValidator
             System.arraycopy(fNotationStack, 0, newArrayN, 0, fElementDepth);
             fNotationStack = newArrayN;
 
-            XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
+            XSTypeDefinition[] newArrayT = new XSTypeDefinition[newSize];
             System.arraycopy(fTypeStack, 0, newArrayT, 0, fElementDepth);
             fTypeStack = newArrayT;
 
@@ -1546,7 +1547,7 @@ public class XMLSchemaValidator
         
         // When it's a complex type with element-only content, we need to
         // find out whether the content contains any non-whitespace character.
-        if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
                 // data outside of element content
@@ -1828,7 +1829,7 @@ public class XMLSchemaValidator
 
         // Element Locally Valid (Element)
         // 2 Its {abstract} must be false.
-        if (fCurrentElemDecl != null && fCurrentElemDecl.getIsAbstract())
+        if (fCurrentElemDecl != null && fCurrentElemDecl.getAbstract())
             reportSchemaError("cvc-elt.2", new Object[]{element.rawname});
 
         if (fCurrentElemDecl != null) {
@@ -1904,7 +1905,7 @@ public class XMLSchemaValidator
                 fAppendBuffer = true;
             }
             // if the type is simple, we need to append
-            else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+            else if (fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
                 fAppendBuffer = true;
             }
             else {
@@ -1930,9 +1931,9 @@ public class XMLSchemaValidator
 
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
-        if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-            if (ctype.getIsAbstract()) {
+            if (ctype.getAbstract()) {
                 reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
             }
             if (fNormalizeData) {
@@ -1968,7 +1969,7 @@ public class XMLSchemaValidator
 
         // then try to get the content model
         fCurrentCM = null;
-        if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
         }
 
@@ -1986,7 +1987,7 @@ public class XMLSchemaValidator
         // now validate everything related with the attributes
         // first, get the attribute group
         XSAttributeGroupDecl attrGrp = null;
-        if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
             attrGrp = ctype.getAttrGrp();
         }
@@ -2354,7 +2355,7 @@ public class XMLSchemaValidator
 
     }//findSchemaGrammar
 
-    XSTypeDecl getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
+    XSTypeDefinition getAndCheckXsiType(QName element, String xsiType, XMLAttributes attributes) {
         // This method also deals with clause 1.2.1.2 of the constraint
         // Validation Rule: Schema-Validity Assessment (Element)
 
@@ -2372,7 +2373,7 @@ public class XMLSchemaValidator
         }
 
         // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
-        XSTypeDecl type = null;
+        XSTypeDefinition type = null;
         // if the namespace is schema namespace, first try built-in types
         if (typeName.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
             type = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(typeName.localpart);
@@ -2396,7 +2397,7 @@ public class XMLSchemaValidator
         if (fCurrentType != null) {
             // 4.3 The local type definition must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (3.14.6) (if it is a simple type definition).
             short block = fCurrentElemDecl.fBlock;
-            if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)
+            if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
                 block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
             if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block))
                 reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType});
@@ -2409,7 +2410,7 @@ public class XMLSchemaValidator
         // Element Locally Valid (Element)
         // 3 The appropriate case among the following must be true:
         // 3.1 If {nillable} is false, then there must be no attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is nil.
-        if (fCurrentElemDecl != null && !fCurrentElemDecl.getIsNillable()) {
+        if (fCurrentElemDecl != null && !fCurrentElemDecl.getNillable()) {
             reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, SchemaSymbols.URI_XSI+","+SchemaSymbols.XSI_NIL});
         }
         // 3.2 If {nillable} is true and there is such an attribute information item and its actual value is true , then all of the following must be true:
@@ -2444,7 +2445,7 @@ public class XMLSchemaValidator
         AttributePSVImpl attrPSVI = null;
 
         boolean isSimple = fCurrentType == null ||
-                           fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE;
+                           fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE;
         
         XSObjectList attrUses = null;
         int useCount = 0;
@@ -2516,7 +2517,7 @@ public class XMLSchemaValidator
             // it's not xmlns, and not xsi, then we need to find a decl for it
             XSAttributeUseImpl currUse = null, oneUse;
             for (int i = 0; i < useCount; i++) {
-                oneUse = (XSAttributeUseImpl)attrUses.getItem(i);
+                oneUse = (XSAttributeUseImpl)attrUses.item(i);
                 if (oneUse.fAttrDecl.fName == fTempQName.localpart &&
                     oneUse.fAttrDecl.fTargetNamespace == fTempQName.uri) {
                     currUse = oneUse;
@@ -2570,7 +2571,7 @@ public class XMLSchemaValidator
                 else {
                     // 5 Let [Definition:]  the wild IDs be the set of all attribute information item to which clause 3.2 applied and whose validation resulted in a context-determined declaration of mustFind or no context-determined declaration at all, and whose [local name] and [namespace name] resolve (as defined by QName resolution (Instance) (3.15.4)) to an attribute declaration whose {type definition} is or is derived from ID. Then all of the following must be true:
                     // 5.1 There must be no more than one item in wild IDs.
-                    if (currDecl.fType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE &&
+                    if (currDecl.fType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE &&
                         ((XSSimpleType)currDecl.fType).isIDType()) {
                         if (wildcardIDName != null){
                             reportSchemaError("cvc-complex-type.5.1", new Object[]{element.rawname, currDecl.fName, wildcardIDName});
@@ -2709,7 +2710,7 @@ public class XMLSchemaValidator
         // for each attribute use
         for (int i = 0; i < useCount; i++) {
 
-            currUse = (XSAttributeUseImpl)attrUses.getItem(i);
+            currUse = (XSAttributeUseImpl)attrUses.item(i);
             currDecl = currUse.fAttrDecl;
             // get value constraint
             constType = currUse.fConstraintType;
@@ -2832,7 +2833,7 @@ public class XMLSchemaValidator
                 if (fSubElement)
                     reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
                 // 5.2.2.2 The appropriate case among the following must be true:
-                if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+                if (fCurrentType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                     XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                     // 5.2.2.2.1 If the {content type} of the actual type definition is mixed, then the initial value of the item must match the canonical lexical representation of the {value constraint} value.
                     if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
@@ -2847,7 +2848,7 @@ public class XMLSchemaValidator
                             reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.stringValue()});
                     }
                 }
-                else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+                else if (fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
                     XSSimpleType sType = (XSSimpleType)fCurrentType;
                     if (actualValue != null &&
                         !actualValue.equals(fCurrentElemDecl.fDefault.actualValue))
@@ -2885,7 +2886,7 @@ public class XMLSchemaValidator
         // Element Locally Valid (Type)
         // 3 The appropriate case among the following must be true:
         // 3.1 If the type definition is a simple type definition, then all of the following must be true:
-        if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
             // 3.1.2 The element information item must have no element information item [children].
             if (fSubElement)
                 reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});

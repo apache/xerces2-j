@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.xni.QName;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -128,15 +129,15 @@ public class SubstitutionGroupHandler {
         short devMethod = 0, blockConstraint = blockingConstraint;
 
         // initialize the derivation method to be that of the type of D
-        XSTypeDecl type = element.fType;
-        if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)
+        XSTypeDefinition type = element.fType;
+        if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
             devMethod = ((XSComplexTypeDecl)type).fDerivedBy;
         else
             devMethod = XSConstants.DERIVATION_RESTRICTION;
 
         // initialize disallowed substitution to the passed in blocking constraint
         type = exemplar.fType;
-        if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)
+        if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
             blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
 
         // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
@@ -145,7 +146,7 @@ public class SubstitutionGroupHandler {
             // add the derivation method and disallowed substitution info
             // of the current type to the corresponding variables
             type = subGroup.fType;
-            if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
                 blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
             } else {

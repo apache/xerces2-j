@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,39 +49,34 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * The <code>XSObjectList</code> interface provides the abstraction of an
- * ordered collection of object, without defining or constraining how this
- * collection is implemented.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ *  The <code>XSObjectList</code> interface provides the abstraction of an 
+ * ordered collection of <code>XSObject</code>s, without defining or 
+ * constraining how this collection is implemented. 
  */
 public interface XSObjectList {
-
     /**
-     * The number of <code>XSObjects</code> in the list. The range of valid
-     * child node indices is 0 to <code>length-1</code> inclusive.
+     *  The number of <code>XSObjects</code> in the list. The range of valid 
+     * child object indices is 0 to <code>length-1</code> inclusive. 
      */
     public int getLength();
 
     /**
-     * Returns the <code>index</code>th item in the collection. The index
-     * starts at 0. If <code>index</code> is greater than or equal to the
-     * number of nodes in the list, this returns <code>null</code>.
-     * @param index index into the collection.
-     * @return The XSObject at the <code>index</code>th position in the
-     *   <code>XSObjectList</code>, or <code>null</code> if that is not a
-     *   valid index.
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>XSObject</code> at the <code>index</code>th 
+     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
+     *   that is not a valid index. 
      */
-    public XSObject getItem(int index);
+    public XSObject item(int index);
 
 }

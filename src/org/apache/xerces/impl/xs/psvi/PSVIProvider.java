@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,30 +49,26 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
 package org.apache.xerces.impl.xs.psvi;
 
 import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 
 /**
- * This interface provides an access to the post schema validation infoset for an
- * API that provides streaming document infoset, such as SAX, XNI, and
- * others.
- * <p>For implementations that would like to provide access to the PSVI in a
- * streaming model, a parser object should also implement
- * <code>PSVIProvider</code> interface. Within the scope of the methods
- * handling the start and end of an element, applications may use the
- * <code>PSVIProvider</code> to retrieve the PSVI related to that element
+ * This interface provides access to the post schema validation infoset for an 
+ * API that provides streaming document infoset, such as SAX, XNI, and 
+ * others. 
+ * <p>For implementations that would like to provide access to the PSVI in a 
+ * streaming model, a parser object should also implement 
+ * <code>PSVIProvider</code> interface. Within the scope of the methods 
+ * handling the start and end of an element, applications may use the 
+ * <code>PSVIProvider</code> to retrieve the PSVI related to that element 
  * and its attributes.
- * 
- * @author Elena Litani, IBM
- * @version $Id$
  */
 public interface PSVIProvider {
     /**
@@ -90,12 +86,14 @@ public interface PSVIProvider {
      *   context}, {notation}. The {schema information} property is 
      *   available for the validation root. The {error codes} property is 
      *   available if any errors occured during validation.  The following 
-     *   information are available in the scope of a document handler 
+     *   properties are available in the scope of a document handler 
      *   <code>endElement</code>: {nil}, {schema specified}, {normalized 
      *   value},{ member type definition}, {validity}, {validation attempted}
      *   . If the declaration has a value constraint, the property {schema 
      *   default} is available. The {error codes} property is available if 
-     *   any errors occured during validation. 
+     *   any errors occured during validation. Note: some processors may 
+     *   choose to provide all the PSVI properties in the scope of the 
+     *   <code>endElement</code>. 
      */
     public ElementPSVI getElementPSVI();
 

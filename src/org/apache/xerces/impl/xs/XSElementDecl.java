@@ -57,10 +57,16 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
-import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSComplexTypeDefinition;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSElementDeclaration;
+import org.apache.xerces.impl.xs.psvi.XSNamedMap;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 
 /**
  * The XML representation for an element declaration
@@ -82,7 +88,7 @@ public class XSElementDecl implements XSElementDeclaration {
     // target namespace of the element
     public String fTargetNamespace = null;
     // type of the element
-    public XSTypeDecl fType = null;
+    public XSTypeDefinition fType = null;
     // misc flag of the element: nillable/abstract/fixed
     short fMiscFlags = 0;
     public short fScope = XSConstants.SCOPE_ABSENT;
@@ -281,7 +287,7 @@ public class XSElementDecl implements XSElementDeclaration {
      * (see xsi:nil (2.6.2)) even if it has no text or element content
      * despite a {content type} which would otherwise require content.
      */
-    public boolean getIsNillable() {
+    public boolean getNillable() {
         return ((fMiscFlags & NILLABLE) != 0);
     }
 
@@ -308,7 +314,7 @@ public class XSElementDecl implements XSElementDeclaration {
      * @return True if <code>exclusion</code> is a part of the substitution
      *   group exclusion subset.
      */
-    public boolean getIsSubstitutionGroupExclusion(short exclusion) {
+    public boolean isSubstitutionGroupExclusion(short exclusion) {
         return (fFinal & exclusion) != 0;
     }
 
@@ -332,7 +338,7 @@ public class XSElementDecl implements XSElementDeclaration {
      * @return True if <code>disallowed</code> is a part of the substitution
      *   group exclusion subset.
      */
-    public boolean getIsDisallowedSubstition(short disallowed) {
+    public boolean isDisallowedSubstitution(short disallowed) {
         return (fBlock & disallowed) != 0;
     }
 
@@ -348,7 +354,7 @@ public class XSElementDecl implements XSElementDeclaration {
     /**
      * {abstract} A boolean.
      */
-    public boolean getIsAbstract() {
+    public boolean getAbstract() {
         return ((fMiscFlags & ABSTRACT) != 0);
     }
 
@@ -360,4 +366,13 @@ public class XSElementDecl implements XSElementDeclaration {
         return null;
     }
     
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        // REVISIT: implement
+		return null;
+	}
+
 } // class XMLElementDecl

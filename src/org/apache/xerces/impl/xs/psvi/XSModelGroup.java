@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,42 +58,39 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.8.1 The Model Group Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Model Group schema component.
  */
 public interface XSModelGroup extends XSTerm {
-
+    // Content model compositors
     /**
      * This constant value signifies a sequence operator.
      */
-    public static final short COMPOSITOR_SEQUENCE   = 1;
+    public static final short COMPOSITOR_SEQUENCE       = 1;
     /**
      * This constant value signifies a choice operator.
      */
-    public static final short COMPOSITOR_CHOICE     = 2;
+    public static final short COMPOSITOR_CHOICE         = 2;
     /**
-     * This content model represents a simplified version of the SGML
-     * &amp;-Connector and is limited to the top-level of any content model.
-     * No element in the content model may appear more than once. Please
-     * refer to the definition element-all.
+     * This content model represents a simplified version of the SGML 
+     * &amp;-Connector and is limited to the top-level of any content model. 
+     * No element in the all content model may appear more than once.
      */
-    public static final short COMPOSITOR_ALL        = 3;
+    public static final short COMPOSITOR_ALL            = 3;
 
     /**
-     * {compositor} One of all, choice or sequence. The valid constants values
-     * are: ALL, CHOICE, SEQUENCE.
+     * [compositor]: one of all, choice or sequence. The valid constants 
+     * values are: 
+     * <code>COMPOSITOR_SEQUENCE, COMPOSITOR_CHOICE, COMPOSITOR_ALL</code>. 
      */
     public short getCompositor();
 
     /**
-     * {particles} A list of particles
+     *  A list of [particles]. 
      */
     public XSObjectList getParticles();
 
     /**
-     * Optional. Annotation.
+     * Optional. An [annotation]. 
      */
     public XSAnnotation getAnnotation();
 

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,30 +49,51 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.13.1 The Annotation Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Annotation schema component.
  */
 public interface XSAnnotation extends XSObject {
+    // TargetType
+    /**
+     * The object type is <code>org.w3c.dom.Element</code>.
+     */
+    public static final short W3C_DOM_ELEMENT           = 1;
+    /**
+     * The object type is <code>org.w3c.dom.Document</code>.
+     */
+    public static final short SAX_CONTENTHANDLER        = 2;
+    /**
+     * The object type is <code>org.xml.sax.ContentHandler</code>.
+     */
+    public static final short W3C_DOM_DOCUMENT          = 3;
+
+    /**
+     *  Write contents of the annotation to the specified DOM object. If the 
+     * specified <code>target</code> object is a DOM in-scope namespace 
+     * declarations for <code>annotation</code> element are added as 
+     * attributes nodes of the serialized <code>annotation</code>, otherwise 
+     * the corresponding events for all in-scope namespace declaration are 
+     * sent via specified document handler. 
+     * @param target  A target pointer to the annotation target object, i.e. 
+     *   <code>org.w3c.dom.Document</code>, 
+     *   <code>org.xml.sax.ContentHandler</code>. 
+     * @param targetType  A target type. 
+     * @return If the <code>target</code> is recognized type and supported by 
+     *   this implementation return true, otherwise return false. 
+     */
+    public boolean writeAnnotation(Object target, 
+                                   short targetType);
 
     /**
      * A text representation of annotation.
      */
     public String getAnnotationString();
-
-    /**
-     * Object representation of annotation.
-     */
-    public Object getAnnotationObject();
 
 }

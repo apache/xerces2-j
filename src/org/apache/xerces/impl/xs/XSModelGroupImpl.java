@@ -255,4 +255,11 @@ public class XSModelGroupImpl implements XSModelGroup {
         return null;
     }
 
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+		return null;
+	}
+
 } // class XSParticle

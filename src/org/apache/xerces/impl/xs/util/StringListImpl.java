@@ -83,7 +83,7 @@ public class StringListImpl implements StringList {
     }
 
     /**
-     * Construct an ObjectList implementation
+     * Construct an XSObjectList implementation
      * 
      * @param array     the data array
      * @param length    the number of elements

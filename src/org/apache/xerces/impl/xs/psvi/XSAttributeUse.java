@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,34 +58,29 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.5.1 The Attribute Use Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Attribute Use schema component. 
  */
 public interface XSAttributeUse extends XSObject {
-
     /**
-     * {required} determines whether this use of an attribute declaration
-     * requires an appropriate attribute information item to be present, or
-     * merely allows it.
+     * [required]: determines whether this use of an attribute declaration 
+     * requires an appropriate attribute information item to be present, or 
+     * merely allows it. 
      */
-    public boolean getIsRequired();
+    public boolean getRequired();
 
     /**
-     * {attribute declaration} provides the attribute declaration itself,
-     * which will in turn determine the simple type definition used.
+     * [attribute declaration]: provides the attribute declaration itself, 
+     * which will in turn determine the simple type definition used. 
      */
     public XSAttributeDeclaration getAttrDeclaration();
 
     /**
-     * Value Constraint: one of default, fixed.
+     * Value Constraint: one of default, fixed. 
      */
     public short getConstraintType();
 
     /**
-     * Value Constraint: The actual value (with respect to the {type
-     * definition}).
+     * Value Constraint: The actual value. 
      */
     public String getConstraintValue();
 

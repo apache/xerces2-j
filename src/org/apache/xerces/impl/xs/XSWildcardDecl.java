@@ -57,10 +57,12 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.psvi.StringList;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSWildcard;
 import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.xni.QName;
-import java.util.Enumeration;
 
 /**
  * The XML representation for a wildcard declaration
@@ -577,7 +579,7 @@ public class XSWildcardDecl implements XSWildcard {
      * <code>constraintType</code> NOT_NSCONSTRAINT, the list contains
      * disallowed namespaces.
      */
-    public StringList getNSConstraintList() {
+    public StringList getNsConstraintList() {
         return new StringListImpl(fNamespaceList, fNamespaceList.length);
     }
 
@@ -596,5 +598,14 @@ public class XSWildcardDecl implements XSWildcard {
         // REVISIT: SCAPI: to implement
         return null;
     }
-    
+
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        // REVISIT: implement
+		return null;
+	}
+
 } // class XSWildcardDecl

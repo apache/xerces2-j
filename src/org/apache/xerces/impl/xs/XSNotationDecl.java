@@ -57,7 +57,10 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
+import org.apache.xerces.impl.xs.psvi.XSNotationDeclaration;
 
 /**
  * The XML representation for a NOTATION declaration
@@ -123,5 +126,12 @@ public class XSNotationDecl implements XSNotationDeclaration {
         // REVISIT: SCAPI: to implement
         return null;
     }
+
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+		return null;
+	}
 
 } // class XSNotationDecl

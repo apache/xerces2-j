@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,36 +58,32 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * This interface defines common constants for XML Schema APIs.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ *  This interface defines constants used by this specification.
  */
 public interface XSConstants {
-
-    // Various types of schema components
+    // XML Schema Components
     /**
-     * An attribute declaration <code>XSAttributeDecl</code>.
+     * The object describes an attribute declaration.
      */
     public static final short ATTRIBUTE_DECLARATION     = 1;
     /**
-     * An element declaration <code>XSElementDecl</code>.
+     * The object describes an element declaration.
      */
     public static final short ELEMENT_DECLARATION       = 2;
     /**
-     * A complex type definition
+     * The object describes a complex type or simple type definition.
      */
     public static final short TYPE_DEFINITION           = 3;
     /**
-     * An attribute use definition
+     * The object describes an attribute use definition.
      */
     public static final short ATTRIBUTE_USE             = 4;
     /**
-     * An attribute group
+     * The object describes an attribute group definition.
      */
     public static final short ATTRIBUTE_GROUP           = 5;
     /**
-     * A model group definition
+     * The object describes a model group definition.
      */
     public static final short MODEL_GROUP_DEFINITION    = 6;
     /**
@@ -95,15 +91,15 @@ public interface XSConstants {
      */
     public static final short MODEL_GROUP               = 7;
     /**
-     * A particle.
+     * The object describes a particle.
      */
     public static final short PARTICLE                  = 8;
     /**
-     * A wildcard.
+     * The object describes a wildcard.
      */
     public static final short WILDCARD                  = 9;
     /**
-     * Identity constraint definition.
+     * The object describes an identity constraint definition.
      */
     public static final short IDENTITY_CONSTRAINT       = 10;
     /**
@@ -111,42 +107,59 @@ public interface XSConstants {
      */
     public static final short NOTATION_DECLARATION      = 11;
     /**
-     * An annotation.
+     * The object describes an annotation.
      */
     public static final short ANNOTATION                = 12;
 
-    // Derivation methods (for block and final values)
+    // Derivation constants
     /**
-     * <code>XSTypeDefinition</code> final set or <code>XSElementDecl</code>
-     * disallowed substitution group.
+     * No constraint is available.
      */
     public static final short DERIVATION_NONE           = 0;
     /**
-     * <code>XSTypeDefinition</code> final set or <code>XSElementDecl</code>
-     * disallowed substitution group.
+     * <code>XSTypeDefinition</code> final set or 
+     * <code>XSElementDeclaration</code> disallowed substitution group.
      */
-    public static final short DERIVATION_EXTENSION      = 1<<0;
+    public static final short DERIVATION_EXTENSION      = 1;
     /**
-     * <code>XSTypeDefinition</code> final set or <code>XSElementDecl</code>
-     * disallowed substitution group.
+     * <code>XSTypeDefinition</code> final set or 
+     * <code>XSElementDeclaration</code> disallowed substitution group.
      */
-    public static final short DERIVATION_RESTRICTION    = 1<<1;
-    /**
-     * <code>XSTypeDefinition</code> final set
-     */
-    public static final short DERIVATION_SUBSTITUTION   = 1<<2;
+    public static final short DERIVATION_RESTRICTION    = 2;
     /**
      * <code>XSTypeDefinition</code> final set.
      */
-    public static final short DERIVATION_UNION          = 1<<3;
+    public static final short DERIVATION_SUBSTITUTION   = 4;
     /**
      * <code>XSTypeDefinition</code> final set.
      */
-    public static final short DERIVATION_LIST           = 1<<4;
+    public static final short DERIVATION_UNION          = 8;
+    /**
+     * <code>XSTypeDefinition</code> final set.
+     */
+    public static final short DERIVATION_LIST           = 16;
 
-    // Value constraint types
+    // Scope
     /**
-     * No value constraint
+     * The scope of a declaration within named model groups or attribute 
+     * groups is <code>absent</code>. The scope of such declaration is 
+     * determined when it is used in the construction of complex type 
+     * definitions. 
+     */
+    public static final short SCOPE_ABSENT              = 0;
+    /**
+     * A scope of <code>global</code> identifies top-level declarations. 
+     */
+    public static final short SCOPE_GLOBAL              = 1;
+    /**
+     * <code>Locally scoped</code> declarations are available for use only 
+     * within the complex type.
+     */
+    public static final short SCOPE_LOCAL               = 2;
+
+    // Value Constraint
+    /**
+     * Indicates that the component does not have any value constraint.
      */
     public static final short VC_NONE                   = 0;
     /**
@@ -157,22 +170,5 @@ public interface XSConstants {
      * Indicates that there is a fixed value constraint for this attribute.
      */
     public static final short VC_FIXED                  = 2;
-
-    // Scopes
-    /**
-     * The scope has value of absent in the case of declarations within named
-     * model groups or attribute groups: their scope is determined when they
-     * are used in the construction of complex type definitions.
-     */
-    public static final short SCOPE_ABSENT              = 0;
-    /**
-     * A {scope} of global identifies top-level declarations.
-     */
-    public static final short SCOPE_GLOBAL              = 1;
-    /**
-     * Locally scoped declarations are available for use only within the
-     * complex type identified by the {scope} property.
-     */
-    public static final short SCOPE_LOCAL               = 2;
 
 }

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,67 +58,62 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.10.1 The Wildcard Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Wildcard schema component.
  */
 public interface XSWildcard extends XSTerm {
+    // Namespace Constraint
+    /**
+     * Namespace Constraint: any namespace is allowed.
+     */
+    public static final short NSCONSTRAINT_ANY          = 1;
+    /**
+     * Namespace Constraint: namespaces in the list are not allowed.
+     */
+    public static final short NSCONSTRAINT_NOT          = 2;
+    /**
+     * Namespace Constraint: namespaces in the list are allowed.
+     */
+    public static final short NSCONSTRAINT_LIST         = 3;
+
+    // Process contents
+    /**
+     * There must be a top-level declaration for the item available, or the 
+     * item must have an xsi:type, and the item must be valid as appropriate.
+     */
+    public static final short PC_STRICT                 = 1;
+    /**
+     * No constraints at all: the item must simply be well-formed XML. 
+     */
+    public static final short PC_SKIP                   = 2;
+    /**
+     * If the item, or any items among its [children] is an element 
+     * information item, has a uniquely determined declaration available, it 
+     * must be valid with respect to that definition, that is, validate 
+     * where you can, don't worry when you can't.
+     */
+    public static final short PC_LAX                    = 3;
 
     /**
-     * Process content strict. There must be a top-level declaration for
-     * the item available, or the item must have an xsi:type, and the item
-     * must be valid as appropriate.
-     */
-    public static final short PC_STRICT             = 1;
-    /**
-     * Process content skip. No constraints at all: the item must simply
-     * be well-formed XML.
-     */
-    public static final short PC_SKIP               = 2;
-    /**
-     * Process content lax. If the item, or any items among its [children] if
-     * it's an element information item, has a uniquely
-     * determined declaration available, it must be valid
-     * with respect to that definition, that is, validate
-     *  where you can, don't worry when you can't.
-     */
-    public static final short PC_LAX                = 3;
-
-    /**
-     * Namespace Constraint: any namespace is allowed
-     */
-    public static final short NSCONSTRAINT_ANY      = 1;
-    /**
-     * Namespace Constraint: namespaces in the list are not allowed
-     */
-    public static final short NSCONSTRAINT_NOT      = 2;
-    /**
-     * Namespace Constraint: namespaces in the liast are allowed
-     */
-    public static final short NSCONSTRAINT_LIST     = 3;
-
-    /**
-     * Namespace constraint: A constraint type: any, not, list.
+     * Namespace constraint: A constraint type: any, not, list. 
      */
     public short getConstraintType();
 
     /**
-     * Namespace constraint. For <code>constraintType</code>
-     * LIST_NSCONSTRAINT, the list contains allowed namespaces. For
-     * <code>constraintType</code> NOT_NSCONSTRAINT, the list contains
-     * disallowed namespaces.
+     * Namespace constraint. For <code>constraintType</code> 
+     * <code>LIST_NSCONSTRAINT</code>, the list contains allowed namespaces. 
+     * For <code>constraintType</code> <code>NOT_NSCONSTRAINT</code>, the 
+     * list contains disallowed namespaces. 
      */
-    public StringList getNSConstraintList();
+    public StringList getNsConstraintList();
 
     /**
-     * {process contents} One of skip, lax or strict. Valid constants values
-     * are: SKIP_PROCESS, LAX_PROCESS, STRING_PROCESS.
+     * [process contents]: one of skip, lax or strict. Valid constants values 
+     * are: <code>SKIP_PROCESS, LAX_PROCESS, STRING_PROCESS </code>. 
      */
     public short getProcessContents();
 
     /**
-     * Optional. Annotation.
+     * Optional. An [annotation]. 
      */
     public XSAnnotation getAnnotation();
 

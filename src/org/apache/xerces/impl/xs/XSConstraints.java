@@ -66,6 +66,7 @@ import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.util.SymbolHash;
 import java.util.Vector;
@@ -84,9 +85,9 @@ public class XSConstraints {
 
     /**
      * check whether derived is valid derived from base, given a subset
-     * of {restriction, extension}.
+     * of {restriction, extension}.B
      */
-    public static boolean checkTypeDerivationOk(XSTypeDecl derived, XSTypeDecl base, short block) {
+    public static boolean checkTypeDerivationOk(XSTypeDefinition derived, XSTypeDefinition base, short block) {
         // if derived is anyType, then it's valid only if base is anyType too
         if (derived == SchemaGrammar.fAnyType)
             return derived == base;
@@ -98,9 +99,9 @@ public class XSConstraints {
         }
 
         // if derived is simple type
-        if (derived.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+        if (derived.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
             // if base is complex type
-            if (base.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+            if (base.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
                 if (base == SchemaGrammar.fAnyType)
@@ -119,7 +120,7 @@ public class XSConstraints {
      * check whether simple type derived is valid derived from base,
      * given a subset of {restriction, extension}.
      */
-    public static boolean checkSimpleDerivationOk(XSSimpleType derived, XSTypeDecl base, short block) {
+    public static boolean checkSimpleDerivationOk(XSSimpleType derived, XSTypeDefinition base, short block) {
         // if derived is anySimpleType, then it's valid only if the base
         // is ur-type
         if (derived == SchemaGrammar.fAnySimpleType) {
@@ -128,7 +129,7 @@ public class XSConstraints {
         }
 
         // if base is complex type
-        if (base.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+        if (base.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
             // if base is anyType, change base to anySimpleType,
             // otherwise, not valid
             if (base == SchemaGrammar.fAnyType)
@@ -144,7 +145,7 @@ public class XSConstraints {
      * check whether complex type derived is valid derived from base,
      * given a subset of {restriction, extension}.
      */
-    public static boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, short block) {
+    public static boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDefinition base, short block) {
         // if derived is anyType, then it's valid only if base is anyType too
         if (derived == SchemaGrammar.fAnyType)
             return derived == base;
@@ -192,7 +193,7 @@ public class XSConstraints {
             XSObjectList subUnionMemberDV = base.getMemberTypes();
             int subUnionSize = subUnionMemberDV.getLength();
             for (int i=0; i<subUnionSize; i++) {
-                base = (XSSimpleType)subUnionMemberDV.getItem(i);
+                base = (XSSimpleType)subUnionMemberDV.item(i);
                 if (checkSimpleDerivation(derived, base, block))
                     return true;
             }
@@ -206,7 +207,7 @@ public class XSConstraints {
      *       anyType. Another method will be introduced for public use,
      *       which will call this method.
      */
-    private static boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDecl base, short block) {
+    private static boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDefinition base, short block) {
         // 2.1 B and D must be the same type definition.
         if (derived == base)
             return true;
@@ -216,7 +217,7 @@ public class XSConstraints {
             return false;
 
         // 2 One of the following must be true:
-        XSTypeDecl directBase = derived.fBaseType;
+        XSTypeDefinition directBase = derived.fBaseType;
         // 2.2 B must be D's {base type definition}.
         if (directBase == base)
             return true;
@@ -230,13 +231,13 @@ public class XSConstraints {
 
         // 2.3.2 The appropriate case among the following must be true:
         // 2.3.2.1 If D's {base type definition} is complex, then it must be validly derived from B given the subset as defined by this constraint.
-        if (directBase.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)
+        if (directBase.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
             return checkComplexDerivation((XSComplexTypeDecl)directBase, base, block);
 
         // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (3.14.6).
-        if (directBase.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+        if (directBase.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
             // if base is complex type
-            if (base.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
+            if (base.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
                 if (base == SchemaGrammar.fAnyType)
@@ -256,14 +257,14 @@ public class XSConstraints {
      * returns the compiled form of the value
      * The parameter value could be either a String or a ValidatedInfo object
      */
-    public static Object ElementDefaultValidImmediate(XSTypeDecl type, Object value, ValidationContext context, ValidatedInfo vinfo) {
+    public static Object ElementDefaultValidImmediate(XSTypeDefinition type, Object value, ValidationContext context, ValidatedInfo vinfo) {
 
         XSSimpleType dv = null;
 
         // e-props-correct
         // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
         // 1 If the type definition is a simple type definition, then the string must be valid with respect to that definition as defined by String Valid (3.14.4).
-        if (type.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
+        if (type.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE) {
             dv = (XSSimpleType)type;
         }
 
@@ -1029,7 +1030,7 @@ public class XSConstraints {
       //
       // Check nillable
       //
-      if (! (bElement.getIsNillable() || !dElement.getIsNillable())) {
+      if (! (bElement.getNillable() || !dElement.getNillable())) {
         throw new XMLSchemaException("rcase-NameAndTypeOK.2",
                                       new Object[]{dElement.fName});
       }
@@ -1054,7 +1055,7 @@ public class XSConstraints {
 
          // get simple type
          boolean isSimple = false;
-         if (dElement.fType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE ||
+         if (dElement.fType.getTypeCategory() == XSTypeDefinition.SIMPLE_TYPE ||
              ((XSComplexTypeDecl)dElement.fType).fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
              isSimple = true;
          }

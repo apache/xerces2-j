@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,48 +58,43 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * Objects implementing the <code>XSNamedMap</code> interface are used to
- * represent collections of objects that can be accessed by
- * name. Objects contained in an object implementing
- * <code>XSNamedMap</code> may also be accessed by an ordinal index, but
- * this is simply to allow convenient enumeration of the contents of a
- * <code>XSNamedMap</code>, and does not imply that the this API specifies an
- * order to these <code>XSObjects</code>.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * Objects implementing the <code>XSNamedMap</code> interface are used to 
+ * represent collections of XML Schema components that can be accessed by 
+ * name. Note that <code>XSNamedMap</code> does not inherit from 
+ * <code>XSObjectList</code>. The <code>XSOBject</code>s in 
+ * <code>XSNamedMap</code>s are not maintained in any particular order. 
  */
 public interface XSNamedMap {
-
     /**
-     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. The
-     * range of valid child node indices is 0 to <code>length-1</code>
-     * inclusive.
+     * The number of <code>XSObjects</code> in the <code>XSObjectList</code>. 
+     * The range of valid child object indices is 0 to 
+     * <code>mapLength-1</code> inclusive. 
      */
     public int getMapLength();
 
     /**
-     * Retrieves an <code>XSObject</code> specified by local name and namespace
-     * URI.
-     * @param namespace The namespace URI of the <code>XSObject</code> to
-     *   retrieve.
-     * @param localName The local name of the <code>XSObject</code> to retrieve.
-     * @return A <code>XSObject</code> (of any type) with the specified local
-     *   name and namespace URI, or <code>null</code> if they do not
-     *   identify any <code>XSObject</code> in this map.
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>XSObject</code> at the <code>index</code>th 
+     *   position in the <code>XSObjectList</code>, or <code>null</code> if 
+     *   that is not a valid index. 
      */
-    public XSObject getNSItem(String namespace, String localName);
+    public XSObject item(int index);
 
     /**
-     * Returns the <code>index</code>th item in the map. The index starts at
-     * 0. If <code>index</code> is greater than or equal to the number of
-     * nodes in the list, this returns <code>null</code>.
-     * @param index The position in the map from which the item is to be
-     *   retrieved.
-     * @return The <code>XSObject</code> at the <code>index</code>th position
-     *   in the <code>XSNamedMap</code>, or <code>null</code> if that is
-     *   not a valid index.
+     * Retrieves a node specified by local name and namespace URI.
+     * <br>Per , applications must use the value null as the 
+     * <code>namespace</code> parameter for methods if they wish to have no 
+     * namespace.
+     * @param namespace The namespace URI of the node to retrieve.
+     * @param localName The local name of the node to retrieve.
+     * @return A <code>XSObject</code> (of any type) with the specified local 
+     *   name and namespace URI, or <code>null</code> if they do not 
+     *   identify any node in this map.
      */
-    public XSObject getItem(int index);
+    public XSObject itemByName(String namespace, 
+                              String localName);
 
 }

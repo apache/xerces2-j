@@ -114,4 +114,12 @@ public class XSGroupDecl implements XSModelGroupDefinition {
         return null;
     }
     
+	/**
+	 * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+	 */
+	public XSNamespaceItem getNamespaceItem() {
+        // REVISIT: implement
+		return null;
+	}
+
 } // class XSGroupDecl

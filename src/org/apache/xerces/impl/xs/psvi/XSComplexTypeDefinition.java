@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2002, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -58,28 +58,25 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.4.1 The Complex Type Definition Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ * This interface represents the Complex Type Definition schema component.
  */
 public interface XSComplexTypeDefinition extends XSTypeDefinition {
-
+    // Content Model Types
     /**
-     * Represents an empty content type. A content
-     * type with the distinguished value empty validates elements with no
-     * character or element information item children.
+     * Represents an empty content type. A content type with the distinguished 
+     * value empty validates elements with no character or element 
+     * information item children. 
      */
     public static final short CONTENTTYPE_EMPTY         = 0;
     /**
-     * The content model type simple. A content type which is a simple
-     * validates elements with character-only children.
+     * Represents a simple content type. A content type which is a simple 
+     * validates elements with character-only children. 
      */
     public static final short CONTENTTYPE_SIMPLE        = 1;
     /**
-     * Represents an element-only content type. An element-only content type
-     * validates elements with children that conform to the supplied content
-     * model.
+     * Represents an element-only content type. An element-only content type 
+     * validates elements with children that conform to the supplied content 
+     * model. 
      */
     public static final short CONTENTTYPE_ELEMENT       = 2;
     /**
@@ -88,65 +85,67 @@ public interface XSComplexTypeDefinition extends XSTypeDefinition {
     public static final short CONTENTTYPE_MIXED         = 3;
 
     /**
-     * {derivation method} Either extension or restriction. The valid constant
-     * value for this <code>XSConstants</code> EXTENTION, RESTRICTION.
+     * [derivation method]: either <code>DERIVATION_EXTENSION</code>, 
+     * <code>DERIVATION_RESTRICTION</code>, or <code>DERIVATION_NONE</code> 
+     * (see <code>XSConstants</code>). 
      */
     public short getDerivationMethod();
 
     /**
-     * {abstract} A boolean. Complex types for which {abstract} is true must
-     * not be used as the {type definition} for the validation of element
-     * information items.
+     * [abstract]: a boolean. Complex types for which <code>abstract</code> is 
+     * true must not be used as the type definition for the validation of 
+     * element information items. 
      */
-    public boolean getIsAbstract();
+    public boolean getAbstract();
 
     /**
-     *  {attribute uses} A set of attribute uses.
+     *  A set of attribute uses. 
      */
     public XSObjectList getAttributeUses();
 
     /**
-     * {attribute wildcard} Optional. A wildcard.
+     * Optional.An attribute wildcard. 
      */
     public XSWildcard getAttributeWildcard();
 
     /**
-     * {content type} One of empty, a simple type definition (see
-     * <code>simpleType</code>, or mixed, element-only (see
-     * <code>cmParticle</code>).
+     * [content type]: one of empty (<code>CONTENTTYPE_EMPTY</code>), a simple 
+     * type definition (<code>CONTENTTYPE_SIMPLE</code>), mixed (
+     * <code>CONTENTTYPE_EMPTY</code>), or element-only (
+     * <code>CONTENTTYPE_EMPTY</code>). 
      */
     public short getContentType();
 
     /**
-     * A simple type definition corresponding to simple content model,
-     * otherwise <code>null</code>
+     * A simple type definition corresponding to simple content model, 
+     * otherwise <code>null</code> 
      */
     public XSSimpleTypeDefinition getSimpleType();
 
     /**
-     * A particle for mixed or element-only content model, otherwise
-     * <code>null</code>
+     * A particle for mixed or element-only content model, otherwise 
+     * <code>null</code> 
      */
     public XSParticle getParticle();
 
     /**
-     * {prohibited substitutions} A subset of {extension, restriction}.
-     * @param prohibited  extention or restriction constants (defined in
-     *   <code>XSConstants</code>).
-     * @return True if prohibited is a prohibited substitution, otherwise
+     * [prohibited substitutions]: a subset of {extension, restriction}
+     * @param restriction  Extention or restriction constants (see 
+     *   <code>XSConstants</code>). 
+     * @return True if restriction is a prohibited substitution, otherwise 
      *   false.
      */
-    public boolean getIsProhibitedSubstitution(short prohibited);
+    public boolean isProhibitedSubstitution(short restriction);
 
     /**
-     * {prohibited substitutions}
-     *
-     * @return A bit flag corresponding to prohibited substitutions
+     *  [prohibited substitutions]: A subset of {extension, restriction} or 
+     * <code>DERIVATION_NONE</code> represented as a bit flag (see 
+     * <code>XSConstants</code>). 
      */
     public short getProhibitedSubstitutions();
 
     /**
-     * {annotations} A set of annotations.
+     * A set of [annotations]. 
      */
     public XSObjectList getAnnotations();
 
