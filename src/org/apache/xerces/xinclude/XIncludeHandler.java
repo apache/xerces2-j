@@ -103,7 +103,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  * <p>
  * This component analyzes each event in the pipeline, looking for &lt;include&gt;
  * elements. An &lt;include&gt; element is one which has a namespace of
- * <code>http://www.w3.org/2001/XInclude</code> and a localname of <code>include</code>.
+ * <code>http://www.w3.org/2003/XInclude</code> and a localname of <code>include</code>.
  * When it finds an &lt;include&gt; element, it attempts to include the file specified
  * in the <code>href</code> attribute of the element.  If inclusion succeeds, all
  * children of the &lt;include&gt; element are ignored (with the exception of
@@ -140,7 +140,7 @@ public class XIncludeHandler
         "org.apache.xerces.parsers.XIncludeParserConfiguration";
 
     public final static String XINCLUDE_NS_URI =
-        "http://www.w3.org/2001/XInclude".intern();
+        "http://www.w3.org/2003/XInclude".intern();
     public final static String XINCLUDE_INCLUDE = "include".intern();
     public final static String XINCLUDE_FALLBACK = "fallback".intern();
 
@@ -1243,9 +1243,9 @@ public class XIncludeHandler
     }
 
     /**
-     * Returns true if the element has the namespace "http://www.w3.org/2001/XInclude"
+     * Returns true if the element has the namespace "http://www.w3.org/2003/XInclude"
      * @param element the element to check
-     * @return true if the element has the namespace "http://www.w3.org/2001/XInclude"
+     * @return true if the element has the namespace "http://www.w3.org/2003/XInclude"
      */
     protected boolean hasXIncludeNamespace(QName element) {
         return element.uri == XINCLUDE_NS_URI
