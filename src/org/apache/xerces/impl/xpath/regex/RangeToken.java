@@ -228,8 +228,6 @@ final class RangeToken extends Token implements java.io.Serializable {
     }
 
     protected void mergeRanges(Token token) {
-        if (token.type != this.type)
-            throw new IllegalArgumentException("Token#mergeRanges(): Mismatched Type: "+token.type);
         RangeToken tok = (RangeToken)token;
         this.sortRanges();
         tok.sortRanges();

@@ -293,13 +293,15 @@ public final class REUtil {
         synchronized (REUtil.regexCache) {
             int i;
             for (i = 0;  i < REUtil.CACHESIZE;  i ++) {
-                re = REUtil.regexCache[i];
-                if (re == null) {
+                RegularExpression cached = REUtil.regexCache[i];
+                if (cached == null) {
                     i = -1;
                     break;
                 }
-                if (re.equals(pattern, intOptions))
+                if (cached.equals(pattern, intOptions)) {
+                    re = cached;
                     break;
+                }
             }
             if (re != null) {
                 if (i != 0) {
@@ -347,6 +349,7 @@ public final class REUtil {
                     if (i > 0)  buffer.append(literal.substring(0, i));
                 }
                 buffer.append((char)'\\');
+                buffer.append((char)ch);
             } else if (buffer != null)
                 buffer.append((char)ch);
         }

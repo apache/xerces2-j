@@ -744,7 +744,7 @@ class Token implements java.io.Serializable {
         /*FEFF..FEFF;*/ "Specials",
         /*FF00..FFEF;*/ "Halfwidth and Fullwidth Forms",
          //missing Specials add manually
-        /*10300..1032F;*/ "Old Italic",
+        /*10300..1032F;*/ "Old Italic",		// 87
         /*10330..1034F;*/ "Gothic",
         /*10400..1044F;*/ "Deseret",
         /*1D000..1D0FF;*/ "Byzantine Musical Symbols",
@@ -771,10 +771,21 @@ class Token implements java.io.Serializable {
         +"\u2800\u28FF\u2E80\u2EFF\u2F00\u2FDF\u2FF0\u2FFF\u3000\u303F\u3040\u309F\u30A0\u30FF\u3100\u312F\u3130\u318F"
         +"\u3190\u319F\u31A0\u31BF\u3200\u32FF\u3300\u33FF\u3400\u4DB5\u4E00\u9FFF\uA000\uA48F\uA490\uA4CF"
         +"\uAC00\uD7A3\uD800\uDB7F\uDB80\uDBFF\uDC00\uDFFF\uE000\uF8FF\uF900\uFAFF\uFB00\uFB4F\uFB50\uFDFF"
-        +"\uFE20\uFE2F\uFE30\uFE4F\uFE50\uFE6F\uFE70\uFEFE\uFEFF\uFEFF\uFF00\uFFEF\u10300\u1032F\u10330\u1034F"
-        +"\u10400\u1044F\u1D000\u1D0FFs\u1D100\u1D1FF\u1D400\u1D7FF\u20000\u2A6D6\u2F800\u2FA1F\uE0000\uE007F";
+        +"\uFE20\uFE2F\uFE30\uFE4F\uFE50\uFE6F\uFE70\uFEFE\uFEFF\uFEFF\uFF00\uFFEF";
+    static final int[] nonBMPBlockRanges = {
+        0x10300, 0x1032F,       // 87
+        0x10330, 0x1034F,
+        0x10400, 0x1044F,
+        0x1D000, 0x1D0FF,
+        0x1D100, 0x1D1FF,
+        0x1D400, 0x1D7FF,
+        0x20000, 0x2A6D6,
+        0x2F800, 0x2FA1F,
+        0xE0000, 0xE007F
+    };
+    private static final int NONBMP_BLOCK_START = 87;
 
-     static protected RangeToken getRange(String name, boolean positive) {
+    static protected RangeToken getRange(String name, boolean positive) {
         if (Token.categories.size() == 0) {
             synchronized (Token.categories) {
                 Token[] ranges = new Token[Token.categoryNames.length];
@@ -864,17 +875,23 @@ class Token implements java.io.Serializable {
                 //         or we can just create all the names in IsBLOCKNAME format (XML Schema REC)?
                 //
                 StringBuffer buffer = new StringBuffer(50);
-                int location = 0;
                 for (int i = 0;  i < Token.blockNames.length;  i ++) {
                     Token r1 = Token.createRange();
-                    location = i*2;
-                    int rstart = Token.blockRanges.charAt(location);
-                    int rend = Token.blockRanges.charAt(location+1);
+                    int location;
+                    if (i < NONBMP_BLOCK_START) {
+                        location = i*2;
+                        int rstart = Token.blockRanges.charAt(location);
+                        int rend = Token.blockRanges.charAt(location+1);
+                        //DEBUGING
+                        //System.out.println(n+" " +Integer.toHexString(rstart)
+                        //                     +"-"+ Integer.toHexString(rend));
+                        r1.addRange(rstart, rend);
+                    } else {
+                        location = (i - NONBMP_BLOCK_START) * 2;
+                        r1.addRange(Token.nonBMPBlockRanges[location],
+                                    Token.nonBMPBlockRanges[location + 1]);
+                    }
                     String n = Token.blockNames[i];
-                    //DEBUGING
-                    //System.out.println(n+" " +Integer.toHexString(rstart)
-                    //                     +"-"+ Integer.toHexString(rend));
-                    r1.addRange(rstart, rend);
                     if (n.equals("Specials"))
                         r1.addRange(0xfff0, 0xfffd);
                     if (n.equals("Private Use")) {
@@ -883,7 +900,7 @@ class Token implements java.io.Serializable {
                     }
                     Token.categories.put(n, r1);
                     Token.categories2.put(n, Token.complementRanges(r1));
-                    buffer.setLength(0);                    
+                    buffer.setLength(0);
                     buffer.append("Is");
                     if (n.indexOf(' ') >= 0) {
                         for (int ci = 0;  ci < n.length();  ci ++)
@@ -895,11 +912,6 @@ class Token implements java.io.Serializable {
                     Token.setAlias(buffer.toString(), n, true);
                 }
 
-                // REVISIT: remove this code later 
-                // the following does not match the XML Schema definition
-                // for Regular Expressions 
-                
-                /*
                 // TR#18 1.2
                 Token.setAlias("ASSIGNED", "Cn", false);
                 Token.setAlias("UNASSIGNED", "Cn", true);
@@ -907,44 +919,51 @@ class Token implements java.io.Serializable {
                 all.addRange(0, Token.UTF16_MAX);
                 Token.categories.put("ALL", all);
                 Token.categories2.put("ALL", Token.complementRanges(all));
-                */
-                
-                /*
+                Token.registerNonXS("ASSIGNED");
+                Token.registerNonXS("UNASSIGNED");
+                Token.registerNonXS("ALL");
+
                 Token isalpha = Token.createRange();
                 isalpha.mergeRanges(ranges[Character.UPPERCASE_LETTER]); // Lu
                 isalpha.mergeRanges(ranges[Character.LOWERCASE_LETTER]); // Ll
                 isalpha.mergeRanges(ranges[Character.OTHER_LETTER]); // Lo
                 Token.categories.put("IsAlpha", isalpha);
                 Token.categories2.put("IsAlpha", Token.complementRanges(isalpha));
-                
+                Token.registerNonXS("IsAlpha");
+
                 Token isalnum = Token.createRange();
                 isalnum.mergeRanges(isalpha);   // Lu Ll Lo
                 isalnum.mergeRanges(ranges[Character.DECIMAL_DIGIT_NUMBER]); // Nd
                 Token.categories.put("IsAlnum", isalnum);
                 Token.categories2.put("IsAlnum", Token.complementRanges(isalnum));
+                Token.registerNonXS("IsAlnum");
 
                 Token isspace = Token.createRange();
                 isspace.mergeRanges(Token.token_spaces);
                 isspace.mergeRanges(ranges[CHAR_SEPARATOR]); // Z
                 Token.categories.put("IsSpace", isspace);
                 Token.categories2.put("IsSpace", Token.complementRanges(isspace));
+                Token.registerNonXS("IsSpace");
 
                 Token isword = Token.createRange();
                 isword.mergeRanges(isalnum);     // Lu Ll Lo Nd
                 isword.addRange('_', '_');
                 Token.categories.put("IsWord", isword);
                 Token.categories2.put("IsWord", Token.complementRanges(isword));
+                Token.registerNonXS("IsWord");
 
                 Token isascii = Token.createRange();
                 isascii.addRange(0, 127);
                 Token.categories.put("IsASCII", isascii);
                 Token.categories2.put("IsASCII", Token.complementRanges(isascii));
+                Token.registerNonXS("IsASCII");
 
                 Token isnotgraph = Token.createRange();
                 isnotgraph.mergeRanges(ranges[CHAR_OTHER]);
                 isnotgraph.addRange(' ', ' ');
                 Token.categories.put("IsGraph", Token.complementRanges(isnotgraph));
                 Token.categories2.put("IsGraph", isnotgraph);
+                Token.registerNonXS("IsGraph");
 
                 Token isxdigit = Token.createRange();
                 isxdigit.addRange('0', '9');
@@ -952,13 +971,20 @@ class Token implements java.io.Serializable {
                 isxdigit.addRange('a', 'f');
                 Token.categories.put("IsXDigit", Token.complementRanges(isxdigit));
                 Token.categories2.put("IsXDigit", isxdigit);
-                
+                Token.registerNonXS("IsXDigit");
+
                 Token.setAlias("IsDigit", "Nd", true);
                 Token.setAlias("IsUpper", "Lu", true);
                 Token.setAlias("IsLower", "Ll", true);
                 Token.setAlias("IsCntrl", "C", true);
                 Token.setAlias("IsPrint", "C", false);
                 Token.setAlias("IsPunct", "P", true);
+                Token.registerNonXS("IsDigit");
+                Token.registerNonXS("IsUpper");
+                Token.registerNonXS("IsLower");
+                Token.registerNonXS("IsCntrl");
+                Token.registerNonXS("IsPrint");
+                Token.registerNonXS("IsPunct");
 
                 Token.setAlias("alpha", "IsAlpha", true);
                 Token.setAlias("alnum", "IsAlnum", true);
@@ -973,13 +999,48 @@ class Token implements java.io.Serializable {
                 Token.setAlias("upper", "IsUpper", true);
                 Token.setAlias("word", "IsWord", true); // Perl extension
                 Token.setAlias("xdigit", "IsXDigit", true);
-                 */
+                Token.registerNonXS("alpha");
+                Token.registerNonXS("alnum");
+                Token.registerNonXS("ascii");
+                Token.registerNonXS("cntrl");
+                Token.registerNonXS("digit");
+                Token.registerNonXS("graph");
+                Token.registerNonXS("lower");
+                Token.registerNonXS("print");
+                Token.registerNonXS("punct");
+                Token.registerNonXS("space");
+                Token.registerNonXS("upper");
+                Token.registerNonXS("word");
+                Token.registerNonXS("xdigit");
             } // synchronized
         } // if null
         RangeToken tok = positive ? (RangeToken)Token.categories.get(name)
             : (RangeToken)Token.categories2.get(name);
-        if (tok == null) System.out.println(name);
+        //if (tok == null) System.out.println(name);
         return tok;
+    }
+    static protected RangeToken getRange(String name, boolean positive, boolean xs) {
+        RangeToken range = Token.getRange(name, positive);
+        if (xs && range != null && Token.isRegisterNonXS(name))
+            range = null;
+        return range;
+    }
+
+    static Hashtable nonxs = null;
+    /**
+     * This method is called by only getRange().
+     * So this method need not MT-safe.
+     */
+    static protected void registerNonXS(String name) {
+        if (Token.nonxs == null)
+            Token.nonxs = new Hashtable();
+        Token.nonxs.put(name, name);
+    }
+    static protected boolean isRegisterNonXS(String name) {
+        if (Token.nonxs == null)
+            return false;
+        System.err.println("isRegisterNonXS: "+name);
+        return Token.nonxs.containsKey(name);
     }
 
     private static void setAlias(String newName, String name, boolean positive) {

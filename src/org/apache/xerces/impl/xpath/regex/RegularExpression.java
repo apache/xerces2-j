@@ -905,7 +905,7 @@ public class RegularExpression implements java.io.Serializable {
 
         while (true) {
             if (op == null)
-                return offset;
+                return isSet(opts, XMLSCHEMA_MODE) && offset != con.limit ? -1 : offset;
             if (offset > con.limit || offset < con.start)
                 return -1;
             switch (op.type) {
@@ -1221,7 +1221,7 @@ public class RegularExpression implements java.io.Serializable {
                     if (DEBUG) {
                         System.err.println("UNION: "+i+", ret="+ret);
                     }
-                    if (ret == con.length )  return ret;
+                    if (ret >= 0)  return ret;
                 }
                 return -1;
 
@@ -1625,7 +1625,7 @@ public class RegularExpression implements java.io.Serializable {
 
         while (true) {
             if (op == null)
-                return offset;
+                return isSet(opts, XMLSCHEMA_MODE) && offset != con.limit ? -1 : offset;
             if (offset > con.limit || offset < con.start)
                 return -1;
             switch (op.type) {
@@ -1940,7 +1940,7 @@ public class RegularExpression implements java.io.Serializable {
                     if (DEBUG) {
                         System.err.println("UNION: "+i+", ret="+ret);
                     }
-                    if (ret == con.length )  return ret;
+                    if (ret >= 0)  return ret;
                 }
                 return -1;
 
@@ -2272,7 +2272,7 @@ public class RegularExpression implements java.io.Serializable {
 
         while (true) {
             if (op == null)
-                return offset;
+                return isSet(opts, XMLSCHEMA_MODE) && offset != con.limit ? -1 : offset;
             if (offset > con.limit || offset < con.start)
                 return -1;
             switch (op.type) {
@@ -2588,7 +2588,7 @@ public class RegularExpression implements java.io.Serializable {
                     if (DEBUG) {
                         System.err.println("UNION: "+i+", ret="+ret);
                     }
-                    if (ret == con.length)  return ret;
+                    if (ret >= 0)  return ret;
                 }
                 return -1;
 
