@@ -72,6 +72,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
+import org.apache.xerces.impl.Constants;
+
 import java.util.*;
 
 /**
@@ -186,7 +188,16 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     public void setProperty(String name, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        xmlReader.setProperty(name, value);
+        if (DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE.equals(name)
+                && DocumentBuilderImpl.W3C_XML_SCHEMA.equals(value)) {
+            // Translate JAXP schemaLanguage property to Xerces
+            // validation feature
+            xmlReader.setFeature(
+                Constants.XERCES_FEATURE_PREFIX +
+                Constants.SCHEMA_VALIDATION_FEATURE, true);
+        } else {
+            xmlReader.setProperty(name, value);
+        }
     }
 
     /**
