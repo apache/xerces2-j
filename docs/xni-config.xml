@@ -340,9 +340,25 @@
     <tr>
      <td>
       <code>
+       public <link anchor='entity-resolver'>XMLEntityResolver</link>
+           getEntityResolver();
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
        public void setErrorHandler(
            <link anchor='error-handler'>XMLErrorHandler</link> handler
 	   );
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public <link anchor='error-handler'>XMLErrorHandler</link>
+           getErrorHandler();
       </code>
      </td>
     </tr>
@@ -358,9 +374,25 @@
     <tr>
      <td>
       <code>
+       public <link anchor='document-handler'>XMLDocumentHandler</link>
+           getDocumentHandler();
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
        public void setDTDHandler(
            <link idref='xni-core' anchor='dtd-handler'>XMLDTDHandler</link> handler
 	   );
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public <link anchor='dtd-handler'>XMLDTDHandler</link>
+           getDTDHandler();
       </code>
      </td>
     </tr>
@@ -376,6 +408,14 @@
     <tr>
      <td>
       <code>
+       public <link anchor='dtd-content-model-handler'>XMLDTDContentModelHandler</link>
+           getDTDContentModelHandler();
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
        public void parse(
            <link anchor='input-source'>XMLInputSource</link> source
 	   ) throws java.io.IOException, <link anchor='exception'>XNIException</link>;
@@ -383,6 +423,7 @@
      </td>
     </tr>
     <tr><td><code>public void setLocale(java.util.Locale);</code></td></tr>
+    <tr><td><code>public Locale getLocale();</code></td></tr>
    </table>
   </s3>
   <anchor name='pull-parser-configuration'/>

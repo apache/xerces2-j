@@ -102,9 +102,9 @@ import org.apache.xerces.xni.XNIException;
  *   Pass the same unique String references for all symbols that are
  *   propagated to the registered handlers. Symbols include, but may not
  *   be limited to, the names of elements and attributes (including their
- *   uri, prefix, and localpart). This is suggested but an absolute must.
- *   However, the standard parser components may require access to the
- *   same symbol table for creation of unique symbol references to be
+ *   uri, prefix, and localpart). This is suggested but not an absolute 
+ *   must. However, the standard parser components may require access to 
+ *   the same symbol table for creation of unique symbol references to be
  *   propagated in the XNI pipeline.
  *  </li>
  * </ul>
@@ -227,12 +227,18 @@ public interface XMLParserConfiguration
      */
     public void setErrorHandler(XMLErrorHandler errorHandler);
 
+    /** Returns the registered error handler. */
+    public XMLErrorHandler getErrorHandler();
+
     /**
      * Sets the document handler to receive information about the document.
      * 
      * @param documentHandler The document handler.
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler);
+
+    /** Returns the registered document handler. */
+    public XMLDocumentHandler getDocumentHandler();
 
     /**
      * Sets the DTD handler.
@@ -241,12 +247,18 @@ public interface XMLParserConfiguration
      */
     public void setDTDHandler(XMLDTDHandler dtdHandler);
 
+    /** Returns the registered DTD handler. */
+    public XMLDTDHandler getDTDHandler();
+
     /**
      * Sets the DTD content model handler.
      * 
      * @param dtdContentModelHandler The DTD content model handler.
      */
     public void setDTDContentModelHandler(XMLDTDContentModelHandler dtdContentModelHandler);
+
+    /** Returns the registered DTD content model handler. */
+    public XMLDTDContentModelHandler getDTDContentModelHandler();
 
     // other settings
 
@@ -257,6 +269,9 @@ public interface XMLParserConfiguration
      */
     public void setEntityResolver(XMLEntityResolver entityResolver);
 
+    /** Returns the registered entity resolver. */
+    public XMLEntityResolver getEntityResolver();
+
     /**
      * Set the locale to use for messages.
      *
@@ -266,5 +281,8 @@ public interface XMLParserConfiguration
      *                         specified locale.
      */
     public void setLocale(Locale locale) throws XNIException;
+
+    /** Returns the locale. */
+    public Locale getLocale();
 
 } // interface XMLParserConfiguration

@@ -7,6 +7,10 @@
    XNI interfaces related to DTD information.
   </desc>
   <changes>
+   <update>
+    <note>Added getter methods to XMLParserConfiguration interface.</note>
+    <submitter name='Andy Clark'/>
+   </update>
    <fix>
     <note>
      Fixed DTD scanner from reporting entity boundaries appearing
