@@ -135,6 +135,10 @@ public class XSDHandler {
     protected static final String JAXP_SCHEMA_SOURCE =
         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
+    /** Property identifier: entity resolver. */
+    public static final String ENTITY_RESOLVER =
+    Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+
     protected static final boolean DEBUG_NODE_POOL = false;
                               
     // Data
@@ -1515,6 +1519,12 @@ public class XSDHandler {
             }
             try {
                 fSchemaParser.setFeature(ALLOW_JAVA_ENCODINGS, fAllowJavaEncodings);
+            } catch (Exception e) {
+            }
+            try {
+                if (fEntityResolver != fSchemaParser.getProperty(ENTITY_RESOLVER)) {
+                    fSchemaParser.setProperty(ENTITY_RESOLVER, fEntityResolver);
+                }
             } catch (Exception e) {
             }
         }
