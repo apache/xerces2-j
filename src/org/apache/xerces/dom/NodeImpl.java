@@ -668,7 +668,7 @@ public abstract class NodeImpl
 	    the DOM Level 2 Events module, perhaps allowing it
 	    to be optimized out to save bytecodes.
 	*/
-	protected final static boolean MUTATIONEVENTS=false;
+	protected final static boolean MUTATIONEVENTS=true;
 	
 	/** The MUTATION_ values are parameters to the NON-DOM 
 	    internalInsertBefore() and internalRemoveChild() operations,
