@@ -78,6 +78,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 
 import org.apache.xerces.util.EncodingMap;
+import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
@@ -521,120 +522,133 @@ public class XML11EntityManager
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
          */
-        public boolean scanData(String delimiter, XMLString data)
+        public boolean scanData(String delimiter, XMLStringBuffer buffer)
             throws IOException {
 
-            // load more characters, if needed
+            boolean done = false;
             int delimLen = delimiter.length();
             char charAt0 = delimiter.charAt(0);
-            //int limit = fCurrentEntity.count - delimLen + 1;
-
-            if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0, true);
-            }
-            else if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
-                System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
-                                 fCurrentEntity.ch, 0, fCurrentEntity.count - fCurrentEntity.position);
-                load(fCurrentEntity.count - fCurrentEntity.position, false);
-                fCurrentEntity.position = 0;
-            }
-
-            // normalize newlines
-            int offset = fCurrentEntity.position;
-            int c = fCurrentEntity.ch[offset];
-            int newlines = 0;
             boolean external = fCurrentEntity.isExternal();
-            if (c == '\n' || ((c == '\r' || c == 0x85 || c == 0x2028) && external)) {
-                do {
-                    c = fCurrentEntity.ch[fCurrentEntity.position++];
-                    if ((c == '\r' || c == 0x85) && external) {
-                        newlines++;
-                        fCurrentEntity.lineNumber++;
-                        fCurrentEntity.columnNumber = 1;
-                        if (fCurrentEntity.position == fCurrentEntity.count) {
-                            offset = 0;
-                            fCurrentEntity.position = newlines;
-                            if (load(newlines, false)) {
-                                break;
-                            }
-                        }
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
-                            fCurrentEntity.position++;
-                            offset++;
-                        }
-                        /*** NEWLINE NORMALIZATION ***/
-                        else {
-                            newlines++;
-                        }
-                    }
-                    else if (c == '\n' || c == 0x2028) {
-                        newlines++;
-                        fCurrentEntity.lineNumber++;
-                        fCurrentEntity.columnNumber = 1;
-                        if (fCurrentEntity.position == fCurrentEntity.count) {
-                            offset = 0;
-                            fCurrentEntity.position = newlines;
-                            fCurrentEntity.count = newlines;
-                            if (load(newlines, false)) {
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        fCurrentEntity.position--;
-                        break;
-                    }
-                } while (fCurrentEntity.position < fCurrentEntity.count - 1);
-                for (int i = offset; i < fCurrentEntity.position; i++) {
-                    fCurrentEntity.ch[i] = '\n';
+            do {
+                // load more characters, if needed
+                if (fCurrentEntity.position == fCurrentEntity.count) {
+                    load(0, true);
                 }
-                int length = fCurrentEntity.position - offset;
-                if (fCurrentEntity.position == fCurrentEntity.count - 1) {
-                    data.setValues(fCurrentEntity.ch, offset, length);
-                    return true;
+                else if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
+                    System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
+                                     fCurrentEntity.ch, 0, fCurrentEntity.count - fCurrentEntity.position);
+                    load(fCurrentEntity.count - fCurrentEntity.position, false);
+                    fCurrentEntity.position = 0;
                 }
-            }
-
-            // iterate over buffer looking for delimiter
-            boolean done = false;
-            OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
-                c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if (c == charAt0) {
-                    // looks like we just hit the delimiter
-                    int delimOffset = fCurrentEntity.position - 1;
-                    for (int i = 1; i < delimLen; i++) {
-                        if (fCurrentEntity.position == fCurrentEntity.count) {
-                            fCurrentEntity.position -= i;
-                            break OUTER;
-                        }
+    
+                if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
+                    // something must be wrong with the input:  e.g., file ends  an unterminated comment
+                    int length = fCurrentEntity.count - fCurrentEntity.position;
+                    buffer.append (fCurrentEntity.ch, fCurrentEntity.position, length); 
+                    fCurrentEntity.columnNumber += fCurrentEntity.count;
+                    fCurrentEntity.position = fCurrentEntity.count;
+                    load(0,true);
+                    return false;
+                }
+    
+                // normalize newlines
+                int offset = fCurrentEntity.position;
+                int c = fCurrentEntity.ch[offset];
+                int newlines = 0;
+                if (c == '\n' || ((c == '\r' || c == 0x85 || c == 0x2028) && external)) {
+                    do {
                         c = fCurrentEntity.ch[fCurrentEntity.position++];
-                        if (delimiter.charAt(i) != c) {
+                        if ((c == '\r' || c == 0x85) && external) {
+                            newlines++;
+                            fCurrentEntity.lineNumber++;
+                            fCurrentEntity.columnNumber = 1;
+                            if (fCurrentEntity.position == fCurrentEntity.count) {
+                                offset = 0;
+                                fCurrentEntity.position = newlines;
+                                if (load(newlines, false)) {
+                                    break;
+                                }
+                            }
+                            if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+                                fCurrentEntity.position++;
+                                offset++;
+                            }
+                            /*** NEWLINE NORMALIZATION ***/
+                            else {
+                                newlines++;
+                            }
+                        }
+                        else if (c == '\n' || c == 0x2028) {
+                            newlines++;
+                            fCurrentEntity.lineNumber++;
+                            fCurrentEntity.columnNumber = 1;
+                            if (fCurrentEntity.position == fCurrentEntity.count) {
+                                offset = 0;
+                                fCurrentEntity.position = newlines;
+                                fCurrentEntity.count = newlines;
+                                if (load(newlines, false)) {
+                                    break;
+                                }
+                            }
+                        }
+                        else {
                             fCurrentEntity.position--;
                             break;
                         }
+                    } while (fCurrentEntity.position < fCurrentEntity.count - 1);
+                    for (int i = offset; i < fCurrentEntity.position; i++) {
+                        fCurrentEntity.ch[i] = '\n';
                     }
-                    if (fCurrentEntity.position == delimOffset + delimLen) {
-                        done = true;
+                    int length = fCurrentEntity.position - offset;
+                    if (fCurrentEntity.position == fCurrentEntity.count - 1) {
+                        buffer.append(fCurrentEntity.ch, offset, length);
+                        return true;
+                    }
+                }
+    
+                // iterate over buffer looking for delimiter
+                OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
+                    c = fCurrentEntity.ch[fCurrentEntity.position++];
+                    if (c == charAt0) {
+                        // looks like we just hit the delimiter
+                        int delimOffset = fCurrentEntity.position - 1;
+                        for (int i = 1; i < delimLen; i++) {
+                            if (fCurrentEntity.position == fCurrentEntity.count) {
+                                fCurrentEntity.position -= i;
+                                break OUTER;
+                            }
+                            c = fCurrentEntity.ch[fCurrentEntity.position++];
+                            if (delimiter.charAt(i) != c) {
+                                fCurrentEntity.position--;
+                                break;
+                            }
+                        }
+                        if (fCurrentEntity.position == delimOffset + delimLen) {
+                            done = true;
+                            break;
+                        }
+                    }
+                    else if (c == '\n' || (external && (c == '\r' || c == 0x85 || c == 0x2028))) {
+                        fCurrentEntity.position--;
                         break;
                     }
+                    else if (XMLChar.isInvalid(c)) {
+                        fCurrentEntity.position--;
+                        int length = fCurrentEntity.position - offset;
+                        fCurrentEntity.columnNumber += length - newlines;
+                        buffer.append(fCurrentEntity.ch, offset, length); 
+                        return true;
+                    }
                 }
-                else if (c == '\n' || (external && (c == '\r' || c == 0x85 || c == 0x2028))) {
-                    fCurrentEntity.position--;
-                    break;
+                int length = fCurrentEntity.position - offset;
+                fCurrentEntity.columnNumber += length - newlines;
+                if (done) {
+                    length -= delimLen;
                 }
-                else if (XMLChar.isInvalid(c)) {
-                    fCurrentEntity.position--;
-                    break;
-                }
-            }
-            int length = fCurrentEntity.position - offset;
-            fCurrentEntity.columnNumber += length - newlines;
-            if (done) {
-                length -= delimLen;
-            }
-            data.setValues(fCurrentEntity.ch, offset, length);
-
-            // return true if string was skipped
+                buffer.append(fCurrentEntity.ch, offset, length);
+    
+                // return true if string was skipped
+            } while (!done);
             return !done;
 
         } // scanData(String,XMLString)
