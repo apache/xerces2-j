@@ -83,7 +83,7 @@ import org.apache.xerces.util.SymbolTable;
  *
  * @version $Id$
  */
-public class SecurityConfiguration extends IntegratedParserConfiguration
+public class SecurityConfiguration extends XML11Configuration
 {
 
     //
@@ -148,5 +148,5 @@ public class SecurityConfiguration extends IntegratedParserConfiguration
         setProperty(SECURITY_MANAGER_PROPERTY, new SecurityManager());
     } // <init>(SymbolTable,XMLGrammarPool)
 
-} // class IntegratedParserConfiguration
+} // class SecurityConfiguration
 
