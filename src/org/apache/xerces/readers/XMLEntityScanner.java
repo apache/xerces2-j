@@ -197,7 +197,7 @@ public class XMLEntityScanner
 
         fLength = 0;
         boolean nmtoken = false;
-        while (XMLChar.isNameChar(peek())) {
+        while (XMLChar.isName(peek())) {
             nmtoken = true;
             fBuffer[fLength++] = (char)read();
         }
@@ -220,10 +220,10 @@ public class XMLEntityScanner
 
         fLength = 0;
         boolean name = false;
-        if (XMLChar.isNameStartChar(peek())) {
+        if (XMLChar.isNameStart(peek())) {
             name = true;
             fBuffer[fLength++] = (char)read();
-            while (XMLChar.isNameChar(peek())) {
+            while (XMLChar.isName(peek())) {
                 fBuffer[fLength++] = (char)read();
             }
         }
@@ -251,11 +251,11 @@ public class XMLEntityScanner
         fLength = 0;
         int colons = -1;
         int index = 0;
-        if (XMLChar.isNameStartChar(peek())) {
+        if (XMLChar.isNameStart(peek())) {
             colons = 0;
             fBuffer[fLength++] = (char)read();
             int c = -1;
-            while (XMLChar.isNameChar(c = peek())) {
+            while (XMLChar.isName(c = peek())) {
                 if (c == ':') {
                     colons++;
                     if (colons == 1) {
