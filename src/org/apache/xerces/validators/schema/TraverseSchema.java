@@ -5735,10 +5735,10 @@ throws Exception {
         }
 
         // validation of attribute type is same for each case of declaration
-            if (simpleTypeChild != null) {
-                attType        = XMLAttributeDecl.TYPE_SIMPLE;
-                dataTypeSymbol = traverseSimpleTypeDecl(simpleTypeChild);
-                localpart = fStringPool.toString(dataTypeSymbol);
+        if (simpleTypeChild != null) {
+            attType        = XMLAttributeDecl.TYPE_SIMPLE;
+            dataTypeSymbol = traverseSimpleTypeDecl(simpleTypeChild);
+            localpart = fStringPool.toString(dataTypeSymbol);
             dv = fDatatypeRegistry.getDatatypeValidator(localpart);
         }
         else if (datatypeStr.length() != 0) {
@@ -5757,6 +5757,7 @@ throws Exception {
 
             if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) { 
                 dv = getDatatypeValidator(SchemaSymbols.URI_SCHEMAFORSCHEMA, localpart);
+//                System.err.println("dv is " + dv + " and typeURI is " + typeURI);
 
                 if (localpart.equals("ID")) {
                     attType = XMLAttributeDecl.TYPE_ID;
@@ -5789,6 +5790,9 @@ throws Exception {
                             // REVISIT: Localize
                             reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+localpart+")"+ errorContext);
                         }
+                    } else if(dv == null && !referredTo) {
+                        // REVISIT:  localize
+                        reportGenericSchemaError("attribute " + attNameStr + " has a type (" + datatypeStr + ") which is not recognized as one of the predefined schema datatypes");
                     }
                 }
             } else { //isn't of the schema for schemas namespace...
@@ -5805,10 +5809,12 @@ throws Exception {
                         // REVISIT: Localize
                         reportGenericSchemaError("simpleType not found : " + "("+typeURI+":"+ localpart+")"+ errorContext);
                     }
+                } else if (dv == null) {
+                    // REVISIT:  localize
+                    reportGenericSchemaError("attribute " + attNameStr + " has an unrecognized type " + datatypeStr);
                 }
             }
-				}
-				else {
+		} else {
             attType        = XMLAttributeDecl.TYPE_SIMPLE;
             localpart      = "string";
             dataTypeSymbol = fStringPool.addSymbol(localpart);
