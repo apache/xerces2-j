@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,8 @@
  */
 
 package dom;
+
+import java.lang.reflect.Method;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -134,6 +136,9 @@ public class Writer {
 
     /** Canonical output. */
     protected boolean fCanonical;
+    
+    /** Processing XML 1.1 document. */
+    protected boolean fXML11;
 
     //
     // Constructors
@@ -189,8 +194,14 @@ public class Writer {
         switch (type) {
             case Node.DOCUMENT_NODE: {
                 Document document = (Document)node;
+                fXML11 = "1.1".equals(getVersion(document));
                 if (!fCanonical) {
-                    fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+                    if (fXML11) {
+                        fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
+                    }
+                    else {
+                        fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+                    }
                     fOut.flush();
                     write(document.getDoctype());
                 }
@@ -211,7 +222,7 @@ public class Writer {
                     fOut.print(systemId);
                     fOut.print('\'');
                 }
-                else {
+                else if (systemId != null) {
                     fOut.print(" SYSTEM '");
                     fOut.print(systemId);
                     fOut.print('\'');
@@ -235,7 +246,7 @@ public class Writer {
                     fOut.print(' ');
                     fOut.print(attr.getNodeName());
                     fOut.print("=\"");
-                    normalizeAndPrint(attr.getNodeValue());
+                    normalizeAndPrint(attr.getNodeValue(), true);
                     fOut.print('"');
                 }
                 fOut.print('>');
@@ -268,7 +279,7 @@ public class Writer {
 
             case Node.CDATA_SECTION_NODE: {
                 if (fCanonical) {
-                    normalizeAndPrint(node.getNodeValue());
+                    normalizeAndPrint(node.getNodeValue(), false);
                 }
                 else {
                     fOut.print("<![CDATA[");
@@ -280,7 +291,7 @@ public class Writer {
             }
 
             case Node.TEXT_NODE: {
-                normalizeAndPrint(node.getNodeValue());
+                normalizeAndPrint(node.getNodeValue(), false);
                 fOut.flush();
                 break;
             }
@@ -293,9 +304,21 @@ public class Writer {
                     fOut.print(' ');
                     fOut.print(data);
                 }
-                fOut.println("?>");
+                fOut.print("?>");
                 fOut.flush();
                 break;
+            }
+            
+            case Node.COMMENT_NODE: {
+                if (!fCanonical) {
+                    fOut.print("<!--");
+                    String comment = node.getNodeValue();
+                    if (comment != null && comment.length() > 0) {
+                        fOut.print(comment);
+                    }
+                    fOut.print("-->");
+                    fOut.flush();
+                }
             }
         }
 
@@ -342,18 +365,18 @@ public class Writer {
     //
 
     /** Normalizes and prints the given string. */
-    protected void normalizeAndPrint(String s) {
+    protected void normalizeAndPrint(String s, boolean isAttValue) {
 
         int len = (s != null) ? s.length() : 0;
         for (int i = 0; i < len; i++) {
             char c = s.charAt(i);
-            normalizeAndPrint(c);
+            normalizeAndPrint(c, isAttValue);
         }
 
-    } // normalizeAndPrint(String)
+    } // normalizeAndPrint(String,boolean)
 
     /** Normalizes and print the given character. */
-    protected void normalizeAndPrint(char c) {
+    protected void normalizeAndPrint(char c, boolean isAttValue) {
 
         switch (c) {
             case '<': {
@@ -369,25 +392,74 @@ public class Writer {
                 break;
             }
             case '"': {
-                fOut.print("&quot;");
+                // A '"' that appears in character data 
+                // does not need to be escaped.
+                if (isAttValue) {
+                    fOut.print("&quot;");
+                }
+                else {
+                    fOut.print("\"");
+                }
                 break;
             }
-            case '\r':
+            case '\r': {
+            	// If CR is part of the document's content, it
+            	// must not be printed as a literal otherwise
+            	// it would be normalized to LF when the document
+            	// is reparsed.
+            	fOut.print("&#xD;");
+            	break;
+            }
             case '\n': {
                 if (fCanonical) {
-                    fOut.print("&#");
-                    fOut.print(Integer.toString(c));
-                    fOut.print(';');
+                    fOut.print("&#xA;");
                     break;
                 }
                 // else, default print char
             }
             default: {
-                fOut.print(c);
+            	// In XML 1.1, control chars in the ranges [#x1-#x1F, #x7F-#x9F] must be escaped.
+            	//
+            	// Escape space characters that would be normalized to #x20 in attribute values
+            	// when the document is reparsed.
+            	//
+            	// Escape NEL (0x85) and LSEP (0x2028) that appear in content 
+            	// if the document is XML 1.1, since they would be normalized to LF 
+            	// when the document is reparsed.
+            	if (fXML11 && ((c >= 0x01 && c <= 0x1F && c != 0x09 && c != 0x0A) 
+            	    || (c >= 0x7F && c <= 0x9F) || c == 0x2028)
+            	    || isAttValue && (c == 0x09 || c == 0x0A)) {
+            	    fOut.print("&#x");
+            	    fOut.print(Integer.toHexString(c).toUpperCase());
+            	    fOut.print(";");
+                }
+                else {
+                    fOut.print(c);
+                }        
             }
         }
+    } // normalizeAndPrint(char,boolean)
 
-    } // normalizeAndPrint(char)
+    /** Extracts the XML version from the Document. */
+    protected String getVersion(Document document) {
+    	if (document == null) {
+    	    return null;
+    	}
+        String version = null;
+        Method getXMLVersion = null;
+        try {
+            getXMLVersion = document.getClass().getMethod("getXmlVersion", new Class[]{});
+            // If Document class implements DOM L3, this method will exist.
+            if (getXMLVersion != null) {
+                version = (String) getXMLVersion.invoke(document, null);
+            }
+        } 
+        catch (Exception e) { 
+            // Either this locator object doesn't have 
+            // this method, or we're on an old JDK.
+        }
+        return version;
+    } // getVersion(Document)
 
     //
     // Main
