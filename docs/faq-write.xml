@@ -152,16 +152,15 @@ parser.getXMLReader().setErrorHandler(handler);</source>
   </q>
   <a>
    <p>
-    The feature 
-    <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code>
-    controls how entities appear in the DOM tree. When this feature
+    The DOM Level 3 feature  <code>create-entity-ref-nodes</code> (or corresponding Xerces  <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code> feature) 
+    control how entities appear in the DOM tree. When one of those features 
     is set to true (the default), an occurance of an entity reference
     in the XML document will be represented by a subtree with an 
     EntityReference node at the root whose children represent the 
     entity expansion.
    </p>
    <p>
-    If the property is false, an entity reference in the XML document
+    If the feature is false, an entity reference in the XML document
     is represented by only the nodes that represent the entity 
     expansion.
    </p> 

@@ -50,7 +50,7 @@
 
    <add>
      <note>Added support for warn-on-duplicate-attdef xerces feature
-     http://apache.org/xml/features/validation/warn-on-duplicate-attdef
+     validation/warn-on-duplicate-attdef
      </note>
       <submitter name='Neeraj Bajaj'/>
    </add>
@@ -98,7 +98,7 @@
    </update>
 
    <update>
-     <note>provided support for fundamental facets in DV implementation  </note>
+     <note>Provided support for fundamental facets in DV implementation  </note>
       <submitter name='Neeraj Bajaj, Sandy Gao'/>
    </update>
    
@@ -121,11 +121,17 @@
     
    <fix>
         <note> 
-            Fixed DOM L2 bug: synchronization for entity reference nodes, 
-            cloning of attribute node, report of event phases. 
-            
+            Fixed DOM L2 bugs: synchronization for entity reference nodes, 
+            cloning of attribute node, report of event phases.             
         </note>
         <submitter name="Arnaud Le Hors, Elena Litani"/>
+    </fix>
+
+    <fix>
+        <note> 
+           Fixed a bug in XMLDocumentFragmentScannerImpl occuring when a ] is encountered          at the end of an entity.                        
+        </note>
+        <submitter name="Arnaud Le Hors"/>
     </fix> 
     
     
@@ -143,26 +149,19 @@
 
     
     <fix>
-        <note>Javadoc fixes. 
+        <note>Massive Javadoc fixes. 
         </note>
-        <submitter name="Ted Leung"/>
+        <submitter name="Ted Leung, Neeraj Bajaj, Rahul Srivastava"/>
     </fix>
     
-
     
     <fix>
         <note>Fixed external-schemaLocation and external-noNamespaceSchemalocation 
-        	properties related bug (bug id 5768)        
+        	properties related bug (# 5768)        
         </note>
         <submitter name="Gopal Sharma"/>
     </fix>
 
-    
-    <fix>
-        <note>XNI related Javadoc fixes. 
-        </note>
-        <submitter name="Neeraj Bajaj, Rahul Srivastava"/>
-    </fix>
 
     <fix>
         <note>Fixed namespaces and namespace-prefixes related SAX bug.
@@ -176,12 +175,6 @@
         <submitter name="Rahul Srivastava"/>
     </fix>
     
-
-    <fix>
-        <note>Corrected features documentation for string-interning feature.
-        </note>
-        <submitter name="Rahul Srivastava"/>
-    </fix>
 
     <fix>
         <note>Fixed the bug in which duplicate attribute definitions were not ignored

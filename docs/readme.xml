@@ -18,7 +18,7 @@
    <link idref='xni'>XNI Manual</link>.
   </p>
   <p>
-   Xerces 2 is a fully conforming XML Schema processor. 
+   Xerces 2 is a <jump href='http://www.w3.org/TR/xmlschema-1/#key-fullyConforming'>fully conforming</jump> XML Schema processor. 
    For more information, refer to the <link idref='limitations-schema'>XML Schema Implementation</link> page. 
   </p>
   <p>
@@ -34,6 +34,9 @@
    <jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>
    to report any bugs that you find.
   </p>
+  <p>You can find the latest Xerces 2 jars
+   <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>here</jump>.
+   </p>
  </s2>
  <s2 title='Features of This Release'>
   <p>
@@ -88,18 +91,21 @@
    The &ParserNameLong; &ParserVersion; introduced some changes to the Xerces Native
    Interface. The following list enumerates the important changes:
   </p>
+  
   <ul>
-   <li>The <code>Augmentations</code> interface was added to the core XNI interfaces.
+   <li>Added an interface, <code>XMLResourceIdentifier</code>, for describing the physical location of XML resources to the core XNI interfaces.
+   This interface is used in grammar caching and entity resulution.
    </li>
    <li>
-    The <code>XMLDocumentHandler</code> interface was modified to include <code>Augmentations</code> as an extra parameter for parser events. Getter methods were added to the <code>XMLAttributes</code> to query the <code>Augmentations</code>. 
+    Updated <code>XMLEntityResolver</code>, <code>XMLLocator</code>, <code>XMLDocumentHandler</code>, <code>XMLDocumentFragmentHandler</code>, and <code>XMLDTDHandler</code> to use <code>XMLResourceIdentifier</code> interface.
    </li>
 
    <li>
-    The PSVI interfaces were added as an extention to the core XNI (still under development).
-   </li>
+    Added <code>Augmentations</code> to <code>XMLDTDHandler</code>, <code>XMLDocumentFragmentHandler</code>, and the <code>XMLDTDContentModelHandler</code> interfaces
+    </li>
   </ul>
   <p>
+  
    For a more complete list of changes, refer to the 
    <link idref='releases'>Release Information</link> page.
   </p>	      

@@ -291,6 +291,7 @@
     parser instance to add recognized features and properties that
     the parser configuration will store.
    </p>
+   <!--
    <table>
     <tr>
      <th>
@@ -425,6 +426,7 @@
     <tr><td><code>public void setLocale(java.util.Locale);</code></td></tr>
     <tr><td><code>public Locale getLocale();</code></td></tr>
    </table>
+   -->
   </s3>
   <anchor name='pull-parser-configuration'/>
   <s3 title='Interface XMLPullParserConfiguration'>
@@ -463,18 +465,19 @@
   <anchor name='entity-resolver'/>
   <s3 title='Interface XMLEntityResolver'>
    <p>
-    This interface allows resolution of the external DTD subset and
-    external parsed entities appearing in the document instance.
-   </p>
+   This interface is used to resolve external parsed entities. The
+   application can register an object that implements this interface
+  with the parser configuration in order to intercept entities and
+  resolve them explicitly. If the registered entity resolver cannot
+  resolve the entity, it should return <code>null</code> so that the
+  parser will try to resolve the entity using a default mechanism.   </p>
    <table>
     <tr><th>Methods</th></tr>
     <tr>
      <td>
       <code>
        public <link anchor='input-source'>XMLInputSource</link> resolveEntity(
-           String publicId,
-	   String systemId,
-	   String baseSystemId
+               <link anchor='resource-identifier'>XMLResourceIdentifier</link> resourceIdentifier
 	   ) throws java.io.IOException, <link anchor='parse-exception'>XMLParseException</link>;
       </code>
      </td>
@@ -483,6 +486,11 @@
   </s3>
   <anchor name='error-handler'/>
   <s3 title='Interface XMLErrorHandler'>
+  <p>
+  An interface for handling errors. If the application is interested
+  in error notifications, then it can register an error handler object
+  that implements this interface with the parser configuration.
+ </p>
    <table>
     <tr><th>Methods</th></tr>
     <tr>
@@ -522,6 +530,14 @@
   </s3>
   <anchor name='input-source'/>
   <s3 title='Class XMLInputSource'>
+  <p>
+  This class represents an input source for an XML document. The
+  basic properties of an input source are the following: 
+   public identifier,
+   system identifier,
+   byte stream or character stream.   
+   </p>
+   <!--
    <table>
     <tr><th>Constructors</th></tr>
     <tr>
@@ -575,9 +591,27 @@
     <tr><td><code>public void setEncoding(String encoding);</code></td></tr>
     <tr><td><code>public String getEncoding();</code></td></tr>
    </table>
+   -->
   </s3>
+  
+  <anchor name='resource-identifier'/>
+  <s3 title='Class XMLResourceIdentifier'>
+  <p>
+   This represents the basic physical description of the location of any
+  XML resource (a Schema grammar, a DTD, a general entity etc.) 
+   </p>
+   </s3>
+
+
   <anchor name='parse-exception'/>
   <s3 title='Class XMLParseException'>
+  <p>
+  
+  A parsing exception. This exception is different from the standard
+  XNI exception in that it stores the location in the document (or
+  its entities) where the exception occurred.
+  </p>
+  <!--
    <table>
     <tr>
      <th>
@@ -613,6 +647,7 @@
     <tr><td><code>public int getLineNumber();</code></td></tr>
     <tr><td><code>public int getColumnNumber();</code></td></tr>
    </table>
+   -->
   </s3>
  </s2>
  <anchor name='pipelines'/>

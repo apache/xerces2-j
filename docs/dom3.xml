@@ -7,7 +7,7 @@ The &ParserNameLong; &ParserVersion;  contains a partial implementation of the W
 Level 3.  This implementation is experimental.  The DOM Level 3 specification is 
 still in working draft stage: you should not consider this implementation complete or correct.  
 The limitations of this implementation are detailed below. 
-Please, read this document before using dom3 package.  
+Please, read this document before using org.apache.xerces.dom3 package.  
 </p>
 </s2> 
 <s2 title="Introduction">
