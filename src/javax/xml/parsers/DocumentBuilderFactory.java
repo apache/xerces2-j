@@ -107,7 +107,15 @@ public abstract class DocumentBuilderFactory {
     public static DocumentBuilderFactory newInstance() {
 
         // Retrieve the javax.xml.parsers.DocumentBuilderFactory system property
-        String n=System.getProperty(property, factory);
+        String n=factory;
+        try {
+            n=System.getProperty(property, factory);
+        } catch (SecurityException e) {
+        	// In applets System.getProperty throws a SecurityException.
+        	// Thanks to Aaron Buchanan <abuchanan@inovacorp.com> and to
+        	// James Duncan Davidson <james.davidson@eng.sun.com> for this
+        	n=factory;
+        }
 
         try {
             // Attempt to load, instantiate and return the factory class
