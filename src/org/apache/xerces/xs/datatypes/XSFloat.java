@@ -28,7 +28,7 @@ package org.apache.xerces.xs.datatypes;
 public interface XSFloat {
     
     /**
-     * @return value
+     * @return a float value
      */
     public float getValue();
     

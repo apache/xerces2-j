@@ -885,13 +885,13 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 		/* (non-Javadoc)
 		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneHr()
 		 */
-		public int getTimeZoneHr() {
+		public int getTimeZoneHours() {
 			return timezoneHr;
 		}
 		/* (non-Javadoc)
 		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneMin()
 		 */
-		public int getTimeZoneMin() {
+		public int getTimeZoneMinutes() {
 			return timezoneMin;
 		}
         /**

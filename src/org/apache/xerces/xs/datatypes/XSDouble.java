@@ -28,7 +28,7 @@ package org.apache.xerces.xs.datatypes;
 public interface XSDouble {
     
     /**
-     * @return value
+     * @return a double value
      */
     public double getValue();
     

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004, 2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +47,14 @@ public interface ByteList {
     public boolean contains(byte item);
     
     /**
-     * Returns the <code>index</code>th item in the collection. The index 
+     * Returns the <code>index</code>of the item in the collection. The index 
      * starts at 0. 
      * @param index  index into the collection. 
      * @return  The <code>byte</code> at the <code>index</code>th 
      *   position in the <code>ByteList</code>. 
      * @exception XSException
      *   INDEX_SIZE_ERR: if <code>index</code> is greater than or equal to the 
-     *   number of objects in the list.
+     *   number of objects in the list or less than zero.
      */
     public byte item(int index) throws XSException;
     
