@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,7 @@ import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSObject;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.util.DOMUtil;
@@ -103,7 +104,6 @@ import org.w3c.dom.Attr;
 class XSDElementTraverser extends XSDAbstractTraverser {
 
     protected final XSElementDecl  fTempElementDecl  = new XSElementDecl();
-    protected final XSParticleDecl fTempParticleDecl = new XSParticleDecl();
 
     // this controls what happens when a local element is encountered.
     // We may not encounter all local elements when first parsing.
@@ -131,7 +131,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                  XSDocumentInfo schemaDoc,
                                  SchemaGrammar grammar,
                                  int allContextFlags,
-                                 XSComplexTypeDecl enclosingCT) {
+                                 XSObject parent) {
 
         XSParticleDecl particle = null;
         if (fSchemaHandler.fDeclPool !=null) {
@@ -155,9 +155,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 catch (NumberFormatException ex) {
                 }
             }
-            fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, enclosingCT, particle);
+            fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, parent, particle);
         } else {
-            traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags, enclosingCT);
+            traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags, parent);
+            // If it's an empty particle, return null.
+            if (particle.fType == XSParticleDecl.PARTICLE_EMPTY)
+                particle = null;
         }
 
         return particle;
@@ -176,7 +179,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                  XSDocumentInfo schemaDoc,
                                  SchemaGrammar grammar,
                                  int allContextFlags,
-                                 XSComplexTypeDecl enclosingCT) {
+                                 XSObject parent) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc);
@@ -208,7 +211,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 element = null;
             }
         } else {
-            element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false, enclosingCT);
+            element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false, parent);
         }
 
         particle.fMinOccurs = minAtt.intValue();
@@ -263,7 +266,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                        XSDocumentInfo schemaDoc,
                                        SchemaGrammar grammar,
                                        boolean isGlobal,
-                                       XSComplexTypeDecl enclosingCT) {
+                                       XSObject parent) {
 
         Boolean abstractAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
         XInt    blockAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_BLOCK];
@@ -294,8 +297,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             element.setIsGlobal();
         }
         else {
-            if (enclosingCT != null)
-                element.setIsLocal(enclosingCT);
+            if (parent instanceof XSComplexTypeDecl)
+                element.setIsLocal((XSComplexTypeDecl)parent);
 
             if (formAtt != null) {
                 if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)

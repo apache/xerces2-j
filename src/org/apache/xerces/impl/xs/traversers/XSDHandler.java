@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,9 @@ import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
+import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
@@ -90,6 +92,7 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.apache.xerces.xs.XSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -311,7 +314,7 @@ public class XSDHandler {
     private XSParticleDecl[] fParticle = new XSParticleDecl[INIT_STACK_SIZE];
     private Element[] fLocalElementDecl = new Element[INIT_STACK_SIZE];
     private int[] fAllContext = new int[INIT_STACK_SIZE];
-    private XSComplexTypeDecl[] fEnclosingCT = new XSComplexTypeDecl[INIT_STACK_SIZE];
+    private XSObject[] fParent = new XSObject[INIT_STACK_SIZE];
     private String [][] fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
 
     // these data members are needed for the deferred traversal
@@ -1675,8 +1678,35 @@ public class XSDHandler {
             Element currElem = fLocalElementDecl[i];
             XSDocumentInfo currSchema = (XSDocumentInfo)fDoc2XSDocumentMap.get(DOMUtil.getDocument(currElem));
             SchemaGrammar currGrammar = fGrammarBucket.getGrammar(currSchema.fTargetNamespace);
-            fElementTraverser.traverseLocal (fParticle[i], currElem, currSchema, currGrammar, fAllContext[i], fEnclosingCT[i]);
+            fElementTraverser.traverseLocal (fParticle[i], currElem, currSchema, currGrammar, fAllContext[i], fParent[i]);
+            // If it's an empty particle, remove it from the containing component.
+            if (fParticle[i].fType == XSParticleDecl.PARTICLE_EMPTY) {
+                XSModelGroupImpl group;
+                if (fParent[i] instanceof XSComplexTypeDecl)
+                    group = (XSModelGroupImpl)((XSComplexTypeDecl)fParent[i]).getParticle().getTerm();
+                else
+                    group = ((XSGroupDecl)fParent[i]).fModelGroup;
+                removeParticle(group, fParticle[i]);
+            }
         }
+    }
+
+    private boolean removeParticle(XSModelGroupImpl group, XSParticleDecl particle) {
+        XSParticleDecl member;
+        for (int i = 0; i < group.fParticleCount; i++) {
+            member = group.fParticles[i];
+            if (member == particle) {
+                for (int j = i; j < group.fParticleCount-1; j++)
+                    group.fParticles[j] = group.fParticles[j+1];
+                group.fParticleCount--;
+                return true;
+            }
+            if (member.fType == XSParticleDecl.PARTICLE_MODELGROUP) {
+                if (removeParticle((XSModelGroupImpl)member.fValue, particle))
+                    return true;
+            }
+        }
+        return false;
     }
 
     // the purpose of this method is to keep up-to-date structures
@@ -1684,7 +1714,7 @@ public class XSDHandler {
     void fillInLocalElemInfo(Element elmDecl,
                              XSDocumentInfo schemaDoc,
                              int allContextFlags,
-                             XSComplexTypeDecl enclosingCT,
+                             XSObject parent,
                              XSParticleDecl particle) {
 
         // if the stack is full, increase the size
@@ -1699,9 +1729,9 @@ public class XSDHandler {
             int[] newStackI = new int[fLocalElemStackPos+INC_STACK_SIZE];
             System.arraycopy(fAllContext, 0, newStackI, 0, fLocalElemStackPos);
             fAllContext = newStackI;
-            XSComplexTypeDecl[] newStackC = new XSComplexTypeDecl[fLocalElemStackPos+INC_STACK_SIZE];
-            System.arraycopy(fEnclosingCT, 0, newStackC, 0, fLocalElemStackPos);
-            fEnclosingCT = newStackC;
+            XSObject[] newStackC = new XSObject[fLocalElemStackPos+INC_STACK_SIZE];
+            System.arraycopy(fParent, 0, newStackC, 0, fLocalElemStackPos);
+            fParent = newStackC;
             String [][] newStackN = new String [fLocalElemStackPos+INC_STACK_SIZE][];
             System.arraycopy(fLocalElemNamespaceContext, 0, newStackN, 0, fLocalElemStackPos);
             fLocalElemNamespaceContext = newStackN;
@@ -1710,7 +1740,7 @@ public class XSDHandler {
         fParticle[fLocalElemStackPos] = particle;
         fLocalElementDecl[fLocalElemStackPos] = elmDecl;
         fAllContext[fLocalElemStackPos] = allContextFlags;
-        fEnclosingCT[fLocalElemStackPos] = enclosingCT;
+        fParent[fLocalElemStackPos] = parent;
         fLocalElemNamespaceContext[fLocalElemStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // end fillInLocalElemInfo(...)
 

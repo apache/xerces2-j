@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -153,12 +153,9 @@ public class CMBuilder {
         // the <all> itself is optional
         XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0, group.fParticleCount);
         for (int i = 0; i < group.fParticleCount; i++) {
-            // for all non-empty particles
-            if (group.fParticles[i].fType != XSParticleDecl.PARTICLE_EMPTY &&
-                group.fParticles[i].fMaxOccurs != 0)
-                // add the element decl to the all content model
-                allContent.addElement((XSElementDecl)group.fParticles[i].fValue,
-                                      group.fParticles[i].fMinOccurs == 0);
+            // add the element decl to the all content model
+            allContent.addElement((XSElementDecl)group.fParticles[i].fValue,
+            group.fParticles[i].fMinOccurs == 0);
         }
         return allContent;
     }

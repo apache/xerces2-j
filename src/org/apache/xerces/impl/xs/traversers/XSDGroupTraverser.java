@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -169,10 +169,14 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         XSAnnotationImpl annotation = null;
         if (l_elmChild == null) {
-        	reportSchemaError("s4s-elt-must-match.2",
+            reportSchemaError("s4s-elt-must-match.2",
                               new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
                               elmNode);
         } else {
+            // Create the group defi up-front, so it can be passed
+            // to the traversal methods
+            group = new XSGroupDecl();
+
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 annotation = traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
@@ -182,24 +186,24 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
 
             if (l_elmChild == null) {
-				reportSchemaError("s4s-elt-must-match.2",
+                reportSchemaError("s4s-elt-must-match.2",
                                   new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
                                   elmNode);
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
+                particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, group);
             } else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                particle = traverseChoice(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
+                particle = traverseChoice(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, group);
             } else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
+                particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, group);
             } else {
-				reportSchemaError("s4s-elt-must-match.1",
+                reportSchemaError("s4s-elt-must-match.1",
                                   new Object[]{"group (global)", "(annotation?, (all | choice | sequence))", DOMUtil.getLocalName(l_elmChild)},
                                   l_elmChild);
             }
 
             if (l_elmChild != null &&
                 DOMUtil.getNextSiblingElement(l_elmChild) != null) {
-				reportSchemaError("s4s-elt-must-match.1",
+                reportSchemaError("s4s-elt-must-match.1",
                                   new Object[]{"group (global)", "(annotation?, (all | choice | sequence))",
                                                DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(l_elmChild))},
                                   DOMUtil.getNextSiblingElement(l_elmChild));
@@ -207,13 +211,16 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
             // add global group declaration to the grammar
             if (strNameAttr != null) {
-                group = new XSGroupDecl();
                 group.fName = strNameAttr;
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
                 if (particle != null)
                     group.fModelGroup = (XSModelGroupImpl)particle.fValue;
                 group.fAnnotation = annotation;
                 grammar.addGlobalGroupDecl(group);
+            }
+            else {
+                // name attribute is not there, don't return this group.
+                group = null;
             }
         }
         if(group != null) { 
