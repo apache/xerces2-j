@@ -64,6 +64,8 @@ import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
 import org.apache.xerces.validators.common.Grammar;
 import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.validators.common.XMLAttributeDecl;
+import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.dtd.DTDGrammar;
 
 import org.xml.sax.Locator;
@@ -206,24 +208,6 @@ public final class XMLDTDScanner {
     private int fDefaultAttValueMark = -1;
     private int fEntityValueReader = -1;
     private int fEntityValueMark = -1;
-    private int fEMPTY = -1;
-    private int fANY = -1;
-    private int fMIXED = -1;
-    private int fCHILDREN = -1;
-    private int fCDATA = -1;
-    private int fID = -1;
-    private int fIDREF = -1;
-    private int fIDREFS = -1;
-    private int fENTITY = -1;
-    private int fENTITIES = -1;
-    private int fNMTOKEN = -1;
-    private int fNMTOKENS = -1;
-    private int fNOTATION = -1;
-    private int fENUMERATION = -1;
-    private int fREQUIRED = -1;
-    private int fIMPLIED = -1;
-    private int fFIXED = -1;
-    private int fDEFAULT = -1;
     private int fXMLSpace = -1;
     private int fDefault = -1;
     private int fPreserve = -1;
@@ -346,24 +330,6 @@ public final class XMLDTDScanner {
         init();
     }
     private void init() {
-        fEMPTY = fStringPool.addSymbol("EMPTY");
-        fANY = fStringPool.addSymbol("ANY");
-        fMIXED = fStringPool.addSymbol("MIXED");
-        fCHILDREN = fStringPool.addSymbol("CHILDREN");
-        fCDATA = fStringPool.addSymbol("CDATA");
-        fID = fStringPool.addSymbol("ID");
-        fIDREF = fStringPool.addSymbol("IDREF");
-        fIDREFS = fStringPool.addSymbol("IDREFS");
-        fENTITY = fStringPool.addSymbol("ENTITY");
-        fENTITIES = fStringPool.addSymbol("ENTITIES");
-        fNMTOKEN = fStringPool.addSymbol("NMTOKEN");
-        fNMTOKENS = fStringPool.addSymbol("NMTOKENS");
-        fNOTATION = fStringPool.addSymbol("NOTATION");
-        fENUMERATION = fStringPool.addSymbol("ENUMERATION");
-        fREQUIRED = fStringPool.addSymbol("#REQUIRED");
-        fIMPLIED = fStringPool.addSymbol("#IMPLIED");
-        fFIXED = fStringPool.addSymbol("#FIXED");
-        fDEFAULT = fStringPool.addSymbol("");
         fXMLSpace = fStringPool.addSymbol("xml:space");
         fDefault = fStringPool.addSymbol("default");
         fPreserve = fStringPool.addSymbol("preserve");
@@ -448,7 +414,7 @@ public final class XMLDTDScanner {
          * @exception java.lang.Exception
          */
         public int addAttDef(QName elementDecl, QName attributeDecl, 
-                             int attType, int enumeration, 
+                             int attType, boolean attList, int enumeration, 
                              int attDefaultType, int attDefaultValue) throws Exception;
         /**
          * create an XMLContentSpec for a leaf
@@ -1637,9 +1603,9 @@ public final class XMLDTDScanner {
         int contentSpecType = -1;
         int contentSpec = -1;
         if (fEntityReader.skippedString(empty_string)) {
-            contentSpecType = fEMPTY;
+            contentSpecType = XMLElementDecl.TYPE_EMPTY;
         } else if (fEntityReader.skippedString(any_string)) {
-            contentSpecType = fANY;
+            contentSpecType = XMLElementDecl.TYPE_ANY;
         } else if (!fEntityReader.lookingAtChar('(', true)) {
             abortMarkup(XMLMessages.MSG_CONTENTSPEC_REQUIRED_IN_ELEMENTDECL,
                         XMLMessages.P45_CONTENTSPEC_REQUIRED,
@@ -1655,11 +1621,11 @@ public final class XMLDTDScanner {
             checkForPEReference(false);
             boolean skippedPCDATA = fEntityReader.skippedString(pcdata_string);
             if (skippedPCDATA) {
-                contentSpecType = fMIXED;
+                contentSpecType = XMLElementDecl.TYPE_MIXED;
                 // REVISIT: Validation. Should we pass in QName?
                 contentSpec = scanMixed(fElementQName);
             } else {
-                contentSpecType = fCHILDREN;
+                contentSpecType = XMLElementDecl.TYPE_CHILDREN;
                 // REVISIT: Validation. Should we pass in QName?
                 contentSpec = scanChildren(fElementQName);
             }
@@ -1893,22 +1859,25 @@ public final class XMLDTDScanner {
                 return;
             }
             int attDefType = -1;
+            boolean attDefList = false;
             int attDefEnumeration = -1;
             if (fEntityReader.skippedString(cdata_string)) {
-                attDefType = fCDATA;
+                attDefType = XMLAttributeDecl.TYPE_CDATA;
             } else if (fEntityReader.skippedString(id_string)) {
                 if (!fEntityReader.skippedString(ref_string)) {
-                    attDefType = fID;
+                    attDefType = XMLAttributeDecl.TYPE_ID;
                 } else if (!fEntityReader.lookingAtChar('S', true)) {
-                    attDefType = fIDREF;
+                    attDefType = XMLAttributeDecl.TYPE_IDREF;
                 } else {
-                    attDefType = fIDREFS;
+                    attDefType = XMLAttributeDecl.TYPE_IDREF;
+                    attDefList = true;
                 }
             } else if (fEntityReader.skippedString(entit_string)) {
                 if (fEntityReader.lookingAtChar('Y', true)) {
-                    attDefType = fENTITY;
+                    attDefType = XMLAttributeDecl.TYPE_ENTITY;
                 } else if (fEntityReader.skippedString(ies_string)) {
-                    attDefType = fENTITIES;
+                    attDefType = XMLAttributeDecl.TYPE_ENTITY;
+                    attDefList = true;
                 } else {
                     abortMarkup(XMLMessages.MSG_ATTTYPE_REQUIRED_IN_ATTDEF,
                                 XMLMessages.P53_ATTTYPE_REQUIRED,
@@ -1917,9 +1886,10 @@ public final class XMLDTDScanner {
                 }
             } else if (fEntityReader.skippedString(nmtoken_string)) {
                 if (fEntityReader.lookingAtChar('S', true)) {
-                    attDefType = fNMTOKENS;
+                    attDefType = XMLAttributeDecl.TYPE_NMTOKEN;
+                    attDefList = true;
                 } else {
-                    attDefType = fNMTOKEN;
+                    attDefType = XMLAttributeDecl.TYPE_NMTOKEN;
                 }
             } else if (fEntityReader.skippedString(notation_string)) {
                 if (!checkForPEReference(true)) {
@@ -1935,7 +1905,7 @@ public final class XMLDTDScanner {
                     return;
                 }
                 increaseParenDepth();
-                attDefType = fNOTATION;
+                attDefType = XMLAttributeDecl.TYPE_NOTATION;
                 attDefEnumeration = scanEnumeration(elementTypeIndex, attDefName, true);
                 if (attDefEnumeration == -1) {
                     skipPastEndOfCurrentMarkup();
@@ -1943,7 +1913,7 @@ public final class XMLDTDScanner {
                 }
             } else if (fEntityReader.lookingAtChar('(', true)) {
                 increaseParenDepth();
-                attDefType = fENUMERATION;
+                attDefType = XMLAttributeDecl.TYPE_ENUMERATION;
                 attDefEnumeration = scanEnumeration(elementTypeIndex, attDefName, false);
                 if (attDefEnumeration == -1) {
                     skipPastEndOfCurrentMarkup();
@@ -1964,9 +1934,9 @@ public final class XMLDTDScanner {
             int attDefDefaultType = -1;
             int attDefDefaultValue = -1;
             if (fEntityReader.skippedString(required_string)) {
-                attDefDefaultType = fREQUIRED;
+                attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
             } else if (fEntityReader.skippedString(implied_string)) {
-                attDefDefaultType = fIMPLIED;
+                attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
             } else {
                 if (fEntityReader.skippedString(fixed_string)) {
                     if (!fEntityReader.lookingAtSpace(true)) {
@@ -1976,9 +1946,9 @@ public final class XMLDTDScanner {
                         return;
                     }
                     fEntityReader.skipPastSpaces();
-                    attDefDefaultType = fFIXED;
+                    attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
                 } else
-                    attDefDefaultType = fDEFAULT;
+                    attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
                 fElementQName.setValues(-1, elementTypeIndex, elementTypeIndex);
                 fAttributeQName.setValues(-1, attDefName, attDefName);
                 attDefDefaultValue = scanDefaultAttValue(fElementQName, fAttributeQName, 
@@ -1991,7 +1961,7 @@ public final class XMLDTDScanner {
             }
             if (attDefName == fXMLSpace) {
                 boolean ok = false;
-                if (attDefType == fENUMERATION) {
+                if (attDefType == XMLAttributeDecl.TYPE_ENUMERATION) {
                     int index = attDefEnumeration;
                     if (index != -1) {
                         ok = fStringPool.stringListLength(index) == 2 &&
@@ -2007,7 +1977,7 @@ public final class XMLDTDScanner {
             }
             sawSpace = checkForPEReference(true);
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefList, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
                 //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
                 //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
                 //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
@@ -2027,14 +1997,14 @@ public final class XMLDTDScanner {
                 }
             }
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefList, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
                 //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
                 //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
                 //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
                 decreaseMarkupDepth();
                 return;
             }
-            int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+            int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefList, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
             //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
             //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
             //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
