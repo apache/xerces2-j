@@ -50,6 +50,11 @@ class ObjectFactory {
 
     /** Set to true for debugging */
     private static final boolean DEBUG = false;
+    
+    /**
+     * Default columns per line.
+     */
+    private static final int DEFAULT_LINE_LENGTH = 80;
 
     /** cache the contents of the xerces.properties file.
      *  Until an attempt has been made to read this file, this will
@@ -426,9 +431,9 @@ class ObjectFactory {
         // jkesselm]
         BufferedReader rd;
         try {
-            rd = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            rd = new BufferedReader(new InputStreamReader(is, "UTF-8"), DEFAULT_LINE_LENGTH);
         } catch (java.io.UnsupportedEncodingException e) {
-            rd = new BufferedReader(new InputStreamReader(is));
+            rd = new BufferedReader(new InputStreamReader(is), DEFAULT_LINE_LENGTH);
         }
 
         String factoryClassName = null;
