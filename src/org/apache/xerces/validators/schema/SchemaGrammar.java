@@ -281,7 +281,11 @@ public class SchemaGrammar extends Grammar{
         int minOccurs = getContentSpecMinOccurs(contentSpecIndex);
         int maxOccurs = getContentSpecMaxOccurs(contentSpecIndex);
 
-        if (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+ 
+        if (((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY) ||
+            ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) ||
+            ((fTempContentSpecNode.type & 0x0f) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) ||
+            (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_LEAF)) {
           return expandContentModel(contentSpecIndex,minOccurs,maxOccurs);
         }
         else if (fTempContentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
