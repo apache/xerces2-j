@@ -225,11 +225,11 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                 attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
             else
-                attribute.fTargetNamespace = fSchemaHandler.EMPTY_STRING;
+                attribute.fTargetNamespace = null;
         } else if (schemaDoc.fAreLocalElementsQualified) {
             attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
         } else {
-            attribute.fTargetNamespace = fSchemaHandler.EMPTY_STRING;
+            attribute.fTargetNamespace = null; 
         }
 
         // get 'value constraint'

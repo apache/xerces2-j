@@ -260,11 +260,11 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                 element.fTargetNamespace = schemaDoc.fTargetNamespace;
             else
-                element.fTargetNamespace = fSchemaHandler.EMPTY_STRING;
+                element.fTargetNamespace = null; 
         } else if (schemaDoc.fAreLocalElementsQualified) {
             element.fTargetNamespace = schemaDoc.fTargetNamespace;
         } else {
-            element.fTargetNamespace = fSchemaHandler.EMPTY_STRING;
+            element.fTargetNamespace = null; 
         }
 
         // get 'block', 'final', 'nillable', 'abstract'
