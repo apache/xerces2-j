@@ -1368,10 +1368,6 @@ public class XMLDTDScanner
                                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
                             startPE(peName, true);
-                            // skip text decl if there is any
-                            if (fEntityScanner.isExternal()) {
-                                scanTextDecl(true);
-                            }
                             fEntityScanner.skipSpaces();
                             if (!fEntityScanner.skipChar('%'))
                                 break;
