@@ -243,6 +243,9 @@ extends BaseMarkupSerializer {
      */
     public void setNamespaces (boolean namespaces){
         fNamespaces = namespaces;
+        fNSBinder = new NamespaceSupport();
+        fLocalNSBinder = new NamespaceSupport();
+        fSymbolTable = new SymbolTable();
     }
 
     //-----------------------------------------//
@@ -682,7 +685,6 @@ extends BaseMarkupSerializer {
         String prefix, localUri;
         String uri;
         if (fNamespaces) {
-
             // reset local binder
             fLocalNSBinder.reset();
             // note: the values that added to namespace binder
@@ -784,6 +786,7 @@ extends BaseMarkupSerializer {
             // record all valid namespace declarations
             // before attempting to fix element's namespace
             // ---------------------------------------
+
             for (i = 0;i < length;i++) {
 
                 attr = (Attr) attrMap.item( i );
@@ -837,7 +840,6 @@ extends BaseMarkupSerializer {
             //-----------------------
             uri = elem.getNamespaceURI();            
             prefix = elem.getPrefix();
-
 
             //----------------------
             // output element name
