@@ -75,6 +75,7 @@ import org.apache.xerces.validators.common.GrammarResolver;
 import org.apache.xerces.validators.common.GrammarResolverImpl;
 import org.apache.xerces.validators.common.XMLValidator;
 import org.apache.xerces.validators.datatype.DatatypeMessageProvider;
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
 
 import org.xml.sax.EntityResolver;
@@ -743,6 +744,7 @@ public class XMLParser implements XMLErrorReporter {
         fGrammarResolver = new GrammarResolverImpl();
         fScanner.setGrammarResolver(fGrammarResolver);
         fValidator.setGrammarResolver(fGrammarResolver);
+        DatatypeValidatorFactoryImpl.getDatatypeRegistry().resetRegistry();
     }
 
     //
