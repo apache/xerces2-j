@@ -84,9 +84,10 @@
 		required to parse documents that use a schema.</p>
 		<p>Documents that use XML Schema grammars specify the location of the
 		grammar using an xsi:schemaLocation attribute if they use
-        namespaces, and an xsi:noNamespaceSchemaLocation attribute
-        otherwise.  These should be attached to the root / top-level element 
-		in the document. Here is an example with no target namespace: </p>
+        	namespaces, and an xsi:noNamespaceSchemaLocation attribute
+	        otherwise.  These should be attached to the root / top-level element 
+		in the document (for more details see XML Schema Part 1 section 4.3.2). 
+		Here is an example with no target namespace: </p>
 <source>&lt;document
   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
   xsi:noNamespaceSchemaLocation='document.xsd'&gt;
