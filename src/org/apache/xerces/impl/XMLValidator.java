@@ -1592,7 +1592,7 @@ public class XMLValidator
                   String defaultValue = normalizeDefaultAttrValue(fTempAttDecl.simpleType.defaultValue,
                                                                    fTempAttDecl.simpleType.type);
                   
-                  if (attrValue != defaultValue && !attrValue.equals(defaultValue) ) {
+                  if (!attrValue.equals(defaultValue) ) {
                       Object[] args = { (element.rawname),
                           (attrRawName),
                           (attrValue),
@@ -1711,12 +1711,62 @@ public class XMLValidator
            }
 
        }
+       attributes.setValue(index, fBuffer.toString());
    }
    
    /** normalize the default attribute value with such a type */
    private String normalizeDefaultAttrValue(String defaultValue, short type) {
 
-       return defaultValue;
+       char[] attValue = new char[defaultValue.length()];
+       boolean isCDATA = type == XMLSimpleType.TYPE_CDATA;
+       fBuffer.setLength(0);
+
+       defaultValue.getChars(0, defaultValue.length(), attValue, 0);
+
+       if ( isCDATA ) {
+           for (int i=0; i<attValue.length; i++) {
+               if (attValue[i] == '\r' || attValue[i] == '\n' || attValue[i] == ' ') {
+                   attValue[i] = ' ';
+               }
+               fBuffer.append(attValue[i]);
+           }
+       }
+       else {
+           boolean leadingSpace = true;
+           boolean spaceStart = false;
+           boolean readingNonSpace = false;
+           int count = 0;
+
+           for (int i=0; i<attValue.length; i++) {
+
+               if (attValue[i] == '\r' || attValue[i] == '\n' || attValue[i] == ' ') {
+                   attValue[i] = ' ';
+
+                   if (readingNonSpace) {
+                       spaceStart = true;
+                       readingNonSpace = false;
+                   }
+
+                   if (spaceStart && !leadingSpace) {
+                       spaceStart = false;
+                       fBuffer.append(attValue[i]);
+                       count++;
+                   }
+                   else  {
+                       // just skip it.
+                   }
+
+               }
+               else {
+                   readingNonSpace = true;
+                   spaceStart = false;
+                   leadingSpace = false;
+                   fBuffer.append(attValue[i]);
+                   count++;
+               }
+           }
+       }
+       return fBuffer.toString();
    }
 
 
