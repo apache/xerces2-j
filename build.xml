@@ -50,7 +50,7 @@ Copyright:
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
     <!-- changed made to synchronize with a patch from Sam Ruby (<rubys@apache.org>) to Xerces1
     <property name="build.compiler" value="classic"/> -->
-    <property name="debug" value="off"/>
+    <property name="debug" value="on"/>
     <property name="optimize" value="on"/>
     <property name="deprecation" value="off"/>
 

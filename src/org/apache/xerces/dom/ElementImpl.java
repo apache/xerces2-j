@@ -228,7 +228,8 @@ public class ElementImpl
 
         //2.the base URI of the element's parent element within the document or external entity,
         //if one exists
-        String parentElementBaseURI = this.parentNode().getBaseURI() ;
+
+        String parentElementBaseURI = (this.parentNode() != null) ? this.parentNode().getBaseURI() : null ;
         //base URI of parent element is not null
         if(parentElementBaseURI != null){
             try {
@@ -242,7 +243,8 @@ public class ElementImpl
         }
         //3. the base URI of the document entity or external entity containing the element
 
-        String baseURI = this.ownerNode.getBaseURI();
+        //REVISIT: we are using ownerNode -- we need to return the base URI of the document entity
+        String baseURI = (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null ;
 
         if(baseURI != null){
             try {

@@ -399,7 +399,7 @@ public class ElementNSImpl
 
         //2.the base URI of the element's parent element within the document or external entity,
         //if one exists
-        String parentElementBaseURI = this.parentNode().getBaseURI() ;
+        String parentElementBaseURI = (this.parentNode() != null) ? this.parentNode().getBaseURI() : null ;
         //base URI of parent element is not null
         if(parentElementBaseURI != null){
             try {
@@ -413,7 +413,7 @@ public class ElementNSImpl
         }
         //3. the base URI of the document entity or external entity containing the element
 
-        String baseURI = this.ownerNode.getBaseURI();
+        String baseURI = (this.ownerNode != null) ? this.ownerNode.getBaseURI() : null ;
 
         if(baseURI != null){
             try {
