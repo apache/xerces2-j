@@ -57,13 +57,18 @@
 
 package org.apache.xerces.impl.xs.dom;
 
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.NonValidatingConfiguration;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.util.XMLChar;
 
 import org.w3c.dom.Element;
 
@@ -88,6 +93,10 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
     protected static final String DEFER_EXPANSION = 
         Constants.XERCES_FEATURE_PREFIX + Constants.DEFER_NODE_EXPANSION_FEATURE;
     
+    /** Property identifier: error reporter. */
+    public static final String ERROR_REPORTER =
+    Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+
     // the locator containing line/column information
     protected XMLLocator   fLocator;
     
@@ -145,7 +154,83 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
         fLocator = locator;
 
     } // startDocument(XMLLocator,String,Augmentations)
+
+    // Where xs:appinfo or xs:documentation starts;
+    // -1 means not in the scope of either of the two elements.
+    private int fAnnotationDepth = -1;
+    // The current element depth
+    private int fDepth = -1;
+    // Use to report the error when characters are not allowed.
+    XMLErrorReporter fErrorReporter;
+
+    // override startElement method to check whether it's one of
+    // xs:appinfo or xs:documentation
+    public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
+        throws XNIException {
+        super.startElement(element, attributes, augs);
+        fDepth++;
+        // if it's not within either element, check whether it's one of them
+        // if so, record the current depth, so that any element with larger
+        // depth is allowed to have character data.
+        if (fAnnotationDepth == -1) {
+            if (element.uri == SchemaSymbols.URI_SCHEMAFORSCHEMA &&
+                (element.localpart == SchemaSymbols.ELT_APPINFO ||
+                 element.localpart == SchemaSymbols.ELT_DOCUMENTATION)) {
+                fAnnotationDepth = fDepth;
+            }
+        }
+    }
     
+    // override this method to check whether there are non-whitespace characters
+    public void characters(XMLString text, Augmentations augs) throws XNIException {
+        // when it's not within xs:appinfo or xs:documentation
+        if (fAnnotationDepth == -1) {
+            for (int i=text.offset; i<text.offset+text.length; i++) {
+                // and there is a non-whitespace character
+                if (!XMLChar.isSpace(text.ch[i])) {
+                    // only get the error reporter when reporting an error
+                    if (fErrorReporter == null) {
+                        try {
+                            fErrorReporter = (XMLErrorReporter)getProperty(ERROR_REPORTER);
+                        } catch (Exception e) {
+                            //ignore the excpetion
+                        }
+                        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+                            XSMessageFormatter xmft = new XSMessageFormatter();
+                            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+                        }
+                    }
+                    // the string we saw: starting from the first non-whitespace character.
+                    String txt = new String(text.ch, i, text.length+text.offset-i);
+                    // report an error
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "s4s-elt-character",
+                                               new Object[]{txt},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                    break;
+                }
+            }
+            // don't call super.characters() when it's not within one of the 2
+            // annotation elements: the traversers ignore them anyway. We can
+            // save time/memory creating the text nodes.
+        }
+        // when it's not within either of the 2 elements, characters are allowed
+        // and we need to call super.characters().
+        else {
+            super.characters(text, augs);
+        }
+    }
+    
+    // override this method to update the depth variables
+    public void endElement(QName element, Augmentations augs) throws XNIException {
+        super.endElement(element, augs);
+        // when we reach the endElement of xs:appinfo or xs:documentation,
+        // change fAnnotationDepth to -1
+        if (fAnnotationDepth == fDepth)
+            fAnnotationDepth = -1;
+        fDepth--;
+    }
+
     // override this method to store line/column information in Element created
     protected Element createElementNode(QName element) {
         // create an element containing line/column information
