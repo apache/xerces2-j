@@ -341,7 +341,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                    (childName.equals(SchemaSymbols.ELT_KEY) ||
                     childName.equals(SchemaSymbols.ELT_KEYREF) ||
                     childName.equals(SchemaSymbols.ELT_UNIQUE))) {
-                
+
                 if (childName.equals(SchemaSymbols.ELT_KEY) ||
                         childName.equals(SchemaSymbols.ELT_UNIQUE)) {
                     fSchemaHandler.fUniqueOrKeyTraverser.traverse(child, element, schemaDoc, grammar);
@@ -352,7 +352,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                             fSchemaHandler.getIDRegistry(),
                             child, schemaDoc);
                     }
-                } else if (childName == SchemaSymbols.ELT_KEYREF) {
+                } else if (childName.equals(SchemaSymbols.ELT_KEYREF)) {
                     fSchemaHandler.storeKeyRef(child, schemaDoc, element);
                 }
                 child = DOMUtil.getNextSiblingElement(child);
