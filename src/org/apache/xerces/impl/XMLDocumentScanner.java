@@ -743,8 +743,10 @@ public class XMLDocumentScanner
         if (systemId != null) {
             XMLInputSource xmlInputSource = 
                 fEntityManager.resolveEntity(publicId, systemId, null);
+            fEntityManager.setEntityHandler(fDTDScanner);
             fEntityManager.startDTDEntity(xmlInputSource);
             fDTDScanner.scanDTD(true);
+            fEntityManager.setEntityHandler(this);
         }
 
         // call handler
