@@ -503,7 +503,7 @@ public class XMLEntityManager
 
         // if no base systemId given, assume that it's relative
         // to the systemId of the current scanned entity
-        if (baseSystemId == null) {
+        if (baseSystemId == null && fCurrentEntity != null) {
             baseSystemId = fCurrentEntity.systemId;
         }
 
