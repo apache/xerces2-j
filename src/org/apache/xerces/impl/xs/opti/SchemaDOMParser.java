@@ -78,8 +78,7 @@ import org.w3c.dom.Document;
  *
  * @version $Id$
  */
-public class SchemaDOMParser extends DefaultXMLDocumentHandler
-                             implements XMLComponent, XMLDocumentSource {
+public class SchemaDOMParser extends DefaultXMLDocumentHandler {
 
     //
     // Data
@@ -87,9 +86,7 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler
     
     SchemaDOM schemaDOM;
     
-    /** Document handler. */
-    protected XMLDocumentHandler fDocumentHandler;
-    
+
 
     //
     // Constructors
@@ -97,95 +94,10 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler
 
     /** Default constructor. */
     public SchemaDOMParser() {
+        schemaDOM = new SchemaDOM();
     }
 
 
-    //
-    // XMLComponent methods
-    //
-
-    /**
-     * Resets the component. The component can query the component manager
-     * about any features and properties that affect the operation of the
-     * component.
-     *
-     * @param componentManager The component manager.
-     *
-     * @throws SAXException Thrown by component on initialization error.
-     *                      For example, if a feature or property is
-     *                      required for the operation of the component, the
-     *                      component manager may throw a
-     *                      SAXNotRecognizedException or a
-     *                      SAXNotSupportedException.
-     */
-    public void reset(XMLComponentManager componentManager)
-        throws XNIException {
-
-        schemaDOM = new SchemaDOM();
-
-    } // reset(XMLComponentManager)
-
-    /**
-     * Returns a list of feature identifiers that are recognized by
-     * this component. This method may return null if no features
-     * are recognized by this component.
-     */
-    public String[] getRecognizedFeatures() {
-        return null;
-    } // getRecognizedFeatures():String[]
-
-    /**
-     * Sets the state of a feature. This method is called by the component
-     * manager any time after reset when a feature changes state.
-     * <p>
-     * <strong>Note:</strong> Components should silently ignore features
-     * that do not affect the operation of the component.
-     *
-     * @param featureId The feature identifier.
-     * @param state     The state of the feature.
-     *
-     * @throws SAXNotRecognizedException The component should not throw
-     *                                   this exception.
-     * @throws SAXNotSupportedException The component should not throw
-     *                                  this exception.
-     */
-    public void setFeature(String featureId, boolean state)
-        throws XMLConfigurationException {
-    } // setFeature(String,boolean)
-
-    /**
-     * Returns a list of property identifiers that are recognized by
-     * this component. This method may return null if no properties
-     * are recognized by this component.
-     */
-    public String[] getRecognizedProperties() {
-        return null;
-    } // getRecognizedProperties():String[]
-
-    /**
-     * Sets the value of a property during parsing.
-     *
-     * @param propertyId
-     * @param value
-     */
-    public void setProperty(String propertyId, Object value)
-        throws XMLConfigurationException {
-
-    } // setProperty(String,Object)
-
-
-    //
-    // XMLDocumentSource methods
-    //
-
-    /**
-     * Sets the document handler to receive information about the document.
-     *
-     * @param documentHandler The document handler.
-     */
-    public void setDocumentHandler(XMLDocumentHandler documentHandler) {
-        fDocumentHandler = documentHandler;
-    } // setDocumentHandler(XMLDocumentHandler)
 
     //
     // XMLDocumentHandler methods

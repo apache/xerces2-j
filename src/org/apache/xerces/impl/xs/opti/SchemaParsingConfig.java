@@ -322,8 +322,7 @@ public class SchemaParsingConfig extends BasicParserConfiguration
             NAMESPACE_BINDER,
             XMLGRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
-            VALIDATION_MANAGER,
-            "SchemaDOMParser"
+            VALIDATION_MANAGER
         };
         addRecognizedProperties(recognizedProperties);
 	
@@ -361,11 +360,6 @@ public class SchemaParsingConfig extends BasicParserConfiguration
             addComponent(fNamespaceBinder);
         }
 
-        fSchemaDOMParser = createSchemaDOMParser();
-        if (fSchemaDOMParser != null) {
-            setProperty("SchemaDOMParser", fSchemaDOMParser);
-            addComponent(fSchemaDOMParser);
-        }
 
         fDatatypeValidatorFactory = createDatatypeValidatorFactory();
         if (fDatatypeValidatorFactory != null) {
@@ -589,6 +583,12 @@ public class SchemaParsingConfig extends BasicParserConfiguration
      */
     public void reset() throws XNIException {
 
+        // set handlers
+        fSchemaDOMParser = createSchemaDOMParser();
+        fDocumentHandler = fSchemaDOMParser;
+        fDTDHandler = fSchemaDOMParser;
+        fDTDContentModelHandler = fSchemaDOMParser;
+
         // configure the pipeline and initialize the components
         configurePipeline();
         super.reset();
@@ -607,10 +607,9 @@ public class SchemaParsingConfig extends BasicParserConfiguration
 
         // setup document pipeline
         fScanner.setDocumentHandler(fNamespaceBinder);
-        fNamespaceBinder.setDocumentHandler(fSchemaDOMParser);
-        //fSchemaDOMParser.setDocumentHandler(fDocumentHandler);
+        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
 
-        //fLastComponent = fSchemaDOMParser;
+        fLastComponent = fNamespaceBinder;
 
         // setup dtd pipeline
 
