@@ -116,6 +116,15 @@ public class XMLString {
     } // setValues
 
     /**
+     * setValues
+     * 
+     * @param s
+     */
+    public void setValues(XMLString s) {
+        setValues(s.ch, s.offset, s.length);
+    } // setValues
+
+    /**
      * clear
      */
     public void clear() {
