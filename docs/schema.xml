@@ -76,8 +76,6 @@
 		Schema document instance namespace, as specified by the
 		Recommendation. See the sample provided in the
 		Usage section.</p>
-		 <p>Finally, note that in &lt;all&gt; model groups fewer than 8 elements must
-		 be used.</p>
 	</s2>
 	<s2 title="Usage">
 		<p>In this release, schema validation has been integrated with the 
