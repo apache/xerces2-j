@@ -162,7 +162,7 @@ public final class TextSerializer
     public void setOutputFormat( OutputFormat format )
     {
 	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( OutputFormat.Method.TEXT, null, false ) );
+	    super.setOutputFormat( new OutputFormat( Method.TEXT, null, false ) );
 	else
 	    super.setOutputFormat( format );
     }
