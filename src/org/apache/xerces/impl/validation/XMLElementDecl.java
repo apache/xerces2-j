@@ -89,7 +89,7 @@ public class XMLElementDecl {
     //
 
     /** name */
-    public QName name;
+    public QName name = new QName();
 
     /** scope */
     public int scope;
@@ -117,7 +117,7 @@ public class XMLElementDecl {
      * @param simpleType 
      */
     public void setValues(QName name, int scope, short type, ContentModelValidator contentModelValidator, XMLSimpleType simpleType) {
-        this.name                  = name;
+        this.name.setValues(name);
         this.scope                 = scope;
         this.type                  = type;
         this.contentModelValidator = contentModelValidator;
