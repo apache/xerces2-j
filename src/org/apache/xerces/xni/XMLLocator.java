@@ -88,4 +88,13 @@ public interface XMLLocator {
     /** Returns the column number. */
     public int getColumnNumber();
 
+    /** Returns the encoding of the current entity.  
+     * Note that, for a given entity, this value can only be
+     * considered final once the encoding declaration has been read (or once it
+     * has been determined that there is no such declaration) since, no encoding
+     * having been specified on the XMLInputSource, the parser
+     * will make an initial "guess" which could be in error. 
+     */
+    public String getEncoding();
+
 } // interface XMLLocator
