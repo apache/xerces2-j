@@ -111,6 +111,7 @@ import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.XMLChar;
 
 import org.w3c.dom.ls.DOMWriterFilter;
 import org.w3c.dom.traversal.NodeFilter;
@@ -185,7 +186,7 @@ public abstract class BaseMarkupSerializer
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
     protected DOMWriterFilter fDOMFilter;
 
-    private EncodingInfo _encodingInfo;
+    protected EncodingInfo _encodingInfo;
 
 
     /**
@@ -545,19 +546,36 @@ public abstract class BaseMarkupSerializer
             }
             saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
+            char ch;
             for ( int index = 0 ; index < length ; ++index ) {
-                if ( index + 2 < length && chars[ index ] == ']' &&
+                ch = chars[index];
+                if ( ch == ']' && index + 2 < length &&
                      chars[ index + 1 ] == ']' && chars[ index + 2 ] == '>' ) {
-
-                    printText( chars, start, index + 2, true, true );
-                    _printer.printText( "]]><![CDATA[" );
-                    start += index + 2;
-                    length -= index + 2;
-                    index = 0;
+                    _printer.printText("]]]]><![CDATA[>");
+                    index +=2; 
+                    continue;
+                }
+                if (!XMLChar.isValid(ch)) {
+                    // check if it is surrogate
+                    if (++index <length) {
+                        surrogates(ch, chars[index]);
+                    } 
+                    else {
+                        fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                    }
+                    continue;
+                } else {
+                    if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+                        ch == '\n' || ch == '\r' || ch == '\t' ) {
+                        _printer.printText((char)ch);
+                    } else {
+                        // The character is not printable -- split CDATA section
+                        _printer.printText("]]>&#x");                        
+                        _printer.printText(Integer.toHexString(ch));                        
+                        _printer.printText(";<![CDATA[");
+                    }
                 }
             }
-            if ( length > 0 )
-                printText( chars, start, length, true, true );
             _printer.setNextIndent( saveIndent );
 
         } else {
@@ -1369,41 +1387,12 @@ public abstract class BaseMarkupSerializer
             // appearing in the code must be identified and dealt with.
             // The contents of a text node is considered space preserving.
             if ( ! state.inCData ) {
-                fStrBuffer.append( "<![CDATA[" );
+                _printer.printText("<![CDATA[");
                 state.inCData = true;
             }
-            index = text.indexOf( "]]>" );
-            if (index >=0) {               
-                // DOM Level 3 Load and Save
-                //
-                if (fFeatures != null && fDOMErrorHandler != null) {
-                    if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
-                        // issue fatal error
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "EndingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR);
-                        boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
-                        if (!continueProcess) {
-                            throw new IOException();
-                        }
-                    } else {
-                        // issue warning
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "SplittingCDATA", null);
-                        modifyDOMError(msg, DOMError.SEVERITY_WARNING);
-                        fDOMErrorHandler.handleError(fDOMError);
-                    }
-                }
-            }
-
-            while ( index >= 0 ) {
-                fStrBuffer.append( text.substring( 0, index + 2 ) ).append( "]]><![CDATA[" );
-                text = text.substring( index + 2 );
-                index = text.indexOf( "]]>" );
-            }
-            fStrBuffer.append( text );
             saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
-            printText( fStrBuffer.toString(), true, true );
-            fStrBuffer.setLength(0);
+            printCDATAText( text);
             _printer.setNextIndent( saveIndent );
 
         } else {
@@ -1480,6 +1469,98 @@ public abstract class BaseMarkupSerializer
     // Text pretty printing and formatting methods //
     //---------------------------------------------//
 
+    protected final void printCDATAText( String text ) throws IOException {
+        int length = text.length();
+        char ch;
+
+        for ( int index = 0 ; index <  length; ++index ) {
+            ch = text.charAt( index );
+            
+            if ( ch ==']' && index + 2 < length && 
+                 text.charAt (index + 1) == ']' && text.charAt (index + 2) == '>' ) { // check for ']]>'
+
+                // DOM Level 3 Load and Save
+                //
+                if (fFeatures != null && fDOMErrorHandler != null) {
+                    if (!getFeature(Constants.DOM_SPLIT_CDATA)) {
+                        // issue fatal error
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "EndingCDATA", null);
+                        modifyDOMError(msg, DOMError.SEVERITY_FATAL_ERROR);
+                        boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                        if (!continueProcess) {
+                            throw new IOException();
+                        }
+                    } else {
+                        // issue warning
+                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "SplittingCDATA", null);
+                        modifyDOMError(msg, DOMError.SEVERITY_WARNING);
+                        fDOMErrorHandler.handleError(fDOMError);
+                    }
+                }
+
+                // split CDATA section
+                _printer.printText("]]]]><![CDATA[>");
+                index +=2; 
+                continue;
+            }
+            
+            if (!XMLChar.isValid(ch)) {
+                // check if it is surrogate
+                if (++index <length) {
+                    surrogates(ch, text.charAt(index));
+                } 
+                else {
+                    fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                }
+                continue;
+            } else {
+                if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
+                     ch == '\n' || ch == '\r' || ch == '\t' ) {
+                    _printer.printText((char)ch);
+                } else {
+
+                    // The character is not printable -- split CDATA section
+                    _printer.printText("]]>&#x");                        
+                    _printer.printText(Integer.toHexString(ch));                        
+                    _printer.printText(";<![CDATA[");
+                }
+            }
+        }
+    }
+
+
+    protected final void surrogates(int high, int low) throws IOException{
+        if (XMLChar.isHighSurrogate(high)) {
+            if (!XMLChar.isLowSurrogate(low)) {
+                //Invalid XML
+                fatalError("The character '"+(char)low+"' is an invalid XML character"); 
+            }
+            else {
+                int supplemental = XMLChar.supplemental((char)high, (char)low);
+                if (!XMLChar.isValid(supplemental)) {
+                    //Invalid XML
+                    fatalError("The character '"+(char)supplemental+"' is an invalid XML character"); 
+                }
+                else {
+                    // REVISIT: For XML 1.1 should we perform extra checks here?
+                    //          Should it be serialized as entity reference?
+                    if (content().inCData ) {
+                        _printer.printText("]]>&#x");                        
+                        _printer.printText(Integer.toHexString(supplemental));                        
+                        _printer.printText(";<![CDATA[");
+                    }  
+                    else {
+                        _printer.printText("&#x");                        
+                        _printer.printText(Integer.toHexString(supplemental));                        
+                        _printer.printText(";");
+                    }
+                }
+            }
+        } else {
+            fatalError("The character '"+(char)high+"' is an invalid XML character"); 
+        }
+
+    }
 
     /**
      * Called to print additional text with whitespace handling.
@@ -1494,7 +1575,7 @@ public abstract class BaseMarkupSerializer
      * @param preserveSpace Space preserving flag
      * @param unescaped Print unescaped
      */
-    protected final void printText( char[] chars, int start, int length,
+    protected void printText( char[] chars, int start, int length,
                                     boolean preserveSpace, boolean unescaped )
         throws IOException
     {
@@ -1534,7 +1615,7 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    protected final void printText( String text, boolean preserveSpace, boolean unescaped )
+    protected void printText( String text, boolean preserveSpace, boolean unescaped )
         throws IOException
     {
         int index;
@@ -1798,4 +1879,13 @@ public abstract class BaseMarkupSerializer
     }
 
 
+    protected void fatalError(String message) throws IOException{
+        if (fDOMErrorHandler != null) {
+            modifyDOMError(message, DOMError.SEVERITY_FATAL_ERROR);
+            fDOMErrorHandler.handleError(fDOMError);
+        } 
+        else {
+            throw new IOException(message);
+        }
+    }
 }

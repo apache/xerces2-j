@@ -90,6 +90,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.dom.DOMMessageFormatter;
 
 /**
@@ -1273,6 +1274,170 @@ extends BaseMarkupSerializer{
             }
         }
         return attrsOnly;
+    }
+   
+    //
+    // overwrite printing functions to make sure serializer prints out valid XML
+    //
+    protected void printEscaped( String source ) throws IOException {
+        int length = source.length();
+        for ( int i = 0 ; i < length ; ++i ) {
+            int ch = source.charAt(i);
+            if (!XMLChar.isValid(ch)) {
+                if (++i <length) {
+                    surrogates(ch, source.charAt(i));
+                } 
+                else {
+                    fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                }
+                continue;
+            }
+            printXMLChar(ch);
+        }
+    }
+
+
+    protected final void printXMLChar( int ch ) throws IOException {
+
+        if ( ch == '<') {
+            _printer.printText("&lt;");
+        }
+        else  if (ch == '&') {
+            _printer.printText("&amp;");
+        } 
+        else if ( ch == '"') {
+            // REVISIT: for character data we should not convert this into 
+            //          char reference
+            _printer.printText("&quot;");
+        }
+        else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch)) ||
+                    ch == '\n' || ch == '\r' || ch == '\t' ) {
+            _printer.printText((char)ch);
+        } 
+        else {
+            // The character is not printable, print as character reference.
+            _printer.printText( "&#x" );
+            _printer.printText(Integer.toHexString(ch));
+            _printer.printText( ';' );
+        }
+    }
+
+
+
+    protected void printText( String text, boolean preserveSpace, boolean unescaped )
+        throws IOException {
+        int index;
+        char ch;
+        int length = text.length();
+        if ( preserveSpace ) {
+            // Preserving spaces: the text must print exactly as it is,
+            // without breaking when spaces appear in the text and without
+            // consolidating spaces. If a line terminator is used, a line
+            // break will occur.
+            for ( index = 0 ; index < length ; ++index ) {
+                ch = text.charAt( index );
+                if (!XMLChar.isValid(ch)) {
+                    // check if it is surrogate
+                    if (++index <length) {
+                        surrogates(ch, text.charAt(index));
+                    } 
+                    else {
+                        fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                    }
+                    continue;
+                } 
+                if ( unescaped ) { 
+                    _printer.printText( ch );
+                }
+                else
+                    printXMLChar( ch );
+            }
+        } else {
+            // Not preserving spaces: print one part at a time, and
+            // use spaces between parts to break them into different
+            // lines. Spaces at beginning of line will be stripped
+            // by printing mechanism. Line terminator is treated
+            // no different than other text part.
+            for ( index = 0 ; index < length ; ++index ) {
+                ch = text.charAt( index );
+                if (!XMLChar.isValid(ch)) {
+                    // check if it is surrogate
+                    if (++index <length) {
+                        surrogates(ch, text.charAt(index));
+                    } 
+                    else {
+                        fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                    }
+                    continue;
+                } 
+                if ( XMLChar.isSpace(ch))
+                    _printer.printSpace();
+                else if ( unescaped )
+                    _printer.printText( ch );
+                else
+                    printXMLChar( ch );
+            }
+        }
+    }
+
+
+
+    protected void printText( char[] chars, int start, int length,
+                                    boolean preserveSpace, boolean unescaped ) throws IOException {
+        int index;
+        char ch;
+
+        if ( preserveSpace ) {
+            // Preserving spaces: the text must print exactly as it is,
+            // without breaking when spaces appear in the text and without
+            // consolidating spaces. If a line terminator is used, a line
+            // break will occur.
+            while ( length-- > 0 ) {
+                ch = chars[ start ];
+                ++start;
+                if (!XMLChar.isValid(ch)) {
+                    // check if it is surrogate
+                    if (++start <length) {
+                        surrogates(ch, chars[start]);
+                    } 
+                    else {
+                        fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                    }
+                    continue;
+                } 
+                if ( unescaped )
+                    _printer.printText( ch );
+                else
+                    printXMLChar( ch );
+            }
+        } else {
+            // Not preserving spaces: print one part at a time, and
+            // use spaces between parts to break them into different
+            // lines. Spaces at beginning of line will be stripped
+            // by printing mechanism. Line terminator is treated
+            // no different than other text part.
+            while ( length-- > 0 ) {
+                ch = chars[ start ];
+                ++start;
+
+                if (!XMLChar.isValid(ch)) {
+                    // check if it is surrogate
+                    if (++start <length) {
+                        surrogates(ch, chars[start]);
+                    } 
+                    else {
+                        fatalError("The character '"+(char)ch+"' is an invalid XML character"); 
+                    }
+                    continue;
+                } 
+                if ( XMLChar.isSpace(ch))
+                    _printer.printSpace();
+                else if ( unescaped )
+                    _printer.printText( ch );
+                else
+                    printXMLChar( ch );
+            }
+        }
     }
 
 
