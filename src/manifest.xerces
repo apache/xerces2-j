@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
-Created-By: 1.2.2 (Sun Microsystems Inc.)
+Created-By: @java.version@ (@java.vendor@)
 
-Name: org/apache/xerces/impl/Version
-Comment: @impl.name@ for http://xml.apache.org/xerces2-j 
+Name: org/apache/xerces/impl/Version.class
+Comment: @impl.name@ 
 Implementation-Title: org.apache.xerces.impl.Version
-Implementation-Version: @@VERSION@@
+Implementation-Version: @impl.version@
 Implementation-Vendor: Apache Software Foundation
 Implementation-URL: http://xml.apache.org/xerces2-j/
 
@@ -48,7 +48,7 @@ Implementation-Version: 1.2
 Implementation-Vendor: Sun Microsystems Inc.
 Implementation-URL: http://java.sun.com/xml/jaxp.html
 
-Name: org.apache.xerces.xni/
+Name: org/apache/xerces/xni/
 Comment: Xerces Native Interface
 Specification-Title: Xerces Native Interface
 Specification-Version: 1.1
