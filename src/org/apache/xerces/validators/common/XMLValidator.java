@@ -242,9 +242,10 @@ public final class XMLValidator
     private int fCurrentContentSpecType = -1;
     private boolean fSeenDoctypeDecl = false;
 
-    private final int TOP_LEVEL_SCOPE = 0;
+    private final int TOP_LEVEL_SCOPE = -1;
     private int fCurrentScope = TOP_LEVEL_SCOPE;
     private int fCurrentSchemaURI = -1;
+    private int fEmptyURI = - 1; 
 
     private Grammar fGrammar = null;
     private int fGrammarNameSpaceIndex = -1;
@@ -325,6 +326,7 @@ public final class XMLValidator
         fEntityHandler = entityHandler;
         fDocumentScanner = documentScanner;
 
+        fEmptyURI = fStringPool.addSymbol("");
 
         // initialize
         fAttrList = new XMLAttrList(fStringPool);
@@ -2462,6 +2464,16 @@ public final class XMLValidator
             //int adIndex = attlistIndex & CHUNK_MASK;
             fGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
+            // TO DO: For ericye Debug only
+            /*if (fTempAttDecl != null) {
+                System.out.println("attlistIndex " + attlistIndex + "\n"+
+                    "attName : '"+fStringPool.toString(fTempAttDecl.name.localpart) + "'\n"
+                                   + "attType : '"+fStringPool.toString(fTempAttDecl.type) + "'\n"
+                                   + "attDefaultType : '"+fTempAttDecl.defaultType + "'\n"
+                                   + "attDefaultValue : '"+fTempAttDecl.defaultValue + "'\n"
+                                   );
+            }*/
+
             int attPrefix = fTempAttDecl.name.prefix;
             int attName = fTempAttDecl.name.localpart;
             int attType = fTempAttDecl.type;
@@ -2667,6 +2679,7 @@ public final class XMLValidator
                 contentModel = fTempElementDecl.contentModelValidator;
             }
         }
+        //return fGrammar.getElementContentModel(elementIndex);
         return contentModel;
     }
     
@@ -2993,15 +3006,24 @@ public final class XMLValidator
     /** Root element specified. */
     private void rootElementSpecified(QName rootElement) throws Exception {
 
-        if (fDynamicValidation && !fSeenDoctypeDecl) {
-            fValidating = false;
+        if  (fDynamicValidation && !fSeenDoctypeDecl) {
+          fValidating = false;
         }
         if (fValidating) {
 
             // initialize the grammar to be the default one.
             if (fGrammar == null) {
+                //TO DO, for ericye debug only
+                //System.out.println("I am getting a grammar .... " );
+
                 fGrammar = fGrammarResolver.getGrammar("");
-                fGrammarNameSpaceIndex = fStringPool.addSymbol("");
+                
+                //TO DO, for ericye debug only
+                //if (fGrammar == null) {
+                  //  System.out.println("Oops! no grammar is found");
+                 // }
+
+                fGrammarNameSpaceIndex = fEmptyURI;
             }
 
             if (fRootElement.rawname != -1) {
@@ -3093,8 +3115,12 @@ public final class XMLValidator
             element.uri = elementURI;
         }
 
+        //TO DO : xsi:schemalocation should be should be handled here: !!!
+
+
         //REVISIT: is this the right place to check on if the Schema has changed?
-        if ( fValidating && element.uri != fGrammarNameSpaceIndex) {
+
+        if ( fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
             fGrammarNameSpaceIndex = element.uri;
             switchGrammar(fGrammarNameSpaceIndex);
         }
@@ -3159,7 +3185,18 @@ public final class XMLValidator
         int elementIndex = -1;
         //REVISIT, is it possible, fValidating is false and fGrammar is no null.???
         if ( fGrammar != null ){
+            //TO DO: for ericye debug only
+            //System.out.println("localpart: '" + fStringPool.toString(element.localpart)+"' and scope : " + fCurrentScope);
+
             elementIndex = fGrammar.getElementDeclIndex(element.localpart,fCurrentScope);
+            fGrammar.getElementDecl(elementIndex, fTempElementDecl);
+
+            //TO DO: for ericye debug only      
+            //System.out.println("elementIndex: " + elementIndex+" \n and itsName : '" 
+            //                   + fStringPool.toString(fTempElementDecl.name.localpart)
+            //                   +"' \n its ContentType:" + fStringPool.toString(fTempElementDecl.type)
+            //                   +"\n its ContentSpecIndex : " + fTempElementDecl.contentSpecIndex +"\n");
+
         }
 
         //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
@@ -3179,7 +3216,7 @@ public final class XMLValidator
                                       element.rawname);
         }
         if (fGrammar != null && elementIndex != -1) {
-            //REVISIT: does not compile
+            //REVISIT: broken
             fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
         }
         if (fAttrListHandle != -1) {
