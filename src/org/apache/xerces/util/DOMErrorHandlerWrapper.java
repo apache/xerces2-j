@@ -61,10 +61,12 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 
+import org.w3c.dom.Node;
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMLocator;
 import org.w3c.dom.DOMErrorHandler;
 import org.apache.xerces.dom.DOMErrorImpl;
+import org.apache.xerces.dom.DOMLocatorImpl;
 
 import java.io.PrintWriter;
 
@@ -85,175 +87,210 @@ import java.io.PrintWriter;
 //          I think we can avoid this indirection if we modify XMLErrorReporter. --el
 
 public class DOMErrorHandlerWrapper
-    implements XMLErrorHandler, DOMErrorHandler {
+implements XMLErrorHandler, DOMErrorHandler {
 
 
-  // It keeps the reference of DOMErrorHandler of application
-     protected DOMErrorHandler fDomErrorHandler;
-     
-  // Error Status
-     boolean eStatus = true ;
-     
-  // Print writer
-     protected PrintWriter fOut;
+    // It keeps the reference of DOMErrorHandler of application
+    protected DOMErrorHandler fDomErrorHandler;
 
- 	
-  //
-  // Constructors
-  //
-   
-  // Default constructor /
-  
-   public DOMErrorHandlerWrapper() {
+    // Error Status
+    boolean eStatus = true ;
+
+    // Print writer
+    protected PrintWriter fOut;
+
+    // some components may set error node
+    // @see DOMNormalizer.
+    public Node fCurrentNode;
+
+    protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
+
+
+    //
+    // Constructors
+    //
+
+    // Default constructor /
+
+    public DOMErrorHandlerWrapper() {
         fOut = new PrintWriter(System.err);
-   }
+    }
 
-   
-   public DOMErrorHandlerWrapper(DOMErrorHandler domErrorHandler) {
-	fDomErrorHandler = domErrorHandler;		
-   } // DOMErrorHandlerWrapper(DOMErrorHandler domErrorHandler)
 
-    
-   //
-   // Public methods
-   //
+    public DOMErrorHandlerWrapper(DOMErrorHandler domErrorHandler) {
+        fDomErrorHandler = domErrorHandler;     
+    } // DOMErrorHandlerWrapper(DOMErrorHandler domErrorHandler)
 
-   /** Sets the DOM error handler. */
-   public void setErrorHandler(DOMErrorHandler errorHandler) {
-       fDomErrorHandler = errorHandler;
-   } // setErrorHandler(ErrorHandler)
-    
 
-   public DOMErrorHandler getErrorHandler(){
-	return fDomErrorHandler;	
-   } //getErrorHandler()
-	
-   //
-   // XMLErrorHandler methods
-   //
+    //
+    // Public methods
+    //
 
-   /**
-    * Reports a warning. Warnings are non-fatal and can be safely ignored
-    * by most applications.
-    *
-    * @param domain    The domain of the warning. The domain can be any
-    *                  string but is suggested to be a valid URI. The
-    *                  domain can be used to conveniently specify a web
-    *                  site location of the relevent specification or
-    *                  document pertaining to this warning.
-    * @param key       The warning key. This key can be any string and
-    *                  is implementation dependent.
-    * @param exception Exception.
-    *
-    * @throws XNIException Thrown to signal that the parser should stop
-    *                      parsing the document.
-    */
+    /** Sets the DOM error handler. */
+    public void setErrorHandler(DOMErrorHandler errorHandler) {
+        fDomErrorHandler = errorHandler;
+    } // setErrorHandler(ErrorHandler)
 
-   public void warning(String domain, String key, 
-			XMLParseException exception) throws XNIException {
-	DOMError error = new DOMErrorImpl(DOMError.SEVERITY_WARNING, exception);
-	fDomErrorHandler.handleError(error); 
-   } // warning(String,String,XMLParseException)
 
-   /**
-    * Reports an error. Errors are non-fatal and usually signify that the
-    * document is invalid with respect to its grammar(s).
-    *
-    * @param domain    The domain of the error. The domain can be any
-    *                  string but is suggested to be a valid URI. The
-    *                  domain can be used to conveniently specify a web
-    *                  site location of the relevent specification or
-    *                  document pertaining to this error.
-    * @param key       The error key. This key can be any string and
-    *                  is implementation dependent.
-    * @param exception Exception.
-    *
-    * @throws XNIException Thrown to signal that the parser should stop
-    *                      parsing the document.
-    */
-   public void error(String domain, String key, 
-			XMLParseException exception) throws XNIException {
-	DOMError error = new DOMErrorImpl(DOMError.SEVERITY_ERROR, exception);
-	fDomErrorHandler.handleError(error);                        
-   } // error(String,String,XMLParseException)
+    public DOMErrorHandler getErrorHandler(){
+        return fDomErrorHandler;    
+    } //getErrorHandler()
 
-   /**
-    * Report a fatal error. Fatal errors usually occur when the document
-    * is not well-formed and signifies that the parser cannot continue
-    * normal operation.
-    * <p>
-    * <strong>Note:</strong> The error handler should <em>always</em>
-    * throw an <code>XNIException</code> from this method. This exception
-    * can either be the same exception that is passed as a parameter to
-    * the method or a new XNI exception object. If the registered error
-    * handler fails to throw an exception, the continuing operation of
-    * the parser is undetermined.
-    *
-    * @param domain    The domain of the fatal error. The domain can be 
-    *                  any string but is suggested to be a valid URI. The
-    *                  domain can be used to conveniently specify a web
-    *                  site location of the relevent specification or
-    *                  document pertaining to this fatal error.
-    * @param key       The fatal error key. This key can be any string 
-    *                  and is implementation dependent.
-    * @param exception Exception.
-    *
-    * @throws XNIException Thrown to signal that the parser should stop
-    *                      parsing the document.
-    */
-   public void fatalError(String domain, String key, 
-			XMLParseException exception) throws XNIException {
-	DOMError error = new DOMErrorImpl(DOMError.SEVERITY_FATAL_ERROR, exception);
-	fDomErrorHandler.handleError(error);                             
-   } // fatalError(String,String,XMLParseException)
-    
-    
-   public boolean handleError(DOMError error) {
-       printError(error);
-       return eStatus;
-   }
-    
-   /** Prints the error message. */
-    
-   private void printError(DOMError error) {
-	int severity = -1;
-	fOut.print("[");
-	if ( severity == DOMError.SEVERITY_WARNING){
-		fOut.print("Warning");
-	}else if ( severity == DOMError.SEVERITY_ERROR){
-		fOut.print("Error");
-	}else{
-		fOut.print("Fatal Error");
-		eStatus = false ; //REVISIT: Abort processing if fatal error, do we need to??
-	}
+    //
+    // XMLErrorHandler methods
+    //
+
+    /**
+     * Reports a warning. Warnings are non-fatal and can be safely ignored
+     * by most applications.
+     *
+     * @param domain    The domain of the warning. The domain can be any
+     *                  string but is suggested to be a valid URI. The
+     *                  domain can be used to conveniently specify a web
+     *                  site location of the relevent specification or
+     *                  document pertaining to this warning.
+     * @param key       The warning key. This key can be any string and
+     *                  is implementation dependent.
+     * @param exception Exception.
+     *
+     * @throws XNIException Thrown to signal that the parser should stop
+     *                      parsing the document.
+     */
+
+    public void warning(String domain, String key, 
+                        XMLParseException exception) throws XNIException {
+        fDOMError.fSeverity = DOMError.SEVERITY_WARNING;
+        fDOMError.fException = exception;
+        fDOMError.fMessage = exception.getMessage();
+        DOMLocatorImpl locator = fDOMError.fLocator;
+        if (locator != null) {
+            locator.fColumnNumber = exception.getColumnNumber();
+            locator.fLineNumber = exception.getLineNumber();
+            locator.fUri = exception.getExpandedSystemId();
+            locator.fErrorNode = fCurrentNode;
+        }
+        fDomErrorHandler.handleError(fDOMError); 
+    } // warning(String,String,XMLParseException)
+
+    /**
+     * Reports an error. Errors are non-fatal and usually signify that the
+     * document is invalid with respect to its grammar(s).
+     *
+     * @param domain    The domain of the error. The domain can be any
+     *                  string but is suggested to be a valid URI. The
+     *                  domain can be used to conveniently specify a web
+     *                  site location of the relevent specification or
+     *                  document pertaining to this error.
+     * @param key       The error key. This key can be any string and
+     *                  is implementation dependent.
+     * @param exception Exception.
+     *
+     * @throws XNIException Thrown to signal that the parser should stop
+     *                      parsing the document.
+     */
+    public void error(String domain, String key, 
+                      XMLParseException exception) throws XNIException {
+        fDOMError.fSeverity = DOMError.SEVERITY_ERROR;
+        fDOMError.fException = exception;
+        fDOMError.fMessage = exception.getMessage();
+        DOMLocatorImpl locator = fDOMError.fLocator;
+        if (locator != null) {
+            locator.fColumnNumber = exception.getColumnNumber();
+            locator.fLineNumber = exception.getLineNumber();
+            locator.fUri = exception.getExpandedSystemId();
+            locator.fErrorNode = fCurrentNode;
+        }
+        fDomErrorHandler.handleError(fDOMError); 
+    } // error(String,String,XMLParseException)
+
+    /**
+     * Report a fatal error. Fatal errors usually occur when the document
+     * is not well-formed and signifies that the parser cannot continue
+     * normal operation.
+     * <p>
+     * <strong>Note:</strong> The error handler should <em>always</em>
+     * throw an <code>XNIException</code> from this method. This exception
+     * can either be the same exception that is passed as a parameter to
+     * the method or a new XNI exception object. If the registered error
+     * handler fails to throw an exception, the continuing operation of
+     * the parser is undetermined.
+     *
+     * @param domain    The domain of the fatal error. The domain can be 
+     *                  any string but is suggested to be a valid URI. The
+     *                  domain can be used to conveniently specify a web
+     *                  site location of the relevent specification or
+     *                  document pertaining to this fatal error.
+     * @param key       The fatal error key. This key can be any string 
+     *                  and is implementation dependent.
+     * @param exception Exception.
+     *
+     * @throws XNIException Thrown to signal that the parser should stop
+     *                      parsing the document.
+     */
+    public void fatalError(String domain, String key, 
+                           XMLParseException exception) throws XNIException {
+        fDOMError.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+        fDOMError.fException = exception;
+        fDOMError.fMessage = exception.getMessage();
+        DOMLocatorImpl locator = fDOMError.fLocator;
+        if (locator != null) {
+            locator.fColumnNumber = exception.getColumnNumber();
+            locator.fLineNumber = exception.getLineNumber();
+            locator.fUri = exception.getExpandedSystemId();
+            locator.fErrorNode = fCurrentNode;
+        }
+        fDomErrorHandler.handleError(fDOMError); 
+    } // fatalError(String,String,XMLParseException)
+
+
+    public boolean handleError(DOMError error) {
+        printError(error);
+        return eStatus;
+    }
+
+    /** Prints the error message. */
+
+    private void printError(DOMError error) {
+        int severity = error.getSeverity();
+        fOut.print("[");
+        if ( severity == DOMError.SEVERITY_WARNING) {
+            fOut.print("Warning");
+        } else if ( severity == DOMError.SEVERITY_ERROR) {
+            fOut.print("Error");
+        } else {
+            fOut.print("FatalError");
+            eStatus = false ; //REVISIT: Abort processing if fatal error, do we need to??
+        }
         fOut.print("] ");
-	fOut.print(": ");
-	fOut.print(error.getMessage());
-	fOut.print(':');
-        fOut.print(error.getRelatedException());		
-	DOMLocator locator = error.getLocation();
-	if (locator != null){
-		fOut.print(":L ");
-	        fOut.print(locator.getLineNumber());
-	        fOut.print(":C ");
-	        fOut.print(locator.getColumnNumber());
-		fOut.print(": ");
-	        fOut.print(locator.getOffset());
-	        fOut.print(": ");
-	        fOut.print(locator.getErrorNode().getNodeName());
-		String systemId = locator.getUri();
-		if (systemId != null) {
-		    int index = systemId.lastIndexOf('/');
-			if (index != -1)
-				systemId = systemId.substring(index + 1);
-		    fOut.print(": ");
-	            fOut.print(systemId);
-		}
-			
-	}
-	fOut.println();
-	fOut.flush();
+        DOMLocator locator = error.getLocation();
+        if (locator != null) {
+            fOut.print(locator.getLineNumber());
+            fOut.print(":");
+            fOut.print(locator.getColumnNumber());
+            fOut.print(":");
+            fOut.print(locator.getOffset());
+            Node node = locator.getErrorNode();
+            if (node != null) {
+                fOut.print("[");
+                fOut.print(node.getNodeName());
+                fOut.print("]");
+            }
+            String systemId = locator.getUri();
+            if (systemId != null) {
+                int index = systemId.lastIndexOf('/');
+                if (index != -1)
+                    systemId = systemId.substring(index + 1);
+                fOut.print(": ");
+                fOut.print(systemId);
+            }
+
+        }
+
+        fOut.print(":");
+        fOut.print(error.getMessage());
+        fOut.println();
+        fOut.flush();
 
     } // printError(DOMError)
-    
+
 } // class DOMErrorHandlerWrapper
