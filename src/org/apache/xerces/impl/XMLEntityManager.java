@@ -1290,7 +1290,6 @@ public class XMLEntityManager
 
         int len = userDir.length(), ch;
         StringBuffer buffer = new StringBuffer(len*3);
-        buffer.append("file://");
         // change C:/blah to /C:/blah
         if (len >= 2 && userDir.charAt(1) == ':') {
             ch = Character.toUpperCase(userDir.charAt(0));
@@ -1351,6 +1350,10 @@ public class XMLEntityManager
             }
         }
 
+        // change blah/blah to blah/blah/
+        if (!userDir.endsWith("/"))
+            buffer.append('/');
+        
         gEscapedUserDir = buffer.toString();
 
         return gEscapedUserDir;
@@ -1395,9 +1398,6 @@ public class XMLEntityManager
             if (baseSystemId == null || baseSystemId.length() == 0 ||
                 baseSystemId.equals(systemId)) {
                 String dir = getUserDir();
-                if (!dir.endsWith("/")) {
-                    dir = dir + "/";
-                }
                 base = new URI("file", "", dir, null, null);
             }
             else {
@@ -1405,16 +1405,13 @@ public class XMLEntityManager
                     base = new URI(fixURI(baseSystemId));
                 }
                 catch (URI.MalformedURIException e) {
-                    String dir = getUserDir();
                     if (baseSystemId.indexOf(':') != -1) {
                         // for xml schemas we might have baseURI with
                         // a specified drive
                         base = new URI("file", "", fixURI(baseSystemId), null, null);
                     }
                     else {
-                        if (!dir.endsWith("/")) {
-                            dir = dir + "/";
-                        }
+                        String dir = getUserDir();
                         dir = dir + fixURI(baseSystemId);
                         base = new URI("file", "", dir, null, null);
                     }
