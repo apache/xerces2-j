@@ -61,6 +61,7 @@ import java.io.IOException;
 import org.apache.xerces.framework.XMLString;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.XMLChar;
+import org.apache.xerces.utils.SymbolTable;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import java.io.Reader;
@@ -80,6 +81,8 @@ implements Locator {
 
     /** fEntityHandler */
     protected XMLEntityHandler fEntityHandler;
+
+    protected SymbolTable      fSymbolTable;
 
     /** fInputSource */
     protected InputSource fInputSource;
@@ -151,16 +154,16 @@ implements Locator {
      * 
      * @return 
      */
-    public char peekChar()
+    public int peekChar()
     throws IOException {
         int charToReturn;
 
         charToReturn = this.fPushbackReader.read();
         this.fPushbackReader.unread(charToReturn );//pushback character
         if (XMLChar.isValid( charToReturn ) ) {
-            return (char) (charToReturn & 0xffff);
+            return charToReturn;
         } else {
-            return '\uFFFE';
+            return -1;
         }
     } // peekChar
 
@@ -169,15 +172,15 @@ implements Locator {
      * 
      * @return 
      */
-    public char scanChar()
+    public int scanChar()
     throws IOException {
         int charToReturn;
 
         charToReturn = this.fPushbackReader.read();//consume character
         if (XMLChar.isValid( charToReturn ) ) {
-            return (char) (charToReturn & 0xffff);
+            return charToReturn;
         } else {
-            return '\uFFFE';
+            return -1;
         }
     } // scanChar
 
@@ -306,6 +309,12 @@ implements Locator {
         return false;
     } // scanAttContent
 
+    public boolean scanData( String delimiter, XMLString content ) throws IOException {
+        return false;
+    }
+
+
+
     /**
      * skipSpaces
      * [3]  S ::=  (#x20 | #x9 | #xD | #xA)+ 
@@ -322,13 +331,15 @@ implements Locator {
 
 
     /**
-     * skipString - While no space 
+     * skipString -  
      */
-    public void skipString() throws IOException {
+    public boolean skipString(String s) throws IOException {
+        /*
         while (  XMLChar.isSpace( this.fPushbackReader.read() ) == false ) {
            fCharPosition++;
        }
-
+       */
+    return false;
     } // skipString
 
     //

@@ -156,13 +156,26 @@ public class XMLEntityManager
     } // resolveEntity
 
     /**
-     * startEntity
-     * 
-     * @param entityName 
-     * @param parameter 
-     */
-    public void startEntity(String entityName, boolean parameter) {
-    } // startEntity
+    * startParameterEntity
+    * 
+    * @param startParameterEntity 
+    */
+
+
+    public void startParameterEntity ( String entityName ){ 
+
+    }
+
+
+    /**
+    * startGeneralEntity
+    * 
+    * @param inputSource 
+    */
+
+    public void startGeneralEntity ( String entityName ){ 
+    }
+
 
     /**
      * startEntity
