@@ -273,8 +273,8 @@ public final class Constants {
     /** DTD scanner property ("internal/dtd-scanner"). */
     public static final String DTD_SCANNER_PROPERTY = "internal/dtd-scanner";
 
-    /** DTD loader property ("internal/dtd-loader"). */
-    public static final String DTD_LOADER_PROPERTY = "internal/dtd-loader";
+    /** DTD processor property ("internal/dtd-processor"). */
+    public static final String DTD_PROCESSOR_PROPERTY = "internal/dtd-processor";
 
     /** Validator property ("internal/validator"). */
     public static final String VALIDATOR_PROPERTY = "internal/validator";

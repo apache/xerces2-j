@@ -65,6 +65,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLEntityScanner;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationManager;
 
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
@@ -150,6 +151,10 @@ public class XMLDocumentScannerImpl
     protected static final String DTD_SCANNER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
 
+    // property identifier:  ValidationManager
+    protected static final String VALIDATION_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -167,6 +172,7 @@ public class XMLDocumentScannerImpl
         ERROR_REPORTER,
         ENTITY_MANAGER,
         DTD_SCANNER,
+        VALIDATION_MANAGER,
     };
 
     //
@@ -177,6 +183,8 @@ public class XMLDocumentScannerImpl
 
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
+    /** Validation manager . */
+    protected ValidationManager fValidationManager;
 
     // protected data
 
@@ -292,6 +300,12 @@ public class XMLDocumentScannerImpl
         
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
+        try {
+            fValidationManager = (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
+        }
+        catch (XMLConfigurationException e) {
+            fValidationManager = null;
+        }
 
         // initialize vars
         fScanningDTD = false;
@@ -699,7 +713,8 @@ public class XMLDocumentScannerImpl
                                 setDispatcher(fDTDDispatcher);
                                 return true;
                             }
-                            if (fDoctypeSystemId != null && (fValidation || fLoadExternalDTD)) {
+                            if (fDoctypeSystemId != null && ((fValidation || fLoadExternalDTD) 
+                                    && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                 setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                 setDispatcher(fDTDDispatcher);
                                 return true;
@@ -789,7 +804,8 @@ public class XMLDocumentScannerImpl
                                 fMarkupDepth--;
 
                                 // scan external subset next
-                                if (fDoctypeSystemId != null && (fValidation || fLoadExternalDTD)) {
+                                if (fDoctypeSystemId != null && (fValidation || fLoadExternalDTD) 
+                                        && (fValidationManager == null || !fValidationManager.isCachedDTD())) {
                                     setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                 }
 

@@ -75,6 +75,7 @@ import org.apache.xerces.impl.io.ASCIIReader;
 import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationManager;
 
 import org.apache.xerces.util.EncodingMap;
 import org.apache.xerces.util.SymbolTable;
@@ -166,6 +167,10 @@ public class XMLEntityManager
     protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
+    // property identifier:  ValidationManager
+    protected static final String VALIDATION_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -182,6 +187,7 @@ public class XMLEntityManager
         SYMBOL_TABLE,
         ERROR_REPORTER,
         ENTITY_RESOLVER,
+        VALIDATION_MANAGER,
     };
 
     // debugging
@@ -256,6 +262,12 @@ public class XMLEntityManager
      * http://apache.org/xml/properties/internal/entity-resolver
      */
     protected XMLEntityResolver fEntityResolver;
+
+    /**
+     * Validation manager. This property identifier is:
+     * http://apache.org/xml/properties/internal/validation-manager
+     */
+    protected ValidationManager fValidationManager;
 
     // settings
 
@@ -631,7 +643,7 @@ public class XMLEntityManager
 
         // should we skip external entities?
         boolean external = entity.isExternal();
-        if (external) {
+        if (external && (fValidationManager == null || !fValidationManager.isCachedDTD())) {
             boolean unparsed = entity.isUnparsed();
             boolean parameter = entityName.startsWith("%");
             boolean general = !parameter;
@@ -640,18 +652,16 @@ public class XMLEntityManager
                 if (fEntityHandler != null) {
                     fResourceIdentifier.clear();
                     final String encoding = null;
-                    if (external) {
-                        ExternalEntity externalEntity = (ExternalEntity)entity;
-                        //REVISIT:  since we're storing expandedSystemId in the
-                        // externalEntity, how could this have got here if it wasn't already
-                        // expanded??? - neilg
-                        String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
-                        String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
-                        String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
-                        fResourceIdentifier.setValues(
-                                (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
-                                extLitSysId, extBaseSysId, expandedSystemId);
-                    }
+                    ExternalEntity externalEntity = (ExternalEntity)entity;
+                    //REVISIT:  since we're storing expandedSystemId in the
+                    // externalEntity, how could this have got here if it wasn't already
+                    // expanded??? - neilg
+                    String extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
+                    String extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
+                    String expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+                    fResourceIdentifier.setValues(
+                            (externalEntity.entityLocation != null ? externalEntity.entityLocation.getPublicId() : null),
+                            extLitSysId, extBaseSysId, expandedSystemId);
                     fEntityHandler.startEntity(entityName, fResourceIdentifier, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
@@ -958,6 +968,12 @@ public class XMLEntityManager
         }
         catch (XMLConfigurationException e) {
             fEntityResolver = null;
+        }
+        try {
+            fValidationManager = (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
+        }
+        catch (XMLConfigurationException e) {
+            fValidationManager = null;
         }
         // initialize state
         fStandalone = false;

@@ -242,6 +242,14 @@ public class XMLDTDScannerImpl
     /** Default constructor. */
     public XMLDTDScannerImpl() {} // <init>()
 
+    /** Constructor for he use of non-XMLComponentManagers. */
+    public XMLDTDScannerImpl(SymbolTable symbolTable,
+                XMLErrorReporter errorReporter, XMLEntityManager entityManager) {
+        fSymbolTable = symbolTable;
+        fErrorReporter = errorReporter;
+        fEntityManager = entityManager;
+    }
+
     //
     // XMLDTDScanner methods
     //
@@ -368,22 +376,15 @@ public class XMLDTDScannerImpl
         throws XMLConfigurationException {
         
         super.reset(componentManager);
-
-        // reset state related data
-        fStartDTDCalled = false;
-        fExtEntityDepth = 0;
-        fIncludeSectDepth = 0;
-        fMarkUpDepth = 0;
-        fPEDepth = 0;
-
-        fStandalone = false;
-        fSeenExternalDTD = false;
-        fSeenExternalPE = false;
-
-        // set starting state
-        setScannerState(SCANNER_STATE_TEXT_DECL);
+        init();
 
     } // reset(XMLComponentManager)
+
+    // this is made for something like XMLDTDLoader--XMLComponentManager-free operation...
+    public void reset() {
+        super.reset();
+        init();
+    }
 
     /**
      * Returns a list of feature identifiers that are recognized by
@@ -1972,6 +1973,23 @@ public class XMLDTDScannerImpl
             System.arraycopy(fEnumeration, 0, newEnum, 0, size);
             fEnumeration = newEnum;
         }
+    }
+
+    // private methods
+    private void init() {
+        // reset state related data
+        fStartDTDCalled = false;
+        fExtEntityDepth = 0;
+        fIncludeSectDepth = 0;
+        fMarkUpDepth = 0;
+        fPEDepth = 0;
+
+        fStandalone = false;
+        fSeenExternalDTD = false;
+        fSeenExternalPE = false;
+
+        // set starting state
+        setScannerState(SCANNER_STATE_TEXT_DECL);
     }
 
 } // class XMLDTDScannerImpl

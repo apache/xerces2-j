@@ -246,24 +246,7 @@ public abstract class XMLScanner
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
 
-        // initialize scanner
-        fEntityScanner = fEntityManager.getEntityScanner();
-        
-        // initialize vars
-        fEntityDepth = 0;
-        fReportEntity = true;
-        fResourceIdentifier.clear();
-
-        // save built-in entity names
-        fVersionSymbol = fSymbolTable.addSymbol("version");
-        fEncodingSymbol = fSymbolTable.addSymbol("encoding");
-        fStandaloneSymbol = fSymbolTable.addSymbol("standalone");
-        fAmpSymbol = fSymbolTable.addSymbol("amp");
-        fLtSymbol = fSymbolTable.addSymbol("lt");
-        fGtSymbol = fSymbolTable.addSymbol("gt");
-        fQuotSymbol = fSymbolTable.addSymbol("quot");
-        fAposSymbol = fSymbolTable.addSymbol("apos");
-        
+        init();
         // sax features
         try {
             fValidation = componentManager.getFeature(VALIDATION);
@@ -302,7 +285,6 @@ public abstract class XMLScanner
             else if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
                 fEntityManager = (XMLEntityManager)value;
             }
-            return;
         }
 
     } // setProperty(String,Object)
@@ -320,9 +302,33 @@ public abstract class XMLScanner
         }
     }
     
+    /*
+     * Gets the state of the feature of the scanner.
+     */
+    public boolean getFeature(String featureId)
+        throws XMLConfigurationException {
+            
+        if (VALIDATION.equals(featureId)) {
+            return fValidation;
+        } else if (NOTIFY_CHAR_REFS.equals(featureId)) {
+            return fNotifyCharRefs;
+        }
+        throw new XMLConfigurationException(XMLConfigurationException.NOT_RECOGNIZED, featureId);
+    }
+    
     //
     // Protected methods
     //
+
+    // anybody calling this had better have set Symtoltable!
+    protected void reset() {
+        init();
+
+        // DTD preparsing defaults:
+        fValidation = true;
+        fNotifyCharRefs = false;
+
+    }
 
     // common scanning methods
 
@@ -1264,5 +1270,26 @@ public abstract class XMLScanner
                                    msgId, args,
                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
     }
+
+    // private methods
+    private void init() {
+        // initialize scanner
+        fEntityScanner = fEntityManager.getEntityScanner();
+        
+        // initialize vars
+        fEntityDepth = 0;
+        fReportEntity = true;
+        fResourceIdentifier.clear();
+
+        // save built-in entity names
+        fVersionSymbol = fSymbolTable.addSymbol("version");
+        fEncodingSymbol = fSymbolTable.addSymbol("encoding");
+        fStandaloneSymbol = fSymbolTable.addSymbol("standalone");
+        fAmpSymbol = fSymbolTable.addSymbol("amp");
+        fLtSymbol = fSymbolTable.addSymbol("lt");
+        fGtSymbol = fSymbolTable.addSymbol("gt");
+        fQuotSymbol = fSymbolTable.addSymbol("quot");
+        fAposSymbol = fSymbolTable.addSymbol("apos"); 
+    } 
 
 } // class XMLScanner
