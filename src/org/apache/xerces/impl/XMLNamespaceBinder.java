@@ -813,7 +813,7 @@ public class XMLNamespaceBinder
                 if (fAttributeQName.uri == null) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "AttributePrefixUnbound",
-                                               new Object[]{aprefix, arawname},
+                                               new Object[]{element.rawname,arawname,aprefix},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 attributes.setName(i, fAttributeQName);

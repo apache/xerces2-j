@@ -733,7 +733,7 @@ public abstract class XMLScanner
         // quote
         int quote = fEntityScanner.peekChar();
         if (quote != '\'' && quote != '"') {
-            reportFatalError("OpenQuoteExpected", new Object[]{atName});
+			reportFatalError("OpenQuoteExpected", new Object[]{eleName,atName});
         }
 
         fEntityScanner.scanChar();
@@ -861,7 +861,7 @@ public abstract class XMLScanner
                 }
                 else if (c == '<') {
                     reportFatalError("LessthanInAttValue",
-                                     new Object[] { null, atName });
+									 new Object[] { eleName, atName });
                     fEntityScanner.scanChar();
                     if (entityDepth == fEntityDepth) {
                         fStringBuffer2.append((char)c);
@@ -925,7 +925,7 @@ public abstract class XMLScanner
         // quote
         int cquote = fEntityScanner.scanChar();
         if (cquote != quote) {
-            reportFatalError("CloseQuoteExpected", new Object[]{atName});
+			reportFatalError("CloseQuoteExpected", new Object[]{eleName,atName});
         }
     } // scanAttributeValue()
 

@@ -266,7 +266,7 @@ extends XMLDocumentScannerImpl {
                     if (uri == null) {
                         fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                    "AttributePrefixUnbound",
-                                                   new Object[]{aprefix, fAttributeQName.rawname},
+                                                   new Object[]{fElementQName.rawname,fAttributeQName.rawname,aprefix},
                                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     fAttributes.setURI(i, uri);
@@ -364,7 +364,7 @@ extends XMLDocumentScannerImpl {
         fEntityScanner.skipSpaces();
         if (!fEntityScanner.skipChar('=')) {
             reportFatalError("EqRequiredInAttribute",
-                             new Object[]{fAttributeQName.rawname});
+                             new Object[]{fCurrentElement.rawname,fAttributeQName.rawname});
         }
         fEntityScanner.skipSpaces();
 
