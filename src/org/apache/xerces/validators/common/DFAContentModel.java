@@ -839,7 +839,7 @@ public class DFAContentModel
     private byte fConflictTable[][];
 
     // check UPA after build the DFA
-    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) throws Exception {
         // rename back
         for (int i = 0; i < fElemMapSize; i++)
             fElemMap[i].uri = gram.getContentSpecOrgUri(fElemMap[i].uri);

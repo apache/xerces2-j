@@ -167,7 +167,7 @@ public class SimpleContentModel
     }
 
     // Unique Particle Attribution
-    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) throws Exception {
         // rename back
         fFirstChild.uri = gram.getContentSpecOrgUri(fFirstChild.uri);
         fSecondChild.uri = gram.getContentSpecOrgUri(fSecondChild.uri);

@@ -178,5 +178,5 @@ public interface XMLContentModel {
 
     // each kind of content model needs to provide a way to validate
     // Unique Particle Attribution
-    public void checkUniqueParticleAttribution(SchemaGrammar gram);
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) throws Exception;
 } // interface XMLContentModel

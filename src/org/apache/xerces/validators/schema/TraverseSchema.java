@@ -874,7 +874,6 @@ public class TraverseSchema implements
                                         fStringPool.toString(eltName.localpart));
        }
 
-
        Vector substitutableNames = fSchemaGrammar.getElementDeclAllSubstitutionGroupQNames(topLevelElementNdx, fGrammarResolver, fStringPool);
        
        for (int i = 0; i < substitutableNames.size(); i++) {
@@ -5964,10 +5963,7 @@ throws Exception {
 				if (!referredTo)
                 	reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
                         new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });    //a-props-correct.2
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Internal error in attribute datatype validation");
-            }
+            } 
         }
 
         // check the coexistence of ID and value constraint

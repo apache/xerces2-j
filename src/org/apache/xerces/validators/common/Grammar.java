@@ -262,7 +262,7 @@ implements XMLContentSpec.Provider {
         return (fContentSpecValidator[chunk][index] != null);
     }
 
-    public XMLContentModel getElementContentModel(int elementDeclIndex, SubstitutionGroupComparator comparator) throws CMException {
+    public XMLContentModel getElementContentModel(int elementDeclIndex, SubstitutionGroupComparator comparator) throws Exception {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
             return null;
@@ -276,7 +276,7 @@ implements XMLContentSpec.Provider {
                                contentType, comparator);
     }
 
-    public XMLContentModel getContentModel(int contentSpecIndex, int contentType, SubstitutionGroupComparator comparator) throws CMException {
+    public XMLContentModel getContentModel(int contentSpecIndex, int contentType, SubstitutionGroupComparator comparator) throws Exception {
         if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount)
             return null;
 

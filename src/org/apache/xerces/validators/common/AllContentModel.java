@@ -145,7 +145,7 @@ public class AllContentModel implements XMLContentModel {
     }
 
     // Unique Particle Attribution
-    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
+    public void checkUniqueParticleAttribution(SchemaGrammar gram) throws Exception {
         // rename back
         for (int i = 0; i < fNumElements; i++)
             fAllElements[i].uri = gram.getContentSpecOrgUri(fAllElements[i].uri);

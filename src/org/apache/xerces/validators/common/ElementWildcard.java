@@ -71,7 +71,7 @@ public class ElementWildcard {
     private ElementWildcard(){}
 
     private static boolean uriInWildcard(QName qname, int wildcard, int wtype,
-                                         SubstitutionGroupComparator comparator) {
+                                         SubstitutionGroupComparator comparator) throws Exception {
         int type = wtype & 0x0f;
 
         if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
@@ -80,12 +80,8 @@ public class ElementWildcard {
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_NS) {
             // substitution of "uri" satisfies "wtype:wildcard"
             if (comparator != null) {
-                try {
-                    if (comparator.isAllowedByWildcard(qname, wildcard, false))
-                        return true;
-                } catch (Exception e) {
-                    // error occurs in comparator, do nothing here.
-                }
+                if (comparator.isAllowedByWildcard(qname, wildcard, false))
+                    return true;
             } else {
                 if (qname.uri == wildcard)
                     return true;
@@ -94,12 +90,8 @@ public class ElementWildcard {
         else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
             // substitution of "uri" satisfies "wtype:wildcard"
             if (comparator != null) {
-                try {
-                    if (comparator.isAllowedByWildcard(qname, wildcard, true))
-                        return true;
-                } catch (Exception e) {
-                    // error occurs in comparator, do nothing here.
-                }
+                if (comparator.isAllowedByWildcard(qname, wildcard, true))
+                    return true;
             } else {
                 //if (wildcard != uri && uri != StringPool.EMPTY_STRING) // ???
                 if (wildcard != qname.uri)
@@ -147,7 +139,7 @@ public class ElementWildcard {
     // check whether two elements conflict
     private static boolean conflic(int type1, int local1, int uri1,
                                    int type2, int local2, int uri2,
-                                   SubstitutionGroupComparator comparator) {
+                                   SubstitutionGroupComparator comparator) throws Exception {
         QName q1 = new QName(), q2 = new QName();
         q1.localpart = local1;
         q1.uri = uri1;
@@ -157,13 +149,9 @@ public class ElementWildcard {
         if (type1 == XMLContentSpec.CONTENTSPECNODE_LEAF &&
             type2 == XMLContentSpec.CONTENTSPECNODE_LEAF) {
             if (comparator != null) {
-                try {
-                    if (comparator.isEquivalentTo(q1, q2) ||
-                        comparator.isEquivalentTo(q2, q1))
-                        return true;
-                } catch (Exception e) {
-                    // error occurs in comparator, do nothing here.
-                }
+                if (comparator.isEquivalentTo(q1, q2) ||
+                    comparator.isEquivalentTo(q2, q1))
+                    return true;
             } else {
                 if (q1.localpart == q2.localpart &&
                     q1.uri == q2.uri)
@@ -185,10 +173,9 @@ public class ElementWildcard {
 
     public static boolean conflict(int type1, int local1, int uri1,
                                    int type2, int local2, int uri2,
-                                   SubstitutionGroupComparator comparator) {
+                                   SubstitutionGroupComparator comparator) throws Exception {
         boolean ret = conflic(type1, local1, uri1, type2, local2, uri2, comparator);
 
-        try {
         if (ret && comparator != null) {
             String elements = getString (type1, local1, uri1,
                                          type2, local2, uri2,
@@ -200,8 +187,6 @@ public class ElementWildcard {
                             SchemaMessageProvider.MSG_NONE,
                             new Object[]{elements},
                             XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-        }
-        } catch (Exception e) {
         }
 
         return ret;

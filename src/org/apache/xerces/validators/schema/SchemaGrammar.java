@@ -291,7 +291,7 @@ public class SchemaGrammar extends Grammar{
     // A substitute B, B substitute C, with types (AT, BT, CT)
     // but the derivation method from AT to BT is block by B's blockset
     // then A can't substitute B, but it's still possible that A substitute C.
-    private Vector getElementDeclAllSubstitutionGroupQNamesBlock( int elementDeclIndex, GrammarResolver grammarResolver, StringPool stringPool){
+    private Vector getElementDeclAllSubstitutionGroupQNamesBlock( int elementDeclIndex, GrammarResolver grammarResolver, StringPool stringPool) {
         if (elementDeclIndex < 0 ) {
             return null;
         }
@@ -371,7 +371,7 @@ public class SchemaGrammar extends Grammar{
     // all elements that can substitute the given one
     // returns a list (Vector) of SchemaGrammar.OneSubGroup: qname+grammar+elementIndex
     // be sure to call this method ONLY AFTER (not during) schema traversal!!!
-    public Vector getElementDeclAllSubstitutionGroupQNames( int elementDeclIndex, GrammarResolver grammarResolver, StringPool stringPool){
+    public Vector getElementDeclAllSubstitutionGroupQNames( int elementDeclIndex, GrammarResolver grammarResolver, StringPool stringPool) {
 
         if (elementDeclIndex < 0 ) {
             return null;
@@ -485,7 +485,7 @@ public class SchemaGrammar extends Grammar{
 
     // Unique Particle Attribution
     // overrides same method from Grammar, to do UPA checking
-    public XMLContentModel getContentModel(int contentSpecIndex, int contentType, SubstitutionGroupComparator comparator) throws CMException {
+    public XMLContentModel getContentModel(int contentSpecIndex, int contentType, SubstitutionGroupComparator comparator) throws Exception {
         // if the content model is already there, no UPA checking is necessary
         if (existContentModel(contentSpecIndex))
             return super.getContentModel(contentSpecIndex, contentType, comparator);
