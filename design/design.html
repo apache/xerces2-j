@@ -79,6 +79,12 @@
         class="interface-title">XMLAttributes</SPAN> <SPAN
         class="param-title">attributes</SPAN>          )
        <LI>
+        <SPAN class="method-title">emptyElement</SPAN>      (   <SPAN
+        class="class-title">QName</SPAN> <SPAN
+        class="param-title">element</SPAN>, <SPAN
+        class="interface-title">XMLAttributes</SPAN> <SPAN
+        class="param-title">attributes</SPAN>          )
+       <LI>
         <SPAN class="method-title">characters</SPAN>      (   <SPAN
         class="class-title">XMLString</SPAN> <SPAN
         class="param-title">text</SPAN>          )
@@ -145,6 +151,12 @@
         class="param-title">name</SPAN>          )
        <LI>
         <SPAN class="method-title">startElement</SPAN>      (   <SPAN
+        class="class-title">QName</SPAN> <SPAN
+        class="param-title">element</SPAN>, <SPAN
+        class="interface-title">XMLAttributes</SPAN> <SPAN
+        class="param-title">attributes</SPAN>          )
+       <LI>
+        <SPAN class="method-title">emptyElement</SPAN>      (   <SPAN
         class="class-title">QName</SPAN> <SPAN
         class="param-title">element</SPAN>, <SPAN
         class="interface-title">XMLAttributes</SPAN> <SPAN
@@ -321,10 +333,6 @@
    <A name="XMLDTDContentModelHandler"><DL class="interface">
      <DT>interface <SPAN class="interface-title">XMLDTDContentModelHandler</SPAN>
      <DD class="constants">      constants:      <UL>
-       <LI>short <SPAN class="constant-title">TYPE_EMPTY</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_ANY</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_MIXED</SPAN>
-       <LI>short <SPAN class="constant-title">TYPE_CHILDREN</SPAN>
        <LI>short <SPAN class="constant-title">SEPARATOR_CHOICE</SPAN>
        <LI>short <SPAN class="constant-title">SEPARATOR_SEQUENCE</SPAN>
        <LI>short <SPAN class="constant-title">OCCURS_ZERO_OR_ONE</SPAN>
@@ -335,28 +343,28 @@
        <LI>
         <SPAN class="method-title">startContentModel</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN
-        class="param-title">elementName</SPAN>, short <SPAN
-        class="param-title">type</SPAN>          )
+        class="param-title">elementName</SPAN>          )
        <LI>
-        <SPAN class="method-title">mixedElement</SPAN>      (   <SPAN
+        <SPAN class="method-title">any</SPAN>      (             )
+       <LI>
+        <SPAN class="method-title">empty</SPAN>      (             )
+       <LI>
+        <SPAN class="method-title">startGroup</SPAN>      (
+        )
+       <LI>
+        <SPAN class="method-title">pcdata</SPAN>      (             )
+       <LI>
+        <SPAN class="method-title">element</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">elementName</SPAN>          )
        <LI>
-        <SPAN class="method-title">childrenStartGroup</SPAN>      (
-        )
+        <SPAN class="method-title">separator</SPAN>      (   short <SPAN
+        class="param-title">separator</SPAN>          )
        <LI>
-        <SPAN class="method-title">childrenElement</SPAN>      (   <SPAN
-        class="class-title">String</SPAN> <SPAN
-        class="param-title">elementName</SPAN>          )
+        <SPAN class="method-title">occurrence</SPAN>      (   short
+         <SPAN class="param-title">occurrence</SPAN>          )
        <LI>
-        <SPAN class="method-title">childrenSeparator</SPAN>      (
-        short <SPAN class="param-title">separator</SPAN>          )
-       <LI>
-        <SPAN class="method-title">childrenOccurrence</SPAN>      (
-        short <SPAN class="param-title">occurrence</SPAN>          )
-       <LI>
-        <SPAN class="method-title">childrenEndGroup</SPAN>      (
-        )
+        <SPAN class="method-title">endGroup</SPAN>      (             )
        <LI>
         <SPAN class="method-title">endContentModel</SPAN>      (
         )
@@ -522,6 +530,36 @@
         <SPAN class="method-title">getEntityLength</SPAN>      (   int
          <SPAN class="param-title">attrIndex</SPAN>, int <SPAN
         class="param-title">entityIndex</SPAN>          )       :    int
+      </UL>
+    </DL>
+   </A></BLOCKQUOTE>
+  <BLOCKQUOTE>
+   <A name="XNIException"><DL class="class">
+     <DT>class <SPAN class="class-title">XNIException</SPAN>
+     <DD class="fields">      fields:      <UL>
+       <LI>
+        <SPAN class="class-title">String</SPAN> <SPAN class="field-title">fException</SPAN>
+      </UL>
+     <DD class="constructors">      constructors:      <UL>
+       <LI>
+        <SPAN class="constructor-title">XNIException</SPAN>      (
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">message</SPAN>          )
+       <LI>
+        <SPAN class="constructor-title">XNIException</SPAN>      (
+         <SPAN class="class-title">Exception</SPAN> <SPAN
+        class="param-title">exception</SPAN>          )
+       <LI>
+        <SPAN class="constructor-title">XNIException</SPAN>      (
+         <SPAN class="class-title">Exception</SPAN> <SPAN
+        class="param-title">exception</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">message</SPAN>          )
+      </UL>
+     <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">getException</SPAN>      (
+        )       :    <SPAN class="class-title">String</SPAN>
       </UL>
     </DL>
    </A></BLOCKQUOTE>

@@ -562,126 +562,35 @@ public abstract class AbstractXMLDocumentParser
     // XMLDTDContentModelHandler methods
     //
 
-    /**
-     * The start of a content model. Depending on the type of the content
-     * model, specific methods may be called between the call to the
-     * startContentModel method and the call to the endContentModel method.
-     * 
-     * @param elementName The name of the element.
-     * @param type        The content model type.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
-     */
-    public void startContentModel(String elementName, short type)
-        throws XNIException {
-    } // startContentModel(String,short)
+    /** Start content model. */
+    public void startContentModel(String elementName) throws XNIException {}
 
-    /**
-     * A referenced element in a mixed content model. If the mixed content 
-     * model only allows text content, then this method will not be called
-     * for that model. However, if this method is called for a mixed
-     * content model, then the zero or more occurrence count is implied.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to 
-     * the startContentModel method where the type is TYPE_MIXED.
-     * 
-     * @param elementName The name of the referenced element. 
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_MIXED
-     */
-    public void mixedElement(String elementName) throws XNIException {
-    } // mixedElement(elementName)
+    /** ANY. */
+    public void any() throws XNIException {}
 
-    /**
-     * The start of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * <p>
-     * <strong>Note:</strong> Children groups can be nested and have
-     * associated occurrence counts.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenStartGroup() throws XNIException {
-    } // childrenStartGroup()
+    /** EMPTY. */
+    public void empty() throws XNIException {}
 
-    /**
-     * A referenced element in a children content model.
-     * 
-     * @param elementName The name of the referenced element.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenElement(String elementName) throws XNIException {
-    } // childrenElement(String)
+    /** Start group. */
+    public void startGroup() throws XNIException {}
 
-    /**
-     * The separator between choices or sequences of a children content
-     * model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * 
-     * @param separator The type of children separator.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see SEPARATOR_CHOICE
-     * @see SEPARATOR_SEQUENCE
-     * @see TYPE_CHILDREN
-     */
-    public void childrenSeparator(short separator) throws XNIException {
-    } // childrenSeparator(short)
+    /** #PCDATA. */
+    public void pcdata() throws XNIException {}
 
-    /**
-     * The occurrence count for a child in a children content model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * 
-     * @param occurrence The occurrence count for the last children element
-     *                   or children group.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
-     * @see TYPE_CHILDREN
-     */
-    public void childrenOccurrence(short occurrence) throws XNIException {
-    } // childrenOccurrence(short)
+    /** Element. */
+    public void element(String elementName) throws XNIException {}
 
-    /**
-     * The end of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenEndGroup() throws XNIException {
-    } // childrenEndGroup()
+    /** Separator. */
+    public void separator(short separator) throws XNIException {}
 
-    /**
-     * The end of a content model.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endContentModel() throws XNIException {
-    } // endContentModel()
+    /** Occurrence. */
+    public void occurrence(short occurrence) throws XNIException {}
+
+    /** End group. */
+    public void endGroup() throws XNIException {}
+
+    /** End content model. */
+    public void endContentModel() throws XNIException {}
 
     //
     // Protected methods

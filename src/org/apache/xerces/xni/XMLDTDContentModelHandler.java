@@ -77,80 +77,6 @@ public interface XMLDTDContentModelHandler {
     // Constants
     //
 
-    // content model types
-
-    /** 
-     * Empty content model type. The element is not allowed to contain
-     * any content except for ignorable whitespace.
-     * <p>
-     * For example:
-     * <pre>
-     * &lt;!ELEMENT elem EMPTY&gt;
-     * </pre>
-     *
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
-     */
-    public static final short TYPE_EMPTY = 0;
-
-    /** 
-     * Any content model type. The element may contain any declared elements
-     * or text content.
-     * <p>
-     * For example:
-     * <pre>
-     * &lt;!ELEMENT elem ANY&gt;
-     * </pre>
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
-     */
-    public static final short TYPE_ANY = 1;
-
-    /**
-     * A mixed content model. The element can contain specified elements or
-     * text content.
-     * <p>
-     * For example:
-     * <pre>
-     * &lt;!ELEMENT elem1 (#PCDATA)&gt;
-     * &lt;!ELEMENT elem2 (#PCDATA|foo|bar)*&gt;
-     * </pre>
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_CHILDREN
-     */
-    public static final short TYPE_MIXED = 2;
-
-    /**
-     * A children content model. The element can contain specified elements
-     * as sequences or choices and with specified occurrence counts.
-     * <p>
-     * For example:
-     * <pre>
-     * &lt;!ELEMENT elem1 (foo)&gt;
-     * &lt;!ELEMENT elem2 (foo?)&gt;
-     * &lt;!ELEMENT elem3 (foo*)&gt;
-     * &lt;!ELEMENT elem4 (foo+)&gt;
-     * &lt;!ELEMENT elem5 (foo,bar)&gt;
-     * &lt;!ELEMENT elem6 (foo|bar)&gt;
-     * &lt;!ELEMENT elem7 (foo|(bar,baz)+)&gt;
-     * </pre>
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see SEPARATOR_CHOICE
-     * @see SEPARATOR_SEQUENCE
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
-     */
-    public static final short TYPE_CHILDREN = 3;
-
     // children model separators
 
     /** 
@@ -246,67 +172,68 @@ public interface XMLDTDContentModelHandler {
      * startContentModel method and the call to the endContentModel method.
      * 
      * @param elementName The name of the element.
-     * @param type        The content model type.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
      */
-    public void startContentModel(String elementName, short type)
+    public void startContentModel(String elementName)
         throws XNIException;
 
-    /**
-     * A referenced element in a mixed content model. If the mixed content 
-     * model only allows text content, then this method will not be called
-     * for that model. However, if this method is called for a mixed
-     * content model, then the zero or more occurrence count is implied.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to 
-     * the startContentModel method where the type is TYPE_MIXED.
-     * 
-     * @param elementName The name of the referenced element. 
+    /** 
+     * A content model of ANY. 
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see TYPE_MIXED
+     * @see #empty
+     * @see #startGroup
      */
-    public void mixedElement(String elementName) throws XNIException;
+    public void any() throws XNIException;
 
     /**
-     * The start of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * <p>
-     * <strong>Note:</strong> Children groups can be nested and have
-     * associated occurrence counts.
+     * A content model of EMPTY.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see TYPE_CHILDREN
+     * @see #any
+     * @see #startGroup
      */
-    public void childrenStartGroup() throws XNIException;
+    public void empty() throws XNIException;
 
     /**
-     * A referenced element in a children content model.
+     * A start of either a mixed or children content model. A mixed
+     * content model will immediately be followed by a call to the
+     * <code>pcdata()</code> method. A children content model will
+     * contain additional groups and/or elements.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #empty
+     */
+    public void startGroup() throws XNIException;
+
+    /**
+     * The appearance of "#PCDATA" within a group signifying a
+     * mixed content model. This method will be the first called
+     * following the content model's <code>startGroup()</code>.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #startGroup
+     */
+    public void pcdata() throws XNIException;
+
+    /**
+     * A referenced element in a mixed or children content model.
      * 
      * @param elementName The name of the referenced element.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
      */
-    public void childrenElement(String elementName) throws XNIException;
+    public void element(String elementName) throws XNIException;
 
     /**
-     * The separator between choices or sequences of a children content
-     * model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
+     * The separator between choices or sequences of a mixed or children
+     * content model.
      * 
      * @param separator The type of children separator.
      *
@@ -314,37 +241,30 @@ public interface XMLDTDContentModelHandler {
      *
      * @see SEPARATOR_CHOICE
      * @see SEPARATOR_SEQUENCE
-     * @see TYPE_CHILDREN
      */
-    public void childrenSeparator(short separator) throws XNIException;
+    public void separator(short separator) throws XNIException;
 
     /**
-     * The occurrence count for a child in a children content model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
+     * The occurrence count for a child in a children content model or
+     * for the mixed content model group.
      * 
-     * @param occurrence The occurrence count for the last children element
-     *                   or children group.
+     * @param occurrence The occurrence count for the last element
+     *                   or group.
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
      * @see OCCURS_ZERO_OR_ONE
      * @see OCCURS_ZERO_OR_MORE
      * @see OCCURS_ONE_OR_MORE
-     * @see TYPE_CHILDREN
      */
-    public void childrenOccurrence(short occurrence) throws XNIException;
+    public void occurrence(short occurrence) throws XNIException;
 
     /**
-     * The end of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
+     * The end of a group for mixed or children content models.
      *
-     * @see TYPE_CHILDREN
+     * @throws XNIException Thrown by handler to signal an error.
      */
-    public void childrenEndGroup() throws XNIException;
+    public void endGroup() throws XNIException;
 
     /**
      * The end of a content model.

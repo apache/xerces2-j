@@ -12,7 +12,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -27,7 +27,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -42,7 +42,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -51,7 +51,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -63,7 +63,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -75,7 +75,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -102,7 +102,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -114,7 +114,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -123,7 +123,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -135,7 +135,19 @@
     <reference idref='attributes'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
+   </throws>
+  </method>
+  
+  <method name='emptyElement'>
+   <param name='element'>
+    <reference idref='qname'/>
+   </param>
+   <param name='attributes'>
+    <reference idref='attributes'/>
+   </param>
+   <throws>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -144,7 +156,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -153,7 +165,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -162,7 +174,7 @@
     <reference idref='qname'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -171,24 +183,24 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='startCDATA'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   <method name='endCDATA'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>   
   
   <method name='endDocument'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -201,7 +213,7 @@
     <reference idref='namespace-context'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -210,7 +222,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -222,7 +234,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -234,7 +246,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -261,7 +273,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -270,7 +282,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -282,7 +294,19 @@
     <reference idref='attributes'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
+   </throws>
+  </method>
+  
+  <method name='emptyElement'>
+   <param name='element'>
+    <reference idref='qname'/>
+   </param>
+   <param name='attributes'>
+    <reference idref='attributes'/>
+   </param>
+   <throws>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -291,7 +315,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -300,7 +324,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -309,7 +333,7 @@
     <reference idref='qname'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -318,19 +342,19 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='startCDATA'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='endCDATA'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -342,13 +366,13 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='endDocumentFragment'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -404,7 +428,7 @@
   
   <method name='startDTD'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -413,7 +437,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -425,7 +449,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -452,7 +476,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -464,7 +488,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -473,7 +497,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -485,7 +509,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -494,7 +518,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -520,13 +544,13 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='endAttlist'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -538,7 +562,7 @@
     <reference idref='string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -553,7 +577,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -571,7 +595,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -586,7 +610,7 @@
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -595,18 +619,18 @@
     <primitive type='short'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='endConditional'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   <method name='endDTD'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -614,22 +638,6 @@
 
  <interface id='dtd-content-model-handler' name='XMLDTDContentModelHandler'>
  
-  <constant name='TYPE_EMPTY'>
-   <primitive type='short'/>
-  </constant>
-  
-  <constant name='TYPE_ANY'>
-   <primitive type='short'/>
-  </constant>
-  
-  <constant name='TYPE_MIXED'>
-   <primitive type='short'/>
-  </constant>
-  
-  <constant name='TYPE_CHILDREN'>
-   <primitive type='short'/>
-  </constant>
-  
   <constant name='SEPARATOR_CHOICE'>
    <primitive type='short'/>
   </constant>
@@ -654,65 +662,71 @@
    <param name='elementName'>
     <reference idref='java-string'/>
    </param>
-   <param name='type'>
-    <primitive type='short'/>
-   </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
-  <method name='mixedElement'>
+  <method name='any'>
+   <throws>
+    <reference idref='xni-exception'/>
+   </throws>
+  </method>
+  
+  <method name='empty'>
+   <throws>
+    <reference idref='xni-exception'/>
+   </throws>
+  </method>
+
+  <method name='startGroup'>
+   <throws>
+    <reference idref='xni-exception'/>
+   </throws>
+  </method>
+  
+  <method name='pcdata'>
+   <throws>
+    <reference idref='xni-exception'/>
+   </throws>
+  </method>
+
+  <method name='element'>
    <param name='elementName'>
     <reference idref='java-string'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
-  <method name='childrenStartGroup'>
-   <throws>
-    <reference idref='sax-exception'/>
-   </throws>
-  </method>
-  
-  <method name='childrenElement'>
-   <param name='elementName'>
-    <reference idref='java-string'/>
-   </param>
-   <throws>
-    <reference idref='sax-exception'/>
-   </throws>
-  </method>
-  
-  <method name='childrenSeparator'>
+  <method name='separator'>
    <param name='separator'>
     <primitive type='short'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
-  <method name='childrenOccurrence'>
+  <method name='occurrence'>
    <param name='occurrence'>
     <primitive type='short'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
-  <method name='childrenEndGroup'>
+  <method name='endGroup'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
   <method name='endContentModel'>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -1028,6 +1042,35 @@
   
  </interface>
 
+ <class id='xni-exception' name='XNIException'>
+  <field name='fException'>
+   <reference idref='java-string'/>
+  </field>
+  <constructor>
+   <param name='message'>
+    <reference idref='java-string'/>
+   </param>
+  </constructor>
+  <constructor>
+   <param name='exception'>
+    <reference idref='java-exception'/>
+   </param>
+  </constructor>
+  <constructor>
+   <param name='exception'>
+    <reference idref='java-exception'/>
+   </param>
+   <param name='message'>
+    <reference idref='java-string'/>
+   </param>
+  </constructor>
+  <method name='getException'>
+   <returns>
+    <reference idref='java-string'/>
+   </returns>
+  </method>
+ </class>
+
 </category>
 
 <category name='XNI: Parser Pipeline' package='&package;.xni.pipeline'>
@@ -1038,7 +1081,7 @@
     <reference idref='configuration-manager'/>
    </param>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
   
@@ -1235,7 +1278,7 @@
     <reference idref='java-io-exception'/>
    </throws>
    <throws>
-    <reference idref='sax-exception'/>
+    <reference idref='xni-exception'/>
    </throws>
   </method>
 

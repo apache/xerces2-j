@@ -152,7 +152,7 @@ public class XMLAttributesImpl
     public int addAttribute(QName name, String type, String value) {
 
         // find attribute; create, if necessary
-        int index = name.uri != null
+        int index = name.uri != null && !name.uri.equals("")
                   ? getIndex(name.uri, name.localpart)
                   : getIndex(name.rawname);
         if (index == -1) {

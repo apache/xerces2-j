@@ -138,6 +138,9 @@ public class DTDGrammar
 
     // temp variables
 
+    /** Mixed. */
+    private boolean fMixed;
+
     /** Element declaration. */
     private XMLElementDecl fElementDecl = new XMLElementDecl();
 
@@ -766,22 +769,8 @@ public class DTDGrammar
     // XMLDTDContentModelHandler methods
     //
 
-    /**
-     * The start of a content model. Depending on the type of the content
-     * model, specific methods may be called between the call to the
-     * startContentModel method and the call to the endContentModel method.
-     * 
-     * @param elementName The name of the element.
-     * @param type        The content model type.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
-     */
-    public void startContentModel(String elementName, short type)
+    /** Start content model. */
+    public void startContentModel(String elementName)
         throws XNIException {
       
         XMLElementDecl elementDecl = (XMLElementDecl) this.fElementDeclTab.get( elementName);
@@ -791,151 +780,93 @@ public class DTDGrammar
         fDepth = 0;
         initializeContentModelStack();
 
-    } // startContentModel(String,short)
+    } // startContentModel(String)
 
-    /**
-     * A referenced element in a mixed content model. If the mixed content 
-     * model only allows text content, then this method will not be called
-     * for that model. However, if this method is called for a mixed
-     * content model, then the zero or more occurrence count is implied.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to 
-     * the startContentModel method where the type is TYPE_MIXED.
-     * 
-     * @param elementName The name of the referenced element. 
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_MIXED
-     */
-    public void mixedElement(String elementName) throws XNIException {
+    /** ANY. */
+    public void any() throws XNIException {}
 
-        if (fNodeIndexStack[fDepth] == -1 ) {
-            fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
-        }
-        else {
-            fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, 
-                                                         fNodeIndexStack[fDepth], 
-                                                         addUniqueLeafNode(elementName));
-        }
+    /** EMPTY. */
+    public void empty() throws XNIException {}
 
-    } // mixedElement(String)
-
-    /**
-     * The start of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * <p>
-     * <strong>Note:</strong> Children groups can be nested and have
-     * associated occurrence counts.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenStartGroup() throws XNIException {
+    /** Start group. */
+    public void startGroup() throws XNIException {
         fDepth++;
         initializeContentModelStack();
-    } // childrenStartGroup()
+        fMixed = false;
+    } // startGroup()
 
-    /**
-     * A referenced element in a children content model.
-     * 
-     * @param elementName The name of the referenced element.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenElement(String elementName) throws XNIException {
-        fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, elementName);
-    } // childrenElement(String)
+    /** #PCDATA. */
+    public void pcdata() throws XNIException {
+        fMixed = true;
+    } // pcdata()
 
-    /**
-     * The separator between choices or sequences of a children content
-     * model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * 
-     * @param separator The type of children separator.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see SEPARATOR_CHOICE
-     * @see SEPARATOR_SEQUENCE
-     * @see TYPE_CHILDREN
-     */
-    public void childrenSeparator(short separator) throws XNIException {
+    /** Element. */
+    public void element(String elementName) throws XNIException {
+        if (fMixed) {
+            if (fNodeIndexStack[fDepth] == -1 ) {
+                fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
+            }
+            else {
+                fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, 
+                                                             fNodeIndexStack[fDepth], 
+                                                             addUniqueLeafNode(elementName));
+            }
+        }
+        else {
+            fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, elementName);
+        }
+    } // element(String)
 
-        if (fOpStack[fDepth] != XMLContentSpec.CONTENTSPECNODE_SEQ && separator == XMLDTDContentModelHandler.SEPARATOR_CHOICE ) {
+    /** Separator. */
+    public void separator(short separator) throws XNIException {
+
+        if (!fMixed) {
+            if (fOpStack[fDepth] != XMLContentSpec.CONTENTSPECNODE_SEQ && separator == XMLDTDContentModelHandler.SEPARATOR_CHOICE ) {
+                if (fPrevNodeIndexStack[fDepth] != -1) {
+                    fNodeIndexStack[fDepth] = addContentSpecNode(fOpStack[fDepth], fPrevNodeIndexStack[fDepth], fNodeIndexStack[fDepth]);
+                }
+                fPrevNodeIndexStack[fDepth] = fNodeIndexStack[fDepth];
+                fOpStack[fDepth] = XMLContentSpec.CONTENTSPECNODE_CHOICE;
+            } else if (fOpStack[fDepth] != XMLContentSpec.CONTENTSPECNODE_CHOICE && separator == XMLDTDContentModelHandler.SEPARATOR_SEQUENCE) {
+                if (fPrevNodeIndexStack[fDepth] != -1) {
+                    fNodeIndexStack[fDepth] = addContentSpecNode(fOpStack[fDepth], fPrevNodeIndexStack[fDepth], fNodeIndexStack[fDepth]);
+                }
+                fPrevNodeIndexStack[fDepth] = fNodeIndexStack[fDepth];
+                fOpStack[fDepth] = XMLContentSpec.CONTENTSPECNODE_SEQ;
+            }
+        }
+
+    } // separator(short)
+
+    /** Occurrence. */
+    public void occurrence(short occurrence) throws XNIException {
+
+        if (!fMixed) {
+            if (occurrence == XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE ) {
+                fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[fDepth], -1);
+            } else if ( occurrence == XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE ) {
+                fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, fNodeIndexStack[fDepth], -1 );
+            } else if ( occurrence == XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE) {
+                fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE, fNodeIndexStack[fDepth], -1 );
+            }
+        }
+
+    } // occurrence(short)
+
+    /** End group. */
+    public void endGroup() throws XNIException {
+
+        if (!fMixed) {
             if (fPrevNodeIndexStack[fDepth] != -1) {
                 fNodeIndexStack[fDepth] = addContentSpecNode(fOpStack[fDepth], fPrevNodeIndexStack[fDepth], fNodeIndexStack[fDepth]);
             }
-            fPrevNodeIndexStack[fDepth] = fNodeIndexStack[fDepth];
-            fOpStack[fDepth] = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-        } else if (fOpStack[fDepth] != XMLContentSpec.CONTENTSPECNODE_CHOICE && separator == XMLDTDContentModelHandler.SEPARATOR_SEQUENCE) {
-            if (fPrevNodeIndexStack[fDepth] != -1) {
-                fNodeIndexStack[fDepth] = addContentSpecNode(fOpStack[fDepth], fPrevNodeIndexStack[fDepth], fNodeIndexStack[fDepth]);
-            }
-            fPrevNodeIndexStack[fDepth] = fNodeIndexStack[fDepth];
-            fOpStack[fDepth] = XMLContentSpec.CONTENTSPECNODE_SEQ;
+            int nodeIndex = fNodeIndexStack[fDepth--];
+            fNodeIndexStack[fDepth] = nodeIndex;
         }
 
-    } // childrenSeparator(short)
+    } // endGroup()
 
-    /**
-     * The occurrence count for a child in a children content model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * 
-     * @param occurrence The occurrence count for the last children element
-     *                   or children group.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
-     * @see TYPE_CHILDREN
-     */
-    public void childrenOccurrence(short occurrence) throws XNIException {
-
-        if ( occurrence == XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE ) {
-            fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE, fNodeIndexStack[fDepth], -1);
-        } else if ( occurrence == XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE ) {
-            fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE, fNodeIndexStack[fDepth], -1 );
-        } else if ( occurrence == XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE) {
-            fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE, fNodeIndexStack[fDepth], -1 );
-        }
-
-    } // childrenOccurrence(short)
-
-    /**
-     * The end of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenEndGroup() throws XNIException {
-
-        if (fPrevNodeIndexStack[fDepth] != -1) {
-            fNodeIndexStack[fDepth] = addContentSpecNode(fOpStack[fDepth], fPrevNodeIndexStack[fDepth], fNodeIndexStack[fDepth]);
-        }
-        int nodeIndex = fNodeIndexStack[fDepth--];
-        fNodeIndexStack[fDepth] = nodeIndex;
-
-    } // childrenEndGroup()
-
-    /**
-     * The end of a content model.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
+    /** End content model. */
     public void endContentModel() throws XNIException {
         // no-op
     } // endContentModel()

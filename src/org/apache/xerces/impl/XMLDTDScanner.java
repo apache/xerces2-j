@@ -685,27 +685,31 @@ public class XMLDTDScanner
         }
 
         // content model
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.startContentModel(name);
+        }
         String contentModel = null;
         if (fEntityScanner.skipString("EMPTY")) {
             contentModel = "EMPTY";
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.startContentModel(name,
-                                         XMLDTDContentModelHandler.TYPE_EMPTY);
+                fDTDContentModelHandler.empty();
             }
         }
         else if (fEntityScanner.skipString("ANY")) {
             contentModel = "ANY";
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.startContentModel(name,
-                                         XMLDTDContentModelHandler.TYPE_ANY);
+                fDTDContentModelHandler.any();
             }
         }
         else {
             if (!fEntityScanner.skipChar('(')) {
                 reportFatalError("MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN",
                                  new Object[]{name});
+            }
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.startGroup();
             }
             fStringBuffer.clear();
             fStringBuffer.append('(');
@@ -714,22 +718,19 @@ public class XMLDTDScanner
 
             // Mixed content model
             if (fEntityScanner.skipString("#PCDATA")) {
-                // call handler
-                if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.startContentModel(name,
-                                         XMLDTDContentModelHandler.TYPE_MIXED);
-                }
                 scanMixed(name);
             }
             else {              // children content
-                // call handler
-                if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.startContentModel(name,
-                                      XMLDTDContentModelHandler.TYPE_CHILDREN);
-                }
                 scanChildren(name);
             }
             contentModel = fStringBuffer.toString();
+            /***
+            // NOTE: The endGroup call is done in scanMixed and
+            //       scanChildren, respectively.
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.endGroup();
+            }
+            /***/
         }
 
         // call handler
@@ -770,9 +771,17 @@ public class XMLDTDScanner
         String childName = null;
 
         fStringBuffer.append("#PCDATA");
+        // call handler
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.pcdata();
+        }
         skipSeparator(false, !scanningInternalSubset());
         while (fEntityScanner.skipChar('|')) {
             fStringBuffer.append('|');
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_CHOICE);
+            }
             skipSeparator(false, !scanningInternalSubset());
 
             childName = fEntityScanner.scanName();
@@ -783,7 +792,7 @@ public class XMLDTDScanner
             fStringBuffer.append(childName);
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.mixedElement(childName);
+                fDTDContentModelHandler.element(childName);
             }
             skipSeparator(false, !scanningInternalSubset());
         }
@@ -793,6 +802,11 @@ public class XMLDTDScanner
         // case we cross the boundary of an entity between the two characters.
         if (fEntityScanner.skipString(")*")) {
             fStringBuffer.append(")*");
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.endGroup();
+                fDTDContentModelHandler.occurrence(XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE);
+            }
         }
         else if (childName != null) {
             reportFatalError("MixedContentUnterminated",
@@ -800,6 +814,10 @@ public class XMLDTDScanner
         }
         else if (fEntityScanner.skipChar(')')){
             fStringBuffer.append(')');
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                fDTDContentModelHandler.endGroup();
+            }
         }
         else {
             reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
@@ -827,10 +845,6 @@ public class XMLDTDScanner
     private final void scanChildren(String elName)
         throws IOException, XNIException {
 
-        // call handler
-        if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenStartGroup();
-        }
         fContentDepth = 0;
         pushContentStack(0);
         int currentOp = 0;
@@ -838,11 +852,11 @@ public class XMLDTDScanner
         while (true) {
             if (fEntityScanner.skipChar('(')) {
                 fMarkUpDepth++;
+                fStringBuffer.append('(');
                 // call handler
                 if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.childrenStartGroup();
+                    fDTDContentModelHandler.startGroup();
                 }
-                fStringBuffer.append('(');
                 // push current op on stack and reset it
                 pushContentStack(currentOp);
                 currentOp = 0;
@@ -858,7 +872,7 @@ public class XMLDTDScanner
             }
             // call handler
             if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.childrenElement(childName);
+                fDTDContentModelHandler.element(childName);
             }
             fStringBuffer.append(childName);
             c = fEntityScanner.peekChar();
@@ -875,7 +889,7 @@ public class XMLDTDScanner
                     else {
                         oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
                     }
-                    fDTDContentModelHandler.childrenOccurrence(oc);
+                    fDTDContentModelHandler.occurrence(oc);
                 }
                 fEntityScanner.scanChar();
                 fStringBuffer.append((char)c);
@@ -887,8 +901,7 @@ public class XMLDTDScanner
                     currentOp = c;
                     // call handler
                     if (fDTDContentModelHandler != null) {
-                        fDTDContentModelHandler.childrenSeparator(
-                                 XMLDTDContentModelHandler.SEPARATOR_SEQUENCE);
+                        fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_SEQUENCE);
                     }
                     fEntityScanner.scanChar();
                     fStringBuffer.append(',');
@@ -898,8 +911,7 @@ public class XMLDTDScanner
                     currentOp = c;
                     // call handler
                     if (fDTDContentModelHandler != null) {
-                        fDTDContentModelHandler.childrenSeparator(
-                                 XMLDTDContentModelHandler.SEPARATOR_CHOICE);
+                        fDTDContentModelHandler.separator(XMLDTDContentModelHandler.SEPARATOR_CHOICE);
                     }
                     fEntityScanner.scanChar();
                     fStringBuffer.append('|');
@@ -911,7 +923,7 @@ public class XMLDTDScanner
                 }
                 // call handler
                 if (fDTDContentModelHandler != null) {
-                    fDTDContentModelHandler.childrenEndGroup();
+                    fDTDContentModelHandler.endGroup();
                 }
                 // restore previous op
                 currentOp = popContentStack();
@@ -922,28 +934,28 @@ public class XMLDTDScanner
                 // want to trigger endEntity too early in case we cross the
                 // boundary of an entity between the two characters.
                 if (fEntityScanner.skipString(")?")) {
+                    fStringBuffer.append(")?");
                     // call handler
                     if (fDTDContentModelHandler != null) {
                         oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE;
-                        fDTDContentModelHandler.childrenOccurrence(oc);
+                        fDTDContentModelHandler.occurrence(oc);
                     }
-                    fStringBuffer.append(")?");
                 }
                 else if (fEntityScanner.skipString(")+")) {
+                    fStringBuffer.append(")+");
                     // call handler
                     if (fDTDContentModelHandler != null) {
                         oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
-                        fDTDContentModelHandler.childrenOccurrence(oc);
+                        fDTDContentModelHandler.occurrence(oc);
                     }
-                    fStringBuffer.append(")+");
                 }
                 else if (fEntityScanner.skipString(")*")) {
+                    fStringBuffer.append(")*");
                     // call handler
                     if (fDTDContentModelHandler != null) {
                         oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
-                        fDTDContentModelHandler.childrenOccurrence(oc);
+                        fDTDContentModelHandler.occurrence(oc);
                     }
-                    fStringBuffer.append(")*");
                 }
                 else {
                     // no occurrence specified

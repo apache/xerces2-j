@@ -340,6 +340,9 @@ public class XMLValidator
     /** True if inside of element content. */
     private boolean fInElementContent = false;
 
+    /** Mixed. */
+    private boolean fMixed;
+
     // temporary variables
 
     /** Temporary element declaration. */
@@ -1597,23 +1600,8 @@ public class XMLValidator
     // XMLDTDContentModelHandler methods
     //
 
-    /**
-     * The start of a content model. Depending on the type of the content
-     * model, specific methods may be called between the call to the
-     * startContentModel method and the call to the endContentModel method.
-     * 
-     * @param elementName The name of the element.
-     * @param type        The content model type.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_EMPTY
-     * @see TYPE_ANY
-     * @see TYPE_MIXED
-     * @see TYPE_CHILDREN
-     */
-    public void startContentModel(String elementName, short type)
-        throws XNIException {
+    /** Start content model. */
+    public void startContentModel(String elementName) throws XNIException {
 
         if (fValidation) {
             fDTDElementDeclName = elementName;
@@ -1621,32 +1609,45 @@ public class XMLValidator
         }
 
         // call handlers
-        fDTDGrammar.startContentModel(elementName, type);
+        fDTDGrammar.startContentModel(elementName);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.startContentModel(elementName, type);
+            fDTDContentModelHandler.startContentModel(elementName);
         }
 
-    } // startContentModel(String,short)
+    } // startContentModel(String)
 
-    /**
-     * A referenced element in a mixed content model. If the mixed content 
-     * model only allows text content, then this method will not be called
-     * for that model. However, if this method is called for a mixed
-     * content model, then the zero or more occurrence count is implied.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to 
-     * the startContentModel method where the type is TYPE_MIXED.
-     * 
-     * @param elementName The name of the referenced element. 
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_MIXED
-     */
-    public void mixedElement(String elementName) throws XNIException {
+    /** ANY. */
+    public void any() throws XNIException {}
+
+    /** EMPTY. */
+    public void empty() throws XNIException {}
+
+    /** Start group. */
+    public void startGroup() throws XNIException {
+
+        fMixed = false;
+        // call handlers
+        fDTDGrammar.startGroup();
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.startGroup();
+        }
+
+    } // startGroup()
+
+    /** #PCDATA. */
+    public void pcdata() {
+        fMixed = true;
+        fDTDGrammar.pcdata();
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.pcdata();
+        }
+    } // pcdata()
+
+    /** Element. */
+    public void element(String elementName) throws XNIException {
 
         // check VC: No duplicate Types, in a single mixed-content declaration
-        if (fValidation) {
+        if (fMixed && fValidation) {
             if (fMixedElementTypes.contains(elementName)) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "DuplicateTypeInMixedContent",
@@ -1656,131 +1657,49 @@ public class XMLValidator
                 fMixedElementTypes.addElement(elementName);
             }
         }
-
+        
         // call handlers
-        fDTDGrammar.mixedElement(elementName);
+        fDTDGrammar.element(elementName);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.mixedElement(elementName);
-        }
-
-    } // mixedElement(elementName)
-
-    /**
-     * The start of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * <p>
-     * <strong>Note:</strong> Children groups can be nested and have
-     * associated occurrence counts.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenStartGroup() throws XNIException {
-
-        // call handlers
-        fDTDGrammar.childrenStartGroup();
-        if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenStartGroup();
-        }
-
-    } // childrenStartGroup()
-
-    /**
-     * A referenced element in a children content model.
-     * 
-     * @param elementName The name of the referenced element.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenElement(String elementName) throws XNIException {
-
-        // call handlers
-        fDTDGrammar.childrenElement(elementName);
-        if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenElement(elementName);
+            fDTDContentModelHandler.element(elementName);
         }
 
     } // childrenElement(String)
 
-    /**
-     * The separator between choices or sequences of a children content
-     * model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * 
-     * @param separator The type of children separator.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see SEPARATOR_CHOICE
-     * @see SEPARATOR_SEQUENCE
-     * @see TYPE_CHILDREN
-     */
-    public void childrenSeparator(short separator) throws XNIException {
+    /** Separator. */
+    public void separator(short separator) throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenSeparator(separator);
+        fDTDGrammar.separator(separator);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenSeparator(separator);
+            fDTDContentModelHandler.separator(separator);
         }
 
-    } // childrenSeparator(short)
+    } // separator(short)
 
-    /**
-     * The occurrence count for a child in a children content model.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     * 
-     * @param occurrence The occurrence count for the last children element
-     *                   or children group.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
-     * @see TYPE_CHILDREN
-     */
-    public void childrenOccurrence(short occurrence) throws XNIException {
+    /** Occurrence. */
+    public void occurrence(short occurrence) throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenOccurrence(occurrence);
+        fDTDGrammar.occurrence(occurrence);
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenOccurrence(occurrence);
+            fDTDContentModelHandler.occurrence(occurrence);
         }
 
-    } // childrenOccurrence(short)
+    } // occurrence(short)
 
-    /**
-     * The end of a children group.
-     * <p>
-     * <strong>Note:</strong> This method is only called after a call to
-     * the startContentModel method where the type is TYPE_CHILDREN.
-     *
-     * @see TYPE_CHILDREN
-     */
-    public void childrenEndGroup() throws XNIException {
+    /** End group. */
+    public void endGroup() throws XNIException {
 
         // call handlers
-        fDTDGrammar.childrenEndGroup();
+        fDTDGrammar.endGroup();
         if (fDTDContentModelHandler != null) {
-            fDTDContentModelHandler.childrenEndGroup();
+            fDTDContentModelHandler.endGroup();
         }
 
-    } // childrenEndGroup()
+    } // endGroup()
 
-    /**
-     * The end of a content model.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
+    /** End content model. */
     public void endContentModel() throws XNIException {
 
         // call handlers
