@@ -236,33 +236,8 @@ public class ObjectFactory {
         throws ConfigurationError
     {
         // assert(className != null);
-
-        try {
-            Class providerClass;
-            if (cl == null) {
-                // XXX Use the bootstrap ClassLoader.  There is no way to
-                // load a class using the bootstrap ClassLoader that works
-                // in both JDK 1.1 and Java 2.  However, this should still
-                // work b/c the following should be true:
-                //
-                // (cl == null) iff current ClassLoader == null
-                //
-                // Thus Class.forName(String) will use the current
-                // ClassLoader which will be the bootstrap ClassLoader.
-                providerClass = Class.forName(className);
-            } else {
-                try {
-                    providerClass = cl.loadClass(className);
-                } catch (ClassNotFoundException x) {
-                    if (doFallback) {
-                        // Fall back to current classloader
-                        cl = ObjectFactory.class.getClassLoader();
-                        providerClass = cl.loadClass(className);
-                    } else {
-                        throw x;
-                    }
-                }
-            }
+        try{
+            Class providerClass = findProviderClass(className, cl, doFallback);
             Object instance = providerClass.newInstance();
             debugPrintln("created new instance of " + providerClass +
                    " using ClassLoader: " + cl);
@@ -275,6 +250,41 @@ public class ObjectFactory {
                 "Provider " + className + " could not be instantiated: " + x,
                 x);
         }
+    }
+
+    /**
+     * Find a Class using the specified ClassLoader
+     */ 
+    public static Class findProviderClass(String className, ClassLoader cl,
+                                      boolean doFallback)
+        throws ClassNotFoundException, ConfigurationError
+    {
+        Class providerClass;
+        if (cl == null) {
+            // XXX Use the bootstrap ClassLoader.  There is no way to
+            // load a class using the bootstrap ClassLoader that works
+            // in both JDK 1.1 and Java 2.  However, this should still
+            // work b/c the following should be true:
+            //
+            // (cl == null) iff current ClassLoader == null
+            //
+            // Thus Class.forName(String) will use the current
+            // ClassLoader which will be the bootstrap ClassLoader.
+            providerClass = Class.forName(className);
+        } else {
+            try {
+                providerClass = cl.loadClass(className);
+            } catch (ClassNotFoundException x) {
+                if (doFallback) {
+                    // Fall back to current classloader
+                    cl = ObjectFactory.class.getClassLoader();
+                    providerClass = cl.loadClass(className);
+                } else {
+                    throw x;
+                }
+            }
+        }
+        return providerClass;
     }
 
     /*
