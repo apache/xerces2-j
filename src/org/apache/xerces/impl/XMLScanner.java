@@ -568,8 +568,8 @@ public abstract class XMLScanner
      * @param attributes The attributes list for the scanned attribute.
      * @param attrIndex The index of the attribute to use from the list.
      *
-     * <strong>Note:</strong> This method uses fString and fStringBuffer2,
-     * anything in it at the time of calling is lost.
+     * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
+     * at the time of calling is lost.
      **/
     protected void scanAttributeValue(XMLString value, String atName,
                                       XMLAttributes attributes, int attrIndex)
@@ -584,7 +584,7 @@ public abstract class XMLScanner
         fEntityScanner.scanChar();
         int entityDepth = fEntityDepth;
 
-        int c = fEntityScanner.scanLiteral(quote, fString);
+        int c = fEntityScanner.scanLiteral(quote, value);
         if (c != quote) {
             fScanningAttribute = true;
             if (DEBUG_ATTR_ENTITIES) {
@@ -597,8 +597,8 @@ public abstract class XMLScanner
             }
             fStringBuffer2.clear();
             do {
-                fStringBuffer2.append(fString);
-                fAttributeOffset += fString.length;
+                fStringBuffer2.append(value);
+                fAttributeOffset += value.length;
                 if (DEBUG_ATTR_ENTITIES) {
                     System.out.println("*** increment attribute offset: "+fAttributeOffset);
                 }
@@ -684,17 +684,17 @@ public abstract class XMLScanner
                     fEntityScanner.scanChar();
                 }
                 while (true) {
-                    c = fEntityScanner.scanLiteral(quote, fString);
+                    c = fEntityScanner.scanLiteral(quote, value);
                     if (c != quote || entityDepth == fEntityDepth) {
                         break;
                     }
-                    fStringBuffer2.append(fString);
+                    fStringBuffer2.append(value);
                     fStringBuffer2.append((char)fEntityScanner.scanChar());
                 }
             } while (c != quote);
-            fAttributeOffset += fString.length;
-            fStringBuffer2.append(fString);
-            value = fStringBuffer2;
+            fAttributeOffset += value.length;
+            fStringBuffer2.append(value);
+            value.setValues(fStringBuffer2);
             int attrEntityCount = fAttributeEntityStack.size();
             if (DEBUG_ATTR_ENTITIES) {
                 System.out.println("*** add remaining attribute entities: "+attrEntityCount);

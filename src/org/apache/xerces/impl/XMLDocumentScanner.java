@@ -261,8 +261,6 @@ public class XMLDocumentScanner
     /** Pseudo-attribute values. */
     private String[] fPseudoAttributeValues = new String[3];
 
-    private XMLString fLiteral = new XMLString();
-
     // symbols
 
     /** Symbol: "CDATA". */
@@ -861,10 +859,10 @@ public class XMLDocumentScanner
         // content
         attributes.addAttribute(fAttributeQName, fCDATASymbol, null);
 
-        scanAttributeValue(fLiteral, fAttributeQName.rawname,
+        scanAttributeValue(fString, fAttributeQName.rawname,
                            attributes, attributes.getLength() - 1);
 
-        attributes.setValue(attributes.getLength() - 1, fLiteral.toString());
+        attributes.setValue(attributes.getLength() - 1, fString.toString());
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
     } // scanAttribute(XMLAttributes)
