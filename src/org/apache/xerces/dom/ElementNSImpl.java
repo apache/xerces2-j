@@ -120,7 +120,7 @@ public class ElementNSImpl
 	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
 	}
-
+	this.namespaceURI = namespaceURI;
 	syncData = true;
 
     } // <init>(DocumentImpl,String,short,boolean,String)

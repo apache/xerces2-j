@@ -125,7 +125,7 @@ public class AttrNSImpl
 	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
 	}
-    	
+	this.namespaceURI = namespaceURI;
         syncData = true;
     } 
 
