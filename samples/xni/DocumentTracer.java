@@ -677,7 +677,7 @@ public class DocumentTracer
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
             System.err.println("# argv["+i+"]: "+arg);
-            print(arg);
+            //print(arg);
             try {
                 parser.parse(arg);
             }
