@@ -510,7 +510,7 @@ public class DocumentTracer
     public void childrenOccurrence(short occurrence) throws SAXException {
         printIndent();
         System.out.print("childrenOccurrence(");
-        System.out.print("separator=");
+        System.out.print("occurrence=");
         switch (occurrence) {
             case XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE: {
                 System.out.print("OCCURS_ONE_OR_MORE");
