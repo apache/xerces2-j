@@ -284,7 +284,6 @@ public class XSDHandler {
     XSDWildcardTraverser fWildCardTraverser;
 
     DOMParser fSchemaParser;
-    final DOMNodePool fDOMPool = new DOMNodePool();
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -347,10 +346,8 @@ public class XSDHandler {
         if (grammar != null)
             return grammar;
         
-        // reset pools
-        fDOMPool.reset();
         if (fSchemaParser != null) {
-            fSchemaParser.setPool(fDOMPool);
+            fSchemaParser.resetNodePool();
         }
 
         short referType = desc.getContextType();
@@ -1355,9 +1352,7 @@ public class XSDHandler {
                 if (fSchemaParser == null) {
                     fSchemaParser = new DOMParser();
                     resetSchemaParserErrorHandler();
-                    fSchemaParser.setPool(fDOMPool);
                 }
-                fSchemaParser.reset();
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
                 // now we need to store the mapping information from system id

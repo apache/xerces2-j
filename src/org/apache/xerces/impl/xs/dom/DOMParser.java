@@ -128,10 +128,14 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
         }
         catch (Exception e) {
         }
+        fNodePool = new DOMNodePool();
     } // <init>()
 
-    public void setPool(DOMNodePool nodePool){
-        fNodePool = nodePool;
+    /**
+     * Resets the node pool.
+     */
+    public void resetNodePool() {
+        fNodePool.reset();
     }
 
     /**
@@ -252,8 +256,5 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
                                              fLocator.getLineNumber(),
                                              fLocator.getColumnNumber());
     }
-
-
-
 
 } // class DOMParser
