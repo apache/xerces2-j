@@ -852,7 +852,8 @@ public class XML11EntityScanner
                     fCurrentEntity.position--;
                     break;
                 }
-                else if (XML11Char.isXML11Invalid(c)) {
+                // note that we should not skip over control characters!
+                else if (!XML11Char.isXML11ValidLiteral(c)) {
                     fCurrentEntity.position--;
                     int length = fCurrentEntity.position - offset;
                     fCurrentEntity.columnNumber += length - newlines;
