@@ -475,7 +475,7 @@ import java.io.Serializable;
   private void initialize(URI p_base, String p_uriSpec)
                          throws MalformedURIException {
 	  
-    String uriSpec = (p_uriSpec != null) ? p_uriSpec.trim() : null;
+    String uriSpec = p_uriSpec;
     int uriSpecLen = (uriSpec != null) ? uriSpec.length() : 0;
 	
     if (p_base == null && uriSpecLen == 0) {
