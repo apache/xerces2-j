@@ -2669,9 +2669,14 @@ public class TraverseSchema implements
             // the data type validator is from the base
             //
             if (numFacets > 0) {
+              try{
                 typeInfo.datatypeValidator = fDatatypeRegistry.createDatatypeValidator(
                                       typeName,
                                       typeInfo.baseDataTypeValidator, facetData, false);
+              } catch (Exception e) {
+                throw new ComplexTypeRecoverableError(e.getMessage());
+              }
+
             }
             else
                 typeInfo.datatypeValidator = 
@@ -3452,8 +3457,10 @@ public class TraverseSchema implements
        while ( attDefIndex > -1 ) {
           fTempAttributeDecl.clear();
           dGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
-          if (isWildCard(fTempAttributeDecl)) 
+          if (isWildCard(fTempAttributeDecl))  {
+             attDefIndex = dGrammar.getNextAttributeDeclIndex(attDefIndex);
              continue;
+          }
           int bAttDefIndex = bGrammar.findAttributeDecl(bAttListHead, fTempAttributeDecl.name);
           if (bAttDefIndex > -1) {
              //
@@ -3498,7 +3505,12 @@ public class TraverseSchema implements
 
        // derivation-ok-restriction.  Constraint 4
        if (dAttWildCard!=null) {
+          if (bAttWildCard==null) {
+            throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.1: An attribute wildcard is present in the derived type, but not the base"); 
+          }
+                
           if (!wildcardSubset(dAttWildCard,bAttWildCard)) {
+            throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.2: The attribute wildcard in the derived type is not a valid subset of that in the base");
 
           }
        }
