@@ -6871,8 +6871,7 @@ throws Exception {
                 localpart.equals("anyType"))) {
                 // check if the type is from the same Schema
                 if ( !typeURI.equals(fTargetNSURIString)
-                     && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-                     && typeURI.length() != 0) {  // REVISIT, only needed because of resolvePrifixToURI.
+                     && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
                     fromAnotherSchema = typeURI;
                     typeInfo = getTypeInfoFromNS(typeURI, localpart);
                     if (typeInfo == null) {
