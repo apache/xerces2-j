@@ -2621,19 +2621,12 @@ public class TraverseSchema implements
         // ------------------------------------------------------------------
         if (child==null) {
             //
-            // EMPTY complex type   
+            // EMPTY complexType with complexContent 
             //
-            typeInfo.contentType = XMLElementDecl.TYPE_ANY;
-            typeInfo.derivedBy = 0;
-            typeInfo.contentSpecHandle = -1;
-            typeInfo.templateElementIndex = fSchemaGrammar.addElementDecl(
-              new QName(-1,fStringPool.addSymbol("$"+typeName),typeNameIndex,fTargetNSURI),
-              (fTargetNSURI==-1) ? -1 : fCurrentScope, scopeDefined,
-               XMLElementDecl.TYPE_ANY, -1, -1, null);
-            typeInfo.attlistHead = -1; 
+            processComplexContent(typeNameIndex, child, typeInfo, null, false);
         }
         else {
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
             int index = -2;
 
             if (childName.equals(SchemaSymbols.ELT_SIMPLECONTENT)) {
@@ -2773,7 +2766,7 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         // The content should be either "restriction" or "extension"
         // -----------------------------------------------------------------------
-        String simpleContentName = simpleContent.getNodeName();
+        String simpleContentName = simpleContent.getLocalName();
         if (simpleContentName.equals(SchemaSymbols.ELT_RESTRICTION))
           typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
         else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
@@ -3029,7 +3022,7 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         // The content should be either "restriction" or "extension"
         // -----------------------------------------------------------------------
-        String complexContentName = complexContent.getNodeName();
+        String complexContentName = complexContent.getLocalName();
         if (complexContentName.equals(SchemaSymbols.ELT_RESTRICTION))
           typeInfo.derivedBy = SchemaSymbols.RESTRICTION;
         else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
@@ -3066,42 +3059,7 @@ public class TraverseSchema implements
         // -----------------------------------------------------------------------
         // Process the elements that make up the content
         // -----------------------------------------------------------------------
-        if (content != null) {
-            processComplexContent(typeNameIndex,content,typeInfo,bInfo,isMixed);
-        }
-
-        // -----------------------------------------------------------------------
-        // Finish setup                                       
-        // -----------------------------------------------------------------------
-        typeInfo.baseComplexTypeInfo = bInfo.baseComplexTypeInfo;
-        int baseContentSpecHandle = bInfo.baseComplexTypeInfo.contentSpecHandle;
-
-        if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
-           //
-           //REVISIT: !!! really hairy stuff to check the particle derivation OK in 5.10
-           //checkParticleDerivationOK();
-         }
-
-        else {
-            //
-            // Compose the final content model by concatenating the base and the 
-            // current in sequence
-            //
-            if (bInfo.baseTypeSchemaURI != null) {
-                SchemaGrammar aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(
-                                 bInfo.baseTypeSchemaURI);
-                baseContentSpecHandle = importContentSpec(aGrammar, baseContentSpecHandle);
-            }
-            if (typeInfo.contentSpecHandle == -2) {
-                typeInfo.contentSpecHandle = baseContentSpecHandle;
-            }
-            else 
-                typeInfo.contentSpecHandle = 
-                 fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
-                                                   baseContentSpecHandle,
-                                                   typeInfo.contentSpecHandle,
-                                                   false);
-        }
+        processComplexContent(typeNameIndex,content,typeInfo,bInfo,isMixed);
 
 
     }  // end traverseComplexContentDecl
@@ -3217,57 +3175,51 @@ public class TraverseSchema implements
                Element complexContentChild, ComplexTypeInfo typeInfo, baseInfo bInfo,
                boolean isMixed) throws Exception {
 
-
-       // -------------------------------------------------------------
-       // Set the content type                                                     
-       // -------------------------------------------------------------
-       if (isMixed) 
-           typeInfo.contentType = XMLElementDecl.TYPE_MIXED;
-       else
-           typeInfo.contentType = XMLElementDecl.TYPE_CHILDREN;
-
-       // -------------------------------------------------------------
-       // GROUP, ALL, SEQUENCE or CHOICE, followed by attributes, if specified.
-       // Note that it's possible that only attributes are specified.
-       // -------------------------------------------------------------
-
        Element attrNode = null;
-       String childName = complexContentChild.getNodeName();
        int index=-2;
 
-       if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-           index = expandContentModel(traverseGroupDecl(complexContentChild), 
+       if (complexContentChild != null) {
+           // -------------------------------------------------------------
+           // GROUP, ALL, SEQUENCE or CHOICE, followed by attributes, if specified.
+           // Note that it's possible that only attributes are specified.
+           // -------------------------------------------------------------
+
+
+          String childName = complexContentChild.getLocalName();
+
+          if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+               index = expandContentModel(traverseGroupDecl(complexContentChild), 
+                                          complexContentChild);
+               attrNode = XUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+               index = expandContentModel(traverseSequence(complexContentChild), 
+                                         complexContentChild);
+               attrNode = XUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+               index = expandContentModel(traverseChoice(complexContentChild), 
+                                          complexContentChild);
+               attrNode = XUtil.getNextSiblingElement(complexContentChild);
+           }
+           else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+               index = expandContentModel(traverseAll(complexContentChild), 
                                       complexContentChild);
-           attrNode = XUtil.getNextSiblingElement(complexContentChild);
-       }
-       else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-           index = expandContentModel(traverseSequence(complexContentChild), 
-                                      complexContentChild);
-           attrNode = XUtil.getNextSiblingElement(complexContentChild);
-       }
-       else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-           index = expandContentModel(traverseChoice(complexContentChild), 
-                                      complexContentChild);
-           attrNode = XUtil.getNextSiblingElement(complexContentChild);
-       }
-       else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-           index = expandContentModel(traverseAll(complexContentChild), 
-                                  complexContentChild);
-           attrNode = XUtil.getNextSiblingElement(complexContentChild);
-           //TO DO: REVISIT 
-           //check that minOccurs = 1 and maxOccurs = 1  
-       }
-       else if (isAttrOrAttrGroup(complexContentChild)) {
-           // reset the contentType
-           typeInfo.contentType = XMLElementDecl.TYPE_ANY;
-           attrNode = complexContentChild;
-       }
-       else {
-           reportGenericSchemaError("Invalid child of a complex type");
+               attrNode = XUtil.getNextSiblingElement(complexContentChild);
+               //TO DO: REVISIT 
+               //check that minOccurs = 1 and maxOccurs = 1  
+           }
+           else if (isAttrOrAttrGroup(complexContentChild)) {
+               // reset the contentType
+               typeInfo.contentType = XMLElementDecl.TYPE_ANY;
+               attrNode = complexContentChild;
+           }
+           else {
+               reportGenericSchemaError("Invalid child of a complex type "+ childName);
+           }
        }
      
        if (isMixed) {
-
             //
             // TODO - check to see if we MUST have an element.  What if only attributes 
             // were specified??
@@ -3292,8 +3244,57 @@ public class TraverseSchema implements
 
        typeInfo.contentSpecHandle = index;
 
+       // -----------------------------------------------------------------------
+       // Merge in information from base, if it exists           
+       // -----------------------------------------------------------------------
+       if (bInfo != null) {
+           typeInfo.baseComplexTypeInfo = bInfo.baseComplexTypeInfo;
+           int baseContentSpecHandle = bInfo.baseComplexTypeInfo.contentSpecHandle;
+
+           if (typeInfo.derivedBy == SchemaSymbols.RESTRICTION) {
+              //
+              //REVISIT: !!!really hairy stuff to check the particle derivation OK in 5.10
+              //checkParticleDerivationOK();
+           }
+           else {
+               //
+               // Compose the final content model by concatenating the base and the 
+               // current in sequence
+               //
+               if (bInfo.baseTypeSchemaURI != null) {
+                   SchemaGrammar aGrammar= (SchemaGrammar) fGrammarResolver.getGrammar(
+                                    bInfo.baseTypeSchemaURI);
+                   baseContentSpecHandle = importContentSpec(aGrammar, baseContentSpecHandle);
+               }
+               if (typeInfo.contentSpecHandle == -2) {
+                   typeInfo.contentSpecHandle = baseContentSpecHandle;
+               }
+               else {
+                   typeInfo.contentSpecHandle = 
+                   fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ, 
+                                                     baseContentSpecHandle,
+                                                     typeInfo.contentSpecHandle,
+                                                     false);
+               }
+           }
+       }
+       else {
+           typeInfo.derivedBy = 0;
+       }
+
        // -------------------------------------------------------------
-       //add a template element to the grammar element decl pool.
+       // Set the content type                                                     
+       // -------------------------------------------------------------
+       if (isMixed) 
+           typeInfo.contentType = XMLElementDecl.TYPE_MIXED;
+       else if (typeInfo.contentSpecHandle == -2)
+           typeInfo.contentType = XMLElementDecl.TYPE_EMPTY;
+       else
+           typeInfo.contentType = XMLElementDecl.TYPE_CHILDREN;
+
+
+       // -------------------------------------------------------------
+       // add a template element to the grammar element decl pool.
        // -------------------------------------------------------------
        String typeName = fStringPool.toString(typeNameIndex);
        int templateElementNameIndex = fStringPool.addSymbol("$"+typeName);
@@ -3315,7 +3316,7 @@ public class TraverseSchema implements
            else
               processAttributes(attrNode,bInfo,typeInfo);
        }
-       else
+       else if (bInfo != null)
            processAttributes(null,bInfo,typeInfo);
 
 
@@ -3459,7 +3460,7 @@ public class TraverseSchema implements
 
     private boolean isAttrOrAttrGroup(Element e) 
     {
-        String elementName = e.getNodeName();
+        String elementName = e.getLocalName();
 
         if (elementName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
             elementName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ||
@@ -4590,6 +4591,7 @@ public class TraverseSchema implements
         int uriIndex = -1;
         int enclosingScope = fCurrentScope;
 
+        
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
              fElementDefaultQualified ) {
             uriIndex = fTargetNSURI;
