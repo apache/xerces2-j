@@ -777,8 +777,8 @@ public class HTMLDocumentImpl
     private static void populateElementType( String tagName, String className )
     {
         try {
-            _elementTypesHTML.put( tagName, ObjectFactory.newInstance( "org.apache.html.dom." + className, 
-                    ObjectFactory.findClassLoader(), true) );
+            _elementTypesHTML.put( tagName, 
+                    ObjectFactory.findClassLoader().loadClass("org.apache.html.dom." + className) );
         } catch ( Exception except ) {
             new RuntimeException( "HTM019 OpenXML Error: Could not find or execute class " + className + " implementing HTML element " + tagName
                                   + "\n" + className + "\t" + tagName);
