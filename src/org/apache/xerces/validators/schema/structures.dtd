@@ -11,7 +11,7 @@
      are defined in XML Schema: Part 2: Datatypes -->
 <!-- Note %p is defined in datatypes.dtd -->
 <!ENTITY % xs-datatypes PUBLIC 'datatypes'
-                     "http://www.w3.org/TR/1999/WD-xmlschema-2-19991217/datatypes.dtd" >
+                     '../WD-xmlschema-2-20000225/datatypes.dtd' >
 %xs-datatypes;
 
 <!ENTITY % s ''> <!-- if %p is defined (e.g. as foo:) then you must
@@ -21,8 +21,7 @@
 
 <!-- Define all the element names, with optional prefix -->
 <!ENTITY % schema "%p;schema">
-<!ENTITY % type "%p;type">
-<!ENTITY % restrictions "%p;restrictions">
+<!ENTITY % complexType "%p;complexType">
 <!ENTITY % element "%p;element">
 <!ENTITY % unique "%p;unique">
 <!ENTITY % key "%p;key">
@@ -30,6 +29,9 @@
 <!ENTITY % selector "%p;selector">
 <!ENTITY % field "%p;field">
 <!ENTITY % group "%p;group">
+<!ENTITY % all "%p;all">
+<!ENTITY % choice "%p;choice">
+<!ENTITY % sequence "%p;sequence">
 <!ENTITY % any "%p;any">
 <!ENTITY % anyAttribute "%p;anyAttribute">
 <!ENTITY % sic "%p;sic">
@@ -39,57 +41,95 @@
 <!ENTITY % import "%p;import">
 <!ENTITY % notation "%p;notation">
 
+<!-- Customisation entities for the ATTLIST of each element type.
+     Define one of these if your schema takes advantage of the
+     anyAttribute='##other' in the schema for schemas -->
+
+<!ENTITY % schemaAttrs ''>
+<!ENTITY % complexTypeAttrs ''>
+<!ENTITY % elementAttrs ''>
+<!ENTITY % groupAttrs ''>
+<!ENTITY % allAttrs ''>
+<!ENTITY % choiceAttrs ''>
+<!ENTITY % sequenceAttrs ''>
+<!ENTITY % anyAttrs ''>
+<!ENTITY % anyAttributeAttrs ''>
+<!ENTITY % attributeAttrs ''>
+<!ENTITY % attributeGroupAttrs ''>
+<!ENTITY % uniqueAttrs ''>
+<!ENTITY % keyAttrs ''>
+<!ENTITY % keyrefAttrs ''>
+<!ENTITY % includeAttrs ''>
+<!ENTITY % importAttrs ''>
+<!ENTITY % notationAttrs ''>
+
+<!ENTITY % complexDerivationChoice "(extension|restriction|reproduction)">
+<!ENTITY % complexDerivationSet "CDATA">
+      <!-- #all or space-separated list drawn from derivationChoice -->
+<!ENTITY % blockSet "CDATA">
+      <!-- #all or space-separated list drawn from
+                      derivationChoice + 'equivClass' and 'list' -->
+
+<!ENTITY % mgs '%all; | %choice; | %sequence;'>
+<!ENTITY % cs '%choice; | %sequence;'>
+
 <!-- the duplication below is to produce an unambiguous content model
      which allows annotation everywhere -->
-<!-- This has the unfortunate consequence of disallowing a schema with
-     only import/includes, this should be fixed -->
 <!ELEMENT %schema; ((%include; | %import; | %annotation;)*,
-                    (%datatype; | %type;
+                    (%simpleType; | %complexType;
                      | %element;
                      | %attributeGroup; | %group;
                      | %notation; ),
                     (%annotation;
-                     | %datatype; | %type;
+                     | %simpleType; | %complexType;
                      | %element;
                      | %attributeGroup; | %group;
-                     | %notation; 
-                     | %unique; | %key; | %keyref; )* )>
+                     | %notation; )* )>
 <!ATTLIST %schema;
-                 targetNamespace    %URI;           #IMPLIED
-                 version            CDATA           #IMPLIED
-                 %nds;              %URI;           #FIXED '&XMLSchemaNS;'
-                 finalDefault       %derivationSet; ''
-                 exactDefault       %exactSet;      ''>
+     targetNamespace    %URIref;               #IMPLIED
+     version            CDATA                  #IMPLIED
+     %nds;              %URIref;               #FIXED '&XMLSchemaNS;'
+     %dtnds;            %URIref;               #FIXED '&XMLSchemaNS;/datatypes'
+     finalDefault       %complexDerivationSet; ''
+     blockDefault       %blockSet;             ''
+     id                 ID                     #IMPLIED
+     %schemaAttrs;>
 <!-- Note the xmlns declaration is NOT in the Schema for Schemas,
      because at the Infoset level where schemas operate,
      xmlns(:prefix) is NOT an attribute! -->
  
+<!-- The id attribute here and below is for use in external references
+     from non-schemas using simple fragment identifiers.
+     It is NOT used for schema-to-schema reference, internal or
+     external. -->
 
 <!-- a type is a named content type specification which allows attribute
      declarations-->
 <!-- -->
 
-<!ELEMENT %type; ((%annotation;)?,
-                 (%restrictions; |
-                  ((%element;| %group;| %any;)*,
+<!ELEMENT %complexType; ((%annotation;)?,
+                 ((%facet;)*|
+                  ((%element;| %mgs; | %group; | %any;)*,
                    (%attribute;| %attributeGroup;)*,
                    (%anyAttribute;)?)))>
 
-<!ATTLIST %type;
+<!ATTLIST %complexType;
           name      %NCName;                        #IMPLIED
+          id        ID                              #IMPLIED
           content   (textOnly|mixed|elementOnly|empty) #IMPLIED
           abstract  %boolean;                       'false'
-          final     %derivationSet;                 ''
-          exact     %derivationSet;                 ''
-          derivedBy %derivationChoice;              #IMPLIED 
-          source    %QName;                         #IMPLIED>
+          final     %complexDerivationSet;          ''
+          block     %complexDerivationSet;          ''
+          derivedBy %complexDerivationChoice;       #IMPLIED 
+          base      %QName;                         #IMPLIED
+          %complexTypeAttrs;>
 
-<!-- restrictions iff derivedBy='restriction' -->
+<!-- facets only if derivedBy='restriction' -->
 <!-- (element|group|any) only if content=mixed or =elementOnly
      and NO derivedBy at all, i.e. a root type -->
-<!-- content defaults to source's if there is a complex source,
-     textonly if there's a simple source,
-     'mixed' if no source (because that's the urType's content)
+<!-- content defaults to base's if there is a complex base,
+     textonly if there's a simple base,
+     'mixed' if no base (because that's the urType's content)
              and no content daughters,
      'elementOnly' otherwise --> 
 <!-- should we replace content='empty' with content='elementOnly'
@@ -98,53 +138,29 @@
 <!-- If one top-level group, that IS the content model, otherwise
      an implicit group obtains.
      This is
-       <group order='seq' minOccurs='1' maxOccurs='1'>
+       <sequence minOccurs='1' maxOccurs='1'>
      unless content='mixed', in which case it's
-       <group order='choice' minOccurs='0' maxOccurs='*'> -->
+       <choice minOccurs='0' maxOccurs='*'> -->
 
 <!-- If anyAttribute appears in one or more referenced attributeGroups
      and/or explicitly, the intersection of the permissions is used -->
 
 <!-- A text-only type with no attributes differs from a datatype with
-     the same source qualified the same way in regard to the impact on
+     the same base qualified the same way in regard to the impact on
      attributes of anyAttribute -->
-
-<!ELEMENT %restrictions; ((%annotation;)?,
-                        ((%facet;)*|
-                        (%element;| %group;| %any;| %sic;)*),
-                        (%attribute;| %attributeGroup;)*,
-                        (%anyAttribute;)?)>
-
-<!-- this contains material for restricting components of inherited types -->
-<!-- (element|group|any|sic) allowed only if source refers to an
-     elementOnly or mixed type, the sequence and GI must match point for
-     point with (an initial sub-sequence of) the content model of
-     the basetype, restricting in each case, except that 'sic' is
-     allowed to "copy through" a single particle.
-     Only the top-level content model can be restricted,
-     e.g. the content model of an anonymous embedded 'type' within
-     an 'element' particle cannot be restricted piecemeal. -->
-<!-- attributes to be restricted are identified by name, without order 
-     constraints.
-     Attributes incorporated into sources via attributeGroups may be
-     restricted by name. -->
-<!-- If anyAttribute appears in one or more referenced attributeGroups
-     and/or explicitly, the intersection of the permissions with the
-     inherited permission (which must exist) is used -->
-
-<!-- facets are allowed only if source refers to a textonly type -->
 
 <!-- an element is declared by either:
  a name and a type (either nested or referenced via the type attribute)
 or:
  a ref to an existing element declaration -->
 
-<!ELEMENT %element; ((%annotation;)?, (%type;| %datatype;)?,
+<!ELEMENT %element; ((%annotation;)?, (%complexType;| %simpleType;)?,
                      (%unique; | %key; | %keyref;)*)>
 <!-- type or datatype only if no type|ref attribute -->
 <!-- ref not allowed at top level -->
 <!ATTLIST %element;
             name        %NCName;               #IMPLIED
+            id          ID                     #IMPLIED
             ref         %QName;                #IMPLIED
             type        %QName;                #IMPLIED
             minOccurs   %non-negative-integer; '1'
@@ -152,10 +168,11 @@ or:
             nullable    %boolean;              'false'
             equivClass  %QName;                #IMPLIED
             abstract    %boolean;              'false'
-            final       %boolean;              'false'
-            exact       %exactSet;             ''
+            final       %complexDerivationSet; ''
+            block       %blockSet;             ''
             default     CDATA                  #IMPLIED
-            fixed       CDATA                  #IMPLIED>
+            fixed       CDATA                  #IMPLIED
+            %elementAttrs;>
 <!-- type and ref are mutually exclusive.
      name and ref are mutually exculsive, one is required -->
 <!-- In the absence of type AND ref, type defaults to type of
@@ -163,14 +180,35 @@ or:
 <!-- maxOccurs defaults to 1 or minOccurs, whichever is greater -->
 <!-- default and fixed are mutually exclusive -->
 
-<!ELEMENT %group; ((%annotation;)?, (%element;| %group;| %any;)*)>
-<!ATTLIST %group;
-            minOccurs   %non-negative-integer; '1'
-            maxOccurs   CDATA                  #IMPLIED
-            order       (choice|seq|all)       'seq'
-            name        %NCName;               #IMPLIED
-            ref         %QName;                #IMPLIED>
+<!ELEMENT %group; (%mgs;)?>
+<!ATTLIST %group; 
+          name        %NCName;               #IMPLIED
+          ref         %QName;                #IMPLIED
+          minOccurs   %non-negative-integer; '1'
+          maxOccurs   CDATA                  #IMPLIED
+          id          ID                     #IMPLIED
+          %groupAttrs;>
 
+<!ELEMENT %all; ((%annotation;)?, (%element;| %group;| %cs; | %any;)*)>
+<!ATTLIST %all;
+          minOccurs   %non-negative-integer; '1'
+          maxOccurs   CDATA                  #IMPLIED
+          id          ID                     #IMPLIED
+          %allAttrs;>
+
+<!ELEMENT %choice; ((%annotation;)?, (%element;| %group;| %cs; | %any;)*)>
+<!ATTLIST %choice;
+          minOccurs   %non-negative-integer; '1'
+          maxOccurs   CDATA                  #IMPLIED
+          id          ID                     #IMPLIED
+          %choiceAttrs;>
+
+<!ELEMENT %sequence; ((%annotation;)?, (%element;| %group;| %cs; | %any;)*)>
+<!ATTLIST %sequence;
+          minOccurs   %non-negative-integer; '1'
+          maxOccurs   CDATA                  #IMPLIED
+          id          ID                     #IMPLIED
+          %sequenceAttrs;>
 
 <!-- an anonymous grouping in a model, or
      a top-level named group definition, or a reference to same -->
@@ -183,9 +221,11 @@ or:
 
 <!ELEMENT %any; EMPTY>
 <!ATTLIST %any;
-            namespace    CDATA                  '##any'
-            minOccurs    %non-negative-integer; '1'
-            maxOccurs    CDATA                  #IMPLIED>
+            namespace       CDATA                  '##any'
+            processContents (skip|lax|strict)      'strict'
+            minOccurs       %non-negative-integer; '1'
+            maxOccurs       CDATA                  #IMPLIED
+            %anyAttrs;>
 
 <!-- namespace is interpreted as follows:
                   ##any      - - any non-conflicting WFXML at all
@@ -193,6 +233,7 @@ or:
                   ##other    - - any non-conflicting WFXML from namespace other
                                   than targetNamespace
 
+                  ##local    - - any unqualified non-conflicting WFXML/attribute
                   one or     - - any non-conflicting WFXML from
                   more URI        the listed namespaces
                   references
@@ -202,7 +243,8 @@ or:
 
 <!ELEMENT %anyAttribute; EMPTY>
 <!ATTLIST %anyAttribute;
-            namespace    CDATA   '##any'>
+            namespace    CDATA   '##any'
+            %anyAttributeAttrs;>
 <!-- namespace is interpreted as for 'any' above -->
 
 
@@ -210,14 +252,13 @@ or:
      model particle from the basetype's content model -->
 <!ELEMENT %sic; EMPTY>
 
-<!ELEMENT %attribute; ((%annotation;)?, (%datatype;)?)>
+<!ELEMENT %attribute; ((%annotation;)?, (%simpleType;)?)>
 <!ATTLIST %attribute;
           name      %NCName;      #REQUIRED
           type      %QName;       #IMPLIED
-          maxOccurs (0|1)         '1'
-          minOccurs (0|1)         '0'
-          default   CDATA         #IMPLIED
-          fixed     CDATA         #IMPLIED>
+          use	    CDATA         #IMPLIED
+          value		CDATA         #IMPLIED
+          %attributeAttrs;>
 <!-- default and fixed are mutually exclusive -->
 <!-- type attr and datatype content are mutually exclusive -->
 
@@ -228,38 +269,50 @@ or:
                        (%anyAttribute;)?) >
 <!ATTLIST %attributeGroup;
                  name       %NCName;       #IMPLIED
-                 ref        %QName;        #IMPLIED>
+                 id         ID             #IMPLIED
+                 ref        %QName;        #IMPLIED
+                 %attributeGroupAttrs;>
 
 <!-- ref iff no content, no name.  ref iff not top level -->
 
 <!-- better reference mechanisms -->
-<!ELEMENT %unique; (%selector;, (%field;)+)>
-<!ATTLIST %unique; name     %NCName;       #REQUIRED>
+<!ELEMENT %unique; ((%annotation;)?, %selector;, (%field;)+)>
+<!ATTLIST %unique; name     %NCName;       #REQUIRED
+                   id       ID             #IMPLIED
+                   %uniqueAttrs;>
 
-<!ELEMENT %key;    (%selector;, (%field;)+)>
-<!ATTLIST %key;    name     %NCName;       #REQUIRED>
+<!ELEMENT %key;    ((%annotation;)?, %selector;, (%field;)+)>
+<!ATTLIST %key;    name     %NCName;       #REQUIRED
+                   id       ID             #IMPLIED
+                   %keyAttrs;>
 
-<!ELEMENT %keyref; (%selector;, (%field;)+)>
+<!ELEMENT %keyref; ((%annotation;)?, %selector;, (%field;)+)>
 <!ATTLIST %keyref;
                    name     %NCName;       #REQUIRED
-                   refer    %QName;        #REQUIRED>
+                   id       ID             #IMPLIED
+                   refer    %QName;        #REQUIRED
+                   %keyrefAttrs;>
 
 <!ELEMENT %selector; (#PCDATA)>
 <!ELEMENT %field; (#PCDATA)>
 
 <!-- Schema combination mechanisms -->
 <!ELEMENT %include; EMPTY>
-<!ATTLIST %include; schemaLocation %URI; #REQUIRED>
+<!ATTLIST %include; schemaLocation %URIref; #REQUIRED
+                    %includeAttrs;>
 
 <!ELEMENT %import; EMPTY>
-<!ATTLIST %import; namespace      %URI; #REQUIRED
-                    schemaLocation %URI; #IMPLIED>
+<!ATTLIST %import; namespace      %URIref; #REQUIRED
+                   schemaLocation %URIref; #IMPLIED
+                   %importAttrs;>
 
 <!ELEMENT %notation; EMPTY>
 <!ATTLIST %notation;
                  name        %NCName;    #REQUIRED
+                 id          ID          #IMPLIED
                  public      CDATA       #REQUIRED
-                 system      %URI;       #IMPLIED>
+                 system      %URIref;    #IMPLIED
+                 %notationAttrs;>
 
 <!NOTATION XMLSchemaStructures PUBLIC 'structures'
            '&XSP1.URI;.xsd' >

@@ -6,9 +6,14 @@
      expansions, but just in case -->
 <!ENTITY % p ''> <!-- can be overriden in the internal subset of a
                       schema document to establish a namespace prefix -->
+<!ENTITY % dts ':dt'>
+<!ENTITY % dtp 'dt:'>
+<!ENTITY % dtpv '"%dtp;"'>
+<!ENTITY % dtnds 'xmlns%dts;'>
+<!ENTITY dtp %dtpv;>
 
 <!-- Define all the element names, with optional prefix -->
-<!ENTITY % datatype "%p;datatype">
+<!ENTITY % simpleType "%p;simpleType">
 <!ENTITY % maxExclusive "%p;maxExclusive">
 <!ENTITY % minExclusive "%p;minExclusive">
 <!ENTITY % maxInclusive "%p;maxInclusive">
@@ -23,25 +28,43 @@
 <!ENTITY % encoding "%p;encoding">
 <!ENTITY % period "%p;period">
 
+<!-- Customisation entities for the ATTLIST of each element type.
+     Define one of these if your schema takes advantage of the
+     anyAttribute='##other' in the schema for schemas -->
+
+<!ENTITY % simpleTypeAttrs ''>
+<!ENTITY % maxExclusiveAttrs ''>
+<!ENTITY % minExclusiveAttrs ''>
+<!ENTITY % maxInclusiveAttrs ''>
+<!ENTITY % minInclusiveAttrs ''>
+<!ENTITY % precisionAttrs ''>
+<!ENTITY % scaleAttrs ''>
+<!ENTITY % lengthAttrs ''>
+<!ENTITY % minlengthAttrs ''>
+<!ENTITY % maxlengthAttrs ''>
+<!ENTITY % enumerationAttrs ''>
+<!ENTITY % patternAttrs ''>
+<!ENTITY % encodingAttrs ''>
+<!ENTITY % periodAttrs ''>
+<!ENTITY % appinfoAttrs ''>
+<!ENTITY % documentationAttrs ''>
+
+
 <!-- annotation elements -->
 <!ENTITY % annotation "%p;annotation">
 <!ENTITY % appinfo "%p;appinfo">
-<!ENTITY % info "%p;info">
+<!ENTITY % documentation "%p;documentation">
 
 
 <!-- Define some entities for informative use as attribute types -->
-<!ENTITY % URI "CDATA">
-<!ENTITY % URIList "CDATA">
+<!ENTITY % URIref "CDATA">
 <!ENTITY % QName "CDATA">
 <!ENTITY % NCName "NMTOKEN">
 <!ENTITY % non-negative-integer "NMTOKEN">
 <!ENTITY % boolean "(true|false)">
-<!ENTITY % derivationChoice "(restriction|extension)">
-<!ENTITY % derivationSet "CDATA">
+<!ENTITY % simpleDerivationChoice "(list|restriction|reproduction)">
+<!ENTITY % simpleDerivationSet "CDATA">
       <!-- #all or space-separated list drawn from derivationChoice -->
-<!ENTITY % exactSet "CDATA">
-      <!-- #all or space-separated list drawn from
-                                        derivationChoice + 'equivClass' -->
 
 <!-- Note that the use of 'facet' below is less restrictive than is
      really intended:  There should in fact be no more than one of each of
@@ -62,61 +85,78 @@
 <!ENTITY % facet '%ordered; | %unordered;'>
 <!ENTITY % facetAttr 'value CDATA #REQUIRED'>
 <!ENTITY % facetModel '(%annotation;)?'>
-<!ELEMENT %datatype; ((%annotation;)?,(%facet;)*)>
-<!ATTLIST %datatype;
-    name     %NCName;        #IMPLIED
-    source   %QName;         #REQUIRED
-    final    %derivationSet; ''
-    abstract %boolean;       'false'>
+<!ELEMENT %simpleType; ((%annotation;)?,(%facet;)*)>
+<!ATTLIST %simpleType;
+    name      %NCName;                 #IMPLIED
+    base      %QName;                  #REQUIRED
+    abstract  %boolean;                'false'
+    final     %simpleDerivationSet;    ''
+    derivedBy %simpleDerivationChoice; 'restriction'
+    %simpleTypeAttrs;>
 <!-- name is required at top level -->
 
 <!ELEMENT %maxExclusive; %facetModel;>
-<!ATTLIST %maxExclusive; %facetAttr;>
+<!ATTLIST %maxExclusive; %facetAttr;
+          %maxExclusiveAttrs;>
 <!ELEMENT %minExclusive; %facetModel;>
-<!ATTLIST %minExclusive; %facetAttr;>
+<!ATTLIST %minExclusive; %facetAttr;
+          %minExclusiveAttrs;>
 
 <!ELEMENT %maxInclusive; %facetModel;>
-<!ATTLIST %maxInclusive; %facetAttr;>
+<!ATTLIST %maxInclusive; %facetAttr;
+          %maxInclusiveAttrs;>
 <!ELEMENT %minInclusive; %facetModel;>
-<!ATTLIST %minInclusive; %facetAttr;>
+<!ATTLIST %minInclusive; %facetAttr;
+          %minInclusiveAttrs;>
 
 <!ELEMENT %precision; %facetModel;>
-<!ATTLIST %precision; %facetAttr;>
+<!ATTLIST %precision; %facetAttr;
+          %precisionAttrs;>
 <!ELEMENT %scale; %facetModel;>
-<!ATTLIST %scale; %facetAttr;>
+<!ATTLIST %scale; %facetAttr;
+          %scaleAttrs;>
 
 <!ELEMENT %length; %facetModel;>
-<!ATTLIST %length; %facetAttr;>
+<!ATTLIST %length; %facetAttr;
+          %lengthAttrs;>
 <!ELEMENT %minlength; %facetModel;>
-<!ATTLIST %minlength; %facetAttr;>
+<!ATTLIST %minlength; %facetAttr;
+          %minlengthAttrs;>
 <!ELEMENT %maxlength; %facetModel;>
-<!ATTLIST %maxlength; %facetAttr;>
+<!ATTLIST %maxlength; %facetAttr;
+          %maxlengthAttrs;>
 
 <!-- This one can be repeated -->
 <!ELEMENT %enumeration; %facetModel;>
-<!ATTLIST %enumeration; %facetAttr;>
+<!ATTLIST %enumeration; %facetAttr;
+          %enumerationAttrs;>
 
 <!-- This one can be repeated -->
 <!ELEMENT %pattern; %facetModel;>
-<!ATTLIST %pattern; %facetAttr;>
+<!ATTLIST %pattern; %facetAttr;
+          %patternAttrs;>
 
 <!ELEMENT %encoding; %facetModel;>
-<!ATTLIST %encoding; %facetAttr;>
+<!ATTLIST %encoding; %facetAttr;
+          %encodingAttrs;>
 <!ELEMENT %period; %facetModel;>
-<!ATTLIST %period; %facetAttr;>
+<!ATTLIST %period; %facetAttr;
+          %periodAttrs;>
 
 <!-- Annotation is either application information or documentation -->
 <!-- By having these here they are available for datatypes as well
      as all the structures elements -->
 
-<!ELEMENT %annotation; (%appinfo; | %info;)*>
+<!ELEMENT %annotation; (%appinfo; | %documentation;)*>
 
 <!-- User must define annotation elements in internal subset for this
      to work -->
 <!ELEMENT %appinfo; ANY>   <!-- too restrictive -->
 <!ATTLIST %appinfo;
-          source     %URI;      #IMPLIED>
-<!ELEMENT %info; ANY>   <!-- too restrictive -->
-<!ATTLIST %info;
-          source     %URI;      #IMPLIED
-          xml:lang   CDATA      #IMPLIED>
+          source     %URIref;      #IMPLIED
+          %appinfoAttrs;>
+<!ELEMENT %documentation; ANY>   <!-- too restrictive -->
+<!ATTLIST %documentation;
+          source     %URIref;   #IMPLIED
+          xml:lang   CDATA      #IMPLIED
+          %documentationAttrs;>
