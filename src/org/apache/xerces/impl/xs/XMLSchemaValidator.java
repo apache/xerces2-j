@@ -275,6 +275,7 @@ public class XMLSchemaValidator
     protected boolean fSchemaElementDefault = true;
     protected boolean fEntityRef = false;
     protected boolean fInCDATA = false;
+    protected boolean fAllWS = false;
 
     // properties
 
@@ -641,18 +642,29 @@ public class XMLSchemaValidator
         }
 
         handleCharacters(text);
-        // call handlers
-        if (fDocumentHandler != null) {
-            if (fUnionType) {
-                // for union types we can't normalize data
-                // thus we only need to send augs information if any;
-                // the normalized data for union will be send
-                // after normalization is performed (at the endElement())
-                if (!emptyAug) {
-                    fDocumentHandler.characters(fEmptyXMLStr, augs);
+        
+        
+        // if fAllWS is true, means this chars is:
+        // -all ws
+        // -outside element content
+        // -and element is not mixed
+        if (fAllWS) {
+            ignorableWhitespace(text, augs);
+        }
+        else{
+            // call handlers
+            if (fDocumentHandler != null) {
+                if (fUnionType) {
+                    // for union types we can't normalize data
+                    // thus we only need to send augs information if any;
+                    // the normalized data for union will be send
+                    // after normalization is performed (at the endElement())
+                    if (!emptyAug) {
+                        fDocumentHandler.characters(fEmptyXMLStr, augs);
+                    }
+                } else {
+                    fDocumentHandler.characters(text, augs);
                 }
-            } else {
-                fDocumentHandler.characters(text, augs);
             }
         }
 
@@ -1450,6 +1462,13 @@ public class XMLSchemaValidator
         if (DEBUG) {
          System.out.println("==>characters()"+fCurrentType.getTypeName()+":"+mixed);
         }
+        
+        fAllWS = true;
+        // REVISIT: I could have used the other IF clause below,
+        //          but, it shows a dependency on fUnionType.
+        if (mixed || fWhiteSpace !=-1) {
+            fAllWS = false;
+        }
 
         if (mixed || fWhiteSpace !=-1 || fUnionType) {
             // don't check characters: since it is either
@@ -1465,6 +1484,7 @@ public class XMLSchemaValidator
             for (int i=text.offset; i< text.offset+text.length; i++) {
                 if (!XMLChar.isSpace(text.ch[i])) {
                     allWhiteSpace = false;
+                    fAllWS = false;
                     break;
                 }
             }
