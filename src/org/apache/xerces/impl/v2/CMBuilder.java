@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.impl.validation.models.CMNode;
 
 /**
  * This class constructs content models for a given grammar.
@@ -71,6 +72,10 @@ public class CMBuilder {
     private final QName fQName2 = new QName();
 
     private XSDeclarationPool fDeclPool = null;
+
+    // needed for DFA construction
+    private int fLeafCount;
+
     //REVISIT: add substitution comparator!!
 
     public CMBuilder (XSDeclarationPool pool){
@@ -233,7 +238,9 @@ public class CMBuilder {
         //
 
         //REVISIT: add DFA Content Model
-        return null;
+        fLeafCount = 0;
+        CMNode node = buildSyntaxTree(particle);
+        return new XSDFACM(node, fLeafCount, false);
     }
 
 
@@ -388,4 +395,57 @@ public class CMBuilder {
         return newParticle;
     }
 
+    // this method is needed to convert a tree of ParticleDecl
+    // nodes into a tree of content models that XSDFACM methods can then use as input.
+    private final CMNode buildSyntaxTree(XSParticleDecl startNode) {
+
+        // We will build a node at this level for the new tree
+        CMNode nodeRet = null;
+        if (startNode.fType == XSParticleDecl.PARTICLE_WILDCARD) {
+            nodeRet = new XSCMAny(startNode.fType, ((XSWildcardDecl)startNode.fValue), fLeafCount++);
+        }
+        //
+        //  If this node is a leaf, then its an easy one. We just add it
+        //  to the tree.
+        //
+        else if (startNode.fType == XSParticleDecl.PARTICLE_ELEMENT) {
+            //
+            //  Create a new leaf node, and pass it the current leaf count,
+            //  which is its DFA state position. Bump the leaf count after
+            //  storing it. This makes the positions zero based since we
+            //  store first and then increment.
+            //
+            nodeRet = new XSCMLeaf((XSElementDecl)(startNode.fValue), fLeafCount++);
+        } 
+        else {
+            //
+            //  Its not a leaf, so we have to recurse its left and maybe right
+            //  nodes. Save both values before we recurse and trash the node.
+            final XSParticleDecl leftNode = ((XSParticleDecl)startNode.fValue);
+            final XSParticleDecl rightNode = ((XSParticleDecl)startNode.fOtherValue);
+
+            if ((startNode.fType == XSParticleDecl.PARTICLE_CHOICE)
+                ||  (startNode.fType == XSParticleDecl.PARTICLE_SEQUENCE)) {
+                //
+                //  Recurse on both children, and return a binary op node
+                //  with the two created sub nodes as its children. The node
+                //  type is the same type as the source.
+                //
+
+                nodeRet = new XSCMBinOp( startNode.fType, buildSyntaxTree(leftNode)
+                                       , buildSyntaxTree(rightNode));
+            } 
+            else if (startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_MORE
+		       || startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_ONE
+		       || startNode.fType == XSParticleDecl.PARTICLE_ONE_OR_MORE) {
+                nodeRet = new XSCMUniOp(startNode.fType, buildSyntaxTree(leftNode));
+            } 
+            else {
+		        throw new RuntimeException("ImplementationMessages.VAL_CST");
+            }
+        }
+        // And return our new node for this level
+        return nodeRet;
+    }
+   
 }

@@ -81,7 +81,7 @@ public class CMStateSet
     // -------------------------------------------------------------------
     //  Constructors
     // -------------------------------------------------------------------
-    CMStateSet(int bitCount) 
+    public CMStateSet(int bitCount) 
     {
         // Store the required bit count and insure its legal
         fBitCount = bitCount;
@@ -151,7 +151,7 @@ public class CMStateSet
         }
     }
 
-    final boolean getBit(int bitToGet) 
+    public final boolean getBit(int bitToGet) 
     {
         if (bitToGet >= fBitCount)
             throw new RuntimeException("ImplementationMessages.VAL_CMSI");
@@ -175,7 +175,7 @@ public class CMStateSet
         }
     }
 
-    final boolean isEmpty()
+    public final boolean isEmpty()
     {
         if (fBitCount < 65)
         {

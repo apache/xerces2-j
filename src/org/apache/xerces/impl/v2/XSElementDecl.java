@@ -72,7 +72,7 @@ public class XSElementDecl {
     // types of value constraint
     public final static short     NO_CONSTRAINT       = 0;
     public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUE         = 2;
+    public final static short     FIXED_VALUE        = 2;
 
     // name of the element
     public String fName = null;

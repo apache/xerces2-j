@@ -80,10 +80,10 @@ public class XSCMAny
     private int fType;
 
     /**
-     * URI of the any content model. This value is set if the type is
+     * Object ref of the any content model. This value is set if the type is
      * XSParticleDecl.PARTICLE_WILDCARD.
      */
-    private String fURI;
+    private XSWildcardDecl fWDecl;
 
     /**
      * Part of the algorithm to convert a regex directly to a DFA
@@ -97,12 +97,12 @@ public class XSCMAny
     //
 
     /** Constructs a content model any. */
-    public XSCMAny(int type, String uri, int position)  {
+    public XSCMAny(int type, XSWildcardDecl wDecl, int position)  {
         super(type);
 
         // Store the information
         fType = type;
-        fURI = uri;
+        fWDecl = wDecl;
         fPosition = position;
     }
 
@@ -114,8 +114,8 @@ public class XSCMAny
         return fType;
     }
 
-    final String getURI() {
-        return fURI;
+    final XSWildcardDecl getURI() {
+        return fWDecl;
     }
 
     final int getPosition() {
@@ -141,7 +141,7 @@ public class XSCMAny
         StringBuffer strRet = new StringBuffer();
         strRet.append("(");
         strRet.append("##any:uri=");
-        strRet.append(fURI);
+        strRet.append(fWDecl.fNamespaceList[0]);
         strRet.append(')');
         if (fPosition >= 0) {
             strRet.append

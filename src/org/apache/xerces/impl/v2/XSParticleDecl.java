@@ -87,7 +87,7 @@ public class XSParticleDecl {
     public Object fValue = null;
     // for PARTICLE_CHOICE/SEQUENCE/ALL: the particle of the other child
     public Object fOtherValue = null;
-    // mininum occurrence of this particle
+    // minimum occurrence of this particle
     public int fMinOccurs = 1;
     // maximum occurrence of this particle
     public int fMaxOccurs = 1;

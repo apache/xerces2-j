@@ -67,7 +67,7 @@ public abstract class CMNode
     // -------------------------------------------------------------------
     //  Constructors
     // -------------------------------------------------------------------
-    protected CMNode(int type) 
+    public CMNode(int type) 
     {
         fType = type;
     }
@@ -83,7 +83,7 @@ public abstract class CMNode
     // -------------------------------------------------------------------
     //  Package final methods
     // -------------------------------------------------------------------
-    protected final int type()
+    public final int type()
     {
         return fType;
     }
@@ -115,7 +115,7 @@ public abstract class CMNode
         fFollowPos = setToAdopt;
     }
 
-    final void setMaxStates(int maxStates)
+    public final void setMaxStates(int maxStates)
     {
         fMaxStates = maxStates;
     }

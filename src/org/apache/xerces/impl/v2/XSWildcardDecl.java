@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.xni.QName;
+
 /**
  * The XML representation for a wildcard declaration
  * schema component is an <any> or <anyAttribute> element information item
@@ -64,7 +66,7 @@ package org.apache.xerces.impl.v2;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSWildcardDecl {
+public class XSWildcardDecl  extends XSElementDecl {
 
     // types of wildcard
     // namespace="##any"

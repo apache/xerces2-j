@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XInt;
 import org.apache.xerces.util.XIntPool;
 import org.w3c.dom.Document;
@@ -77,6 +78,7 @@ import java.util.Stack;
 
 class XSDocumentInfo {
 
+    private static String EMPTY_STRING = "";
     // Data
     protected SchemaNamespaceSupport fNamespaceSupport;
     protected SchemaNamespaceSupport fNamespaceSupportRoot;
@@ -101,7 +103,7 @@ class XSDocumentInfo {
     // to store the ID values appearing in this document
     protected Hashtable fIdDefs = new Hashtable();
 
-    XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker) {
+    XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable) {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
 
@@ -118,8 +120,9 @@ class XSDocumentInfo {
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-            //if (fTargetNamespace == null)
-            //    fTargetNamespace = XSDHandler.EMPTY_STRING;
+            if (fTargetNamespace == null)
+                fTargetNamespace = EMPTY_STRING;
+            fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 
