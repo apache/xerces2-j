@@ -173,6 +173,7 @@ public class XSAttributeChecker {
 
     // default wildcard to return
     private static final XSWildcardDecl WC_ANY   = new XSWildcardDecl();
+    private final        XSWildcardDecl fTempWC  = new XSWildcardDecl();
 
     // used to store the map from element name to attribute list
     protected static Hashtable fEleAttrsMapG = new Hashtable();
@@ -1405,14 +1406,14 @@ public class XSAttributeChecker {
                 wildcard = WC_ANY;
             } else if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
                 // ##other
-                wildcard = new XSWildcardDecl();
+                wildcard = fTempWC;
                 wildcard.fType = XSWildcardDecl.WILDCARD_OTHER;
                 wildcard.fNamespaceList = new String[2];
                 wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
                 wildcard.fNamespaceList[1] = null;
             } else {
                 // list
-                wildcard = new XSWildcardDecl();
+                wildcard = fTempWC;
                 wildcard.fType = XSWildcardDecl.WILDCARD_LIST;
 
                 // tokenize

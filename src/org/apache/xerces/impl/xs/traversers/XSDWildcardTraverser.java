@@ -180,9 +180,14 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                                          SchemaGrammar grammar) {
 
         //get all attributes
-        XSWildcardDecl wildcard = (XSWildcardDecl) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
+        XSWildcardDecl namespace = (XSWildcardDecl) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
         XInt processContentsAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_PROCESSCONTENTS];
 
+        XSWildcardDecl wildcard = new XSWildcardDecl();
+        
+        // namespace
+        wildcard.fType = namespace.fType;
+        wildcard.fNamespaceList = namespace.fNamespaceList;
         // process contents
         wildcard.fProcessContents = processContentsAttr.shortValue();
 
