@@ -153,6 +153,11 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         "preserve", "collapse", "replace",
     };
 
+    // this will be true if this is a static XSSimpleTypeDecl
+    // and hence must remain immutable (i.e., applyFacets
+    // may not be permitted to have any effect).
+    private boolean fIsImmutable = false;
+
     private XSSimpleTypeDecl fItemType;
     private XSSimpleTypeDecl[] fMemberTypes;
 
@@ -194,7 +199,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     //Create a new built-in primitive types (and id/idref/entity)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
                                short ordered, boolean bounded,
-                               boolean finite, boolean numeric) {
+                               boolean finite, boolean numeric, boolean isImmutable) {
+        fIsImmutable = isImmutable;
         fBase = base;
         fTypeName = name;
         fTargetNamespace = SchemaDVFactoryImpl.URI_SCHEMAFORSCHEMA;
@@ -215,7 +221,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     //Create a new simple type for restriction.
-    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet) {
+    protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, String uri, short finalSet, boolean isImmutable) {
         fBase = base;
         fTypeName = name;
         fTargetNamespace = uri;
@@ -254,10 +260,11 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         //we also set fundamental facets information in case applyFacets is not called.
         caclFundamentalFacets();
+        fIsImmutable = isImmutable;
     }
 
     //Create a new simple type for list.
-    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl itemType) {
+    protected XSSimpleTypeDecl(String name, String uri, short finalSet, XSSimpleTypeDecl itemType, boolean isImmutable) {
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
@@ -272,6 +279,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         //setting fundamental facets
         caclFundamentalFacets();
+        fIsImmutable = isImmutable;
     }
 
     //Create a new simple type for union.
@@ -293,10 +301,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         //setting fundamental facets
         caclFundamentalFacets();
+        // none of the schema-defined types are unions, so just set
+        // fIsImmutable to false.
+        fIsImmutable = false;
     }
 
     //set values for restriction.
     protected XSSimpleTypeDecl setRestrictionValues(XSSimpleTypeDecl base, String name, String uri, short finalSet) {
+        //decline to do anything if the object is immutable.
+        if(fIsImmutable) return null;
         fBase = base;
         fTypeName = name;
         fTargetNamespace = uri;
@@ -340,6 +353,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     //set values for list.
     protected XSSimpleTypeDecl setListValues(String name, String uri, short finalSet, XSSimpleTypeDecl itemType) {
+        //decline to do anything if the object is immutable.
+        if(fIsImmutable) return null;
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
@@ -359,6 +374,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     //set values for union.
     protected XSSimpleTypeDecl setUnionValues(String name, String uri, short finalSet, XSSimpleTypeDecl[] memberTypes) {
+        //decline to do anything if the object is immutable.
+        if(fIsImmutable) return null;
         fBase = fAnySimpleType;
         fTypeName = name;
         fTargetNamespace = uri;
@@ -504,6 +521,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             // should never gets here, internel error
             throw new RuntimeException("internal error");
         }
+        // we've now applied facets; so lock this object:
+        fIsImmutable = true;
     }
 
     /**
@@ -517,6 +536,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             // should never gets here, internel error
             throw new RuntimeException("internal error");
         }
+        // we've now applied facets; so lock this object:
+        fIsImmutable = true;
     }
 
     /**
@@ -525,6 +546,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, short patternType, ValidationContext context)
         throws InvalidDatatypeFacetException {
 
+        // if the object is immutable, should not apply facets...
+        if(fIsImmutable) return;
         ValidatedInfo tempInfo = new ValidatedInfo();
 
         // clear facets. because we always inherit facets in the constructor
@@ -1882,7 +1905,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return type != SchemaGrammar.fAnySimpleType;
     }
 
-    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false);
+    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true);
 
     /**
      * Validation context used to validate facet values.
@@ -1986,6 +2009,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     public void reset(){
 
+        // if it's immutable, can't be reset:
+        if (fIsImmutable) return;
         fItemType = null;
         fMemberTypes = null;
 
@@ -2017,4 +2042,4 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         // REVISIT: reset for fundamental facets
     }
-} // class XSComplexTypeDecl
+} // class XSSimpleTypeDecl
