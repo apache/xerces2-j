@@ -73,7 +73,6 @@ import org.apache.xerces.utils.regex.RegularExpression;
 
 public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cloneable {
 
-    protected Hashtable         fFacets; // Hashtable of Facets Strings.
     protected DatatypeValidator fBaseValidator = null; 
     protected String            fPattern         = null;
     protected RegularExpression fRegex    = null;
@@ -101,18 +100,6 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
     abstract public Object validate(String content, Object state) throws InvalidDatatypeValueException;
     
     abstract public Object clone() throws CloneNotSupportedException ;
-
-
-    /**
-     * returns the datatype facet if any is set as a
-     * Hashtable
-     *
-     * @return
-     */
-    public Hashtable getFacets() {
-        //REVISIT: do we really need getFacets? 
-        return fFacets;  
-    }
     
     /**
      * default value for whiteSpace facet is collapse

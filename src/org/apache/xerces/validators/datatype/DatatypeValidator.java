@@ -114,14 +114,6 @@ public interface DatatypeValidator {
 
     public short getWSFacet ();
     
-    /**
-     * returns the datatype facet if any is set as a
-     * Hashtable
-     * 
-     * @return 
-     */
-    public Hashtable getFacets();
-
     // returns the base datatypeValidator of the current validator.  
     public DatatypeValidator getBaseValidator();
 

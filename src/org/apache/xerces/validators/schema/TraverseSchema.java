@@ -196,8 +196,10 @@ public class TraverseSchema implements
     // new name for those groups in the modified redefined schema.  
     private Hashtable fRedefineAttributeGroupMap = null;
 
-    //to store facets for simpleType
+    // simpleType data
     private Hashtable fFacetData = new Hashtable(10);
+    private Stack fSimpleTypeNameStack = new Stack();
+    private String fListName = "";
 
 
     private int fAnonTypeCount =0;
@@ -1649,6 +1651,44 @@ public class TraverseSchema implements
        return baseValidator;
     }
 
+       
+   // @used in traverseSimpleType
+   // on return we need to pop the last simpleType name from 
+   // the name stack
+    private int resetSimpleTypeNameStack(int returnValue){
+       if (!fSimpleTypeNameStack.empty()) {
+           fSimpleTypeNameStack.pop();
+       }
+       return returnValue;
+    }
+
+    // @used in traverseSimpleType
+    // report an error cos-list-of-atomic and reset the last name of the list datatype we traversing
+    private void reportCosListOfAtomic () throws Exception{  
+       reportGenericSchemaError("cos-list-of-atomic: The itemType must have a {variety} of atomic or union (in which case all the {member type definitions} must be atomic)");
+       fListName="";
+    }
+
+    // @used in traverseSimpleType
+    // find if union datatype validator has list datatype member.
+    private boolean isListDatatype (DatatypeValidator validator){
+       if (validator instanceof UnionDatatypeValidator) {
+              Vector temp = ((UnionDatatypeValidator)validator).getBaseValidators();
+              for (int i=0;i<temp.size();i++) {
+                   if (temp.elementAt(i) instanceof ListDatatypeValidator) {
+                       return true;
+                   }
+                   if (temp.elementAt(i) instanceof UnionDatatypeValidator) {
+                       if (isListDatatype((DatatypeValidator)temp.elementAt(i))) {
+                           return true;
+                       }
+                   }
+              }
+       }
+       return false;
+    }
+
+
    /**
      * Traverse SimpleType declaration:
      * <simpleType
@@ -1672,15 +1712,40 @@ public class TraverseSchema implements
 
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
         String qualifiedName = nameProperty;
-        if (fTargetNSURIString.length () != 0) {
-            qualifiedName = fTargetNSURIString+","+nameProperty;
+
+
+        //---------------------------------------------------
+        // set qualified name
+        //---------------------------------------------------
+        if ( nameProperty.length() == 0) { // anonymous simpleType
+            qualifiedName = "#S#"+(fSimpleTypeAnonCount++);
+            fStringPool.addSymbol(qualifiedName);   
+        }
+        else {
+            if (fTargetNSURIString.length () != 0) {
+                qualifiedName = fTargetNSURIString+","+qualifiedName;
+            }
+            fStringPool.addSymbol( nameProperty );        
         }
 
+        //----------------------------------------------------------------------
         //check if we have already traversed the same simpleType decl
+        //----------------------------------------------------------------------        
         if (fDatatypeRegistry.getDatatypeValidator(qualifiedName)!=null) {
-            return fStringPool.addSymbol(qualifiedName);
+            return resetSimpleTypeNameStack(fStringPool.addSymbol(qualifiedName));
+        }
+        else {
+           if (fSimpleTypeNameStack.search(qualifiedName) != -1 ){
+               // cos-no-circular-unions && no circular definitions
+               reportGenericSchemaError("cos-no-circular-unions: no circular definitions are allowed for an element '"+ nameProperty+"'");
+               return resetSimpleTypeNameStack(-1);
+           }
         }
         
+
+        //----------------------------------------------------------
+        // update _final_ registry
+        //----------------------------------------------------------
         Attr finalAttr = simpleTypeDecl.getAttributeNode(SchemaSymbols.ATT_FINAL);
         int finalProperty = 0;
         if(finalAttr != null) 
@@ -1692,41 +1757,50 @@ public class TraverseSchema implements
         if(finalProperty != 0) 
             fSimpleTypeFinalRegistry.put(qualifiedName, new Integer(finalProperty));
 
-        boolean list = false;
-        boolean union = false;
-        boolean restriction = false;
-        int     newSimpleTypeName    = -1;
-        if ( nameProperty.length() == 0) { // anonymous simpleType
-            newSimpleTypeName = fStringPool.addSymbol(
-                "#S#"+fSimpleTypeAnonCount++ );   
-        }
-        else 
-            newSimpleTypeName       = fStringPool.addSymbol( nameProperty );
 
+        // -------------------------------
+        // remember name being traversed to 
+        // avoid circular definitions in union
+        // -------------------------------
+        fSimpleTypeNameStack.push(qualifiedName);
+        
 
-
+        //----------------------------------------------------------------------
         //annotation?,(list|restriction|union)
+        //----------------------------------------------------------------------
         Element content = XUtil.getFirstChildElement(simpleTypeDecl);
         content = checkContent(simpleTypeDecl, content, false);
         if (content == null) {
-            return (-1);
+            return resetSimpleTypeNameStack(-1);
         }
 
         // General Attribute Checking
         scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
         Hashtable contentAttrs = fGeneralAttrCheck.checkAttributes(content, scope);
 
+        //----------------------------------------------------------------------
         //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
+        //----------------------------------------------------------------------
         String varietyProperty = content.getLocalName();
         String baseTypeQNameProperty = null;
         Vector dTValidators = null;
         int size = 0;  
         StringTokenizer unionMembers = null;
+        boolean list = false;
+        boolean union = false;
+        boolean restriction = false;
         int numOfTypes = 0; //list/restriction = 1, union = "+"
         
         if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) { //traverse List
            baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
            list = true;
+           if (fListName.length() != 0) { // parent is <list> datatype
+                    reportCosListOfAtomic();
+                    return resetSimpleTypeNameStack(-1);
+           }
+           else {
+                fListName = qualifiedName;
+           }
         }
         else if (varietyProperty.equals(SchemaSymbols.ELT_RESTRICTION)) { //traverse Restriction
             baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_BASE );
@@ -1757,15 +1831,20 @@ public class TraverseSchema implements
         int typeNameIndex;
         DatatypeValidator baseValidator = null;
         
-        if ( baseTypeQNameProperty.length() == 0 ) { //must 'see' <simpleType>
+        if ( baseTypeQNameProperty.length() == 0 ) { 
+            //---------------------------
+            //must 'see' <simpleType>
+            //---------------------------
+
             //content = {annotation?,simpleType?...}
             content = XUtil.getFirstChildElement(content);
+            
             //check content (annotation?, ...)
             content = checkContent(simpleTypeDecl, content, false);
             if (content == null) {
-                return (-1);
+                return resetSimpleTypeNameStack(-1);
             }
-            if (content.getLocalName().equals( SchemaSymbols.ELT_SIMPLETYPE )) {  //Test...
+            if (content.getLocalName().equals( SchemaSymbols.ELT_SIMPLETYPE )) { 
               typeNameIndex = traverseSimpleTypeDecl(content); 
               if (typeNameIndex!=-1) {
                   baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
@@ -1777,22 +1856,27 @@ public class TraverseSchema implements
                   reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
                                         new Object [] { content.getAttribute( SchemaSymbols.ATT_BASE ),
                                             content.getAttribute(SchemaSymbols.ATT_NAME) });
-                      return -1;
+                      return resetSimpleTypeNameStack(-1);
               }
             }
             else {
                  reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
                         new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-                 return -1;
+                 return resetSimpleTypeNameStack(-1);
             }
         } //end - must see simpleType?
-        else { //base was provided - get proper validator. 
+        else { 
+            //-----------------------------
+            //base was provided - get proper validator. 
+            //-----------------------------
             numOfTypes = 1;
             if (union) {
                 numOfTypes= size;
             }
+            //--------------------------------------------------------------------
             // this loop is also where we need to find out whether the type being used as
             // a base (or itemType or whatever) allows such things.
+            //--------------------------------------------------------------------
             int baseRefContext = (restriction? SchemaSymbols.RESTRICTION:0);
             baseRefContext = baseRefContext | (union? SchemaSymbols.UNION:0);
             baseRefContext = baseRefContext | (list ? SchemaSymbols.LIST:0);
@@ -1802,7 +1886,26 @@ public class TraverseSchema implements
                 }
                 baseValidator = findDTValidator ( simpleTypeDecl, baseTypeQNameProperty, baseRefContext);
                 if ( baseValidator == null) {
-                    return (-1);
+                    return resetSimpleTypeNameStack(-1);
+                }
+                // ------------------------------
+                // (variety is list)cos-list-of-atomic
+                // ------------------------------
+                if (fListName.length() != 0 ) {
+                    if (baseValidator instanceof ListDatatypeValidator) {                   
+                        reportCosListOfAtomic();
+                        return resetSimpleTypeNameStack(-1);
+                    }
+                    //-----------------------------------------------------
+                    // if baseValidator is of type (union) need to look
+                    // at Union validators to make sure that List is not one of them
+                    //-----------------------------------------------------
+                    if (isListDatatype(baseValidator)) {
+                        reportCosListOfAtomic();
+                        return resetSimpleTypeNameStack(-1);
+
+                    }
+                    
                 }
                 if (union) {
                     dTValidators.addElement((DatatypeValidator)baseValidator); //add validator to structure
@@ -1811,27 +1914,25 @@ public class TraverseSchema implements
             }
         } //end - base is available
         
-        if (list && baseValidator instanceof ListDatatypeValidator) {
-            reportSchemaError(SchemaMessageProvider.InvalidBaseType,
-                                      new Object [] { baseTypeQNameProperty,
-                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
-            return -1;
-        }
         
+        // ------------------------------------------
         // move to next child 
-        // restriction ->[simpleType]->[facets]  OR
-        // restriction ->[facets]
-        if (baseTypeQNameProperty.equals ("")) {  //we already got the first kid of union/list/restriction
+        // <base==empty)->[simpleType]->[facets]  OR
+        // <base!=empty)->[facets]
+        // ------------------------------------------
+        if (baseTypeQNameProperty.length() == 0) {  
             content = XUtil.getNextSiblingElement( content );
         }
-        else { //we need to look at first kid of union/list/restriction
+        else { 
             content = XUtil.getFirstChildElement(content);
         }
         
+        // ------------------------------------------
         //get more types for union if any
+        // ------------------------------------------
         if (union) {
             int index=size;
-            if (!baseTypeQNameProperty.equals ("")) {
+            if (baseTypeQNameProperty.length() != 0 ) {
                 content = checkContent(simpleTypeDecl, content, true);
             }
             while (content!=null) {
@@ -1839,6 +1940,10 @@ public class TraverseSchema implements
                 if (typeNameIndex!=-1) {
                     baseValidator=fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
                     if (baseValidator != null) {
+                        if (fListName.length() != 0 && baseValidator instanceof ListDatatypeValidator) {
+                            reportCosListOfAtomic();
+                            return resetSimpleTypeNameStack(-1);
+                        }
                         dTValidators.addElement((DatatypeValidator)baseValidator);
                     }
                 }
@@ -1853,7 +1958,14 @@ public class TraverseSchema implements
         } // end - traverse Union
         
         
-         
+        if (fListName.length() != 0) {
+            // reset fListName, meaning that we are done with
+            // traversing <list> and its itemType resolves to atomic value
+            if (fListName.equals(qualifiedName)) {
+                fListName = "";
+            }
+        }
+              
         int numFacets=0;
         fFacetData.clear();
         if (restriction && content != null) {
@@ -1882,8 +1994,8 @@ public class TraverseSchema implements
                                         localpart = enumVal.substring(colonptr+1);
                                 }
                                 String uriStr = (prefix.length() != 0)?resolvePrefixToURI(prefix):fTargetNSURIString;
-                                qualifiedName=uriStr + ":" + localpart;
-                                localName = (String)fNotationRegistry.get(qualifiedName);
+                                nameProperty=uriStr + ":" + localpart;
+                                localName = (String)fNotationRegistry.get(nameProperty);
                                 if(localName == null){
                                        localName = traverseNotationFromAnotherSchema( localpart, uriStr);
                                        if (localName == null) {
@@ -1892,11 +2004,7 @@ public class TraverseSchema implements
                                                                     
                                        }
                                 }
-                                if (DEBUGGING) {
-                                    System.out.println("[notation decl] fullName: = " + qualifiedName);
-                                    System.out.println("[notation decl] enum value: =" +enumVal);
-                                }
-                                enumVal=qualifiedName;
+                                enumVal=nameProperty;
                             }
                             enumData.addElement(enumVal);
                             checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
@@ -1909,7 +2017,10 @@ public class TraverseSchema implements
                             if (pattern == null) {                                
                                 pattern = new StringBuffer (content.getAttribute( SchemaSymbols.ATT_VALUE ));
                             }
-                            else { //datatypes: 5.2.4 pattern 
+                            else { 
+                                // ---------------------------------------------
+                                //datatypes: 5.2.4 pattern: src-multiple-pattern 
+                                // ---------------------------------------------
                                 pattern.append("|");
                                 pattern.append(content.getAttribute( SchemaSymbols.ATT_VALUE ));
                                 checkContent(simpleTypeDecl, XUtil.getFirstChildElement( content ), true);
@@ -1922,9 +2033,11 @@ public class TraverseSchema implements
                              fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
                              
                              if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals("true")){
-                                  // set fixed facet flags
-                                  // length - must remain const through derivation
-                                  // thus we don't care if it fixed
+                                 // --------------------------------------------
+                                 // set fixed facet flags
+                                 // length - must remain const through derivation
+                                 // thus we don't care if it fixed
+                                 // --------------------------------------------
                                   if ( facet.equals(SchemaSymbols.ELT_MINLENGTH) ) {
                                       flags |= DatatypeValidator.FACET_MINLENGTH;
                                   }
@@ -1971,7 +2084,8 @@ public class TraverseSchema implements
         }
 
         
-        else if (list && content!=null) { // report error - must not have any children!
+        else if (list && content!=null) { 
+            // report error - must not have any children!
             if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
             }
@@ -1981,7 +2095,8 @@ public class TraverseSchema implements
                 //REVISIT: should we return?
             }
         }
-        else if (union && content!=null) { //report error - must not have any children!
+        else if (union && content!=null) { 
+            //report error - must not have any children!
              if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
                 if (content!=null) {
@@ -1997,12 +2112,9 @@ public class TraverseSchema implements
             }
         }
      
+        // ----------------------------------------------------------------------
         // create & register validator for "generated" type if it doesn't exist 
-
-        qualifiedName = fStringPool.toString(newSimpleTypeName);
-        if (fTargetNSURIString.length () != 0) {
-            qualifiedName = fTargetNSURIString+","+qualifiedName;
-        }
+        // ----------------------------------------------------------------------
         try { 
            DatatypeValidator newValidator =
                  fDatatypeRegistry.getDatatypeValidator( qualifiedName );
@@ -2025,7 +2137,7 @@ public class TraverseSchema implements
            } catch (Exception e) {
                reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
            }
-        return fStringPool.addSymbol(qualifiedName);
+        return resetSimpleTypeNameStack(fStringPool.addSymbol(qualifiedName));
      }
 
 
