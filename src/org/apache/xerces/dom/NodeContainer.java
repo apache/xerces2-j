@@ -333,7 +333,8 @@ public abstract class NodeContainer
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
      	
-        boolean errorChecking = ownerDocument.errorChecking;
+        boolean errorChecking =
+	    (ownerDocument != null) ? ownerDocument.errorChecking : true;
     	if(errorChecking && !(newChild instanceof NodeImpl)
     		||
     		!(
@@ -405,7 +406,9 @@ public abstract class NodeContainer
             }
     	}
     	
-    	else if (errorChecking && !ownerDocument.isKidOK(this, newInternal)) {
+    	else if (errorChecking &&
+		 (ownerDocument != null &&
+		  !ownerDocument.isKidOK(this, newInternal))) {
     		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
     		                           "DOM006 Hierarchy request error");
         }
