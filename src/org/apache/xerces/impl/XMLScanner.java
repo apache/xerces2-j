@@ -813,7 +813,8 @@ public abstract class XMLScanner
      * @param value The string to normalize.
      */
     protected void normalizeWhitespace(XMLString value) {
-        for (int i = value.offset; i < value.length; i++) {
+        int end = value.offset + value.length;
+        for (int i = value.offset; i < end; i++) {
             int ch = value.ch[i];
             if (ch == '\r' || ch == '\n' || ch == '\t') {
                 value.ch[i] = ' ';
@@ -841,7 +842,8 @@ public abstract class XMLScanner
         }
         // skip all non spaces
         int index = value.offset;
-        while (index < value.offset + value.length && value.ch[index] != ' ') {
+        int end = value.offset + value.length;
+        while (index < end && value.ch[index] != ' ') {
             index++;
         }
         if (index == value.offset + value.length) {
@@ -864,11 +866,11 @@ public abstract class XMLScanner
             }
             // skip all non spaces
             index = value.offset;
-            while (index < value.offset + value.length &&
-                   value.ch[index] != ' ') {
+            end = value.offset + value.length;
+            while (index < end && value.ch[index] != ' ') {
                 index++;
             }
-        } while (index < value.offset + value.length);
+        } while (index < end);
 
         fStringBuffer.append(value.ch, value.offset, index - value.offset);
 
