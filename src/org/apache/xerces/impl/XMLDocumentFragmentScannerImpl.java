@@ -873,8 +873,8 @@ public class XMLDocumentFragmentScannerImpl
         //REVISIT: one more case needs to be included: external PE and standalone is no
         boolean isVC =  fHasExternalDTD && !fStandalone;        
         scanAttributeValue(fTempString, fTempString2,
-                           fAttributeQName.rawname, attributes,
-                           attrIndex, isVC,fCurrentElement.rawname);
+                           fAttributeQName.rawname, isVC, 
+                           fCurrentElement.rawname);
         attributes.setValue(attrIndex, fTempString.toString());
         attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());
         attributes.setSpecified(attrIndex, true);

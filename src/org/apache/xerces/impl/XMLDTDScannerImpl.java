@@ -1388,8 +1388,7 @@ public class XMLDTDScannerImpl
             }
             // AttValue 
             boolean isVC = !fStandalone  &&  (fSeenExternalDTD || fSeenExternalPE) ;
-            scanAttributeValue(defaultVal, nonNormalizedDefaultVal, atName,
-                               fAttributes, 0, isVC,elName);
+            scanAttributeValue(defaultVal, nonNormalizedDefaultVal, atName, isVC, elName);
         }
         return defaultType;
 

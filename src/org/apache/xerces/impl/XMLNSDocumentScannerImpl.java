@@ -408,10 +408,9 @@ extends XMLDocumentScannerImpl {
         //REVISIT: one more case needs to be included: external PE and standalone is no
         boolean isVC =  fHasExternalDTD && !fStandalone;
 
-        // REVISIT: it seems that this function should not take attributes, and length
         scanAttributeValue(this.fTempString, fTempString2,
-                           fAttributeQName.rawname, attributes,
-                           attrIndex, isVC,fCurrentElement.rawname);
+                           fAttributeQName.rawname, isVC, 
+                           fCurrentElement.rawname);
         String value = fTempString.toString();
         attributes.setValue(attrIndex, value);
         attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());

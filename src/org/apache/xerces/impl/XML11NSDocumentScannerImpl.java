@@ -415,8 +415,6 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
             this.fTempString,
             fTempString2,
             fAttributeQName.rawname,
-            attributes,
-            attrIndex,
             isVC,
             fCurrentElement.rawname);
         String value = fTempString.toString();

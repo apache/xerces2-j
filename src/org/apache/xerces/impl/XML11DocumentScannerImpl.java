@@ -185,10 +185,9 @@ public class XML11DocumentScannerImpl
      * @param nonNormalizedValue The XMLString to fill in with the 
      *                           non-normalized value.
      * @param atName The name of the attribute being parsed (for error msgs).
-     * @param attributes The attributes list for the scanned attribute.
-     * @param attrIndex The index of the attribute to use from the list.
      * @param checkEntities true if undeclared entities should be reported as VC violation,  
      *                      false if undeclared entities should be reported as WFC violation.
+     * @param eleName The name of element to which this attribute belongs.
      *
      * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
@@ -196,7 +195,6 @@ public class XML11DocumentScannerImpl
     protected void scanAttributeValue(XMLString value, 
                                       XMLString nonNormalizedValue,
                                       String atName,
-                                      XMLAttributes attributes, int attrIndex,
                                       boolean checkEntities,String eleName)
         throws IOException, XNIException
     {
