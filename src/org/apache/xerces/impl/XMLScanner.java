@@ -722,6 +722,89 @@ public abstract class XMLScanner
         }
     } // scanAttributeValue()
 
+
+    /**
+     * Scans public ID literal.
+     *
+     * [12] PubidLiteral ::= '"' PubidChar* '"' | "'" (PubidChar - "'")* "'" 
+     * [13] PubidChar::= #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
+     *
+     * The returned string is normalized according to the following rule,
+     * from http://www.w3.org/TR/REC-xml#dt-pubid:
+     *
+     * Before a match is attempted, all strings of white space in the public
+     * identifier must be normalized to single space characters (#x20), and
+     * leading and trailing white space must be removed.
+     *
+     * @param literal The string to fill in with the public ID literal.
+     * @returns True on success.
+     */
+    protected boolean scanPubidLiteral(XMLString literal)
+        throws IOException, SAXException
+    {
+        int quote = fEntityScanner.scanChar();
+        if (quote != '\'' && quote != '"') {
+            reportFatalError("QuoteRequiredInPublicID", null);
+            return false;
+        }
+
+        boolean dataok = true;
+        int c;
+        // skip leading whitespace (tab is not allowed though!)
+        while (true) {
+            c = fEntityScanner.scanChar();
+            if (c == '\t') {
+                dataok = false;
+                reportFatalError("InvalidCharInPublicID",
+                                 new Object[] {Integer.toString(9, 16)});
+            }
+            else if (c != ' ' && c != '\n' && c != '\r') {
+                break;
+            }
+        }
+
+        fStringBuffer.clear();
+        boolean skipSpace = false;
+        while (true) {
+            if (c == '\t') {
+                dataok = false;
+                reportFatalError("InvalidCharInPublicID",
+                                 new Object[] {Integer.toString(9, 16)});
+            }
+            else if (c == ' ' || c == '\n' || c == '\r') {
+                // take the first whitespace as a space and skip the others
+                if (!skipSpace) {
+                    fStringBuffer.append(' ');
+                    skipSpace = true;
+                }
+            }
+            else if (c == quote) {
+                if (skipSpace) {
+                    // if we finished on a space let's trim it
+                    fStringBuffer.length--;
+                }
+                literal.setValues(fStringBuffer);
+                break;
+            }
+            else if (XMLChar.isInvalid(c)) {
+                dataok = false;
+                reportFatalError("InvalidCharInPublicID",
+                                 new Object[]{Integer.toHexString(c)});
+            }
+            else if (c == -1) {
+                reportFatalError("PublicIDUnterminated", null);
+                return false;
+            }
+            else {
+                fStringBuffer.append((char)c);
+                skipSpace = false;
+            }
+            c = fEntityScanner.scanChar();
+        }
+        return dataok;
+   }
+
+
     /**
      * Normalize whitespace in an XMLString according to the rules of attribute
      * value normalization - converting all whitespace characters to space

@@ -1277,7 +1277,7 @@ public class XMLDTDScanner
                 reportFatalError("MSG_SPACE_REQUIRED_BEFORE_PUBIDLITERAL_IN_EXTERNALID",
                                  null);
             }
-            scanLiteral(fLiteral, false);
+            scanPubidLiteral(fLiteral);
             publicId = fLiteral.toString();
             if (!skipSeparator(true, !scanningInternalSubset())) {
                 reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
@@ -1409,7 +1409,7 @@ public class XMLDTDScanner
                 reportFatalError("MSG_SPACE_REQUIRED_AFTER_PUBIDLITERAL_IN_EXTERNALID",
                                  null);
             }
-            scanLiteral(fLiteral, false);
+            scanPubidLiteral(fLiteral);
             publicId = fLiteral.toString();
 
             // skip possible space
@@ -1705,10 +1705,8 @@ public class XMLDTDScanner
                         scanSurrogates(fStringBuffer2);
                     }
                     else if (XMLChar.isInvalid(c)) {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "InvalidCharInLiteral",
-                                                   new Object[] { Integer.toHexString(c) },
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        reportFatalError("InvalidCharInLiteral",
+                                         new Object[]{Integer.toHexString(c)});
                         fEntityScanner.scanChar();
                     }
                     else if (c != quote) {

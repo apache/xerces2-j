@@ -639,37 +639,20 @@ public class XMLDocumentScanner
                 if (!fEntityScanner.skipSpaces()) {
                     reportFatalError("SpaceRequiredAfterPUBLIC", null);
                 }
-                int quote = fEntityScanner.peekChar();
-                if (quote != '\'' && quote != '"') {
-                    reportFatalError("QuoteRequiredInPublicID", null);
-                }
-                fEntityScanner.scanChar();
-                XMLString value = fString;
-                if (fEntityScanner.scanLiteral(quote, fString) != quote) {
-                    fStringBuffer.clear();
-                    do {
-                        fStringBuffer.append(fString);
-                        if (XMLChar.isMarkup(fEntityScanner.peekChar())) {
-                            fStringBuffer.append((char)fEntityScanner.scanChar());
-                        }
-                    } while (fEntityScanner.scanLiteral(quote, fString) != quote);
-                    fStringBuffer.append(fString);
-                    value = fStringBuffer;
-                }
-                publicId = value.toString();
-                if (!fEntityScanner.skipChar(quote)) {
-                    reportFatalError("PublicIDUnterminated", null);
-                }
+                
+                scanPubidLiteral(fString);
+                publicId = fString.toString();
+
                 if (!fEntityScanner.skipSpaces()) {
                     reportFatalError("SpaceRequiredBetweenPublicAndSystem",
                                      null);
                 }
-                quote = fEntityScanner.peekChar();
+                int quote = fEntityScanner.peekChar();
                 if (quote != '\'' && quote != '"') {
                     reportFatalError("QuoteRequiredInSystemID", null);
                 }
                 fEntityScanner.scanChar();
-                value = fString;
+                XMLString value = fString;
                 if (fEntityScanner.scanLiteral(quote, fString) != quote) {
                     fStringBuffer.clear();
                     do {
