@@ -121,9 +121,17 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/w3c/dom	
 	${CP}  ../src/org/w3c/dom/*.class				../class/org/w3c/dom
 
+#-src/org/w3c/dom/events
+	${MKDIR} ../class/org/w3c/dom/events	
+	${CP}  ../src/org/w3c/dom/events/*.class			../class/org/w3c/dom/events
+
 #-src/org/w3c/dom/html
 	${MKDIR} ../class/org/w3c/dom/html	
 	${CP}  ../src/org/w3c/dom/html/*.class				../class/org/w3c/dom/html
+
+#-src/org/w3c/dom/traversal
+	${MKDIR} ../class/org/w3c/dom/traversal	
+	${CP}  ../src/org/w3c/dom/traversal/*.class			../class/org/w3c/dom/traversal
 
 #-src/org/xml/sax
 	${MKDIR} ../class/org/xml/sax
@@ -204,15 +212,6 @@ package_src:
 	${MKDIR} ../source/src/org/apache/xerces/domx
 	${CP}  ../src/org/apache/xerces/domx/*.java  		../source/src/org/apache/xerces/domx
 
-#-src/org/apache/xerces/domx/traversal
-	${MKDIR} ../source/src/org/apache/xerces/domx/traversal
-	${CP}  ../src/org/apache/xerces/domx/traversal/*.java  		../source/src/org/apache/xerces/domx/traversal
-
-#-src/org/apache/xerces/domx/events
-	${MKDIR} ../source/src/org/apache/xerces/domx/events
-	${CP}  ../src/org/apache/xerces/domx/events/*.java  		../source/src/org/apache/xerces/domx/events
-
-
 #-src/org/apache/xerces/framework
 	${MKDIR} ../source/src/org/apache/xerces/framework
 	${CP}  ../src/org/apache/xerces/framework/*.java		../source/src/org/apache/xerces/framework
@@ -268,6 +267,18 @@ package_src:
 #-src/org/w3c/dom
 	${MKDIR} ../source/src/org/w3c/dom	
 	${CP}  ../src/org/w3c/dom/*.java				../source/src/org/w3c/dom
+
+#-src/org/w3c/dom/events
+	${MKDIR} ../source/src/org/w3c/dom/events	
+	${CP}  ../src/org/w3c/dom/events/*.java				../source/src/org/w3c/dom/events
+
+#-src/org/w3c/dom/html
+	${MKDIR} ../source/src/org/w3c/dom/html	
+	${CP}  ../src/org/w3c/dom/html/*.java				../source/src/org/w3c/dom/html
+
+#-src/org/w3c/dom/traversal
+	${MKDIR} ../source/src/org/w3c/dom/traversal	
+	${CP}  ../src/org/w3c/dom/traversal/*.java			../source/src/org/w3c/dom/traversal
 
 #-src/org/xml/sax
 	${MKDIR} ../source/src/org/xml/sax
@@ -326,12 +337,6 @@ package_src:
 #-src/org/apache/xerces/dom/events
 	${CP}  ../src/org/apache/xerces/dom/events/Makefile  		../source/src/org/apache/xerces/dom/events
 
-#-src/org/apache/xerces/domx/traversal
-	${CP}  ../src/org/apache/xerces/domx/traversal/Makefile  		../source/src/org/apache/xerces/domx/traversal
-
-#-src/org/apache/xerces/domx/events
-	${CP}  ../src/org/apache/xerces/domx/events/Makefile  		../source/src/org/apache/xerces/domx/events
-
 #-src/org/apache/xerces/framework
 	${CP}  ../src/org/apache/xerces/framework/Makefile		../source/src/org/apache/xerces/framework
 
@@ -368,6 +373,15 @@ package_src:
 
 #-src/org/w3c/dom
 	${CP}  ../src/org/w3c/dom/Makefile				../source/src/org/w3c/dom
+
+#-src/org/w3c/dom/events
+	${CP}  ../src/org/w3c/dom/events/Makefile			../source/src/org/w3c/dom/events
+
+#-src/org/w3c/dom/html
+	${CP}  ../src/org/w3c/dom/html/Makefile				../source/src/org/w3c/dom/html
+
+#-src/org/w3c/dom/traversal
+	${CP}  ../src/org/w3c/dom/traversal/Makefile			../source/src/org/w3c/dom/traversal
 
 #-src/org/xml/sax
 	${CP}  ../src/org/xml/sax/Makefile				../source/src/org/xml/sax

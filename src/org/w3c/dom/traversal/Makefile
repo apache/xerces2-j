@@ -1,5 +1,5 @@
-include ../../../src/Makefile.incl
-# Makefile for directory ./org/w3c
+include ../../../../../src/Makefile.incl
+# Makefile for directory ./org/w3c/dom/traversal
 #
 # This makefile depends on the following environment variables
 # already being defined:
@@ -10,12 +10,16 @@ include ../../../src/Makefile.incl
 # In addition, the CLASSPATH environment variable must
 # include the absolute path of the base source directory.
 
-TARGETS=
+TARGETS=\
+     DocumentTraversal.class\
+     NodeFilter.class\
+     NodeIterator.class\
+     TreeWalker.class
+
 
 all: dirs compile
 
 dirs:
-	${MAKE} -C dom
 
 compile: ${TARGETS}
 
@@ -25,9 +29,7 @@ compile: ${TARGETS}
 
 .java.class:
 	${JAVAC} $<
-
-	touch ../../../src/classfiles_updated
+	touch ../../../../../src/classfiles_updated
 
 clean:
-	${MAKE} -C dom clean
-
+	${RM} *.class

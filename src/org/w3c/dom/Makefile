@@ -32,6 +32,9 @@ TARGETS=\
 all: dirs compile
 
 dirs:
+	${MAKE} -C events
+	${MAKE} -C html
+	${MAKE} -C traversal
 
 compile: ${TARGETS}
 
@@ -41,7 +44,11 @@ compile: ${TARGETS}
 
 .java.class:
 	${JAVAC} $<
+	touch ../../../../src/classfiles_updated
 
 clean:
 	${RM} *.class
+	${MAKE} -C events clean
+	${MAKE} -C html clean
+	${MAKE} -C traversal clean
 
