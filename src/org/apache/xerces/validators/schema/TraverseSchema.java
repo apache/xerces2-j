@@ -4175,10 +4175,13 @@ public class TraverseSchema implements
 
            // if there are no children, detect an error
            // See the definition of content type in Structures 3.4.1
+           // This is commented out for now, until I get a clarification from schema WG
+           // LM.
 
            if (typeInfo.contentSpecHandle == -2) {
 
-             throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
+             //throw new ComplexTypeRecoverableError("Type '" + typeName + "': The content of a mixed complexType must not be empty");
+             typeInfo.contentType = XMLElementDecl.TYPE_MIXED_SIMPLE;
            }
 
            else
@@ -4880,7 +4883,7 @@ public class TraverseSchema implements
         if (tempType == null) {
          if (!(checkSimpleTypeDerivationOK(derived.datatypeValidator,
                base.datatypeValidator)))
-              throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+              throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
          return;
         }
       }
@@ -5290,29 +5293,58 @@ throws Exception {
 
     private void checkMapAndSum(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
 
-      // See if the sequence group particle is a valid restriction of one of the particles
-      // of the choice
-      // This isn't what the spec says, but I can't make heads or tails of the
-      // algorithm in structures
+      // See if the sequence group is a valid restriction of the choice
 
+      // Here is an example of a valid restriction:
+      //   <choice minOccurs="2">
+      //       <a/>
+      //       <b/>
+      //       <c/>
+      //   </choice>
+      //
+      //   <sequence>
+      //        <b/>
+      //        <a/>
+      //   </sequence>
+
+      // check the occurrence ranges
+      // Occurrence range for the sequence:   
+      // min1 = (length of particles) * min of sequence
+      // max1 = (length of particles) * max of sequence  (or unbounded)
+      // min2 = minOccurs of choice
+      // max2 = maxOccurs of choice
+
+      int count1 = tempVector1.size();
       int count2 = tempVector2.size();
-      boolean foundit = false;
-      for (int i=0; i<count2; i++) {
-         Integer particle = (Integer)tempVector2.elementAt(i);
-         fSchemaGrammar.getContentSpec(particle.intValue(),tempContentSpec1);
-         if (tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_SEQ)
-         try {
-           checkParticleDerivationOK(csIndex1,derivedScope,particle.intValue(),
-               baseScope, bInfo);
-           foundit = true;
-           break;
-         }
-         catch (ParticleRecoverableError e) {
-         }
-      }
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1) * count1;
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      if (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+        max1 = max1 * count1;
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
 
-      if (!foundit)
-	throw new ParticleRecoverableError("rcase-MapAndSum:  There is not a complete functional mapping between the particles");
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        throw new ParticleRecoverableError("rcase-MapAndSum.2:  Occurrence range of group is not a valid restriction of occurence range of base group");
+      }
+       
+      label: for (int i = 0; i<count1; i++) {
+
+        Integer particle1 = (Integer)tempVector1.elementAt(i);
+        for (int j = 0; j<count2; j++) {
+           Integer particle2 = (Integer)tempVector2.elementAt(j);
+           try {
+             checkParticleDerivationOK(particle1.intValue(),derivedScope,
+                particle2.intValue(), baseScope, bInfo);
+
+             continue label;
+           }
+           catch (ParticleRecoverableError e) {
+           }
+        }
+        // didn't find a match.  Detect an error
+	throw new ParticleRecoverableError("rcase-MapAndSum.1:  There is not a complete functional mapping between the particles");
+      }
     }
 
     private int importContentSpec(SchemaGrammar aGrammar, int contentSpecHead ) throws Exception {
