@@ -853,17 +853,21 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             fBusy = false;
         } catch (Exception e){
             fBusy = false;
-            if (fErrorHandler != null) {
-                DOMErrorImpl error = new DOMErrorImpl ();
-                error.fException = e;
-                error.fMessage = e.getMessage ();
-                error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-                fErrorHandler.getErrorHandler ().handleError (error);
+            // Consume this exception if the user 
+            // issued an interrupt or an abort.
+            if (e != abort) {
+                if (fErrorHandler != null) {
+                    DOMErrorImpl error = new DOMErrorImpl ();
+                    error.fException = e;
+                    error.fMessage = e.getMessage ();
+                    error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                    fErrorHandler.getErrorHandler ().handleError (error);
+                }
+                if (DEBUG) {
+                    e.printStackTrace ();
+                }
+                throw new LSException(LSException.PARSE_ERR, e.getMessage());
             }
-            if (DEBUG) {
-                e.printStackTrace ();
-            }
-            throw new LSException(LSException.PARSE_ERR, e.getMessage());
         }
         return getDocument ();
     }
@@ -890,19 +894,22 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             fBusy = false;
         } catch (Exception e) {
             fBusy = false;
-            if (fErrorHandler != null) {
-                DOMErrorImpl error = new DOMErrorImpl ();
-                error.fException = e;
-                error.fMessage = e.getMessage ();
-                error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-                fErrorHandler.getErrorHandler ().handleError (error);
-            }
-            if (DEBUG) {
-                            e.printStackTrace ();
-                        }
-            throw new LSException(LSException.PARSE_ERR, e.getMessage());         
+            // Consume this exception if the user 
+            // issued an interrupt or an abort.
+            if (e != abort) {
+                if (fErrorHandler != null) {
+                   DOMErrorImpl error = new DOMErrorImpl ();
+                   error.fException = e;
+                   error.fMessage = e.getMessage ();
+                   error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
+                   fErrorHandler.getErrorHandler().handleError (error);
+                }
+                if (DEBUG) {
+                   e.printStackTrace ();
+                }
+                throw new LSException(LSException.PARSE_ERR, e.getMessage());
+            }   
         }
-        
         return getDocument ();
     }
     
@@ -990,8 +997,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     public void abort () {
         // If parse operation is in progress then reset it
         if ( fBusy ) {
-        	fBusy = false;
-            throw new RuntimeException("Stopped at user request");
+            fBusy = false;
+            throw abort;
         }
         return; // If not busy then this is noop
     }

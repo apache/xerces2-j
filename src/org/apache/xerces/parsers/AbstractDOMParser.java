@@ -195,6 +195,11 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
     protected static final String PSVI_DOCUMENT_CLASS_NAME =
     "org.apache.xerces.dom.PSVIDocumentImpl";
     
+    /**
+     * If the user stops the process, this exception will be thrown.
+     */
+    public static final RuntimeException abort = new RuntimeException();
+    
     // debugging
     
     private static final boolean DEBUG_EVENTS = false;
@@ -628,7 +633,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 short code = fDOMFilter.acceptNode (comment);
                 switch (code) {
                     case LSParserFilter.FILTER_INTERRUPT:{
-                        throw new RuntimeException ("The normal processing of the document was interrupted.");
+                        throw abort;
                     }
                     case LSParserFilter.FILTER_REJECT:{
                         // REVISIT: the constant FILTER_REJECT should be changed when new
@@ -710,7 +715,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 short code = fDOMFilter.acceptNode (pi);
                 switch (code) {
                     case LSParserFilter.FILTER_INTERRUPT:{
-                        throw new RuntimeException ("The normal processing of the document was interrupted.");
+                        throw abort;
                     }
                     case LSParserFilter.FILTER_REJECT:{
                         // fall through to SKIP since PI has no children.
@@ -1012,7 +1017,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT :
                             {
-                                throw new RuntimeException("The normal processing of the document was interrupted.");
+                                throw abort;
                             }
                         case LSParserFilter.FILTER_REJECT :
                             {
@@ -1295,7 +1300,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (fCurrentNode);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw new RuntimeException ("The normal processing of the document was interrupted.");
+                            throw abort;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             Node parent = fCurrentNode.getParentNode ();
@@ -1387,7 +1392,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (fCurrentCDATASection);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw new RuntimeException ("The normal processing of the document was interrupted.");
+                            throw abort;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             // fall through to SKIP since CDATA section has no children.
@@ -1499,7 +1504,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (fCurrentNode);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw new RuntimeException ("The normal processing of the document was interrupted.");
+                            throw abort;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             Node parent = fCurrentNode.getParentNode ();
@@ -2548,7 +2553,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     short code = fDOMFilter.acceptNode (child);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{
-                            throw new RuntimeException ("The normal processing of the document was interrupted.");
+                            throw abort;
                         }
                         case LSParserFilter.FILTER_REJECT:{
                             // fall through to SKIP since Comment has no children.
@@ -2572,7 +2577,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      * @see org.w3c.dom.ls.LSParser#abort()
      */
     public void abort () {
-        throw new RuntimeException ();
+        throw abort;
     }
     
     
