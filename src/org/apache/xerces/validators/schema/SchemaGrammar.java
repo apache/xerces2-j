@@ -480,8 +480,18 @@ public class SchemaGrammar extends Grammar{
 
           return expandContentModel(contentSpecIndex, minOccurs, maxOccurs);
         }
-        else
-          return contentSpecIndex;
+        else {
+          // When checking Unique Particle Attribution, we have to rename
+          // uri even on zero_or_one, zero_or_more and one_or_more
+          if (checkingUPA) {
+              return addContentSpecNode (fTempContentSpecNode.type,
+                                         convertContentSpecTree(fTempContentSpecNode.value),
+                                         convertContentSpecTree(fTempContentSpecNode.otherValue),
+                                         false);
+          } else {
+              return contentSpecIndex;
+          }
+        }
     }
 
     // Unique Particle Attribution
