@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ import org.w3c.dom.NodeList;
  * A sample DOM counter. This sample program illustrates how to
  * traverse a DOM tree in order to information about the document.
  *
- * @version
+ * @version $id$
  */
 public class DOMCount {
 
@@ -83,7 +83,7 @@ public class DOMCount {
 
     /** Default parser name. */
     private static final String
-        DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
+    DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
@@ -118,26 +118,30 @@ public class DOMCount {
 
         try {
             DOMParserWrapper parser =
-                (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
+            (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
             DOMCount counter = new DOMCount();
             long before = System.currentTimeMillis();
-            parser.setFeatures( new Features( setValidation, setNameSpaces, 
-                                    setSchemaSupport, setDeferredDOM ) );
+            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+
+                               setDeferredDOM );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                               setValidation );
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                               setNameSpaces );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                               setSchemaSupport );
 
             Document document = parser.parse(uri);
             counter.traverse(document);
             long after = System.currentTimeMillis();
             counter.printResults(uri, after - before);
-        }
-        catch (org.xml.sax.SAXParseException spe) {
-        }
-        catch (org.xml.sax.SAXException se) {
+        } catch (org.xml.sax.SAXParseException spe) {
+        } catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
             else
                 se.printStackTrace(System.err);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -157,8 +161,8 @@ public class DOMCount {
 
         int type = node.getNodeType();
         switch (type) {
-            // print document
-            case Node.DOCUMENT_NODE: {
+        // print document
+        case Node.DOCUMENT_NODE: {
                 elements            = 0;
                 attributes          = 0;
                 characters          = 0;
@@ -168,7 +172,7 @@ public class DOMCount {
             }
 
             // print element with attributes
-            case Node.ELEMENT_NODE: {
+        case Node.ELEMENT_NODE: {
                 elements++;
                 NamedNodeMap attrs = node.getAttributes();
                 if (attrs != null) {
@@ -185,7 +189,7 @@ public class DOMCount {
             }
 
             // handle entity reference nodes
-            case Node.ENTITY_REFERENCE_NODE: {
+        case Node.ENTITY_REFERENCE_NODE: {
                 NodeList children = node.getChildNodes();
                 if (children != null) {
                     int len = children.getLength();
@@ -197,11 +201,11 @@ public class DOMCount {
             }
 
             // print text
-            case Node.CDATA_SECTION_NODE: {
+        case Node.CDATA_SECTION_NODE: {
                 characters += node.getNodeValue().length();
                 break;
             }
-            case Node.TEXT_NODE: {
+        case Node.TEXT_NODE: {
                 if (node instanceof TextImpl) {
                     if (((TextImpl)node).isIgnorableWhitespace())
                         ignorableWhitespace += node.getNodeValue().length();
@@ -244,20 +248,20 @@ public class DOMCount {
 
         Arguments argopt = new Arguments();
         argopt.setUsage( new String[] {
-        "usage: java dom.DOMCount (options) uri ...",
-                  "",
-                  "options:",
-                  "  -p name  Specify DOM parser wrapper by name.",
-                  "           Default parser: ",
-                  "  -n turn on  Namespace  - default",
-                  "  -v turn on  Validation - default",
-                  "  -s turn on  Schema support - default",
-                  "  -d turn on  Deferred DOM - default",
-                  "  -N turn off Namespace",
-                  "  -V turn off Validation",
-                  "  -S turn off Schema validation",
-                  "  -D turn off Deferred DOM",
-                  "  -h       This help screen." } );
+                             "usage: java dom.DOMCount (options) uri ...",
+                             "",
+                             "options:",
+                             "  -p name  Specify DOM parser wrapper by name.",
+                             "           Default parser: ",
+                             "  -n turn on  Namespace  - default",
+                             "  -v turn on  Validation - default",
+                             "  -s turn on  Schema support - default",
+                             "  -d turn on  Deferred DOM - default",
+                             "  -N turn off Namespace",
+                             "  -V turn off Validation",
+                             "  -S turn off Schema validation",
+                             "  -D turn off Deferred DOM",
+                             "  -h       This help screen."} );
 
 
         // is there anything to do?
@@ -313,9 +317,9 @@ public class DOMCount {
         }
 
         // count uri
-        
-        for( int j = 0; j<argopt.stringParameterLeft(); j++){
-               count(parserName, argopt.getStringParameter());
+
+        for ( int j = 0; j<argopt.stringParameterLeft(); j++){
+            count(parserName, argopt.getStringParameter());
         }
 
     } // main(String[])

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@ import org.apache.xerces.readers.MIME2Java;
  * A sample DOM writer. This sample program illustrates how to
  * traverse a DOM tree in order to print a document that is parsed.
  *
- * @version
+ * @version $Id$
  */
 public class DOMWriter {
 
@@ -194,8 +194,15 @@ public class DOMWriter {
         try {
             DOMParserWrapper parser = 
             (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
-            parser.setFeatures( new Features( setValidation, setNameSpaces, 
-                                              setSchemaSupport, setDeferredDOM ) );
+
+            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+                               setDeferredDOM );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                               setValidation );
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                               setNameSpaces );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                               setSchemaSupport );
 
             Document document = parser.parse(uri);
             DOMWriter writer = new DOMWriter(canonical);

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@
  */
 
 package dom;                    
-                    
+
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -73,7 +73,7 @@ import org.w3c.dom.NodeList;
  * use the Document#getElementsByTagName() method to quickly 
  * and easily locate elements by name.
  *
- * @version
+ * @version $Id$
  */
 public class DOMFilter {
 
@@ -83,7 +83,7 @@ public class DOMFilter {
 
     /** Default parser name. */
     private static final String 
-        DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
+    DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
@@ -103,9 +103,21 @@ public class DOMFilter {
         try {
             // parse document
             DOMParserWrapper parser = 
-                (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
-            parser.setFeatures( new Features( setValidation, setNameSpaces, 
-                        setSchemaSupport, setDeferredDOM ) );
+            (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
+
+            try {
+                parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+                                   setDeferredDOM );
+                parser.setFeature( "http://xml.org/sax/features/validation", 
+                                   setValidation );
+                parser.setFeature( "http://xml.org/sax/features/namespaces",
+                                   setNameSpaces );
+                parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                                   setSchemaSupport );
+            } catch (SAXException e) {
+                System.out.println("error in setting up parser feature");
+            }
+
 
             Document document = parser.parse(uri);
 
@@ -114,8 +126,7 @@ public class DOMFilter {
 
             // print nodes
             print(elements, attributeName);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -188,30 +199,30 @@ public class DOMFilter {
         for (int i = 0; i < len; i++) {
             char ch = s.charAt(i);
             switch (ch) {
-                case '<': {
+            case '<': {
                     str.append("&lt;");
                     break;
                 }
-                case '>': {
+            case '>': {
                     str.append("&gt;");
                     break;
                 }
-                case '&': {
+            case '&': {
                     str.append("&amp;");
                     break;
                 }
-                case '"': {
+            case '"': {
                     str.append("&quot;");
                     break;
                 }
-                case '\r':
-                case '\n': {
+            case '\r':
+            case '\n': {
                     str.append("&#");
                     str.append(Integer.toString(ch));
                     str.append(';');
                     break;
                 }
-                default: {
+            default: {
                     str.append(ch);
                 }
             }
@@ -230,21 +241,21 @@ public class DOMFilter {
 
         Arguments argopt = new Arguments();
         argopt.setUsage( new String[] 
-        { "usage: java dom.DOMFilter (options) uri ...","",
-        "options:",
-        "  -p name  Specify DOM parser wrapper by name.",
-        "           Default parser: "+DEFAULT_PARSER_NAME,
-        "  -e name  Specify element name to search for. Default is \"*\".",
-        "  -a name  Specify attribute name of specified elements.",
-        "  -n turn on  Namespace  - default",
-        "  -v turn on  Validation - default",
-        "  -s turn on  Schema support - default",
-        "  -d turn on  Deferred DOM - default",
-        "  -N turn off Namespace",
-        "  -V turn off Validation",
-        "  -S turn off Schema validation",
-        "  -D turn off Deferred DOM",
-        "  -h       This help screen." } );
+                         { "usage: java dom.DOMFilter (options) uri ...","",
+                             "options:",
+                             "  -p name  Specify DOM parser wrapper by name.",
+                             "           Default parser: "+DEFAULT_PARSER_NAME,
+                             "  -e name  Specify element name to search for. Default is \"*\".",
+                             "  -a name  Specify attribute name of specified elements.",
+                             "  -n turn on  Namespace  - default",
+                             "  -v turn on  Validation - default",
+                             "  -s turn on  Schema support - default",
+                             "  -d turn on  Deferred DOM - default",
+                             "  -N turn off Namespace",
+                             "  -V turn off Validation",
+                             "  -S turn off Schema validation",
+                             "  -D turn off Deferred DOM",
+                             "  -h       This help screen."} );
 
         // is there anything to do?
         if (argv.length == 0) {
@@ -307,7 +318,7 @@ public class DOMFilter {
         }
 
         // count uri
-        
+
         String argument = argopt.getStringParameter();
         ////
 
@@ -315,8 +326,8 @@ public class DOMFilter {
         // check parameters
 
         // print uri
-         System.err.println(argument+':');
-            print(parserName, argument, elementName, attributeName);
+        System.err.println(argument+':');
+        print(parserName, argument, elementName, attributeName);
 
     } // main(String[])
 
