@@ -99,7 +99,7 @@
  <anchor name="xml-schema-api-documentation"/>
  <s2 title='XML Schema API Documentation'>
   <p>
-   The <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump> 
+   The <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump> 
    specification defines a set of interfaces for accessing and querying the post schema 
    validation infoset (PSVI) defined in 
    <jump href="http://www.w3.org/TR/xmlschema-1/#PSVI_contributions">Contributions 

@@ -72,14 +72,14 @@
     <q>Does Xerces provide access to the post schema validation infoset (PSVI)?</q>
     <a>
       <p>
-	Xerces implements the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump> specification that defines an API for accessing and querying the post schema validation infoset (PSVI) as defined in <jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
+	Xerces implements the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump> specification that defines an API for accessing and querying the post schema validation infoset (PSVI) as defined in <jump href='http://www.w3.org/TR/xmlschema-1/#PSVI_contributions'>
 	  Contributions to the post-schema-validation infoset (Appendix C.2)</jump>. 
           This API also defines interfaces for loading XML schema documents. 
       </p>
       <p>For more information please refer to the 
          <link idref='api' anchor='xml-schema-api-documentation'>interfaces</link>.
       </p>
-<note>The Xerces 2.6.2 release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>. In particular in the XSModel interface the order of the parameters in getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup methods have been changed from (String namespace, String name) to (String name, String namespace). 
+<note>The Xerces 2.6.2 release fixes a documentation bug in the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump>. In particular in the XSModel interface the order of the parameters in getTypeDefinition, getNotationDeclaration, getModelGroupDefinition, getElementDeclaration, getAttributeDeclaration, getAttributeGroup methods have been changed from (String namespace, String name) to (String name, String namespace). 
 </note>
     </a>
   </faq>
@@ -90,7 +90,7 @@
       <p>
         The PSVI interfaces which used to be part of the <code>org.apache.xerces.xni.psvi</code>
         and <code>org.apache.xerces.impl.xs.psvi</code> packages were modified and have been moved
-        into the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>.
+        into the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump>.
       </p>
     </a>
   </faq>
@@ -210,7 +210,7 @@ PSVIProvider psviProvider = (PSVIProvider)parser;</source>
   <q>Can I parse and query XML Schema components in memory?</q>
   <a>
    <p>
-       Yes, the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>
+       Yes, the <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump>
        specification defines an interface called <code>XSLoader</code> which provides methods 
        for loading XML Schema documents into an <code>XSModel</code>. The <code>XSImplementation</code>
        interface provides a method to create an <code>XSLoader</code> using the 

@@ -363,7 +363,7 @@ DocumentBuilder builder = // JAXP factory invocation
         Yes, for grammar types for which such an API is defined.
         No such API exists at the current moment for DTD's.  For
         XML Schemas, Xerces implements the 
-        <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040122/">XML Schema API</jump>.
+        <jump href="http://www.w3.org/Submission/2004/SUBM-xmlschema-api-20040309/">XML Schema API</jump>.
         For details, it's best to look at the 
         <link idref="api" anchor="xml-schema-api-documentation">API</link> docs for
         the <code>org.apache.xerces.xs</code>
