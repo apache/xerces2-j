@@ -311,9 +311,8 @@ catch (SAXException e) {
    <default value='false'/>
    <access parsing='read-only' not-parsing='read-write'/>
    <note>
-    &ParserName; does not support interning all strings using the 
-    <code>String#intern()</code> method because &ParserName; does its
-    own intern optimizations for String objects.
+    &ParserName; always internalizes all strings mentioned above
+    using the <code>String#intern()</code> method.
    </note>
   </feature>
  </fcategory>

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  
+ * Copyright (c) 2001 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -98,7 +98,7 @@ import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- * This is the base class of all SAX parsers. It implements both the 
+ * This is the base class of all SAX parsers. It implements both the
  * SAX1 and SAX2 parser functionality, while the actual pipeline is
  * defined in the parser configuration.
  *
@@ -106,7 +106,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author Arnaud Le Hors, IBM
  * @author Andy Clark, IBM
  *
- * @version $Id$ 
+ * @version $Id$
  */
 public abstract class AbstractSAXParser
     extends AbstractXMLDocumentParser
@@ -165,14 +165,14 @@ public abstract class AbstractSAXParser
     protected QName fQName = new QName();
 
     // symbols
-       
+
     /** Symbol: empty string (""). */
     private String fEmptySymbol;
     private String fXmlnsSymbol;
 
     // state
 
-    /** 
+    /**
      * True if a parse is in progress. This state is needed because
      * some features/properties cannot be set while parsing (e.g.
      * validation and namespaces).
@@ -220,10 +220,10 @@ public abstract class AbstractSAXParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
-     *     
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding)
         throws XNIException {
 
         try {
@@ -251,7 +251,7 @@ public abstract class AbstractSAXParser
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
-     * 
+     *
      * @param rootElement The name of the root element.
      * @param publicId    The public identifier if an external DTD or null
      *                    if the external DTD is specified using SYSTEM.
@@ -280,7 +280,7 @@ public abstract class AbstractSAXParser
     /**
      * The start of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
-     * 
+     *
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
@@ -305,13 +305,13 @@ public abstract class AbstractSAXParser
      * The start of an element. If the document specifies the start element
      * by using an empty tag, then the startElement method will immediately
      * be followed by the endElement method, with no intervening methods.
-     * 
+     *
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startElement(QName element, XMLAttributes attributes) 
+    public void startElement(QName element, XMLAttributes attributes)
         throws XNIException {
 
         try {
@@ -320,10 +320,10 @@ public abstract class AbstractSAXParser
                 fAttributesProxy.setAttributes(attributes);
                 fDocumentHandler.startElement(element.rawname, fAttributesProxy);
             }
-    
+
             // SAX2
             if (fContentHandler != null) {
-    
+
                 if (!fNamespacePrefixes) {
                     // remove namespace declaration attributes
                     int len = attributes.getLength();
@@ -335,11 +335,11 @@ public abstract class AbstractSAXParser
                         }
                     }
                 }
-    
+
                 String uri = element.uri != null ? element.uri : fEmptySymbol;
                 String localpart = fNamespaces ? element.localpart : fEmptySymbol;
                 fAttributesProxy.setAttributes(attributes);
-                fContentHandler.startElement(uri, localpart, element.rawname, 
+                fContentHandler.startElement(uri, localpart, element.rawname,
                                              fAttributesProxy);
             }
         }
@@ -351,7 +351,7 @@ public abstract class AbstractSAXParser
 
     /**
      * Character content.
-     * 
+     *
      * @param text The content.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -386,7 +386,7 @@ public abstract class AbstractSAXParser
      * example, the validator can determine if a length of whitespace
      * characters in the document are ignorable based on the element
      * content model.
-     * 
+     *
      * @param text The ignorable whitespace.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -412,7 +412,7 @@ public abstract class AbstractSAXParser
 
     /**
      * The end of an element.
-     * 
+     *
      * @param element The name of the element.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -442,7 +442,7 @@ public abstract class AbstractSAXParser
     /**
      * The end of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
-     * 
+     *
      * @param prefix The namespace prefix.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -491,7 +491,7 @@ public abstract class AbstractSAXParser
 
     /**
      * This method notifies of the start of an entity. The DTD has the
-     * pseudo-name of "[dtd]; parameter entity names start with '%'; and 
+     * pseudo-name of "[dtd]; parameter entity names start with '%'; and
      * general entity names are just the entity name.
      * <p>
      * <strong>Note:</strong> Since the document is an entity, the handler
@@ -507,7 +507,7 @@ public abstract class AbstractSAXParser
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity if the entity
      *                 is external, null otherwise.
@@ -521,7 +521,7 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
-                            String baseSystemId, String encoding) 
+                            String baseSystemId, String encoding)
         throws XNIException {
 
         try {
@@ -537,7 +537,7 @@ public abstract class AbstractSAXParser
     } // startEntity(String,String,String,String,String)
 
     /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name 
+     * This method notifies the end of an entity. The DTD has the pseudo-name
      * of "[dtd]; parameter entity names start with '%'; and general entity
      * names are just the entity name.
      * <p>
@@ -554,7 +554,7 @@ public abstract class AbstractSAXParser
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param name The name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -573,8 +573,8 @@ public abstract class AbstractSAXParser
 
     } // endEntity(String)
 
-    /** 
-     * The start of a CDATA section. 
+    /**
+     * The start of a CDATA section.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -593,7 +593,7 @@ public abstract class AbstractSAXParser
     } // startCDATA()
 
     /**
-     * The end of a CDATA section. 
+     * The end of a CDATA section.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -613,7 +613,7 @@ public abstract class AbstractSAXParser
 
     /**
      * A comment.
-     * 
+     *
      * @param text The text in the comment.
      *
      * @throws XNIException Thrown by application to signal an error.
@@ -626,7 +626,7 @@ public abstract class AbstractSAXParser
                 fLexicalHandler.comment(text.ch, 0, text.length);
             }
         }
-        catch (SAXException e) { 
+        catch (SAXException e) {
             throw new XNIException(e);
         }
 
@@ -642,7 +642,7 @@ public abstract class AbstractSAXParser
      * element attributes but are <strong>not</strong> parsed or presented
      * to the application as anything other than text. The application is
      * responsible for parsing the data.
-     * 
+     *
      * @param target The target.
      * @param data   The data or null if none specified.
      *
@@ -681,13 +681,13 @@ public abstract class AbstractSAXParser
 
     /**
      * An element declaration.
-     * 
+     *
      * @param name         The name of the element.
      * @param contentModel The element content model.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, String contentModel) 
+    public void elementDecl(String name, String contentModel)
         throws XNIException {
 
         try {
@@ -704,13 +704,13 @@ public abstract class AbstractSAXParser
 
     /**
      * An attribute declaration.
-     * 
+     *
      * @param elementName   The name of the element that this attribute
      *                      is associated with.
      * @param attributeName The name of the attribute.
      * @param type          The attribute type. This value will be one of
      *                      the following: "CDATA", "ENTITY", "ENTITIES",
-     *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
+     *                      "ENUMERATION", "ID", "IDREF", "IDREFS",
      *                      "NMTOKEN", "NMTOKENS", or "NOTATION".
      * @param enumeration   If the type has the value "ENUMERATION" or
      *                      "NOTATION", this array holds the allowed attribute
@@ -723,8 +723,8 @@ public abstract class AbstractSAXParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void attributeDecl(String elementName, String attributeName, 
-                              String type, String[] enumeration, 
+    public void attributeDecl(String elementName, String attributeName,
+                              String type, String[] enumeration,
                               String defaultType, XMLString defaultValue)
         throws XNIException {
 
@@ -757,13 +757,13 @@ public abstract class AbstractSAXParser
 
     /**
      * An internal entity declaration.
-     * 
+     *
      * @param name The name of the entity. Parameter entity names start with
-     *             '%', whereas the name of a general entity is just the 
+     *             '%', whereas the name of a general entity is just the
      *             entity name.
      * @param text The value of the entity.
      * @param nonNormalizedText The non-normalized value of the entity. This
-     *             value contains the same sequence of characters that was in 
+     *             value contains the same sequence of characters that was in
      *             the internal entity declaration, without any entity
      *             references expanded.
      *
@@ -787,7 +787,7 @@ public abstract class AbstractSAXParser
 
     /**
      * An external entity declaration.
-     * 
+     *
      * @param name     The name of the entity. Parameter entity names start
      *                 with '%', whereas the name of a general entity is just
      *                 the entity name.
@@ -815,7 +815,7 @@ public abstract class AbstractSAXParser
 
     /**
      * An unparsed entity declaration.
-     * 
+     *
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity, or null if not
      *                 specified.
@@ -844,7 +844,7 @@ public abstract class AbstractSAXParser
 
     /**
      * A notation declaration
-     * 
+     *
      * @param name     The name of the notation.
      * @param publicId The public identifier of the notation, or null if not
      *                 specified.
@@ -957,12 +957,12 @@ public abstract class AbstractSAXParser
      * @exception org.xml.sax.SAXException
      * @exception java.io.IOException
      */
-    public void parse(InputSource inputSource) 
+    public void parse(InputSource inputSource)
         throws SAXException, IOException {
 
         // parse document
         try {
-            XMLInputSource xmlInputSource = 
+            XMLInputSource xmlInputSource =
                 new XMLInputSource(inputSource.getPublicId(),
                                    inputSource.getSystemId(),
                                    null);
@@ -987,7 +987,7 @@ public abstract class AbstractSAXParser
             throw new SAXException(ex);
         }
 
-    } // parse(InputSource) 
+    } // parse(InputSource)
 
     /**
      * Sets the resolver used to resolve external entities. The EntityResolver
@@ -999,7 +999,7 @@ public abstract class AbstractSAXParser
     public void setEntityResolver(EntityResolver resolver) {
 
         try {
-            fConfiguration.setProperty(ENTITY_RESOLVER, 
+            fConfiguration.setProperty(ENTITY_RESOLVER,
                                        new EntityResolverWrapper(resolver));
         }
         catch (XMLConfigurationException e) {
@@ -1019,7 +1019,7 @@ public abstract class AbstractSAXParser
 
         EntityResolver entityResolver = null;
         try {
-            XMLEntityResolver xmlEntityResolver = 
+            XMLEntityResolver xmlEntityResolver =
                 (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
             if (xmlEntityResolver != null &&
                 xmlEntityResolver instanceof EntityResolverWrapper) {
@@ -1047,14 +1047,14 @@ public abstract class AbstractSAXParser
      * handler immediately.</p>
      *
      * @param errorHandler The error handler.
-     * @exception java.lang.NullPointerException If the handler 
+     * @exception java.lang.NullPointerException If the handler
      *            argument is null.
      * @see #getErrorHandler
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
 
         try {
-            fConfiguration.setProperty(ERROR_HANDLER, 
+            fConfiguration.setProperty(ERROR_HANDLER,
                                        new ErrorHandlerWrapper(errorHandler));
         }
         catch (XMLConfigurationException e) {
@@ -1074,9 +1074,9 @@ public abstract class AbstractSAXParser
 
         ErrorHandler errorHandler = null;
         try {
-            XMLErrorHandler xmlErrorHandler = 
+            XMLErrorHandler xmlErrorHandler =
                 (XMLErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
-            if (xmlErrorHandler != null && 
+            if (xmlErrorHandler != null &&
                 xmlErrorHandler instanceof ErrorHandlerWrapper) {
                 errorHandler = ((ErrorHandlerWrapper)xmlErrorHandler).getErrorHandler();
             }
@@ -1116,7 +1116,7 @@ public abstract class AbstractSAXParser
      *
      * @param dtdHandler The DTD handler.
      *
-     * @exception java.lang.NullPointerException If the handler 
+     * @exception java.lang.NullPointerException If the handler
      *            argument is null.
      *
      * @see #getDTDHandler
@@ -1171,7 +1171,7 @@ public abstract class AbstractSAXParser
      *
      * @param contentHandler The content handler.
      *
-     * @exception java.lang.NullPointerException If the handler 
+     * @exception java.lang.NullPointerException If the handler
      *            argument is null.
      *
      * @see #getContentHandler
@@ -1224,10 +1224,10 @@ public abstract class AbstractSAXParser
             //
             // SAX2 Features
             //
-    
+
             if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
                 String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
-    
+
                 // http://xml.org/sax/features/namespaces
                 if (feature.equals(Constants.NAMESPACES_FEATURE)) {
                     fConfiguration.setFeature(featureId, state);
@@ -1235,9 +1235,9 @@ public abstract class AbstractSAXParser
                     return;
                 }
                 // http://xml.org/sax/features/namespace-prefixes
-                //   controls the reporting of raw prefixed names and Namespace 
-                //   declarations (xmlns* attributes): when this feature is false 
-                //   (the default), raw prefixed names may optionally be reported, 
+                //   controls the reporting of raw prefixed names and Namespace
+                //   declarations (xmlns* attributes): when this feature is false
+                //   (the default), raw prefixed names may optionally be reported,
                 //   and xmlns* attributes must not be reported.
                 //
                 if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
@@ -1250,7 +1250,7 @@ public abstract class AbstractSAXParser
                 //   passed to SAX handlers.
                 //
                 if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
-                    if (state) {
+                    if (!state) {
                         // REVISIT: Localize this error message. -Ac
                         throw new SAXNotSupportedException(
                             "PAR018 " + state + " state for feature \"" + featureId
@@ -1258,16 +1258,16 @@ public abstract class AbstractSAXParser
                     }
                     return;
                 }
-       
+
                 //
                 // Drop through and perform default processing
                 //
             }
-    
+
             //
             // Xerces Features
             //
-    
+
             /*
             else if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
                 String feature = featureId.substring(XERCES_FEATURES_PREFIX.length());
@@ -1276,7 +1276,7 @@ public abstract class AbstractSAXParser
                 //
             }
             */
-    
+
             //
             // Default handling
             //
@@ -1322,9 +1322,9 @@ public abstract class AbstractSAXParser
                     featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
 
                 // http://xml.org/sax/features/namespace-prefixes
-                //   controls the reporting of raw prefixed names and Namespace 
-                //   declarations (xmlns* attributes): when this feature is false 
-                //   (the default), raw prefixed names may optionally be reported, 
+                //   controls the reporting of raw prefixed names and Namespace
+                //   declarations (xmlns* attributes): when this feature is false
+                //   (the default), raw prefixed names may optionally be reported,
                 //   and xmlns* attributes must not be reported.
                 //
                 if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
@@ -1336,7 +1336,7 @@ public abstract class AbstractSAXParser
                 //   passed to SAX handlers.
                 //
                 if (feature.equals(Constants.STRING_INTERNING_FEATURE)) {
-                    return false;
+                    return true;
                 }
 
                 //
@@ -1603,7 +1603,7 @@ public abstract class AbstractSAXParser
      * @see #getDeclHandler
      * @see #setProperty
      */
-    protected void setDeclHandler(DeclHandler handler) 
+    protected void setDeclHandler(DeclHandler handler)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         if (fParseInProgress) {
@@ -1622,7 +1622,7 @@ public abstract class AbstractSAXParser
      *
      * @see #setDeclHandler
      */
-    protected DeclHandler getDeclHandler() 
+    protected DeclHandler getDeclHandler()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fDeclHandler;
     } // getDeclHandler():DeclHandler
@@ -1659,7 +1659,7 @@ public abstract class AbstractSAXParser
      *
      * @see #setLexicalHandler
      */
-    protected LexicalHandler getLexicalHandler() 
+    protected LexicalHandler getLexicalHandler()
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fLexicalHandler;
     } // getLexicalHandler():LexicalHandler
@@ -1668,8 +1668,8 @@ public abstract class AbstractSAXParser
     // XMLDocumentParser methods
     //
 
-    /** 
-     * Reset all components before parsing. 
+    /**
+     * Reset all components before parsing.
      *
      * @throws SAXException Thrown if an error occurs during initialization.
      */
@@ -1698,7 +1698,7 @@ public abstract class AbstractSAXParser
 
     protected static class LocatorProxy
         implements Locator {
-        
+
         //
         // Data
         //
@@ -1798,7 +1798,7 @@ public abstract class AbstractSAXParser
         public String getValue(String name) {
             return fAttributes.getValue(name);
         }
-        
+
         public String getValue(String uri, String localName) {
             return fAttributes.getValue(uri, localName);
         }
