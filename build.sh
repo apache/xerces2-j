@@ -19,7 +19,7 @@ uname | grep WIN && CLPATHSEP=\;
 
 # Keep this classpath to the minimum required to run ant
 # Application dependent classpaths are specified in build.xml 
-LOCALCLASSPATH="$JAVA_HOME/lib/tools.jar${CLPATHSEP}${JAVA_HOME}/lib/classes.zip${CLPATHSEP}./tools/ant.jar${CLPATHSEP}./tools/xerces.jar"
+LOCALCLASSPATH="$JAVA_HOME/lib/tools.jar${CLPATHSEP}${JAVA_HOME}/lib/classes.zip${CLPATHSEP}./tools/ant.jar${CLPATHSEP}./tools/xercesImpl.jar${CLPATHSEP}./tools/xml-apis.jar${CLPATHSEP}./tools/bin/xjavac.jar"
 ANT_HOME=./tools
 
 echo Building with classpath \"$LOCALCLASSPATH\"

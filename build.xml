@@ -17,6 +17,10 @@ Copyright:
 ==================================================================== -->
 
 <project default="usage" basedir=".">
+
+  <!-- enable compilation under IBM JDK 1.4 -->
+  <taskdef name="xjavac" classname="org.apache.xerces.util.XJavac"/>
+
   <!-- Allow properties following these statements to be overridden -->
   <!-- Note that all of these don't have to exist.  They've just been defined
        incase they are used. -->
@@ -196,19 +200,14 @@ Copyright:
       </fileset>
     </copy>
 
-    <javac srcdir="${build.src}"
+    <xjavac srcdir="${build.src}"
            excludes="**/RevalidatingDOMParser.java"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
            includeAntRuntime="false"
-           includeJavaRuntime="false"
-    />
-    <!--
-    bootclasspath="${build.src}"
-    extdirs="${build.src}"
-    -->
+           includeJavaRuntime="false"/>
   </target>
 
   <!-- =================================================================== -->
@@ -267,7 +266,7 @@ Copyright:
            excludes="dom/DOMAddLines.java 
                      dom/DOM3.java" />
     </copy>
-    <javac srcdir="${build.samples}"
+    <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes"
            debug="${debug}"
@@ -284,7 +283,7 @@ Copyright:
         <fileset dir="${tests.dir}"
          excludes="dom/rename/**, dom/dom3/**, dom/registry/**, dom/mem/**" />
     </copy>
-    <javac srcdir="${build.tests}"
+    <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"
@@ -743,7 +742,7 @@ Copyright:
       </fileset>
     </copy>
 
-    <javac srcdir="${build.src}"
+    <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
@@ -865,7 +864,7 @@ Copyright:
       </fileset>
     </copy>
 
-    <javac srcdir="${build.src}"
+    <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
@@ -1043,7 +1042,7 @@ Copyright:
       </fileset>
     </copy>
 
-    <javac srcdir="${build.src}"
+    <xjavac srcdir="${build.src}"
            excludes="**/RevalidatingDOMParser.java"
            destdir="${build.dest}"
            debug="${debug}"
@@ -1069,7 +1068,7 @@ Copyright:
              token="org.apache.xerces.dom3.DOMErrorHandler" value="org.w3c.dom.DOMErrorHandler"/>
  
 
-   <javac srcdir="${build.samples}"
+   <xjavac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes"
            debug="${debug}"
@@ -1088,7 +1087,7 @@ Copyright:
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}" />
     </copy>
-    <javac srcdir="${build.tests}"
+    <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
            classpath="${build.dir}/classes:./tools/junit.jar"
            debug="${debug}"
