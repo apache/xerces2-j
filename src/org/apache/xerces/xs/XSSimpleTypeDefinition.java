@@ -175,8 +175,8 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * this simple type definition. This method must not be used to retrieve 
      * values for <code>enumeration</code> and <code>pattern</code> facets. 
      * @param facetName The name of the facet, i.e. 
-     *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see 
-     *   <code>XSConstants</code>). To retrieve the value for a pattern or 
+     *   <code>FACET_LENGTH, FACET_TOTALDIGITS</code>.
+     *   To retrieve the value for a pattern or 
      *   an enumeration, see <code>enumeration</code> and 
      *   <code>pattern</code>.
      * @return A value of the facet specified in <code>facetName</code> for 
