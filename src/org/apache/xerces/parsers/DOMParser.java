@@ -74,6 +74,8 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
+import org.w3c.dom.Node;
+
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -488,6 +490,21 @@ public class DOMParser
      */
     public Object getProperty(String propertyId)
         throws SAXNotRecognizedException, SAXNotSupportedException {
+
+       if (propertyId.equals(CURRENT_ELEMENT_NODE)) {
+           boolean deferred = true;
+           try {
+               deferred = getFeature(DEFER_NODE_EXPANSION);
+           }
+           catch (XMLConfigurationException e){
+               // ignore
+           }
+           if (deferred) {
+               throw new SAXNotSupportedException("Current element node cannot be queried when node expansion is deferred.");
+           }
+           return (fCurrentNode!=null && 
+                   fCurrentNode.getNodeType() == Node.ELEMENT_NODE)? fCurrentNode:null;
+       }
 
         try {
             return fConfiguration.getProperty(propertyId);

@@ -148,6 +148,9 @@ public abstract class AbstractDOMParser
     protected static final String DEFAULT_DOCUMENT_CLASS_NAME =
         "org.apache.xerces.dom.DocumentImpl";
 
+    protected static final String  CURRENT_ELEMENT_NODE=  
+        Constants.XERCES_FEATURE_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
+
     // debugging
 
     /** Set to true and recompile to debug entity references. */
