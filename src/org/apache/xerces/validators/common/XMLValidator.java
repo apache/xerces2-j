@@ -922,16 +922,16 @@ public final class XMLValidator
          bindNamespacesToElementAndAttributes(element, fAttrList);
       }
 
-      //before we increment the element depth, add this element's QName to its enclosing element 's children list
-      fElementDepth++;
-
       validateElementAndAttributes(element, fAttrList);
       if (fAttrListHandle != -1) {
          fAttrList.endAttrList();
       }
 
       fDocumentHandler.startElement(element, fAttrList, fAttrListHandle);
-      
+      fAttrListHandle = -1; 
+      //before we increment the element depth, add this element's QName to its enclosing element 's children list
+      fElementDepth++;
+
       //if (fElementDepth >= 0) {
       // REVISIT: Why are doing anything if the grammar is null? -Ac
       if (fValidating) {
