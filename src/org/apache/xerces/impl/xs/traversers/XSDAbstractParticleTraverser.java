@@ -262,6 +262,9 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 // A content type of all can only appear
                 // as the content type of a complex type definition.
                 if (hasAllContent(particle)) {
+                    // don't insert the "all" particle, otherwise we won't be
+                    // able to create DFA from this content model
+                    particle = null;
                     Object [] args;
                     if (choice) {
                         args = new Object[]{SchemaSymbols.ELT_CHOICE};
