@@ -474,20 +474,38 @@ public class AttrImpl
         if (hasStringValue()) {
             return (String) value;
         }
+        
         ChildNode firstChild = ((ChildNode) value);
-        ChildNode node = firstChild.nextSibling;
-        if (node == null) {
-            return firstChild.getNodeValue();
+
+        String data = null;
+        if (firstChild.getNodeType() == Node.ENTITY_REFERENCE_NODE){
+                data = ((EntityReferenceImpl)firstChild).getEntityRefValue();
         }
-    	StringBuffer value = new StringBuffer(firstChild.getNodeValue());
+        else {
+                data =  firstChild.getNodeValue();
+        }
+        
+        ChildNode node = firstChild.nextSibling;
+        
+        if (node == null || data == null)  return (data == null)?"":data;
+        
+        StringBuffer value = new StringBuffer(data);
     	while (node != null) {
-            value.append(node.getNodeValue());
+            if (node.getNodeType()  == Node.ENTITY_REFERENCE_NODE){
+                data = ((EntityReferenceImpl)node).getEntityRefValue();
+                if (data == null) return "";
+                value.append(data);
+            }
+            else {
+                value.append(node.getNodeValue());
+            }
             node = node.nextSibling;
     	}
     	return value.toString();
 
     } // getValue():String
-
+    
+    
     /**
      * The "specified" flag is true if and only if this attribute's
      * value was explicitly specified in the original document. Note that

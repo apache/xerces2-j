@@ -139,6 +139,7 @@ implements EntityReference {
     protected String name;
     /** Base URI*/
     protected String baseURI;
+    
 
     /** Entity changes. */
     //protected int entityChanges = -1;	
@@ -218,6 +219,59 @@ implements EntityReference {
             synchronizeData();
         }
         baseURI = uri;
+    }
+    
+	/**
+	 * NON-DOM: compute string representation of the entity reference.
+     * This method is used to retrieve a string value for an attribute node that has child nodes. 
+	 * @return String representing a value of this entity ref. or 
+     *          null if any node other than EntityReference, Text is encountered
+     *          during computation
+	 */
+    protected String getEntityRefValue (){
+        if (needsSyncChildren()){
+            synchronizeChildren();
+        }
+       
+        String value = "";
+        if (firstChild != null){
+          if (firstChild.getNodeType() == Node.ENTITY_REFERENCE_NODE){
+              value = ((EntityReferenceImpl)firstChild).getEntityRefValue();
+          }
+          else if (firstChild.getNodeType() == Node.TEXT_NODE){
+            value = firstChild.getNodeValue();
+          }
+          else {
+             // invalid to have other types of nodes in attr value
+            return null;
+          }
+          
+          if (firstChild.nextSibling == null){
+            return value;
+          }
+          else {
+            StringBuffer buff = new StringBuffer(value);
+            ChildNode next = firstChild.nextSibling;
+            while (next != null){   
+            
+                if (next.getNodeType() == Node.ENTITY_REFERENCE_NODE){
+                   value = ((EntityReferenceImpl)next).getEntityRefValue();
+                }
+                else if (next.getNodeType() == Node.TEXT_NODE){
+                  value = next.getNodeValue();
+                }
+                else {
+                    // invalid to have other types of nodes in attr value
+                    return null;
+                }
+                buff.append(value);
+                next = next.nextSibling;
+
+            }
+            return buff.toString();  
+          }   
+        } 
+        return "";
     }
 
     /**
