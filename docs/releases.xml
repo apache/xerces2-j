@@ -3,7 +3,14 @@
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
   <release version='&ParserName; 2.6.1'>
-   <desc>TBD</desc>
+   <desc>
+    This release provides support for OASIS XML Catalogs
+    and includes several bug fixes for XML 1.1, XML Schema and 
+    DOM Level 3 Core and Load/Save. It also contains several
+    performance improvements and includes an update for 
+    the latest working draft of XInclude. This is the last
+    release to support JDK 1.1.
+   </desc>
    <changes>
     <add>
      <note>
