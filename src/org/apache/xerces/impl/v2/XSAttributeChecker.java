@@ -1299,7 +1299,7 @@ public class XSAttributeChecker {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
-                    retValue = fExtraDVs[DT_QNAME].validate(token, null);
+                    retValue = fExtraDVs[DT_QNAME].validate(token, schemaDoc.fValidationContext);
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
                     retValue = resolveQName(token, schemaDoc);
@@ -1354,7 +1354,7 @@ public class XSAttributeChecker {
                         } else {
                             // we have found namespace URI here
                             // need to add it to the symbol table
-                            fExtraDVs[DT_ANYURI].validate(token, null);
+                            fExtraDVs[DT_ANYURI].validate(token, schemaDoc.fValidationContext);
                             tempNamespace = fSymbolTable.addSymbol(token);
                         }
 
@@ -1399,7 +1399,7 @@ public class XSAttributeChecker {
         case DT_PUBLIC:
             // public = A public identifier, per ISO 8879
             // REVISIT: how to validate "public"???
-            fExtraDVs[DT_TOKEN].validate(value, null);
+            fExtraDVs[DT_TOKEN].validate(value, schemaDoc.fValidationContext);
             break;
         case DT_USE:
             // use = (optional | prohibited | required)
@@ -1469,7 +1469,9 @@ public class XSAttributeChecker {
                 attrVal = normalize((String)values.elementAt(i+1), dv.getWSFacet());
                 try {
                     // and validate it using the DatatypeValidator
-                    dv.validate(attrVal,null);
+                    // REVISIT: what would be the proper validation context?
+                    //          guess we need to save that in the vectors too.
+                    dv.validate(attrVal, null);
                 } catch(InvalidDatatypeValueException ide) {
                     reportSchemaError ("s4s-att-invalid-value",
                                        new Object[] {elName, attrName, ide.getLocalizedMessage()});

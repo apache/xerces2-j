@@ -61,7 +61,6 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
@@ -128,7 +127,7 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException{
-        
+
         return checkContent (content, state, false);
 
     }

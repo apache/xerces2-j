@@ -70,9 +70,9 @@ import org.apache.xerces.impl.validation.ValidationContext;
 
 /**
  * AbstractNumericFacetValidator is a base class for decimal, double, float,
- * and all date/time datatype validators. It implements evaluation of common facets - 
+ * and all date/time datatype validators. It implements evaluation of common facets -
  * minInclusive, maxInclusive, minExclusive, maxExclusive according to schema specs.
- * 
+ *
  * @author Elena Litani
  * @version $Id$
  */
@@ -91,8 +91,8 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
         this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
-    public AbstractNumericFacetValidator ( DatatypeValidator base, 
-                                           Hashtable facets, 
+    public AbstractNumericFacetValidator ( DatatypeValidator base,
+                                           Hashtable facets,
                                            boolean derivedByList, XMLErrorReporter reporter) {
         fBaseValidator = base;
         fErrorReporter = reporter;
@@ -112,10 +112,11 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                     String value = null;
 
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                        fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                         fPattern = (String) facets.get(key);
                         if (fPattern != null)
                             fRegex = new RegularExpression(fPattern, "X" );
+                        if (fRegex != null)
+                            fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
                     }
                     else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                         enumeration     = (Vector)facets.get(key);
@@ -123,23 +124,23 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                     }
                     else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
                         value = ((String) facets.get(key ));
-                        fFacetsDefined |= DatatypeValidator.FACET_MAXINCLUSIVE;
                         setMaxInclusive(value);
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXINCLUSIVE;
                     }
                     else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
                         value = ((String) facets.get(key ));
-                        fFacetsDefined |= DatatypeValidator.FACET_MAXEXCLUSIVE;
                         setMaxExclusive(value);
+                        fFacetsDefined |= DatatypeValidator.FACET_MAXEXCLUSIVE;
                     }
                     else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
                         value = ((String) facets.get(key ));
-                        fFacetsDefined |= DatatypeValidator.FACET_MININCLUSIVE;
                         setMinInclusive(value);
+                        fFacetsDefined |= DatatypeValidator.FACET_MININCLUSIVE;
                     }
                     else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
                         value = ((String) facets.get(key ));
-                        fFacetsDefined |= DatatypeValidator.FACET_MINEXCLUSIVE;
                         setMinExclusive(value);
+                        fFacetsDefined |= DatatypeValidator.FACET_MINEXCLUSIVE;
                     }
                     else if (key.equals(DatatypeValidator.FACET_FIXED)) {// fixed flags
                         fFlags = ((Short)facets.get(key)).shortValue();
@@ -153,18 +154,18 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
 
                 if (fFacetsDefined != 0) {
                     // check 4.3.8.c1 error: maxInclusive + maxExclusive
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXEXCLUSIVE) != 0) && 
+                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXEXCLUSIVE) != 0) &&
                         ((fFacetsDefined & DatatypeValidator.FACET_MAXINCLUSIVE) != 0)) {
                         throw new InvalidDatatypeFacetException( "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." );
                     }
                     // check 4.3.9.c1 error: minInclusive + minExclusive
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MINEXCLUSIVE) != 0) && 
+                    if (((fFacetsDefined & DatatypeValidator.FACET_MINEXCLUSIVE) != 0) &&
                         ((fFacetsDefined & DatatypeValidator.FACET_MININCLUSIVE) != 0)) {
                         throw new InvalidDatatypeFacetException( "It is an error for both minInclusive and minExclusive to be specified for the same datatype." );
                     }
 
                     // check 4.3.7.c1 must: minInclusive <= maxInclusive
-                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXINCLUSIVE) != 0) && 
+                    if (((fFacetsDefined & DatatypeValidator.FACET_MAXINCLUSIVE) != 0) &&
                         ((fFacetsDefined & DatatypeValidator.FACET_MININCLUSIVE) != 0)) {
                         result =  compareValues(fMinInclusive, fMaxInclusive);
                         if (result == 1 || result == INDETERMINATE)
@@ -173,7 +174,7 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                     }
                     // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXEXCLUSIVE) != 0) && ((fFacetsDefined & DatatypeValidator.FACET_MINEXCLUSIVE) != 0)) {
-                        result =compareValues(fMinExclusive, fMaxExclusive); 
+                        result =compareValues(fMinExclusive, fMaxExclusive);
                         if (result == 1 || result == INDETERMINATE)
                             throw new InvalidDatatypeFacetException( "minExclusive value ='" + getMinExclusive(false) + "'must be <= maxExclusive value ='" +
                                                                      getMaxExclusive(false) + "'. " );
@@ -206,10 +207,10 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
 
                         if (((fFacetsDefined & DatatypeValidator.FACET_MAXINCLUSIVE) != 0)) {
                             if (((numBase.fFacetsDefined & DatatypeValidator.FACET_MAXINCLUSIVE) != 0)) {
-                                result = compareValues(fMaxInclusive, numBase.fMaxInclusive); 
+                                result = compareValues(fMaxInclusive, numBase.fMaxInclusive);
                                 if ((numBase.fFlags & DatatypeValidator.FACET_MAXINCLUSIVE) != 0 &&
                                     result != 0) {
-                                    throw new InvalidDatatypeFacetException( "maxInclusive value = '" + getMaxInclusive(false) + 
+                                    throw new InvalidDatatypeFacetException( "maxInclusive value = '" + getMaxInclusive(false) +
                                                                              "' must be equal to base.maxInclusive value = '" +
                                                                              getMaxInclusive(true) + "' with attribute {fixed} = true" );
                                 }
@@ -247,7 +248,7 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                                 result= compareValues(fMaxExclusive, numBase.fMaxExclusive);
                                 if ((numBase.fFlags & DatatypeValidator.FACET_MAXEXCLUSIVE) != 0 &&
                                     result != 0) {
-                                    throw new InvalidDatatypeFacetException( "maxExclusive value = '" + getMaxExclusive(false) + 
+                                    throw new InvalidDatatypeFacetException( "maxExclusive value = '" + getMaxExclusive(false) +
                                                                              "' must be equal to base.maxExclusive value = '" +
                                                                              getMaxExclusive(true) + "' with attribute {fixed} = true" );
                                 }
@@ -283,7 +284,7 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                                 result= compareValues(fMinExclusive, numBase.fMinExclusive);
                                 if ((numBase.fFlags & DatatypeValidator.FACET_MINEXCLUSIVE) != 0 &&
                                     result != 0) {
-                                    throw new InvalidDatatypeFacetException( "minExclusive value = '" + getMinExclusive(false) + 
+                                    throw new InvalidDatatypeFacetException( "minExclusive value = '" + getMinExclusive(false) +
                                                                              "' must be equal to base.minExclusive value = '" +
                                                                              getMinExclusive(true) + "' with attribute {fixed} = true" );
                                 }
@@ -321,10 +322,10 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                         // minInclusive >= base.maxExclusive
                         if (((fFacetsDefined & DatatypeValidator.FACET_MININCLUSIVE) != 0)) {
                             if (((numBase.fFacetsDefined & DatatypeValidator.FACET_MININCLUSIVE) != 0)) {
-                                result = compareValues(fMinInclusive, numBase.fMinInclusive); 
+                                result = compareValues(fMinInclusive, numBase.fMinInclusive);
                                 if ((numBase.fFlags & DatatypeValidator.FACET_MININCLUSIVE) != 0 &&
                                     result != 0) {
-                                    throw new InvalidDatatypeFacetException( "minInclusive value = '" + getMinInclusive(false) + 
+                                    throw new InvalidDatatypeFacetException( "minInclusive value = '" + getMinInclusive(false) +
                                                                              "' must be equal to base.minInclusive value = '" +
                                                                              getMinInclusive(true) + "' with attribute {fixed} = true" );
                                 }
@@ -413,15 +414,15 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
             }
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "DatatypeFacetError", new Object [] { ((Exception)e).getMessage()},
-                                       XMLErrorReporter.SEVERITY_ERROR);    
+                                       XMLErrorReporter.SEVERITY_ERROR);
         }
     }
 
 
     //
-    // Compares values in value space of give datatype    
+    // Compares values in value space of give datatype
     //
-    abstract protected int compareValues (Object value1, Object value2);            
+    abstract protected int compareValues (Object value1, Object value2);
 
     //
     // set* functions used to set facets values
@@ -429,8 +430,8 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
     abstract protected void setMaxInclusive (String value);
     abstract protected void setMinInclusive (String value);
     abstract protected void setMaxExclusive (String value);
-    abstract protected void setMinExclusive (String value);    
-    abstract protected void setEnumeration (Vector enumeration) 
+    abstract protected void setMinExclusive (String value);
+    abstract protected void setEnumeration (Vector enumeration)
     throws InvalidDatatypeValueException;
 
     //
@@ -451,7 +452,7 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
     // decimal has fractionDigits and totalDigits facets
     // all other datatypes will throw InvalidDatatypeFacetException
     //
-    abstract protected void assignAdditionalFacets(String key, Hashtable facets) 
+    abstract protected void assignAdditionalFacets(String key, Hashtable facets)
     throws InvalidDatatypeFacetException;
 
     //

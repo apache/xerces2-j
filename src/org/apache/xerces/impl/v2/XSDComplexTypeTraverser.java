@@ -755,6 +755,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     private boolean isAttrOrAttrGroup(Element e)
     {
+        if (e == null)
+            return false;
+
         String elementName = DOMUtil.getLocalName(e);
 
         if (elementName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||

@@ -267,7 +267,7 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
 
         // we check pattern first
         if ((fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0) {
-            if (fRegex == null || fRegex.matches( content) == false)
+            if (fRegex == null || !fRegex.matches( content))
                 throw new InvalidDatatypeValueException("Value'"+content+
                                                         "' does not match regular expression facet " + fRegex.getPattern() );
         }
@@ -308,8 +308,8 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
             if (d.scale() > fFractionDigits) {
                 String msg = getErrorString(
                                            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.FRACTION_EXCEEDED],
-                                           new Object[] { 
-                                               "'" + content + "'" + " with fractionDigits = '"+ d.scale() +"'", 
+                                           new Object[] {
+                                               "'" + content + "'" + " with fractionDigits = '"+ d.scale() +"'",
                                                "'" + fFractionDigits + "'"
                                            });
                 throw new InvalidDatatypeValueException(msg);
@@ -322,8 +322,8 @@ public class DecimalDatatypeValidator extends AbstractNumericValidator {
 
                 String msg = getErrorString(
                                            DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.TOTALDIGITS_EXCEEDED],
-                                           new Object[] { 
-                                               "'" + content + "'" + " with totalDigits = '"+ totalDigits +"'", 
+                                           new Object[] {
+                                               "'" + content + "'" + " with totalDigits = '"+ totalDigits +"'",
                                                "'" + fTotalDigits + "'"
                                            });
                 throw new InvalidDatatypeValueException(msg);

@@ -164,7 +164,8 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
                 l_elmChild = DOMUtil.getNextSiblingElement(l_elmChild);
-                childName = l_elmChild.getLocalName();
+                if (l_elmChild != null)
+                    childName = l_elmChild.getLocalName();
             }
 
             if (l_elmChild == null) {
@@ -183,7 +184,8 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
 
-            if (DOMUtil.getNextSiblingElement(l_elmChild) != null) {
+            if (l_elmChild != null &&
+                DOMUtil.getNextSiblingElement(l_elmChild) != null) {
                 Object[] args = new Object [] { "group", childName};
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            "GroupContentRestricted",

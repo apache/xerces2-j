@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -71,22 +71,22 @@ import org.apache.xerces.impl.validation.ValidationContext;
  * This is the base class of all date/time datatype validators.
  * It implements common code for parsing, validating and comparing datatypes.
  * Classes that extend this class, must implement parse() method.
- * 
+ *
  * @author Elena Litani
- * @author Len Berman  
+ * @author Len Berman
  *
  * @version $Id$
  */
 
 public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
-    //debugging    
+    //debugging
     private static final boolean DEBUG=false;
-    
+
     //define shared variables for date/time
 
     //define constants
-    protected final static int CY = 0,  M = 1, D = 2, h = 3, 
+    protected final static int CY = 0,  M = 1, D = 2, h = 3,
     m = 4, s = 5, ms = 6, utc=7, hh=0, mm=1;
 
     //comparison
@@ -94,17 +94,17 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     protected static final short EQUAL=0;
     protected static final short GREATER_THAN=1;
 
-    //size for all objects must have the same fields: 
+    //size for all objects must have the same fields:
     //CCYY, MM, DD, h, m, s, ms + timeZone
     protected final static int TOTAL_SIZE = 8;
 
     //date obj size for gMonth datatype (without time zone): --09--
-    protected final static int MONTH_SIZE = 6; 
+    protected final static int MONTH_SIZE = 6;
 
     //date obj must have at least 6 chars after year (without time zone): "-MM-DD"
     private final static int YEARMONTH_SIZE = 7;
 
-    //define constants to be used in assigning default values for 
+    //define constants to be used in assigning default values for
     //all date/time excluding duration
     protected final static int YEAR=2000;
     protected final static int MONTH=01;
@@ -117,11 +117,11 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     protected int  fEnumSize;
 
     //size of string buffer
-    protected int fEnd; 
+    protected int fEnd;
     protected int fStart;
 
-    //storage for string value of date/time object 
-    protected StringBuffer fBuffer;     
+    //storage for string value of date/time object
+    protected StringBuffer fBuffer;
 
     //obj to store all date/time objects with fields:
     // {CY, M, D, h, m, s, ms, utc}
@@ -142,7 +142,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     }
 
-    public DateTimeValidator (DatatypeValidator base, Hashtable facets, boolean derivedByList, XMLErrorReporter reporter ) 
+    public DateTimeValidator (DatatypeValidator base, Hashtable facets, boolean derivedByList, XMLErrorReporter reporter )
       {
         super (base, facets, derivedByList, reporter);
     }
@@ -150,18 +150,18 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     protected void initializeValues(){
         fDateValue = new int[TOTAL_SIZE];
         fTempDate = new int[TOTAL_SIZE];
-        fEnd = 30; 
+        fEnd = 30;
         fStart = 0;
         message = new StringBuffer(TOTAL_SIZE);
         fBuffer = new StringBuffer(fEnd);
         timeZone = new int[2];
     }
 
-    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{
         String msg = "date/time datatypes, facet "+key+" with value "+(String)facets.get(key);
         throw new InvalidDatatypeFacetException(msg);
     }
-    
+
     protected int compareValues (Object value1, Object value2) {
             return compareDates((int[])value1, (int[])value2, true);
     }
@@ -172,7 +172,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     protected void setMinInclusive (String value) {
         fMinInclusive = parse(value, null);
     }
-    
+
     protected void setMaxExclusive (String value) {
         fMaxExclusive = parse(value, null);
 
@@ -182,16 +182,19 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     }
     protected void setEnumeration (Vector enumeration) throws InvalidDatatypeValueException{
-   
+
     if ( enumeration != null ) {
-         
+
         fEnumSize = enumeration.size();
         fEnumeration = new int[fEnumSize][];
+        int j = 0;
         for ( int i=0; i<fEnumSize; i++ ) {
             try {
-                fEnumeration[i] = parse((String)enumeration.elementAt(i), null);
+                fEnumeration[j] = parse((String)enumeration.elementAt(i), null);
+                j++;
             }
             catch ( RuntimeException e ) {
+                fEnumSize = j;
                 throw new InvalidDatatypeValueException(e.getMessage());
             }
         }
@@ -223,7 +226,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     /**
      * Implemented by each subtype, calling appropriate function to parse
      * given date/time
-     * 
+     *
      * @param content String value of the date/time
      * @param date    Storage to represent date/time object.
      *                If null - new object will be created, otherwise
@@ -235,10 +238,10 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Validate that a string is a W3C date/time type
-     * 
+     *
      * @param content string value of date/time
      * @param state
-     * @return  
+     * @return
      * @exception InvalidDatatypeValueException
      */
     public Object validate(String content, ValidationContext state) throws InvalidDatatypeValueException{
@@ -257,7 +260,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Validates date object against facet and base datatype
-     * 
+     *
      * @param date    represents date/time obj
      * @param content lexical representation of date/time obj
      * @exception InvalidDatatypeValueException
@@ -271,7 +274,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
                                                             "' does not match regular expression facet " + fRegex.getPattern() );
             }
             //validate against base type
-            if (!(fBaseValidator instanceof AnySimpleType)) {            
+            if (!(fBaseValidator instanceof AnySimpleType)) {
                 ((DateTimeValidator)this.fBaseValidator).validateDate( date, content);
             }
             if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
@@ -293,7 +296,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             // REVISIT: output values for facets in error message
             short c;
             if ( fMinInclusive != null ) {
-                
+
                 c = compareDates(date, (int[])fMinInclusive, false);
                 if ( c == LESS_THAN || c == INDETERMINATE ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
@@ -332,7 +335,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     }
     public int compare( String content1, String content2)  {
         //implement compareDates using the compare() method
-        try{        
+        try{
             parse(content1, fDateValue);
             parse(content2,fTempDate);
             int result = compareDates(fDateValue, fTempDate, true);
@@ -340,7 +343,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
         catch ( RuntimeException e ) {
             return -1;
-        
+
         }
     }
 
@@ -354,7 +357,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     /**
      * Compare algorithm described in dateDime (3.2.7).
      * Duration datatype overwrites this method
-     * 
+     *
      * @param date1  normalized date representation of the first value
      * @param date2  normalized date representation of the second value
      * @param strict
@@ -362,7 +365,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      */
     protected  short compareDates(int[] date1, int[] date2, boolean strict) {
         if ( date1[utc]==date2[utc] ) {
-            return compareOrder(date1, date2);    
+            return compareOrder(date1, date2);
         }
         short c1, c2;
 
@@ -388,14 +391,14 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
             if ( (c1==LESS_THAN && c2==GREATER_THAN) ||
                  (c1==GREATER_THAN && c2==LESS_THAN) ) {
-                return INDETERMINATE; 
+                return INDETERMINATE;
             }
             //REVISIT: wait for clarification on this case from schema
             return(c1!=INDETERMINATE)?c1:c2;
         }
         else if ( date2[utc]=='Z' ) {
 
-            //compare (date1 with time zone -14)<=date2 
+            //compare (date1 with time zone -14)<=date2
             //
             cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
             timeZone[hh]=14;
@@ -411,7 +414,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
                 System.out.println("date=" + dateToString(date2));
                 System.out.println("fTempDate=" + dateToString(fTempDate));
             }
-            //compare (date1 with time zone +14)<=date2 
+            //compare (date1 with time zone +14)<=date2
             //
             cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
             timeZone[hh]=14;
@@ -424,7 +427,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             }
             if ( (c1==LESS_THAN && c2==GREATER_THAN) ||
                  (c1==GREATER_THAN && c2==LESS_THAN) ) {
-                return INDETERMINATE; 
+                return INDETERMINATE;
             }
             //REVISIT: wait for clarification on this case from schema
             return(c1!=INDETERMINATE)?c1:c2;
@@ -437,13 +440,13 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     /**
      * Given normalized values, determines order-relation
      * between give date/time objects.
-     * 
+     *
      * @param date1  date/time object
      * @param date2  date/time object
-     * @return 
+     * @return
      */
     protected short compareOrder (int[] date1, int[] date2) {
-        
+
         for ( int i=0;i<TOTAL_SIZE;i++ ) {
             if ( date1[i]<date2[i] ) {
                 return LESS_THAN;
@@ -458,17 +461,17 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Parses time hh:mm:ss.sss and time zone if any
-     * 
+     *
      * @param start
      * @param end
      * @param data
-     * @return 
+     * @return
      * @exception Exception
      */
     protected  void getTime (int start, int end, int[] data) throws RuntimeException{
-        
+
         int stop = start+2;
-        
+
         //get hours (hh)
         data[h]=parseInt(start,stop);
 
@@ -486,7 +489,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
                 throw new RuntimeException("Error in parsing time zone" );
         }
         start = stop;
-        stop = stop+2;               
+        stop = stop+2;
         data[s]=parseInt(start,stop);
 
         //get miliseconds (ms)
@@ -495,12 +498,12 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         //find UTC sign if any
         int sign = findUTCSign((milisec!=-1)?milisec:start, end);
 
-        //parse miliseconds 
+        //parse miliseconds
         if ( milisec != -1 ) {
 
             if ( sign<0 ) {
 
-                //get all digits after "." 
+                //get all digits after "."
                 data[ms]=parseInt(milisec+1,fEnd);
             }
             else {
@@ -511,7 +514,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
         }
 
-        //parse UTC time zone (hh:mm)        
+        //parse UTC time zone (hh:mm)
         if ( sign>0 ) {
             getTimeZone(data,sign);
         }
@@ -520,11 +523,11 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Parses date CCYY-MM-DD
-     * 
+     *
      * @param start
      * @param end
      * @param data
-     * @return 
+     * @return
      * @exception Exception
      */
     protected void getDate (int start, int end, int[] date) throws RuntimeException{
@@ -541,11 +544,11 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Parses date CCYY-MM
-     * 
+     *
      * @param start
      * @param end
      * @param data
-     * @return 
+     * @return
      * @exception Exception
      */
     protected void getYearMonth (int start, int end, int[] date) throws RuntimeException{
@@ -580,16 +583,16 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     /**
      * Shared code from Date and YearMonth datatypes.
      * Finds if time zone sign is present
-     * 
+     *
      * @param end
      * @param date
-     * @return 
+     * @return
      * @exception Exception
      */
     protected void parseTimeZone (int end, int[] date) throws RuntimeException{
 
         //fStart points right after the date
- 
+
         if ( fStart<fEnd ) {
             int sign = findUTCSign(fStart, fEnd);
             if ( sign<0 ) {
@@ -603,10 +606,10 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Parses time zone: 'Z' or {+,-} followed by  hh:mm
-     * 
+     *
      * @param data
      * @param sign
-     * @return 
+     * @return
      */
     protected void getTimeZone (int[] data, int sign) throws RuntimeException{
         data[utc]=fBuffer.charAt(sign);
@@ -618,21 +621,21 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             return;
         }
         if ( sign<=(fEnd-6) ) {
-             
+
             //parse [hh]
             int stop = ++sign+2;
             timeZone[hh]=parseInt(sign, stop);
             if (fBuffer.charAt(stop++)!=':') {
                 throw new RuntimeException("Error in parsing time zone" );
-            }            
-            
+            }
+
             //parse [ss]
             timeZone[mm]=parseInt(stop, stop+2);
-            
+
             if ( stop+2!=fEnd ) {
                 throw new RuntimeException("Error in parsing time zone");
             }
-            
+
         }
         else {
             throw new RuntimeException("Error in parsing time zone");
@@ -646,7 +649,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Computes index of given char within StringBuffer
-     * 
+     *
      * @param start
      * @param end
      * @param ch     character to look for in StringBuffer
@@ -663,16 +666,16 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
 
     /**
-     * Validates given date/time object accoring to W3C PR Schema 
+     * Validates given date/time object accoring to W3C PR Schema
      * [D.1 ISO 8601 Conventions]
-     * 
+     *
      * @param data
-     * @return 
+     * @return
      */
     protected void validateDateTime (int[]  data) {
 
         //REVISIT: should we throw an exception for not valid dates
-        //          or reporting an error message should be sufficient?  
+        //          or reporting an error message should be sufficient?
         if ( data[CY]==0 ) {
             throw new RuntimeException("The year \"0000\" is an illegal year value");
 
@@ -718,10 +721,10 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Return index of UTC char: 'Z', '+', '-'
-     * 
+     *
      * @param start
      * @param end
-     * @return 
+     * @return
      */
     protected int findUTCSign (int start, int end) {
         int c;
@@ -738,14 +741,14 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Given start and end position, parses string value
-     * 
+     *
      * @param value  string to parse
      * @param start  Start position
      * @param end    end position
      * @return  return integer representation of characters
      */
-    protected  int parseInt (int start, int end) 
-    throws NumberFormatException{ 
+    protected  int parseInt (int start, int end)
+    throws NumberFormatException{
         //REVISIT: more testing on this parsing needs to be done.
         int radix=10;
         int result = 0;
@@ -779,8 +782,8 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             negative = true;
             limit = Integer.MIN_VALUE;
             i++;
-         
-        } 
+
+        }
         else{
             limit = -Integer.MAX_VALUE;
         }
@@ -808,7 +811,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * If timezone present - normalize dateTime  [E Adding durations to dateTimes]
-     * 
+     *
      * @param date   CCYY-MM-DDThh:mm:ss+03
      * @return CCYY-MM-DDThh:mm:ssZ
      */
@@ -830,7 +833,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         int temp = date[m] + negate*timeZone[mm];
         int carry = fQuotient (temp, 60);
         date[m]= mod(temp, 60, carry);
-        
+
         if ( DEBUG ) {
             System.out.println("==>carry: " + carry);
         }
@@ -862,14 +865,14 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             date[M]=modulo(temp, 1, 13);
             date[CY]=date[CY]+fQuotient(temp, 1, 13);
         }
-        date[utc]='Z';  
+        date[utc]='Z';
     }
 
 
     /**
-     * Resets fBuffer to store string representation of 
+     * Resets fBuffer to store string representation of
      * date/time
-     * 
+     *
      * @param str    Lexical representation of date/time
      */
     protected void resetBuffer (String str) {
@@ -878,13 +881,13 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         timeZone[hh]=timeZone[mm]=0;
         fBuffer.append(str);
         fEnd = fBuffer.length();
-        
+
     }
 
 
     /**
      * Resets object representation of date/time
-     * 
+     *
      * @param data   date/time object
      */
     protected void resetDateObj (int[] data) {
@@ -895,12 +898,12 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
 
     /**
-     * Given {year,month} computes maximum 
+     * Given {year,month} computes maximum
      * number of days for given month
-     * 
+     *
      * @param year
      * @param month
-     * @return 
+     * @return
      */
     protected int maxDayInMonthFor(int year, int month) {
         //validate days
@@ -923,32 +926,32 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     private boolean isLeapYear(int year) {
 
-        //REVISIT: should we take care about Julian calendar? 
-        return((year%4 == 0) && ((year%100 != 0) || (year%400 == 0))); 
+        //REVISIT: should we take care about Julian calendar?
+        return((year%4 == 0) && ((year%100 != 0) || (year%400 == 0)));
     }
 
     //
     // help function described in W3C PR Schema [E Adding durations to dateTimes]
-    //    
+    //
     protected int mod (int a, int b, int quotient) {
-        //modulo(a, b) = a - fQuotient(a,b)*b 
+        //modulo(a, b) = a - fQuotient(a,b)*b
         return (a - quotient*b) ;
     }
-    
+
     //
     // help function described in W3C PR Schema [E Adding durations to dateTimes]
     //
     protected int fQuotient (int a, int b) {
-        
-        //fQuotient(a, b) = the greatest integer less than or equal to a/b 
+
+        //fQuotient(a, b) = the greatest integer less than or equal to a/b
         return (int)Math.floor((float)a/b);
     }
 
     //
     // help function described in W3C PR Schema [E Adding durations to dateTimes]
-    //    
+    //
     protected int modulo (int temp, int low, int high) {
-        //modulo(a - low, high - low) + low 
+        //modulo(a - low, high - low) + low
         int a = temp - low;
         int b = high - low;
         return (mod (a, b, fQuotient(a, b)) + low) ;
@@ -958,8 +961,8 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     // help function described in W3C PR Schema [E Adding durations to dateTimes]
     //
     protected int fQuotient (int temp, int low, int high) {
-        //fQuotient(a - low, high - low) 
-  
+        //fQuotient(a - low, high - low)
+
         return fQuotient(temp - low, high - low);
     }
 
@@ -986,7 +989,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     /**
      * Use this function to report errors in constructor
-     * 
+     *
      * @param msg
      * @param value
      */

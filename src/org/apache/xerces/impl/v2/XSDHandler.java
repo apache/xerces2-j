@@ -303,15 +303,22 @@ class XSDHandler {
         // third phase:  call traversers
         traverseSchemas();
 
-        // fourth:  handle local element decls
+        // fourth:  handle substitution group declarations
+        // we defer substitution group handling for circular substitution
+        // REVISIT: wait until we are sure that such circular referencence
+        //          is allowed.
+        //fElementTraverser.resolveSubstitutionGroup();
+
+        // fifth phase: handle local element decls
         traverseLocalElements();
 
-        // fifth phase:  handle Keyrefs
+        // sixth phase:  handle Keyrefs
         resolveKeyRefs();
 
-        // sixth phase:  handle derivation constraint checking
+        // seventh phase:  handle derivation constraint checking
         // and UPA, and validate attribute of non-schema namespaces
-        fAttributeChecker.checkNonSchemaAttributes(fGrammarResolver);
+        // REVISIT: skip this for now. we reall don't want to do it.
+        //fAttributeChecker.checkNonSchemaAttributes(fGrammarResolver);
 
         // and return.
         return fGrammarResolver.getGrammar(fRoot.fTargetNamespace);

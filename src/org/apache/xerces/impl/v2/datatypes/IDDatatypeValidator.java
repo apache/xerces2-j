@@ -61,7 +61,6 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.impl.v2.msg.XMLMessages;
 import org.apache.xerces.impl.v2.SchemaSymbols;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.v2.XSMessageFormatter;
@@ -108,7 +107,7 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
 
     /**
      * Make sure that ID is unique in the document
-     * 
+     *
      * @param content Id value
      * @param state   a structure that stores id's
      * @return content
@@ -152,7 +151,7 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
 
         return content;
 
-    
+
     }
 
 
