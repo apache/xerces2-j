@@ -248,6 +248,7 @@ public class XMLValidator
     private DatatypeValidator            fValNOTATION;
     */
 
+    private Hashtable fTableOfIDs = new Hashtable();//There is one per instance of XMLValidator
 
 
     /** DEBUG flags */
@@ -2127,8 +2128,13 @@ public class XMLValidator
         //Initialize Validators
         //Datatype Registry
 
-        fDataTypeReg = 
-        DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+        /* uncomment when using Registry with no Singleton
+        fDataTypeReg = new DatatypeValidatorFactoryImpl();
+        */
+
+        fDataTypeReg = DatatypeValidatorFactoryImpl.getDatatypeRegistry();//To be commented or deleted  when no Singleton
+
+
         fDataTypeReg.resetRegistry();
 
         fValID       = (IDDatatypeValidator) fDataTypeReg.getDatatypeValidator("ID" );
@@ -2145,8 +2151,9 @@ public class XMLValidator
 
         //Initialize ENTITY & ENTITIES Validatorh
         
-        fValID.initialize(null);
-        fValIDRef.initialize( fValID.getInternalStateInformation() );
+        fValID.initialize(fTableOfIDs);
+        fValIDRef.initialize(fTableOfIDs);
+        fValIDRefs.initialize(fTableOfIDs);
         fValENTITY.initialize(fCurrentGrammar);
         fValENTITIES.initialize(fCurrentGrammar);
 
