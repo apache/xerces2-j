@@ -141,7 +141,12 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                 } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                     this.fTableOfId = (Hashtable) message.getDatatypeObject();
                     if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
-                        throw new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
+
+                        InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
+
+                        error.setMajorCode(XMLMessages.MSG_IDREF_INVALID );
+                        error.setMinorCode(XMLMessages.VC_IDREF);
+                        throw error;//Need Message
                     }
                     addIdRef( content, state);// We are storing IDs 
                 }
