@@ -87,9 +87,8 @@ import org.w3c.dom.traversal.TreeWalker;
 
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
-import org.apache.xerces.utils.XMLCharacterProperties;
 
-
+       
 /**
  * The Document interface represents the entire HTML or XML document.
  * Conceptually, it is the root of the document tree, and provides the
