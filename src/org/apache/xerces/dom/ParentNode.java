@@ -354,8 +354,8 @@ public abstract class ParentNode
 
                     if (!ownerDocument.isKidOK(this, kid)) {
                         throw new DOMException(
-                                           DOMException.HIERARCHY_REQUEST_ERR, 
-                                           "DOM006 Hierarchy request error");
+                              DOMException.HIERARCHY_REQUEST_ERR, 
+                              DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null));
                     }
                 }
             }
@@ -381,21 +381,21 @@ public abstract class ParentNode
         if (errorChecking) {
             if (isReadOnly()) {
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                       "DOM001 Modification not allowed");
+                              DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                              DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
             }
             if (newChild.getOwnerDocument() != ownerDocument) {
                 throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                       "DOM005 Wrong document");
+                            DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null));
             }
             if (!ownerDocument.isKidOK(this, newChild)) {
                 throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                       "DOM006 Hierarchy request error");
+                            DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null));
             }
             // refChild must be a child of this node (or null)
             if (refChild != null && refChild.getParentNode() != this) {
                 throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                       "DOM008 Not found");
+                            DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null));
             }
 
             // Prevent cycles in the tree
@@ -408,7 +408,7 @@ public abstract class ParentNode
             }
             if(!treeSafe) {
                 throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                       "DOM006 Hierarchy request error");
+                            DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null));
             }
         }
 
@@ -526,12 +526,12 @@ public abstract class ParentNode
         if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
                 throw new DOMException(
-                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                     "DOM001 Modification not allowed");
+                            DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                            DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
             }
             if (oldChild != null && oldChild.getParentNode() != this) {
                 throw new DOMException(DOMException.NOT_FOUND_ERR, 
-                                       "DOM008 Not found");
+                            DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null));
             }
         }
 
