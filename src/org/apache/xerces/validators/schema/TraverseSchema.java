@@ -424,6 +424,7 @@ public class TraverseSchema implements
     private String fCurrentSchemaURL = "";
 
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
+    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
 
     // REVISIT: maybe need to be moved into SchemaGrammar class
     public class ComplexTypeInfo {
@@ -2715,12 +2716,20 @@ public class TraverseSchema implements
         }
 
 
-        //There can never be two elements with the same name in the same scope.
-        if (fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope) > -1) {
-            noErrorSoFar = false;
-            // REVISIT: Localize
-            reportGenericSchemaError("duplicate element decl in the same scope : " + 
-                              fStringPool.toString(localpartIndex));
+        //There can never be two elements with the same name and different type in the same scope.
+        int existSuchElementIndex = fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope);
+        if ( existSuchElementIndex > -1) {
+            fSchemaGrammar.getElementDecl(existSuchElementIndex, fTempElementDecl);
+            DatatypeValidator edv = fTempElementDecl.datatypeValidator;
+            ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(existSuchElementIndex);
+            if ( ((eTypeInfo != null)&&(eTypeInfo!=typeInfo))
+                 || ((edv != null)&&(edv != dv)) )  {
+                noErrorSoFar = false;
+                // REVISIT: Localize
+                reportGenericSchemaError("duplicate element decl in the same scope : " + 
+                                         fStringPool.toString(localpartIndex));
+
+            }
         }
 
         QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
