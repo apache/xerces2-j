@@ -1059,6 +1059,7 @@ Copyright:
 			org/apache/xerces/xs/XSWildcard.java
 			org/apache/xerces/xs/XSFacet.java
 			org/apache/xerces/xs/XSMultiValueFacet.java
+			org/apache/xerces/xs/datatypes/*.java
                       org/apache/xerces/impl/xs/util/StringListImpl.java,
                       org/apache/xerces/impl/xs/util/XSObjectListImpl.java,
                       org/apache/xerces/util/ObjectFactory.java,
