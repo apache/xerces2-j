@@ -1460,8 +1460,8 @@
      <reference idref='string'/>
     </param>
     <returns>
-     <note>True if more content is available.</note>
-     <primitive type='boolean'/>
+     <note>The next character on the stream.</note>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1473,11 +1473,11 @@
      <primitive type='int'/>
     </param>
     <param name='content'>
-     <note>True if more attribute content is available.</note>
      <reference idref='string'/>
     </param>
     <returns>
-     <primitive type='boolean'/>
+     <note>The next character on the stream.</note>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1491,7 +1491,19 @@
      <reference idref='string'/>
     </param>
     <returns>
-     <note>True if more data is available</note>
+     <note>The next character on the stream.</note>
+     <primitive type='int'/>
+    </returns>
+    <throws>
+     <reference idref='java-io-exception'/>
+    </throws>
+   </method>
+   <method name='skipChar'>
+    <param name='c'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <note>True if spaces were skipped.</note>
      <primitive type='boolean'/>
     </returns>
     <throws>
