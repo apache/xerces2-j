@@ -3,7 +3,7 @@
 
 <faqs title="Common Problems">
 	<faq title="Parsing Generated an Error">
-		<q>I tried to use Xerces-J to parse HTML, and it generated an error. What did I do wrong?</q>
+		<q>I tried to use &javaparsername; to parse HTML, and it generated an error. What did I do wrong?</q>
 		<a><p>Unfortunately, HTML does not, in general, follow the XML grammar rules. 
               Most HTML is actually not well-formed XML. Therefore, the XML parser 
 			  generates XML well-formedness errors.</p>
@@ -47,7 +47,7 @@
 		editor, which automatically inserts an End-of-file character at the end of your 
 		XML document (other editors might do this as well). Unfortunately, the 
 		EOF character (0x1A) is an illegal character according to the XML specification, 
-		and Xerces-J correctly generates an error.</p>
+		and &javaparsername; correctly generates an error.</p>
 		</a>
 	</faq>
 </faqs>

@@ -69,7 +69,7 @@ try {
 			<tr><th>true</th><td>Provide a Locator using the DocumentHandler setDocumentLocator callback.</td></tr>
 			<tr><th>false</th><td>Explicitly allow the parser not to provide a Locator (but it still may).</td></tr>
 			<tr><th>Default</th><td>true</td></tr>
-			<tr><th>Note</th><td>Xerces-J always provides a Locator to the document handler.</td></tr>
+			<tr><th>Note</th><td>&javaparsername; always provides a Locator to the document handler.</td></tr>
 		</table>
 		<p>http://apache.org/xml/features/validation/dynamic</p>
 		<table>
@@ -141,7 +141,7 @@ try {
 			<tr><th>true</th><td>Provide a Locator using the DocumentHandler setDocumentLocator callback.</td></tr>
 			<tr><th>false</th><td>Explicitly allow the parser not to provide a Locator (but it still may).</td></tr>
 			<tr><th>Default</th><td>true</td></tr>
-			<tr><th>Note</th><td>Xerces-J always provides a Locator to the document handler</td></tr>
+			<tr><th>Note</th><td>&javaparsername; always provides a Locator to the document handler</td></tr>
 		</table>
 	</s2>
 </s1> 

@@ -11,28 +11,45 @@
 	</faq>
 	<faq title="Recompling?">
 		<q>How do I recompile the source files?</q>
-		<a> <p>blah
+		<a> <p>To build &javaparsername; on Windows, you need a copy of Cygnus's Cygwin.
+See <jump href="http://sourceware.cygnus.com/cygwin">http://sourceware.cygnus.com/cygwin</jump>.
+Once Cygwin is installed, you need to set two environment variables.  Edit the batch file
+BuildAll.bat to set these variables.  Execute BuildAll.bat, and then
+set your classpath to point to the src and samples directories in the
+&javaparsername; distribution.  You can then go to the top of the
+&javaparsername; tree and type 'make'.  
+</p>
+<p>
+To build &javaparsername; Java on UNIX, you need to set an environment
+variable. Edit the shell script BuildAll to set this variables.  
+Execute BuildAll, and then set your classpath to point to the src 
+and samples directories in the &javaparsername; distribution.  You can then
+go to the top of the &javaparsername; tree and type 'make'. 
 			</p>
 		</a>
 	</faq>
 	<faq title="Regenerating?">
 		<q>How do I regenerate the api documentation?</q>
-		<a> <p>blah
+		<a> <p>To regenerate the api documentation, you need to set up
+your environment to build &javaparsername;.  Instead of typing 'make', you
+type 'make apidocs'.
 			</p>
 		</a>
 	</faq>
+<!-- TBD
 	<faq title="Packaging?">
 		<q>How do I package the parser?</q>
 		<a> <p>blah
 			</p>
 		</a>
 	</faq>
+-->
 	<faq title="Visual Age?">
-		<q>How do I import Xerces-J into Visual Age for Java</q>
+		<q>How do I import &javaparsername; into Visual Age for Java</q>
 		<a> 		
 		<ul>
-          <li>Why does VisualAge for Java 2.0 report problems when I import the Xerces-J parser?
-			<br/>The current version of the Xerces-J parser uses Swing 1.1, 
+          <li>Why does VisualAge for Java 2.0 report problems when I import the &javaparsername; parser?
+			<br/>The current version of the &javaparsername; parser uses Swing 1.1, 
 		  	while VisualAge for Java 2.0 comes with Swing 1.0.2. The free update for the 
             Professional version of VisualAge for Java 2.0 installs Swing 1.0.3. 
 			The most important difference between Swing 1.0.2 - 1.0.3 and 1.1 is 
@@ -41,11 +58,11 @@
 			with Swing 1.1 from Sun's Java home page and import the &quot;swingall.jar&quot; 
 			file into VisualAge for Java 2.0. The Swing 1.1 package can be found at 
             the following URL:
-			<br/>http://java.sun.com/products/jfc/index.html 
+			<br/><jump href="http://java.sun.com/products/jfc/index.html">http://java.sun.com/products/jfc/index.html</jump>
 			<br/>Refer to the VisualAge for Java 2.0 documentation for information about 
 			how to import a JAR file into the repository and add that code to your workspace.
           </li>
-          <li>Are there any other tips for importing the Xerces-J parser into VisualAge 
+          <li>Are there any other tips for importing the &javaparsername; parser into VisualAge 
 		  	for Java 2.0?
 			<br/>The most useful tip applies to *any* updated code that you import 
 			into the VisualAge for Java 2.0 product. Before updating code, do the following:
@@ -65,13 +82,13 @@
 		</a>
 	</faq>
 	<faq title="100% Pure Java?">
-		<q>Is this Xerces-J version 100% pure Java compliant?</q>
+		<q>Is this &javaparsername; version 100% pure Java compliant?</q>
 		<a> <p>blah
 			</p>
 		</a>
 	</faq>
 	<faq title="Running on the Mac?">
-		<q>How do I get Xerces-J to run on the Mac under MRJ?</q>
+		<q>How do I get &javaparsername; to run on the Mac under MRJ?</q>
 		<a> <p><em>Prerequisites</em> (available from 
 			<jump href="http://developer.apple.com/java/">http://developer.apple.com/java/</jump>):</p>
         <ul>
@@ -80,7 +97,7 @@
         </ul>
         <p><em>Instructions </em>(other variations would work also):</p>
         <ol>
-          <li>Download the .tar.gz file containing Xerces-J.</li>
+          <li>Download the .tar.gz file containing &javaparsername;.</li>
           <li>Use Stuffit Expander(tm), Suntar, or some other Macintosh tool that
 		  	<br/>supports the .tar.gz format to expand the downloaded file.</li>
           <li>JBindery, part of MRJ SDK 2.1, is used to create a double-clickable 
@@ -107,8 +124,8 @@
 	<faq title="Visual Cafe Error?">
 		<q>Why do I get ArrayIndexOutOfBoundsException in the Symantec Visual Cafe debugger?</q>
 		<a> <p>Visual Cafe's debugger is set to trap <code>ArrayIndexOutOfBoundsException</code>'s by 
-        	default. Xerces-J uses <code>ArrayIndexOutOfBoundsException</code> internally to signal 
-			exceptional, but not erroneous conditions. In order to run Xerces-J2 inside 
+        	default. &javaparsername; uses <code>ArrayIndexOutOfBoundsException</code> internally to signal 
+			exceptional, but not erroneous conditions. In order to run &javaparsername;2 inside 
        		Visual Cafe's debugger, you need to turn off the trapping of these 
 			exceptions.</p>
 			<p><em>To do this:</em></p>

@@ -3,15 +3,15 @@
 
 <s1 title="API Documentation">
     <s2 title="Javadoc Generated Documentation">
-        <p>Xerces-J comes packaged with API documentation for SAX and DOM, 
+        <p>&javaparsername; comes packaged with API documentation for SAX and DOM, 
         the two most common interfaces for programming XML.  In addition, 
         we provide documentation for classes that are not part of the SAX 
-        and DOM API's, but are useful for writing Xerces-J programs. </p>
+        and DOM API's, but are useful for writing &javaparsername; programs. </p>
         <p>This documentation is generated automatically from the Javadoc-style 
         comments inside the source files.  Click on one of the links below to 
         go to the appropriate API documentation.</p>
     </s2>
-    <s2 title="Xerces-J API Documentation">
+    <s2 title="&javaparsername; API Documentation">
         <ul>
             <li><jump href="./apiDocs/index.html">Full API documentation</jump></li>
             <li><jump href="./apiDocs/overview-tree.html">Hierarchy for all the packages</jump></li>

@@ -9,3 +9,8 @@
 <!ENTITY XercesCWindowsLib    "xerces-c_1_0">               <!-- windowslibname -->
 <!ENTITY XercesCUnixLib       "libxerces-c1_0">             <!-- unixlibname -->
 <!ENTITY XercesCEmailAddress  "xerces-dev@xml.apache.org "> <!-- emailaddress -->
+
+<!ENTITY javaparsername "Xerces">
+<!ENTITY javaparserversion "1.0.1">
+<!ENTITY javaparserdirectory "xerces">
+<!ENTITY javaparserdistname "Xerces-J-bin"> <!-- name of binaries -->

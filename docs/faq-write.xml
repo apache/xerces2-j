@@ -3,7 +3,7 @@
 
 <faqs title="Writing Application FAQs">
 	<faq title="Constructing a Parser">
-		<q>How do I construct a parser in Xerces-J v1.0?</q>
+		<q>How do I construct a parser in &javaparsername;?</q>
 		<a><p>
 There are two ways the parser classes can be
 	  instantiated: The first way is to <em>create a string</em>
@@ -79,7 +79,7 @@ Document doc = parser.getDocument();
 	<faq title="Creating a DOM Parser">
 		<q>How do I create a DOM parser?</q>
         <a><p>Use one of the methods in the question above, and use 
-		<code>org.apache.xerces.parsers.DOMEParser</code> as the name of the class. </p>
+		<code>org.apache.xerces.parsers.DOMParser</code> as the name of the class. </p>
 		<p>To access the DOM tree, you can call the
 		<code>getDocument()</code> method on the parser instance.</p> 
 		</a>
@@ -165,7 +165,7 @@ Document doc = parser.getDocument();
         checking is done! There are still many things that the XML specification 
 		requires of the parser, including entity substitution, defaulting of 
 		attribute values, and attribute normalization.</p>
-        <p>This table describes what "non-validating" really means for Xerces-J parsers. 
+        <p>This table describes what "non-validating" really means for &javaparsername; parsers. 
 		In this table, "no DTD" means no internal or external DTD subset is present.</p>
 		
         <table>
@@ -244,7 +244,9 @@ Document doc = parser.getDocument();
 		</a>
 	</faq>
     <faq title="How do access the DOM Level 2 functionality">
-    <q>How do access the DOM Level 2 functionality</q>
-    <a><p>...</p></a>
+    <q>How do I access the DOM Level 2 functionality</q>
+    <a><p>Because the DOM Level 2 spec is not frozen yet, the interfaces
+    for DOM Level 2 can be found in the package org.apache.xerces.domx
+    and its subpackages.</p></a>
     </faq>
 </faqs>

@@ -3,7 +3,7 @@
 
 <s1 title="Caveats">
 	<s2 title="Caveats and Limitations">
-		<p>This is a list of the limitations in this release of Xerces-J:</p>
+		<p>This is a list of the limitations in this release of &javaparsername;:</p>
 		<ul>
 			<li>Due to a transcoding bug in the Sun JDK's 
 			(1.1.6, 1.1.7, 1.1.8, 1.2)  handling of EBCDIC data 

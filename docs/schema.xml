@@ -15,7 +15,8 @@
 		of the W3C XML Schema Language as specified in the 24 
 		September 1999 Working Draft. The parsers contained in this 
 		package are able to read and validate XML documents with the 
-		grammar specified in either DTD or XML Schema format.</p>
+		grammar specified in either DTD or XML Schema format.  There
+		is no functionality for accessing typed data.</p>
 		<p>We are making this package available in order to get 
 		feedback on the features in the XML Schema language 
 		design and on representing an XML document's grammar 
@@ -23,7 +24,7 @@
 		this package until it implements all of the functionality 
 		of the then current XML Schema Working Draft. If you are 
 		interested in a particular unimplemented feature, we welcome 
-		your feedback on the Xerces mailing list.</p>
+		your feedback on the &javaparsername; mailing list.</p>
 	</s2>
 	<s2 title="Limitations">
 		<p>The XML Schema implementation in this package is a 
