@@ -1057,11 +1057,11 @@ public class XMLEntityScanner implements XMLLocator {
         if (DEBUG_BUFFER) {
             System.out.print(")scanData: ");
             XMLEntityManager.print(fCurrentEntity);
-            System.out.println(" -> " + found);
+            System.out.println(" -> " + !found);
         }
-        return found;
+        return !found;
 
-    } // scanData(String,XMLString)
+    } // scanData(String,XMLString):boolean
 
     /**
      * Skips a character appearing immediately on the input.

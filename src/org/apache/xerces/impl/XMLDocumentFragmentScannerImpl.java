@@ -963,7 +963,7 @@ public class XMLDocumentFragmentScannerImpl
 
         while (true) {
             fStringBuffer.clear();
-            if (fEntityScanner.scanData("]]", fStringBuffer)) {
+            if (!fEntityScanner.scanData("]]", fStringBuffer)) {
                 if (fDocumentHandler != null && fStringBuffer.length > 0) {
                     fDocumentHandler.characters(fStringBuffer, null);
                 }
