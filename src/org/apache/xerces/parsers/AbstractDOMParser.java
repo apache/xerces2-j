@@ -113,6 +113,13 @@ public abstract class AbstractDOMParser
     protected static final String DEFER_NODE_EXPANSION =
         "http://apache.org/xml/features/dom/defer-node-expansion";
 
+    /** Property id: document class name. */
+    protected static final String DOCUMENT_CLASS_NAME =
+        "http://apache.org/xml/properties/dom/document-class-name";
+
+    protected static final String DEFAULT_DOCUMENT_CLASS_NAME =
+        "org.apache.xerces.dom.DocumentImpl";
+
     private static final boolean DEBUG_ENTITY_REF = false;
 
     //
@@ -134,6 +141,9 @@ public abstract class AbstractDOMParser
 
     /** The default Xerces document implementation, if used. */
     protected DocumentImpl fDocumentImpl;
+
+    /** The document class name to use. */
+    protected String  fDocumentClassName;
 
     /** Current node. */
     protected Node fCurrentNode;
@@ -186,7 +196,67 @@ public abstract class AbstractDOMParser
         fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
         fConfiguration.setFeature(DEFER_NODE_EXPANSION, true);
 
+        // add recognized properties
+        final String[] recognizedProperties = {
+            DOCUMENT_CLASS_NAME
+        };
+        fConfiguration.addRecognizedProperties(recognizedProperties);
+
+        // set default values
+        fConfiguration.setProperty(DOCUMENT_CLASS_NAME,
+                                   DEFAULT_DOCUMENT_CLASS_NAME);
+
     } // <init>(XMLParserConfiguration)
+
+    /**
+     * This method allows the programmer to decide which document
+     * factory to use when constructing the DOM tree. However, doing
+     * so will lose the functionality of the default factory. Also,
+     * a document class other than the default will lose the ability
+     * to defer node expansion on the DOM tree produced.
+     *
+     * @param documentClassName The fully qualified class name of the
+     *                      document factory to use when constructing
+     *                      the DOM tree.
+     *
+     * @see #getDocumentClassName
+     * @see #setDeferNodeExpansion
+     * @see #DEFAULT_DOCUMENT_CLASS_NAME
+     */
+    protected void setDocumentClassName(String documentClassName) {
+
+        // normalize class name
+        if (documentClassName == null) {
+            documentClassName = DEFAULT_DOCUMENT_CLASS_NAME;
+        }
+
+        // verify that this class exists and is of the right type
+        try {
+            Class _class = Class.forName(documentClassName);
+            //if (!_class.isAssignableFrom(Document.class)) {
+            if (!Document.class.isAssignableFrom(_class)) {
+                // REVISIT: message
+                throw new IllegalArgumentException("PAR002 Class, \"" +
+                                                   documentClassName +
+                                 "\", is not of type org.w3c.dom.Document.\n" +
+                                                   documentClassName);
+            }
+        }
+        catch (ClassNotFoundException e) {
+            // REVISIT: message
+            throw new IllegalArgumentException("PAR003 Class, \"" +
+                                               documentClassName +
+                                               "\", not found.\n" +
+                                               documentClassName);
+        }
+
+        // set document class name
+        fDocumentClassName = documentClassName;
+        if (!documentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
+            fDeferNodeExpansion = false;
+        }
+
+    } // setDocumentClassName(String)
 
     //
     // Public methods
@@ -219,8 +289,14 @@ public abstract class AbstractDOMParser
         fDeferNodeExpansion =
             fConfiguration.getFeature(DEFER_NODE_EXPANSION);
 
+        // get property
+        setDocumentClassName((String)
+                             fConfiguration.getProperty(DOCUMENT_CLASS_NAME));
+
         // reset dom information
         fDocument = null;
+        fDocumentImpl = null;
+        fDeferredDocumentImpl = null;
         fCurrentNode = null;
 
         // reset state information
@@ -352,11 +428,37 @@ public abstract class AbstractDOMParser
 
         fInDocument = true;
         if (!fDeferNodeExpansion) {
-            fDocument = new DocumentImpl();
-            fDocumentImpl = (DocumentImpl)fDocument;
+            if (fDocumentClassName.equals(DEFAULT_DOCUMENT_CLASS_NAME)) {
+                fDocument = new DocumentImpl();
+                fDocumentImpl = (DocumentImpl)fDocument;
+                // set DOM error checking off
+                fDocumentImpl.setErrorChecking(false);
+            }
+            else {
+                // use specified document class
+                try {
+                    Class documentClass = Class.forName(fDocumentClassName);
+                    fDocument = (Document)documentClass.newInstance();
+                    // if subclass of our own class that's cool too
+                    Class defaultDocClass =
+                        Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
+                    if (defaultDocClass.isAssignableFrom(documentClass)) {
+                        fDocumentImpl = (DocumentImpl)fDocument;
+                        // set DOM error checking off
+                        fDocumentImpl.setErrorChecking(false);
+                    }
+                }
+                catch (ClassNotFoundException e) {
+                    // won't happen we already checked that earlier
+                }
+                catch (Exception e) {
+                    // REVISIT: Localize this message.
+                    throw new RuntimeException(
+                                 "Failed to create document object of class: "
+                                 + fDocumentClassName);
+                }
+            }
             fCurrentNode = fDocument;
-            // set DOM error checking off
-            fDocumentImpl.setErrorChecking(false);
         }
         else {
             fDeferredDocumentImpl = new DeferredDocumentImpl();
@@ -383,10 +485,12 @@ public abstract class AbstractDOMParser
         throws XNIException {
 
         if (!fDeferNodeExpansion) {
-            DocumentImpl docimpl = (DocumentImpl) fDocument;
-            DocumentType doctype =
-                docimpl.createDocumentType(rootElement, publicId, systemId);
-            fCurrentNode.appendChild(doctype);
+            if (fDocumentImpl != null) {
+                DocumentType doctype =
+                    fDocumentImpl.createDocumentType(rootElement,
+                                                     publicId, systemId);
+                fCurrentNode.appendChild(doctype);
+            }
         }
         else {
             int doctype = fDeferredDocumentImpl.
