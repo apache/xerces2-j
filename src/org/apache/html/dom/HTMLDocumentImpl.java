@@ -200,7 +200,7 @@ public class HTMLDocumentImpl
         // HTML element must exist. Create a new element and dump the
         // entire contents of the document into it in the same order as
         // they appear now.
-        html = new HTMLHtmlElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "HTML" );
+        html = new HTMLHtmlElementImpl( this, "HTML" );
         child = getFirstChild();
         while ( child != null )
         {
@@ -261,7 +261,7 @@ public class HTMLDocumentImpl
 
             // Head does not exist, create a new one, place it at the top of the
             // HTML element and return it.
-            head = new HTMLHeadElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "HEAD" );
+            head = new HTMLHeadElementImpl( this, "HEAD" );
             html.insertBefore( head, html.getFirstChild() );
         }
         return (HTMLElement) head;
@@ -309,7 +309,7 @@ public class HTMLDocumentImpl
         {
             // No TITLE found, create a new element and place it at the end
             // of the HEAD element.
-            title = new HTMLTitleElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "TITLE" );
+            title = new HTMLTitleElementImpl( this, "TITLE" );
             head.appendChild( title );
         }
     }
@@ -360,7 +360,7 @@ public class HTMLDocumentImpl
 
             // BODY does not exist, create a new one, place it in the HTML element
             // right after the HEAD and return it.
-            body = new HTMLBodyElementImpl( (HTMLDocumentImpl) getOwnerDocument(), "BODY" );
+            body = new HTMLBodyElementImpl( this, "BODY" );
             html.appendChild( body );
         }
         return (HTMLElement) body;
