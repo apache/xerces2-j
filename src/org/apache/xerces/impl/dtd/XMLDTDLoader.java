@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,7 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLDTDScannerImpl;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLEntityManager;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.DefaultErrorHandler;
@@ -80,7 +81,7 @@ import java.io.EOFException;
 
 /**
  * The DTD loader. The loader knows how to build grammars from XMLInputSources.
- * It extends the dTD processor in order to do this; it's
+ * It extends the DTD processor in order to do this; it's
  * a separate class because DTD processors don't need to know how
  * to talk to the outside world in their role as instance-document
  * helpers.
@@ -184,6 +185,12 @@ public class XMLDTDLoader
             errorReporter.setProperty(ERROR_HANDLER, new DefaultErrorHandler());
         }
         fErrorReporter = errorReporter;
+        // Add XML message formatter if there isn't one.
+        if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
+            XMLMessageFormatter xmft = new XMLMessageFormatter();
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
+        }
         fEntityResolver = entityResolver;
         if(fEntityResolver instanceof XMLEntityManager) {
             fEntityManager = (XMLEntityManager)fEntityResolver;
@@ -286,6 +293,12 @@ public class XMLDTDLoader
             fEntityManager.setProperty(propertyId, value);
         } else if(propertyId.equals( ERROR_REPORTER)) {
             fErrorReporter = (XMLErrorReporter)value;
+            // Add XML message formatter if there isn't one.
+            if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
+                XMLMessageFormatter xmft = new XMLMessageFormatter();
+                fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+                fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
+            }
             fDTDScanner.setProperty(propertyId, value);
             fEntityManager.setProperty(propertyId, value);
         } else if(propertyId.equals( ERROR_HANDLER)) {
@@ -404,6 +417,7 @@ public class XMLDTDLoader
         super.reset();
         fDTDScanner.reset();
         fEntityManager.reset();
+        fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
     }
 
 } // class XMLDTDLoader
