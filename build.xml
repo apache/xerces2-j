@@ -478,7 +478,7 @@ Copyright:
     <copy todir="${disttools.dir}" >
         <fileset
             dir="${tools.dir}"  
-            includes="ant*, **/*.bat, *.jar"
+            includes="**/*.txt, **/*.bat, **/*.jar"
             excludes="**/CVS*, **/.#*, **/*.class"
         />
     </copy>
