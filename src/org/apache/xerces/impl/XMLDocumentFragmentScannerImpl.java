@@ -780,7 +780,12 @@ public class XMLDocumentFragmentScannerImpl
                 break;
             }
             else if (!isValidNameStartChar(c) || !sawSpace) {
-                reportFatalError("ElementUnterminated", new Object[]{rawname});
+                // Second chance. Check if this character is a high
+                // surrogate of a valid name start character.
+                if (!isValidNameStartHighSurrogate(c) || !sawSpace) {
+                    reportFatalError("ElementUnterminated",
+                                     new Object[] { rawname });
+                }
             }
 
             // attributes
@@ -1515,9 +1520,17 @@ public class XMLDocumentFragmentScannerImpl
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
                             fMarkupDepth++;
-                            if (fEntityScanner.skipChar('?')) {
-                                setScannerState(SCANNER_STATE_PI);
-                                again = true;
+                            if (fEntityScanner.skipChar('/')) {
+                                if (scanEndElement() == 0) {
+                                    if (elementDepthIsZeroHook()) {
+                                        return true;
+                                    }
+                                }
+                                setScannerState(SCANNER_STATE_CONTENT);
+                            }
+                            else if (isValidNameStartChar(fEntityScanner.peekChar())) {
+                                scanStartElement();
+                                setScannerState(SCANNER_STATE_CONTENT);
                             }
                             else if (fEntityScanner.skipChar('!')) {
                                 if (fEntityScanner.skipChar('-')) {
@@ -1537,15 +1550,11 @@ public class XMLDocumentFragmentScannerImpl
                                                      null);
                                 }
                             }
-                            else if (fEntityScanner.skipChar('/')) {
-                                if (scanEndElement() == 0) {
-                                    if (elementDepthIsZeroHook()) {
-                                        return true;
-                                    }
-                                }
-                                setScannerState(SCANNER_STATE_CONTENT);
+                            else if (fEntityScanner.skipChar('?')) {
+                                setScannerState(SCANNER_STATE_PI);
+                                again = true;
                             }
-                            else if (isValidNameStartChar(fEntityScanner.peekChar())) {
+                            else if (isValidNameStartHighSurrogate(fEntityScanner.peekChar())) {
                                 scanStartElement();
                                 setScannerState(SCANNER_STATE_CONTENT);
                             }

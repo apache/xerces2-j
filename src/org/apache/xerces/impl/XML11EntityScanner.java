@@ -183,26 +183,80 @@ public class XML11EntityScanner
 
         // scan nmtoken
         int offset = fCurrentEntity.position;
-        while (XML11Char.isXML11Name(fCurrentEntity.ch[fCurrentEntity.position])) {
-            if (++fCurrentEntity.position == fCurrentEntity.count) {
-                int length = fCurrentEntity.position - offset;
-                if (length == fCurrentEntity.ch.length) {
-                    // bad luck we have to resize our buffer
-                    char[] tmp = new char[fCurrentEntity.ch.length << 1];
-                    System.arraycopy(fCurrentEntity.ch, offset,
-                                     tmp, 0, length);
-                    fCurrentEntity.ch = tmp;
-                }
-                else {
-                    System.arraycopy(fCurrentEntity.ch, offset,
-                                     fCurrentEntity.ch, 0, length);
-                }
-                offset = 0;
-                if (load(length, false)) {
-                    break;
+        
+        do {
+            char ch = fCurrentEntity.ch[fCurrentEntity.position];
+            if (XML11Char.isXML11Name(ch)) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
                 }
             }
+            else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        --fCurrentEntity.position;
+                        break;
+                    }
+                }
+                char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+                if ( !XMLChar.isLowSurrogate(ch2) ||
+                     !XML11Char.isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                    --fCurrentEntity.position;
+                    break;
+                }
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
+                }
+            }
+            else {
+                break;
+            }
         }
+        while (true);
+        
         int length = fCurrentEntity.position - offset;
         fCurrentEntity.columnNumber += length;
 
@@ -239,9 +293,11 @@ public class XML11EntityScanner
 
         // scan name
         int offset = fCurrentEntity.position;
-        if (XML11Char.isXML11NameStart(fCurrentEntity.ch[offset])) {
+        char ch = fCurrentEntity.ch[offset];
+        
+        if (XML11Char.isXML11NameStart(ch)) {
             if (++fCurrentEntity.position == fCurrentEntity.count) {
-                fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
+                fCurrentEntity.ch[0] = ch;
                 offset = 0;
                 if (load(1, false)) {
                     fCurrentEntity.columnNumber++;
@@ -249,7 +305,40 @@ public class XML11EntityScanner
                     return symbol;
                 }
             }
-            while (XML11Char.isXML11Name(fCurrentEntity.ch[fCurrentEntity.position])) {
+        }
+        else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = ch;
+                offset = 0;
+                if (load(1, false)) {
+                    --fCurrentEntity.position;
+                    return null;
+                }
+            }
+            char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+            if ( !XMLChar.isLowSurrogate(ch2) ||
+                 !XML11Char.isXML11NameStart(XMLChar.supplemental(ch, ch2)) ) {
+                --fCurrentEntity.position;
+                return null;
+            }
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = ch;
+                fCurrentEntity.ch[1] = ch2;
+                offset = 0;
+                if (load(2, false)) {
+                    fCurrentEntity.columnNumber += 2;
+                    String symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 2);
+                    return symbol;
+                }
+            }
+        }
+        else {
+            return null;
+        }
+        
+        do {
+            ch = fCurrentEntity.ch[fCurrentEntity.position];
+            if (XML11Char.isXML11Name(ch)) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
@@ -269,7 +358,57 @@ public class XML11EntityScanner
                     }
                 }
             }
+            else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        --fCurrentEntity.position;
+                        break;
+                    }
+                }
+                char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+                if ( !XMLChar.isLowSurrogate(ch2) ||
+                     !XML11Char.isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                    --fCurrentEntity.position;
+                    break;
+                }
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
+                }
+            }
+            else {
+                break;
+            }
         }
+        while (true);
+
         int length = fCurrentEntity.position - offset;
         fCurrentEntity.columnNumber += length;
 
@@ -307,9 +446,11 @@ public class XML11EntityScanner
 
         // scan name
         int offset = fCurrentEntity.position;
-        if (XML11Char.isXML11NCNameStart(fCurrentEntity.ch[offset])) {
+        char ch = fCurrentEntity.ch[offset];
+        
+        if (XML11Char.isXML11NCNameStart(ch)) {
             if (++fCurrentEntity.position == fCurrentEntity.count) {
-                fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
+                fCurrentEntity.ch[0] = ch;
                 offset = 0;
                 if (load(1, false)) {
                     fCurrentEntity.columnNumber++;
@@ -317,7 +458,40 @@ public class XML11EntityScanner
                     return symbol;
                 }
             }
-            while (XML11Char.isXML11NCName(fCurrentEntity.ch[fCurrentEntity.position])) {
+        }
+        else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = ch;
+                offset = 0;
+                if (load(1, false)) {
+                    --fCurrentEntity.position;
+                    return null;
+                }
+            }
+            char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+            if ( !XMLChar.isLowSurrogate(ch2) ||
+                 !XML11Char.isXML11NCNameStart(XMLChar.supplemental(ch, ch2)) ) {
+                --fCurrentEntity.position;
+                return null;
+            }
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = ch;
+                fCurrentEntity.ch[1] = ch2;
+                offset = 0;
+                if (load(2, false)) {
+                    fCurrentEntity.columnNumber += 2;
+                    String symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 2);
+                    return symbol;
+                }
+            }
+        }
+        else {
+            return null;
+        }
+        
+        do {
+            ch = fCurrentEntity.ch[fCurrentEntity.position];
+            if (XML11Char.isXML11NCName(ch)) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     int length = fCurrentEntity.position - offset;
                     if (length == fCurrentEntity.ch.length) {
@@ -337,7 +511,57 @@ public class XML11EntityScanner
                     }
                 }
             }
+            else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        --fCurrentEntity.position;
+                        break;
+                    }
+                }
+                char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+                if ( !XMLChar.isLowSurrogate(ch2) ||
+                     !XML11Char.isXML11NCName(XMLChar.supplemental(ch, ch2)) ) {
+                    --fCurrentEntity.position;
+                    break;
+                }
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
+                }
+            }
+            else {
+                break;
+            }
         }
+        while (true);
+        
         int length = fCurrentEntity.position - offset;
         fCurrentEntity.columnNumber += length;
 
@@ -381,22 +605,57 @@ public class XML11EntityScanner
 
         // scan qualified name
         int offset = fCurrentEntity.position;
-        if (XML11Char.isXML11NCNameStart(fCurrentEntity.ch[offset])) {
+        char ch = fCurrentEntity.ch[offset];
+        
+        if (XML11Char.isXML11NCNameStart(ch)) {
             if (++fCurrentEntity.position == fCurrentEntity.count) {
-                fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
+                fCurrentEntity.ch[0] = ch;
                 offset = 0;
                 if (load(1, false)) {
                     fCurrentEntity.columnNumber++;
-                    String name =
-                        fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 1);
+                    String name = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 1);
                     qname.setValues(null, name, name, null);
                     return true;
                 }
             }
-            int index = -1;
-            while (XML11Char.isXML11Name(fCurrentEntity.ch[fCurrentEntity.position])) {
-                char c = fCurrentEntity.ch[fCurrentEntity.position];
-                if (c == ':') {
+        }
+        else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = ch;
+                offset = 0;
+                if (load(1, false)) {
+                    --fCurrentEntity.position;
+                    return false;
+                }
+            }
+            char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+            if ( !XMLChar.isLowSurrogate(ch2) ||
+                 !XML11Char.isXML11NCNameStart(XMLChar.supplemental(ch, ch2)) ) {
+                --fCurrentEntity.position;
+                return false;
+            }
+            if (++fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.ch[0] = ch;
+                fCurrentEntity.ch[1] = ch2;
+                offset = 0;
+                if (load(2, false)) {
+                    fCurrentEntity.columnNumber += 2;
+                    String name = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 2);
+                    qname.setValues(null, name, name, null);
+                    return true;
+                }
+            }
+        }
+        else {
+            return false;
+        }
+        
+        int index = -1;
+        boolean sawIncompleteSurrogatePair = false;
+        do {
+            ch = fCurrentEntity.ch[fCurrentEntity.position];
+            if (XML11Char.isXML11Name(ch)) {
+                if (ch == ':') {
                     if (index != -1) {
                         break;
                     }
@@ -415,8 +674,58 @@ public class XML11EntityScanner
                         System.arraycopy(fCurrentEntity.ch, offset,
                                          fCurrentEntity.ch, 0, length);
                     }
+                    offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
+                }
+            }
+            else if (XML11Char.isXML11NameHighSurrogate(ch)) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
                     if (index != -1) {
-                        index -= offset;
+                        index = index - offset;
+                    }
+                    offset = 0;
+                    if (load(length, false)) {
+                        sawIncompleteSurrogatePair = true;
+                        --fCurrentEntity.position;
+                        break;
+                    }
+                }
+                char ch2 = fCurrentEntity.ch[fCurrentEntity.position];
+                if ( !XMLChar.isLowSurrogate(ch2) ||
+                     !XML11Char.isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                    sawIncompleteSurrogatePair = true;
+                    --fCurrentEntity.position;
+                    break;
+                }
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    int length = fCurrentEntity.position - offset;
+                    if (length == fCurrentEntity.ch.length) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fCurrentEntity.ch.length << 1];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
+                    if (index != -1) {
+                        index = index - offset;
                     }
                     offset = 0;
                     if (load(length, false)) {
@@ -424,35 +733,43 @@ public class XML11EntityScanner
                     }
                 }
             }
-            int length = fCurrentEntity.position - offset;
-            fCurrentEntity.columnNumber += length;
-            if (length > 0) {
-                String prefix = null;
-                String localpart = null;
-                String rawname = fSymbolTable.addSymbol(fCurrentEntity.ch,
-                                                        offset, length);
-                if (index != -1) {
-                    int prefixLength = index - offset;
-                    prefix = fSymbolTable.addSymbol(fCurrentEntity.ch,
-                                                    offset, prefixLength);
-                    int len = length - prefixLength - 1;
-                    int startLocal = index +1;
-                    if (!XML11Char.isXML11NCNameStart(fCurrentEntity.ch[startLocal])){
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "IllegalQName",
-                                                   null,
-                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,
-                                                       index + 1, len);
-
-                }
-                else {
-                    localpart = rawname;
-                }
-                qname.setValues(prefix, localpart, rawname, null);
-                return true;
+            else {
+                break;
             }
+        }
+        while (true);
+        
+        int length = fCurrentEntity.position - offset;
+        fCurrentEntity.columnNumber += length;
+        
+        if (length > 0) {
+            String prefix = null;
+            String localpart = null;
+            String rawname = fSymbolTable.addSymbol(fCurrentEntity.ch,
+                                                    offset, length);
+            if (index != -1) {
+                int prefixLength = index - offset;
+                prefix = fSymbolTable.addSymbol(fCurrentEntity.ch,
+                                                    offset, prefixLength);
+                int len = length - prefixLength - 1;
+                int startLocal = index +1;
+                if (!XML11Char.isXML11NCNameStart(fCurrentEntity.ch[startLocal]) &&
+                    (!XML11Char.isXML11NameHighSurrogate(fCurrentEntity.ch[startLocal]) ||
+                    sawIncompleteSurrogatePair)){
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "IllegalQName",
+                                               null,
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,
+                                                   index + 1, len);
+
+            }
+            else {
+                localpart = rawname;
+            }
+            qname.setValues(prefix, localpart, rawname, null);
+            return true;
         }
         return false;
 

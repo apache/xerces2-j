@@ -74,6 +74,7 @@ package org.apache.xerces.util;
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM
  * @author Neil Graham, IBM
+ * @author Michael Glavassevich, IBM
  *
  * @version $Id$
  */
@@ -327,6 +328,18 @@ public class XML11Char {
         return (c < 0x10000 && (XML11CHARS[c] & MASK_XML11_NCNAME) != 0)
             || (0x10000 <= c && c < 0xF0000);
     } // isXML11NCName(int):boolean
+    
+    /**
+     * Returns whether the given character is a valid 
+     * high surrogate for a name character. This includes
+     * all high surrogates for characters [0x10000-0xEFFFF].
+     * In other words everything excluding planes 15 and 16.
+     *
+     * @param c The character to check.
+     */
+    public static boolean isXML11NameHighSurrogate(int c) {
+        return (0xD800 <= c && c <= 0xDB7F);
+    }
 
     /*
      * [5] Name ::= NameStartChar NameChar*
@@ -339,16 +352,39 @@ public class XML11Char {
      * @return true if name is a valid Name
      */
     public static boolean isXML11ValidName(String name) {
-        if (name.length() == 0)
+        int length = name.length();
+        if (length == 0)
             return false;
+        int i = 1;
         char ch = name.charAt(0);
-        if( !isXML11NameStart(ch) )
-           return false;
-        for (int i = 1; i < name.length(); i++ ) {
-           ch = name.charAt(i);
-           if( ! isXML11Name( ch ) ){
-              return false;
-           }
+        if( !isXML11NameStart(ch) ) {
+            if ( length > 1 && isXML11NameHighSurrogate(ch) ) {
+                char ch2 = name.charAt(1);
+                if ( !XMLChar.isLowSurrogate(ch2) || 
+                     !isXML11NameStart(XMLChar.supplemental(ch, ch2)) ) {
+                    return false;
+                }
+                i = 2;
+            }
+            else {
+                return false;
+            }
+        }
+        while (i < length) {
+            ch = name.charAt(i);
+            if ( !isXML11Name(ch) ) {
+                if ( ++i < length && isXML11NameHighSurrogate(ch) ) {
+                    char ch2 = name.charAt(i);
+                    if ( !XMLChar.isLowSurrogate(ch2) || 
+                         !isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            ++i;
         }
         return true;
     } // isXML11ValidName(String):boolean
@@ -366,16 +402,39 @@ public class XML11Char {
      * @return true if name is a valid NCName
      */
     public static boolean isXML11ValidNCName(String ncName) {
-        if (ncName.length() == 0)
+        int length = ncName.length();
+        if (length == 0)
             return false;
+        int i = 1;
         char ch = ncName.charAt(0);
-        if( !isXML11NCNameStart(ch) )
-           return false;
-        for (int i = 1; i < ncName.length(); i++ ) {
-           ch = ncName.charAt(i);
-           if( !isXML11NCName( ch ) ){
-              return false;
-           }
+        if( !isXML11NCNameStart(ch) ) {
+            if ( length > 1 && isXML11NameHighSurrogate(ch) ) {
+                char ch2 = ncName.charAt(1);
+                if ( !XMLChar.isLowSurrogate(ch2) || 
+                     !isXML11NCNameStart(XMLChar.supplemental(ch, ch2)) ) {
+                    return false;
+                }
+                i = 2;
+            }
+            else {
+                return false;
+            }
+        }
+        while (i < length) {
+            ch = ncName.charAt(i);
+            if ( !isXML11NCName(ch) ) {
+                if ( ++i < length && isXML11NameHighSurrogate(ch) ) {
+                    char ch2 = ncName.charAt(i);
+                    if ( !XMLChar.isLowSurrogate(ch2) || 
+                         !isXML11NCName(XMLChar.supplemental(ch, ch2)) ) {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            ++i;
         }
         return true;
     } // isXML11ValidNCName(String):boolean
@@ -391,18 +450,26 @@ public class XML11Char {
      * @return true if nmtoken is a valid Nmtoken 
      */
     public static boolean isXML11ValidNmtoken(String nmtoken) {
-        if (nmtoken.length() == 0)
+        int length = nmtoken.length();
+        if (length == 0)
             return false;
-        for (int i = 0; i < nmtoken.length(); i++ ) {
-           char ch = nmtoken.charAt(i);
-           if(  ! isXML11Name( ch ) ){
-              return false;
-           }
+        for (int i = 0; i < length; ++i ) {
+            char ch = nmtoken.charAt(i);
+            if( !isXML11Name(ch) ) {
+                if ( ++i < length && isXML11NameHighSurrogate(ch) ) {
+                    char ch2 = nmtoken.charAt(i);
+                    if ( !XMLChar.isLowSurrogate(ch2) || 
+                         !isXML11Name(XMLChar.supplemental(ch, ch2)) ) {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
         }
         return true;
     } // isXML11ValidName(String):boolean
-
-
 
 } // class XML11Char
 

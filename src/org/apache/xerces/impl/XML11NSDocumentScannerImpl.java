@@ -208,9 +208,13 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
                 empty = true;
                 break;
             } else if (!isValidNameStartChar(c) || !sawSpace) {
-                reportFatalError(
-                    "ElementUnterminated",
-                    new Object[] { rawname });
+                // Second chance. Check if this character is a high
+                // surrogate of a valid name start character.
+                if (!isValidNameStartHighSurrogate(c) || !sawSpace) {
+                    reportFatalError(
+                        "ElementUnterminated",
+                        new Object[] { rawname });
+                }
             }
 
             // attributes

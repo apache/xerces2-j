@@ -359,6 +359,7 @@ public class XML11DocumentScannerImpl
                     }
                 }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
+                    fStringBuffer3.clear();
                     if (scanSurrogates(fStringBuffer3)) {
                         fStringBuffer.append(fStringBuffer3);
                         if (entityDepth == fEntityDepth) {
@@ -502,6 +503,14 @@ public class XML11DocumentScannerImpl
     protected boolean isValidNameStartChar(int value) {
         return (XML11Char.isXML11NameStart(value)); 
     } // isValidNameStartChar(int):  boolean
+    
+    // returns true if the given character is 
+    // a valid high surrogate for a nameStartChar 
+    // with respect to the version of XML understood 
+    // by this scanner.
+    protected boolean isValidNameStartHighSurrogate(int value) {
+        return XML11Char.isXML11NameHighSurrogate(value); 
+    } // isValidNameStartHighSurrogate(int):  boolean
 
     protected boolean versionSupported(String version) {
         return (version.equals("1.1") || version.equals("1.0"));

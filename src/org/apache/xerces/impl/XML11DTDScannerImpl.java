@@ -223,6 +223,14 @@ public class XML11DTDScannerImpl
     protected boolean isValidNameStartChar(int value) {
         return (XML11Char.isXML11NameStart(value)); 
     } // isValidNameStartChar(int):  boolean
+    
+    // returns true if the given character is 
+    // a valid high surrogate for a nameStartChar 
+    // with respect to the version of XML understood 
+    // by this scanner.
+    protected boolean isValidNameStartHighSurrogate(int value) {
+        return XML11Char.isXML11NameHighSurrogate(value); 
+    } // isValidNameStartHighSurrogate(int):  boolean
 
     // note that, according to 4.3.4 of the XML 1.1 spec, XML 1.1
     // documents may invoke 1.0 entities; thus either version decl (or none!)

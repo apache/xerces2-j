@@ -757,11 +757,7 @@ public class XMLDocumentScannerImpl
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
                             fMarkupDepth++;
-                            if (fEntityScanner.skipChar('?')) {
-                                setScannerState(SCANNER_STATE_PI);
-                                again = true;
-                            }
-                            else if (fEntityScanner.skipChar('!')) {
+                            if (fEntityScanner.skipChar('!')) {
                                 if (fEntityScanner.skipChar('-')) {
                                     if (!fEntityScanner.skipChar('-')) {
                                         reportFatalError("InvalidCommentStart",
@@ -779,7 +775,16 @@ public class XMLDocumentScannerImpl
                                                      null);
                                 }
                             }
-                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                            else if (isValidNameStartChar(fEntityScanner.peekChar())) {
+                                setScannerState(SCANNER_STATE_ROOT_ELEMENT);
+                                setDispatcher(fContentDispatcher);
+                                return true;
+                            }
+                            else if (fEntityScanner.skipChar('?')) {
+                                setScannerState(SCANNER_STATE_PI);
+                                again = true;
+                            }
+                            else if (isValidNameStartHighSurrogate(fEntityScanner.peekChar())) {
                                 setScannerState(SCANNER_STATE_ROOT_ELEMENT);
                                 setDispatcher(fContentDispatcher);
                                 return true;
@@ -1142,7 +1147,13 @@ public class XMLDocumentScannerImpl
                                                  null);
                                 again = true;
                             }
-                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                            else if (isValidNameStartChar(fEntityScanner.peekChar())) {
+                                reportFatalError("MarkupNotRecognizedInMisc",
+                                                 null);
+                                scanStartElement();
+                                setScannerState(SCANNER_STATE_CONTENT);
+                            }
+                            else if (isValidNameStartHighSurrogate(fEntityScanner.peekChar())) {
                                 reportFatalError("MarkupNotRecognizedInMisc",
                                                  null);
                                 scanStartElement();
