@@ -2538,7 +2538,9 @@ public class XMLEntityManager
                         fCurrentEntity.columnNumber = 1;
                         if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                             fCurrentEntity.ch[0] = (char)c;
-                            load(1, true);
+                            if (!load(1, true))
+                                // he load change the position to be 1, need to restore it, only when entity not changed:
+                                fCurrentEntity.position = 0;
                         }
                         if (c == '\r' && external) {
                             if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
