@@ -74,10 +74,10 @@ public interface XMLDTDHandler
     //
 
     /** CONDITIONAL_INCLUDE */
-    public static final short CONDITIONAL_INCLUDE = -1;
+    public static final short CONDITIONAL_INCLUDE = 0;
 
     /** CONDITIONAL_IGNORE */
-    public static final short CONDITIONAL_IGNORE = -1;
+    public static final short CONDITIONAL_IGNORE = 1;
 
     //
     // Methods
