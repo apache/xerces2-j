@@ -375,12 +375,23 @@ public class XMLChar {
     }
 
     /**
+     * Returns true the supplemental character corresponding to the given
+     * surrogates.
+     *
+     * @param h The high surrogate.
+     * @param l The low surrogate.
+     */
+    public static int supplemental(char h, char l) {
+        return (h - 0xD800) * 0x400 + (l - 0xDC00) + 0x10000;
+    }
+
+    /**
      * Returns the high surrogate of a supplemental character
      *
-     * @param c The supplementatl character to "split".
+     * @param c The supplemental character to "split".
      */
     public static char highSurrogate(int c) {
-        return (char) (((c - 0x00010000) >> 10) + 0xd800);
+        return (char) (((c - 0x00010000) >> 10) + 0xD800);
     }
 
     /**
@@ -389,7 +400,7 @@ public class XMLChar {
      * @param c The supplemental character to "split".
      */
     public static char lowSurrogate(int c) {
-        return (char) (((c - 0x00010000) & 0x3ff) + 0xdc00);
+        return (char) (((c - 0x00010000) & 0x3FF) + 0xDC00);
     }
 
     /**
@@ -398,7 +409,7 @@ public class XMLChar {
      * @param c The character to check.
      */
     public static boolean isHighSurrogate(int c) {
-        return (0xd800 <= c && c <= 0xdbff);
+        return (0xD800 <= c && c <= 0xDBFF);
     }
 
     /**
@@ -407,7 +418,7 @@ public class XMLChar {
      * @param c The character to check.
      */
     public static boolean isLowSurrogate(int c) {
-        return (0xdc00 <= c && c <= 0xdfff);
+        return (0xDC00 <= c && c <= 0xDFFF);
     }
 
 
@@ -423,7 +434,7 @@ public class XMLChar {
      */
     public static boolean isValid(int c) {
         return (c < 0x10000 && (CHARS[c] & MASK_VALID) != 0) ||
-               (c >= 0x10000 && c <= 0x10FFFF);
+               (0x10000 <= c && c <= 0x10FFFF);
     } // isValid(int):boolean
 
     /**
@@ -442,7 +453,7 @@ public class XMLChar {
      */
     public static boolean isContent(int c) {
         return (c < 0x10000 && (CHARS[c] & MASK_CONTENT) != 0) ||
-               (c >= 0x10000 && c <= 0x10FFFF);
+               (0x10000 <= c && c <= 0x10FFFF);
     } // isContent(int):boolean
 
     /**
