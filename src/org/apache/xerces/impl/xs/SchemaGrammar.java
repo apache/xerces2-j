@@ -18,10 +18,23 @@ package org.apache.xerces.impl.xs;
 
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
+import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.parsers.IntegratedParserConfiguration;
+import org.apache.xerces.parsers.SAXParser;
+import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSAttributeDeclaration;
@@ -37,19 +50,6 @@ import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
-import org.apache.xerces.impl.xs.util.SimpleLocator;
-import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
-import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.parsers.SAXParser;
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
-import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.grammars.XSGrammar;
 
 /**
  * This class is to hold all schema component declaration that are declared
@@ -695,6 +695,8 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
                                                   false,    // idc
                                                   true,     // notation
                                                   false,    // annotation
+                                                  false,    // facet
+                                                  false,    // multi value facet
                                                   true,     // complex type
                                                   true      // simple type
                                                  };
@@ -755,21 +757,22 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
     }
 
     /**
-     * Returns a list of top-level components, i.e. element declarations,
-     * attribute declarations, etc.<p>
-     * Note that  <code>XSTypeDefinition#SIMPLE_TYPE</code> and
-     * <code>XSTypeDefinition#COMPLEX_TYPE</code> can also be used as the
-     * <code>objectType</code> to retrieve only complex types or simple types,
-     * instead of all types.
-     * @param objectType The type of the declaration, i.e.
-     *   ELEMENT_DECLARATION, ATTRIBUTE_DECLARATION, etc.
-     * @return A list of top-level definition of the specified type in
-     *   <code>objectType</code> or <code>null</code>.
+     * [schema components]: a list of top-level components, i.e. element 
+     * declarations, attribute declarations, etc. 
+     * @param objectType The type of the declaration, i.e. 
+     *   <code>ELEMENT_DECLARATION</code>. Note that 
+     *   <code>XSTypeDefinition.SIMPLE_TYPE</code> and 
+     *   <code>XSTypeDefinition.COMPLEX_TYPE</code> can also be used as the 
+     *   <code>objectType</code> to retrieve only complex types or simple 
+     *   types, instead of all types.
+     * @return  A list of top-level definition of the specified type in 
+     *   <code>objectType</code> or an empty <code>XSNamedMap</code> if no 
+     *   such definitions exist. 
      */
     public synchronized XSNamedMap getComponents(short objectType) {
         if (objectType <= 0 || objectType > MAX_COMP_IDX ||
             !GLOBAL_COMP[objectType]) {
-            return null;
+            return XSNamedMapImpl.EMPTY_MAP;
         }
         
         if (fComponents == null)

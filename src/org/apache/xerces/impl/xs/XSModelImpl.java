@@ -219,17 +219,22 @@ public class XSModelImpl implements XSModel {
     }
 
     /**
-     * Returns a list of top-level components, i.e. element declarations,
-     * attribute declarations, etc.
-     * @param objectType The type of the declaration, i.e.
-     *   ELEMENT_DECLARATION, ATTRIBUTE_DECLARATION, etc.
-     * @return A list of top-level definition of the specified type in
-     *   <code>objectType</code> or <code>null</code>.
+     * Returns a list of top-level components, i.e. element declarations, 
+     * attribute declarations, etc. 
+     * @param objectType The type of the declaration, i.e. 
+     *   <code>ELEMENT_DECLARATION</code>. Note that 
+     *   <code>XSTypeDefinition.SIMPLE_TYPE</code> and 
+     *   <code>XSTypeDefinition.COMPLEX_TYPE</code> can also be used as the 
+     *   <code>objectType</code> to retrieve only complex types or simple 
+     *   types, instead of all types.
+     * @return  A list of top-level definitions of the specified type in 
+     *   <code>objectType</code> or an empty <code>XSNamedMap</code> if no 
+     *   such definitions exist. 
      */
     public synchronized XSNamedMap getComponents(short objectType) {
         if (objectType <= 0 || objectType > MAX_COMP_IDX ||
             !GLOBAL_COMP[objectType]) {
-            return null;
+            return XSNamedMapImpl.EMPTY_MAP;
         }
         
         SymbolHash[] tables = new SymbolHash[fGrammarCount];
@@ -274,22 +279,22 @@ public class XSModelImpl implements XSModel {
     }
 
     /**
-     * Convenience method. Returns a list of top-level component declarations
-     * that are defined within the specified namespace, i.e. element
-     * declarations, attribute declarations, etc.
-     * @param objectType The type of the declaration, i.e.
-     *   ELEMENT_DECLARATION, ATTRIBUTE_DECLARATION, etc.
-     * @param namespace The namespace to which declaration belong or
-     *   <code>null</code> (for components with no targetNamespace).
-     * @return A list of top-level definition of the specified type in
-     *   <code>objectType</code> and defined in the specified
-     *   <code>namespace</code> or <code>null</code>.
+     * Convenience method. Returns a list of top-level component declarations 
+     * that are defined within the specified namespace, i.e. element 
+     * declarations, attribute declarations, etc. 
+     * @param objectType The type of the declaration, i.e. 
+     *   <code>ELEMENT_DECLARATION</code>.
+     * @param namespace The namespace to which the declaration belongs or 
+     *   <code>null</code> (for components with no target namespace).
+     * @return  A list of top-level definitions of the specified type in 
+     *   <code>objectType</code> and defined in the specified 
+     *   <code>namespace</code> or an empty <code>XSNamedMap</code>. 
      */
     public synchronized XSNamedMap getComponentsByNamespace(short objectType,
                                                             String namespace) {
         if (objectType <= 0 || objectType > MAX_COMP_IDX ||
             !GLOBAL_COMP[objectType]) {
-            return null;
+            return XSNamedMapImpl.EMPTY_MAP;
         }
         
         // try to find the grammar

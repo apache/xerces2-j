@@ -29,6 +29,21 @@ import org.apache.xerces.xs.*;
  */
 public class XSNamedMapImpl implements XSNamedMap {
 
+    /**
+     * An immutable empty map.
+     */
+    public static final XSNamedMap EMPTY_MAP = new XSNamedMap () {
+        public int getLength() {
+            return 0;
+        }
+        public XSObject itemByName(String namespace, String localName) {
+            return null;
+        }
+        public XSObject item(int index) {
+            return null;
+        }
+    };
+    
     // components of these namespaces are stored in this map
     String[]     fNamespaces;
     // number of namespaces
