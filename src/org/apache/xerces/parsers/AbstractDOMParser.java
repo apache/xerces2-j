@@ -968,7 +968,11 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
 					else {
 						// DTD 
                         type = attributes.getType(i);
-						attrImpl.setType(type);
+						boolean isDeclared = Boolean.TRUE.equals(attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_DECLARED));						
+						// For DOM Level 3 TypeInfo, the type name must
+						// be null if this attribute has not been declared
+						// in the DTD.
+						attrImpl.setType(isDeclared ? type : null);
 						id = (type.equals("ID")) ? true : false;
 					}
                 
