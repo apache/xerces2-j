@@ -108,6 +108,9 @@ public class DOMParser
     /** The document. */
     protected Document fDocument;
 
+    /** The default Xerces document implementation, if used. */
+    protected DocumentImpl fDocumentImpl;
+
     /** Current node. */
     protected Node fCurrentNode;
 
@@ -272,6 +275,7 @@ public class DOMParser
 
         fInDocument = true;
         fDocument = new DocumentImpl();
+        fDocumentImpl = (DocumentImpl)fDocument;
         fCurrentNode = fDocument;
 
     } // startDocument()
@@ -374,6 +378,21 @@ public class DOMParser
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text) throws SAXException {
+
+        Node child = fCurrentNode.getLastChild();
+        if (child != null && child.getNodeType() == Node.TEXT_NODE) {
+            Text textNode = (Text)child;
+            textNode.appendData(text.toString());
+        }
+        else {
+            Text textNode = fDocument.createTextNode(text.toString());
+            if (fDocumentImpl != null) {
+                TextImpl textNodeImpl = (TextImpl)textNode;
+                textNodeImpl.setIgnorableWhitespace(true);
+            }
+            fCurrentNode.appendChild(textNode);
+        }
+
     } // ignorableWhitespace(XMLString)
 
     /**
