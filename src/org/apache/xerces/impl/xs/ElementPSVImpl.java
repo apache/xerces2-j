@@ -62,7 +62,6 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 
-import java.util.Vector;
 
 
 /**
@@ -89,8 +88,9 @@ public class ElementPSVImpl implements ElementPSVI {
       */
     protected boolean fNil = false;
 
-    /** if normalized value represent the default value  */
-    protected boolean fSpecified = false;
+    /** false if the element value was provided by the schema; true otherwise. 
+     */
+    protected boolean fSpecified = true;
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
@@ -311,7 +311,7 @@ public class ElementPSVImpl implements ElementPSVI {
         fDeclaration = null;
         fTypeDecl = null;
         fNil = false;
-        fSpecified = false;
+        fSpecified = true;
         fNotation = null;
         fMemberType = null;
         fValidationAttempted = ElementPSVI.NO_VALIDATION;

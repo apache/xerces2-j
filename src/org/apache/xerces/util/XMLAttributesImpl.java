@@ -78,7 +78,8 @@ import org.xml.sax.Attributes;
  *
  * @see XMLDocumentHandler#startElement
  *
- * @author Andy Clark, IBM
+ * @author Andy Clark, IBM 
+ * @author Elena Litani, IBM
  *
  * @version $Id$
  */
@@ -103,7 +104,10 @@ public class XMLAttributesImpl
     protected Attribute[] fAttributes = new Attribute[4];
 
     /** Augmentations information for each attribute 
-        number of augmentations is equal to the number of attributes*/
+        number of augmentations is equal to the number of attributes
+    */
+    // XMLAttributes has no knowledge if any augmentations
+    //          we attached to Augmentations.
     protected Augmentations[] fAugmentations = new AugmentationsImpl[4];
 
     //

@@ -113,7 +113,7 @@ public class IndentPrinter
     private int             _nextIndent;
 
 
-    IndentPrinter( Writer writer, OutputFormat format)
+    public IndentPrinter( Writer writer, OutputFormat format)
     {
         super( writer, format );
         // Initialize everything for a first/second run.

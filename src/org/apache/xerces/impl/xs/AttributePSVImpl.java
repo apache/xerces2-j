@@ -79,8 +79,9 @@ public class AttributePSVImpl implements AttributePSVI {
     /** type of attribute, simpleType */
     protected XSTypeDecl fTypeDecl = null;
 
-    /** if normalized value represent the default value  */
-    protected boolean fSpecified = false;
+    /** If this attribute was explicitly given a 
+     * value in the original document, this is true; otherwise, it is false  */
+    protected boolean fSpecified = true;
 
     /** schema normalized value property */
     protected String fNormalizedValue = null;
@@ -95,7 +96,7 @@ public class AttributePSVImpl implements AttributePSVI {
     protected short fValidity = AttributePSVI.UNKNOWN_VALIDITY;
 
     /** error codes */
-    protected String[] fErrorCodes = null;
+    protected Vector fErrorCodes = new Vector(10);
 
     /** validation context: could be QName or XPath expression*/
     protected String fValidationContext = null;
@@ -240,7 +241,14 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return Array of error codes
      */
     public String[] getErrorCodes() {
-        return fErrorCodes;
+        // REVISIT: can we make it more efficient?
+        int size = fErrorCodes.size();
+        // copy errors from the list to an string array
+        String[] errors = new String[size];
+        for (int i = 0; i < size; i++) {
+            errors[i] = (String)fErrorCodes.elementAt(i);
+        }
+        return errors;
 
     }
 
@@ -257,12 +265,15 @@ public class AttributePSVImpl implements AttributePSVI {
     public void reset() {
         fDeclaration = null;
         fTypeDecl = null;
-        fSpecified = false;
+        fSpecified = true;
         fMemberType = null;
         fValidationAttempted = AttributePSVI.NO_VALIDATION;
         fValidity = AttributePSVI.UNKNOWN_VALIDITY;
-        fErrorCodes = null;
+        fErrorCodes.setSize(0);
         fValidationContext = null;
     }
 
+    public void addErrorCode(String key){
+        fErrorCodes.addElement(key);
+    }
 }
