@@ -1922,6 +1922,11 @@ public class TraverseSchema implements
         // compose the final content model by concatenating the base and the 
         // current in sequence.
         if (!derivedByRestriction && baseContentSpecHandle > -1 ) {
+            if (baseFromAnotherSchema ) {
+                SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(baseTypeSchemaURI);
+                baseContentSpecHandle = importContentSpec(aGrammar, baseContentSpecHandle);
+            }
+            
             if (left == -2) {
                 left = baseContentSpecHandle;
             }
@@ -2129,6 +2134,7 @@ public class TraverseSchema implements
 
     } // end of method: traverseComplexTypeDecl
 
+
     private void checkRecursingComplexType() throws Exception {
         if ( fCurrentTypeNameStack.empty() ) {
             if (! fElementRecurseComplex.isEmpty() ) {
@@ -2165,6 +2171,36 @@ public class TraverseSchema implements
         //TO DO: !!!
     }
 
+    private int importContentSpec(SchemaGrammar aGrammar, int contentSpecHead ) throws Exception {
+        XMLContentSpec ctsp = new XMLContentSpec();
+        aGrammar.getContentSpec(contentSpecHead, ctsp);
+        int left = -1;
+        int right = -1;
+        if ( ctsp.type == ctsp.CONTENTSPECNODE_LEAF 
+             || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY
+             || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_LOCAL
+             || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_OTHER ) {
+            return fSchemaGrammar.addContentSpecNode(ctsp.type, ctsp.value, ctsp.otherValue, false);
+        }
+        else {
+            if ( ctsp.value == -1 ) {
+                left = -1;
+            }
+            else {
+                left = importContentSpec(aGrammar, ctsp.value);
+            }
+            
+            if ( ctsp.otherValue == -1 ) {
+                right = -1;
+            }
+            else {
+                right = importContentSpec(aGrammar, ctsp.otherValue);
+            }
+            return fSchemaGrammar.addContentSpecNode(ctsp.type, left, right, false);
+        
+        }
+    }
+    
     private int expandContentModel ( int index, Element particle) throws Exception {
         
         String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS).trim();

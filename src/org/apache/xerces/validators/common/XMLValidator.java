@@ -1083,7 +1083,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             if ( fValidating && fGrammarIsSchemaGrammar )
                 if ( !switchGrammar(fGrammarNameSpaceIndex) ) {
                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                              "Grammar with uri : " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                                              "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex) 
                                               + " , can not found");
                 }
         }
@@ -2483,7 +2483,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                 if (!success && !laxThisOne) {
                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                              "Grammar with uri : " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                                              "Grammar with uri 2: " + fStringPool.toString(fGrammarNameSpaceIndex) 
                                               + " , can not found");
                 }
             }
@@ -2503,18 +2503,29 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
 
                 if (elementIndex == -1) {
-                    // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
+                    // if validating based on a Schema, try to resolve the element again by searching in its type's ancestor types
                     if (fGrammarIsSchemaGrammar && fCurrentElementIndex != -1) {
                         TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
                         baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
-                        //TO DO: 
-                        //      should check if baseTypeInfo is from the same Schema.
+                        int aGrammarNSIndex = fGrammarNameSpaceIndex;
                         while (baseTypeInfo != null) {
                             elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
                             if (elementIndex > -1 ) {
+                                // update the current Grammar NS index if resolving element succeed.
+                                fGrammarNameSpaceIndex = aGrammarNSIndex;
                                 break;
                             }
                             baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
+                            String baseTName = baseTypeInfo.typeName;
+                            if (!baseTName.startsWith("#")) {
+                                int comma = baseTName.indexOf(',');
+                                aGrammarNSIndex = fStringPool.addSymbol(baseTName.substring(0,comma).trim());
+                                if (aGrammarNSIndex != fGrammarNameSpaceIndex) {
+                                    if ( !switchGrammar(aGrammarNSIndex) ) {
+                                        break; //exit the loop in this case
+                                    }
+                                }
+                            }
                         }
                     }
                     //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
@@ -2583,7 +2594,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 if (!success && !fNeedValidationOff) {
                                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
                                                               XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                                              "Grammar with uri : " 
+                                                              "Grammar with uri 3: " 
                                                               + fStringPool.toString(fCurrentSchemaURI) 
                                                               + " , can not found");
                                 }
@@ -2648,7 +2659,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     if (!success && !fNeedValidationOff) {
                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
                                                   XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                                  "Grammar with uri : " 
+                                                  "Grammar with uri 4: " 
                                                   + fStringPool.toString(fCurrentSchemaURI) 
                                                   + " , can not found");
                     }
