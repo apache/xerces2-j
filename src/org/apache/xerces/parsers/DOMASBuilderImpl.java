@@ -347,7 +347,7 @@ public class DOMASBuilderImpl
 
        initGrammarBucket();
        fSubGroupHandler.reset();
-       fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, null, fGrammarPool);
+       fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, fGrammarPool);
 
        // Should check whether the grammar with this namespace is already in
        // the grammar resolver. But since we don't know the target namespace
