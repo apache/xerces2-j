@@ -177,7 +177,7 @@ public interface XMLDTDHandler {
      *
      * @throws SAXException Thrown by handler to signal an error.
      */
-    public void elementDecl(String name, XMLString contentModel)
+    public void elementDecl(String name, String contentModel)
         throws SAXException;
 
     /**

@@ -88,6 +88,7 @@ public class XMLGrammarParser
      * @param symbolTable 
      */
     protected XMLGrammarParser(SymbolTable symbolTable) {
+        super(symbolTable);
     }
 
     //

@@ -322,7 +322,7 @@ public class SAXParser
      * @param name 
      * @param contentModel 
      */
-    public void elementDecl(String name, XMLString contentModel)
+    public void elementDecl(String name, String contentModel)
         throws SAXException {
 
         if (fDeclHandler != null || DEBUG_CALLBACKS) {
@@ -333,7 +333,7 @@ public class SAXParser
                                    + ", " + contentModel + ")");
             }
             if (fDeclHandler != null) {
-                fDeclHandler.elementDecl(name, contentModel.toString());
+                fDeclHandler.elementDecl(name, contentModel);
             }
         }
 
