@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.domx.DOMException;
-//import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMException;
 
 /**
  * DOMExceptions are thrown when one of the
@@ -110,6 +109,14 @@ import org.apache.xerces.domx.DOMException;
 public class DOMExceptionImpl 
     extends DOMException {
 
+    //
+    // Constants
+    //
+
+    // DOM has named these but hasn't values yet. Stopgap:
+    public static final short           UNSPECIFIED_EVENT_TYPE= 100;
+    public static final short           UNSUPPORTED_EVENT_TYPE= 101;
+    
     //
     // Constructors
     //

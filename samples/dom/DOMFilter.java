@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@
 
 package dom;                    
                     
+import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -84,6 +85,13 @@ public class DOMFilter {
     /** Default parser name. */
     private static final String 
         DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
+
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+    private static boolean setDeferredDOM   = true;
+
+
 
     //
     // Public static methods
@@ -218,9 +226,23 @@ public class DOMFilter {
     /** Main program entry point. */
     public static void main(String argv[]) {
 
+        Arguments argopt = new Arguments();
+        argopt.setUsage( new String[] 
+                         { "usage: java dom.DOMFilter (options) uri ...","",
+                             "options:",
+                             "  -p name  Specify DOM parser wrapper by name.",
+                             "  -e name  Specify element name to search for. Default is \"*\".",
+                             "  -a name  Specify attribute name of specified elements.",
+                             "  -p name  Specify DOM parser wrapper by name.",
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -d | -D  Turn on/off deferred DOM [default=on]",
+                             "  -h       This help screen."} );
+
         // is there anything to do?
         if (argv.length == 0) {
-            printUsage();
+            argopt.printUsage();
             System.exit(1);
         }
 
@@ -229,42 +251,59 @@ public class DOMFilter {
         String elementName   = "*"; // all elements
         String attributeName = null;
 
-        // check parameters
-        for (int i = 0; i < argv.length; i++) {
-            String arg = argv[i];
 
-            // options
-            if (arg.startsWith("-")) {
-                if (arg.equals("-p")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing parser name");
-                        System.exit(1);
-                    }
-                    parserName = argv[++i];
-                    continue;
-                }
+        /////
 
-                if (arg.equals("-e")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing element name");
-                        System.exit(1);
-                    }
-                    elementName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-a")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing attribute name");
-                        System.exit(1);
-                    }
-                    attributeName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-h")) {
-                    printUsage();
+        argopt.parseArgumentTokens(argv , new char[] { 'p', 'e', 'a'} );
+        int   c;
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName = argopt.getStringParameter();
+                    break;
+                case 'd':
+                    setDeferredDOM = true;
+                    break;
+                case 'D':
+                    setDeferredDOM = false;
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case 'e':
+                    elementName = argopt.getStringParameter();
+                    break;
+                case 'a':
+                    attributeName  = argopt.getStringParameter();
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
                     System.exit(1);
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
                 }
             }
 
@@ -274,19 +313,5 @@ public class DOMFilter {
         }
 
     } // main(String[])
-
-    /** Prints the usage. */
-    private static void printUsage() {
-
-        System.err.println("usage: java dom.DOMFilter (options) uri ...");
-        System.err.println();
-        System.err.println("options:");
-        System.err.println("  -p name  Specify DOM parser wrapper by name.");
-        System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-        System.err.println("  -e name  Specify element name to search for. Default is \"*\".");
-        System.err.println("  -a name  Specify attribute name of specified elements.");
-        System.err.println("  -h       This help screen.");
-
-    } // printUsage()
 
 } // class DOMFilter

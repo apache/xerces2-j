@@ -1,0 +1,31 @@
+# Makefile for directory ./org/apache/xerces/impl/validation/datatypes
+
+TARGETS=\
+	AbstractDatatypeValidator.class\
+	Base64.class\
+	BinaryDatatypeValidator.class\
+	BooleanDatatypeValidator.class\
+	DatatypeMessageProvider.class\
+	DatatypeValidatorFactoryImpl.class\
+	DecimalDatatypeValidator.class\
+	DoubleDatatypeValidator.class\
+	ENTITYDatatypeValidator.class \
+	FloatDatatypeValidator.class\
+	HexBin.class\
+	IDDatatypeValidator.class \
+	IDREFDatatypeValidator.class \
+	NOTATIONDatatypeValidator.class \
+	ListDatatypeValidator.class \
+	QNameDatatypeValidator.class\
+	StringDatatypeValidator.class\
+	UnionDatatypeValidator.class \
+	URIReferenceDatatypeValidator.class \
+	RecurringDurationDatatypeValidator.class\
+	StatefullDatatypeValidator.class\
+	TimeDurationDatatypeValidator.class\
+	DatatypeValidatorFactoryImpl.class
+
+DIRS = regex eTypes
+
+TOP = ../../../../../../..
+include $(TOP)/src/Makefile.incl

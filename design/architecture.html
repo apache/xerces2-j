@@ -1,0 +1,360 @@
+<!-- $Id$ -->
+<html>
+ <head>
+  <title>Xerces 2 | Architecture</title>
+  <link rel='stylesheet' type='text/css' href='css/site.css'>
+  <link rel='stylesheet' type='text/css' href='css/diagram.css'>
+  <style type='text/css'>
+   .note { font-size: smaller }
+  </style>
+ </head>
+ <body>
+  <span class='netscape'>
+  <a name='TOP'></a>
+  <h1>Architecture Overview</h1>
+  <h2>Table of Contents</h2>
+  <p>
+   <ul>
+    <li><a href='#Parsing'>Parsing</a></li>
+    <li>
+     <a href='#Configuration'>Configuration</a>
+     <ul>
+      <li><a href='#Configuration.FeaturesAndProperties'>Features &amp; Properties</a></li>
+      <li><a href='#Configuration.SettingsManagement'>Settings Management</a></li>
+      <li><a href='#Configuration.ParserInitialization'>Parser Initialization</a></li>
+     </ul>
+    </li>
+    <li><a href='validation.htm'>Validation</a></li>
+    <li><a href='#Notes'>Notes</a></li>
+   </ul>
+  </p>
+  <hr>
+  <a name='Parsing'></a>
+  <h2>Parsing</h2>
+  <p>
+   The parser is designed as a pipeline. Information flows from the 
+   scanner to the validator to the parser. In the pipeline architecture, 
+   one component acts as a source of events while the other components 
+   in the pipeline are filters. The other components both listen to and 
+   propagate the information. The following diagram illustrates the 
+   layout of the pipeline in the parser.
+  </p>
+  <p>
+   <table border='2' cellpadding='10' cellspacing='0'>
+    <tr class='diagram'>
+     <td>
+      <table cellpadding='7' cellspacing='0'>
+       <tr class='diagram'>
+        <td class='diagram'>XML<br>Document</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>Scanner</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>Validator</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>Parser</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='diagram'>Application<br>API</td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>
+  </p>
+  <p>
+   The scanner implements 
+   <code><a href='design.html#XMLDocumentSource'>XMLDocumentSource</a></code>
+   and parses an XML document to perform callbacks to the
+   next stage in the pipeline. The validator implements both
+   <code><a href='design.html#XMLDocumentHandler'>XMLDocumentHandler</a></code> 
+   to receive the callbacks from
+   the scanner and <code>XMLDocumentSource</code> to
+   act as the source for the next stage in the pipeline.
+   <sup><a href='#note.1'>[1]</a></sup> 
+   Finally,
+   the parser implements <code>XMLDocumentHandler</code>
+   to receive the callbacks from the validator and then expose
+   that information to the application API.
+  </p>
+  <p>
+   By abstracting the components into <em>sources</em> and
+   <em>handlers</em>, the stages in the pipeline can be connected
+   together like puzzle pieces. Stages can be removed, added, or
+   replaced with other implementations. For example, in a parser 
+   configuration with no validation, the scanner component can
+   be connected directly as the source for the parser, thereby 
+   bypassing the validator and shortening the code path. 
+  </p>
+  <p>
+   This architecture can also be used to implement upcoming 
+   standards like <a href='http://www.w3.org/TR/xinclude'>XInclude</a>.
+   A new XInclude filter can be written that includes document
+   fragments into the pipeline stream before or after the validator.
+   <sup><a href='#note.2'>[2]</a></sup>
+  </p>
+  <p>
+   Parsing of DTDs can also be viewed as a pipeline. Since the
+   DTD is referenced in the document instance by XML syntax
+   (the DOCTYPE declaration), the DTD pipeline is triggered by 
+   the document scanner. This contrasts with XML Schema because
+   there is no XML syntax that associates a Schema grammar with
+   a document; a special attribute in the document instance is
+   used as a <em>hint</em> to the location of the grammar. The 
+   following diagram illustrates the layout of the DTD pipeline.
+  </p>
+  <p>
+   <table border='2' cellpadding='10' cellspacing='0'>
+    <tr class='diagram'>
+     <td>
+      <table cellpadding='7' cellspacing='0'>
+       <tr class='diagram'>
+        <td class='diagram'>DTD<br>Document</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>DTD<br>Scanner</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component' rowspan='3'>Validator</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>Parser</td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='diagram'>Application<br>API</td>
+       </tr>
+       <tr><td>&nbsp;</td></tr>
+       <tr class='diagram'>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><img alt='--&gt;' src='images/arrow-right.gif'></td>
+        <td class='component'>DTD<br>Grammar</td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>
+  </p>
+  <p>
+   Note that the DTD scanner communicates directly with the validator.
+   The validator receives the callbacks from the DTD scanner in order
+   to create and populate the DTD grammar object. In this way, the
+   validator acts as a "tee", propogating the DTD events to both
+   the next stage in the pipeline and the DTD grammar object. This
+   allows the validation stage in the pipeline to be completely 
+   removed from the parser configuration, if needed.
+  </p>
+  <a name='Configuration'></a>
+  <h2>Configuration</h2>
+  <p>
+   The parser object used by the application is comprised of a series
+   of connecting components. The parser puts the components together,
+   transmits settings to each component, and controls their actions.
+   The configuration is managed by the parser object and the values are 
+   communicated to the components. The following diagram shows a
+   general parser configuration and its components. (No ordering or
+   direct connection between components should be implied.)
+  </p>
+  <p>
+   <table border='2' cellspacing='0' cellpadding='7'>
+    <tr class='diagram'>
+     <td>
+      <table border='0' cellspacing='5' cellpadding='5'>
+       <tr align='center' valign='middle'>
+        <th class='manager' colspan='9'>Parser</td>
+       </tr>
+       <tr align='center' valign='middle'>
+        <td class='non-config-component'>Symbol<br>Table</td>
+        <td class='config-component'>Error<br>Reporter</td>
+        <td class='config-component'>Entity<br>Manager</td>
+        <td class='config-component'>Document<br>Scanner</td>
+        <td class='config-component'>DTD<br>Scanner</td>
+        <td class='config-component'>Validator</td>
+        <td class='non-config-component'>Grammar<br>Pool</td>
+        <td class='non-config-component'>Datatype<br>Validator<br>Factory</td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>
+  </p>
+  <p>
+   In the parser configuration, the parser object acts both as the 
+   configuration manager and as a component in the pipeline.
+   The parser object does <strong>not</strong> have to be the final
+   stage in the pipeline, though. Most users of the parser will not
+   need to create new parsers by assembling the components but may
+   want to change some part of the behavior of the parser (e.g. 
+   capitalize element names that get created in the DOM tree). By 
+   having the parser be the last stage, the user can extend the
+   parser class and override the necessary methods.
+  </p>
+  <a name='Configuration.FeaturesAndProperties'></a>
+  <h3>Features &amp; Properties</h3>
+  <p>
+   Features and properties are provided via the extensible mechanism
+   found in SAX2. Features are boolean settings on the parser while
+   properties are object settings. There are a number of SAX2 features 
+   as well as additional parser features defined by the Xerces parser. 
+   The following list includes only those features which are of 
+   general use to most components and should not not be considered a 
+   complete list.
+   <span class='netscape'>
+   <dl>
+    <dt><tt>http://xml.org/sax/features/namespaces</tt></dt>
+    <dd>Sets whether the parser should process namespaces.</dd>
+    <dt><tt>http://xml.org/sax/features/validation</tt></dt>
+    <dd>Sets whether the parser should validate instance documents.</dd>
+    <dt><tt>http://apache.org/xml/features/validation/dynamic</tt></dt>
+    <dd>
+     This setting tells the parser to validate instance documents if
+     the document contains a reference to a grammar. If no reference to
+     a grammar is included, then validation is turned off. Setting the
+     <tt>http://xml.org/sax/features/validation</tt> feature to
+     <code>false</code> overrides this setting.
+    </dd>
+   </dl>
+   </span>
+  </p>
+  <p>
+   The SAX2 property mechanism is used to communicate information about
+   other components in the parser and its internals. The following
+   list includes properties defined for general use by most
+   parser instances but does not mean that every parser configuration
+   will have all of these components. All of the following properties 
+   are <strong>read-only</strong>.
+   <span class='netscape'>
+   <dl>
+    <dt><tt>http://apache.org/xml/properties/internal/symbol-table</tt></dt>
+    <dd>
+     The symbol table used by this parser instance. 
+     The object returned by this property is of type
+     <code><a href='design.html#SymbolTable'>SymbolTable</a></code>.
+    </dd>
+    <dt><tt>http://apache.org/xml/properties/internal/error-reporter</tt></dt>
+    <dd>
+     The error reporter used by this parser instance.
+     The object returned by this property is of type
+     <code><a href='design.html#XMLErrorReporter'>XMLErrorReporter</a></code>.
+    </dd>
+    <dt><tt>http://apache.org/xml/properties/internal/entity-manager</tt></dt>
+    <dd>
+     The entity manager used by this parser instance.
+     The object returned by this property is of type
+     <code><a href='design.html#XMLEntityManager'>XMLEntityManager</a></code>.
+    </dd>
+    <!-- REVISIT: Should these be included?
+    <dt><tt>http://apache.org/xml/properties/internal/document-scanner</tt></dt>
+    <dd>
+     The document scanner used by this parser instance, if appropriate.
+     The object returned by this property is of type
+     <code><a href='design.html#XMLDocumentScanner'>XMLDocumentScanner</a></code>.
+    </dd>
+    <dt><tt>http://apache.org/xml/properties/internal/dtd-scanner</tt></dt>
+    <dd>
+     The DTD scanner used by this parser instance, if appropriate.
+     The object returned by this property is of type
+     <code><a href='design.html#XMLDTDScanner'>XMLDTDScanner</a></code>.
+    </dd>
+    <dt><tt>http://apache.org/xml/properties/internal/validator</tt></dt>
+    <dd>
+     The validator used by this parser instance, if appropriate.
+     The object returned by this property is of type
+     <code><a href='design.html#XMLValidator'>XMLValidator</a></code>.
+    </dd>
+    -->
+    <dt><tt>http://apache.org/xml/properties/internal/grammar-pool</tt></dt>
+    <dd>
+     The grammar pool used by this parser instance, if appropriate.
+     The object returned by this property is of type
+     <code><a href='design.html#GrammarPool'>GrammarPool</a></code>.
+    </dd>
+    <dt><tt>http://apache.org/xml/properties/internal/datatype-validator-factory</tt></dt>
+    <dd>
+     The datatype validator factory used by this parser instance, if
+     appropriate. The object returned by this property is of type
+     <code><a href='design.html#DatatypeValidatorFactory'>DatatypeValidatorFactory</a></code>.
+    </dd>
+   </dl>
+   </span>
+  </p>
+  <a name='Configuration.SettingsManagement'></a>
+  <h3>Settings Management</h3>
+  <p>
+   The parser implements the 
+   <code><a href='design.html#XMLComponentManager'>XMLComponentManager</a></code> 
+   interface and each component implements the 
+   <code><a href='design.html#XMLComponent'>XMLComponent</a></code> 
+   interface. For this configuration system to work, the parser
+   must adhere to the following guidelines:
+   <span class='netscape'>
+   <ul>
+    <li>
+     Before each parse, the parser <strong>must</strong> call the 
+     <code>reset</code> method on each configurable component.
+     This call allows each component to query the state of only
+     those features and properties that are important to the operation
+     of the component.
+    </li>
+    <li>
+     Any time that the application sets a feature or property on the 
+     parser <em>during a parse</em>, the parser <strong>must</strong> 
+     pass those settings to each configurable component. This is 
+     important because configuration settings can change while parsing 
+     an XML document and those settings may directly affect the 
+     operation of components. But this does <em>not</em> need to be
+     done before or after a parse because each component will query
+     settings during the call to <code>reset</code>.
+    </li>
+   </ul>
+   </span>
+  </p>
+  <a name='Configuration.ParserInitialization'></a>
+  <h3>Parser Initialization</h3>
+  <p>
+   <em>To be written.</em>
+  </p>
+  <a name='Validation'></a>
+    <a name='Notes'></a>
+  <h2>Notes</h2>
+  <p>
+   <table border='0'>
+    <tr>
+     <td><a name='note.1'></a>[1]</td>
+     <td>
+      For the purposes of discussion, any component that implements
+      both the document handler and document source interfaces will
+      be known as a "filter".
+     </td>
+    </tr>
+    <tr>
+     <td><a name='note.2'></a>[2]</td>
+     <td>
+      XInclude is defined to work on the 
+      <a href='http://www.w3.org/TR/xml-infoset'>XML Infoset</a> which
+      means that it <em>should</em> occur after validation but there
+      may be situations where the application wants to validate the
+      included material. In this case, the filter would be inserted
+      before the validator so that the document inclusion would 
+      be expanded without the validator ever knowing that there was an 
+      inclusion. However, since the pipeline does not buffer the
+      document, there is a problem with supporting features of 
+      specifications that operate on the Infoset.
+      <a href='http://www.w3.org/TR/xinclude#IDwgAq1'>Section 3.1</a>
+      of the XInclude specification highlights this problem in the
+      example. Any use of 
+      <a href='http://www.w3.org/TR/xptr'>XPointer</a>
+      to reference parts of the document containing the XInclude could
+      not be supported without buffering the document in some way.
+      Perhaps this means that the best way to support XInclude, and
+      other specifications that rely on the XML Infoset, is to 
+      operate on the document model (such as DOM) and not to try to
+      do it in the parser pipeline.
+     </td>
+    </tr>
+   </table>
+  </p>
+  </span>
+  <a name='BOTTOM'></a>
+  <hr>
+  <span class='netscape'>
+   Last modified: $Date$
+  </span>
+ </body>
+</html>

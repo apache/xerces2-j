@@ -10,21 +10,6 @@ TARGETS=\
 	ChildAndParentNode.class\
 	CommentImpl.class\
 	DeepNodeListImpl.class\
-	DeferredAttrImpl.class\
-	DeferredAttrNSImpl.class\
-	DeferredCDATASectionImpl.class\
-	DeferredCommentImpl.class\
-	DeferredDocumentImpl.class\
-	DeferredDocumentTypeImpl.class\
-	DeferredElementDefinitionImpl.class\
-	DeferredElementImpl.class\
-	DeferredElementNSImpl.class\
-	DeferredEntityImpl.class\
-	DeferredEntityReferenceImpl.class\
-	DeferredNode.class\
-	DeferredNotationImpl.class\
-	DeferredProcessingInstructionImpl.class\
-	DeferredTextImpl.class\
 	DocumentFragmentImpl.class\
 	DocumentImpl.class\
 	DocumentTypeImpl.class\

@@ -13,7 +13,7 @@ endif
 XERCES_CLASSPATH = $(TOP)/src$(CLPATHSEP)$(TOP)/samples
 CLPATH = $(XERCES_CLASSPATH)$(CLPATHSEP)$(CLASSPATH)
 
-STYLEBOOK_CLPATH = $(TOP)/tools/xalan-0.19.2.jar$(CLPATHSEP)$(TOP)/tools/xerces-1.0.1.jar$(CLPATHSEP)$(XERCES_CLASSPATH)$(CLPATHSEP)$(TOP)/tools/stylebook-1.0-b2.jar
+STYLEBOOK_CLPATH = $(TOP)/tools/xalan.jar$(CLPATHSEP)$(TOP)/tools/xerces.jar$(CLPATHSEP)$(XERCES_CLASSPATH)$(CLPATHSEP)$(TOP)/tools/stylebook-1.0-b2.jar
 
 SB_CLPATH = $(STYLEBOOK_CLPATH)$(CLPATHSEP)$(CLASSPATH)
 
@@ -36,8 +36,8 @@ MV = mv
 #
 # Define the version strings
 #
-PRODUCTVERSION = 1_1_1
-PRODUCTVERSION_DOT = 1.1.1
+PRODUCTVERSION = 2_0_0_alpha
+PRODUCTVERSION_DOT = 2.0.0.alpha
 PRODUCTNAME = Xerces
 
 #define the jar file names
@@ -49,20 +49,20 @@ SAMPLESJARFILE = xercesSamples.jar
 PACKAGES = org.apache.xerces.parsers \
            org.apache.xerces.dom \
            org.apache.xerces.dom.events \
-           org.apache.xml.serialize \
-           org.apache.html.dom \
-           org.apache.wml \
-           org.apache.wml.dom \
            org.w3c.dom \
            org.w3c.dom.events \
            org.w3c.dom.range \
            org.w3c.dom.traversal \
-           org.w3c.dom.html \
            org.xml.sax \
            org.xml.sax.ext \
            org.xml.sax.helpers \
            javax.xml.parsers
 
+#           org.apache.xml.serialize \
+#           org.apache.html.dom \
+#           org.apache.wml \
+#           org.apache.wml.dom \
+#           org.w3c.dom.html \
 
 BINZIPFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.zip
 SRCZIPFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.zip
@@ -78,7 +78,7 @@ SRCJARFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.jar
 .SUFFIXES: .class .java
 
 .java.class:
-	${JAVAC} -classpath "$(CLPATH)" $<
+	${JAVAC} -g -classpath "$(CLPATH)" $<
 	touch ${TOP}/src/classfiles_updated
 
 all:: dirs compile 

@@ -1,6 +1,8 @@
 # Makefile for directory ./sax
 
 TARGETS=\
+	DelayedInput.class\
+	DocumentTracer.class\
 	SAXCount.class\
 	SAX2Count.class\
 	SAXWriter.class\

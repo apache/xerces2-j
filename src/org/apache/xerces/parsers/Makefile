@@ -1,8 +1,14 @@
 # Makefile for directory ./org/apache/xerces/parsers
 
 TARGETS=\
-	DOMParser.class\
-	SAXParser.class
+	CachingParserPool.class\
+        DOMParser.class\
+        DTDParser.class\
+        SAXParser.class\
+        SchemaParser.class\
+        XMLDocumentParser.class\
+        XMLGrammarParser.class\
+        XMLParser.class
 
 DIRS =
 

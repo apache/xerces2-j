@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * Wraps the Xerces DOM parser.
@@ -103,6 +105,13 @@ public class NonValidatingDOMParser
         return parser.getDocument();
 
     } // parse(String):Document
+
+
+    public void setFeature(String featureId, boolean state)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        parser.setFeature( featureId, state );
+    }
+
 
     //
     // ErrorHandler methods
