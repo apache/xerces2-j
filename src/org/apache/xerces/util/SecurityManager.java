@@ -83,6 +83,9 @@ public final class SecurityManager {
 
     // default value for entity expansion limit
     private final static int DEFAULT_ENTITY_EXPANSION_LIMIT = 100000;
+    
+    //default value of number of nodes created 
+    private final static int DEFAULT_MAX_OCCUR_NODE_LIMIT = 3000;
 
     //
     // Data
@@ -90,11 +93,13 @@ public final class SecurityManager {
 
     /** entity expansion limit */
     private int entityExpansionLimit;
+    private int maxOccurLimit;
 
     // default constructor.  Establishes default values for
     // all known security holes.  
     public SecurityManager() {
         entityExpansionLimit = DEFAULT_ENTITY_EXPANSION_LIMIT;
+        maxOccurLimit = DEFAULT_MAX_OCCUR_NODE_LIMIT ;
     }
 
     // set the number of entity expansions that the
@@ -108,5 +113,22 @@ public final class SecurityManager {
     public int getEntityExpansionLimit() {
         return entityExpansionLimit;
     }
+    
+    //sets the limit of the number of nodes that should be allowed to create when building
+    //content model from maxOccurs attribute value specified in schema document, number of nodes 
+    //created depneds upon the type of content model and value of maxOccurs attribute.
+    public void setMaxOccurNodeLimit(int limit){
+        maxOccurLimit = limit ;
+    }
+    
+    
+    //get the limit of the number of nodes that should be allowed to create when building
+    //content model from maxOccurs attribute value specified in schema document, number of nodes 
+    //created depneds upon the type of content model and value of maxOccurs attribute.
+    
+    public int getMaxOccurNodeLimit(){
+        return maxOccurLimit ;    
+    }
+    
 } // class SecurityManager
 

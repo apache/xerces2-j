@@ -88,6 +88,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Vector;
+import org.apache.xerces.impl.xs.models.CMNodeFactory;
+
 /**
  * This class implements XMLGrammarLoader.  It is designed to interact
  * either with a proxy for a user application which wants to preparse schemas,
@@ -238,8 +240,11 @@ public class XMLSchemaLoader implements XMLGrammarLoader {
             sHandler = new SubstitutionGroupHandler(fGrammarBucket);
         }
         fSubGroupHandler = sHandler;
+        //get the factory instance.. this class is singleton
+        CMNodeFactory nodeFactory = CMNodeFactory.newInstance() ;
+        //REVISIT: shouldn't the SecurityManager be allowed to set, if an application tries to load standalone schema - nb.
         if(builder == null) {
-            builder = new CMBuilder();
+            builder = new CMBuilder(nodeFactory);
         }
         fCMBuilder = builder;
         fSchemaHandler = new XSDHandler(fGrammarBucket);

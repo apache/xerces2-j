@@ -118,6 +118,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 import java.io.IOException;
+import org.apache.xerces.impl.xs.models.CMNodeFactory;
 
 /**
  * The XML Schema validator. The validator implements a document
@@ -1070,10 +1071,11 @@ public class XMLSchemaValidator
     // REVISIT: in new simple type design, make things in DVs static,
     //          so that we can QNameDV.getCompiledForm()
     final XSSimpleType fQNameDV = (XSSimpleType)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_QNAME);
-
+    
+    final CMNodeFactory nodeFactory = CMNodeFactory.newInstance();
     /** used to build content models */
     // REVISIT: create decl pool, and pass it to each traversers
-    final CMBuilder fCMBuilder = new CMBuilder();
+    final CMBuilder fCMBuilder = new CMBuilder(nodeFactory);
 
     // state
 
@@ -1374,6 +1376,9 @@ public class XMLSchemaValidator
         catch (XMLConfigurationException e){
         }
 
+        //pass the component manager to the factory..
+        nodeFactory.reset(componentManager);
+        
         // clear grammars, and put the one for schema namespace there
         // logic for resetting grammar-related components moved
         // to schema loader
