@@ -411,20 +411,6 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
     protected void checkValueSpace (String content) throws InvalidDatatypeValueException {}
 
     /**
-     * Compares two anyURIs for equality.
-     * This is not really well defined.
-     *
-     * @param content1
-     * @param content2
-     * @return
-     */
-    public int compare( String content1, String content2) {
-        return 0;
-    }
-
-
-
-    /**
      * Returns a copy of this object.
      * 
      * @return 

@@ -103,5 +103,8 @@ public class AnyURIDatatypeValidator extends AbstractStringValidator {
         }
     }
 
-
+    public int compare( String  content1, String content2){
+        // TO BE DONE!!!
+        return content1.equals(content2)?0:-1;
+    }
 }

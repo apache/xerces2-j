@@ -233,7 +233,8 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
      * @return
      */
     public int compare( String  content1, String content2){
-        return -1;
+        // TO BE DONE!!!
+        return content1.equals(content2)?0:-1;
     }
 
     // Private methods start here

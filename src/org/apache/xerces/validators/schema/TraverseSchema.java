@@ -5629,7 +5629,7 @@ throws Exception {
                             referredAttrDecl.defaultType |= valueDigits;
                             referredAttrDecl.defaultType ^= valueDigits; // clear the value
                             referredAttrDecl.defaultType |= XMLAttributeDecl.VALUE_CONSTRAINT_FIXED;
-                            referredAttrDecl.defaultValue = fStringPool.toString(attValueConstraint);
+                            referredAttrDecl.defaultValue = fixedStr;
                             updated = true;
 					}
 			}

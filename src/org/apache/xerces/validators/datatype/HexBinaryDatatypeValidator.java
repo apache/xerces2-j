@@ -123,6 +123,29 @@ public class HexBinaryDatatypeValidator extends AbstractStringValidator{
         return newObj;
     }
 
+    public int compare( String value1, String value2 ){
+        if (value1 == null || value2 == null)
+            return -1;
 
+        if (value1 == value2 || value1.equals(value2))
+            return 0;
+
+        byte[] data1=HexBin.decode(value1.getBytes());
+        byte[] data2=HexBin.decode(value2.getBytes());
+
+        if (data1 == null || data2 == null)
+            return -1;
+
+        for (int i = 0; i < Math.min(data1.length, data2.length); i++)
+            if (data1[i] < data2[i])
+                return -1;
+            else if (data1[i] > data2[i])
+                return 1;
+
+        if (data1.length == data2.length)
+            return 0;
+
+        return data1.length > data2.length ? 1 : -1;
+    }
 }
 

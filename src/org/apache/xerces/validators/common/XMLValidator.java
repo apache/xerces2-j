@@ -2090,22 +2090,6 @@ public final class XMLValidator
 								args,
 								XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                		}
-                     if (validationEnabled && fixed) {
-                        int alistValue = attrList.getAttValue(i);
-                        if (alistValue != attValue &&
-                            !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {
-                           Object[] args = { fStringPool.toString(elementNameIndex),
-                              fStringPool.toString(attName),
-                              fStringPool.toString(alistValue),
-                              fStringPool.toString(attValue)};
-                           fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                      XMLMessages.XML_DOMAIN,
-                                                      XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
-                                                      XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
-                                                      args,
-                                                      XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                        }
-                     }
                      specified = true;
                      break;
                   }
@@ -3582,6 +3566,21 @@ public final class XMLValidator
                                     String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
                                     String  value       = unTrimValue.trim();
                                     DatatypeValidator tempDV = fTempAttDecl.datatypeValidator;
+                                    // if "fixed" is specified, then get the fixed string,
+                                    // and compare over value space
+                                    if ((fTempAttDecl.defaultType & XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0 &&
+                                        tempDV.compare(value, fTempAttDecl.defaultValue) != 0) {
+                                        Object[] args = { fStringPool.toString(element.rawname),
+                                                          fStringPool.toString(attrList.getAttrName(index)),
+                                                          unTrimValue,
+                                                          fTempAttDecl.defaultValue};
+                                        fErrorReporter.reportError( fErrorReporter.getLocator(),
+                                                                    XMLMessages.XML_DOMAIN,
+                                                                    XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
+                                                                    XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
+                                                                    args,
+                                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                    }
                                     if (tempDV instanceof IDDatatypeValidator) {
                                        this.fStoreIDRef.setDatatypeObject( tempDV.validate( value, null ) );
                                     } else if (tempDV instanceof IDREFDatatypeValidator) {

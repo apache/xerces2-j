@@ -114,20 +114,6 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
         return fBaseValidator;
     }
 
-    /**
-     * Compares content in the Domain value vs. lexical
-     * value.
-     * e.g. If type is a float then 1.0 may be equivalent
-     * to 1 even tough both are lexically different.
-     *
-     * @param value1
-     * @param valu2
-     * @return
-     */
-    public int compare(String value1, String value2) {
-        return value1.compareTo(value2);
-    }
-
     protected String getErrorString(int major, int minor, Object args[]) {
         try {
             return fMessageProvider.createMessage(fLocale, major, minor, args);
