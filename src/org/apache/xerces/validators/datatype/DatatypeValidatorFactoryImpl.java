@@ -349,19 +349,21 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             
             simpleType = (AbstractDatatypeValidator) fRegistry.get(type);
 
-            if ( simpleType != null ) { // if not registered type to create one
-                try {
-                    simpleType  = (AbstractDatatypeValidator) simpleType.clone();
-                } catch (CloneNotSupportedException cloneExc) {
-                    try {
-                        simpleType = (AbstractDatatypeValidator) simpleType.getClass().newInstance(); 
-                    } catch( InstantiationException e ) {
-                        e.printStackTrace();
-                    } catch( IllegalAccessException e ) {
-                        e.printStackTrace();
-                    }
-                 }
-            }
+            // This code is not needed after all.
+            // and it is a potential performance hit.
+            //if ( simpleType != null ) { // if not registered type to create one
+              //  try {
+               //     simpleType  = (AbstractDatatypeValidator) simpleType.clone();
+                //} catch (CloneNotSupportedException cloneExc) {
+                  //  try {
+                   //     simpleType = (AbstractDatatypeValidator) simpleType.getClass().newInstance(); 
+                   // } catch( InstantiationException e ) {
+                    //    e.printStackTrace();
+                   // } catch( IllegalAccessException e ) {
+                    //    e.printStackTrace();
+                    //}
+                 //}
+            //}
         }
         return (DatatypeValidator) simpleType;
     }
