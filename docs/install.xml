@@ -17,11 +17,11 @@
 			<tr><td>LICENSE</td><td>License for &javaparsername;</td></tr>
 			<!--<tr><td>README</td><td>Build instructions</td></tr>-->
 			<tr><td>Readme.html</td><td>Web page redirect to docs/html/index.html</td></tr>
-			<tr><td>STATUS</td><td>Project status list</td></tr>
+			<!--<tr><td>STATUS</td><td>Project status list</td></tr>-->
 			<tr><td>xerces.jar</td><td>Jar file containing all the parser class files</td></tr>
 			<tr><td>xercesSamples.jar</td><td>Jar file containing all sample class files</td></tr>
 			<tr><td>data/</td><td>Directory containing sample XML data files</td></tr>
-			<tr><td>docs/html</td><td>Directory containing documentation</td></tr>
+			<tr><td>docs/html/</td><td>Directory containing documentation</td></tr>
 			<tr><td>docs/apiDocs/</td><td>Directory containing Javadoc API for parser framework</td></tr>
 		</table>
 		<note>To use &javaparsername; you do not need the source files. 
@@ -32,6 +32,7 @@
 			<tr><td>LICENSE</td><td>License for &javaparsername;</td></tr>
 			<tr><td>Makefile</td><td>Top level Makefile -- read README file before building</td></tr>
 			<tr><td>README</td><td>Build instructions</td></tr>
+			<tr><td>Readme.html</td><td>Web page redirect required for building documentation</td></tr>
 			<tr><td>STATUS</td><td>Current source code status information</td></tr>
 			<tr><td>data/</td><td>Directory containing sample XML data files</td></tr>
 			<tr><td>docs/</td><td>Directory containing documentation, in XML form</td></tr>
