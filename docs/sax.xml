@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
+<s1 title="SAX">
+<s2 title="Introduction">
+<p>SAX 1.0 and SAX 2.0 Information</p>
+<ul>
+<li><jump href='http://www.saxproject.org/?selected=sax1'>SAX 1.0 Overview</jump></li>
+<li><jump href='http://www.saxproject.org/?selected=sax2'>SAX 2.0 Changes</jump></li>
+<li><jump href='http://www.saxproject.org/?selected=ext'>SAX 2.0 Extensions</jump></li>
+</ul>
+</s2>
+
+
+<s2 title="SAX Programmer's Guide">
+<p>This section provides the following topics:</p>
+
+<ul>
+<li><jump href='http://www.saxproject.org'>About SAX</jump></li>
+<li><link idref='faq-sax'>How do I?</link> -- the most frequently asked questions about SAX.</li>
+<li><link idref='samples-sax'>SAX Samples</link> -- documents various SAX samples included with Xerces.</li>
+</ul>
+</s2>
+</s1>

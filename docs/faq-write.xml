@@ -1,44 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='Writing Application FAQs'>
- <faq title="Creating a SAX Parser">
-  <q>How do I create a SAX parser?</q>
-  <a>
-   <p>
-    You can create a SAX parser by using the Java APIs for
-    XML Processing (JAXP). The following source code shows
-    how:
-   </p>
-   <source>import java.io.IOException; 
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
-  ...
-
-String xmlFile = &quot;file:///&parserdir;/data/personal.xml&quot;; 
-try {
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    SAXParser parser = factory.newSAXParser();
-    DefaultHandler handler = /* custom handler class */;
-    parser.parse(xmlFile, handler);
-} 
-catch (FactoryConfigurationError e) {
-    // unable to get a document builder factory
-} 
-catch (ParserConfigurationException e) {
-    // parser was unable to be configured
-catch (SAXException e) {
-    // parsing error
-} 
-catch (IOException e) {
-    // i/o error
-}</source>
-  </a>
- </faq>
  <!--
    - REVISIT: make sure that JAXP implementation can handle
    -          passing features and properties through to the

@@ -43,6 +43,8 @@
        id='faq-build' source='faq-build.xml'/>
   <faq title='Writing Applications FAQs' 
        id='faq-write' source='faq-write.xml'/>
+  <faq title='Programming with SAX' 
+       id='faq-sax' source='faq-sax.xml'/>
   <faq title='Programming with DOM' 
        id='faq-dom' source='faq-dom.xml'/>
   <faq title='Using XML Schemas' 
@@ -65,6 +67,7 @@
  <document label='XNI Manual' title='Xerces Native Interface'
            id='xni' source='xni.xml'/>
  <document   label='XML Schema' title='XML Schema' id='xml-schema' source='xml-schema.xml'/>
+ <document label ='SAX' title='Simple API for XML' id='sax' source='sax.xml'/>
  <document label ='DOM' title='The Document Object Model' id='dom' source='dom.xml'/>
  <hidden title='DOM Level 3 Implementation' id='dom3' source='dom3.xml'/>
  <document label='Limitations' title='Parser Limitations'
