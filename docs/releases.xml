@@ -73,6 +73,13 @@
      </note>
      <submitter name='Michael Glavassevich'/>
     </add>
+    <add>
+     <note>
+      Added support for generating synthetic annotations when a schema component
+      has non-schema attributes but no child annotation.
+     </note>
+     <submitter name='Ankit Pasricha'/>
+    </add>
     <fix>
      <note>
       Fixed numerous schema related bugs.
