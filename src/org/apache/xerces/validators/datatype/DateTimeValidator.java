@@ -99,7 +99,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
     protected final static int MONTH_SIZE = 6; 
 
     //date obj must have at least 6 chars after year (without time zone): "-MM-DD"
-    private final static int YEARMONTH_SIZE = 6;
+    private final static int YEARMONTH_SIZE = 7;
 
     //define constants to be used in assigning default values for 
     //all date/time excluding duration
@@ -509,9 +509,12 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
         getYearMonth(start, end, date);
 
-        //fStart points to the first '-' after year.
-        int stop =fStart+YEARMONTH_SIZE; 
-        date[D]=parseInt(stop-2, stop);
+        if (fBuffer.charAt(fStart++) !='-') {
+            throw new RuntimeException("CCYY-MM must be followed by '-' sign.");
+        }
+        int stop = fStart + 2;
+        date[D]=parseInt(fStart, stop);
+        fStart = stop;  //fStart points right after the Day
     }
 
     /**
@@ -533,7 +536,6 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
         int i = indexOf(start, end, '-');
         if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced.");
-        fStart=i; //position after the Year
         int length = i-start;
         if (length<4) {
             throw new RuntimeException("Year must have 'CCYY' format.");
@@ -541,9 +543,14 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         else if (length > 4 && fBuffer.charAt(start)=='0'){
             throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden");
         }
-        date[CY]=parseInt(start,i);
+        date[CY]= parseIntYear(i);
+        if (fBuffer.charAt(i)!='-') {
+            throw new RuntimeException("CCYY must be followed by '-' sign.");
+        }
         start = ++i;
-        date[M]=parseInt(start, start+2);
+        i = start +2;
+        date[M]=parseInt(start, i);
+        fStart = i; //fStart points right after the MONTH
     }
 
 
@@ -559,10 +566,10 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      */
     protected void parseTimeZone (int end, int[] date) throws RuntimeException{
 
-        //fStart points to first '-' after the year
-        int start = fStart+YEARMONTH_SIZE;
-        if ( start<fEnd ) {
-            int sign = findUTCSign(start, fEnd);
+        //fStart points right after the date
+ 
+        if ( fStart<fEnd ) {
+            int sign = findUTCSign(fStart, fEnd);
             if ( sign<0 ) {
                 throw new RuntimeException ("Error in month parsing");
             }
@@ -727,16 +734,56 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         int i = start;
         do {
             digit = Character.digit(fBuffer.charAt(i),radix);
-            if ( digit < 0 ) throw new NumberFormatException();
-            if ( result < multmin ) throw new NumberFormatException();
+            if ( digit < 0 ) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            if ( result < multmin ) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
             result *= radix;
-            if ( result < limit + digit ) throw new NumberFormatException();
+            if ( result < limit + digit ) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
             result -= digit;
 
         }while ( ++i < end );
         return -result;
     }
 
+    // parse Year differently to support negative value.
+    protected int parseIntYear (int end){
+        int radix=10;
+        int result = 0;
+        boolean negative = false;
+        int i=0;
+        int limit;
+        int multmin;
+        int digit=0;
+
+        if (fBuffer.charAt(0) == '-'){
+            negative = true;
+            limit = Integer.MIN_VALUE;
+            i++;
+         
+        } 
+        else{
+            limit = -Integer.MAX_VALUE;
+        }
+        multmin = limit / radix;
+        while (i < end)
+        {
+            digit = Character.digit(fBuffer.charAt(i++),radix);
+            if (digit < 0) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            if (result < multmin) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            result *= radix;
+            if (result < limit + digit) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            result -= digit;
+        }
+
+        if (negative)
+        {
+            if (i > 1) return result;
+            else throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+        }
+        return -result;
+
+
+
+    }
 
     /**
      * If timezone present - normalize dateTime  [E Adding durations to dateTimes]

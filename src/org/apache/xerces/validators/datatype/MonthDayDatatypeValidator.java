@@ -103,15 +103,22 @@ public class MonthDayDatatypeValidator extends DateTimeValidator {
         //initialize 
         date[CY]=YEAR;
 
+        if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-') {
+            throw new SchemaDateTimeException("Invalid format for gMonthDay: "+str);
+        }
         date[M]=parseInt(fStart+2,fStart+4);
-        fStart+=5;
-
+        fStart+=4;
+        
+        if (fBuffer.charAt(fStart++)!='-') {
+            throw new SchemaDateTimeException("Invalid format for gMonthDay: " + str);
+        }
+        
         date[D]=parseInt(fStart, fStart+2);
 
         if ( MONTHDAY_SIZE<fEnd ) {
             int sign = findUTCSign(MONTHDAY_SIZE, fEnd);
             if ( sign<0 ) {
-                throw new SchemaDateTimeException ("Error in month parsing");
+                throw new SchemaDateTimeException ("Error in month parsing:" +str);
             }
             else {
                 getTimeZone(date, sign);

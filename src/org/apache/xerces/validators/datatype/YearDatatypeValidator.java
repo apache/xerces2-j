@@ -100,15 +100,16 @@ public class YearDatatypeValidator extends DateTimeValidator {
         resetDateObj(date);
 
         // check for preceding '-' sign
+        int start = 0;
         if (fBuffer.charAt(0)=='-') {
-            fStart++;
+            start = 1;
         }
-        int sign = findUTCSign(fStart, fEnd);
+        int sign = findUTCSign(start, fEnd);
         if (sign == -1) {
-            date[CY]=parseInt(fStart, fEnd);
+            date[CY]=parseIntYear(fEnd);
         }
         else {
-            date[CY]=parseInt(fStart, sign);
+            date[CY]=parseIntYear(sign);
             getTimeZone (date, sign);
         }
 
@@ -120,7 +121,7 @@ public class YearDatatypeValidator extends DateTimeValidator {
         if ( !validateDateTime(date) ) {
             //REVISIT: should we throw an exeption?
             //         we should not try normalizing in this case ..
-            throw new SchemaDateTimeException ("Not valid date");
+            throw new SchemaDateTimeException ("Not valid date: "+str);
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);

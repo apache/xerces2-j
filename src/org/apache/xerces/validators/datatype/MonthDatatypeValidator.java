@@ -99,13 +99,19 @@ public class MonthDatatypeValidator extends DateTimeValidator {
         //set constants
         date[CY]=YEAR;
         date[D]=DAY;
+        if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-') {
+            throw new SchemaDateTimeException("Invalid format for gMonth: "+str);
+        }
+        int stop = fStart +4;
+        date[M]=parseInt(fStart+2,stop);
 
-        date[M]=parseInt(fStart+2,fStart+4);
-
+        if (fBuffer.charAt(stop++)!='-' || fBuffer.charAt(stop)!='-') {
+            throw new SchemaDateTimeException("Invalid format for gMonth: "+str);
+        }
         if ( MONTH_SIZE<fEnd ) {
             int sign = findUTCSign(MONTH_SIZE, fEnd);
             if ( sign<0 ) {
-                throw new SchemaDateTimeException ("Error in month parsing");
+                throw new SchemaDateTimeException ("Error in month parsing: "+str);
             }
             else {
                 getTimeZone(date, sign);

@@ -165,6 +165,9 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         if ( fRegistryExpanded != 2 ) {
             DatatypeValidator v;
             try {
+                //REVISIT: we want to create datatypes lazily 
+                //         esspecially for the types that are not often used
+                //
                 fSchemaDatatypeRegistry.put("boolean",           new BooleanDatatypeValidator()  );
                 fSchemaDatatypeRegistry.put("float",             new FloatDatatypeValidator());
                 fSchemaDatatypeRegistry.put("double",            new DoubleDatatypeValidator());
@@ -176,6 +179,12 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 fSchemaDatatypeRegistry.put("duration",          new DurationDatatypeValidator());
                 fSchemaDatatypeRegistry.put("gDay",              new DayDatatypeValidator()); 
                 fSchemaDatatypeRegistry.put("time",              new TimeDatatypeValidator());
+                fSchemaDatatypeRegistry.put("dateTime",          new DateTimeDatatypeValidator());
+                fSchemaDatatypeRegistry.put("date",              new DateDatatypeValidator());
+                fSchemaDatatypeRegistry.put("gMonthDay",         new MonthDayDatatypeValidator());
+                fSchemaDatatypeRegistry.put("gYearMonth",        new YearMonthDatatypeValidator());
+                fSchemaDatatypeRegistry.put("gYear",             new YearDatatypeValidator());
+                fSchemaDatatypeRegistry.put("gMonth",            new MonthDatatypeValidator());
 
                 if ( fRegistryExpanded == 0 ) {
                     initializeDTDRegistry(); //Initialize common Schema/DTD Datatype validator set if not already initialized
@@ -270,34 +279,6 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 facets.put(SchemaSymbols.ELT_MININCLUSIVE, "1" );
                 createSchemaDatatypeValidator("positiveInteger",
                                               getDatatypeValidator( "nonNegativeInteger"), facets, false );
-
-
-                //REVISIT: it looks like patterns are expensive
-                //         should we rely on error reporting for date/times and not use pattern here?
-                facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createSchemaDatatypeValidator("dateTime", new DateTimeDatatypeValidator(), facets, false);
-
-                facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createSchemaDatatypeValidator("date", new DateDatatypeValidator(), facets, false);
-
-                facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");
-                createSchemaDatatypeValidator("gMonthDay", new MonthDayDatatypeValidator(), facets, false);
-
-                facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)-(\\d\\d)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
-                createSchemaDatatypeValidator("gYearMonth", new YearMonthDatatypeValidator(), facets, false);
-
-                facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN,"(-)?(\\d*)(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?");                
-                createSchemaDatatypeValidator("gYear", new YearDatatypeValidator(), facets, false);
-
-
-                facets.clear();
-                facets.put(SchemaSymbols.ELT_PATTERN,"--(\\d\\d)--(Z)?");
-                createSchemaDatatypeValidator("gMonth", new MonthDatatypeValidator(), facets, false);
 
 
                 fRegistryExpanded = 2;
