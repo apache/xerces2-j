@@ -298,6 +298,8 @@ public class XMLValidator
         fSeenRootElement = false;
         fBufferDatatype = false;
         fInElementContent = false;
+        fCurrentElementIndex = -1;
+        fCurrentContentSpecType = -1;
 
         fRootElement.clear();
 
@@ -701,6 +703,7 @@ public class XMLValidator
     public void endElement(QName element) throws SAXException {
 
         fElementDepth--;
+
         if (fValidation) {
             int elementIndex = fCurrentElementIndex;
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
@@ -738,7 +741,6 @@ public class XMLValidator
             fNamespaceBinder.endElement(fCurrentElement);
             fDocumentHandler.endElement(fCurrentElement);
         }
-    
         
         // now pop this element off the top of the element stack
         if (fElementDepth < -1) {
@@ -1079,9 +1081,6 @@ public class XMLValidator
         // REVISIT: should we use the systemId as the key instead?
         fGrammarPool.putGrammar("", fDTDGrammar);
 
-        // REVESIT: if schema validation is turned on, we shouldn't be doing this.
-        fCurrentGrammarIsDTD = true;
-        fCurrentGrammarIsSchema = false;
 
         // call handlers
         fDTDGrammar.startDTD();
@@ -1346,6 +1345,9 @@ public class XMLValidator
         fDTDGrammar.endDTD();
         fCurrentGrammar = fDTDGrammar;
         fDTDGrammar = null;
+        // REVESIT: if schema validation is turned on, we shouldn't be doing this.
+        fCurrentGrammarIsDTD = true;
+        fCurrentGrammarIsSchema = false;
 
         // check VC: Notation declared,  in the production of NDataDecl
         if (fValidation ) {
