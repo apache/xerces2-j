@@ -7,7 +7,7 @@
         <p> They&apos;re intended to provide a way to augment the
         basic XML infoset available from the non-Augmentation
         parameters in the callbacks.  They can be used by a component to add arbitrary
-        information to the streaming infoseet, which can then
+        information to the streaming infoset, which can then
         be interpreted by some later component.</p>
         <p> For instance, a component can be written to transmit the
         post schema validation infoset through Augmentations
