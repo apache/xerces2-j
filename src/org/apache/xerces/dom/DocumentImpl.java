@@ -793,6 +793,8 @@ public class DocumentImpl
                } else {
                    newnode = createAttribute(source.getNodeName());
                }
+
+               ((Attr)newnode).setValue( ((Attr)source).getValue() );
                 deep = true;
 		// Kids carry value
 		break;
