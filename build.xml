@@ -742,6 +742,12 @@ Copyright:
            <arg value="testSchemaLanguageDOM"/>
            <arg value="testSchemaSourceDOM"/>
     </java>
+    <echo message="Running xinclude.Test ..." />
+    <java fork="yes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
+          classname="xinclude.Test"
+          failOnError="yes">
+    </java>
   </target>
 
   <!-- =================================================================== -->
