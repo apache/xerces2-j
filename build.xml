@@ -203,7 +203,12 @@ Copyright:
            deprecation="${deprecation}"
            optimize="${optimize}"
            includeAntRuntime="false"
-           includeJavaRuntime="true"/>
+           includeJavaRuntime="false"
+    />
+    <!--
+    bootclasspath="${build.src}"
+    extdirs="${build.src}"
+    -->
   </target>
 
   <!-- =================================================================== -->
@@ -224,6 +229,7 @@ Copyright:
          basedir="${build.dest}"
          compress="true"
          includes="org/apache/**, META-INF/**
+                    org/w3c/dom/html/HTMLDOMImplementation.class
                    org/w3c/dom/ls/**
                    org/w3c/dom/DOMError.class
                    org/w3c/dom/DOMErrorHandler.class
