@@ -71,26 +71,28 @@ public class XSComplexTypeDecl implements XSType {
     static final short CONTENTTYPE_MIXED   = 3;
     static final short CONTENTTYPE_ELEMENT = 4;
 
-    public QName fTypeName;
-    public XSComplexTypeDecl fBaseType;
+    public String fName;
+    public String fTargetNamespace;
+    public int fBaseIdx = XSDHandler.I_EMPTY_DECL;
+    public String fBaseUri;
     public short fDerivedBy = 0;
     public short fFinalSet = 0;
     public short fMiscFlags = 0;
-    public int fAttUseIndex = -1;
-    public int fAttWildcardIndex = -1;
+    public int fAttUseIndex = XSDHandler.I_EMPTY_DECL;
+    public int fAttWildcardIndex = XSDHandler.I_EMPTY_DECL;
     public short fContentType = 0;
     public DatatypeValidator fDatatypeValidator = null;
-    public int fParticleIndex = -1;
+    public int fParticleIndex = XSDHandler.I_EMPTY_DECL;
     public short fBlockSet = 0;
 
-    public int fTemplateElmIndex = -1;
+    public int fTemplateElmIndex = XSDHandler.I_EMPTY_DECL;
 
     public short getXSType () {
         return COMPLEX_TYPE;
     }
     
     public String getXSTypeName() {
-        return fTypeName.localpart;
+        return fName;
     }
 
     private static final short CT_IS_ABSTRACT = 1;

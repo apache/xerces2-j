@@ -113,13 +113,18 @@ class XSDHandler {
     public final static int NOTATION_TYPE = 32;
     public final static int TYPEDECL_TYPE = 64;
 
-    // component not found 
-    public final static short I_NOT_FOUND = -1;
-    // empty particle (minOccurs==maxOccurs==0)
-    public final static short I_EMPTY_PARTICLE = -2;
-    // for circular definitions we report errors here, however,
-    // traversers still need to report errors for component not found
-    public final static short I_IGNORE_ERROR = -3;
+    // empty declaration. cases to return this value:
+    // - from a traverse method, when an declaration can't be created
+    //   (but the reason/error has already be reported)
+    // - from XSDHandler.getGlobalDecl(), when the traverse method it calls
+    //   returns I_EMPTY_DECL
+    // - from XSDHandler.getGlobalDecl(), when it sees a circular reference,
+    //   and reported an error for that
+    public final static short I_EMPTY_DECL = -1;
+    // component not found. cases to return this value
+    // - from XSDHandler.getGlobalDecl(), when it can't find a declaration
+    //   for the required type and name
+    public final static short I_NOT_FOUND = -2;
 
     // this string gets appended to redefined names; it's purpose is to be
     // as unlikely as possible to cause collisions.
@@ -190,6 +195,9 @@ class XSDHandler {
 
     // the XSAttributeChecker
     private XSAttributeChecker fAttributeChecker;
+
+    // the SubstitutionGroupHandler
+    private SubstitutionGroupHandler fSubGroupHandler;
 
     // the XMLEntityResolver
     private XMLEntityResolver fEntityResolver;
@@ -613,17 +621,19 @@ class XSDHandler {
                 break;
             default:
                 // this would indicate some sort of internal error...
-                return -1;
+                return I_NOT_FOUND;
             }
+            if (decl == null)
+                return I_NOT_FOUND;
             schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
             if(schemaWithDecl == null) {
                 // cannot get to this schema from the one containing the requesting decl
-                return -1;
+                return I_NOT_FOUND;
             }
             sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
         }
 
-        int retIndex = -1;
+        int retIndex = I_EMPTY_DECL;
                 
         switch (declType) {
         case ATTRIBUTE_TYPE :
@@ -639,7 +649,7 @@ class XSDHandler {
             retIndex = sGrammar.getGroupIndex(declToTraverse.localpart);
             break;
         case IDENTITYCONSTRAINT_TYPE :
-            retIndex = -1;
+            retIndex = I_EMPTY_DECL;
             break;
         case NOTATION_TYPE :
             retIndex = sGrammar.getNotationIndex(declToTraverse.localpart);
@@ -649,13 +659,13 @@ class XSDHandler {
             break;
         }
 
-        if (retIndex != -1)
+        if (retIndex != I_EMPTY_DECL)
             return retIndex;
         
         if (decl != null) {
             if (DOMUtil.isHidden(decl)) {
                 //REVISIT: report an error: circular reference
-                return -1;
+                return I_EMPTY_DECL;
             }
             
             DOMUtil.setHidden(decl);
@@ -674,7 +684,7 @@ class XSDHandler {
             case GROUP_TYPE :
                 retIndex = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             case IDENTITYCONSTRAINT_TYPE :
-                retIndex = -1;
+                retIndex = I_EMPTY_DECL;
             case NOTATION_TYPE :
                 retIndex = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
             case TYPEDECL_TYPE :
@@ -683,37 +693,42 @@ class XSDHandler {
                 else
                     retIndex = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             }
-        }
         
-        // restore the previous NamespaceSupport, so that the caller can get
-        // proper namespace binding.
-        schemaWithDecl.restoreNSSupport();
+            // restore the previous NamespaceSupport, so that the caller can get
+            // proper namespace binding.
+            schemaWithDecl.restoreNSSupport();
+        }
             
         return retIndex;
     } // getGlobalDecl(XSDocumentInfo, int, QName):  int
 
-    protected Object getDecl(String namespace, int declType, int declIndex) {
+    protected XSType getXSTypeDecl(String namespace, int declIndex) {
         SchemaGrammar sGrammar = fGrammarResolver.getGrammar(namespace);
-        if (sGrammar == null)
-            return null;
-        switch (declType) {
-        case ATTRIBUTE_TYPE :
-            return null;
-        case ATTRIBUTEGROUP_TYPE :
-            return null;
-        case ELEMENT_TYPE :
-            return null;
-        case GROUP_TYPE :
-            return null;
-        case IDENTITYCONSTRAINT_TYPE :
-            return null;
-        case NOTATION_TYPE :
-            return null;
-        case TYPEDECL_TYPE :
+        if (sGrammar != null)
             return sGrammar.getTypeDecl(declIndex);
-        }
         return null;
-    } // end getDecl
+    } // end getXSTypeDecl
+
+    protected XSElementDecl getElementDecl(String namespace, int declIndex, XSElementDecl tempDecl) {
+        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(namespace);
+        if (sGrammar != null)
+            return sGrammar.getElementDecl(declIndex, tempDecl);
+        return null;
+    } // end getElementDecl
+
+    protected XSAttributeDecl getAttributeDecl(String namespace, int declIndex, XSAttributeDecl tempDecl) {
+        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(namespace);
+        if (sGrammar != null)
+            return sGrammar.getAttributeDecl(declIndex, tempDecl);
+        return null;
+    } // end getAttributeDecl
+
+    protected XSParticleDecl getParticleDecl(String namespace, int declIndex, XSParticleDecl tempDecl) {
+        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(namespace);
+        if (sGrammar != null)
+            return sGrammar.getParticleDecl(declIndex, tempDecl);
+        return null;
+    } // end getParticleDecl
 
     // Since ID constraints can occur in local elements, unless we
     // wish to completely traverse all our DOM trees looking for ID
@@ -765,14 +780,15 @@ class XSDHandler {
     // construct schemaGrammars.
     private void createTraversers() {
         fAttributeChecker = new XSAttributeChecker(this, fErrorReporter, fSymbolTable);
+        fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
         fAttributeGroupTraverser = new
                                    XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this,
                                                         fErrorReporter, fAttributeChecker);
         fComplexTypeTraverser = new XSDComplexTypeTraverser(this,
                                                             fErrorReporter, fAttributeChecker);
-        fElementTraverser = new XSDElementTraverser(this,
-                                                    fErrorReporter, fAttributeChecker);
+        fElementTraverser = new XSDElementTraverser(this, fErrorReporter,
+                                                    fAttributeChecker, fSubGroupHandler);
         fGroupTraverser = new XSDGroupTraverser(this,
                                                 fErrorReporter, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this,

@@ -63,7 +63,6 @@ import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.validation.ContentModelValidator;
 
-import java.lang.Integer;
 import java.util.Vector;
 import java.util.Hashtable;
 
@@ -109,7 +108,8 @@ public class SchemaGrammar {
     private int fXSTypeCount = 0;
 
     /** Element declaration contents. */
-    private QName fElementDeclName[][];
+    private String fElementDeclName[][];
+    private String fElementDeclNamespace[][];
     private String fElementDeclTypeNS[][];
     private int fElementDeclTypeDecl[][];
     private short fElementDeclMiscFlags[][];
@@ -123,7 +123,8 @@ public class SchemaGrammar {
     private Vector fElementDeclKeyRef[][];
 
     // attribute declarations
-    private QName fAttributeDeclName[][];
+    private String fAttributeDeclName[][];
+    private String fAttributeDeclNamespace[][];
     private String fAttributeDeclTypeNS[][];
     private int fAttributeDeclType[][];
     private short fAttributeDeclConstraintType[][];
@@ -174,7 +175,8 @@ public class SchemaGrammar {
         fTargetNamespace = targetNamespace;
 
         // element decl
-        fElementDeclName = new QName[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclName = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fElementDeclNamespace = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fElementDeclTypeNS = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fElementDeclTypeDecl = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fElementDeclMiscFlags = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
@@ -188,7 +190,8 @@ public class SchemaGrammar {
         fElementDeclKeyRef = new Vector[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
 
         // attribute declarations
-        fAttributeDeclName = new QName[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttributeDeclName = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
+        fAttributeDeclNamespace = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fAttributeDeclTypeNS = new String[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fAttributeDeclType = new int[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
         fAttributeDeclConstraintType = new short[INITIAL_CHUNK_COUNT][CHUNK_SIZE];
@@ -236,6 +239,8 @@ public class SchemaGrammar {
         try {
             int typeIndex = 0;
             XSComplexTypeDecl anyType = new XSComplexTypeDecl();
+            anyType.fName = SchemaSymbols.ATTVAL_ANYTYPE;
+            anyType.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
             fTypeDeclType[0][typeIndex] = anyType;
             fGlobalTypeDecls.put(SchemaSymbols.ATTVAL_ANYTYPE, typeIndex++);
             //REVISIT: make anyType the base of anySimpleType
@@ -443,7 +448,8 @@ public class SchemaGrammar {
         int elementIndex = fElementDeclCount++;
         int chunk = elementIndex >> CHUNK_SHIFT;
         int index = elementIndex & CHUNK_MASK;
-        fElementDeclName[chunk][index] = new QName(element.fQName);
+        fElementDeclName[chunk][index] = element.fName;
+        fElementDeclNamespace[chunk][index] = element.fTargetNamespace;
         fElementDeclTypeNS[chunk][index] = element.fTypeNS;
         fElementDeclTypeDecl[chunk][index] = element.fTypeIdx;
         fElementDeclMiscFlags[chunk][index] = element.fElementMiscFlags;
@@ -455,7 +461,7 @@ public class SchemaGrammar {
         //REVISIT: other fields
         
         if (isGlobal)
-            fGlobalElemDecls.put(element.fQName.localpart, elementIndex);
+            fGlobalElemDecls.put(element.fName, elementIndex);
         
         return elementIndex;
     }
@@ -491,7 +497,8 @@ public class SchemaGrammar {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
-        elementDecl.fQName.setValues(fElementDeclName[chunk][index]);
+        elementDecl.fName = fElementDeclName[chunk][index];
+        elementDecl.fTargetNamespace = fElementDeclNamespace[chunk][index];
         elementDecl.fTypeNS = fElementDeclTypeNS[chunk][index];
         elementDecl.fTypeIdx = fElementDeclTypeDecl[chunk][index];
         elementDecl.fElementMiscFlags = fElementDeclMiscFlags[chunk][index];
@@ -543,7 +550,8 @@ public class SchemaGrammar {
         int attributeIndex = fAttributeDeclCount++;
         int chunk = attributeIndex >> CHUNK_SHIFT;
         int index = attributeIndex & CHUNK_MASK;
-        fAttributeDeclName[chunk][index] = new QName(attribute.fQName);
+        fAttributeDeclName[chunk][index] = attribute.fName;
+        fAttributeDeclNamespace[chunk][index] = attribute.fTargetNamespace;
         fAttributeDeclTypeNS[chunk][index] = attribute.fTypeNS;
         fAttributeDeclType[chunk][index] = attribute.fTypeIdx;
         fAttributeDeclDefault[chunk][index] = attribute.fDefaultValue;
@@ -551,7 +559,7 @@ public class SchemaGrammar {
         //REVISIT: other fields
         
         if (isGlobal)
-            fGlobalAttrDecls.put(attribute.fQName.localpart, attributeIndex);
+            fGlobalAttrDecls.put(attribute.fName, attributeIndex);
         
         return attributeIndex;
     }
@@ -584,7 +592,7 @@ public class SchemaGrammar {
         int chunk = attributeDeclIndex >> CHUNK_SHIFT;
         int index = attributeDeclIndex & CHUNK_MASK;
 
-        attributeDecl.fQName.setValues(fAttributeDeclName[chunk][index]);
+        attributeDecl.fName = fAttributeDeclName[chunk][index];
         //REVISIT: add code
 
         return attributeDecl;
@@ -614,6 +622,16 @@ public class SchemaGrammar {
         return fGlobalAttrGrpDecls.get(attrGroupName);
     } // getAttributeGroupIndex(String):int
 
+
+    /**
+     * addGroupDecl
+     * 
+     * @param groupName
+     * @param particle
+     */
+    public void addGroupDecl(String groupName, int particle) {
+        fGlobalGroupDecls.put(groupName, particle);
+    } // getGroupIndex(String):int
 
     /**
      * getGroupIndex
@@ -669,7 +687,6 @@ public class SchemaGrammar {
     // ***********************************************
     
     /**
-     * 
      * @param type       particle type
      * @param value      particle left child
      * @param otherValue particle right child
@@ -708,6 +725,7 @@ public class SchemaGrammar {
         fParticleMaxOccurs[chunk][index] = 1;
         return fParticleCount;
     }
+
     /**
      * getParticleDecl
      * 

@@ -68,26 +68,29 @@ public class XSParticleDecl {
     // Constants
     //
 
+    /** An empty particle, to be ignored. */
+    public static final short PARTICLE_EMPTY     = 0;
+
     /** An element. */
-    public static final short PARTICLE_ELEMENT   = 0;
+    public static final short PARTICLE_ELEMENT   = 1;
 
     /** Represents <choice>. */
-    public static final short PARTICLE_CHOICE    = 1;
+    public static final short PARTICLE_CHOICE    = 2;
     
     /** Represents <sequence>. */
-    public static final short PARTICLE_SEQUENCE  = 2;
+    public static final short PARTICLE_SEQUENCE  = 3;
 
     /** Represents <all>. */
-    public static final short PARTICLE_ALL  = 3;
+    public static final short PARTICLE_ALL       = 4;
 
     /** Wildcard namespace="##any". */
-    public static final short PARTICLE_ANY       = 4;
+    public static final short PARTICLE_ANY       = 5;
 
     /** Wildcard namespace="##other". */
-    public static final short PARTICLE_ANY_OTHER = 5;
+    public static final short PARTICLE_ANY_OTHER = 6;
 
     /** Wildcard namespace=list of anyURI | ##targetNamespace | ##local. */
-    public static final short PARTICLE_ANY_LIST  = 6;
+    public static final short PARTICLE_ANY_LIST  = 7;
 
     /** Wildcard processContents="lax". */
     public static final short WILDCARD_LAX       = 0x10;
@@ -125,7 +128,7 @@ public class XSParticleDecl {
 
     /**
      * The "left hand" value object of the particle.
-     * leaf name.localpart, single child for unary ops, left child for binary ops.
+     * leaf elementIndex, single child for unary ops, left child for binary ops.
      */
     public int value;
 
@@ -136,7 +139,7 @@ public class XSParticleDecl {
 
     /**
      * The "right hand" value of the particle.
-     *  leaf name.uri, right child for binary ops
+     * right child for binary ops
      */
     public int otherValue;
 
@@ -179,7 +182,7 @@ public class XSParticleDecl {
 
     /** Clears the values. */
     public void clear() {
-        type = -1;
+        type = PARTICLE_EMPTY;
     }
 
     /** Sets the values. */

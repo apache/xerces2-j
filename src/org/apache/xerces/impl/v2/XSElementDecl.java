@@ -74,7 +74,8 @@ public class XSElementDecl {
     public static final short ABSTRACT = 2;
     public static final short FIXED    = 4;
 
-    public final QName fQName = new QName();
+    public String fName;
+    public String fTargetNamespace;
 
     // index to the type registry: simpleType or complexType
     public String fTypeNS;
@@ -118,8 +119,8 @@ public class XSElementDecl {
     //
 
     public void clear() {
-        fQName.clear();
-        fTypeIdx = -1;
+        fName = null;
+        fTypeIdx = XSDHandler.I_EMPTY_DECL;
         fUnique.removeAllElements();
         fKey.removeAllElements();
         fKeyRef.removeAllElements();

@@ -59,6 +59,8 @@ package org.apache.xerces.impl.v2;
 
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XInt;
+import org.apache.xerces.util.XIntPool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
@@ -105,13 +107,13 @@ class XSDocumentInfo {
             Element root = DOMUtil.getRoot(schemaDoc); 
             Object[] schemaAttrs = attrChecker.checkAttributes(root, true, fNamespaceSupport);
             fAreLocalAttributesQualified =
-                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fAreLocalElementsQualified =
-                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fBlockDefault =
-                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).intValue();
+                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).intValue();
             fFinalDefault =
-                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).intValue();
+                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).intValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
             if (fTargetNamespace == null)

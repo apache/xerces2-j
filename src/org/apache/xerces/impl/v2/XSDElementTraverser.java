@@ -59,6 +59,8 @@ package org.apache.xerces.impl.v2;
 import  org.apache.xerces.impl.v2.datatypes.*;
 import  org.apache.xerces.impl.XMLErrorReporter;
 import  org.apache.xerces.util.DOMUtil;
+import  org.apache.xerces.util.XInt;
+import  org.apache.xerces.util.XIntPool;
 import  org.apache.xerces.xni.QName;
 import  org.w3c.dom.Element;
 import java.util.Hashtable;
@@ -94,17 +96,29 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                                                              SchemaSymbols.ATTVAL_ANYTYPE,
                                                              SchemaSymbols.URI_SCHEMAFORSCHEMA);
 
-    protected XSElementDecl fTempElementDecl = new XSElementDecl();
+    protected XSElementDecl  fTempElementDecl  = new XSElementDecl();
+    protected XSParticleDecl fTempParticleDecl = new XSParticleDecl();
+    
+    // the initial size of the array to store deferred local elements
+    static final int INIT_STACK_SIZE = 30;
+    // the incremental size of the array to store deferred local elements
+    static final int INC_STACK_SIZE  = 10;
+    // current position of the array (# of deferred local elements)
+    int fStackPos = 0;
 
-    //
-    // REVISIT: we should be able to acces
-    // SubstitutionGroupHandler
-    //
-
+    private int[] fParticleIdx = new int[INIT_STACK_SIZE];
+    private Element[] fElementDecl = new Element[INIT_STACK_SIZE];
+    private XSDocumentInfo[] fSchemaDoc = new XSDocumentInfo[INIT_STACK_SIZE];
+    private SchemaGrammar[] fGrammar = new SchemaGrammar[INIT_STACK_SIZE];
+    
+    SubstitutionGroupHandler fSubGroupHandler;
+    
     XSDElementTraverser (XSDHandler handler,
                          XMLErrorReporter errorReporter,
-                         XSAttributeChecker gAttrCheck) {
+                         XSAttributeChecker gAttrCheck,
+                         SubstitutionGroupHandler subGroupHandler) {
         super(handler, errorReporter, gAttrCheck);
+        fSubGroupHandler = subGroupHandler;
     }
 
     /**
@@ -123,42 +137,69 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                       XSDocumentInfo schemaDoc,
                       SchemaGrammar grammar) {
 
-        //REVISIT: to implement
-        // 1. an empty particle decl object
-        // 2. register it
-        // 3. return the index
-        return -1;
+        // if the stack is full, increase the size
+        if (fParticleIdx.length == fStackPos) {
+            // increase size
+            int[] newStackI = new int[fStackPos+INC_STACK_SIZE];
+            System.arraycopy(fParticleIdx, 0, newStackI, 0, fStackPos);
+            Element[] newStackE = new Element[fStackPos+INC_STACK_SIZE];
+            System.arraycopy(fElementDecl, 0, newStackE, 0, fStackPos);
+            XSDocumentInfo[] newStackX = new XSDocumentInfo[fStackPos+INC_STACK_SIZE];
+            System.arraycopy(fSchemaDoc, 0, newStackX, 0, fStackPos);
+            SchemaGrammar[] newStackS = new SchemaGrammar[fStackPos+INC_STACK_SIZE];
+            System.arraycopy(fGrammar, 0, newStackS, 0, fStackPos);
+        }
+
+        fTempParticleDecl.clear();
+        fTempParticleDecl.type = XSParticleDecl.PARTICLE_EMPTY;
+        int particleIdx = grammar.addParticleDecl(fTempParticleDecl);
+
+        fParticleIdx[fStackPos] = particleIdx;
+        fElementDecl[fStackPos] = elmDecl;
+        fSchemaDoc[fStackPos] = schemaDoc;
+        fGrammar[fStackPos] = grammar;
+
+        return particleIdx;
     }
 
+    /**
+     * Traverse all the deferred local elements. This method should be called
+     * by the handler after we've done with all the global declarations.
+     */
+    void traverseLocalElements() {
+        for (int i = 0; i < fStackPos; i++) {
+            traverseLocal(i);
+        }
+    }
+    
     /**
      * Traverse a locally declared element (or an element reference).
      *
      * This is the real traversal method. It's called after we've done with
      * all the global declarations.
      *
-     * @param  particleIdx
-     * @param  elmDecl
-     * @param  schemaDoc
-     * @param  grammar
-     * @return the particle node index
+     * @param  index
      */
-    int traverseLocal(int particleIdx,
-                      Element elmDecl,
-                      XSDocumentInfo schemaDoc,
-                      SchemaGrammar grammar) {
+    private void traverseLocal(int index) {
+
+        int particleIdx = fParticleIdx[index];
+        Element elmDecl = fElementDecl[index];
+        XSDocumentInfo schemaDoc = fSchemaDoc[index];
+        SchemaGrammar grammar = fGrammar[index];
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc.fNamespaceSupport);
 
         QName   refAtt = (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
-        Integer minAtt = (Integer) attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
-        Integer maxAtt = (Integer) attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+        XInt minAtt = (XInt) attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+        XInt maxAtt = (XInt) attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
 
-        int elemIdx = -1;
+        int elemIdx = XSDHandler.I_EMPTY_DECL;
         if (refAtt != null) {
             elemIdx = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, refAtt);
-            if (elemIdx == -1) {
+            if (elemIdx == XSDHandler.I_NOT_FOUND) {
                 reportGenericSchemaError("element not found: "+refAtt.uri+","+refAtt.localpart);
+                elemIdx = XSDHandler.I_EMPTY_DECL;
             }
 
             Element child = DOMUtil.getFirstChildElement(elmDecl);
@@ -175,12 +216,14 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             elemIdx = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
         }
 
-        // REVISIT: implement
-        // fill in the particle decl
+        fTempParticleDecl.clear();
+        fTempParticleDecl.type = XSParticleDecl.PARTICLE_ELEMENT;
+        fTempParticleDecl.uri = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
+        fTempParticleDecl.value = elemIdx;
+        fTempParticleDecl.minOccurs = minAtt.intValue();
+        fTempParticleDecl.maxOccurs = maxAtt.intValue();
         
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
-
-        return particleIdx;
     }
 
     /**
@@ -220,11 +263,11 @@ class XSDElementTraverser extends XSDAbstractTraverser{
                              boolean isGlobal) {
 
         Boolean abstractAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
-        Integer blockAtt     = (Integer) attrValues[XSAttributeChecker.ATTIDX_BLOCK];
+        XInt    blockAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_BLOCK];
         String  defaultAtt   = (String)  attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
-        Integer finalAtt     = (Integer) attrValues[XSAttributeChecker.ATTIDX_FINAL];
+        XInt    finalAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_FINAL];
         String  fixedAtt     = (String)  attrValues[XSAttributeChecker.ATTIDX_FIXED];
-        Integer formAtt      = (Integer) attrValues[XSAttributeChecker.ATTIDX_FORM];
+        XInt    formAtt      = (XInt)    attrValues[XSAttributeChecker.ATTIDX_FORM];
         String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         Boolean nillableAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_NILLABLE];
         QName   subGroupAtt  = (QName)   attrValues[XSAttributeChecker.ATTIDX_SUBSGROUP];
@@ -244,9 +287,6 @@ class XSDElementTraverser extends XSDAbstractTraverser{
             namespace = schemaDoc.fTargetNamespace;
         }
 
-        // get qname for 'name' and 'target namespace'
-        QName name = new QName(null, nameAtt, nameAtt, namespace);
-        
         // get 'block', 'final', 'nillable', 'abstract'
         short blockSet = blockAtt == null ? SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
         short finalSet = finalAtt == null ? SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
@@ -267,11 +307,12 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // get 'substitutionGroup affiliation'
         String subGroupNS = null;
-        int subGroupIndex = -1;
+        int subGroupIndex = XSDHandler.I_EMPTY_DECL;
         if (subGroupAtt != null) {
             subGroupIndex = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ELEMENT_TYPE, subGroupAtt);
-            if (subGroupIndex == -1) {
+            if (subGroupIndex == XSDHandler.I_NOT_FOUND) {
                 reportGenericSchemaError("substitutionGroup element not found: "+subGroupAtt.uri+","+subGroupAtt.localpart+" for element '"+nameAtt+"'");
+                subGroupIndex = XSDHandler.I_EMPTY_DECL;
             } else {
                 subGroupNS = subGroupAtt.uri;
             }
@@ -286,7 +327,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // get 'type definition'
         String typeNS = null;
-        int elementType = -1;
+        int elementType = XSDHandler.I_EMPTY_DECL;
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
@@ -295,14 +336,14 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 elementType = fSchemaHandler.fComplexTypeTraverser.traverseLocal(child, schemaDoc, grammar);
-                if (elementType != -1)
+                if (elementType != XSDHandler.I_EMPTY_DECL)
                     typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
             }
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 elementType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
-                if (elementType != -1)
+                if (elementType != XSDHandler.I_EMPTY_DECL)
                     typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
             	child = DOMUtil.getNextSiblingElement(child);
@@ -310,23 +351,25 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         // Handler type attribute
-        if (elementType == -1 && typeAtt != null) {
+        if (elementType == XSDHandler.I_EMPTY_DECL && typeAtt != null) {
             elementType = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
-            if (elementType != -1)
+            if (elementType == XSDHandler.I_NOT_FOUND) {
+                reportGenericSchemaError("type not found: '"+typeAtt.uri+","+typeAtt.localpart+"' for element '"+nameAtt+"'");
+                elementType = XSDHandler.I_EMPTY_DECL;
+            } else {
                 typeNS = typeAtt.uri;
-            else
-                reportGenericSchemaError("type not found: "+typeAtt.uri+","+typeAtt.localpart+" for element '"+nameAtt+"'");
+            }
         }
         
         // Get it from the substitutionGroup declaration
-        if (elementType == -1 && subGroupIndex != -1) {
-            fTempElementDecl = (XSElementDecl)fSchemaHandler.getDecl(subGroupNS, XSDHandler.ELEMENT_TYPE, subGroupIndex);
+        if (elementType == XSDHandler.I_EMPTY_DECL && subGroupIndex != XSDHandler.I_EMPTY_DECL) {
+            fTempElementDecl = fSchemaHandler.getElementDecl(subGroupNS, subGroupIndex, fTempElementDecl);
             elementType = fTempElementDecl.fTypeIdx;
-            if (elementType != -1)
+            if (elementType != XSDHandler.I_EMPTY_DECL)
                 typeNS = fTempElementDecl.fTypeNS;
         }
 
-        if (elementType == -1) {
+        if (elementType == XSDHandler.I_EMPTY_DECL) {
             elementType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_TYPE);
             typeNS = SchemaSymbols.URI_SCHEMAFORSCHEMA;
         }
@@ -353,7 +396,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         /*Element ic = XUtil.getFirstChildElementNS(elementDecl, IDENTITY_CONSTRAINTS);
         if (ic != null) {
-            Integer elementIndexObj = new Integer(elementIndex);
+            XInt elementIndexObj = XIntPool.getXInt(elementIndex);
             Vector identityConstraints = (Vector)fIdentityConstraints.get(elementIndexObj);
             if (identityConstraints == null) {
                 identityConstraints = new Vector();
@@ -370,7 +413,8 @@ class XSDElementTraverser extends XSDAbstractTraverser{
 
         // Step 2: create the declaration, and register it to the grammar
         fTempElementDecl.clear();
-        fTempElementDecl.fQName.setValues(name);
+        fTempElementDecl.fName = nameAtt;
+        fTempElementDecl.fTargetNamespace = namespace;
         fTempElementDecl.fTypeNS = typeNS;
         fTempElementDecl.fTypeIdx = elementType;
         fTempElementDecl.fElementMiscFlags = elementMiscFlags;
@@ -402,7 +446,6 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         
         // 1 default and fixed must not both be present. 
 		if (defaultAtt != null && fixedAtt != null) {
-			// REVISIT:  localize
 			reportGenericSchemaError("src-element.1: 'default' and 'fixed' must not both be present in element declaration '" + nameAtt + "'");
         }
 
@@ -420,7 +463,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         // Step 5: check 3.3.6 constraints
-        XSType typeInfo = (XSType)fSchemaHandler.getDecl(typeNS, XSDHandler.TYPEDECL_TYPE, elementType);
+        XSType typeInfo = fSchemaHandler.getXSTypeDecl(typeNS, elementType);
         // check for NOTATION type
         checkNotationType(nameAtt, typeInfo);
 
@@ -434,25 +477,26 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple). 
-        // REVISIT: to implement
-        //if(subGroupIndex != -1)
-        //    checkSubstitutionGroupOK(elementDecl, substitutionGroupElementDecl, noErrorSoFar, substitutionGroupElementDeclIndex, subGrammar, typeInfo, substitutionGroupEltTypeInfo, dv, substitutionGroupEltDV);
+        if (subGroupIndex != XSDHandler.I_EMPTY_DECL) {
+           if (!fSubGroupHandler.checkSubstitutionGroupOK(typeInfo, subGroupNS, subGroupIndex)) {
+                reportGenericSchemaError ("e-props-correct.3: the {type definition} of element '"+nameAtt+"' must be validly derived from the {type definition} of the element '"+subGroupAtt.uri+","+subGroupAtt.localpart+"'");
+           }
+        }
 
         // 4 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}. 
         if (defaultAtt != null) {
             if (typeInfo instanceof IDDatatypeValidator ||
                 typeInfo instanceof XSComplexTypeDecl &&
                 ((XSComplexTypeDecl)typeInfo).containsTypeID()) {
-                reportGenericSchemaError ("e-props-correct.4: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- element " + nameAtt);
+                reportGenericSchemaError ("e-props-correct.4: if the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- element " + nameAtt);
             }
         }
 
         // Step 6: add substitutionGroup information to the handler
 
-        // REVISIT: substitutionGroup: double-direction
-        if (subGroupIndex != -1) {
-            //fSchemaHandler.addSubGroup(schemaDoc.fTargetNamespace, elementIndex,
-            //                           subGroupNS, subGroupIndex);
+        if (subGroupIndex != XSDHandler.I_EMPTY_DECL) {
+            fSubGroupHandler.addSubstitutionGroup(schemaDoc.fTargetNamespace, elementIndex,
+                                                  subGroupNS, subGroupIndex);
         }
 
         return elementIndex;

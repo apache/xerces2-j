@@ -1,9 +1,8 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -19,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
+ *    if any, must include the following acknowledgment:  
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -27,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written
+ *    software without prior written permission. For written 
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,41 +54,46 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
-import  org.w3c.dom.Element;
+package org.apache.xerces.impl.v2; 
 
 /**
- * The notation declaration schema component traverser.
- *
- * <notation
- *   id = ID
- *   name = NCName
- *   public = anyURI
- *   system = anyURI
- *   {any attributes with non-schema namespace . . .}>
- *   Content: (annotation?)
- * </notation>
- *
+ * To store and validate information about substitutionGroup
+ * 
  * @version $Id$
  */
-class  XSDNotationTraverser extends XSDAbstractTraverser{
+class SubstitutionGroupHandler {
 
-
-    XSDNotationTraverser (XSDHandler handler,
-                          XMLErrorReporter errorReporter,
-                          XSAttributeChecker gAttrCheck) {
-        super(handler, errorReporter, gAttrCheck);
+    XSGrammarResolver fGrammarResolver;
+    
+    SubstitutionGroupHandler(XSGrammarResolver grammarResolver) {
+        fGrammarResolver = grammarResolver;
     }
 
-    //REVISIT: return type should be int; thus need to 
-    // establish an array of these objects in the grammar.
-    int traverse(Element elmNode,
-                    XSDocumentInfo schemaDoc,
-                    SchemaGrammar grammar) {
-        return XSDHandler.I_EMPTY_DECL;
+    void addSubstitutionGroup(String elementUri, int elementIdx,
+                              String subHeadUri, int subHeadIdx) {
+        // REVISIT: to implement
+    }
+    
+    boolean substitutable(String elementUri, int elementIdx,
+                          String subHeadUri, int subHeadIdx) {
+        // REVISIT: to implement
+        return true;
     }
 
-
-}
+    XSElementDecl[] getSubstitutionGroup(String elementUri, int elementIdx) {
+        // REVISIT: to implement
+        return null;
+    }
+    
+    void reset(XSGrammarResolver grammarResolver) {
+        // REVISIT: to implement
+        fGrammarResolver = grammarResolver;
+    }
+    
+    boolean checkSubstitutionGroupOK(XSType elemType, String subGroupUri, int subGroupIdx) {
+        // REVISIT: to implement
+        return true;
+    }
+    
+} // class SubstitutionGroupHandler

@@ -56,12 +56,13 @@
  */
 package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.util.XInt;
 import org.apache.xerces.xni.QName;
-import  org.w3c.dom.Element;
-import  java.util.Stack;
-import  java.util.Hashtable;
+import org.w3c.dom.Element;
+import java.util.Stack;
+import java.util.Hashtable;
 
 /**
  * The model group schema component traverser.
@@ -94,24 +95,20 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         // General Attribute Checking for elmNode declared locally
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, 
                               schemaDoc.fNamespaceSupport);
-        QName   refAttr     = (QName)  attrValues[XSAttributeChecker.ATTIDX_REF];
-        Integer l_nMinAttr  = (Integer) attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
-        Integer l_nMaxAttr  = (Integer) attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+        QName refAttr    = (QName) attrValues[XSAttributeChecker.ATTIDX_REF];
+        XInt  l_nMinAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+        XInt  l_nMaxAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
 
-        String l_strNamespace = XSDHandler.EMPTY_STRING;
-        if (schemaDoc.fAreLocalElementsQualified) {
-            l_strNamespace = schemaDoc.fTargetNamespace;
-        }
+        int index = XSDHandler.I_EMPTY_DECL;
         
         // ref should be here.
         if (refAttr == null) {
             reportGenericSchemaError("Local group declaration should have ref.");
-            return XSDHandler.I_EMPTY_PARTICLE;
+        } else {
+            // get global decl
+            // index is a particle index.
+            index = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr);
         }
-
-        // get global decl
-        // index is a particle index.
-        int index = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE,                            refAttr);
 
         // no children are allowed
         if (DOMUtil.getFirstChildElement(elmNode) != null) {
@@ -126,11 +123,12 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
         //
         if (index == XSDHandler.I_NOT_FOUND) {
             reportGenericSchemaError("Reference made to non-existent group element");
-            index = XSDHandler.I_EMPTY_PARTICLE;
+            index = XSDHandler.I_EMPTY_DECL;
+        } else if (index == XSDHandler.I_EMPTY_DECL) {
         }
         // empty particle
         else if (minOccurs == 0 && maxOccurs == 0) {
-            index = XSDHandler.I_EMPTY_PARTICLE;
+            index = XSDHandler.I_EMPTY_DECL;
         }
         else if (!( minOccurs == 1 && maxOccurs == 1)) {
             // if minOccurs==maxOccurs==1 we don't need to create new particle
@@ -163,13 +161,13 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             reportGenericSchemaError("Global group declaration must have a name.");
         }
 
-        int index=-1;
+        int index = XSDHandler.I_EMPTY_DECL;
 
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         if (l_elmChild == null) {
             reportGenericSchemaError("Global group declaration must have a child.");
-            index = XSDHandler.I_EMPTY_PARTICLE;
+            index = XSDHandler.I_EMPTY_DECL;
         }
         else {
 
@@ -181,19 +179,19 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
             if (l_elmChild == null) {
                 reportGenericSchemaError("Global group element must have a child <all>, <choice> or <sequence>.");
-                index = XSDHandler.I_EMPTY_PARTICLE;
+                index = XSDHandler.I_EMPTY_DECL;
             }
             else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 index = traverseAll(l_elmChild, schemaDoc, grammar);
-                index = handleOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                index = checkOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 index = traverseChoice(l_elmChild, schemaDoc, grammar);
-                index = handleOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                index = checkOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 index = traverseSequence(l_elmChild, schemaDoc, grammar);
-                index = handleOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
+                index = checkOccurrences(index, l_elmChild, CHILD_OF_GROUP, grammar);
             }
             else {
                 Object[] args = new Object [] { "group", childName};

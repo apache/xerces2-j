@@ -96,20 +96,20 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                       XSDocumentInfo schemaDoc,
                       SchemaGrammar grammar) {
 
-        return -1;
+        return XSDHandler.I_EMPTY_DECL;
     }
 
     int traverseGlobal (Element elmNode,
                         XSDocumentInfo schemaDoc,
                         SchemaGrammar grammar){
 
-        return -1;
+        return XSDHandler.I_EMPTY_DECL;
     }
 
 
     private int traverseComplexTypeDecl( Element complexTypeDecl, boolean forwardRef) {
 
-        return -1;
+        return XSDHandler.I_EMPTY_DECL;
     }
 
     private void processComplexContent(int typeNameIndex,

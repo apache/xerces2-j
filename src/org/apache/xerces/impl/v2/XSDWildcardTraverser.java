@@ -101,14 +101,14 @@ class  XSDWildcardTraverser extends XSDAbstractTraverser {
                     XSDocumentInfo schemaDoc,
                     SchemaGrammar grammar) {
 
-        return -1;
+        return XSDHandler.I_EMPTY_DECL;
     }
 
     int traverseAnyAttribute(Element elmNode,
                              XSDocumentInfo schemaDoc,
                              SchemaGrammar grammar) {
 
-        return -1;
+        return XSDHandler.I_EMPTY_DECL;
     }
 
 

@@ -63,6 +63,8 @@ import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XInt;
+import org.apache.xerces.util.XIntPool;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.NamespaceSupport;
 
@@ -130,25 +132,21 @@ public class XSAttributeChecker {
     //public static final int ATTIDX_OTHERVALUES     = ATTIDX_COUNT++;
     public static final int ATTIDX_ISRETURNED      = ATTIDX_COUNT++;
 
+    private static final XIntPool fXIntPool = new XIntPool();
     // constants to return
-    private static Integer[] INT_CONSTANTS    = {new Integer(0),
-                                                 new Integer(1),
-                                                 new Integer(2)};
-    private static Integer INT_ZERO           = INT_CONSTANTS[0];
-    private static Integer INT_ONE            = INT_CONSTANTS[1];
-    private static Integer INT_QUALIFIED      = INT_CONSTANTS[SchemaSymbols.FORM_QUALIFIED];
-    private static Integer INT_UNQUALIFIED    = INT_CONSTANTS[SchemaSymbols.FORM_UNQUALIFIED];
-    private static Integer INT_EMPTY_SET      = INT_CONSTANTS[SchemaSymbols.EMPTY_SET];
-    private static Integer INT_ANY_STRICT     = INT_CONSTANTS[SchemaSymbols.ANY_STRICT];
-    private static Integer INT_ANY_LAX        = INT_CONSTANTS[SchemaSymbols.ANY_LAX];
-    private static Integer INT_ANY_SKIP       = INT_CONSTANTS[SchemaSymbols.ANY_SKIP];
-    private static Integer INT_USE_OPTIONAL   = INT_CONSTANTS[SchemaSymbols.USE_OPTIONAL];
-    private static Integer INT_USE_REQUIRED   = INT_CONSTANTS[SchemaSymbols.USE_REQUIRED];
-    private static Integer INT_USE_PROHIBITED = INT_CONSTANTS[SchemaSymbols.USE_PROHIBITED];
-    private static Integer INT_WS_PRESERVE    = INT_CONSTANTS[SchemaSymbols.WS_PRESERVE];
-    private static Integer INT_WS_REPLACE     = INT_CONSTANTS[SchemaSymbols.WS_REPLACE];
-    private static Integer INT_WS_COLLAPSE    = INT_CONSTANTS[SchemaSymbols.WS_COLLAPSE];
-    private static Integer INT_UNBOUNDED      = new Integer(SchemaSymbols.OCCURRENCE_UNBOUNDED);
+    private static XInt INT_QUALIFIED      = fXIntPool.getXInt(SchemaSymbols.FORM_QUALIFIED);
+    private static XInt INT_UNQUALIFIED    = fXIntPool.getXInt(SchemaSymbols.FORM_UNQUALIFIED);
+    private static XInt INT_EMPTY_SET      = fXIntPool.getXInt(SchemaSymbols.EMPTY_SET);
+    private static XInt INT_ANY_STRICT     = fXIntPool.getXInt(SchemaSymbols.ANY_STRICT);
+    private static XInt INT_ANY_LAX        = fXIntPool.getXInt(SchemaSymbols.ANY_LAX);
+    private static XInt INT_ANY_SKIP       = fXIntPool.getXInt(SchemaSymbols.ANY_SKIP);
+    private static XInt INT_USE_OPTIONAL   = fXIntPool.getXInt(SchemaSymbols.USE_OPTIONAL);
+    private static XInt INT_USE_REQUIRED   = fXIntPool.getXInt(SchemaSymbols.USE_REQUIRED);
+    private static XInt INT_USE_PROHIBITED = fXIntPool.getXInt(SchemaSymbols.USE_PROHIBITED);
+    private static XInt INT_WS_PRESERVE    = fXIntPool.getXInt(SchemaSymbols.WS_PRESERVE);
+    private static XInt INT_WS_REPLACE     = fXIntPool.getXInt(SchemaSymbols.WS_REPLACE);
+    private static XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(SchemaSymbols.WS_COLLAPSE);
+    private static XInt INT_UNBOUNDED      = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
     // the prefix to distinguish gloval vs. local; name vs. ref
     protected static String PRE_GLOBAL      = "G_";
@@ -340,11 +338,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_MAXOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS,
                                                         ATTIDX_MAXOCCURS,
-                                                        INT_ONE);
+                                                        fXIntPool.getXInt(1));
         allAttrs[ATT_MAXOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS1,
                                                         ATTIDX_MAXOCCURS,
-                                                        INT_ONE);
+                                                        fXIntPool.getXInt(1));
         allAttrs[ATT_MEMBER_T_N]        =   new OneAttr(SchemaSymbols.ATT_MEMBERTYPES,
                                                         DT_MEMBERTYPES,
                                                         ATTIDX_MEMBERTYPES,
@@ -352,11 +350,11 @@ public class XSAttributeChecker {
         allAttrs[ATT_MINOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_NONNEGINT,
                                                         ATTIDX_MINOCCURS,
-                                                        INT_ONE);
+                                                        fXIntPool.getXInt(1));
         allAttrs[ATT_MINOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_MINOCCURS1,
                                                         ATTIDX_MINOCCURS,
-                                                        INT_ONE);
+                                                        fXIntPool.getXInt(1));
         allAttrs[ATT_MIXED_D]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
                                                         ATTIDX_MIXED,
@@ -1117,7 +1115,7 @@ public class XSAttributeChecker {
                                    Boolean.TRUE : Boolean.FALSE;
                         break;
                     case DT_NONNEGINT:
-                        retValue = new Integer(attrVal);
+                        retValue = fXIntPool.getXInt(Integer.parseInt(attrVal));
                         break;
                     case DT_QNAME:
                         retValue = resolveQName(attrVal, nsSupport);
@@ -1163,6 +1161,23 @@ public class XSAttributeChecker {
         attrValues[ATTIDX_FROMDEFAULT] = new Long(fromDefault);
         //attrValues[ATTIDX_OTHERVALUES] = otherValues;
 
+        // Check that minOccurs isn't greater than maxOccurs.
+        // p-props-correct 2.1
+        if (attrValues[ATTIDX_MAXOCCURS] != null) {
+            int min = ((XInt)attrValues[ATTIDX_MINOCCURS]).intValue();
+            int max = ((XInt)attrValues[ATTIDX_MAXOCCURS]).intValue();
+            if (max != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                if (min > max) {
+                    reportSchemaError ("p-props-correct:2.1 Value of minOccurs '" + attrValues[ATTIDX_MINOCCURS] + "' must not be greater than value of maxOccurs '" + attrValues[ATTIDX_MAXOCCURS] +"'",
+                                       new Object[] {elName, attrValues[ATTIDX_MINOCCURS], attrValues[ATTIDX_MAXOCCURS]});
+                }
+                if (((XInt)attrValues[ATTIDX_MAXOCCURS]).intValue() < 1) {
+                    reportSchemaError("p-props-correct:2.2 Value of maxOccurs " + attrValues[ATTIDX_MAXOCCURS] + " is invalid.  It must be greater than or equal to 1",
+                                       new Object[] {elName, attrValues[ATTIDX_MAXOCCURS]});
+                }
+            }
+        }
+        
         return attrValues;
     }
 
@@ -1209,7 +1224,7 @@ public class XSAttributeChecker {
                     }
                 }
             }
-            retValue = new Integer(choice);
+            retValue = fXIntPool.getXInt(choice);
             break;
         case DT_BLOCK1:
         case DT_FINAL:
@@ -1235,7 +1250,7 @@ public class XSAttributeChecker {
                     }
                 }
             }
-            retValue = new Integer(choice);
+            retValue = fXIntPool.getXInt(choice);
             break;
         case DT_FINAL1:
             // final = (#all | (list | union | restriction))
@@ -1256,7 +1271,7 @@ public class XSAttributeChecker {
             else {
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | (list | union | restriction))");
             }
-            retValue = new Integer(choice);
+            retValue = fXIntPool.getXInt(choice);
             break;
         case DT_FORM:
             // form = (qualified | unqualified)
@@ -1276,7 +1291,7 @@ public class XSAttributeChecker {
                     retValue = fExtraDVs[DT_NONNEGINT].validate(value, null);
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
-                    retValue = new Integer(value);
+                    retValue = fXIntPool.getXInt(Integer.parseInt(value));
                 }
                 catch (InvalidDatatypeValueException ide) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
@@ -1286,7 +1301,7 @@ public class XSAttributeChecker {
         case DT_MAXOCCURS1:
             // maxOccurs = 1
             if (value.equals("1"))
-                retValue = INT_ONE;
+                retValue = fXIntPool.getXInt(1);
             else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must be '1'");
             break;
@@ -1312,9 +1327,9 @@ public class XSAttributeChecker {
         case DT_MINOCCURS1:
             // minOccurs = (0 | 1)
             if (value.equals("0"))
-                retValue = INT_ZERO;
+                retValue = fXIntPool.getXInt(0);
             else if (value.equals("1"))
-                retValue = INT_ONE;
+                retValue = fXIntPool.getXInt(1);
             else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must be '0' or '1'");
             break;
@@ -1515,6 +1530,9 @@ public class XSAttributeChecker {
     static final int INC_POOL_SIZE  = 10;
     // the array pool
     Object[][] fArrayPool = new Object[INIT_POOL_SIZE][ATTIDX_COUNT];
+    // used to clear the returned array
+    // I think System.arrayCopy is more efficient than setting 35 fields to null
+    private static Object[] fTempArray = new Object[ATTIDX_COUNT];
     // current position of the array pool (# of arrays not returned)
     int fPoolPos = 0;
     
@@ -1536,6 +1554,7 @@ public class XSAttributeChecker {
         // to make sure that one array is not returned twice, we use
         // the last entry to indicate whether an array is already returned
         // now set it to false.
+        System.arraycopy(fTempArray, 0, retArray, 0, ATTIDX_COUNT-1);
         retArray[ATTIDX_ISRETURNED] = Boolean.FALSE;
         
         return retArray;

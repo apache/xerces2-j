@@ -74,7 +74,8 @@ public class XSAttributeDecl {
     final static short     FIXED_VALUET        = 2;
            
 
-    public final QName fQName = new QName();
+    public String fName;
+    public String fTargetNamespace;
     public String fTypeNS;
     public int fTypeIdx;
     // value default, fixed or !specified
@@ -86,7 +87,7 @@ public class XSAttributeDecl {
     //
 
     public void clear() {
-        fQName.clear();
+        fName = null;
         fConstraintType = NO_CONSTRAINT;
     }
 

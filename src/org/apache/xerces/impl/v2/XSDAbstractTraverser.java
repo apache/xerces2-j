@@ -128,7 +128,7 @@ abstract class XSDAbstractTraverser {
         }
 
         // REVISIT: an annotation index should be returned when we support PSVI
-        return -1;
+        return XSDHandler.I_EMPTY_DECL;
     }
 
     // REVISIT: is it how we want to handle error reporting?
