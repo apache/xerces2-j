@@ -115,6 +115,11 @@ source: ../bin/${JARFILE}
 #-src/org/apache/xerces/validaters/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../class/org/apache/xerces/validators/schema
 
+#-src/org/apache/xml/serialize
+	${MKDIR} ../class/org/apache/xml/serialize
+	${CP}  ../src/org/apache/xml/serialize/*.class                  ../class/org/apache/xml/serialize
+	${CP}  ../src/org/apache/xml/serialize/*.res                    ../class/org/apache/xml/serialize 
+
 #-src/org/w3c/dom
 	${MKDIR} ../class/org/w3c/dom	
 	${CP}  ../src/org/w3c/dom/*.class				../class/org/w3c/dom
@@ -250,6 +255,11 @@ package_src:
 #-src/org/apache/xerces/validaters/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../source/src/org/apache/xerces/validators/schema
 
+#-src/org/apache/xml/serialize
+	${MKDIR} ../source/src/org/apache/xml/serialize
+	${CP}  ../src/org/apache/xml/serialize/*.java                   ../source/src/org/apache/xml/serialize
+	${CP}  ../src/org/apache/xml/serialize/*.res                    ../source/src/org/apache/xml/serialize
+
 #-src/org/w3c/dom
 	${MKDIR} ../source/src/org/w3c/dom	
 	${CP}  ../src/org/w3c/dom/*.java				../source/src/org/w3c/dom
@@ -348,6 +358,9 @@ package_src:
 #-src/org/apache/xerces/validaters/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/Makefile        ../source/src/org/apache/xerces/validators/schema
 
+#-src/org/apache/xml/serialize
+	${CP}  ../src/org/apache/xml/serialize/Makefile                    ../source/src/org/apache/xml/serialize
+
 #-src/org/w3c/dom
 	${CP}  ../src/org/w3c/dom/Makefile				../source/src/org/w3c/dom
 
@@ -394,6 +407,9 @@ package_src:
 
 #-src/org/apache/xerces/validators
 	${CP}  ../src/org/apache/xerces/validators/Makefile    ../source/src/org/apache/xerces/validators
+
+#-src/org/apache/xml
+	${CP}  ../src/org/apache/xml/Makefile    ../source/src/org/apache/xml
 
 #-src/org
 	${CP}  ../src/org/Makefile    ../source/src/org
