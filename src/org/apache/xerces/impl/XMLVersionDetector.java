@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,7 @@ public class XMLVersionDetector
 
     private final static char[] XML11_VERSION = new char[]{'1', '.', '1'};
     private final static char [] EXPECTED_VERSION_STRING = {'<', '?', 'x', 'm', 'l', ' ', 'v', 'e', 'r', 's', 
-                    'i', 'o', 'n', '=', ' ', ' ', ' ', ' '};
+                    'i', 'o', 'n', '=', ' ', ' ', ' ', ' ', ' '};
 
     // this class doesn't do anything that would affect events
     // further down the pipeline; therefore, it doesn't
@@ -524,7 +524,9 @@ public class XMLVersionDetector
         for (int versionPos=0; versionPos<XML11_VERSION.length; versionPos++) {
             EXPECTED_VERSION_STRING[15+versionPos] = (char)scanner.scanChar();
         } 
-        fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 18);
+        // REVISIT:  should we check whether this equals quoteChar? 
+        EXPECTED_VERSION_STRING[18] = (char)scanner.scanChar();
+        fixupCurrentEntity(fEntityManager, EXPECTED_VERSION_STRING, 19);
         int matched = 0;
         for(; matched<XML11_VERSION.length; matched++) {
             if(EXPECTED_VERSION_STRING[15+matched] != XML11_VERSION[matched]) break;
@@ -655,27 +657,23 @@ public class XMLVersionDetector
     private void fixupCurrentEntity(XMLEntityManager manager, 
                 char [] scannedChars, int length) {
         XMLEntityManager.ScannedEntity currentEntity = manager.getCurrentEntity();
-        if(currentEntity.position > length) {
-            // there's something to do; no point rescanning useless whitespace
-            // (or perhaps the buffer was reset once already)
-            System.arraycopy(scannedChars, 0, currentEntity.ch, 0, length);
-            for(int i=currentEntity.position; i>= length; i--) {
-                currentEntity.ch[i] = ' ';
-            } 
-        } else if (currentEntity.position < length) {
-            if(currentEntity.count-currentEntity.position+length > currentEntity.ch.length) {
-                //resize array; this case is hard to imagine...
-                char[] tempCh = currentEntity.ch;
-                currentEntity.ch = new char[currentEntity.ch.length << 1];
-                System.arraycopy(tempCh, currentEntity.position, currentEntity.ch, 0, currentEntity.count-currentEntity.position);
-                currentEntity.count -= currentEntity.position;
-                currentEntity.position = 0;
-            }
-            // prepend contents...
-            System.arraycopy(currentEntity.ch, currentEntity.position, currentEntity.ch, length, currentEntity.count-currentEntity.position);
-            System.arraycopy(scannedChars, 0, currentEntity.ch, 0, length);
-            currentEntity.count += length-currentEntity.position;
+        if(currentEntity.count-currentEntity.position+length > currentEntity.ch.length) {
+            //resize array; this case is hard to imagine...
+            char[] tempCh = currentEntity.ch;
+            currentEntity.ch = new char[length+currentEntity.count-currentEntity.position+1];
+            System.arraycopy(tempCh, 0, currentEntity.ch, 0, tempCh.length);
         }
+        if(currentEntity.position < length) {
+            // have to move sensitive stuff out of the way...
+            System.arraycopy(currentEntity.ch, currentEntity.position, currentEntity.ch, length, currentEntity.count-currentEntity.position);
+            currentEntity.count += length-currentEntity.position;
+        } else {
+            // have to reintroduce some whitespace so this parses:
+            for(int i=length; i<currentEntity.position; i++) 
+                currentEntity.ch[i]=' ';
+        }
+        // prepend contents...
+        System.arraycopy(scannedChars, 0, currentEntity.ch, 0, length);
         currentEntity.position = 0;
         currentEntity.columnNumber = currentEntity.lineNumber = 1;
     }
