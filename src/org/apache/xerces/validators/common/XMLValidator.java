@@ -88,12 +88,9 @@ import org.apache.xerces.validators.dtd.DTDImporter;
 import org.apache.xerces.validators.schema.SchemaGrammar;
 //import org.apache.xerces.validators.schema.SchemaImporter;
 import org.apache.xerces.validators.schema.SchemaMessageProvider;
+//import org.apache.xerces.validators.schema.SchemaGrammarResolver;
 import org.apache.xerces.validators.schema.DatatypeContentModel;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
-import org.apache.xerces.validators.common.Grammar;
-import org.apache.xerces.validators.common.GrammarResolver;
-import org.apache.xerces.validators.common.XMLAttributeDecl;
-import org.apache.xerces.validators.common.XMLElementDecl;
 
 /**
  * This class is the super all-in-one validator used by the parser.
@@ -139,7 +136,7 @@ public final class XMLValidator
     // all the following were moved into Grammar class
     // Element list
     
-    private int fElementCount = 0;
+    //private int fElementCount = 0;
 
     /*
     // REVISIT: Validation. Convert elementType to <uri,localpart> tuple!
@@ -157,13 +154,13 @@ public final class XMLValidator
     */
     // ContentSpecNode list
 
-    private int fNodeCount = 0;
+    //private int fNodeCount = 0;
     //private byte[][] fNodeType = new byte[INITIAL_CHUNK_COUNT][];
     //private int[][] fNodeValue = new int[INITIAL_CHUNK_COUNT][];
 
     // AttDef list
 
-    private int fAttDefCount = 0;
+   // private int fAttDefCount = 0;
     /*
     // REVISIT: Validation. I don't think we need to store the prefix.
     //          The namespace URI is important.
@@ -243,7 +240,7 @@ public final class XMLValidator
     private int fNamespacesPrefix = -1;
     private QName fRootElement = new QName();
     private int fAttrListHandle = -1;
-    private int fElementDeclCount = 0;
+    //private int fElementDeclCount = 0;
     private int fCurrentElementEntity = -1;
     private int fCurrentElementIndex = -1;
     private int fCurrentContentSpecType = -1;
@@ -324,7 +321,9 @@ public final class XMLValidator
                         DefaultEntityHandler entityHandler,
                         XMLDocumentScanner documentScanner) {
 
-        //TO DO, fGrammarResolver needed to be initialiezed somehow.
+        //REVISIT fGrammarResolver needed to be initialiezed somehow. 
+        //        since SchemaGrammarResolver is the only implementation, for now ,we use this.
+        //fGrammarResolver = SchemaGrammarResolver.instanceGrammarResolver();
 
         // keep references
         fStringPool = stringPool;
@@ -349,6 +348,10 @@ public final class XMLValidator
         }
 
     } // <init>(StringPool,XMLErrorReporter,DefaultEntityHandler,XMLDocumentScanner)
+
+    public void setGrammarResolver(GrammarResolver grammarResolver){
+        fGrammarResolver = grammarResolver;
+    }
 
     //
     // Public methods
@@ -770,7 +773,7 @@ public final class XMLValidator
         fElementChildCount[fElementDepth] = 0;
 
         //REVISIT: Validation
-        if ( fCurrentElementIndex > -1 && fGrammar instanceof SchemaGrammar) {
+        if ( fCurrentElementIndex > -1 && fGrammar instanceof SchemaGrammar  && fValidating) {
             fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(fCurrentElementIndex);
         }
 
@@ -2312,7 +2315,7 @@ public final class XMLValidator
         fNamespacesPrefix = -1;
         fRootElement.clear();
         fAttrListHandle = -1;
-        fElementDeclCount = 0;
+        //fElementDeclCount = 0;
         fCheckedForSchema = false;
         fSchemaDocument = null;
         init();
@@ -3108,7 +3111,7 @@ public final class XMLValidator
                 if (DEBUG) print("(VAL) XMLValidator.validateElementAndAttributes: " + param("elementType",element.rawname) + " !!!!\n");
                 //****DEBUG****
 
-        if (fElementDeclCount == 0 && fAttDefCount == 0 && 
+        if (fGrammar == null && 
             !fValidating && !fNamespacesEnabled) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
@@ -3128,9 +3131,21 @@ public final class XMLValidator
         }
         // REVISIT: Validation
         //int elementIndex = getDeclaration(element);
-        int elementIndex = fGrammar.getElementDeclIndex(element.localpart,fCurrentScope);
-        //TO DO: here need to check if we need to switch Grammar by asking SchemaGrammar whether 
+        int elementIndex = -1;
+        //REVISIT, is it possible, fValidating is false and fGrammar is no null.???
+        if ( fGrammar != null ){
+            elementIndex = fGrammar.getElementDeclIndex(element.localpart,fCurrentScope);
+        }
+
+        //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
         //       this element actually is of a type in a Schema in different namespace.
+        if (fGrammar instanceof SchemaGrammar) {
+            String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
+            if (anotherSchemaURI != null) {
+                fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
+                switchGrammar(fCurrentSchemaURI);
+            }
+        }
 
         int contentSpecType =  getContentSpecType(elementIndex);
         if (contentSpecType == -1 && fValidating) {
@@ -3138,7 +3153,7 @@ public final class XMLValidator
                                       XMLMessages.VC_ELEMENT_VALID,
                                       element.rawname);
         }
-        if (fAttDefCount != 0 && elementIndex != -1) {
+        if (fGrammar != null && elementIndex != -1) {
             //REVISIT: does not compile
             fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
         }
