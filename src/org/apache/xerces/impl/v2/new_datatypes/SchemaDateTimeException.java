@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999, 2000, 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,59 +54,16 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+ /*$Id*/
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-/**
- * Represent the schema type "float"
- *
- * @author Neeraj Bajaj, Sun Microsystems, inc.
- * @author Sandy Gao, IBM
- *
- * @version $Id$
- */
-public class FloatDV extends TypeValidator {
-
-    public short getAllowedFacets(){
-        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
-    }//getAllowedFacets()
-
-    //convert a String to Float form, we have to take care of cases specified in spec like INF, -INF and NaN
-    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        try{
-            return fValueOf(content);
-        } catch (Exception ex){
-            throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_FLOAT ],
-                                                    new Object[]{content});
-        }
-    }//getActualValue()
-
-    // Float compareTo method takes care of cases specified for Float in schema spec.
-    public int compare(Object value1, Object value2){
-        return ((Float)value1).compareTo((Float)value2);
-    }//compare()
-
-    //takes care of special values positive, negative infinity and Not a Number as per the spec.
-    private static Float fValueOf(String s) throws NumberFormatException {
-        Float f=null;
-        try {
-            f = Float.valueOf(s);
-        }
-        catch ( NumberFormatException nfe ) {
-            if ( s.equals("INF") ) {
-                f = new Float(Float.POSITIVE_INFINITY);
-            }
-            else if ( s.equals("-INF") ) {
-                f = new Float (Float.NEGATIVE_INFINITY);
-            }
-            else if ( s.equals("NaN" ) ) {
-                f = new Float (Float.NaN);
-            }
-            else {
-                throw nfe;
-            }
-        }
-        return f;
+public class SchemaDateTimeException extends RuntimeException {
+    public SchemaDateTimeException () {
+        super();
     }
 
-} // class FloatDV
+    public SchemaDateTimeException (String s) {
+        super (s);
+    }
+}

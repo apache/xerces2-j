@@ -57,34 +57,25 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
-
 import java.util.Locale;
-import java.text.Collator;
-
 
 /**
+ * Represent the schema type "string"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class StringDV extends AbstractStringDV{
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-    public short getPrimitiveDV(){
-	      return XSSimpleTypeDecl.DV_STRING;
-    }//getPrimitiveDV()
+public class StringDV extends TypeValidator {
 
-
-    // the following methods might not be supported by every DV.
-    // but XSSimpleTypeDecl should know which type supports which methods,
-    // and it's an *internal* error if a method is called on a DV that
-    // doesn't support it.
-
-
-    public int compare(Object value1, Object value2){
-	      return ((String)value1).equals((String)value2) ? 0 :-1 ;
+    public short getAllowedFacets(){
+        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
     }
 
+    public Object getActualValue(String content, ValidationContext context)
+        throws InvalidDatatypeValueException {
+        return content;
+    }
 
 } // class StringDV

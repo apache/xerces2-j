@@ -57,71 +57,60 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-//internal imports
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
-
-import java.util.Locale;
-import java.text.Collator;
+import org.apache.xerces.xni.QName;
 
 /**
+ * Represent the schema type "QName" and "NOTATION"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public  class QNameDV extends AbstractStringDV{
+public class QNameDV extends TypeValidator {
 
-    protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-    protected Locale fLocale = null;
+    private static final String EMPTY_STRING = "";
 
-
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-
-    public short getPrimitiveDV(){
-        return XSSimpleTypeDecl.DV_QNAME;
+    public short getAllowedFacets() {
+        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE);
     }
 
+    public Object getActualValue(String content, ValidationContext context)
+        throws InvalidDatatypeValueException {
 
-    // convert a string to a compiled form. for example,
-    // for number types (decimal, double, float, and types derived from them),
-    // get the BigDecimal, Double, Flout object.
-    // for some types (string and derived), they just return the string itself
-    public Object getCompiledValue(String content) throws InvalidDatatypeValueException{
-        //NCNames check should be done here.
-        boolean NCName = false;
-        int posColon = content.indexOf(':');
-        if (posColon >= 0){
-            if( !XMLChar.isValidNCName(content.substring(0,posColon)) ||
-                !XMLChar.isValidNCName(content.substring(posColon+1))){
-                NCName = false;
-            }
+        // "prefix:localpart" or "localpart"
+        // get prefix and local part out of content
+        String prefix, localpart;
+        int colonptr = content.indexOf(":");
+        if (colonptr > 0) {
+            prefix = context.getSymbol(content.substring(0,colonptr));
+            localpart = content.substring(colonptr+1);
+        } else {
+            prefix = context.getSymbol(EMPTY_STRING);
+            localpart = content;
         }
-        if(!NCName)
-            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName");
 
-        return content;
+        // both prefix (if any) and localpart must be valid NCName
+        if (prefix.length() > 0 && !XMLChar.isValidNCName(prefix))
+            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: '" + prefix + "' is not an NCName");
 
-    }//getCompiledValue()
+        if(!XMLChar.isValidNCName(localpart))
+            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: '" + localpart + "' is not an NCName");
 
+        // resove prefix to a uri, report an error if failed
+        String uri = context.getURI(prefix);
+        if (prefix.length() > 0 && uri == null)
+            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid QName: cannot resolve the prefix to a namespace uri");
 
-    // the parameters are in compiled form (from getCompiledValue)
-    public boolean isEqual(Object value1, Object value2){
-        return ((String)value1).equals((String)value2);
+        return new QName(prefix, localpart, content, uri);
+
     }
 
-    // the following methods might not be supported by every DV.
-    // but XSSimpleTypeDecl should know which type supports which methods,
-    // and it's an *internal* error if a method is called on a DV that
-    // doesn't support it.
-
-
-    public  int compare(Object value1, Object value2) {
-        Locale    loc       = Locale.getDefault();
-        Collator  collator  = Collator.getInstance( loc );
-        return collator.compare( (String)value1 , (String)value2 );
+    // REVISIT: qname and notation shouldn't support length facets.
+    //          now we just return the length of the rawname
+    public int getDataLength(Object value) {
+        return ((QName)value).rawname.length();
     }
-
-
 
 } // class QNameDVDV

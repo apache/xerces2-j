@@ -57,28 +57,32 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
-
 /**
  * This is the base class of all date/time datatype validators.
  * It implements common code for parsing, validating and comparing datatypes.
  * Classes that extend this class, must implement parse() method.
  *
+ * REVISIT: There are many instance variables, which would cause problems
+ *          when we support grammar caching. A grammar is possibly used by
+ *          two parser instances at the same time, then the same simple type
+ *          decl object can be used to validate two strings at the same time.
+ *          -SG
+ *
  * @author Elena Litani
  * @author Len Berman
  * @author Gopal Sharma, SUN Microsystems Inc.
+ *
  * @version $Id$
  */
-
-public abstract class AbstractDateTimeDV extends AbstractNumericDV {
+public abstract class AbstractDateTimeDV extends TypeValidator {
 
     //debugging
     private static final boolean DEBUG=false;
 
     //define shared variables for date/time
 
-	//To check order relation as per 3.2.7.3
-	public static final short INDETERMINATE=2;
+    //To check order relation as per 3.2.7.3
+    public static final short INDETERMINATE=2;
 
     //define constants
     protected final static int CY = 0,  M = 1, D = 2, h = 3,
@@ -131,18 +135,22 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         timeZone = new int[2];
     }
 
+    public short getAllowedFacets(){
+        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
+    }//getAllowedFacets()
 
-   // the parameters are in compiled form (from getCompiledValue)
+
+    // the parameters are in compiled form (from getActualValue)
     public boolean isEqual(Object value1, Object value2){
-        return compareDates((int[])value1,(int[])value2)==COMPARE_EQUAL?true:false;
+        return compareDates((int[])value1,(int[])value2)==0;
     }//IsEqual()
 
-   // the parameters are in compiled form (from getCompiledValue)
-       public int compare (Object value1, Object value2) {
-            return compareDates((int[])value1, (int[])value2);
+    // the parameters are in compiled form (from getActualValue)
+    public int compare (Object value1, Object value2) {
+        return compareDates((int[])value1, (int[])value2);
     }//compare()
 
-	/**
+    /**
      * Implemented by each subtype, calling appropriate function to parse
      * given date/time
      *
@@ -155,7 +163,7 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
      */
      abstract protected int[] parse (String content, int[] date) throws SchemaDateTimeException;
 
-	 /**
+     /**
      * Compare algorithm described in dateDime (3.2.7).
      * Duration datatype overwrites this method
      *
@@ -164,8 +172,7 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
      * @param strict
      * @return less, greater, less_equal, greater_equal, equal
      */
-
-    protected  int compareDates(int[] date1, int[] date2) {
+    protected int compareDates(int[] date1, int[] date2) {
         if ( date1[utc]==date2[utc] ) {
             return compareOrder(date1, date2);
         }
@@ -191,8 +198,8 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             normalize(fTempDate);
             c2 = compareOrder(date1, fTempDate);
 
-            if ( (c1==COMPARE_LESS && c2==COMPARE_GREATER) ||
-                 (c1==COMPARE_GREATER && c2==COMPARE_LESS) ) {
+            if ( (c1 < 0 && c2 > 0) ||
+                 (c1 == 0 && c2 == 0) ) {
                 return INDETERMINATE;
             }
             //REVISIT: wait for clarification on this case from schema
@@ -227,8 +234,8 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             if (DEBUG) {
                System.out.println("fTempDate=" + dateToString(fTempDate));
             }
-            if ( (c1==COMPARE_LESS && c2==COMPARE_GREATER) ||
-                 (c1==COMPARE_GREATER && c2==COMPARE_LESS) ) {
+            if ( (c1 < 0 && c2 > 0) ||
+                 (c1 == 0 && c2 == 0) ) {
                 return INDETERMINATE;
             }
             //REVISIT: wait for clarification on this case from schema
@@ -237,7 +244,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         return INDETERMINATE;
 
     }
-
 
     /**
      * Given normalized values, determines order-relation
@@ -251,15 +257,14 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
 
         for ( int i=0;i<TOTAL_SIZE;i++ ) {
             if ( date1[i]<date2[i] ) {
-                return COMPARE_LESS;
+                return -1;
             }
             else if ( date1[i]>date2[i] ) {
-                return COMPARE_GREATER;
+                return 1;
             }
         }
-        return COMPARE_EQUAL;
+        return 0;
     }
-
 
     /**
      * Parses time hh:mm:ss.sss and time zone if any
@@ -322,7 +327,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         }
     }
 
-
     /**
      * Parses date CCYY-MM-DD
      *
@@ -379,8 +383,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         date[M]=parseInt(start, i);
         fStart = i; //fStart points right after the MONTH
     }
-
-
 
     /**
      * Shared code from Date and YearMonth datatypes.
@@ -447,8 +449,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         }
     }
 
-
-
     /**
      * Computes index of given char within StringBuffer
      *
@@ -465,7 +465,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         }
         return -1;
     }
-
 
     /**
      * Validates given date/time object accoring to W3C PR Schema
@@ -520,7 +519,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         }
     }
 
-
     /**
      * Return index of UTC char: 'Z', '+', '-'
      *
@@ -539,7 +537,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
         }
         return -1;
     }
-
 
     /**
      * Given start and end position, parses string value
@@ -571,7 +568,7 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
     }
 
     // parse Year differently to support negative value.
-     protected int parseIntYear (int end){
+    protected int parseIntYear (int end){
         int radix=10;
         int result = 0;
         boolean negative = false;
@@ -606,8 +603,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             else throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
         }
         return -result;
-
-
 
     }
 
@@ -686,7 +681,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
 
     }
 
-
     /**
      * Resets object representation of date/time
      *
@@ -697,7 +691,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             data[i]=0;
         }
     }
-
 
     /**
      * Given {year,month} computes maximum
@@ -724,7 +717,6 @@ public abstract class AbstractDateTimeDV extends AbstractNumericDV {
             return 31;
         }
     }
-
 
     private boolean isLeapYear(int year) {
 

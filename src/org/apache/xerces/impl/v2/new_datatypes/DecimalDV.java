@@ -57,95 +57,45 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-//internal imports
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
-
-//java imports
 import java.math.BigDecimal;
 
 /**
+ * Represent the schema type "decimal"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class DecimalDV extends AbstractNumericDV{
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-    public short getPrimitiveDV(){
-	      return XSSimpleTypeDecl.DV_DECIMAL;
+public class DecimalDV extends TypeValidator {
+
+    public short getAllowedFacets(){
+        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE | XSSimpleTypeDecl.FACET_TOTALDIGITS | XSSimpleTypeDecl.FACET_FRACTIONDIGITS);
+    }
+
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        try {
+            return new BigDecimal( stripPlusIfPresent( content));
+        } catch (Exception nfe) {
+            throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_DECIMAL],
+                                                    new Object[]{content});
+        }
+    } //getActualValue()
+
+    public int compare(Object value1, Object value2){
+        return ((BigDecimal)value1).compareTo((BigDecimal)value2);
+    }
+
+    public int getTotalDigits(Object value){
+        return ((BigDecimal)value).movePointRight(((BigDecimal)value).scale()).toString().length() -
+                ((((BigDecimal)value).signum() < 0) ? 1 : 0); // account for minus sign
+    }
+
+    public int getFractionDigits(Object value){
+        return ((BigDecimal)value).scale();
     }
 
     /**
-    * return the facets allowed by Decimal
-    */
-    public short getAllowedFacets(){
-	      return (short)(super.getAllowedFacets() |XSSimpleTypeDecl.DEFINED_TOTALDIGITS | XSSimpleTypeDecl.DEFINED_FRACTIONDIGITS);
-    }//getAllowedFacets()
-
-
-    // convert a string to a compiled form. for example,
-    // for number types (decimal, double, float, and types derived from them),
-    // get the BigDecimal, Double, Flout object.
-    // for some types (string and derived), they just return the string itself
-    public Object getCompiledValue(String content) throws InvalidDatatypeValueException{
-
-	  BigDecimal bigDecimal = null; // Is content a Decimal
-        try {
-            bigDecimal = new BigDecimal( stripPlusIfPresent( content));
-        }
-        catch (Exception nfe) {
-            String msg = getErrorString(
-                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_DECIMAL],
-                                       new Object[] { "'" + content +"'"});
-            throw new InvalidDatatypeValueException(msg);
-        }
-
-    	return bigDecimal;
-    } //getCompiledValue()
-
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public boolean isEqual(Object value1, Object value2){
-        if(value1 instanceof BigDecimal && value2 instanceof BigDecimal)
-            return value1.equals(value2);
-        else //REVISIT: to be taken care in XSSimpleTypeDecl.
-            return false;
-    }
-
-    // the following methods might not be supported by every DV.
-    // but XSSimpleTypeDecl should know which type supports which methods,
-    // and it's an *internal* error if a method is called on a DV that
-    // doesn't support it.
-
-
-
-    // the  parameters are in compiled form (from getCompiledValue)
-    public int compare(Object value1, Object value2){
-        if(value1 instanceof BigDecimal && value2 instanceof BigDecimal)
-	          return ((BigDecimal)value1).compareTo((BigDecimal)value2);
-        else
-            return -1;
-    }//compare()
-
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getTotalDigits(Object value){
-        if(value instanceof BigDecimal)
-	          return ((BigDecimal)value).movePointRight(((BigDecimal)value).scale()).toString().length() -
-                             ((((BigDecimal)value).signum() < 0) ? 1 : 0); // account for minus sign
-        else
-            return -1;
-    }
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getFractionDigits(Object value){
-	      if(value instanceof BigDecimal)
-            return ((BigDecimal)value).scale();
-        else
-            return -1;
-    }//getFractionDigits()
-
-     /**
      * This class deals with a bug in BigDecimal class
      * present up to version 1.1.2. 1.1.3 knows how
      * to deal with the + sign.
@@ -160,7 +110,7 @@ public class DecimalDV extends AbstractNumericDV{
      * @param value
      * @return
      */
-    static private String stripPlusIfPresent( String value ) {
+    static private String stripPlusIfPresent(String value) {
         String strippedPlus = value;
 
         if (value.length() >= 2 && value.charAt(0) == '+' && value.charAt(1) != '-') {

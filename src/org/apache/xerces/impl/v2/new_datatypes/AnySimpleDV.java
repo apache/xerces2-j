@@ -57,84 +57,23 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
-
-import java.util.Locale;
 /**
+ * Represent the schema type "anySimpleType"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public abstract class AbstractStringDV implements TypeValidator{
+public class AnySimpleDV extends TypeValidator {
 
-    protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-    protected Locale fLocale = null;
-
-
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-
-    public abstract short getPrimitiveDV();
-
-
-     // return the facets allowed ; string, hexBinary, base64Binary, anyURI, Qname, Notation all have same set of factes allowed.
-    public short getAllowedFacets(){
-        return (XSSimpleTypeDecl.DEFINED_LENGTH | XSSimpleTypeDecl.DEFINED_MINLENGTH | XSSimpleTypeDecl.DEFINED_MAXLENGTH | XSSimpleTypeDecl.DEFINED_PATTERN | XSSimpleTypeDecl.DEFINED_ENUMERATION | XSSimpleTypeDecl.DEFINED_WHITESPACE );
+    public short getAllowedFacets() {
+        // anySimpleType doesn't allow any facet, not even whiteSpace
+        return 0;
     }
 
-    // convert a string to a compiled form. for example,
-    // for number types (decimal, double, float, and types derived from them),
-    // get the BigDecimal, Double, Flout object.
-    // for some types (string and derived), they just return the string itself
-    public Object getCompiledValue(String content) throws InvalidDatatypeValueException{
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         return content;
     }
 
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public boolean isEqual(Object value1, Object value2){
-        return ((String)value1).equals((String)value2);
-    }
-
-    // the following methods might not be supported by every DV.
-    // but XSSimpleTypeDecl should know which type supports which methods,
-    // and it's an *internal* error if a method is called on a DV that
-    // doesn't support it.
-
-
-    public abstract int compare(Object value1, Object value2);
-
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getDataLength(Object value){
-        return ((String)value).length() ;
-    }
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getTotalDigits(Object value){
-        return -1;
-    }
-
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getFractionDigits(Object value){
-        return -1;
-    }
-
-    protected String getErrorString(String key, Object args[]) {
-        try {
-            return fMessageProvider.formatMessage(fLocale, key, args);
-        }
-        catch ( Exception e ) {
-            return "Illegal Errorcode "+key;
-        }
-    }
-
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
-
-
-} // class AbstractStringDV
+} // class AnySimpleDV

@@ -57,41 +57,68 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-
 /**
+ * All primitive types plus ID/IDREF/ENTITY are derived from this abstract
+ * class. It provides extra information XSSimpleTypeDecl requires from each
+ * type: allowed facets, converting String to actual value, check equality,
+ * comparison, etc.
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public interface TypeValidator {
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-    public short getPrimitiveDV();
-    public short getAllowedFacets();
+public abstract class TypeValidator {
 
-    // convert a string to a compiled form. for example,
+    // which facets are allowed for this type
+    public abstract short getAllowedFacets();
+
+    // convert a string to an actual value. for example,
     // for number types (decimal, double, float, and types derived from them),
     // get the BigDecimal, Double, Flout object.
     // for some types (string and derived), they just return the string itself
-    public Object getCompiledValue(String content) throws InvalidDatatypeValueException;
-    // the parameters are in compiled form (from getCompiledValue)
-    public boolean isEqual(Object value1, Object value2);
+    public abstract Object getActualValue(String content, ValidationContext context)
+        throws InvalidDatatypeValueException;
+
+    // for ID/IDREF/ENTITY types, do some extra checking after the value is
+    // checked to be valid with respect to both lexical representation and
+    // facets
+    public void checkExtraRules(Object value, ValidationContext context) throws InvalidDatatypeValueException {
+    }
+
+    // whether two values are equal
+    // the parameters are in compiled form (from getActualValue)
+    public boolean isEqual(Object value1, Object value2) {
+        return value1.equals(value2);
+    }
 
     // the following methods might not be supported by every DV.
     // but XSSimpleTypeDecl should know which type supports which methods,
     // and it's an *internal* error if a method is called on a DV that
     // doesn't support it.
 
-    public static final short COMPARE_LESS    = -1;
-    public static final short COMPARE_EQUAL   = 0;
-    public static final short COMPARE_GREATER = 1;
-    // the parameters are in compiled form (from getCompiledValue)
-    public int compare(Object value1, Object value2);
+    // check the order relation between the two values
+    // the parameters are in compiled form (from getActualValue)
+    public int compare(Object value1, Object value2) {
+        return -1;
+    }
 
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getDataLength(Object value);
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getTotalDigits(Object value);
-    // the parameters are in compiled form (from getCompiledValue)
-    public int getFractionDigits(Object value);
+    // get the length of the value
+    // the parameters are in compiled form (from getActualValue)
+    public int getDataLength(Object value) {
+        return (value instanceof String) ? ((String)value).length() : -1;
+    }
+
+    // get the number of digits of the value
+    // the parameters are in compiled form (from getActualValue)
+    public int getTotalDigits(Object value) {
+        return -1;
+    }
+
+    // get the number of fraction digits of the value
+    // the parameters are in compiled form (from getActualValue)
+    public int getFractionDigits(Object value) {
+        return -1;
+    }
+
 } // interface TypeValidator

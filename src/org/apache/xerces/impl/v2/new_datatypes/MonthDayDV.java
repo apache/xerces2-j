@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -19,7 +19,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -27,7 +27,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -58,47 +58,37 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
 /**
  * Validator for <gMonthDay> datatype (W3C Schema Datatypes)
- * 
+ *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
+ *
+ * @version $Id$
  */
 
 public class MonthDayDV extends AbstractDateTimeDV {
 
-    //size without time zone: --MM-DD    
+    //size without time zone: --MM-DD
     private final static int MONTHDAY_SIZE = 7;
 
     /**
-     * @return Index of MonthDayDV
-	 */
-
-	public short getPrimitiveDV(){
-		return XSSimpleTypeDecl.DV_GMONTHDAY;
+     * Convert a string to a compiled form
+     *
+     * @param  content The lexical representation of gMonthDay
+     * @return a valid and normalized gMonthDay object
+     */
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("not a valid monthDay");
+        }
     }
 
     /**
-     * Convert a string to a compiled form
-	 * 
-	 * @param  content The lexical representation of gMonthDay
-	 * @return a valid and normalized gMonthDay object
-	 */
-	public Object  getCompiledValue(String content) throws InvalidDatatypeValueException{
-			int[] date=null;
-			try{
-					date= parse(content, null);
-			}catch(Exception ex){
-			}
-			return date;
-	}
-
-
-    /** 
      * Parses, validates and computes normalized version of gMonthDay object
-     * 
+     *
      * @param str    The lexical representation of gMonthDay object --MM-DD
      *               with possible time zone Z or (-),(+)hh:mm
      * @param date   uninitialized date object
@@ -115,7 +105,7 @@ public class MonthDayDV extends AbstractDateTimeDV {
         }
         resetDateObj(date);
 
-        //initialize 
+        //initialize
         date[CY]=YEAR;
 
         if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-') {
@@ -123,11 +113,11 @@ public class MonthDayDV extends AbstractDateTimeDV {
         }
         date[M]=parseInt(fStart+2,fStart+4);
         fStart+=4;
-        
+
         if (fBuffer.charAt(fStart++)!='-') {
             throw new SchemaDateTimeException("Invalid format for gMonthDay: " + str);
         }
-        
+
         date[D]=parseInt(fStart, fStart+2);
 
         if ( MONTHDAY_SIZE<fEnd ) {
@@ -141,18 +131,17 @@ public class MonthDayDV extends AbstractDateTimeDV {
         }
         //validate and normalize
 
-		validateDateTime(date);
-        
+        validateDateTime(date);
+
         if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);
         }
         return date;
     }
 
-
     /**
      * Converts gMonthDay object representation to String
-     * 
+     *
      * @param date   gmonthDay object
      * @return lexical representation of month: --MM-DD with an optional time zone sign
      */

@@ -57,68 +57,32 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-//internal imports
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.DatatypeMessageProvider;
-
-//java import
-
 /**
+ * Represent the schema type "double"
+ *
+ * @author Neeraj Bajaj, Sun Microsystems, inc.
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public class DoubleDV extends AbstractNumericDV{
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-    public short getPrimitiveDV(){
-	      return XSSimpleTypeDecl.DV_DOUBLE;
-    }
+public class DoubleDV extends TypeValidator {
+
+    public short getAllowedFacets(){
+        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
+    }//getAllowedFacets()
 
     //convert a String to Double form, we have to take care of cases specified in spec like INF, -INF and NaN
-    public Object getCompiledValue(String content) throws InvalidDatatypeValueException{
-
-        Double compiledValue = null;
-
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            compiledValue = dValueOf(content);
-        }catch(Exception ex){
-        String msg = getErrorString(
-                                           DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_DOUBLE ],
-                                           new Object[] { "'" + content +"'"});
-        throw new InvalidDatatypeValueException(msg);
+            return dValueOf(content);
+        } catch (Exception ex){
+            throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_DOUBLE ],
+                                                    new Object[]{content});
         }
-        return compiledValue;
-    }//getCompiledValue()
+    }//getActualValue()
 
-    //Double equals method takes care of cases specified for double in schema spec.
-    public boolean isEqual(Object value1, Object value2){
-        if(value1 != null && value2 != null){
-            if(value1 instanceof Double && value2 instanceof Double){
-                return ((Double)value1).equals((Double)value2);
-            }
-            return false;
-        }
-
-        else //REVISIT: should we throw error for not getting right object or to be taken care in XSSimpleTypeDecl.
-            return false;
-    }//isEqual()
-
-    // the following methods might not be supported by every DV.
-    // but XSSimpleTypeDecl should know which type supports which methods,
-    // and it's an *internal* error if a method is called on a DV that
-    // doesn't support it.
-
-
-    // Double compareTo method takes care of cases specified for double in schema spec.
-    public int compare(Object value1, Object value2){
-        if(value1 != null && value2 != null){
-	          if(value1 instanceof Double && value2 instanceof Double){
-                return ((Double)value1).compareTo((Double)value2)  ;
-            }
-            return -1;
-        }
-        else
-            return -1;
+    public int compare(Object value1, Object value2) {
+        return ((Double)value1).compareTo((Double)value2);
     }//compare()
 
     //
@@ -145,8 +109,5 @@ public class DoubleDV extends AbstractNumericDV{
         }
         return d;
     }//dValueOf()
-
-
-
 
 } // class DoubleDV

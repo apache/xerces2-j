@@ -58,9 +58,6 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-
 /**
  * Validator for <gDay> datatype (W3C Schema datatypes)
  *
@@ -68,28 +65,18 @@ import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
  * @author Gopal Sharma, SUN Microsystem Inc.
  * @version $Id$
  */
-
-public class DayDV extends AbstractDateTimeDV{
+public class DayDV extends AbstractDateTimeDV {
 
     //size without time zone: ---09
     private final static int DAY_SIZE=5;
 
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-
-	public short getPrimitiveDV(){
-		return XSSimpleTypeDecl.DV_GDAY;
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("not a valid day");
+        }
     }
-
-	public Object  getCompiledValue(String content) throws InvalidDatatypeValueException{
-			int[] date;
-			try{
-					date= parse(content, null);
-			}catch(Exception ex){
-			}
-			return date;
-	}
 
     /**
      * Parses, validates and computes normalized version of gDay object
@@ -101,7 +88,7 @@ public class DayDV extends AbstractDateTimeDV{
      * @return normalized date representation
      * @exception Exception Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException {
 
         resetBuffer(str);
 
@@ -131,7 +118,7 @@ public class DayDV extends AbstractDateTimeDV{
             }
         }
 
-	   //validate and normalize
+       //validate and normalize
         validateDateTime(date);
 
         if ( date[utc]!=0 && date[utc]!='Z' ) {

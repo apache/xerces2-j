@@ -57,56 +57,31 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.util.XMLChar;
+
 /**
- * Represent the schema type "float"
+ * Represent the schema type "IDREF"
  *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public class FloatDV extends TypeValidator {
+public class IDREFDV extends TypeValidator{
 
     public short getAllowedFacets(){
-        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
-    }//getAllowedFacets()
-
-    //convert a String to Float form, we have to take care of cases specified in spec like INF, -INF and NaN
-    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        try{
-            return fValueOf(content);
-        } catch (Exception ex){
-            throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_FLOAT ],
-                                                    new Object[]{content});
-        }
-    }//getActualValue()
-
-    // Float compareTo method takes care of cases specified for Float in schema spec.
-    public int compare(Object value1, Object value2){
-        return ((Float)value1).compareTo((Float)value2);
-    }//compare()
-
-    //takes care of special values positive, negative infinity and Not a Number as per the spec.
-    private static Float fValueOf(String s) throws NumberFormatException {
-        Float f=null;
-        try {
-            f = Float.valueOf(s);
-        }
-        catch ( NumberFormatException nfe ) {
-            if ( s.equals("INF") ) {
-                f = new Float(Float.POSITIVE_INFINITY);
-            }
-            else if ( s.equals("-INF") ) {
-                f = new Float (Float.NEGATIVE_INFINITY);
-            }
-            else if ( s.equals("NaN" ) ) {
-                f = new Float (Float.NaN);
-            }
-            else {
-                throw nfe;
-            }
-        }
-        return f;
+        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
     }
 
-} // class FloatDV
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        if (!XMLChar.isValidNCName(content)) {
+            throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid ID");
+        }
+        return content;
+    }
+
+    public void checkExtraRules(Object value, ValidationContext context) throws InvalidDatatypeValueException {
+        context.addIdRef((String)value);
+    }
+
+}//IDREF class

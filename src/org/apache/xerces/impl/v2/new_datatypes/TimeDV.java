@@ -3,7 +3,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -19,7 +19,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -27,7 +27,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -58,41 +58,33 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
 /**
  * Validator for <time> datatype (W3C Schema Datatypes)
- * 
+ *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
+ *
+ * @version $Id$
  */
 public class TimeDV extends AbstractDateTimeDV {
 
     /**
-     @return Index of TimeDV
-	*/
-	public short getPrimitiveDV(){
-		return XSSimpleTypeDecl.DV_TIME;
-    }
-   
-	/**
      * Convert a string to a compiled form
-	 * 
-	 * @param  content The lexical representation of time
-	 * @return a valid and normalized time object
-	 */
-	public Object  getCompiledValue(String content) throws InvalidDatatypeValueException{
-			int[] date=null;
-			try{
-					date= parse(content, null);
-			}catch(Exception ex){
-			}
-			return date;
-	}
-    
-	/**
+     *
+     * @param  content The lexical representation of time
+     * @return a valid and normalized time object
+     */
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("not a valid time");
+        }
+    }
+
+    /**
      * Parses, validates and computes normalized version of time object
-     * 
+     *
      * @param str    The lexical representation of time object hh:mm:ss.sss
      *               with possible time zone Z or (-),(+)hh:mm
      *               Pattern: "(\\d\\d):(\\d\\d):(\\d\\d)(\\.(\\d)*)?(Z|(([-+])(\\d\\d)(:(\\d\\d))?))?")
@@ -101,7 +93,7 @@ public class TimeDV extends AbstractDateTimeDV {
      * @exception Exception Invalid lexical representation
      */
     protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
-        
+
         resetBuffer(str);
 
         //create structure to hold an object
@@ -118,23 +110,21 @@ public class TimeDV extends AbstractDateTimeDV {
         getTime(fStart, fEnd, date);
 
         //validate and normalize
-        
+
         validateDateTime(date);
-        
+
         if ( date[utc]!=0 ) {
             normalize(date);
         }
                 return date;
     }
 
-
     /**
      * Converts time object representation to String
-     * 
+     *
      * @param date   time object
      * @return lexical representation of time: hh:mm:ss.sss with an optional time zone sign
      */
-     
     protected String dateToString(int[] date) {
         message.setLength(0);
         message.append(date[h]);
@@ -147,7 +137,6 @@ public class TimeDV extends AbstractDateTimeDV {
         message.append((char)date[utc]);
         return message.toString();
     }
-     
 
 }
 

@@ -57,36 +57,23 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
-
 /**
  * Validator for <dateTime> datatype (W3C Schema Datatypes)
  *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
+ *
  * @version $Id$
  */
 public class DateTimeDV extends AbstractDateTimeDV {
 
-    // for most DV classes, this is the same as the DV_?? value defined
-    // in XSSimpleTypeDecl that's corresponding to that class. But for
-    // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-
-	public short getPrimitiveDV(){
-		return XSSimpleTypeDecl.DV_DATETIME;
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("not a valid dataTime");
+        }
     }
-
-	public Object  getCompiledValue(String content) throws InvalidDatatypeValueException{
-            // REVISIT:  Initialize this intelligently!!!  Fixed by neilg for the sake
-            // of making this compile...
-			int[] date = new int[10];
-			try{
-					date= parse(content, null);
-			}catch(Exception ex){
-			}
-			return date;
-	}
 
     /**
      * Parses, validates and computes normalized version of dateTime object
@@ -97,8 +84,7 @@ public class DateTimeDV extends AbstractDateTimeDV {
      * @return normalized dateTime representation
      * @exception Exception Invalid lexical representation
      */
-
-	protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException {
         resetBuffer(str);
 
         //create structure to hold an object
@@ -122,7 +108,6 @@ public class DateTimeDV extends AbstractDateTimeDV {
         }
         return date;
     }
-
 
 }
 

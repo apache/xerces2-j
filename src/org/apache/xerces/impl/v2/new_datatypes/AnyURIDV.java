@@ -57,56 +57,43 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
+import org.apache.xerces.util.URI;
+
 /**
- * Represent the schema type "float"
+ * Represent the schema type "anyURI"
  *
  * @author Neeraj Bajaj, Sun Microsystems, inc.
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public class FloatDV extends TypeValidator {
+public class AnyURIDV extends TypeValidator {
 
     public short getAllowedFacets(){
-        return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
-    }//getAllowedFacets()
-
-    //convert a String to Float form, we have to take care of cases specified in spec like INF, -INF and NaN
-    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
-        try{
-            return fValueOf(content);
-        } catch (Exception ex){
-            throw new InvalidDatatypeValueException(DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.NOT_FLOAT ],
-                                                    new Object[]{content});
-        }
-    }//getActualValue()
-
-    // Float compareTo method takes care of cases specified for Float in schema spec.
-    public int compare(Object value1, Object value2){
-        return ((Float)value1).compareTo((Float)value2);
-    }//compare()
-
-    //takes care of special values positive, negative infinity and Not a Number as per the spec.
-    private static Float fValueOf(String s) throws NumberFormatException {
-        Float f=null;
-        try {
-            f = Float.valueOf(s);
-        }
-        catch ( NumberFormatException nfe ) {
-            if ( s.equals("INF") ) {
-                f = new Float(Float.POSITIVE_INFINITY);
-            }
-            else if ( s.equals("-INF") ) {
-                f = new Float (Float.NEGATIVE_INFINITY);
-            }
-            else if ( s.equals("NaN" ) ) {
-                f = new Float (Float.NaN);
-            }
-            else {
-                throw nfe;
-            }
-        }
-        return f;
+        return (XSSimpleTypeDecl.FACET_LENGTH | XSSimpleTypeDecl.FACET_MINLENGTH | XSSimpleTypeDecl.FACET_MAXLENGTH | XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_ENUMERATION | XSSimpleTypeDecl.FACET_WHITESPACE );
     }
 
-} // class FloatDV
+    // before we return string we have to make sure it is correct URI as per spec.
+    // for some types (string and derived), they just return the string itself
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+        // check 3.2.17.c0 must: URI (rfc 2396/2723)
+        try {
+            if( content.length() != 0 ) {
+                URI tempURI = new URI("http://www.template.com");
+                // Support for relative URLs
+                // According to Java 1.1: URLs may also be specified with a
+                // String and the URL object that it is related to.
+                new URI(tempURI, content );
+            }
+        } catch (  URI.MalformedURIException ex ) {
+            throw new InvalidDatatypeValueException("Value '"+content+"' is a Malformed URI");
+        }
+
+        // REVISIT: do we need to return the new URI object?
+        return content;
+    }
+
+    // REVISIT: do we need to compare based on URI, or based on String?
+    // public boolean isEqual(Object value1, Object value2);
+
+} // class AnyURIDV

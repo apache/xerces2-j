@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,44 +57,34 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-import org.apache.xerces.impl.v2.datatypes.SchemaDateTimeException;
 /**
  * Validator for <gMonth> datatype (W3C Schema Datatypes)
- * 
+ *
  * @author Elena Litani
  * @author Gopal Sharma, SUN Microsystem Inc.
+ *
+ * @version $Id$
  */
 
 public class MonthDV extends AbstractDateTimeDV {
 
     /**
-     @return Index of MonthDV
-	*/
-
-	public short getPrimitiveDV(){
-		return XSSimpleTypeDecl.DV_GMONTH;
-    }
-   
-	/**
      * Convert a string to a compiled form
-	 * 
-	 * @param  content The lexical representation of gMonth
-	 * @return a valid and normalized gMonth object
-	 */
-	public Object  getCompiledValue(String content) throws InvalidDatatypeValueException{
-			int[] date=null;
-			try{
-					date= parse(content, null);
-			}catch(Exception ex){
-			}
-			return date;
-	}
-
+     *
+     * @param  content The lexical representation of gMonth
+     * @return a valid and normalized gMonth object
+     */
+    public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
+        try{
+            return parse(content, null);
+        } catch(Exception ex){
+            throw new InvalidDatatypeValueException("not a valid month");
+        }
+    }
 
     /**
      * Parses, validates and computes normalized version of gMonth object
-     * 
+     *
      * @param str    The lexical representation of gMonth object --MM--
      *               with possible time zone Z or (-),(+)hh:mm
      * @param date   uninitialized date object
@@ -134,7 +124,7 @@ public class MonthDV extends AbstractDateTimeDV {
         }
         //validate and normalize
         validateDateTime(date);
-        
+
         if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);
         }
@@ -143,44 +133,44 @@ public class MonthDV extends AbstractDateTimeDV {
 
     /**
      * Overwrite compare algorithm to optimize month comparison
-     * 
+     *
      * @param date1
      * @param date2
-     * @return 
+     * @return
      */
     protected  int compareDates(int[] date1, int[] date2) {
 
         if ( date1[utc]==date2[utc] ) {
-            return (date1[M]>=date2[M])?(date1[M]>date2[M])?COMPARE_LESS:COMPARE_EQUAL:COMPARE_GREATER;
+            return (date1[M]>=date2[M])?(date1[M]>date2[M])?-1:0:1;
         }
 
         if ( date1[utc]=='Z' || date2[utc]=='Z' ) {
-            
+
             if ( date1[M]==date2[M] ) {
                 //--05--Z and --05--
                 return INDETERMINATE;
             }
             if ( (date1[M]+1 == date2[M] || date1[M]-1 == date2[M]) ) {
-                //--05--Z and (--04-- or --05--) 
-                //REVISIT: should this case be less than or equal? 
+                //--05--Z and (--04-- or --05--)
+                //REVISIT: should this case be less than or equal?
                 //         maxExclusive should fail but what about maxInclusive
-                //         
+                //
                 return INDETERMINATE;
             }
         }
 
         if ( date1[M]<date2[M] ) {
-            return COMPARE_LESS;
+            return -1;
         }
         else {
-            return COMPARE_GREATER;
+            return 1;
         }
 
     }
 
     /**
      * Converts month object representation to String
-     * 
+     *
      * @param date   month object
      * @return lexical representation of month: --MM-- with an optional time zone sign
      */
