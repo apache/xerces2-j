@@ -79,6 +79,8 @@ public class XMLAttributeDecl {
 
     // values
 
+    public String defaultType;
+
     public String defaultValue;
 
     //
@@ -105,6 +107,8 @@ public class XMLAttributeDecl {
     public void setValues(XMLAttributeDecl attributeDecl) {
         name.setValues(attributeDecl.name);
         datatypeValidator = attributeDecl.datatypeValidator;
+	defaultType = attributeDecl.defaultType;
+	defaultValue = attributeDecl.defaultValue;
     }
 
     //
