@@ -27,6 +27,21 @@ import java.util.Vector;
  */
 public class StringListImpl implements StringList {
 
+    /**
+     * An immutable empty list.
+     */
+    public static final StringList EMPTY_LIST = new StringList () {
+        public int getLength() {
+            return 0;
+        }
+        public boolean contains(String item) {
+            return false;
+        }
+        public String item(int index) {
+            return null;
+        }
+    };
+    
     // The array to hold all data
     private String[] fArray = null;
     // Number of elements in this list

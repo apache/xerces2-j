@@ -28,6 +28,18 @@ import org.apache.xerces.xs.XSObjectList;
  */
 public class XSObjectListImpl implements XSObjectList {
 
+    /**
+     * An immutable empty list.
+     */
+    public static final XSObjectList EMPTY_LIST = new XSObjectList () {
+        public int getLength() {
+            return 0;
+        }
+        public XSObject item(int index) {
+            return null;
+        }
+    };
+    
     private final int DEFAULT_SIZE = 4;
 
     // The array to hold all data

@@ -569,10 +569,20 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
     }
 
+    /**
+     * Returns the closest built-in type category this type represents or 
+     * derived from. For example, if this simple type is a built-in derived 
+     * type integer the <code>INTEGER_DV</code> is returned.
+     */
     public short getBuiltInKind() {
         return this.fBuiltInKind;
     }
 
+    /**
+     * If variety is <code>atomic</code> the primitive type definition (a 
+     * built-in primitive datatype definition or the simple ur-type 
+     * definition) is available, otherwise <code>null</code>. 
+     */
     public XSSimpleTypeDefinition getPrimitiveType() {
         if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
             XSSimpleTypeDecl pri = this;
@@ -587,6 +597,11 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
     }
 
+    /**
+     * If variety is <code>list</code> the item type definition (an atomic or 
+     * union simple type definition) is available, otherwise 
+     * <code>null</code>. 
+     */
     public XSSimpleTypeDefinition getItemType() {
         if (fVariety == VARIETY_LIST) {
             return fItemType;
@@ -597,13 +612,17 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         }
     }
 
+    /**
+     * If variety is <code>union</code> the list of member type definitions (a 
+     * non-empty sequence of simple type definitions) is available, 
+     * otherwise an empty <code>XSObjectList</code>. 
+     */
     public XSObjectList getMemberTypes() {
         if (fVariety == VARIETY_UNION) {
             return new XSObjectListImpl(fMemberTypes, fMemberTypes.length);
         }
         else {
-            // REVISIT: error situation. runtime exception?
-            return null;
+            return XSObjectListImpl.EMPTY_LIST;
         }
     }
 
@@ -1856,22 +1875,40 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return WS_FACET_STRING[ws];
     }
 
+    /**
+     *  Fundamental Facet: ordered. 
+     */
     public short getOrdered() {
         return fOrdered;
     }
 
+    /**
+     * Fundamental Facet: bounded. 
+     */
     public boolean getBounded(){
         return fBounded;
     }
 
+    /**
+     * Fundamental Facet: cardinality. 
+     */
     public boolean getFinite(){
         return fFinite;
     }
 
+    /**
+     * Fundamental Facet: numeric. 
+     */
     public boolean getNumeric(){
         return fNumeric;
     }
 
+    /**
+     * Convenience method. [Facets]: check whether a facet is defined on this 
+     * type.
+     * @param facetName  The name of the facet. 
+     * @return  True if the facet is defined, false otherwise.
+     */
     public boolean isDefinedFacet(short facetName) {
         if ((fFacetsDefined & facetName) != 0)
             return true;
@@ -1882,6 +1919,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return false;
     }
 
+    /**
+     * [facets]: all facets defined on this type. The value is a bit 
+     * combination of FACET_XXX constants of all defined facets. 
+     */
     public short getDefinedFacets() {
         if (fPatternType != SPECIAL_PATTERN_NONE)
             return (short)(fFacetsDefined | FACET_PATTERN);
@@ -1890,6 +1931,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fFacetsDefined;
     }
 
+    /**
+     * Convenience method. [Facets]: check whether a facet is defined and 
+     * fixed on this type. 
+     * @param facetName  The name of the facet. 
+     * @return  True if the facet is fixed, false otherwise.
+     */
     public boolean isFixedFacet(short facetName) {
         if ((fFixedFacet & facetName) != 0)
             return true;
@@ -1898,12 +1945,27 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return false;
     }
 
+    /**
+     * [facets]: all defined facets for this type which are fixed.
+     */
     public short getFixedFacets() {
         if (fValidationDV == DV_INTEGER)
             return (short)(fFixedFacet | FACET_FRACTIONDIGITS);
         return fFixedFacet;
     }
 
+    /**
+     * Convenience method. Returns a value of a single constraining facet for 
+     * this simple type definition. This method must not be used to retrieve 
+     * values for <code>enumeration</code> and <code>pattern</code> facets. 
+     * @param facetName The name of the facet, i.e. 
+     *   <code>FACET_LENGTH, FACET_TOTALDIGITS </code> (see 
+     *   <code>XSConstants</code>). To retrieve the value for a pattern or 
+     *   an enumeration, see <code>enumeration</code> and 
+     *   <code>pattern</code>.
+     * @return A value of the facet specified in <code>facetName</code> for 
+     *   this simple type definition or <code>null</code>. 
+     */
     public String getLexicalFacetValue(short facetName) {
         switch (facetName) {
         case FACET_LENGTH:
@@ -1932,10 +1994,14 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return null;
     }
 
+    /**
+     * A list of enumeration values if it exists, otherwise an empty 
+     * <code>StringList</code>. 
+     */
     public StringList getLexicalEnumeration() {
         if (fLexicalEnumeration == null){
             if (fEnumeration == null)
-                return null;
+                return StringListImpl.EMPTY_LIST;
             int size = fEnumeration.size();
             String[] strs = new String[size];
             for (int i = 0; i < size; i++)
@@ -1945,9 +2011,13 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fLexicalEnumeration;
     }
 
+    /**
+     * A list of pattern values if it exists, otherwise an empty 
+     * <code>StringList</code>. 
+     */
     public StringList getLexicalPattern() {
         if (fPatternType == SPECIAL_PATTERN_NONE && fValidationDV != DV_INTEGER && fPatternStr == null)
-            return null;
+            return StringListImpl.EMPTY_LIST;
         if (fLexicalPattern == null){
             int size = fPatternStr == null ? 0 : fPatternStr.size();
             String[] strs;
@@ -1978,8 +2048,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return fLexicalPattern;
     }
 
+    /**
+     * [annotations]: a set of annotations for this simple type component if 
+     * it exists, otherwise an empty <code>XSObjectList</code>. 
+     */
     public XSObjectList getAnnotations() {
-        return fAnnotations;
+        return (fAnnotations != null) ? fAnnotations : XSObjectListImpl.EMPTY_LIST;
     }
 
     private void caclFundamentalFacets() {
@@ -2387,8 +2461,11 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return this.fTargetNamespace+"," +this.fTypeName;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.xerces.xs.XSSimpleTypeDefinition#getFacets()
+    /**
+     *  A list of constraining facets if it exists, otherwise an empty 
+     * <code>XSObjectList</code>. Note: This method must not be used to 
+     * retrieve values for <code>enumeration</code> and <code>pattern</code> 
+     * facets. 
      */
     public XSObjectList getFacets() {
         if (fFacets == null &&
@@ -2497,10 +2574,14 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
             fFacets = new XSObjectListImpl(facets, count);
         }
-        return fFacets;
+        return (fFacets != null) ? fFacets : XSObjectListImpl.EMPTY_LIST;
     }
     
-    public XSObjectList getMultiValueFacets(){
+    /**
+     *  A list of enumeration and pattern constraining facets if it exists, 
+     * otherwise an empty <code>XSObjectList</code>. 
+     */
+    public XSObjectList getMultiValueFacets() {
         if (fMultiValueFacets == null &&
             ((fFacetsDefined & FACET_ENUMERATION) != 0 ||
              (fFacetsDefined & FACET_PATTERN) != 0 ||
@@ -2529,7 +2610,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             }
             fMultiValueFacets = new XSObjectListImpl(facets, count);
         }
-        return fMultiValueFacets;
+        return (fMultiValueFacets != null) ? 
+            fMultiValueFacets : XSObjectListImpl.EMPTY_LIST;
     }
     
     private static final class XSFacetImpl implements XSFacet {
