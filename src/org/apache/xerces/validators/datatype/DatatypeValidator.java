@@ -69,6 +69,7 @@ import java.util.Locale;
  * W3C to remove facets from the data type spec.
  *
  * @author Ted Leung
+ * @author Kito D. Mann -- changed the MAXLENGTH and MINLENGTH as per 12/17 spec.
  * @version
  */
 
@@ -83,8 +84,8 @@ public interface DatatypeValidator {
 	public static final String SCALE = "scale";
 	
 	public static final String LENGTH = "length";
-    public static final String MINLENGTH = "minLength";
-	public static final String MAXLENGTH = "maxLength";
+    public static final String MINLENGTH = "minlength";
+	public static final String MAXLENGTH = "maxlength";
 	public static final String ENUMERATION = "enumeration";
 	public static final String LITERAL = "literal";
 	public static final String LEXICALREPRESENTATION = "lexicalRepresentation";
