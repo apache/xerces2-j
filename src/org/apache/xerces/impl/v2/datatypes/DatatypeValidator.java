@@ -111,7 +111,7 @@ public interface DatatypeValidator extends XSTypeDecl {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state ) throws InvalidDatatypeValueException;
+    public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException;
 
     public short getWSFacet ();
 
@@ -133,4 +133,6 @@ public interface DatatypeValidator extends XSTypeDecl {
     public int getFinalSet();
 
     public void setFinalSet(int finalSet);
+
+
 }

@@ -263,13 +263,10 @@ public class SchemaGrammar {
         DatatypeValidator idrefDV = new IDREFDatatypeValidator(ncnameDV,  null, false, null);
         addGlobalTypeDecl(SchemaSymbols.ATTVAL_IDREF, idrefDV);
         addGlobalTypeDecl(SchemaSymbols.ATTVAL_IDREFS, new ListDatatypeValidator(idrefDV, null, true, null));
-        //REVISIT: entity validators
-        //DatatypeValidator entityDV = new ENTITYDatatypeValidator(ncnameDV,  null, false, null);
-        DatatypeValidator entityDV = new StringDatatypeValidator(ncnameDV,  null, false, null);
+        DatatypeValidator entityDV = new EntityDatatypeValidator(ncnameDV, null, false, null);
         addGlobalTypeDecl(SchemaSymbols.ATTVAL_ENTITY, entityDV);
-        //REVISIT: entity validators
-        //fTypeDeclType[0][typeIndex] = new ListDatatypeValidator(entityDV, null, true);
         addGlobalTypeDecl(SchemaSymbols.ATTVAL_ENTITIES, new ListDatatypeValidator(entityDV, null, true, null));
+        
         facets.clear();
         facets.put(SchemaSymbols.ELT_WHITESPACE, SchemaSymbols.ATTVAL_COLLAPSE);
         facets.put(AbstractStringValidator.FACET_SPECIAL_TOKEN, AbstractStringValidator.SPECIAL_TOKEN_NMTOKEN);

@@ -99,7 +99,7 @@ public abstract class AbstractNumericValidator extends AbstractNumericFacetValid
      *                   is not a W3C decimal type
      * @exception InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state) throws InvalidDatatypeValueException {
+    public Object validate(String content, ValidationContext state) throws InvalidDatatypeValueException {
         //REVISIT: should we pass state?
         checkContent(content, state, null, false);
         return null;

@@ -2,15 +2,15 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
- * reserved.
+ * Copyright (c) 1999,2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
+ *    if any, must include the following acknowledgment:  
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written
+ *    software without prior written permission. For written 
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,58 +55,45 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.v2.datatypes;
+package org.apache.xerces.impl.validation;
 
-import java.util.Hashtable;
-
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.v2.XSMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.xni.parser.XMLComponent;
 
 /**
- * AnySimpleType is the base of all simple types.
- * @author Sandy Gao
- * @version $Id$
+ * ValidationManager is a coordinator property for validators in the 
+ * pipeline. Each validator must know how to interact with
+ * this property. Validators are not required to know what kind of 
+ * other validators present in the pipeline, but should understand
+ * that there are others and that some coordination is required.
+ * 
+ * @author Elena Litani, IBM
  */
-public class AnySimpleType extends AbstractDatatypeValidator {
-    public  AnySimpleType() {
+public class ValidationManager {
+
+    // REVISIT: should validation/state be another property?
+    protected final ValidationState fValidationState= new ValidationState();
+    
+    public ValidationState getValidationState (){
+        return fValidationState;
     }
 
-    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList, 
-                         XMLErrorReporter reporter) {
+    // REVISIT: handle other validation coordination
+    //          the following will depend on the final set of validation
+    //          features
+    
+    //protected boolean fGrammarFound = false;
+    //protected XMLComponent fLastValidator = null;
 
-        fBaseValidator = base;
-        fErrorReporter = reporter;
-
-        if (facets != null && facets.size() != 0) {
-            String msg = getErrorString(
-                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_ANYSIMPLETYPE_FACET],
-                                       new Object[] { facets.toString()});
-
-            if (fErrorReporter == null) {
-                throw new RuntimeException("InternalDatatype error AST.");
-            }
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "DatatypeFacetError", new Object[]{msg},
-                                       XMLErrorReporter.SEVERITY_ERROR);                    
-
-        }
-    }
-
-    public Object validate(String content, ValidationContext state )
-    throws InvalidDatatypeValueException {
-        return null;
-    }
-
-    public int compare( String value1, String value2 ) {
-        return -1;
-    }
-
-
-    public Object clone() throws CloneNotSupportedException  {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
-
-    public short getWSFacet () {
-        return DatatypeValidator.PRESERVE;
+    // public void setGrammarFound(){
+        
+    // public boolean isGrammarFound(){
+    // public boolean isLastValidationComponent( XMLComponent validator){
+    // public void setLastValidationComponent( XMLComponent validator){
+        
+    public void reset (){
+        fValidationState.reset();
     }
 }
+
+

@@ -75,20 +75,19 @@ import org.apache.xerces.impl.v2.XSMessageFormatter;
  * @version $Id$
  */
 public class IDDatatypeValidator extends StringDatatypeValidator {
-    private static Object                   fNullValue      = new Object();
 
-    public IDDatatypeValidator ()   {
+    public IDDatatypeValidator () {
         this( null, null, false, null ); // Native, No Facets defined, Restriction
     }
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                 boolean derivedByList, XMLErrorReporter reporter)  {
+                                 boolean derivedByList, XMLErrorReporter reporter) {
 
         // all facets are handled in StringDatatypeValidator
         super (base, facets, derivedByList, reporter);
 
         // list types are handled by ListDatatypeValidator, we do nothing here.
-        if ( derivedByList )
+        if (derivedByList)
             return;
 
         // the type is NAME by default
@@ -107,36 +106,29 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
     }
 
     /**
-     * Checks that "content" string is valid
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.
-     *
-     * @param content A string containing the content to be validated
-     * @param state  Generic Object state that can be use to pass
-     *               Structures
-     * @return
+     * Make sure that ID is unique in the document
+     * 
+     * @param content Id value
+     * @param state   a structure that stores id's
+     * @return content
      * @exception throws InvalidDatatypeException if the content is
      *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-        // use StringDatatypeValidator to validate content against facets
-        super.validate(content, state);
+    public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException{
+
+        // REVISIT: in case user uses pattern we may not validate correctly
+        //          since we don't inherit pattern for now.
+        // 
+
 
         if (state != null) {
-            if ( !addId( content, (Hashtable)state) ) {
-                InvalidDatatypeValueException error =
-                new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
-                //REVISIT: error handling
-                
-                //error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
-                //error.setMajorCode(XMLMessages.VC_ID);
-                throw error;
+            if (state.isIdDeclared(content)) {
+                throw new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
             }
+            state.addId(content);
         }
 
-        return null;
+        return content;
     }
 
 
@@ -148,18 +140,4 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
     }
 
 
-    /** addId. */
-    private boolean addId(String content, Hashtable IDList) {
-        if ( IDList.containsKey( content ) )
-            return false;
-
-        try {
-            IDList.put( content, fNullValue );
-        }
-        catch ( OutOfMemoryError ex ) {
-            System.out.println( "Out of Memory: Hashtable of ID's has " + IDList.size() + " Elements" );
-            ex.printStackTrace();
-        }
-        return true;
-    } // addId(int):boolean
 }

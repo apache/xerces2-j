@@ -58,7 +58,10 @@
 package org.apache.xerces.impl;
 
 import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+
+import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.impl.validation.ContentModelValidator;
 import org.apache.xerces.impl.validation.DatatypeValidator;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
@@ -153,6 +156,9 @@ public class XMLDTDValidator
     protected static final String DYNAMIC_VALIDATION = 
         Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
+    protected static final String SCHEMA_VALIDATION = 
+        Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_VALIDATION_FEATURE;
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -171,6 +177,9 @@ public class XMLDTDValidator
     protected static final String DATATYPE_VALIDATOR_FACTORY =
         Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
 
+
+    protected static final String VALIDATION_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
     // recognized features and properties
 
     /** Recognized features. */
@@ -178,6 +187,7 @@ public class XMLDTDValidator
         NAMESPACES,
         VALIDATION,
         DYNAMIC_VALIDATION,
+        SCHEMA_VALIDATION
     };
 
     /** Recognized properties. */
@@ -186,6 +196,7 @@ public class XMLDTDValidator
         ERROR_REPORTER,
         GRAMMAR_POOL,       
         DATATYPE_VALIDATOR_FACTORY,
+        VALIDATION_MANAGER
     };
 
     // debugging
@@ -200,6 +211,9 @@ public class XMLDTDValidator
     // Data
     //
 
+    // updated during reset
+    protected ValidationManager fValidationManager = null;
+
     // features
 
     /** Namespaces. */
@@ -207,6 +221,8 @@ public class XMLDTDValidator
 
     /** Validation. */
     protected boolean fValidation;
+    /** Validation. */
+    protected boolean fDTDValidation;
 
     /** 
      * Dynamic validation. This state of this feature is only useful when
@@ -506,7 +522,7 @@ public class XMLDTDValidator
 
         // clear grammars
         fDTDGrammar = null;
-
+        
         // initialize state
         fInDTD = false;
         fInDTDIgnore = false;
@@ -534,6 +550,12 @@ public class XMLDTDValidator
         catch (XMLConfigurationException e) {
             fValidation = false;
         }
+        try {
+            fDTDValidation = !(componentManager.getFeature(SCHEMA_VALIDATION));
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
+        }
 
         // Xerces features
         try {
@@ -543,6 +565,8 @@ public class XMLDTDValidator
             fDynamicValidation = false;
         }
 
+        fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
+        fValidationManager.reset();
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
@@ -1220,7 +1244,7 @@ public class XMLDTDValidator
      * 
      * @param elementName   The name of the element that this attribute
      *                      is associated with.
-   * @param attributeName The name of the attribute.
+     * @param attributeName The name of the attribute.
      * @param type          The attribute type. This value will be one of
      *                      the following: "CDATA", "ENTITY", "ENTITIES",
      *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
@@ -2538,23 +2562,24 @@ public class XMLDTDValidator
                                       boolean isEmpty) throws XNIException {
 
         // set wether we're performing validation
-        fPerformValidation = fValidation && (!fDynamicValidation || fSeenDoctypeDecl);
+        fPerformValidation = fValidation && (!fDynamicValidation || fSeenDoctypeDecl) && fDTDValidation;
         
         // VC: Root Element Type
         // see if the root element's name matches the one in DoctypeDecl 
         if (!fSeenRootElement) {
             fSeenRootElement = true;
+            fValidationManager.getValidationState().setEntityState(fDTDGrammar);
             rootElementSpecified(element);
         }
 
-        if (fDTDGrammar == null && !fSkipValidation){
+        if (fDTDGrammar == null ){
         
             if  (!fPerformValidation) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
             fInElementContent = false;
             }
-            if (fPerformValidation) {
+            if (fPerformValidation && !fSkipValidation) {
                 fSkipValidation = true;
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_GRAMMAR_NOT_FOUND",

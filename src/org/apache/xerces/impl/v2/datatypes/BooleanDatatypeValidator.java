@@ -127,7 +127,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
      * is not valid.
      */
 
-    public Object validate(String content, Object state) throws InvalidDatatypeValueException {
+    public Object validate(String content, ValidationContext state) throws InvalidDatatypeValueException {
         checkContent( content, false );
         return null;
     }

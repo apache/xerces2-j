@@ -216,6 +216,10 @@ public final class Constants {
     /** Namespace binder property ("internal/namespace-binder"). */
     public static final String NAMESPACE_BINDER_PROPERTY = "internal/namespace-binder";
 
+
+    /** Validation manager property ("internal/validation-manager"). */
+    public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
+
     // private
 
     /** SAX features. */
@@ -270,6 +274,7 @@ public final class Constants {
         DOCUMENT_SCANNER_PROPERTY,
         DTD_SCANNER_PROPERTY,
         VALIDATOR_PROPERTY,
+        VALIDATION_MANAGER_PROPERTY
     };
 
     /** Empty enumeration. */

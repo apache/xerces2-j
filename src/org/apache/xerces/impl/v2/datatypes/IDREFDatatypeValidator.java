@@ -126,21 +126,19 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-        StateMessageDatatype message = (StateMessageDatatype) state;
-        if (message != null && message.getDatatypeState() == IDREF_CHECKID) {
-            Object[] params = (Object[])message.getDatatypeObject();
-            checkIdRefs((Hashtable)params[0], (Hashtable)params[1]);
-        }
-        else {
-            // use StringDatatypeValidator to validate content against facets
-            super.validate(content, state);
+    public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException{
+        
+        // REVISIT: in case user uses pattern we may not validate correctly
+        //          since we don't inherit pattern for now.
+        // 
 
-            if ( message != null && message.getDatatypeState() == IDREF_VALIDATE )
-                addIdRef( content, (Hashtable)message.getDatatypeObject());
-        }
+        // state should never be null.
+        state.addIdRef(content);
+        if (!state.isIdDeclared(content)) {
 
-        return null;
+            InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );
+        }
+        return content;
     }
 
 
@@ -151,21 +149,7 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-    /** addId. */
-    private void addIdRef(String content, Hashtable IDREFList) {
-        if ( IDREFList.containsKey( content ) )
-            return;
-
-        try {
-            IDREFList.put( content, fNullValue );
-        }
-        catch ( OutOfMemoryError ex ) {
-            System.out.println( "Out of Memory: Hashtable of ID's has " + IDREFList.size() + " Elements" );
-            ex.printStackTrace();
-        }
-    } // addId(int):boolean
-
-
+    /*
     public static void checkIdRefs(Hashtable IDList, Hashtable IDREFList) throws InvalidDatatypeValueException {
         Enumeration en = IDREFList.keys();
 
@@ -182,4 +166,5 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
             }
         }
     } // checkIdRefs()
+    */
 }

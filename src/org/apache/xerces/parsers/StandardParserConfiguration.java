@@ -68,6 +68,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLDTDValidator;
 import org.apache.xerces.impl.XMLNamespaceBinder;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
@@ -191,6 +192,9 @@ public class StandardParserConfiguration
     protected static final String DATATYPE_VALIDATOR_FACTORY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
 
+    protected static final String VALIDATION_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
+
     // debugging
 
     /** Set to true and recompile to print exception stack trace. */
@@ -228,6 +232,7 @@ public class StandardParserConfiguration
     /** Namespace binder. */
     protected XMLNamespaceBinder fNamespaceBinder;
 
+    protected ValidationManager fValidationManager;
     // state
 
     /** Locator */
@@ -319,6 +324,7 @@ public class StandardParserConfiguration
             NAMESPACE_BINDER,
             GRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
+            VALIDATION_MANAGER
         };
         addRecognizedProperties(recognizedProperties);
 
@@ -369,7 +375,11 @@ public class StandardParserConfiguration
             setProperty(DATATYPE_VALIDATOR_FACTORY,
                         fDatatypeValidatorFactory);
         }
+        fValidationManager = createValidationManager();
 
+        if (fValidationManager != null) {
+            setProperty (VALIDATION_MANAGER, fValidationManager);
+        }
         // add message formatters
         if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
             XMLMessageFormatter xmft = new XMLMessageFormatter();
@@ -742,5 +752,8 @@ public class StandardParserConfiguration
     protected DatatypeValidatorFactory createDatatypeValidatorFactory() {
         return new DatatypeValidatorFactoryImpl();
     } // createDatatypeValidatorFactory():DatatypeValidatorFactory
+    protected ValidationManager createValidationManager(){
+        return new ValidationManager();
+    }
 
 } // class StandardParserConfiguration

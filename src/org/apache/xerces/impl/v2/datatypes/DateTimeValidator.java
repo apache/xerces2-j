@@ -240,7 +240,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      * @return  
      * @exception InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state) throws InvalidDatatypeValueException{
+    public Object validate(String content, ValidationContext state) throws InvalidDatatypeValueException{
 
         try {
             resetDateObj(fDateValue);

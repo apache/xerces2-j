@@ -380,7 +380,7 @@ public abstract class AbstractStringValidator extends AbstractDatatypeValidator 
      *                   not a W3C string type
      * @exception InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state)  throws InvalidDatatypeValueException {
+    public Object validate(String content, ValidationContext state)  throws InvalidDatatypeValueException {
         checkContent( content, state, false );
         return null;
     }

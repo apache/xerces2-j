@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XInt;
@@ -101,7 +102,8 @@ class XSDocumentInfo {
     protected Document fSchemaDoc;
 
     // to store the ID values appearing in this document
-    protected Hashtable fIdDefs = new Hashtable();
+    // set namespace resolver
+    protected ValidationState fValidationContext = new ValidationState();
 
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable) {
         fSchemaDoc = schemaDoc;
@@ -124,7 +126,7 @@ class XSDocumentInfo {
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
-
+            fValidationContext.setNamespaceSupport(fNamespaceSupport);
             // REVISIT: we can't return, becaues we can't pop fNamespaceSupport
             //attrChecker.returnAttrArray(schemaAttrs, this);
         }
@@ -133,10 +135,12 @@ class XSDocumentInfo {
     void backupNSSupport() {
         SchemaNamespaceSupportStack.push(fNamespaceSupport);
         fNamespaceSupport = new SchemaNamespaceSupport(fNamespaceSupportRoot);
+        fValidationContext.setNamespaceSupport(fNamespaceSupport);
     }
 
     void restoreNSSupport() {
         fNamespaceSupport = (SchemaNamespaceSupport)SchemaNamespaceSupportStack.pop();
+        fValidationContext.setNamespaceSupport(fNamespaceSupport);
     }
 
     // some Object methods

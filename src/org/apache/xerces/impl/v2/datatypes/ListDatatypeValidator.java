@@ -205,7 +205,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
      *                   not a W3C string type
      * @exception InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state)  throws InvalidDatatypeValueException
+    public Object validate(String content, ValidationContext state)  throws InvalidDatatypeValueException
     {
         if (content == null && state != null) {
             this.fBaseValidator.validate( content, state );//Passthrough setup information
@@ -283,7 +283,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator {
      * @exception throws InvalidDatatypeException if the content is not valid
      * @exception InvalidDatatypeValueException
      */
-    protected void checkContentEnum( String content,  Object state, Vector enumeration )
+    protected void checkContentEnum( String content,  ValidationContext state, Vector enumeration )
     throws InvalidDatatypeValueException {
 
         //REVISIT: attemt to make enumeration to be validated against value space.

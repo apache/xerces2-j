@@ -100,7 +100,7 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    abstract public Object validate(String content, Object state) throws InvalidDatatypeValueException;
+    abstract public Object validate(String content, ValidationContext state) throws InvalidDatatypeValueException;
 
     abstract public Object clone() throws CloneNotSupportedException ;
 

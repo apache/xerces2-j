@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,64 +49,36 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.v2.datatypes;
+package org.apache.xerces.impl.validation;
 
-import java.util.Hashtable;
-
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.v2.XSMessageFormatter;
 
 /**
- * AnySimpleType is the base of all simple types.
- * @author Sandy Gao
- * @version $Id$
+ * The entity state interface defines methods that must be implemented
+ * by components that store information about entity declarations, as well as by
+ * entity validator that will need to validate attributes of type entity.
+ * 
+ * @author Elena Litani, IBM
  */
-public class AnySimpleType extends AbstractDatatypeValidator {
-    public  AnySimpleType() {
-    }
+public interface EntityState {
+    /**
+     * Query method to check if entity with this name was declared.
+     * 
+     * @param name
+     * @return 
+     */
+    public boolean isEntityDeclared (String name);
 
-    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList, 
-                         XMLErrorReporter reporter) {
-
-        fBaseValidator = base;
-        fErrorReporter = reporter;
-
-        if (facets != null && facets.size() != 0) {
-            String msg = getErrorString(
-                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_ANYSIMPLETYPE_FACET],
-                                       new Object[] { facets.toString()});
-
-            if (fErrorReporter == null) {
-                throw new RuntimeException("InternalDatatype error AST.");
-            }
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "DatatypeFacetError", new Object[]{msg},
-                                       XMLErrorReporter.SEVERITY_ERROR);                    
-
-        }
-    }
-
-    public Object validate(String content, ValidationContext state )
-    throws InvalidDatatypeValueException {
-        return null;
-    }
-
-    public int compare( String value1, String value2 ) {
-        return -1;
-    }
-
-
-    public Object clone() throws CloneNotSupportedException  {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
-
-    public short getWSFacet () {
-        return DatatypeValidator.PRESERVE;
-    }
+    /**
+     * Query method to check if entity is unparsed.
+     * 
+     * @param name
+     * @return 
+     */
+    public boolean isEntityUnparsed (String name);
 }

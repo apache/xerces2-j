@@ -61,8 +61,10 @@ import org.apache.xerces.impl.v2.datatypes.*;
 import org.apache.xerces.impl.v2.identity.*;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
@@ -148,6 +150,8 @@ public class SchemaValidator
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
 
+    protected static final String VALIDATION_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
     // REVISIT: this is just a temporary solution for entity resolver
     //          while we are making a decision
     protected static final String ENTITY_MANAGER =
@@ -165,6 +169,7 @@ public class SchemaValidator
         SYMBOL_TABLE,
         ERROR_REPORTER,
         ENTITY_RESOLVER,
+        VALIDATION_MANAGER
     };
 
     //
@@ -190,6 +195,9 @@ public class SchemaValidator
     protected XMLEntityResolver fEntityResolver;
 
 
+    // updated during reset
+    protected ValidationManager fValidationManager = null;
+    protected ValidationState fValidationState = null;
     // handlers
 
     /** Document handler. */
@@ -844,6 +852,9 @@ public class SchemaValidator
 
         // get error reporter
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+       
+        fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
+        fValidationManager.reset();
 
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
@@ -999,6 +1010,8 @@ public class SchemaValidator
         if (DEBUG) {
             System.out.println("handleStartElement: " +element);
         }
+        
+
         // we receive prefix binding events before this one,
         // so at this point, the prefix bindings for this element is done,
         // and we need to push context when we receive another prefix binding.
@@ -1012,9 +1025,12 @@ public class SchemaValidator
             fPushForNextBinding = true;
 
         // whether to do validation
+        // root element
         // REVISIT: consider DynamicValidation
         if (fElementDepth == -1) {
             fDoValidation = fValidation;
+            fValidationState = fValidationManager.getValidationState();
+            fValidationState.setNamespaceSupport(fNamespaceSupport);
         }
 
         // if we are in the content of "skip", then just skip this element
@@ -1138,7 +1154,9 @@ public class SchemaValidator
         }
 
         // if the element decl is not found
-        if (fCurrentType == null && fDoValidation) {
+        if (fCurrentType == null ) {
+            if (fDoValidation) {
+            
             // if this is the root element, or wildcard = strict, report error
             if (fElementDepth == 0) {
                 // report error, because it's root element
@@ -1148,11 +1166,12 @@ public class SchemaValidator
                 // report error, because wilcard = strict
                 reportSchemaError("cvc-complex-type.2.4.c", new Object[]{element.rawname});
             }
-
+            }
             // no element decl found, have to skip this element
             fSkipValidationDepth = fElementDepth;
             return;
         }
+
 
         // then try to get the content model
         fCurrentCM = null;
@@ -1284,15 +1303,9 @@ public class SchemaValidator
         fElementDepth--;
         if (fElementDepth == -1) {
             if (fDoValidation) {
-                try {
                     // 7 If the element information item is the ·validation root·, it must be ·valid· per Validation Root Valid (ID/IDREF) (§3.3.4).
                     // REVISIT: how to do it? new simpletype design?
-                    IDREFDatatypeValidator.checkIdRefs(fTableOfIDs, fTableOfIDRefs);
-                }
-                catch (InvalidDatatypeValueException ex) {
-                    // REVISIT: put idref value in ex
-                    reportSchemaError("cvc-id.1", new Object[]{ex.getLocalizedMessage()});
-                }
+                    // IDREFDatatypeValidator.checkIdRefs(fTableOfIDs, fTableOfIDRefs);
             }
         } else {
             // get the states for the parent element.
@@ -1328,14 +1341,14 @@ public class SchemaValidator
         try {
             // REVISIT: have QNameDV to return QName
             //typeName = fQNameDV.validate(xsiType, fNamespaceSupport);
-            fQNameDV.validate(xsiType, fNamespaceSupport);
+            fQNameDV.validate(xsiType, fValidationState);
             String prefix = fSchemaHandler.EMPTY_STRING;
             String localpart = xsiType;
             int colonptr = xsiType.indexOf(":");
             if (colonptr > 0) {
                 prefix = fSymbolTable.addSymbol(xsiType.substring(0,colonptr));
                 localpart = xsiType.substring(colonptr+1);
-            }
+            }                          
             // REVISIT: if we take the null approach (instead of ""),
             //          we need to chech the retrned value from getURI
             //          to see whether a binding is found.
@@ -1520,7 +1533,7 @@ public class SchemaValidator
             try {
                 // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
                 // actualValue = attDV.validate(attrValue, null);
-                attDV.validate(attrValue, null);
+                attDV.validate(attrValue, fValidationState);
             } catch (InvalidDatatypeValueException idve) {
                 reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
@@ -1714,7 +1727,7 @@ public class SchemaValidator
                     // retValue = dv.validate(content, null);
                     // make sure we return something... - NG
                     retValue = content;
-                    dv.validate(content, null);
+                    dv.validate(content, fValidationState);
                 } catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, content});
                 }
@@ -1750,7 +1763,7 @@ public class SchemaValidator
                 String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
                 try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                    dv.validate(content, null);
+                    dv.validate(content, fValidationState);
                 } catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 }

@@ -97,7 +97,7 @@ import org.apache.xerces.xni.QName;
  *
  * @version $Id$
  */
-public abstract class Grammar {
+public abstract class Grammar implements EntityState {
 
     //
     // Constants
@@ -1821,5 +1821,23 @@ public abstract class Grammar {
         } // hash(String):int
 
     }  // class TupleHashtable
+
+    //
+    // EntityState methods
+    //
+    public boolean isEntityDeclared (String name){
+        return (getEntityDeclIndex(name)!=-1)?true:false;
+    }
+
+    public boolean isEntityUnparsed (String name){
+        int entityIndex = getEntityDeclIndex(name);
+        if (entityIndex >-1) {
+            int chunk = entityIndex >> CHUNK_SHIFT;
+            int index = entityIndex & CHUNK_MASK;
+            //for unparsed entity notation!=null
+            return (fEntityNotation[chunk][index]!=null)?true:false;
+        }
+        return false; 
+    }
 
 } // class Grammar

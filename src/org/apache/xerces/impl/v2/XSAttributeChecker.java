@@ -1086,12 +1086,7 @@ public class XSAttributeChecker {
                         oneAttr.dvIndex != DT_XPATH &&
                         oneAttr.dvIndex != DT_XPATH1) {
                         DatatypeValidator dv = fExtraDVs[oneAttr.dvIndex];
-                        if (dv instanceof IDDatatypeValidator) {
-                            retValue = dv.validate(attrVal, schemaDoc.fIdDefs);
-                        }
-                        else {
-                            retValue = dv.validate(attrVal, null);
-                        }
+                        retValue = dv.validate(attrVal, schemaDoc.fValidationContext);
                     }
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.

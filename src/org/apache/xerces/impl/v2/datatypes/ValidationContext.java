@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
- * reserved.
+ * Copyright (c) 2001 The Apache Software Foundation.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -54,59 +54,31 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
-
+ 
 package org.apache.xerces.impl.v2.datatypes;
 
-import java.util.Hashtable;
-
-import org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.impl.v2.XSMessageFormatter;
-
 /**
- * AnySimpleType is the base of all simple types.
- * @author Sandy Gao
- * @version $Id$
+ * ValidationContext has all the information required for the 
+ * validation of: id, idref, entity, notation, qname
+ * 
+ * @author Sandy Gao, IBM
  */
-public class AnySimpleType extends AbstractDatatypeValidator {
-    public  AnySimpleType() {
-    }
-
-    public AnySimpleType(DatatypeValidator base, Hashtable facets, boolean derivedByList, 
-                         XMLErrorReporter reporter) {
-
-        fBaseValidator = base;
-        fErrorReporter = reporter;
-
-        if (facets != null && facets.size() != 0) {
-            String msg = getErrorString(
-                                       DatatypeMessageProvider.fgMessageKeys[DatatypeMessageProvider.ILLEGAL_ANYSIMPLETYPE_FACET],
-                                       new Object[] { facets.toString()});
-
-            if (fErrorReporter == null) {
-                throw new RuntimeException("InternalDatatype error AST.");
-            }
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "DatatypeFacetError", new Object[]{msg},
-                                       XMLErrorReporter.SEVERITY_ERROR);                    
-
-        }
-    }
-
-    public Object validate(String content, ValidationContext state )
-    throws InvalidDatatypeValueException {
-        return null;
-    }
-
-    public int compare( String value1, String value2 ) {
-        return -1;
-    }
-
-
-    public Object clone() throws CloneNotSupportedException  {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
-
-    public short getWSFacet () {
-        return DatatypeValidator.PRESERVE;
-    }
+public interface ValidationContext {
+    
+    // entity
+    public boolean isEntityDeclared (String name);
+    public boolean isEntityUnparsed (String name);
+    
+    // id
+    public boolean isIdDeclared (String name);
+    public void    addId(String name);
+    
+    // idref
+    public void addIdRef(String name);
+    
+    
+    // REVISIT: notation
+    
+    // qname
+    public String resolvePrefix(String prefix);
 }

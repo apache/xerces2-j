@@ -160,7 +160,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
      *                   not a W3C string type
      * @exception InvalidDatatypeValueException
      */
-    public Object validate(String content, Object state)  throws InvalidDatatypeValueException
+    public Object validate(String content, ValidationContext state)  throws InvalidDatatypeValueException
     {
         if ( content == null && state != null ) {
             this.fBaseValidator.validate( content, state );//Passthrough setup information
@@ -251,7 +251,7 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
      * @param enumeration enumeration facet
      * @exception throws InvalidDatatypeException if the content is not valid
      */
-    private void checkContentEnum( String content,  Object state, boolean pattern, Vector enumeration ) throws InvalidDatatypeValueException
+    private void checkContentEnum( String content,  ValidationContext state, boolean pattern, Vector enumeration ) throws InvalidDatatypeValueException
     {
         // for UnionDatatype we have to wait till the union baseValidators are known, thus
         // if the content is valid "against" ListDatatype, but pattern was applied - report an error. To do so we pass @param pattern;
