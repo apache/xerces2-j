@@ -2,6 +2,7 @@
 
 <!-- overall organization -->
 <!ELEMENT design (note*,types*,category*)>
+<!ATTLIST design name CDATA #IMPLIED>
 <!ELEMENT types (category)*>
 <!ELEMENT category (note*,(class|interface)*)>
 <!ATTLIST category name    CDATA   #REQUIRED

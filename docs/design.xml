@@ -2,7 +2,7 @@
 <!DOCTYPE design SYSTEM 'design.dtd' [
 <!ENTITY package 'org.apache.xerces'>
 ]>
-<design>
+<design name='Xerces-J 2.0'>
 
  <!-- TYPES -->
  <types>
@@ -30,6 +30,8 @@
    <class id='sax-not-recognized-exception' name='SAXNotRecognizedException'/>
    <class id='sax-not-supported-exception' name='SAXNotSupportedException'/>
    <class id='sax-parse-exception' name='SAXParseException'/>
+   <interface id='sax-attribute-list' name='AttributeList'/>
+   <interface id='sax-attributes' name='Attributes'/>
    <interface id='sax-entity-resolver' name='EntityResolver'/>
    <interface id='sax-error-handler' name='ErrorHandler'/>
    <interface id='sax-input-source' name='InputSource'/>
@@ -313,11 +315,9 @@
     <param name='element'>
      <reference idref='qname'/>
     </param>
-    <!-- REVISIT: What should this be?
     <param name='attributes'>
      <reference idref='attributes'/>
     </param>
-    -->
     <throws>
      <reference idref='exception'/>
     </throws>
@@ -380,6 +380,202 @@
     </throws>
    </method>
   </interface>
+
+  <class id='attributes' name='XMLAttributes'>
+   <field name='stringPool'>
+    <reference idref='string-pool'/>
+   </field>
+   <field name='symbolTable'>
+    <reference idref='symbol-table'/>
+   </field>
+   <constructor/>
+   <method name='reset'>
+    <param name='stringPool'>
+     <reference idref='string-pool'/>
+    </param>
+    <param name='symbolTable'>
+     <reference idref='symbol-table'/>
+    </param>
+   </method>
+   <method name='addAttribute'>
+    <param name='localpart'>
+     <note>The index into the symbol table.</note>
+     <primitive type='int'/>
+    </param>
+    <param name='rawname'>
+     <note>The index into the symbol table.</note>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='addAttribute'>
+    <param name='uri'>
+     <note>The index into the symbol table.</note>
+     <primitive type='int'/>
+    </param>
+    <param name='localpart'>
+     <note>The index into the symbol table.</note>
+     <primitive type='int'/>
+    </param>
+    <param name='rawname'>
+     <note>The index into the symbol table.</note>
+     <primitive type='int'/>
+    </param>
+    <param name='type'>
+     <note>The index into the symbol table.</note>
+     <primitive type='int'/>
+    </param>
+    <param name='value'>
+     <note>The index into the string pool.</note>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='addAttributeEntity'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <param name='name'>
+     <primitive type='int'/>
+    </param>
+    <param name='offset'>
+     <primitive type='int'/>
+    </param>
+    <param name='length'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='clear'/>
+   <method name='getLength'>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='setURI'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <param name='uri'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='getURI'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='setLocalpart'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <param name='localpart'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='getLocalpart'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='setRawname'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <param name='rawname'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='getRawname'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='setType'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <param name='type'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='getType'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='setValue'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <param name='value'>
+     <primitive type='int'/>
+    </param>
+   </method>
+   <method name='getValue'>
+    <param name='index'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='getEntityCount'>
+    <param name='attrIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='getEntityOffset'>
+    <param name='attrIndex'>
+     <primitive type='int'/>
+    </param>
+    <param name='entityIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='getEntityLength'>
+    <param name='attrIndex'>
+     <primitive type='int'/>
+    </param>
+    <param name='entityIndex'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <primitive type='int'/>
+    </returns>
+   </method>
+   <method name='getAttributeList'>
+    <returns>
+     <reference idref='sax-attribute-list'/>
+    </returns>
+   </method>
+   <method name='getAttributes'>
+    <returns>
+     <reference idref='sax-attributes'/>
+    </returns>
+   </method>
+  </class>
 
   <class id='dtd-scanner' name='XMLDTDScanner'>
    <implements>
@@ -495,9 +691,16 @@
     <param name='attribute'>
      <reference idref='qname'/>
     </param>
-    <!-- TODO
-    <param name='...'/>
-    -->
+    <param name='type'>
+     <primitive type='short'/>
+    </param>
+    <!-- REVISIT: enumeration -->
+    <param name='defaultType'>
+     <primitive type='short'/>
+    </param>
+    <param name='defaultValue'>
+     <primitive type='int'/>
+    </param>
     <throws>
      <reference idref='exception'/>
     </throws>
@@ -597,6 +800,9 @@
     <primitive type='short'/>
    </constant>
    <method name='startContentModel'>
+    <param name='element'>
+     <reference idref='qname'/>
+    </param>
     <throws>
      <reference idref='exception'/>
     </throws>
@@ -674,6 +880,9 @@
     </throws>
    </method>
    <method name='endContentModel'>
+    <param name='element'>
+     <reference idref='qname'/>
+    </param>
     <throws>
      <reference idref='exception'/>
     </throws>
@@ -1008,10 +1217,23 @@
     <note>This field is initialized on reset.</note>
     <reference idref='grammar-pool'/>
    </field>
+   <field name='namespacesEnabled'>
+    <note>This field is initialized on reset.</note>
+    <primitive type='boolean'/>
+   </field>
+   <field name='validationEnabled'>
+    <note>This field is initialized on reset.</note>
+    <primitive type='boolean'/>
+   </field>
    <field name='documentHandler'>
     <reference idref='document-handler'/>
    </field>
    <constructor/>
+   <method name='setDocumentHandler'>
+    <param name='documentHandler'>
+     <reference idref='document-handler'/>
+    </param>
+   </method>
   </class>
 
   <class id='grammar-pool' name='GrammarPool'>
@@ -1053,6 +1275,9 @@
   </class>
 
   <class id='grammar' name='Grammar'>
+   <implements>
+    <reference idref='content-spec-provider'/>
+   </implements>
    <field name='grammarDocument'>
     <reference idref='dom-document'/>
    </field>
@@ -1080,18 +1305,6 @@
     <param name='elementDecl'>
      <note>The values of this structure are set by this call.</note>
      <reference idref='element-decl'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-   </method>
-   <method name='getContentSpec'>
-    <param name='contentSpecIndex'>
-     <primitive type='int'/>
-    </param>
-    <param name='contentSpec'>
-     <note>The values of this structure are set by this call.</note>
-     <reference idref='content-spec'/>
     </param>
     <returns>
      <primitive type='boolean'/>
@@ -1155,39 +1368,6 @@
      <reference idref='content-model'/>
     </returns>
    </method>
-  </class>
-
-  <class id='dtd-grammar' name='DTDGrammar'>
-   <extends>
-    <reference idref='grammar'/>
-   </extends>
-   <implements>
-    <reference idref='dtd-handler'/>
-   </implements>
-   <implements>
-    <reference idref='dtd-content-model-handler'/>
-   </implements>
-   <constructor/>
-  </class>
-
-  <class id='schema-grammar' name='SchemaGrammar'>
-   <extends>
-    <reference idref='grammar'/>
-   </extends>
-   <constructor/>
-   <constructor>
-    <param name='grammarDocument'>
-     <reference idref='dom-document'/>
-    </param>
-   </constructor>
-   <constructor>
-    <param name='grammarDocument'>
-     <reference idref='dom-document'/>
-    </param>
-    <param name='grammarPool'>
-     <reference idref='grammar-pool'/>
-    </param>
-   </constructor>
   </class>
 
   <class id='element-decl' name='XMLElementDecl'>
@@ -1313,6 +1493,21 @@
    <method name='clear'/>
   </class>
 
+  <interface id='content-spec-provider' name='ContentSpecProvider'>
+   <method name='getContentSpec'>
+    <param name='contentSpecIndex'>
+     <primitive type='int'/>
+    </param>
+    <param name='contentSpec'>
+     <note>The values of this structure are set by this call.</note>
+     <reference idref='content-spec'/>
+    </param>
+    <returns>
+     <primitive type='boolean'/>
+    </returns>
+   </method>
+  </interface>                            
+                            
   <class id='attribute-decl' name='XMLAttributeDecl'>
    <constant name='TYPE_CDATA'>
     <primitive type='short'/>
@@ -1356,6 +1551,9 @@
    <field name='type' visibility='public'>
     <primitive type='short'/>
    </field>
+   <field name='enumeration' visibility='public'>
+    <primitive type='int'/>
+   </field>
    <field name='list' visibility='public'>
     <primitive type='boolean'/>
    </field>
@@ -1374,6 +1572,9 @@
     </param>
     <param name='type'>
      <primitive type='short'/>
+    </param>
+    <param name='enumeration'>
+     <primitive type='int'/>
     </param>
     <param name='list'>
      <primitive type='boolean'/>
@@ -1679,9 +1880,276 @@
 
  </category>
 
+ <!-- Category: VALIDATING: Content Models -->
+ <category name='Validating: Content Models' package='&package;.validators.models'>
+  
+  <class id='simple-content-model' name='SimpleContentModel'>
+   <implements>
+    <reference idref='content-model'/>
+   </implements>
+   <constant name='CHOICE'>
+    <primitive type='short'/>
+   </constant>
+   <constant name='SEQUENCE'>
+    <primitive type='short'/>
+   </constant>
+   <field name='operator'>
+    <primitive type='short'/>
+   </field>
+   <field name='firstChild'>
+    <reference idref='qname'/>
+   </field>
+   <field name='secondChild'>
+    <reference idref='qname'/>
+   </field>
+   <constructor>
+    <param name='operator'>
+     <primitive type='short'/>
+    </param>
+    <param name='firstChild'>
+     <reference idref='qname'/>
+    </param>
+    <param name='secondChild'>
+     <reference idref='qname'/>
+    </param>
+   </constructor>
+  </class>
+  
+  <class id='mixed-content-model' name='MixedContentModel'>
+   <implements>
+    <reference idref='content-model'/>
+   </implements>
+   <field name='count'>
+    <primitive type='int'/>
+   </field>
+   <field name='children'>
+    <array>
+     <reference idref='qname'/>
+    </array>
+   </field>
+   <field name='ordered'>
+    <primitive type='boolean'/>
+   </field>
+   <constructor>
+    <param name='count'>
+     <primitive type='int'/>
+    </param>
+    <param name='children'>
+     <array>
+      <reference idref='qname'/>
+     </array>
+    </param>
+    <param name='ordered'>
+     <primitive type='boolean'/>
+    </param>
+   </constructor>
+  </class>
+  
+  <class id='dfa-content-model' name='DFAContentModel'>
+   <implements>
+    <reference idref='content-model'/>
+   </implements>
+   <constructor>
+    <param name='contentSpecProvider'>
+     <reference idref='content-spec-provider'/>
+    </param>
+    <param name='contentSpecIndex'>
+     <primitive type='int'/>
+    </param>
+   </constructor>
+  </class>
+  
+ </category>
+ 
+ <!-- Category: VALIDATING: Datatypes -->
+ <category name='Validating: Datatypes' package='&package;.validators.datatypes'>
+
+  <class id='datatype-validator-factory-impl' name='DatatypeValidatorFactoryImpl'>
+   <implements>
+    <reference idref='datatype-validator-factory'/>
+   </implements>
+   <field name='baseTypes'>
+    <collection>
+     <collector>
+      <reference idref='java-hashtable'/>
+     </collector>
+     <items>
+      <reference idref='datatype-validator'/>
+     </items>
+    </collection>
+   </field>
+  </class>
+
+  <class id='datatype-validator-abstract' name='AbstractDatatypeValidator'>
+   <implements>
+    <reference idref='datatype-validator'/>
+   </implements>
+   <field name='facets'>
+    <collection>
+     <collector>
+      <reference idref='java-hashtable'/>
+     </collector>
+     <items>
+      <reference idref='java-string'/>
+     </items>
+    </collection>
+   </field>
+   <constructor visibility='protected'>
+    <param name='base'>
+     <reference idref='datatype-validator'/>
+    </param>
+    <param name='facets'>
+     <collection>
+      <collector>
+       <reference idref='java-hashtable'/>
+      </collector>
+      <items>
+       <reference idref='java-string'/>
+      </items>
+     </collection>
+    </param>
+    <param name='list'>
+     <primitive type='boolean'/>
+    </param>
+    <throws>
+     <reference idref='invalid-datatype-facet-exception'/>
+    </throws>
+   </constructor>
+  </class>
+
+  <class id='datatype-validator-string' name='StringDatatypeValidator'>
+   <extends>
+    <reference idref='datatype-validator-abstract'/>
+   </extends>
+   <constructor>
+    <param name='base'>
+     <reference idref='datatype-validator'/>
+    </param>
+    <param name='facets'>
+     <collection>
+      <collector>
+       <reference idref='java-hashtable'/>
+      </collector>
+      <items>
+       <reference idref='java-string'/>
+      </items>
+     </collection>
+    </param>
+    <param name='list'>
+     <primitive type='boolean'/>
+    </param>
+    <throws>
+     <reference idref='invalid-datatype-facet-exception'/>
+    </throws>
+   </constructor>
+  </class>
+
+ </category>
+
+ <!-- Category: VALIDATING: DTD -->
+ <category name='Validating: DTD' package='&package;.validators.dtd'>
+
+  <class id='dtd-grammar' name='DTDGrammar'>
+   <extends>
+    <reference idref='grammar'/>
+   </extends>
+   <implements>
+    <reference idref='dtd-handler'/>
+   </implements>
+   <implements>
+    <reference idref='dtd-content-model-handler'/>
+   </implements>
+   <constructor/>
+  </class>
+
+ </category>
+
+ <!-- Category: VALIDATING: Schema -->
+ <category name='Validating: Schema' package='&package;.validators.schema'>
+
+  <class id='schema-grammar' name='SchemaGrammar'>
+   <extends>
+    <reference idref='grammar'/>
+   </extends>
+   <constructor/>
+   <constructor>
+    <param name='grammarDocument'>
+     <reference idref='dom-document'/>
+    </param>
+   </constructor>
+   <constructor>
+    <param name='grammarDocument'>
+     <reference idref='dom-document'/>
+    </param>
+    <param name='grammarPool'>
+     <reference idref='grammar-pool'/>
+    </param>
+   </constructor>
+  </class>
+
+ </category>
+
  <!-- Category: Parsing -->
  <category name='Parsing' package='&package;.parsers'>
 
+  <class id='caching-parser-pool' name='CachingParserPool'>
+   <field name='symbolTable'>
+    <reference idref='symbol-table'/>
+   </field>
+   <field name='grammarPool'>
+    <reference idref='grammar-pool'/>
+   </field>
+   <constructor/>
+   <constructor>
+    <param name='symbolTable'>
+     <reference idref='symbol-table'/>
+    </param>
+   </constructor>
+   <constructor>
+    <param name='grammarPool'>
+     <reference idref='grammar-pool'/>
+    </param>
+   </constructor>
+   <constructor>
+    <param name='symbolTable'>
+     <reference idref='symbol-table'/>
+    </param>
+    <param name='grammarPool'>
+     <reference idref='grammar-pool'/>
+    </param>
+   </constructor>
+   <method name='getSymbolTable'>
+    <returns>
+     <reference idref='symbol-table'/>
+    </returns>
+   </method>
+   <method name='getGrammarPool'>
+    <returns>
+     <reference idref='grammar-pool'/>
+    </returns>
+   </method>
+   <method name='createDOMParser'>
+    <returns>
+     <reference idref='domparser'/>
+    </returns>
+   </method>
+   <method name='createSAXParser'>
+    <returns>
+     <reference idref='saxparser'/>
+    </returns>
+   </method>
+   <method name='createDTDParser'>
+    <returns>
+     <reference idref='dtdparser'/>
+    </returns>
+   </method>
+   <method name='createSchemaParser'>
+    <returns>
+     <reference idref='schemaparser'/>
+    </returns>
+   </method>
+  </class>         
+         
   <class id='parser' name='XMLParser'>
    <implements>
     <reference idref='configuration-manager'/>
@@ -1697,6 +2165,12 @@
    </field>
    <field name='errorReporter'>
     <reference idref='error-reporter'/>
+   </field>
+   <field name='namespacesEnabled'>
+    <primitive type='boolean'/>
+   </field>
+   <field name='validationEnabled'>
+    <primitive type='boolean'/>
    </field>
    <constructor/>
    <constructor visibility='protected'>
@@ -1871,13 +2345,27 @@
    </constructor>
   </class>
 
-  <class id='dtdparser' name='DTDParser'>
+  <class id='grammar-parser' name='XMLGrammarParser'>
    <extends>
     <reference idref='parser'/>
    </extends>
    <implements>
     <reference idref='configuration-manager'/>
    </implements>
+   <field name='datatypeValidatorFactory'>
+    <reference idref='datatype-validator-factory'/>
+   </field>
+   <constructor visibility='protected'>
+    <param name='symbolTable'>
+     <reference idref='symbol-table'/>
+    </param>
+   </constructor>
+  </class>           
+           
+  <class id='dtdparser' name='DTDParser'>
+   <extends>
+    <reference idref='grammar-parser'/>
+   </extends>
    <implements>
     <reference idref='dtd-handler'/>
    </implements>
@@ -1887,105 +2375,39 @@
    <field name='dtdScanner'>
     <reference idref='dtd-scanner'/>
    </field>
-   <field name='datatypeValidatorFactory'>
-    <reference idref='datatype-validator-factory'/>
-   </field>
    <constructor>
     <param name='symbolTable'>
      <reference idref='symbol-table'/>
     </param>
    </constructor>
-   <method name='setFeature'>
-    <param name='featureId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='state'>
-     <primitive type='boolean'/>
-    </param>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='getFeature'>
-    <param name='featureId'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='setProperty'>
-    <param name='propertyId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='value'>
-     <reference idref='java-object'/>
-    </param>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='getProperty'>
-    <param name='propertyId'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='java-object'/>
-    </returns>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='setEntityResolver'>
-    <param name='entityResolver'>
-     <reference idref='sax-entity-resolver'/>
-    </param>
-   </method>
-   <method name='setErrorHandler'>
-    <param name='errorHandler'>
-     <reference idref='sax-error-handler'/>
-    </param>
-   </method>
-   <method name='parse'>
-    <param name='systemId'>
-     <reference idref='java-string'/>
-    </param>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='parse'>
-    <param name='inputSource'>
-     <reference idref='sax-input-source'/>
-    </param>
-    <throws>
-     <reference idref='java-io-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='getDTD'>
+   <method name='getDTDGrammar'>
     <returns>
      <reference idref='dtd-grammar'/>
+    </returns>
+   </method>
+  </class>
+
+  <class id='schemaparser' name='SchemaParser'>
+   <extends>
+    <reference idref='grammar-parser'/>
+   </extends>
+   <field name='domParser'>
+    <reference idref='domparser'/>
+   </field>
+   <field name='grammarPool'>
+    <reference idref='grammar-pool'/>
+   </field>
+   <constructor>
+    <param name='symbolTable'>
+     <reference idref='symbol-table'/>
+    </param>
+    <param name='grammarPool'>
+     <reference idref='grammar-pool'/>
+    </param>
+   </constructor>
+   <method name='getSchemaGrammar'>
+    <returns>
+     <reference idref='schema-grammar'/>
     </returns>
    </method>
   </class>

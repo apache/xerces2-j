@@ -9,7 +9,11 @@
     <LINK rel='stylesheet' type='text/css' href='design.css'/>
    </HEAD>
    <BODY>
-    <H1 align='center'>Design</H1>
+    <H1 align='center'>
+     <xsl:value-of select='@name'/>
+     <xsl:text> </xsl:text>
+     Design
+    </H1>
     <H2>Classes and Interfaces</H2>
     <xsl:for-each select='category'>
      <xsl:apply-templates select='.'/>
