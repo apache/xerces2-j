@@ -142,7 +142,7 @@ public class TraverseSchema implements
         { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEY }, 
         { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEYREF },
     };
-    private static final String redefIdentifier = "#redefined";
+    private static final String redefIdentifier = "_redefined";
 
     //debuggin
     private static final boolean DEBUGGING = false;
@@ -216,6 +216,9 @@ public class TraverseSchema implements
     
     private Hashtable fIdentityConstraints = new Hashtable();
     
+    // General Attribute Checking
+    private GeneralAttrCheck fGeneralAttrCheck = null;
+
    // REVISIT: maybe need to be moved into SchemaGrammar class
     public class ComplexTypeInfo {
         public String typeName;
@@ -324,10 +327,17 @@ public class TraverseSchema implements
         fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
         fDatatypeRegistry.expandRegistryToFullSchemaSet();//Expand to registry type to contain all primitive datatype
 
+        // General Attribute Checking
+        fGeneralAttrCheck = new GeneralAttrCheck(fErrorReporter);
+
         if (root == null) { 
             // REVISIT: Anything to do?
             return;
         }
+
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(root, scope);
 
         //Make sure namespace binding is defaulted
         String rootPrefix = root.getPrefix();
@@ -502,6 +512,9 @@ public class TraverseSchema implements
             }
         }
 
+        // General Attribute Checking
+        fGeneralAttrCheck = null;
+
     } // traverseSchema(Element)
 
     private void checkTopLevelDuplicateNames(Element root) {
@@ -624,6 +637,10 @@ public class TraverseSchema implements
 
     private void traverseInclude(Element includeDecl) throws Exception {
 
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(includeDecl, scope);
+
         Attr locationAttr = includeDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
 	    if (locationAttr == null) {
             // REVISIT: Localize
@@ -719,6 +736,10 @@ public class TraverseSchema implements
     }
 
     private void traverseIncludedSchemaHeader(Element root) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(root, scope);
+
         // Retrived the Namespace mapping from the schema element.
         NamedNodeMap schemaEltAttrs = root.getAttributes();
         int i = 0;
@@ -775,6 +796,10 @@ public class TraverseSchema implements
     } // traverseIncludedSchemaHeader 
 
     private void traverseIncludedSchema(Element root) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(root, scope);
+
         checkTopLevelDuplicateNames(root);
 
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
@@ -836,6 +861,10 @@ public class TraverseSchema implements
     // that the other schema's info has already been saved, putting the info it finds into the
     // SchemaInfoList element that is passed in.  
     private void openRedefinedSchema(Element redefineDecl, SchemaInfo store) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(redefineDecl, scope);
+
         Attr locationAttr = redefineDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
 	    if (locationAttr == null) {
             // REVISIT: Localize
@@ -1306,6 +1335,10 @@ public class TraverseSchema implements
     } // validateRedefineNameChange
 
     private void traverseImport(Element importDecl)  throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_GLOBAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(importDecl, scope);
+
         String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
         // expand it before passing it to the parser
         InputSource source = null;
@@ -1386,6 +1419,10 @@ public class TraverseSchema implements
     */
     private void traverseAnnotationDecl(Element annotationDecl) throws Exception {
 
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(annotationDecl, scope);
+
         for(Element child = XUtil.getFirstChildElement(annotationDecl); child != null;
                  child = XUtil.getNextSiblingElement(child)) {
             String name = child.getLocalName();
@@ -1394,6 +1431,9 @@ public class TraverseSchema implements
                 // REVISIT: Localize
                 reportGenericSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements");
             }
+
+            // General Attribute Checking
+            attrValues = fGeneralAttrCheck.checkAttributes(child, scope);
         }
     }
 
@@ -1497,6 +1537,12 @@ public class TraverseSchema implements
      */
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
                 
+        // General Attribute Checking
+        int scope = isTopLevel(simpleTypeDecl)?
+                    GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
+                    GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(simpleTypeDecl, scope);
+
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
         String qualifiedName = nameProperty;
         if (fTargetNSURIString.length () != 0) {
@@ -1538,6 +1584,11 @@ public class TraverseSchema implements
         if (content == null) {
             return (-1);
         }
+
+        // General Attribute Checking
+        scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable contentAttrs = fGeneralAttrCheck.checkAttributes(content, scope);
+
         //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
         String varietyProperty = content.getLocalName();
         String baseTypeQNameProperty = null;
@@ -1686,6 +1737,8 @@ public class TraverseSchema implements
             String facet;
             while (content != null) { 
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
+                        // General Attribute Checking
+                        contentAttrs = fGeneralAttrCheck.checkAttributes(content, scope);
                         numFacets++;
                         facet =content.getLocalName(); 
                         if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
@@ -1822,6 +1875,10 @@ public class TraverseSchema implements
     * </any>
     */
     private int traverseAny(Element child) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(child, scope);
+
         Element annotation = checkContent( child, XUtil.getFirstChildElement(child), true );
         if(annotation != null ) {
             // REVISIT: Localize
@@ -1932,6 +1989,10 @@ public class TraverseSchema implements
     * </anyAttribute>
     */
     private XMLAttributeDecl traverseAnyAttribute(Element anyAttributeDecl) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(anyAttributeDecl, scope);
+
         Element annotation = checkContent( anyAttributeDecl, XUtil.getFirstChildElement(anyAttributeDecl), true );
         if(annotation != null ) {
             // REVISIT: Localize
@@ -2133,6 +2194,12 @@ public class TraverseSchema implements
     
     private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception { 
         
+        // General Attribute Checking
+        int scope = isTopLevel(complexTypeDecl)?
+                    GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
+                    GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(complexTypeDecl, scope);
+
         // ------------------------------------------------------------------
         // Get the attributes of the type
         // ------------------------------------------------------------------
@@ -2332,6 +2399,10 @@ public class TraverseSchema implements
                throws Exception {
 
         
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(simpleContentDecl, scope);
+
         String typeName = fStringPool.toString(typeNameIndex);
 
         // -----------------------------------------------------------------------
@@ -2352,6 +2423,9 @@ public class TraverseSchema implements
         if (simpleContent==null) {
           throw new ComplexTypeRecoverableError();
         }
+
+        // General Attribute Checking
+        attrValues = fGeneralAttrCheck.checkAttributes(simpleContent, scope);
 
         // -----------------------------------------------------------------------
         // The content should be either "restriction" or "extension"
@@ -2458,6 +2532,10 @@ public class TraverseSchema implements
             Vector enumData            = new Vector();
             Element child;
 
+             // General Attribute Checking
+            scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+            Hashtable contentAttrs;
+
             //REVISIT: there is a better way to do this, 
             for (child = content;
                  child != null && (child.getLocalName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
@@ -2478,6 +2556,8 @@ public class TraverseSchema implements
             {
                 if ( child.getNodeType() == Node.ELEMENT_NODE ) {
                     Element facetElt = (Element) child;
+                    // General Attribute Checking
+                    contentAttrs = fGeneralAttrCheck.checkAttributes(facetElt, scope);
                     numFacets++;
                     if (facetElt.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
                         numEnumerationLiterals++;
@@ -2620,6 +2700,10 @@ public class TraverseSchema implements
     private void traverseComplexContentDecl(int typeNameIndex,  
                Element complexContentDecl, ComplexTypeInfo typeInfo, 
                boolean mixedOnComplexTypeDecl) throws Exception { 
+
+         // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(complexContentDecl, scope);
 
         String typeName = fStringPool.toString(typeNameIndex);
 
@@ -3454,6 +3538,12 @@ public class TraverseSchema implements
      */
     private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo, boolean referredTo ) throws Exception {
 
+        // General Attribute Checking
+        int scope = isTopLevel(attrDecl)?
+                    GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
+                    GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(attrDecl, scope);
+
         ////// Get declared fields of the attribute
         String defaultStr   = attrDecl.getAttribute(SchemaSymbols.ATT_DEFAULT);
         String fixedStr     = attrDecl.getAttribute(SchemaSymbols.ATT_FIXED);
@@ -3878,6 +3968,12 @@ int aaaa= 1;
     * 
     */
     private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo, Vector anyAttDecls ) throws Exception {
+        // General Attribute Checking
+        int scope = isTopLevel(attrGrpDecl)?
+                    GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
+                    GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(attrGrpDecl, scope);
+
         // attributeGroup name
         String attGrpNameStr = attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME);
         int attGrpName = fStringPool.addSymbol(attGrpNameStr);
@@ -4109,6 +4205,12 @@ int aaaa= 1;
      * @exception Exception
      */
     private QName traverseElementDecl(Element elementDecl) throws Exception {
+
+        // General Attribute Checking
+        int scope = isTopLevel(elementDecl)?
+                    GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
+                    GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(elementDecl, scope);
 
         int contentSpecType      = -1;
         int contentSpecNodeIndex = -1;
@@ -4722,6 +4824,10 @@ int aaaa= 1;
     private void traverseUnique(Element uelem, XMLElementDecl edecl) 
         throws Exception {
 
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(uelem, scope);
+
         // create identity constraint
         String uname = uelem.getAttribute(SchemaSymbols.ATT_NAME);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
@@ -4741,6 +4847,10 @@ int aaaa= 1;
     private void traverseKey(Element kelem, XMLElementDecl edecl)
         throws Exception {
 
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(kelem, scope);
+
         // create identity constraint
         String kname = kelem.getAttribute(SchemaSymbols.ATT_NAME);
         if (DEBUG_IDENTITY_CONSTRAINTS) {
@@ -4759,6 +4869,10 @@ int aaaa= 1;
 
     private void traverseKeyRef(Element krelem, XMLElementDecl edecl) 
         throws Exception {
+
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(krelem, scope);
 
         // create identity constraint
         String krname = krelem.getAttribute(SchemaSymbols.ATT_NAME);
@@ -4793,9 +4907,16 @@ int aaaa= 1;
     private void traverseIdentityConstraint(IdentityConstraint ic, 
                                             Element icElem) throws Exception {
         
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(icelem, scope);
+
         // check for <annotation> and get selector
         Element sElem = XUtil.getFirstChildElement(icElem);
         sElem = checkContent( icElem, sElem, false);
+        // General Attribute Checking
+        attrValues = fGeneralAttrCheck.checkAttributes(selem, scope);
+
         if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
             // REVISIT: localize
             reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
@@ -4830,6 +4951,9 @@ int aaaa= 1;
         Element fElem = XUtil.getNextSiblingElement(sElem);
 
         while (fElem != null) {
+            // General Attribute Checking
+            attrValues = fGeneralAttrCheck.checkAttributes(felem, scope);
+
             if(!fElem.getLocalName().equals(SchemaSymbols.ELT_FIELD))
                 // REVISIT: localize
                 reportGenericSchemaError("The content of an identity constraint must match (annotation?, selector, field+)");
@@ -5349,6 +5473,10 @@ int aaaa= 1;
      * @exception Exception
      */
     private String traverseNotationDecl( Element notation ) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(notation, scope);
+
         String name = notation.getAttribute(SchemaSymbols.ATT_NAME);
         String qualifiedName =name;
         if (fTargetNSURIString.length () != 0) {
@@ -5447,6 +5575,12 @@ int aaaa= 1;
      * @exception Exception
      */
     private int traverseGroupDecl( Element groupDecl ) throws Exception {
+
+        // General Attribute Checking
+        int scope = isTopLevel(groupDecl)?
+                    GeneralAttrCheck.ELE_CONTEXT_GLOBAL:
+                    GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(groupDecl, scope);
 
         String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
@@ -5608,6 +5742,9 @@ int aaaa= 1;
     * 
     **/
     int traverseSequence (Element sequenceDecl) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(sequenceDecl, scope);
             
         Element child = checkContent(sequenceDecl, XUtil.getFirstChildElement(sequenceDecl), true);
 
@@ -5696,6 +5833,9 @@ int aaaa= 1;
     * 
     **/
     int traverseChoice (Element choiceDecl) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(choiceDecl, scope);
             
         // REVISIT: traverseChoice, traverseSequence can be combined
         Element child = checkContent(choiceDecl, XUtil.getFirstChildElement(choiceDecl), true);
@@ -5787,6 +5927,9 @@ int aaaa= 1;
     **/
 
     int traverseAll( Element allDecl) throws Exception {
+        // General Attribute Checking
+        int scope = GeneralAttrCheck.ELE_CONTEXT_LOCAL;
+        Hashtable attrValues = fGeneralAttrCheck.checkAttributes(allDecl, scope);
 
         Element child = checkContent(allDecl, XUtil.getFirstChildElement(allDecl), true);
 		if (child == null) return -2;

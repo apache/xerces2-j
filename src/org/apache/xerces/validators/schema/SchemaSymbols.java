@@ -136,6 +136,7 @@ public final  class SchemaSymbols {
     public static final String ATT_FINALDEFAULT =  "finalDefault";
     public static final String ATT_FIXED =  "fixed";
     public static final String ATT_FORM =  "form";
+    public static final String ATT_ID =  "id";
     public static final String ATT_MAXOCCURS =  "maxOccurs";
     public static final String ATT_MINOCCURS =  "minOccurs";
     public static final String ATT_NAME =  "name";
@@ -146,6 +147,7 @@ public final  class SchemaSymbols {
     public static final String ATT_REF =  "ref";
     public static final String ATT_REFER =  "refer";
     public static final String ATT_SCHEMALOCATION =  "schemaLocation";
+    public static final String ATT_SOURCE =  "source";
     public static final String ATT_SYSTEM =  "system";
     public static final String ATT_PUBLIC =  "public";
     public static final String ATT_TARGETNAMESPACE =  "targetNamespace";
@@ -153,6 +155,7 @@ public final  class SchemaSymbols {
     public static final String ATT_USE =  "use";
     public static final String ATT_VALUE = "value";
     public static final String ATT_MIXED = "mixed";
+    public static final String ATT_VERSION = "version";
     public static final String ATT_XPATH = "xpath";
     public static final String ATT_PRESERVE = "preserve";
     public static final String ATT_REPLACE = "replace";
@@ -160,6 +163,7 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_TWOPOUNDANY =  "##any";
     public static final String ATTVAL_TWOPOUNDLOCAL =  "##local";
     public static final String ATTVAL_TWOPOUNDOTHER =  "##other";
+    public static final String ATTVAL_TWOPOUNDTARGETNS =  "##targetNamespace";
     public static final String ATTVAL_POUNDALL =  "#all";
     public static final String ATTVAL_BOOLEAN =  "boolean";
     public static final String ATTVAL_DEFAULT =  "default";
@@ -181,12 +185,15 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_REQUIRED =  "required";
     public static final String ATTVAL_RESTRICTION =  "restriction";
     public static final String ATTVAL_SKIP =  "skip";
+    public static final String ATTVAL_STRICT =  "strict";
     public static final String ATTVAL_STRING =  "string";
     public static final String ATTVAL_TEXTONLY =  "textOnly";
     public static final String ATTVAL_TIMEDURATION =  "timeDuration";
     public static final String ATTVAL_TRUE =  "true";
+    public static final String ATTVAL_UNBOUNDED =  "unbounded";
     public static final String ATTVAL_UNQUALIFIED =  "unqualified";
     public static final String ATTVAL_ANYURI =  "anyURI";
+    public static final String ATTVAL_TOKEN =  "token";
     public static final String ATTVAL_SUBSTITUTIONGROUP = "substitutionGroup";
     public static final String ATTVAL_SUBSTITUTION = "substitution";
 
