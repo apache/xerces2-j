@@ -249,6 +249,13 @@
      </td>
     </tr>
     <tr>
+     <td>-ga | -GA</td>
+     <td>
+      Turn on/off generation of synthetic schema annotations.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
      <td>-va | -VA</td>
      <td>
       Turn on/off validation of schema annotations.<br/>
