@@ -170,9 +170,8 @@ public class Printer
         // Can only enter DTD state once. Once we're out of DTD
         // state, can no longer re-enter it.
         if ( _dtdWriter == null ) {
-            //bug fixed by david (blondeau@intalio.com)
-			//flushLine( false );
-            flush();
+	    flushLine( false );
+
 			_dtdWriter = new StringWriter();
             _docWriter = _writer;
             _writer = _dtdWriter;
@@ -190,9 +189,8 @@ public class Printer
     {
         // Only works if we're going out of DTD mode.
         if ( _writer == _dtdWriter ) {
-            //bug fixed by david (blondeau@intalio.com)
-			//flushLine( false );
-            flush();
+	    flushLine( false );
+
 			_writer = _docWriter;
             return _dtdWriter.toString();
         } else
