@@ -223,7 +223,7 @@ public class XMLString {
 
     /** Returns a string representation of this object. */
     public String toString() {
-        return new String(ch, offset, length);
+        return length > 0 ? new String(ch, offset, length) : "";
     } // toString():String
 
 } // class XMLString
