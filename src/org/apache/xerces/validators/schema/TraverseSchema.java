@@ -677,13 +677,13 @@ public class TraverseSchema implements
             child = XUtil.getNextSiblingElement(child)) {
 
             String name = child.getNodeName();
-
+            String compName = child.getAttribute(SchemaSymbols.ATT_NAME);
             if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                fSchemaGrammar.topLevelAttrGrpDecls.put(name, child);
+                fSchemaGrammar.topLevelAttrGrpDecls.put(compName, child);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
-                fSchemaGrammar.topLevelAttrDecls.put(name, child);
-            } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
-                fSchemaGrammar.topLevelGroupDecls.put(name, child);
+                fSchemaGrammar.topLevelAttrDecls.put(compName, child);
+            } else if ( name.equals(SchemaSymbols.ELT_GROUP) ) {
+                fSchemaGrammar.topLevelGroupDecls.put(compName, child);
             } 
         } // for each child node
     }
@@ -1855,6 +1855,8 @@ public class TraverseSchema implements
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                     index = traverseGroupDecl(child);
+                    if (index == -1) 
+                        continue;
                     seeParticle = true;
                     seeOtherParticle = true;
                 } 
@@ -3579,7 +3581,7 @@ public class TraverseSchema implements
                 // REVISIT: Localize
                 reportGenericSchemaError("Group " + localpart + " not found in the Schema");
                 //REVISIT, this should be some custom Exception
-                throw new RuntimeException("Group " + localpart + " not found in the Schema");
+                //throw new RuntimeException("Group " + localpart + " not found in the Schema");
             }
             else {
                 contentSpecIndex = traverseGroupDecl(referredGroup);
@@ -3631,6 +3633,8 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
+                if (index == -1) 
+                    continue;
                 seeParticle = true;
 
             } 
@@ -3751,6 +3755,8 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
+                if (index == -1) 
+                    continue;                
                 seeParticle = true;
 
             } 
@@ -3847,6 +3853,8 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
+                if (index == -1) 
+                    continue;
                 seeParticle = true;
 
             } 
@@ -3936,6 +3944,8 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
+                if (index == -1) 
+                    continue;
                 seeParticle = true;
 
             } 
@@ -4023,6 +4033,8 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
+                if (index == -1) 
+                    continue;
                 seeParticle = true;
 
             } 
