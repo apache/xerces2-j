@@ -156,10 +156,10 @@ public class NamespaceSupport
 
         // bind "xml" prefix to the XML uri
         fNamespace[fNamespaceSize++] = XMLSymbols.PREFIX_XML;
-        fNamespace[fNamespaceSize++] = XMLSymbols.XML_URI;
+        fNamespace[fNamespaceSize++] = XML_URI;
         // bind "xmlns" prefix to the XMLNS uri
         fNamespace[fNamespaceSize++] = XMLSymbols.PREFIX_XMLNS;
-        fNamespace[fNamespaceSize++] = XMLSymbols.XMLNS_URI;
+        fNamespace[fNamespaceSize++] = XMLNS_URI;
         ++fCurrentContext;
 
     } // reset(SymbolTable)

@@ -557,7 +557,7 @@ public class DOMNormalizer implements XMLGrammarPool {
             for (int k=0; k < attributes.getLength(); k++) {
                 Attr attr = (Attr)attributes.getItem(k);
                 uri = attr.getNamespaceURI();
-                if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
+                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
                     // namespace attribute
                     value = attr.getNodeValue();
                     if (value == null) {
@@ -565,7 +565,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     }
 
                     // Check for invalid namespace declaration:
-                    if (value.equals(XMLSymbols.XMLNS_URI)) {
+                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
                         if (fErrorHandler != null) {
                             modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
                                            DOMError.SEVERITY_ERROR, attr);
@@ -724,7 +724,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     // ---------------------------------------
                     // REVISIT: can we assume that "uri" is from some symbol
                     // table, and compare by reference? -SG
-                    if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
+                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
                         continue;
                     }
 
@@ -844,12 +844,12 @@ public class DOMNormalizer implements XMLGrammarPool {
             if (DEBUG) {
                 System.out.println("=>add xmlns=\""+uri+"\" declaration");
             }
-            element.setAttributeNS(XMLSymbols.XMLNS_URI, XMLSymbols.PREFIX_XMLNS, uri);             
+            element.setAttributeNS(NamespaceSupport.XMLNS_URI, XMLSymbols.PREFIX_XMLNS, uri);             
         } else {
             if (DEBUG) {
                 System.out.println("=>add xmlns:"+prefix+"=\""+uri+"\" declaration");
             }
-            element.setAttributeNS(XMLSymbols.XMLNS_URI, "xmlns:"+prefix, uri); 
+            element.setAttributeNS(NamespaceSupport.XMLNS_URI, "xmlns:"+prefix, uri); 
         }
     }
 

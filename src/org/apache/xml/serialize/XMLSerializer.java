@@ -773,14 +773,14 @@ extends BaseMarkupSerializer {
                 attr = (Attr) attrMap.item( i );
                 uri = attr.getNamespaceURI();
                 // check if attribute is a namespace decl 
-                if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
+                if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
 
                     value = attr.getNodeValue();
                     if (value == null) {
                         value=XMLSymbols.EMPTY_STRING;
                     }
 
-                    if (value.equals(XMLSymbols.XMLNS_URI)) {
+                    if (value.equals(NamespaceSupport.XMLNS_URI)) {
                         if (fDOMErrorHandler != null) {
                             modifyDOMError("No prefix other than 'xmlns' can be bound to 'http://www.w3.org/2000/xmlns/' namespace name", 
                                            DOMError.SEVERITY_ERROR, attr);
@@ -954,7 +954,7 @@ extends BaseMarkupSerializer {
                     // ---------------------------------------------------
                     // print namespace declarations namespace declarations 
                     // ---------------------------------------------------
-                    if (uri != null && uri.equals(XMLSymbols.XMLNS_URI)) {
+                    if (uri != null && uri.equals(NamespaceSupport.XMLNS_URI)) {
                         // check if we need to output this declaration
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 

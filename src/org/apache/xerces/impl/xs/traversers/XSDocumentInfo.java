@@ -123,7 +123,7 @@ class XSDocumentInfo {
         // During XML Schema traversal bind "xml" prefix to
         // "http://www.w3.org/XML/1998/namespace"
         // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
-        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, XMLSymbols.XML_URI);
+        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, SchemaNamespaceSupport.XML_URI);
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
@@ -170,7 +170,7 @@ class XSDocumentInfo {
         // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
         // REVISIT: shouldn't this work be done whenever a namespace support
         // object is constructed?
-        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, XMLSymbols.XML_URI);
+        fNamespaceSupport.declarePrefix(XMLSymbols.PREFIX_XML, SchemaNamespaceSupport.XML_URI);
 
         fValidationContext.setNamespaceSupport(fNamespaceSupport);
     }

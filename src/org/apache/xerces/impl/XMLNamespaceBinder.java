@@ -749,7 +749,7 @@ public class XMLNamespaceBinder
                 }
                 
                 // 2. the namespace for "xmlns" can't be bound to any prefix
-                if (uri == XMLSymbols.XMLNS_URI) {
+                if (uri == NamespaceContext.XMLNS_URI) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "CantBindXMLNS",
                                                new Object[]{attributes.getQName(i)},
@@ -758,7 +758,7 @@ public class XMLNamespaceBinder
                 
                 // 3. "xml" can't be bound to any other namespace than it's own
                 if (localpart == XMLSymbols.PREFIX_XML) {
-                    if (uri != XMLSymbols.XML_URI) {
+                    if (uri != NamespaceContext.XML_URI) {
                         fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                    "CantBindXML",
                                                    new Object[]{attributes.getQName(i)},
@@ -767,7 +767,7 @@ public class XMLNamespaceBinder
                 }
                 // 4. the namespace for "xml" can't be bound to any other prefix
                 else {
-                    if (uri ==XMLSymbols.XML_URI) {
+                    if (uri ==NamespaceContext.XML_URI) {
                         fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                    "CantBindXML",
                                                    new Object[]{attributes.getQName(i)},

@@ -78,7 +78,6 @@ import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
 import org.apache.xerces.impl.dv.XSSimpleType;
 
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -2341,7 +2340,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                     // done here.
                     if (attributeName.startsWith("xmlns:") ||
                         attributeName.equals("xmlns")) {
-                        namespaceURI = XMLSymbols.XMLNS_URI;
+                        namespaceURI = NamespaceContext.XMLNS_URI;
                     }
                     attr = (AttrImpl)fDocumentImpl.createAttributeNS(namespaceURI,
                                                                 attributeName);
