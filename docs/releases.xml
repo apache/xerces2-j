@@ -71,13 +71,27 @@
      <note>
       Fixed numerous schema related bugs.
      </note>
-     <submitter name='Mike Boos, Sandy Gao, Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani'/>
+     <submitter name='Mike Boos, Neil Delima, Sandy Gao, Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani'/>
     </fix>
+    <update>
+     <note>
+      Reimplemented <jump href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#Text3-replaceWholeText">Text.replaceWholeText</jump> and
+      <jump href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#TypeInfo-isDerivedFrom">TypeInfo.isDerivedFrom</jump> according
+      to the DOM Level 3 Core Recommendation.
+     </note>
+     <submitter name='Neil Delima'/>
+    </update>
     <fix>
      <note>
       Fixed various DOM Level 3 bugs.
      </note>
      <submitter name='Jonathan Au, Neil Delima, Michael Glavassevich, Naela Nissar, Ankit Pasricha, K. Venugopal'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed numerous bugs in the DOM Level 2 <jump href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/">Traversal and Range</jump> implementation.
+     </note>
+     <submitter name='Neil Delima'/>
     </fix>
     <add>
      <note>
@@ -87,9 +101,9 @@
     </add>
     <update>
      <note>
-      Improved scaling of the SymbolTable.
+      Improved the performance of the SymbolTable, processing of attribute values and parsing of relative URIs.
      </note>
-     <submitter name='John Kim'/>
+     <submitter name='Michael Glavassevich, John Kim'/>
     </update>
     <update>
      <note>
