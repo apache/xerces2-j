@@ -154,7 +154,7 @@ extends HandlerBase {
 
 
 
-          
+
             parser.setDocumentHandler(handler);
             parser.setErrorHandler(handler);
             parser.parse(uri);
@@ -365,19 +365,17 @@ extends HandlerBase {
     public static void main(String argv[]) {
         ///
         Arguments argopt = new Arguments();
-        argopt.setUsage( new String[] 
-                         { "usage: java sax.SAXWriter (options) uri ...","",
+
+        argopt.setUsage( new String[] {
+                             "usage: java sax.SAXWriter (options) uri ...","",
                              "options:",
-                             "  -p name  Specify SAX parser by name.",
-                             "           Default parser: "+DEFAULT_PARSER_NAME,
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -c       Canonical XML output.",
-                             "  -v       Turn on validation.",
-                             "  -w       Warmup the parser before timing.",
-                             "  -n turn on  Namespace  - default",
-                             "  -s turn on  Schema support - default",
-                             "  -N turn off Namespace",
-                             "  -V turn off Validation",
-                             "  -h       This help screen."}  );
+                             "  -h       This help screen."} );
+
+
 
 
         // is there anything to do?
@@ -391,56 +389,58 @@ extends HandlerBase {
         String  parserName = DEFAULT_PARSER_NAME;
 
 
-        argopt.parseArgumentTokens(argv);
+        argopt.parseArgumentTokens(argv, new char[] { 'p'} );
 
         int   c;
-        while ( (c =  argopt.getArguments()) != -1 ){
-            switch (c) {
-            case 'c':
-                canonical     = true;
-                break;
-            case 'C':
-                canonical     = false;
-                break;
-            case 'v':
-                setValidation = true;
-                break;
-            case 'V':
-                setValidation = false;
-                break;
-            case 'N':
-                setNameSpaces = false;
-                break;
-            case 'n':
-                setNameSpaces = true;
-                break;
-            case 'p':
-                parserName = argopt.getStringParameter();
-                break;
-            case 's':
-                setSchemaSupport = true;
-                break;
-            case 'S':
-                setSchemaSupport = false;
-                break;
-            case '?':
-            case 'h':
-            case '-':
-                argopt.printUsage();
-                System.exit(1);
-                break;
-            default:
-                break;
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+
+            outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'c':
+                    canonical     = true;
+                    break;
+                case 'C':
+                    canonical     = false;
+                    break;
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName = argopt.getStringParameter();
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
+                    System.exit(1);
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
+                }
             }
+            // print 
+            System.err.println(arg+':');
+            print(parserName, arg, canonical);
         }
-
-        // print 
-       String arg = argopt.getStringParameter();
-       System.err.println(arg+':');
-       print(parserName, arg, canonical);
-
-        ///
-
     } // main(String[])
 
 } // class SAXWriter

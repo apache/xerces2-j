@@ -369,17 +369,11 @@ public class DOMWriter {
         argopt.setUsage( new String[] {
                              "usage: java dom.DOMWriter (options) uri ...","",
                              "options:",
-                             "  -p name  Specify DOM parser wrapper by name.",
-                             "           Default parser: "+DEFAULT_PARSER_NAME,
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -c       Canonical XML output.",
-                             "  -n turn on  Namespace  - default",
-                             "  -v turn on  Validation - default",
-                             "  -s turn on  Schema support - default",
-                             "  -d turn on  Deferred DOM - default",
-                             "  -N turn off Namespace",
-                             "  -V turn off Validation",
-                             "  -S turn off Schema validation",
-                             "  -D turn off Deferred DOM",
                              "  -h       This help screen.",
                              "  -e       Output Java Encoding.",
                              "           Default encoding: UTF-8"} );
@@ -397,66 +391,72 @@ public class DOMWriter {
         boolean canonical  = false;
         String  encoding   = "UTF8"; // default encoding
 
-        argopt.parseArgumentTokens(argv);
+        argopt.parseArgumentTokens(argv, new char[] { 'p', 'e'} );
 
         int   c;
-        while ( (c =  argopt.getArguments()) != -1 ){
-            switch (c) {
-            case 'c':
-                canonical = true;
-                break;
-            case 'e':
-                encoding      = argopt.getStringParameter();
-                if ( encoding != null && isValidJavaEncoding( encoding ) )
-                     setWriterEncoding( encoding );
-                else {
-                     printValidJavaEncoding();
-                     System.exit( 1 );
-                     }
-                break;
-            case 'v':
-                setValidation = true;
-                break;
-            case 'V':
-                setValidation = false;
-                break;
-            case 'N':
-                setNameSpaces = false;
-                break;
-            case 'n':
-                setNameSpaces = true;
-                break;
-            case 'p':
-                parserName    = argopt.getStringParameter();
-                break;
-            case 'd':
-                setDeferredDOM = true;
-                break;
-            case 'D':
-                setDeferredDOM = false;
-                break;
-            case 's':
-                setSchemaSupport = true;
-                break;
-            case 'S':
-                setSchemaSupport = false;
-                break;
-            case '?':
-            case 'h':
-            case '-':
-                argopt.printUsage();
-                System.exit(1);
-                break;
-            default:
-                break;
-            }
-        }
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
 
-       // print uri
-       String argument = argopt.getStringParameter();
-       System.err.println(argument+':');
-       print(parserName, argument, canonical );
-       System.err.println();
+            outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'c':
+                    canonical = true;
+                    break;
+                case 'e':
+                    encoding      = argopt.getStringParameter();
+                    if ( encoding != null && isValidJavaEncoding( encoding ) )
+                        setWriterEncoding( encoding );
+                    else {
+                        printValidJavaEncoding();
+                        System.exit( 1 );
+                    }
+                    break;
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName    = argopt.getStringParameter();
+                    break;
+                case 'd':
+                    setDeferredDOM = true;
+                    break;
+                case 'D':
+                    setDeferredDOM = false;
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
+                    System.exit(1);
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
+                }
+            }
+            // print uri
+             // print uri
+            System.err.println(arg+':');
+            print(parserName, arg, canonical );
+            System.err.println();
+        }
     } // main(String[])
 
 

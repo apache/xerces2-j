@@ -281,11 +281,11 @@ outer:
                 switch (c) {
                 case 'v':
                     setValidation = true;
-                    System.out.println( "v" );
+                    //System.out.println( "v" );
                     break;
                 case 'V':
                     setValidation = false;
-                    System.out.println( "V" );
+                    //System.out.println( "V" );
                     break;
                 case 'N':
                     setNameSpaces = false;
@@ -294,9 +294,9 @@ outer:
                     setNameSpaces = true;
                     break;
                 case 'p':
-                    System.out.println('p');
+                    //System.out.println('p');
                     parserName = argopt.getStringParameter();
-                    System.out.println( "parserName = " + parserName );
+                    //System.out.println( "parserName = " + parserName );
                     break;
                 case 'd':
                     setDeferredDOM = true;
@@ -305,11 +305,11 @@ outer:
                     setDeferredDOM = false;
                     break;
                 case 's':
-                    System.out.println("s" );
+                    //System.out.println("s" );
                     setSchemaSupport = true;
                     break;
                 case 'S':
-                    System.out.println("S" );
+                    //System.out.println("S" );
                     setSchemaSupport = false;
                     break;
                 case '?':
@@ -319,13 +319,14 @@ outer:
                     System.exit(1);
                     break;
                 case  -1:
-                    System.out.println( "-1" );
+                    //System.out.println( "-1" );
                     break outer;
                 default:
                     
                     break;
                 }
             }
+
             count(parserName, arg ); //count uri
         }
 

@@ -297,7 +297,7 @@ extends HandlerBase {
     // Main
     //
 
-    /** Main program entry point. */
+                            /** Main program entry point. */
     public static void main(String argv[]) {
 
         Arguments argopt = new Arguments();
@@ -305,13 +305,11 @@ extends HandlerBase {
                          { "usage: java sax.SAXCount (options) uri ...","",
                              "options:",
                              "  -p name  Specify SAX parser by name.",
-                             "           Default parser: "+DEFAULT_PARSER_NAME,
-                             "  -v       Turn on validation.",
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -w       Warmup the parser before timing.",
-                             "  -n turn on  Namespace  - default",
-                             "  -s turn on  Schema support - default",
-                             "  -N turn off Namespace",
-                             "  -V turn off Validation",
                              "  -h       This help screen."}  );
 
 
@@ -324,52 +322,56 @@ extends HandlerBase {
         // vars
         String  parserName = DEFAULT_PARSER_NAME;
 
-        argopt.parseArgumentTokens(argv);
+        argopt.parseArgumentTokens(argv, new char[]  { 'p'} );
 
         int   c;
-        while ( (c =  argopt.getArguments()) != -1 ){
-            switch (c) {
-            case 'v':
-                setValidation = true;
-                break;
-            case 'V':
-                setValidation = false;
-                break;
-            case 'N':
-                setNameSpaces = false;
-                break;
-            case 'n':
-                setNameSpaces = true;
-                break;
-            case 'p':
-                parserName = argopt.getStringParameter();
-                break;
-            case 's':
-                setSchemaSupport = true;
-                break;
-            case 'S':
-                setSchemaSupport = false;
-                break;
-            case '?':
-            case 'h':
-            case '-':
-                argopt.printUsage();
-                System.exit(1);
-                break;
-            case 'w':
-                warmup = true;
-                break;
-            default:
-                break;
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+            outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName = argopt.getStringParameter();
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
+                    System.exit(1);
+                    break;
+                case 'w':
+                    warmup = true;
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
+                }
+
             }
+            
+            // print uri
+            print(parserName, arg,  setValidation);
+            ///
         }
-
-        // print 
-        for ( int j = 0; j<argopt.stringParameterLeft(); j++){
-            print(parserName, argopt.getStringParameter(), setValidation);
-        }
-
     } // main(String[])
-
 
 } // class SAXCount

@@ -56,7 +56,7 @@
  */
 
 package sax;                    
-                    
+
 import  util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -76,7 +76,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version $Id$
  */
 public class SAX2Count 
-    extends DefaultHandler {
+extends DefaultHandler {
 
     //
     // Constants
@@ -84,7 +84,7 @@ public class SAX2Count
 
     /** Default parser name. */
     private static final String 
-        DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
+    DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
 
     private static boolean setValidation    = false; //defaults
@@ -128,7 +128,7 @@ public class SAX2Count
 
 
             //if (validate)
-             //   parser.setFeature("http://xml.org/sax/features/validation", true);
+            //   parser.setFeature("http://xml.org/sax/features/validation", true);
 
             if ( parser instanceof XMLReader ){
                 ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
@@ -151,17 +151,14 @@ public class SAX2Count
             parser.parse(uri);
             long after = System.currentTimeMillis();
             counter.printResults(uri, after - before);
-        }
-        catch (org.xml.sax.SAXParseException spe) {
+        } catch (org.xml.sax.SAXParseException spe) {
             spe.printStackTrace(System.err);
-        }
-        catch (org.xml.sax.SAXException se) {
+        } catch (org.xml.sax.SAXException se) {
             if (se.getException() != null)
                 se.getException().printStackTrace(System.err);
             else
                 se.printStackTrace(System.err);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
@@ -259,7 +256,7 @@ public class SAX2Count
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
-            if (index != -1) 
+            if (index != -1)
                 systemId = systemId.substring(index + 1);
             str.append(systemId);
         }
@@ -307,13 +304,11 @@ public class SAX2Count
                          { "usage: java sax.SAX2Count (options) uri ...","",
                              "options:",
                              "  -p name  Specify SAX parser by name.",
-                             "           Default parser: "+DEFAULT_PARSER_NAME,
-                             "  -v       Turn on validation.",
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -w       Warmup the parser before timing.",
-                             "  -n turn on  Namespace  - default",
-                             "  -s turn on  Schema support - default",
-                             "  -N turn off Namespace",
-                             "  -V turn off Validation",
                              "  -h       This help screen."}  );
 
 
@@ -326,47 +321,56 @@ public class SAX2Count
         // vars
         String  parserName = DEFAULT_PARSER_NAME;
 
-        argopt.parseArgumentTokens(argv);
+        argopt.parseArgumentTokens(argv, new char[] { 'p'} );
 
         int   c;
-        while ( (c =  argopt.getArguments()) != -1 ){
-            switch (c) {
-            case 'v':
-                setValidation = true;
-                break;
-            case 'V':
-                setValidation = false;
-                break;
-            case 'N':
-                setNameSpaces = false;
-                break;
-            case 'n':
-                setNameSpaces = true;
-                break;
-            case 'p':
-                parserName = argopt.getStringParameter();
-                break;
-            case 's':
-                setSchemaSupport = true;
-                break;
-            case 'S':
-                setSchemaSupport = false;
-                break;
-            case '?':
-            case 'h':
-            case '-':
-                argopt.printUsage();
-                System.exit(1);
-                break;
-            case 'w':
-                warmup = true;
-                break;
-            default:
-                break;
-            }
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+            outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName = argopt.getStringParameter();
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
+                    System.exit(1);
+                    break;
+                case 'w':
+                    warmup = true;
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
+                }
 
+            }
+            
+            // print uri
+            print(parserName, arg,  setValidation);
+            ///
         }
-        ///
     } // main(String[])
 
 } // class SAX2Count
