@@ -140,7 +140,7 @@ public abstract class DocumentBuilderFactory {
                 /* The default property name according to the JAXP spec */
                 "javax.xml.parsers.DocumentBuilderFactory",
                 /* The fallback implementation class name */
-                null);
+                "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
         } catch (FactoryFinder.ConfigurationError e) {
             throw new FactoryConfigurationError(e.getException(),
                                                 e.getMessage());

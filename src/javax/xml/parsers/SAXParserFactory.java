@@ -136,7 +136,7 @@ public abstract class SAXParserFactory {
                 /* The default property name according to the JAXP spec */
                 "javax.xml.parsers.SAXParserFactory",
                 /* The fallback implementation class name */
-                null);
+                "org.apache.xerces.jaxp.SAXParserFactoryImpl");
         } catch (FactoryFinder.ConfigurationError e) {
             throw new FactoryConfigurationError(e.getException(),
                                                 e.getMessage());
