@@ -716,8 +716,8 @@ extends XMLDocumentScannerImpl {
         protected boolean scanRootElementHook()
             throws IOException, XNIException {
        
-            if (fExternalSubsetResolver != null && !fSeenDoctypeDecl 
-                && (fValidation || fLoadExternalDTD)) {
+            if (fExternalSubsetResolver != null && !fSeenDoctypeDecl
+                && !fDisallowDoctype && (fValidation || fLoadExternalDTD)) {
                 scanStartElementName();
                 resolveExternalSubsetAndRead();
                 reconfigurePipeline();

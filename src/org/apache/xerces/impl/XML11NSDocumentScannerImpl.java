@@ -793,7 +793,7 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
             throws IOException, XNIException {
             
             if (fExternalSubsetResolver != null && !fSeenDoctypeDecl 
-                && (fValidation || fLoadExternalDTD)) {
+                && !fDisallowDoctype && (fValidation || fLoadExternalDTD)) {
                 scanStartElementName();
                 resolveExternalSubsetAndRead();
                 reconfigurePipeline();

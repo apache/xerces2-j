@@ -1104,7 +1104,7 @@ public class XMLDocumentScannerImpl
             throws IOException, XNIException {
 
             if (fExternalSubsetResolver != null && !fSeenDoctypeDecl 
-                && (fValidation || fLoadExternalDTD)) {
+                && !fDisallowDoctype && (fValidation || fLoadExternalDTD)) {
                 scanStartElementName();
                 resolveExternalSubsetAndRead();
                 if (scanStartElementAfterName()) {
