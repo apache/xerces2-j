@@ -59,6 +59,7 @@ package org.apache.xerces.impl.v2.new_datatypes;
 
 //internal imports
 import org.apache.xerces.impl.v2.util.HexBin;
+import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
 
 //java imports
 import java.io.UnsupportedEncodingException;
@@ -139,7 +140,9 @@ public class HexBinaryDV extends AbstractStringDV{
         int x = -1;
         String content = (String)value;
         try {
-            x = HexBin.getDecodedDataLength(content.getBytes("utf-8"));
+            if(content != null){
+                x = HexBin.getDecodedDataLength(content.getBytes("utf-8"));
+            }
         }
         catch (UnsupportedEncodingException e) {
         }

@@ -57,97 +57,41 @@
 
 package org.apache.xerces.impl.v2.new_datatypes;
 
-//internal imports
-import org.apache.xerces.impl.v2.util.Base64;
 import org.apache.xerces.impl.v2.datatypes.InvalidDatatypeValueException;
-
-//java imports
-import java.io.UnsupportedEncodingException;
 
 /**
  * @version $Id$
  */
-public class Base64BinaryDV extends AbstractStringDV{
-
+public interface TypeValidator {
     // for most DV classes, this is the same as the DV_?? value defined
     // in XSSimpleTypeDecl that's corresponding to that class. But for
     // ID/IDREF/ENTITY, the privitivaDV is DV_STRING.
-
-    public short getPrimitiveDV(){
-        return XSSimpleTypeDecl.DV_BASE64BINARY;
-    }
+    public short getPrimitiveDV();
+    public short getAllowedFacets();
 
     // convert a string to a compiled form. for example,
     // for number types (decimal, double, float, and types derived from them),
     // get the BigDecimal, Double, Flout object.
     // for some types (string and derived), they just return the string itself
-    public Object getCompiledValue(String content) throws InvalidDatatypeValueException{
-        if (getDataLength(content) < 0) {
-            throw new InvalidDatatypeValueException( "Value '"+content+"' is not encoded in Hex" );
-        }
-        return content;
-    }
-
-
+    public Object getCompiledValue(String content) throws InvalidDatatypeValueException;
     // the parameters are in compiled form (from getCompiledValue)
-    public boolean isEqual(Object value1, Object value2){
-
-        return compare(value1,value2) == 0 ? true : false;
-
-    }//isEqual()
+    public boolean isEqual(Object value1, Object value2);
 
     // the following methods might not be supported by every DV.
     // but XSSimpleTypeDecl should know which type supports which methods,
     // and it's an *internal* error if a method is called on a DV that
     // doesn't support it.
 
-    //compiled value is string in this case ,as we return string for all derived by string.
-    public  int compare(Object value1, Object value2){
+    public static final short COMPARE_LESS    = -1;
+    public static final short COMPARE_EQUAL   = 0;
+    public static final short COMPARE_GREATER = 1;
+    // the parameters are in compiled form (from getCompiledValue)
+    public int compare(Object value1, Object value2);
 
-        String str1 = (String)value1;
-        String str2 = (String)value2;
-
-        if (str1 == null || str2 == null)
-            return -1;
-
-        if (str1 == str2 || str1.equals(str2))
-            return 0;
-
-        byte[] data1= Base64.decode(str1.getBytes());
-        byte[] data2= Base64.decode(str2.getBytes());
-
-        if (data1 == null || data2 == null)
-            return -1;
-
-        for (int i = 0; i < Math.min(data1.length, data2.length); i++){
-            if (data1[i] < data2[i])
-                return -1;
-            else if (data1[i] > data2[i])
-                return 1;
-        }
-
-        if (data1.length == data2.length)
-            return 0;
-
-        return data1.length > data2.length ? 1 : -1;
-
-    }//compare()
-
-
-    //compiled value is string in this case ,as we return string for all derived by string.
-    //for base64 length is measured in octets of binary data.
-    public int getDataLength(Object value){
-        int x = -1;
-        String content = (String)value;
-        try {
-            x = Base64.getDecodedDataLength(content.getBytes("utf-8"));
-        }
-        catch (UnsupportedEncodingException e) {
-        }
-        finally {
-            return x;
-        }
-    }//getDataLength()
-
-
-} // class Base64BinaryDV
+    // the parameters are in compiled form (from getCompiledValue)
+    public int getDataLength(Object value);
+    // the parameters are in compiled form (from getCompiledValue)
+    public int getTotalDigits(Object value);
+    // the parameters are in compiled form (from getCompiledValue)
+    public int getFractionDigits(Object value);
+} // interface TypeValidator
