@@ -113,13 +113,13 @@ public abstract class ParentNode
     // transients
 
     /** Cached node list length. */
-    protected transient int nodeListLength = -1;
+    protected transient int fCachedLength = -1;
 
     /** Last requested node. */
-    protected transient ChildNode nodeListNode;
+    protected transient ChildNode fCachedChild;
 
     /** Last requested node index. */
-    protected transient int nodeListIndex = -1;
+    protected transient int fCachedChildIndex = -1;
 
     //
     // Constructors
@@ -175,8 +175,8 @@ public abstract class ParentNode
     	newnode.firstChild      = null;
 
         // invalidate cache for children NodeList
-        newnode.nodeListIndex = -1;
-        newnode.nodeListLength = -1;
+        newnode.fCachedChildIndex = -1;
+        newnode.fCachedLength = -1;
 
         // Then, if deep, clone the kids too.
     	if (deep) {
@@ -330,48 +330,8 @@ public abstract class ParentNode
     Node internalInsertBefore(Node newChild, Node refChild,int mutationMask) 
         throws DOMException {
 
-    	if (isReadOnly())
-            throw new DOMException(
-                        DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                        "DOM001 Modification not allowed");
-
         boolean errorChecking = ownerDocument.errorChecking;
-    	if (errorChecking && newChild.getOwnerDocument() != ownerDocument) {
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
-                                       "DOM005 Wrong document");
-        }
 
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-
-        if (errorChecking) {
-            // Prevent cycles in the tree
-            // newChild cannot be ancestor of this Node,
-            // and actually cannot be this
-            boolean treeSafe = true;
-            for (NodeImpl a = this;
-                 treeSafe && a != null;
-                 a = a.parentNode()) {
-                treeSafe = newChild != a;
-            }
-            if(!treeSafe) {
-                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                       "DOM006 Hierarchy request error");
-            }
-
-            // refChild must in fact be a child of this node (or null)
-            if(refChild != null && refChild.getParentNode() != this) {
-                throw new DOMException(DOMException.NOT_FOUND_ERR,
-                                       "DOM008 Not found");
-            }
-            // refChild cannot be same as newChild
-            if(refChild == newChild) {
-                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
-                                       "DOM006 Hierarchy request error");
-            }
-        }
-        
         if (newChild.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
             // SLOW BUT SAFE: We could insert the whole subtree without
             // juggling so many next/previous pointers. (Wipe out the
@@ -404,162 +364,192 @@ public abstract class ParentNode
             while (newChild.hasChildNodes()) {
                 insertBefore(newChild.getFirstChild(), refChild);
             }
+            return newChild;
         }
-        else if (errorChecking &&
-                 (!(newChild instanceof ChildNode)
-                  ||
-                  !ownerDocument.isKidOK(this, newChild))) {
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
+
+        if (newChild == refChild) {
+            // stupid case that must be handled as a no-op triggering events...
+            refChild = refChild.getNextSibling();
+            removeChild(newChild);
+            insertBefore(newChild, refChild);
+            return newChild;
+        }
+
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
+
+        if (errorChecking) {
+            if (isReadOnly()) {
+                throw new DOMException(
+                                     DOMException.NO_MODIFICATION_ALLOWED_ERR, 
+                                       "DOM001 Modification not allowed");
+            }
+            if (newChild.getOwnerDocument() != ownerDocument) {
+                throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
+                                       "DOM005 Wrong document");
+            }
+            if (!ownerDocument.isKidOK(this, newChild)) {
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
                                        "DOM006 Hierarchy request error");
+            }
+            // refChild must be a child of this node (or null)
+            if (refChild != null && refChild.getParentNode() != this) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR,
+                                       "DOM008 Not found");
+            }
+
+            // Prevent cycles in the tree
+            // newChild cannot be ancestor of this Node,
+            // and actually cannot be this
+            boolean treeSafe = true;
+            for (NodeImpl a = this; treeSafe && a != null; a = a.parentNode())
+            {
+                treeSafe = newChild != a;
+            }
+            if(!treeSafe) {
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
+                                       "DOM006 Hierarchy request error");
+            }
         }
-        else {
-            // Convert to internal type, to avoid repeated casting
-            ChildNode newInternal = (ChildNode)newChild;
 
-            EnclosingAttr enclosingAttr=null;
-            if(MUTATIONEVENTS && ownerDocument.mutationEvents
-               && (mutationMask&MUTATION_AGGREGATE)!=0)
-            {
-                // MUTATION PREPROCESSING
-                // No direct pre-events, but if we're within the scope 
-    	        // of an Attr and DOMAttrModified was requested,
-                // we need to preserve its previous value.
-                LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-                if(lc.captures+lc.bubbles+lc.defaults>0)
-                {
-                    enclosingAttr=getEnclosingAttr();
-                }
+        // Convert to internal type, to avoid repeated casting
+        ChildNode newInternal = (ChildNode)newChild;
+
+        EnclosingAttr enclosingAttr=null;
+        if (MUTATIONEVENTS && ownerDocument.mutationEvents
+            && (mutationMask&MUTATION_AGGREGATE)!=0) {
+            // MUTATION PREPROCESSING
+            // No direct pre-events, but if we're within the scope 
+            // of an Attr and DOMAttrModified was requested,
+            // we need to preserve its previous value.
+            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+            if (lc.captures+lc.bubbles+lc.defaults>0) {
+                enclosingAttr=getEnclosingAttr();
             }
+        }
 
-            Node oldparent = newInternal.parentNode();
-            if (oldparent != null) {
-                oldparent.removeChild(newInternal);
-            }
+        Node oldparent = newInternal.parentNode();
+        if (oldparent != null) {
+            oldparent.removeChild(newInternal);
+        }
 
-            // Convert to internal type, to avoid repeated casting
-            ChildNode refInternal = (ChildNode)refChild;
+        // Convert to internal type, to avoid repeated casting
+        ChildNode refInternal = (ChildNode)refChild;
 
-            // Attach up
-            newInternal.ownerNode = this;
-            newInternal.isOwned(true);
+        // Attach up
+        newInternal.ownerNode = this;
+        newInternal.isOwned(true);
 
-            // Attach before and after
-            // Note: firstChild.previousSibling == lastChild!!
-            if (firstChild == null) {
-                // this our first and only child
-                firstChild = newInternal;
-                newInternal.isFirstChild(true);
-                newInternal.previousSibling = newInternal;
+        // Attach before and after
+        // Note: firstChild.previousSibling == lastChild!!
+        if (firstChild == null) {
+            // this our first and only child
+            firstChild = newInternal;
+            newInternal.isFirstChild(true);
+            newInternal.previousSibling = newInternal;
+        } else {
+            if (refInternal == null) {
+                // this is an append
+                ChildNode lastChild = firstChild.previousSibling;
+                lastChild.nextSibling = newInternal;
+                newInternal.previousSibling = lastChild;
+                firstChild.previousSibling = newInternal;
             } else {
-                if (refInternal == null) {
-                    // this is an append
-                    ChildNode lastChild = firstChild.previousSibling;
-                    lastChild.nextSibling = newInternal;
-                    newInternal.previousSibling = lastChild;
+                // this is an insert
+                if (refChild == firstChild) {
+                    // at the head of the list
+                    firstChild.isFirstChild(false);
+                    newInternal.nextSibling = firstChild;
+                    newInternal.previousSibling = firstChild.previousSibling;
                     firstChild.previousSibling = newInternal;
+                    firstChild = newInternal;
+                    newInternal.isFirstChild(true);
                 } else {
-                    // this is an insert
-                    if (refChild == firstChild) {
-                        // at the head of the list
-                        firstChild.isFirstChild(false);
-                        newInternal.nextSibling = firstChild;
-                        newInternal.previousSibling =
-                            firstChild.previousSibling;
-                        firstChild.previousSibling = newInternal;
-                        firstChild = newInternal;
-                        newInternal.isFirstChild(true);
-                    } else {
-                        // somewhere in the middle
-                        ChildNode prev = refInternal.previousSibling;
-                        newInternal.nextSibling = refInternal;
-                        prev.nextSibling = newInternal;
-                        refInternal.previousSibling = newInternal;
-                        newInternal.previousSibling = prev;
-                    }
+                    // somewhere in the middle
+                    ChildNode prev = refInternal.previousSibling;
+                    newInternal.nextSibling = refInternal;
+                    prev.nextSibling = newInternal;
+                    refInternal.previousSibling = newInternal;
+                    newInternal.previousSibling = prev;
                 }
             }
+        }
 
-            changed();
+        changed();
 
-            // update cached length if we have any
-            if (nodeListLength != -1) {
-                nodeListLength++;
+        // update cached length if we have any
+        if (fCachedLength != -1) {
+            fCachedLength++;
+        }
+        if (fCachedChildIndex != -1) {
+            // if we happen to insert just before the cached node, update
+            // the cache to the new node to match the cached index
+            if (fCachedChild == refInternal) {
+                fCachedChild = newInternal;
+            } else {
+                // otherwise just invalidate the cache
+                fCachedChildIndex = -1;
             }
-            if (nodeListIndex != -1) {
-                // if we happen to insert just before the cached node, update
-                // the cache to the new node to match the cached index
-                if (nodeListNode == refInternal) {
-                    nodeListNode = newInternal;
-                } else {
-                    // otherwise just invalidate the cache
-                    nodeListIndex = -1;
-                }
-            }
+        }
 
-            if(MUTATIONEVENTS && ownerDocument.mutationEvents)
-            {
-                // MUTATION POST-EVENTS:
-                // "Local" events (non-aggregated)
-                if( (mutationMask&MUTATION_LOCAL) != 0)
-                {
-                    // New child is told it was inserted, and where
-                    LCount lc =
-                        LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
-                    if(lc.captures+lc.bubbles+lc.defaults>0)
-                    {
-                        MutationEvent me= new MutationEventImpl();
-                        me.initMutationEvent(
-                                          MutationEventImpl.DOM_NODE_INSERTED,
-                                          true,false,this,null,
+        if (MUTATIONEVENTS && ownerDocument.mutationEvents) {
+            // MUTATION POST-EVENTS:
+            // "Local" events (non-aggregated)
+            if ((mutationMask&MUTATION_LOCAL) != 0) {
+                // New child is told it was inserted, and where
+                LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
+                if (lc.captures+lc.bubbles+lc.defaults>0) {
+                    MutationEvent me= new MutationEventImpl();
+                    me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,
+                                         true,false,this,null,
                                           null,null,(short)0);
-                        newInternal.dispatchEvent(me);
-                    }
+                    newInternal.dispatchEvent(me);
+                }
 
-                    // If within the Document, tell the subtree it's been added
-                    // to the Doc.
-                    lc=LCount.lookup(
+                // If within the Document, tell the subtree it's been added
+                // to the Doc.
+                lc=LCount.lookup(
                             MutationEventImpl.DOM_NODE_INSERTED_INTO_DOCUMENT);
-                    if(lc.captures+lc.bubbles+lc.defaults>0)
-                    {
-                        NodeImpl eventAncestor=this;
-                        if(enclosingAttr!=null) 
-                            eventAncestor=
-                              (NodeImpl)(enclosingAttr.node.getOwnerElement());
-                        if(eventAncestor!=null) // Might have been orphan Attr
-                        {
-                            NodeImpl p=eventAncestor;
-                            while(p!=null)
-                            {
-                                eventAncestor=p; // Last non-null ancestor
-                                // In this context, ancestry includes
-                                // walking back from Attr to Element
-                                if(p.getNodeType()==ATTRIBUTE_NODE)
-                                    p=(ElementImpl)
-                                        ((AttrImpl)p).getOwnerElement();
-                                else
-                                    p=p.parentNode();
+                if (lc.captures+lc.bubbles+lc.defaults>0) {
+                    NodeImpl eventAncestor=this;
+                    if (enclosingAttr!=null) 
+                        eventAncestor=
+                            (NodeImpl)(enclosingAttr.node.getOwnerElement());
+                    if (eventAncestor!=null) { // Might have been orphan Attr
+                        NodeImpl p=eventAncestor;
+                        while (p!=null) {
+                            eventAncestor=p; // Last non-null ancestor
+                            // In this context, ancestry includes
+                            // walking back from Attr to Element
+                            if(p.getNodeType()==ATTRIBUTE_NODE) {
+                                p=(ElementImpl)((AttrImpl)p).getOwnerElement();
                             }
-                            if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
-                            {
-                                MutationEvent me= new MutationEventImpl();
-                                me.initMutationEvent(MutationEventImpl
+                            else {
+                                p=p.parentNode();
+                            }
+                        }
+                        if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE) {
+                            MutationEvent me= new MutationEventImpl();
+                            me.initMutationEvent(MutationEventImpl
                                               .DOM_NODE_INSERTED_INTO_DOCUMENT,
-                                                     false,false,null,null,
-                                                     null,null,(short)0);
-                                dispatchEventToSubtree(newInternal,me);
-                            }
+                                                 false,false,null,null,
+                                                 null,null,(short)0);
+                            dispatchEventToSubtree(newInternal,me);
                         }
                     }
                 }
-
-                // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified
-                // (Common to most kinds of mutation)
-                if( (mutationMask&MUTATION_AGGREGATE) != 0)
-                    dispatchAggregateEvents(enclosingAttr);
             }
 
-            checkNormalizationAfterInsert(newInternal);
+            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified
+            // (Common to most kinds of mutation)
+            if ((mutationMask&MUTATION_AGGREGATE) != 0) {
+                dispatchAggregateEvents(enclosingAttr);
+            }
         }
+
+        checkNormalizationAfterInsert(newInternal);
+
         return newChild;
 
     } // internalInsertBefore(Node,Node,int):Node
@@ -666,18 +656,18 @@ public abstract class ParentNode
         } // End mutation preprocessing
 
         // update cached length if we have any
-        if (nodeListLength != -1) {
-            nodeListLength--;
+        if (fCachedLength != -1) {
+            fCachedLength--;
         }
-        if (nodeListIndex != -1) {
+        if (fCachedChildIndex != -1) {
             // if the removed node is the cached node
             // move the cache to its (soon former) previous sibling
-            if (nodeListNode == oldInternal) {
-                nodeListIndex--;
-                nodeListNode = oldInternal.previousSibling();
+            if (fCachedChild == oldInternal) {
+                fCachedChildIndex--;
+                fCachedChild = oldInternal.previousSibling();
             } else {
                 // otherwise just invalidate the cache
-                nodeListIndex = -1;
+                fCachedChildIndex = -1;
             }
         }
 
@@ -774,7 +764,9 @@ public abstract class ParentNode
         } // End mutation preprocessing
 
         internalInsertBefore(newChild, oldChild,MUTATION_LOCAL);
-        internalRemoveChild(oldChild,MUTATION_LOCAL);
+        if (newChild != oldChild) {
+            internalRemoveChild(oldChild,MUTATION_LOCAL);
+        }
 
         if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
@@ -795,22 +787,22 @@ public abstract class ParentNode
      */
     private int nodeListGetLength() {
 
-        if (nodeListLength == -1) { // is the cached length invalid ?
+        if (fCachedLength == -1) { // is the cached length invalid ?
             ChildNode node;
             // start from the cached node if we have one
-            if (nodeListIndex != -1 && nodeListNode != null) {
-                nodeListLength = nodeListIndex;
-                node = nodeListNode;
+            if (fCachedChildIndex != -1 && fCachedChild != null) {
+                fCachedLength = fCachedChildIndex;
+                node = fCachedChild;
             } else {
                 node = firstChild;
-                nodeListLength = 0;
+                fCachedLength = 0;
             }
             for (; node != null; node = node.nextSibling) {
-                nodeListLength++;
+                fCachedLength++;
             }
         }
 
-        return nodeListLength;
+        return fCachedLength;
 
     } // nodeListGetLength():int
 
@@ -829,30 +821,30 @@ public abstract class ParentNode
      */
     private Node nodeListItem(int index) {
         // short way
-        if (nodeListIndex != -1 && nodeListNode != null) {
-            if (nodeListIndex < index) {
-                while (nodeListIndex < index && nodeListNode != null) {
-                    nodeListIndex++;
-                    nodeListNode = nodeListNode.nextSibling;
+        if (fCachedChildIndex != -1 && fCachedChild != null) {
+            if (fCachedChildIndex < index) {
+                while (fCachedChildIndex < index && fCachedChild != null) {
+                    fCachedChildIndex++;
+                    fCachedChild = fCachedChild.nextSibling;
                 }
             }
-            else if (nodeListIndex > index) {
-                while (nodeListIndex > index && nodeListNode != null) {
-                    nodeListIndex--;
-                    nodeListNode = nodeListNode.previousSibling();
+            else if (fCachedChildIndex > index) {
+                while (fCachedChildIndex > index && fCachedChild != null) {
+                    fCachedChildIndex--;
+                    fCachedChild = fCachedChild.previousSibling();
                 }
             }
-            return nodeListNode;
+            return fCachedChild;
         }
 
         // long way
-        nodeListNode = firstChild;
-        for (nodeListIndex = 0; 
-             nodeListIndex < index && nodeListNode != null; 
-             nodeListIndex++) {
-            nodeListNode = nodeListNode.nextSibling;
+        fCachedChild = firstChild;
+        for (fCachedChildIndex = 0; 
+             fCachedChildIndex < index && fCachedChild != null; 
+             fCachedChildIndex++) {
+            fCachedChild = fCachedChild.nextSibling;
         }
-        return nodeListNode;
+        return fCachedChild;
 
     } // nodeListItem(int):Node
 
@@ -1109,8 +1101,8 @@ public abstract class ParentNode
         needsSyncChildren(false);
 
         // initialize transients
-        nodeListLength = -1;
-        nodeListIndex = -1;
+        fCachedLength = -1;
+        fCachedChildIndex = -1;
 
     } // readObject(ObjectInputStream)
 
