@@ -316,7 +316,7 @@ Copyright:
     <jar jarfile="${build.dir}/${jar.samples}"
          basedir="${build.dest}"
          compress="true"
-         includes="dom/**,sax/**,socket/**,ui/**,xni/**"/>
+         includes="dom/**,sax/**,socket/**,ui/**,xni/**,xs/**"/>
   </target>
 
   <!-- =================================================================== -->
