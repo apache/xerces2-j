@@ -91,7 +91,7 @@ import java.util.Vector;
  * includes the list of all schemas that are referenced plus the schema that was set
  * on the parser.
  * NOTE: this behavior might be changed
- * 
+ * @deprecated
  * @author Sandy Gao, IBM
  * @version $Id$
  */
