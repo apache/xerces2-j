@@ -24,6 +24,7 @@ import java.io.ObjectOutputStream;
 // REVISIT: This is a HACK! DO NOT MODIFY THIS import.
 //          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
 import org.apache.xerces.dom3.DOMConfiguration;
+import org.apache.xerces.dom3.UserDataHandler;
 import org.w3c.dom.*;
 
 /**
@@ -54,6 +55,28 @@ public class PSVIDocumentImpl extends DocumentImpl {
         super(doctype);
     }
     
+    /**
+     * Deep-clone a document, including fixing ownerDoc for the cloned
+     * children. Note that this requires bypassing the WRONG_DOCUMENT_ERR
+     * protection. I've chosen to implement it by calling importNode
+     * which is DOM Level 2.
+     *
+     * @return org.w3c.dom.Node
+     * @param deep boolean, iff true replicate children
+     */
+    public Node cloneNode(boolean deep) {
+
+        PSVIDocumentImpl newdoc = new PSVIDocumentImpl();
+        callUserDataHandlers(this, newdoc, UserDataHandler.NODE_CLONED);
+        cloneNode(newdoc, deep);
+
+        // experimental
+        newdoc.mutationEvents = mutationEvents;
+
+        return newdoc;
+
+    } // cloneNode(boolean):Node
+	    
     /**
      * Retrieve information describing the abilities of this particular
      * DOM implementation. Intended to support applications that may be
