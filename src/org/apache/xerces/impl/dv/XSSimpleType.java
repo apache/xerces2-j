@@ -126,9 +126,8 @@ public interface XSSimpleType extends XSSimpleTypeDefinition {
         throws InvalidDatatypeValueException;
 
     /**
-     * validate an actual value against this simple type.
+     * Validate an actual value against this simple type.
      *
-     * @param value         the actual value that needs to be validated
      * @param context       the validation context
      * @param validatedInfo used to provide the actual value and member types
      * @exception InvalidDatatypeValueException  exception for invalid values.
@@ -142,11 +141,11 @@ public interface XSSimpleType extends XSSimpleTypeDefinition {
      * different facets.
      *
      * @param facets        the value of all the facets
-     * @param presentFacets bit combination value of the costraining facet
+     * @param presentFacet  bit combination value of the costraining facet
      *                      constants which are present.
-     * @param fixedFacets   bit combination value of the costraining facet
+     * @param fixedFacet    bit combination value of the costraining facet
      *                      constants which are fixed.
-     * @param ValidationContext the validation context
+     * @param context       the validation context
      * @exception InvalidDatatypeFacetException  exception for invalid facet values.
      */
     public void applyFacets(XSFacets facets, short presentFacet, short fixedFacet, ValidationContext context)

@@ -20,8 +20,6 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.dtd.XMLContentSpec;
 
 /**
- * @version $Id$
- *
  * DFAContentModel is the derivative of ContentModel that does
  * all of the non-trivial element content validation. This class does 
  * the conversion from the regular expression to the DFA that 
@@ -32,7 +30,8 @@ import org.apache.xerces.impl.dtd.XMLContentSpec;
  * and is handled via the MixedContentModel class since mixed models 
  * are very constrained in form and easily handled via a special case. 
  * This also makes implementation of this class much easier.
- *
+ * 
+ * @version $Id$
  */
 public class DFAContentModel
     implements ContentModelValidator {
@@ -187,10 +186,9 @@ public class DFAContentModel
      *
      * @param syntaxTree    The syntax tree of the content model.
      * @param leafCount     The number of leaves.
-     * @param dtd           if it is created for a DTDGrammar.
+     * @param mixed
      *
      */
-
     public DFAContentModel(CMNode syntaxTree, int leafCount, boolean mixed) {
         // Store away our index and pools in members
         //fStringPool = stringPool;

@@ -65,10 +65,10 @@ public interface XMLDTDScanner
      * @param standalone True if the document was specified as standalone.
      *                   This value is important for verifying certain
      *                   well-formedness constraints.
-     * @param hasExternalDTD True if the document has an external DTD.
-     *                       This allows the scanner to properly notify
-     *                       the handler of the end of the DTD in the
-     *                       absence of an external subset.
+     * @param hasExternalSubset True if the document has an external DTD.
+     *                          This allows the scanner to properly notify
+     *                          the handler of the end of the DTD in the
+     *                          absence of an external subset.
      *
      * @return True if there is more to scan, false otherwise.
      */

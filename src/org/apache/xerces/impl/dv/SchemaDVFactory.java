@@ -103,7 +103,7 @@ public abstract class SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param base              base type of the new type
-     * @param annotation        set of annotations
+     * @param annotations       set of annotations
      * @return                  the newly created simple type
      */
     public abstract XSSimpleType createTypeRestriction(String name, String targetNamespace,
@@ -118,7 +118,7 @@ public abstract class SchemaDVFactory {
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
      * @param itemType          item type of the list type
-     * @param annotation        set of annotations
+     * @param annotations       set of annotations
      * @return                  the newly created simple type
      */
     public abstract XSSimpleType createTypeList(String name, String targetNamespace,
@@ -132,8 +132,8 @@ public abstract class SchemaDVFactory {
      * @param name              name of the new type, could be null
      * @param targetNamespace   target namespace of the new type, could be null
      * @param finalSet          value of "final"
-     * @param base              member types of the union type
-     * @param annotation        set of annotations
+     * @param memberTypes       member types of the union type
+     * @param annotations       set of annotations
      * @return                  the newly created simple type
      */
     public abstract XSSimpleType createTypeUnion(String name, String targetNamespace,

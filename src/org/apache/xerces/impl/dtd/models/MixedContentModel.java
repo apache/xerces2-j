@@ -21,8 +21,6 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.dtd.XMLContentSpec;
 
 /**
- * @version $Id$
- *
  * MixedContentModel is a derivative of the abstract content model base
  * class that handles the special case of mixed model elements. If an element
  * is mixed model, it has PCDATA as its first possible content, followed
@@ -34,7 +32,8 @@ import org.apache.xerces.impl.dtd.XMLContentSpec;
  * So, all we have to do is to keep an array of the possible children and
  * validate by just looking up each child being validated by looking it up
  * in the list.
- *
+ * 
+ * @version $Id$
  */
 public class MixedContentModel
     implements ContentModelValidator {
@@ -73,8 +72,6 @@ public class MixedContentModel
      * @param offset The start offset position in the children.
      * @param length The child count.
      * @param ordered True if content must be ordered.
-     * @param dtd True if it is for a DTDGrammar.
-     *
      */
     public MixedContentModel(QName[] children, int[] type, int offset, int length , boolean ordered) {
         // Make our own copy now, which is exactly the right size

@@ -87,7 +87,7 @@ public class QName
     /**
      * Convenience method to set the values of the qname components.
      * 
-     * @param QName The qualified name to be copied. 
+     * @param qname The qualified name to be copied.
      */
     public void setValues(QName qname) {
         prefix = qname.prefix;

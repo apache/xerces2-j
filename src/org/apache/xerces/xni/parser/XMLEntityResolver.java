@@ -45,7 +45,7 @@ public interface XMLEntityResolver {
      * Resolves an external parsed entity. If the entity cannot be
      * resolved, this method should return null.
      *
-     * @param resourceIdentifier:  location of the XML resource to resolve
+     * @param resourceIdentifier location of the XML resource to resolve
      *
      * @throws XNIException Thrown on general error.
      * @throws IOException  Thrown if resolved entity stream cannot be

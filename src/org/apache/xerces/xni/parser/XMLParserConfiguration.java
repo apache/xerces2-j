@@ -100,8 +100,8 @@ public interface XMLParserConfiguration
      * When this method returns, all characters streams and byte streams
      * opened by the parser are closed.
      * 
-     * @param source The input source for the top-level of the
-     *               XML document.
+     * @param inputSource The input source for the top-level of the
+     *                    XML document.
      *
      * @exception XNIException Any XNI exception, possibly wrapping 
      *                         another exception.

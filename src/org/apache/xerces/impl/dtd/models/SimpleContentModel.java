@@ -21,8 +21,6 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.dtd.XMLContentSpec;
 
 /**
- * @version $Id$
- *
  * SimpleContentModel is a derivative of the abstract content model base
  * class that handles a small set of simple content models that are just
  * way overkill to give the DFA treatment.
@@ -41,7 +39,8 @@ import org.apache.xerces.impl.dtd.XMLContentSpec;
  * operation with two elements. These are very simple and can be checked
  * in a simple way without a DFA and without the overhead of setting up a
  * DFA for such a simple check.
- *
+ * 
+ * @version $Id$
  */
 public class SimpleContentModel
     implements ContentModelValidator {
@@ -95,9 +94,8 @@ public class SimpleContentModel
      * Constructs a simple content model.
      *
      * @param operator The content model operator.
-     * @param firstChild The first child index.
-     * @param secondChild The second child index.
-     * @param dtd if it is for a DTDGrammar.
+     * @param firstChild qualified name of the first child
+     * @param secondChild qualified name of the second child
      *
      */
     public SimpleContentModel(short operator, QName firstChild, QName secondChild) {

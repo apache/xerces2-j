@@ -113,7 +113,7 @@ public interface XMLAttributes {
      *
      * @param uri       The Namespace URI, or the empty string if
      *                  the name has no Namespace URI.
-     * @param localName The attribute's local name.
+     * @param localPart The attribute's local name.
      *
      * @return The index of the attribute, or -1 if it does not
      *         appear in the list.
