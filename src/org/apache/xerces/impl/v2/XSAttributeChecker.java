@@ -149,6 +149,9 @@ public class XSAttributeChecker {
     private static final XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(SchemaSymbols.WS_COLLAPSE);
     private static final XInt INT_UNBOUNDED      = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
+    // default wildcard to return
+    private static final XSWildcardDecl WC_ANY   = new XSWildcardDecl();
+
     // used to store the map from element name to attribute list
     protected static Hashtable fEleAttrsMapG = new Hashtable();
     protected static Hashtable fEleAttrsMapN = new Hashtable();
@@ -364,7 +367,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_NAMESPACE_D]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_NAMESPACE,
                                                         ATTIDX_NAMESPACE,
-                                                        SchemaSymbols.ATTVAL_TWOPOUNDANY);
+                                                        WC_ANY);
         allAttrs[ATT_NAMESPACE_N]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_ANYURI,
                                                         ATTIDX_NAMESPACE,
@@ -938,9 +941,6 @@ public class XSAttributeChecker {
         fEleAttrsMapN.put(SchemaSymbols.ELT_MINEXCLUSIVE, oneEle);
     }
 
-    // used to store all seen ID values, and to check duplicate ID values
-    private Hashtable fIdDefs = new Hashtable();
-
     // used to resolver namespace prefixes
     protected XSDHandler fSchemaHandler = null;
 
@@ -959,7 +959,6 @@ public class XSAttributeChecker {
     }
 
     public void reset(XMLErrorReporter er, SymbolTable symbolTable) {
-        fIdDefs.clear();
         fErrorReporter = er;
         fSymbolTable = symbolTable;
         fNonSchemaAttrs.clear();
@@ -975,12 +974,12 @@ public class XSAttributeChecker {
      * @return: Hashtable - list of attributes and values
      */
     public Object[] checkAttributes(Element element, boolean isGlobal,
-                                    SchemaNamespaceSupport nsSupport) {
+                                    XSDocumentInfo schemaDoc) {
         if (element == null)
             return null;
 
         // update NamespaceSupport
-        resolveNamespace(element, nsSupport);
+        resolveNamespace(element, schemaDoc.fNamespaceSupport);
 
         String uri = DOMUtil.getNamespaceURI(element);
         String elName = DOMUtil.getLocalName(element);
@@ -1087,17 +1086,17 @@ public class XSAttributeChecker {
                         oneAttr.dvIndex != DT_XPATH1) {
                         DatatypeValidator dv = fExtraDVs[oneAttr.dvIndex];
                         if (dv instanceof IDDatatypeValidator) {
-                            retValue = dv.validate( attrVal, fIdDefs );
+                            retValue = dv.validate(attrVal, schemaDoc.fIdDefs);
                         }
                         else {
-                            retValue = dv.validate( attrVal, null);
+                            retValue = dv.validate(attrVal, null);
                         }
                     }
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
                     switch (oneAttr.dvIndex) {
                     case DT_QNAME:
-                        retValue = resolveQName(attrVal, nsSupport);
+                        retValue = resolveQName(attrVal, schemaDoc.fNamespaceSupport);
                         break;
                     default:
                         retValue = attrVal;
@@ -1107,7 +1106,7 @@ public class XSAttributeChecker {
                     attrValues[oneAttr.valueIndex] = retValue;
                 }
                 else {
-                    retValue = validate(attrName, attrVal, oneAttr.dvIndex, nsSupport);
+                    retValue = validate(attrName, attrVal, oneAttr.dvIndex, schemaDoc);
                     //attrValues.put(attrName, retValue);
                     attrValues[oneAttr.valueIndex] = retValue;
                 }
@@ -1161,7 +1160,7 @@ public class XSAttributeChecker {
     }
 
     private Object validate(String attr, String value, int dvIndex,
-                            SchemaNamespaceSupport nsSupport) throws InvalidDatatypeValueException {
+                            XSDocumentInfo schemaDoc) throws InvalidDatatypeValueException {
         if (value == null)
             return null;
 
@@ -1312,7 +1311,7 @@ public class XSAttributeChecker {
                     retValue = fExtraDVs[DT_QNAME].validate(token, null);
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
-                    retValue = resolveQName(token, nsSupport);
+                    retValue = resolveQName(token, schemaDoc.fNamespaceSupport);
                     memberType.addElement(retValue);
                 }
                 retValue = memberType;
@@ -1332,22 +1331,67 @@ public class XSAttributeChecker {
             break;
         case DT_NAMESPACE:
             // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
-            if (!value.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY) &&
-                !value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
-                StringTokenizer t = new StringTokenizer (value, " ");
+            XSWildcardDecl wildcard = null;
+            if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY)) {
+                // ##any
+                wildcard = WC_ANY;
+            } else if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
+                // ##other
+                wildcard = new XSWildcardDecl();
+                wildcard.fType = XSWildcardDecl.WILDCARD_OTHER;
+                wildcard.fNamespaceList = new String[2];
+                wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
+                wildcard.fNamespaceList[1] = fSchemaHandler.EMPTY_STRING;
+            } else {
+                // list
+                wildcard = new XSWildcardDecl();
+                wildcard.fType = XSWildcardDecl.WILDCARD_LIST;
+
+                // tokenize
+                StringTokenizer tokens = new StringTokenizer(value);
+                String[] namespaceList = new String[tokens.countTokens()];
+                int nsNum = 0;
+                String token;
+                String tempNamespace;
                 try {
-                    while (t.hasMoreTokens()) {
-                        String token = t.nextToken ();
-                        if (!token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS) &&
-                            !token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+                    while (tokens.hasMoreTokens()) {
+                        token = tokens.nextToken();
+                        if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+                            tempNamespace = fSchemaHandler.EMPTY_STRING;
+                        } else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
+                            tempNamespace = schemaDoc.fTargetNamespace;
+                        } else {
+                            // we have found namespace URI here
+                            // need to add it to the symbol table
                             fExtraDVs[DT_ANYURI].validate(token, null);
+                            tempNamespace = fSymbolTable.addSymbol(token);
+                        }
+
+                        //check for duplicate namespaces in the list
+                        int j = 0;
+                        for (; j < nsNum; j++) {
+                            if (tempNamespace == namespaceList[j])
+                                break;
+                        }
+                        if (j == nsNum) {
+                            // this means traversed whole for loop
+                            // i.e. not a duplicate namespace
+                            namespaceList[nsNum++] = tempNamespace;
                         }
                     }
-                    //REVISIT: what to return? a vector?
-                }
-                catch (InvalidDatatypeValueException ide) {
+                } catch (InvalidDatatypeValueException ide) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )");
                 }
+
+                // resize the array, so there is no empty entry
+                if (nsNum == namespaceList.length) {
+                    wildcard.fNamespaceList = namespaceList;
+                } else {
+                    wildcard.fNamespaceList = new String[nsNum];
+                    System.arraycopy(namespaceList, 0, wildcard.fNamespaceList, 0, nsNum);
+                }
+
+                retValue = wildcard;
             }
             break;
         case DT_PROCESSCONTENTS:
@@ -1554,9 +1598,9 @@ public class XSAttributeChecker {
     }
 
     // return an array back to the pool
-    public void returnAttrArray(Object[] attrArray, SchemaNamespaceSupport nsSupport) {
+    public void returnAttrArray(Object[] attrArray, XSDocumentInfo schemaDoc) {
         // pop the namespace context
-        nsSupport.popContext();
+        schemaDoc.fNamespaceSupport.popContext();
 
         // if 1. the pool is full; 2. the array is null;
         // 3. the array is of wrong size; 4. the array is already returned
@@ -1585,7 +1629,7 @@ public class XSAttributeChecker {
         for (int i = 0; i < attrs.length; i++) {
             sattr = attrs[i];
             rawname = DOMUtil.getName(sattr);
-            if (rawname.startsWith("xmlns")) {
+            if (rawname == SchemaSymbols.XMLNS || rawname.startsWith("xmlns:")) {
                 prefix = null;
                 if (rawname.length() == 5)
                     prefix = fSchemaHandler.EMPTY_STRING;

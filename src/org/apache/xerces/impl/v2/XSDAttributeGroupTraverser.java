@@ -91,7 +91,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
                                        SchemaGrammar grammar) {
 
         // General Attribute Checking for elmNode declared locally
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
 
         // get attribute
         QName   refAttr	= (QName)   attrValues[XSAttributeChecker.ATTIDX_REF];
@@ -101,7 +101,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // ref should be here.
         if (refAttr == null) {
             reportGenericSchemaError("Local attributeGroup declaration should have ref.");
-            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
 
@@ -128,7 +128,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
             }
          } // if
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         return attrGrp;
 
     } // traverseLocal
@@ -140,7 +140,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
 
         // General Attribute Checking for elmNode declared globally
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc);
 
         String  nameAttr   = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
 
@@ -203,7 +203,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // make an entry in global declarations.
         grammar.addGlobalAttributeGroupDecl(attrGrp);
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         return attrGrp;
 
     } // traverseGlobal

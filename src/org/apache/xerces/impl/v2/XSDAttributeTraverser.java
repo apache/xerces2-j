@@ -96,7 +96,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                                            SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc);
 
         String defaultAtt = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
         String fixedAtt   = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
@@ -142,7 +142,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             attrUse.fDefault = defaultAtt;
         }
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         //src-attribute
 
@@ -180,9 +180,9 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                                              SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true, schemaDoc);
         XSAttributeDecl attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return attribute;
     }

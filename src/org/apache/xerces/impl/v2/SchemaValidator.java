@@ -658,6 +658,7 @@ public class SchemaValidator
     static final int INC_STACK_SIZE     = 8;
 
     // some constants that'll be added into the symbol table
+    String XMLNS;
     String URI_XSI;
     String XSI_SCHEMALOCACTION;
     String XSI_NONAMESPACESCHEMALOCACTION;
@@ -727,6 +728,15 @@ public class SchemaValidator
     Hashtable fTableOfIDs = new Hashtable();
     Hashtable fTableOfIDRefs = new Hashtable();
 
+    /**
+     * temprory qname
+     */
+    QName fTempQName = new QName();
+    /**
+     * temprory empty object, used to fill IDREF table
+     */
+    static final Object fTempObject = new Object();
+
     //
     // Constructors
     //
@@ -748,6 +758,7 @@ public class SchemaValidator
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
+            XMLNS = symbolTable.addSymbol(SchemaSymbols.O_XMLNS);
             URI_XSI = symbolTable.addSymbol(SchemaSymbols.OURI_XSI);
             XSI_SCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCACTION);
             XSI_NONAMESPACESCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCACTION);
@@ -920,14 +931,28 @@ public class SchemaValidator
 
         // get the type for the current element
         fCurrentType = null;
-        if (fCurrentElemDecl != null)
+        if (fCurrentElemDecl != null) {
+            // Check whether this element is abstract.  If so, an error
+            if (fCurrentElemDecl.isAbstract()) {
+                reportGenericSchemaError("A member of abstract element " + element.rawname + "'s substitution group must be specified");
+            }
+            // then get the type
             fCurrentType = fCurrentElemDecl.fType;
+        }
 
         // get type from xsi:type
         String xsiType = attributes.getValue(URI_XSI, XSI_TYPE);
         if (xsiType != null) {
-            // REVISIT: bind namespace, get grammar, get type
-            // report error if type not found.
+            getAndCheckXsiType(element, xsiType);
+        } else if (fCurrentType != null) {
+            // if no xsi:type is specified, check whether the type of
+            // the element is abstract
+            if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                if (ctype.isAbstractType()) {
+                    reportGenericSchemaError("Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type");
+                }
+            }
         }
 
         // if the element decl is not found
@@ -963,10 +988,16 @@ public class SchemaValidator
         // and the buffer to hold the value of the element
         fBuffer = new StringBuffer();
 
-        // REVISIT: get xsi:nil (was bind...)
+        // get information about xsi:nil
+        String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
+        if (xsiNil != null)
+            getXsiNil(element, xsiNil);
 
         // now validate everything related with the attributes
-        validateOnAttributes(element, attributes);
+        if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+            validateOnAttributes(element, attributes, ctype.fAttrGrp);
+        }
 
     } // handleStartElement(QName,XMLAttributes,boolean)
 
@@ -975,6 +1006,8 @@ public class SchemaValidator
 
         // if we are skipping, return
         if (fSkipValidationDepth >= 0) {
+            // but if this is the top element that we are skipping,
+            // restore the states.
             if (fSkipValidationDepth == fElementDepth &&
                 fSkipValidationDepth > 0) {
                 fSkipValidationDepth = -1;
@@ -1000,6 +1033,7 @@ public class SchemaValidator
                     // REVISIT: report an error
                     reportGenericSchemaError("element content doesn't allowed here");
                 }
+                // validate against simple type
                 if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
                     try {
                         DatatypeValidator dv = (DatatypeValidator)fCurrentType;
@@ -1010,6 +1044,7 @@ public class SchemaValidator
                         reportGenericSchemaError("datatype error: " + e.getMessage());
                     }
                 } else {
+                    // REVISIT: validate against complex type with simple content
                     // if the current state is a valid state, check whether
                     // it's one of the final states.
                     if (fCurrCMState != null && fCurrCMState[0] >= 0 &&
@@ -1039,6 +1074,7 @@ public class SchemaValidator
                 }
             }
         } else {
+            // get the states for the parent element.
             fChildCount = fChildCountStack[fElementDepth];
             fCurrentElemDecl = fElemDeclStack[fElementDepth];
             fCurrentType = fTypeStack[fElementDepth];
@@ -1055,11 +1091,312 @@ public class SchemaValidator
         fBuffer.append(text.toString());
     } // handleCharacters(XMLString)
 
-    void validateOnAttributes(QName element, XMLAttributes attributes) {
+    void getAndCheckXsiType(QName element, String xsiType) {
+        // REVISIT: bind namespace, get grammar, get type
+        // report error if type not found.
+        // (similar to code in XSAttributeChecker.resolveQName
+        String uri = null, name = null;
+        // uri = resolve; name = substring;
+        XSTypeDecl type = null;
+        SchemaGrammar grammar = fGrammarResolver.getGrammar(uri);
+        if (grammar != null)
+            type = grammar.getGlobalTypeDecl(name);
+        if (type == null) {
+            reportGenericSchemaError("can't find type '"+xsiType+"'");
+            return;
+        }
 
-        return;
+        // if this is a complex type, check whether it's abstract
+        if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
+            if (ctype.isAbstractType())
+                reportGenericSchemaError("Abstract type " + xsiType + " should not be used in xsi:type");
+        }
 
+        // if there is no current type, set this one as current.
+        // and we don't need to do extra checking
+        if (fCurrentType == null) {
+            fCurrentType = type;
+            return;
+        }
+
+        // if there is a matching element decl, then this xsi:type must
+        // be validly derived from the type of the element decl
+        if (!checkTypeDerivationOk(type, fCurrentType, fCurrentElemDecl.fBlock))
+            reportGenericSchemaError("xsitype is not validly derived from element type");
+    }
+
+    void getXsiNil(QName element, String xsiNil) {
+        // get nil: true or false
+        boolean nil = false;
+        if (xsiNil.equals(SchemaSymbols.ATTVAL_TRUE) ||
+            xsiNil.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
+            if (fCurrentElemDecl == null || fCurrentElemDecl.isNillable()) {
+                nil = true;
+            } else {
+                reportGenericSchemaError("xsi:nil must not be specified for the element '"+ element.rawname + "' with {nillable} equals 'false'");
+            }
+        } else if (!xsiNil.equals(SchemaSymbols.ATTVAL_FALSE) &&
+                   !xsiNil.equals(SchemaSymbols.ATTVAL_FALSE_0)) {
+            reportGenericSchemaError("value '" + xsiNil + "' of xsi:nil attribute is not a valid boolean value");
+        }
+        // REVISIT: have a stack to hold it, because it's checked at endElement
+    }
+
+    void checkXsiNil(String xsiNil) {
+        // REVISIT: check whether the content is empty
+    }
+
+    void validateOnAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
+
+        XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
+        int useCount = attrUses.length;
+        XSWildcardDecl attrWildcard = attrGrp.fAttributeWC;
+
+        // REVISIT: do we add default attribute before or after
+        //          we validate the attribute values?
+        //if (fGrammar != null && fGrammarIsSchemaGrammar && elementIndex != -1) {
+        //    fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
+        //}
+
+        // if we don't do validation, we don't need to validate the attributes
+        if (!fDoValidation)
+            return;
+
+        // for each present attribute
+        int attCount = attributes.getLength();
+        for (int index = 0; index < attCount; index++) {
+            attributes.getName(index, fTempQName);
+            // if it's from xsi namespace, it must be one of the four
+            if (fTempQName.uri == URI_XSI) {
+                if (fTempQName.localpart != XSI_SCHEMALOCACTION &&
+                    fTempQName.localpart != XSI_NONAMESPACESCHEMALOCACTION &&
+                    fTempQName.localpart != XSI_NIL &&
+                    fTempQName.localpart != XSI_TYPE) {
+                    reportGenericSchemaError("invalid attribute from xsi namespace '"+fTempQName.localpart+"'");
+                }
+            } else if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
+                // it's not xmlns, and not xsi, then we need to find a decl for it
+                XSAttributeUse currUse = null;
+                for (int i = 0; i < useCount; i++) {
+                    if (attrUses[i].fAttrDecl.fName == fTempQName.localpart &&
+                        attrUses[i].fAttrDecl.fTargetNamespace == fTempQName.uri) {
+                        currUse = attrUses[i];
+                        break;
+                    }
+                }
+                // if failed, get it from wildcard
+                if (currUse == null) {
+                    if (!attrWildcard.allowNamespace(fTempQName.uri)) {
+                        // so this attribute is not allowed
+                        reportGenericSchemaError("attribute '"+fTempQName.rawname+"' can't appear in element '"+element.rawname+"'");
+                        continue;
+                    }
+                }
+
+                // get the corresponding attribute decl
+                XSAttributeDecl currDecl = null;
+                if (currUse != null) {
+                    currDecl = currUse.fAttrDecl;
+                } else {
+                    // which means it matches a wildcard
+                    // skip it if it's skip
+                    if (attrWildcard.fType == XSWildcardDecl.WILDCARD_SKIP)
+                        continue;
+                    // now get the grammar and attribute decl
+                    SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempQName.uri);
+                    if (grammar != null)
+                        currDecl = grammar.getGlobalAttributeDecl(fTempQName.localpart);
+                    // if can't find
+                    if (currDecl == null) {
+                        // if strict, report error
+                        if (attrWildcard.fType == XSWildcardDecl.WILDCARD_STRICT)
+                            reportGenericSchemaError("can't find the declaration for attribute '"+fTempQName.rawname+"'");
+                        // then continue to the next attribute
+                        continue;
+                    }
+                }
+
+                // get the value constraint from use or decl
+                // REVISIT: don't quite understand the spec: which value constraint to use
+                short constType = XSAttributeDecl.NO_CONSTRAINT;
+                Object defaultValue = null;
+                if (currUse != null) {
+                    constType = currUse.fConstraintType;
+                    defaultValue = currUse.fDefault;
+                }
+                if (constType == XSAttributeDecl.NO_CONSTRAINT) {
+                    constType = currDecl.fConstraintType;
+                    defaultValue = currDecl.fDefault;
+                }
+                // get simple type
+                DatatypeValidator attDV = currDecl.fType;
+                // get attribute value
+                String attrValue = attributes.getValue(index);
+                // if the value is fixed
+                if (constType == XSAttributeDecl.FIXED_VALUET) {
+                    // REVISIT: get compiled form of value, then compare
+                    if (attDV.compare(attrValue, (String)defaultValue) != 0) {
+                        reportGenericSchemaError("attribute value not match fixed value");
+                    } else {
+                        // if it's one of IDREF type, we should record this value for further checking against ID vlues
+                        if (attDV instanceof IDREFDatatypeValidator) {
+                            fTableOfIDRefs.put(fTempQName.localpart, fTempObject);
+                        }
+                    }
+                } else {
+                    // otherwise, check the value against the simpleType
+                    // REVISIT: normalize the attribute value
+                    //attrValue = normalizeValue(attrValue, attDV.getWSFacet());
+                    try {
+                        // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
+                        attDV.validate(attrValue, null);
+                    } catch (InvalidDatatypeValueException idve) {
+                        reportGenericSchemaError("datatype validation error: "+idve);
+                    }
+                }
+            } // end of if (not xsi and not xmlns)
+        } // end of for (all attributes)
     } //validateOnAttributes
+
+    // REVISIT: move the following 5 methods to common place
+    boolean checkTypeDerivationOk(XSTypeDecl derived, XSTypeDecl base, int block) {
+        // if derived is anyType, then it's valid only if base is anyType too
+        if (derived.getXSType() == XSTypeDecl.ANY_TYPE)
+            return derived == base;
+        // if derived is anySimpleType, then it's valid only if the base
+        // is ur-type
+        if (derived.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE)
+            return (base.getXSType() & XSTypeDecl.UR_TYPE) != 0;
+
+        // if derived is simple type
+        if ((derived.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+            // if base is complex type
+            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                // if base is anyType, change base to anySimpleType,
+                // otherwise, not valid
+                if (base.getXSType() == XSTypeDecl.ANY_TYPE)
+                    base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+                else
+                    return false;
+            }
+            return checkSimpleDerivation((DatatypeValidator)derived,
+                                         (DatatypeValidator)base, block);
+        } else {
+            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+                block |= ((XSComplexTypeDecl)base).fBlock;
+            return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
+        }
+    }
+
+    boolean checkSimpleDerivationOk(DatatypeValidator derived, XSTypeDecl base, int block) {
+        // REVISIT: to implement and move to common place
+        return true;
+    }
+
+    boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
+        // REVISIT: to implement and move to common place
+        return true;
+    }
+
+    /**
+     * Note: this will be a private method, and it assumes that derived is not
+     *       anySimpleType, and base is not anyType. Another method will be
+     *       introduced for public use, which will call this method.
+     */
+    boolean checkSimpleDerivation(DatatypeValidator derived, DatatypeValidator base, int block) {
+        // 1 They are the same type definition.
+        if (derived == base)
+            return true;
+
+        // 2 All of the following must be true:
+        // 2.1 restriction is not in the subset, or in the {final} of its own {base type definition};
+        if ((block & SchemaSymbols.RESTRICTION) != 0 ||
+            (derived.getBaseValidator().getFinalSet() & SchemaSymbols.RESTRICTION) != 0) {
+            return false;
+        }
+
+        // 2.2 One of the following must be true:
+        // 2.2.1 D's ·base type definition· is B.
+        DatatypeValidator directBase = derived.getBaseValidator();
+        if (directBase == base)
+            return true;
+
+        // 2.2.2 D's ·base type definition· is not the ·simple ur-type definition· and is validly derived from B given the subset, as defined by this constraint.
+        if (directBase.getXSType() != XSTypeDecl.ANYSIMPLE_TYPE &&
+            checkSimpleDerivation(directBase, base, block)) {
+            return true;
+        }
+
+        // 2.2.3 D's {variety} is list or union and B is the ·simple ur-type definition·.
+        if ((derived instanceof ListDatatypeValidator ||
+             derived instanceof UnionDatatypeValidator) &&
+            base.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE) {
+            return true;
+        }
+
+        // 2.2.4 B's {variety} is union and D is validly derived from a type definition in B's {member type definitions} given the subset, as defined by this constraint.
+        if (base instanceof UnionDatatypeValidator) {
+            Vector subUnionMemberDV = ((UnionDatatypeValidator)base).getBaseValidators();
+            int subUnionSize = subUnionMemberDV.size();
+            for (int i=0; i<subUnionSize; i++) {
+                base = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                if (checkSimpleDerivation(derived, base, block))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Note: this will be a private method, and it assumes that derived is not
+     *       anyType. Another method will be introduced for public use,
+     *       which will call this method.
+     */
+    boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
+        // 2.1 B and D must be the same type definition.
+        if (derived == base)
+            return true;
+
+        // 1 If B and D are not the same type definition, then the {derivation method} of D must not be in the subset.
+        if ((derived.fDerivedBy & block) != 0)
+            return false;
+
+        // 2 One of the following must be true:
+        XSTypeDecl directBase = derived.fBaseType;
+        // 2.2 B must be D's {base type definition}.
+        if (directBase == base)
+            return true;
+
+        // 2.3 All of the following must be true:
+        int directType = directBase.getXSType();
+        // 2.3.1 D's {base type definition} must not be the ·ur-type definition·.
+        if ((directType & XSTypeDecl.UR_TYPE) != 0)
+            return false;
+
+        // 2.3.2 The appropriate case among the following must be true:
+        // 2.3.2.1 If D's {base type definition} is complex, then it must be validly derived from B given the subset as defined by this constraint.
+        if ((directType & XSTypeDecl.COMPLEX_TYPE) != 0)
+            return checkComplexDerivation((XSComplexTypeDecl)directBase, base, block);
+
+        // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (§3.14.6).
+        if ((directType & XSTypeDecl.SIMPLE_TYPE) != 0) {
+            // if base is complex type
+            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                // if base is anyType, change base to anySimpleType,
+                // otherwise, not valid
+                if (base.getXSType() == XSTypeDecl.ANY_TYPE)
+                    base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+                else
+                    return false;
+            }
+            return checkSimpleDerivation((DatatypeValidator)derived,
+                                         (DatatypeValidator)base, block);
+        }
+
+        return false;
+    }
 
     void reportSchemaError(String key, Object[] arguments) {
         if (fDoValidation)

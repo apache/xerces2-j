@@ -91,7 +91,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         sElem = checkContent( icElem, sElem, false);
         // General Attribute Checking on sElem
-        Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc.fNamespaceSupport);
+        Object [] attrValues = fAttrChecker.checkAttributes(sElem, false, schemaDoc);
 
         if(!sElem.getLocalName().equals(SchemaSymbols.ELT_SELECTOR)) {
             // REVISIT: localize
@@ -112,12 +112,12 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             // REVISIT: Add error message.
             reportGenericSchemaError(e.getMessage());
             // put back attr values...
-            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;
         }
 
         // put back attr values...
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         // get fields
         Element fElem = DOMUtil.getNextSiblingElement(sElem);
@@ -127,7 +127,7 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         while (fElem != null) {
             // General Attribute Checking
-            attrValues = fAttrChecker.checkAttributes(fElem, false, schemaDoc.fNamespaceSupport);
+            attrValues = fAttrChecker.checkAttributes(fElem, false, schemaDoc);
 
             if(!fElem.getLocalName().equals(SchemaSymbols.ELT_FIELD))
                 // REVISIT: localize
@@ -145,12 +145,12 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
                 // REVISIT: Add error message.
                 reportGenericSchemaError(e.getMessage());
                 // put back attr values...
-                fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+                fAttrChecker.returnAttrArray(attrValues, schemaDoc);
                 return;
             }
             fElem = DOMUtil.getNextSiblingElement(fElem);
             // put back attr values...
-            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         }
 
     } // traverseIdentityConstraint(IdentityConstraint,Element, XSDocumentInfo)

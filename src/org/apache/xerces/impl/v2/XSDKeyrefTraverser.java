@@ -81,7 +81,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
             XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(krElem, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(krElem, false, schemaDoc);
 
         // create identity constraint
         QName krName = (QName)attrValues[XSAttributeChecker.ATTIDX_NAME];
@@ -92,7 +92,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         if(key == null) {
             // reportSchemaError(SchemaMessageProvider.KeyRefReferNotFound,
                               // new Object[]{krName,kName});
-            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return;
         }
 
@@ -106,7 +106,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         // REVISIT: should we add IDC to element here?
         grammar.addIDConstraintDecl(element, keyRef);
         // and put back attributes
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
     } // traverse(Element,int,XSDocumentInfo, SchemaGrammar)
 } // XSDKeyrefTraverser
 

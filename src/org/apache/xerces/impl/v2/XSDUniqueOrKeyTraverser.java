@@ -82,7 +82,7 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
             XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(uElem, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(uElem, false, schemaDoc);
 
         // create identity constraint
         String uName = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
@@ -103,6 +103,6 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         grammar.addIDConstraintDecl(element, uniqueOrKey);
 
         // and fix up attributeChecker
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
     } // traverse(Element,XSDElementDecl,XSDocumentInfo, SchemaGrammar)
 } // XSDUniqueOrKeyTraverser

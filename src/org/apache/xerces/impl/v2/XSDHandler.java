@@ -323,10 +323,10 @@ class XSDHandler {
             else if (localName.equals(SchemaSymbols.ELT_IMPORT)) {
                 // have to handle some validation here too!
                 // call XSAttributeChecker to fill in attrs
-                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo.fNamespaceSupport);
+                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
-                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo.fNamespaceSupport);
+                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
             }
             else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
@@ -334,9 +334,9 @@ class XSDHandler {
                 // validation for redefine/include will be the same here; just
                 // make sure TNS is right (don't care about redef contents
                 // yet).
-                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo.fNamespaceSupport);
+                Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
-                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo.fNamespaceSupport);
+                fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 newSchemaRoot = getSchema(EMPTY_STRING, schemaHint);
             }
             else {

@@ -135,10 +135,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // General Attribute Checking
         fSchemaDoc = schemaDoc;
         fGrammar = grammar;
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc);
         String nameAtt = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         DatatypeValidator type = traverseSimpleTypeDecl(elmNode, attrValues, schemaDoc, true);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
     }
@@ -149,9 +149,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         fSchemaDoc = schemaDoc;
         fGrammar = grammar;
 
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         DatatypeValidator type = traverseSimpleTypeDecl (elmNode, attrValues, schemaDoc, false);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
     }
@@ -188,7 +188,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // update _final_ registry
         //----------------------------------------------------------
         XInt finalAttr = (XInt)attrValues[XSAttributeChecker.ATTIDX_FINAL];
-        int finalProperty = finalAttr == null ? 0 : finalAttr.intValue();
+        int finalProperty = finalAttr == null ? schemaDoc.fFinalDefault : finalAttr.intValue();
 
         //----------------------------------------------------------------------
         //annotation?,(list|restriction|union)
@@ -201,9 +201,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
 
         // General Attribute Checking
-        Object[] contentAttrs = fAttrChecker.checkAttributes(content, false, schemaDoc.fNamespaceSupport);
+        Object[] contentAttrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
         // REVISIT: when to return the array
-        fAttrChecker.returnAttrArray(contentAttrs, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(contentAttrs, schemaDoc);
 
         //----------------------------------------------------------------------
         //use content.getLocalName for the cases there "xsd:" is a prefix, ei. "xsd:list"
@@ -404,7 +404,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             String facet;
             while (content != null) {
                 // General Attribute Checking
-                Object[] attrs = fAttrChecker.checkAttributes(content, false, schemaDoc.fNamespaceSupport);
+                Object[] attrs = fAttrChecker.checkAttributes(content, false, schemaDoc);
                 numFacets++;
                 facet = DOMUtil.getLocalName(content);
                 if (facet.equals(SchemaSymbols.ELT_ENUMERATION)) {
@@ -412,7 +412,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     String enumVal =  DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE);
                     String localName;
                     if (baseValidator instanceof NOTATIONDatatypeValidator) {
-                        fAttrChecker.checkAttributes(content, false, schemaDoc.fNamespaceSupport);
+                        fAttrChecker.checkAttributes(content, false, schemaDoc);
                         String prefix = "";
                         String localpart = enumVal;
                         int colonptr = enumVal.indexOf(":");
@@ -505,7 +505,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
                 }
                 // REVISIT: when to return the array
-                fAttrChecker.returnAttrArray (attrs, schemaDoc.fNamespaceSupport);
+                fAttrChecker.returnAttrArray (attrs, schemaDoc);
                 content = DOMUtil.getNextSiblingElement(content);
             }
             if (numEnumerationLiterals > 0) {

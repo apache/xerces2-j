@@ -89,8 +89,8 @@ class XSDocumentInfo {
     protected boolean fAreLocalElementsQualified;
 
     // [block | final]Default
-    protected int fBlockDefault;
-    protected int fFinalDefault;
+    protected short fBlockDefault;
+    protected short fFinalDefault;
 
     // targetNamespace
     protected String fTargetNamespace;
@@ -98,21 +98,24 @@ class XSDocumentInfo {
     // the root of the schema Document tree itself
     protected Document fSchemaDoc;
 
+    // to store the ID values appearing in this document
+    protected Hashtable fIdDefs = new Hashtable();
+
     XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker) {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
 
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
-            Object[] schemaAttrs = attrChecker.checkAttributes(root, true, fNamespaceSupport);
+            Object[] schemaAttrs = attrChecker.checkAttributes(root, true, this);
             fAreLocalAttributesQualified =
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fAreLocalElementsQualified =
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fBlockDefault =
-                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).intValue();
+                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).shortValue();
             fFinalDefault =
-                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).intValue();
+                ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
             //if (fTargetNamespace == null)
@@ -121,7 +124,7 @@ class XSDocumentInfo {
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 
             // REVISIT: we can't return, becaues we can't pop fNamespaceSupport
-            //attrChecker.returnAttrArray(schemaAttrs, fNamespaceSupport);
+            //attrChecker.returnAttrArray(schemaAttrs, this);
         }
     }
 

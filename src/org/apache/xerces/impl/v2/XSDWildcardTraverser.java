@@ -117,8 +117,10 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                                SchemaGrammar grammar) {
 
         // General Attribute Checking for elmNode
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         XSWildcardDecl wildcard = traverseWildcardDecl(elmNode, attrValues, schemaDoc, grammar);
+
+        // for <any>, need to create a new particle to reflect the min/max values
         XSParticleDecl particle = null;
         if (wildcard != null) {
             int min = ((XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS]).intValue();
@@ -132,7 +134,7 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
             }
         }
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return particle;
     }
@@ -151,9 +153,9 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                                         SchemaGrammar grammar) {
 
         // General Attribute Checking for elmNode
-        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         XSWildcardDecl wildcard = traverseWildcardDecl(elmNode, attrValues, schemaDoc, grammar);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return wildcard;
     }
@@ -172,77 +174,12 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                                          XSDocumentInfo schemaDoc,
                                          SchemaGrammar grammar) {
 
-        XSWildcardDecl wildcard = new XSWildcardDecl();
-
         //get all attributes
-        String namespaceAttr       = (String) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
-        XInt   processContentsAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_PROCESSCONTENTS];
+        XSWildcardDecl wildcard = (XSWildcardDecl) attrValues[XSAttributeChecker.ATTIDX_NAMESPACE];
+        XInt processContentsAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_PROCESSCONTENTS];
 
+        // process contents
         wildcard.fProcessContents = processContentsAttr.shortValue();
-
-        wildcard.fType = XSWildcardDecl.WILDCARD_ANY;
-        if (namespaceAttr.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY)) {
-            wildcard.fType = XSWildcardDecl.WILDCARD_ANY;
-        }
-        else if (namespaceAttr.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
-            wildcard.fType = XSWildcardDecl.WILDCARD_OTHER;
-            if (schemaDoc.fTargetNamespace.length() == 0) {
-                wildcard.fNamespaceList = new String[1];
-                wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
-            } else {
-                wildcard.fNamespaceList = new String[2];
-                wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
-                wildcard.fNamespaceList[1] = fSchemaHandler.EMPTY_STRING;
-            }
-        }
-        else {
-            // REVISIT: namespace should be return in String[] or Vector,
-            //          then we don't need to tokenize them again
-
-            //namespace = "##local" OR
-            //namespace = "##targetNamespace" OR
-            //namespace = "anyURI" OR
-            //namespace = "anyURI ##local" OR
-            //namespace = "anyURI ##targetNamespace"
-
-            StringTokenizer tokens = new StringTokenizer(namespaceAttr);
-            String[] namespaceList = new String[tokens.countTokens()];
-            int i = 0;
-            String token;
-            String tempNamespace;
-            while (tokens.hasMoreTokens()) {
-                token = tokens.nextToken();
-                if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-                    tempNamespace = fSchemaHandler.EMPTY_STRING;
-                }
-                else if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS)) {
-                    tempNamespace = schemaDoc.fTargetNamespace;
-                }
-                else {
-                    // we have found namespace URI here
-                    tempNamespace = token;
-                }
-
-                //check for duplicate namespaces in the list
-                int j=0;
-                for (; j<i; j++) {
-                    if (tempNamespace.equals(namespaceList[j]))
-                        break;
-                }
-                if (j == i) {
-                    // this means traversed whole for loop
-                    // i.e. not a duplicate namespace
-                    namespaceList[i] = tempNamespace;
-                    i++;
-                }
-            }
-            if (i == namespaceList.length) {
-                wildcard.fNamespaceList = namespaceList;
-            } else {
-                wildcard.fNamespaceList = new String[i];
-                System.arraycopy(namespaceList, 0, wildcard.fNamespaceList, 0, i);
-            }
-        }
 
         //check content
         Element child = DOMUtil.getFirstChildElement(elmNode);

@@ -93,7 +93,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         // General Attribute Checking
 
-        Object[] attrValues = fAttrChecker.checkAttributes(allDecl, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(allDecl, false, schemaDoc);
 
         Element content = DOMUtil.getFirstChildElement(allDecl);
         Element child = checkContent(allDecl, content, true);
@@ -155,7 +155,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                 allContextFlags,
                                 defaultVals.longValue());
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return left;
     }
@@ -222,7 +222,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                              boolean choice) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc);
 
         Element content = DOMUtil.getFirstChildElement(decl);
         Element child = checkContent(decl,content, true);
@@ -325,7 +325,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                 allContextFlags,
                                 defaultVals.longValue());
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return left;
     }

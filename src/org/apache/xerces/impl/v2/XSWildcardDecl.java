@@ -91,4 +91,28 @@ public class XSWildcardDecl {
     // for WILDCARD_OTHER, it means not any of the namespaces in the list
     public String[] fNamespaceList;
 
+    /**
+     * Whether a namespace is allowed by this wildcard
+     */
+    public boolean allowNamespace(String namespace) {
+        // ##any allows any namespace
+        if (fType == WILDCARD_ANY)
+            return true;
+
+        // ##other doesn't allow target namespace and empty namespace
+        if (fType == WILDCARD_OTHER) {
+            return namespace != fNamespaceList[0] &&
+                   namespace != fNamespaceList[1];
+        }
+
+        // list allows any one in the list
+        int listNum = fNamespaceList.length;
+        for (int i = 0; i < listNum; i++) {
+            if (namespace == fNamespaceList[i])
+                return true;
+        }
+
+        return false;
+    }
+
 } // class XSWildcardDecl

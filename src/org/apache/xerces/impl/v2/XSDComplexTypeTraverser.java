@@ -109,11 +109,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
 
         Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, false,
-                              schemaDoc.fNamespaceSupport);
+                              schemaDoc);
         String complexTypeName = genAnonTypeName(complexTypeNode);
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                                  complexTypeName, attrValues, schemaDoc, grammar);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
     }
@@ -131,12 +131,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                         SchemaGrammar grammar){
 
         Object[] attrValues = fAttrChecker.checkAttributes(complexTypeNode, true,
-                              schemaDoc.fNamespaceSupport);
+                              schemaDoc);
         String complexTypeName = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode,
                                  complexTypeName, attrValues, schemaDoc, grammar);
         grammar.addGlobalTypeDecl(type);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
     }
@@ -157,9 +157,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         complexType.fName = complexTypeName;
         complexType.fTargetNamespace = schemaDoc.fTargetNamespace;
         complexType.fBlock = blockAtt == null ?
-                             SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
+                             schemaDoc.fBlockDefault : blockAtt.shortValue();
         complexType.fFinal = finalAtt == null ?
-                             SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
+                             schemaDoc.fFinalDefault : finalAtt.shortValue();
         if (abstractAtt.booleanValue())
             complexType.setIsAbstractType();
 

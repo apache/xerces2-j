@@ -130,8 +130,8 @@ abstract class XSDAbstractTraverser {
     void traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs,
                                 boolean isGlobal, XSDocumentInfo schemaDoc) {
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc.fNamespaceSupport);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         for(Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
@@ -148,8 +148,8 @@ abstract class XSDAbstractTraverser {
             // General Attribute Checking
             // There is no difference between global or local appinfo/documentation,
             // so we assume it's always global.
-            attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc.fNamespaceSupport);
-            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            attrValues = fAttrChecker.checkAttributes(child, true, schemaDoc);
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc);
         }
 
         // REVISIT: an annotation decl should be returned when we support PSVI

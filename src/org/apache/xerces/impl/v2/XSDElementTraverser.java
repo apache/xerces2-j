@@ -156,7 +156,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                int allContextFlags) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc);
 
         QName refAtt = (QName) attrValues[XSAttributeChecker.ATTIDX_REF];
         XInt  minAtt = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
@@ -191,7 +191,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                              defaultVals.longValue());
         }
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
     }
 
     /**
@@ -207,9 +207,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                  SchemaGrammar grammar) {
 
         // General Attribute Checking
-        Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, true, schemaDoc.fNamespaceSupport);
+        Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, true, schemaDoc);
         XSElementDecl element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return element;
     }
@@ -264,8 +264,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         // get 'block', 'final', 'nillable', 'abstract'
-        element.fBlock = blockAtt == null ? SchemaSymbols.EMPTY_SET : blockAtt.shortValue();
-        element.fFinal = finalAtt == null ? SchemaSymbols.EMPTY_SET : finalAtt.shortValue();
+        element.fBlock = blockAtt == null ? schemaDoc.fBlockDefault : blockAtt.shortValue();
+        element.fFinal = finalAtt == null ? schemaDoc.fFinalDefault : finalAtt.shortValue();
         if (nillableAtt.booleanValue())
             element.setIsNillable();
         if (abstractAtt != null && abstractAtt.booleanValue())

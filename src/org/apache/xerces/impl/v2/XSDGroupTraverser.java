@@ -89,7 +89,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // General Attribute Checking for elmNode declared locally
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false,
-                              schemaDoc.fNamespaceSupport);
+                              schemaDoc);
         QName refAttr = (QName) attrValues[XSAttributeChecker.ATTIDX_REF];
         XInt  minAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt  maxAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
@@ -132,7 +132,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
         }
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return particle;
 
@@ -144,7 +144,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         // General Attribute Checking for elmNode declared globally
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true,
-                              schemaDoc.fNamespaceSupport);
+                              schemaDoc);
         String  strNameAttr = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
 
         // must have a name
@@ -200,7 +200,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
         }
 
-        fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return group;
 
