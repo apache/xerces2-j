@@ -139,6 +139,9 @@ Copyright:
     <copy file="${src.dir}/org/apache/xerces/jaxp/javax.xml.parsers.SAXParserFactory"
       tofile="${build.dest}/META-INF/services/javax.xml.parsers.SAXParserFactory"/>
 
+    <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
+      tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
+
     <!-- copy src files -->
     <copy todir="${build.src}">
         <fileset 
