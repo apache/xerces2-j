@@ -518,7 +518,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     Node prevSibling = node.getPreviousSibling();
                     Node parent = node.getParentNode();
                     ((EntityReferenceImpl)node).setReadOnly(false, true);
-                    expandEntityRef (node, parent, node);
+                    expandEntityRef (parent, node);
                     parent.removeChild(node);
                     Node next = (prevSibling != null)?prevSibling.getNextSibling():parent.getFirstChild();
                     // The list of children #text -> &ent;
@@ -713,15 +713,11 @@ public class DOMNormalizer implements XMLDocumentHandler {
         return null;
     }//normalizeNode
 
-    protected final void expandEntityRef (Node node, Node parent, Node reference){
+    protected final void expandEntityRef (Node parent, Node reference){
         Node kid, next;
-        for (kid = node.getFirstChild(); kid != null; kid = next) {
+        for (kid = reference.getFirstChild(); kid != null; kid = next) {
             next = kid.getNextSibling();
-            if (node.getNodeType() == Node.TEXT_NODE) {
-                expandEntityRef(kid, parent, reference);
-            } else {
-                parent.insertBefore(kid, reference);
-            }
+            parent.insertBefore(kid, reference);
         }
     }
 
