@@ -76,6 +76,7 @@ import org.xml.sax.InputSource;
 public class Test {
     
     static final boolean DEBUG = false;
+    static boolean fStdOut = false;
     
     static final String [] tests = {
         "<FOO>AB<MOO>CD</MOO>CD</FOO>",
@@ -158,13 +159,20 @@ public class Test {
             printUsage();
             System.exit(1);
         }
+        if (args.length > 1) {
+            if (args[1].equals("yes")){
+                fStdOut = true;
+            }
+            
+            
+        }
         new Test(args[0]);
     }
     
    /** Prints the usage. */
    private static void printUsage() {
 
-      System.err.println("usage: java dom.range.Test (options) ...");
+      System.err.println("usage: java dom.range.Test (option) (stdout)");
       System.err.println();
       System.err.println("options:");
       System.err.println("  all             all tests");
@@ -175,6 +183,10 @@ public class Test {
       System.err.println("  surround        surround test");
       System.err.println("  insert2         insert mutation test");
       System.err.println("  delete2         delete mutation test");
+      System.err.println("stdout:");
+      System.err.println("  yes             print to standard output");
+      System.err.println("  no              don't print any messages to standard output [default]");
+
 
    } // printUsage()
     
@@ -189,10 +201,14 @@ public class Test {
             all = performTest("surround")&&all;
             all = performTest("insert2")&&all;
             all = performTest("delete2")&&all;
-            if (all) 
-                System.out.println("*** ALL TESTS PASSED! ***");
-            else 
+            if (all) {
+                System.out.println("Done.");
+                
+            }
+            else {
                 System.out.println("*** ONE OR MORE TESTS FAILED! ***");
+                System.exit(1);
+            }
             
         } else {
             performTest(arg);            
@@ -205,10 +221,10 @@ public class Test {
             Writer writer = new Writer(false);
             DOMParser parser = new DOMParser();
             if (!arg.equals("delete2") && !arg.equals("insert2")) {
-            System.out.println("\n*************** Test == "+arg+" ***************");
+            if (fStdOut) System.out.println("\n*************** Test == "+arg+" ***************");
             for (int i = 0; i < tests.length; i++) {
-                System.out.println("\n\nTest["+i+"]");
-                System.out.println("\nBefore "+arg+": document="+tests[i]+":");
+                if (fStdOut) System.out.println("\n\nTest["+i+"]");
+                if (fStdOut) System.out.println("\nBefore "+arg+": document="+tests[i]+":");
                 parser.parse(new InputSource(new StringReader(tests[i])));
                 DocumentImpl document = (DocumentImpl)parser.getDocument();
                 Range range = document.createRange();
@@ -258,47 +274,47 @@ public class Test {
                     }
                 }
                 
-                System.out.println("range.toString="+range.toString());
+                if (fStdOut) System.out.println("range.toString="+range.toString());
                 DocumentFragment frag = null;
                 
                 if (arg.equals("surround")) {
                     try {
-                        System.out.println("surroundNode="+surroundNode);
+                        if (fStdOut) System.out.println("surroundNode="+surroundNode);
                         range.surroundContents(surroundNode);
                     } catch (org.w3c.dom.ranges.RangeException e) {
-                        System.out.println(e);
+                        if (fStdOut) System.out.println(e);
                     }
                    String result = toString(document);
-                   System.out.println("After surround: document="+result+":");
+                   if (fStdOut) System.out.println("After surround: document="+result+":");
                    if (!result.equals(surroundResult[i])) {
-                        System.out.println("Should be: document="+surroundResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: document="+surroundResult[i]+":");
                         passed = false;
-                        System.out.println("Test FAILED!");
-                        System.out.println("*** Surround document Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("Test FAILED!");
+                        if (fStdOut) System.out.println("*** Surround document Test["+i+"] FAILED!");
                    }
                 }
                 
                 if (arg.equals("insert")) {
                     range.insertNode(document.createTextNode(INSERT));
                    String result = toString(document);
-                   System.out.println("After  insert: document="+result+":");
+                   if (fStdOut) System.out.println("After  insert: document="+result+":");
                    if (!result.equals(insertResult[i])) {
-                        System.out.println("Should be: document="+insertResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: document="+insertResult[i]+":");
                         passed = false;
-                        System.out.println("Test FAILED!");
-                        System.out.println("*** Insert document Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("Test FAILED!");
+                        if (fStdOut) System.out.println("*** Insert document Test["+i+"] FAILED!");
                    }
                     
                 } else 
                 if (arg.equals("delete")) {
                    range.deleteContents();
                    String result = toString(document);
-                   System.out.println("After delete:"+result+":");
+                   if (fStdOut) System.out.println("After delete:"+result+":");
                    if (!result.equals(deleteResult[i])) {
-                        System.out.println("Should be: document="+deleteResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: document="+deleteResult[i]+":");
                         passed = false;
-                        System.out.println("Test FAILED!");
-                        System.out.println("*** Delete document Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("Test FAILED!");
+                        if (fStdOut) System.out.println("*** Delete document Test["+i+"] FAILED!");
                    }
                 }
                 else 
@@ -306,18 +322,18 @@ public class Test {
                     frag = range.extractContents();
                     //range.insertNode(document.createTextNode("^"));
                    String result = toString(document);
-                   System.out.println("After extract: document="+result+":");
+                   if (fStdOut) System.out.println("After extract: document="+result+":");
                    if (!result.equals(deleteResult[i])) {
-                        System.out.println("Should be: document="+deleteResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: document="+deleteResult[i]+":");
                         passed = false;
-                        System.out.println("*** Extract document Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("*** Extract document Test["+i+"] FAILED!");
                    }
                    String fragResult = toString(frag);
-                   System.out.println("After extract: fragment="+fragResult+":");
+                   if (fStdOut) System.out.println("After extract: fragment="+fragResult+":");
                    if (!fragResult.equals(extractResult[i])) {
-                        System.out.println("Should be: fragment="+extractResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: fragment="+extractResult[i]+":");
                         passed = false;
-                        System.out.println("*** Extract Fragment Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("*** Extract Fragment Test["+i+"] FAILED!");
                    }
                 }
                    
@@ -325,11 +341,11 @@ public class Test {
                 if (arg.equals("clone")) {
                     frag = range.cloneContents();
                    String fragResult = toString(frag);
-                   System.out.println("After clone: fragment="+fragResult);
+                   if (fStdOut) System.out.println("After clone: fragment="+fragResult);
                    if (!fragResult.equals(extractResult[i])) {
-                        System.out.println("Should be: fragment="+extractResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: fragment="+extractResult[i]+":");
                         passed = false;
-                        System.out.println("*** Clone Fragment Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("*** Clone Fragment Test["+i+"] FAILED!");
                    }
                 }
                 
@@ -337,11 +353,11 @@ public class Test {
             
             } else
             if (arg.equals("insert2")) {
-            System.out.println("\n*************** Test == "+arg+" ***************");
+            if (fStdOut) System.out.println("\n*************** Test == "+arg+" ***************");
             for (int i = 0; i < 4; i++) {
 
-                System.out.println("\n\nTest["+i+"]");
-                System.out.println("\nBefore "+arg+": document="+INSERT2+":");
+                if (fStdOut) System.out.println("\n\nTest["+i+"]");
+                if (fStdOut) System.out.println("\nBefore "+arg+": document="+INSERT2+":");
                 parser.parse(new InputSource(new StringReader(INSERT2)));
                 DocumentImpl document = (DocumentImpl)parser.getDocument();
                 Node root = document.getDocumentElement();
@@ -365,23 +381,23 @@ public class Test {
                     rangei.setStart(root.getFirstChild(), 17);
                     rangei.setEnd(root.getFirstChild(), 17);
                 }
-                //System.out.println("range: start1=="+range.getStartContainer());
+                //if (fStdOut) System.out.println("range: start1=="+range.getStartContainer());
                 //root.insertBefore(document.createTextNode("YES!"), root.getFirstChild());
-                //System.out.println("range: start2=="+range.getStartContainer());
+                //if (fStdOut) System.out.println("range: start2=="+range.getStartContainer());
    
-                if (DEBUG) System.out.println("before insert start="+range.getStartOffset());
-                if (DEBUG) System.out.println("before insert end="+range.getEndOffset());
+                if (DEBUG) if (fStdOut) System.out.println("before insert start="+range.getStartOffset());
+                if (DEBUG) if (fStdOut) System.out.println("before insert end="+range.getEndOffset());
                 rangei.insertNode(document.createTextNode(INSERTED_TEXT));
-                if (DEBUG) System.out.println("after insert start="+range.getStartOffset());
-                if (DEBUG) System.out.println("after insert end="+range.getEndOffset());
+                if (DEBUG) if (fStdOut) System.out.println("after insert start="+range.getStartOffset());
+                if (DEBUG) if (fStdOut) System.out.println("after insert end="+range.getEndOffset());
                 
                 String result = toString(document);
-                System.out.println("After insert2: document="+result+":");
+                if (fStdOut) System.out.println("After insert2: document="+result+":");
                 if (!result.equals(rangeInsertResult[i])) {
-                    System.out.println("Should be: document="+rangeInsertResult[i]+":");
+                    if (fStdOut) System.out.println("Should be: document="+rangeInsertResult[i]+":");
                     passed = false;
-                    System.out.println("Test FAILED!");
-                    System.out.println("*** Delete Ranges document Test["+i+"] FAILED!");
+                    if (fStdOut) System.out.println("Test FAILED!");
+                    if (fStdOut) System.out.println("*** Delete Ranges document Test["+i+"] FAILED!");
                 }
             }
             } else
@@ -390,10 +406,10 @@ public class Test {
             // Range Deletion, acting upon another range.
             //
        
-            System.out.println("\n*************** Test == "+arg+" ***************");
+            if (fStdOut) System.out.println("\n*************** Test == "+arg+" ***************");
             for (int i = 0; i < rangeDelete.length; i++) {
-                System.out.println("\n\nTest["+i+"]");
-                System.out.println("\nBefore "+arg+": document="+rangeDelete[i]+":");
+                if (fStdOut) System.out.println("\n\nTest["+i+"]");
+                if (fStdOut) System.out.println("\nBefore "+arg+": document="+rangeDelete[i]+":");
                 parser.parse(new InputSource(new StringReader(rangeDelete[i])));
                 DocumentImpl document = (DocumentImpl)parser.getDocument();
                 Range range = document.createRange();
@@ -449,42 +465,42 @@ public class Test {
                 
                 if (arg.equals("delete2")) {
                     if (DEBUG) {
-                   System.out.println("BEFORE deleteContents()");
-                   System.out.println("ranged: startc="+ranged.getStartContainer());
-                   System.out.println("ranged: starto="+ranged.getStartOffset());
-                   System.out.println("ranged:   endc="+ranged.getEndContainer());
-                   System.out.println("ranged:   endo="+ranged.getEndOffset());
+                   if (fStdOut) System.out.println("BEFORE deleteContents()");
+                   if (fStdOut) System.out.println("ranged: startc="+ranged.getStartContainer());
+                   if (fStdOut) System.out.println("ranged: starto="+ranged.getStartOffset());
+                   if (fStdOut) System.out.println("ranged:   endc="+ranged.getEndContainer());
+                   if (fStdOut) System.out.println("ranged:   endo="+ranged.getEndOffset());
              
-                   System.out.println("range: startc="+range.getStartContainer());
-                   System.out.println("range: starto="+range.getStartOffset());
-                   System.out.println("range:   endc="+range.getEndContainer());
-                   System.out.println("range:   endo="+range.getEndOffset());
+                   if (fStdOut) System.out.println("range: startc="+range.getStartContainer());
+                   if (fStdOut) System.out.println("range: starto="+range.getStartOffset());
+                   if (fStdOut) System.out.println("range:   endc="+range.getEndContainer());
+                   if (fStdOut) System.out.println("range:   endo="+range.getEndOffset());
                     }
                    ranged.deleteContents();
                    String result = null;
                    if (DEBUG) {
-                   System.out.println("AFTER deleteContents()");
+                   if (fStdOut) System.out.println("AFTER deleteContents()");
                    result = toString(document);
-                   System.out.println("ranged: startc="+ranged.getStartContainer());
-                   System.out.println("ranged: starto="+ranged.getStartOffset());
-                   System.out.println("ranged:   endc="+ranged.getEndContainer());
-                   System.out.println("ranged:   endo="+ranged.getEndOffset());
+                   if (fStdOut) System.out.println("ranged: startc="+ranged.getStartContainer());
+                   if (fStdOut) System.out.println("ranged: starto="+ranged.getStartOffset());
+                   if (fStdOut) System.out.println("ranged:   endc="+ranged.getEndContainer());
+                   if (fStdOut) System.out.println("ranged:   endo="+ranged.getEndOffset());
              
-                   System.out.println("range: startc="+range.getStartContainer());
-                   System.out.println("range: starto="+range.getStartOffset());
-                   System.out.println("range:   endc="+range.getEndContainer());
-                   System.out.println("range:   endo="+range.getEndOffset());
+                   if (fStdOut) System.out.println("range: startc="+range.getStartContainer());
+                   if (fStdOut) System.out.println("range: starto="+range.getStartOffset());
+                   if (fStdOut) System.out.println("range:   endc="+range.getEndContainer());
+                   if (fStdOut) System.out.println("range:   endo="+range.getEndOffset());
                    }
                    
                    ranged.insertNode(document.createTextNode("^"));
                    
                    result = toString(document);
-                   System.out.println("After delete2: document="+result+":");
+                   if (fStdOut) System.out.println("After delete2: document="+result+":");
                    if (!result.equals(rangeDeleteResult[i])) {
-                        System.out.println("Should be: document="+rangeDeleteResult[i]+":");
+                        if (fStdOut) System.out.println("Should be: document="+rangeDeleteResult[i]+":");
                         passed = false;
-                        System.out.println("Test FAILED!");
-                        System.out.println("*** Delete Ranges document Test["+i+"] FAILED!");
+                        if (fStdOut) System.out.println("Test FAILED!");
+                        if (fStdOut) System.out.println("*** Delete Ranges document Test["+i+"] FAILED!");
                    }
                 }
             }
@@ -507,7 +523,7 @@ public class Test {
             e.printStackTrace(System.err);
             passed = false;
         }
-        if (!passed) System.out.println("*** The "+arg+" Test FAILED! ***");
+        if (!passed) if (fStdOut) System.out.println("*** The "+arg+" Test FAILED! ***");
         
         return passed;
     }
