@@ -1015,12 +1015,12 @@ public class XSDHandler {
     // otherwise.  schemaDoc is null if and only if no schema document
     // was resolved to.
     private Document getSchema(String schemaNamespace, String schemaHint,
-                               String baseSystemId, boolean useProperties) {
+                               String baseSystemId, boolean useNamespace) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         Document schemaDoc = null;
         try {
-            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId, useProperties);
+            schemaSource = fLocationResolver.resolveEntity(schemaNamespace, schemaHint, baseSystemId, useNamespace);
             // REVISIT: when the system id and byte stream and character stream
             //          of the input source are all null, it's
             //          impossible to find the schema document. so we skip in
@@ -1064,7 +1064,13 @@ public class XSDHandler {
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        "General",
                                        new Object[]{"file not found: " + schemaHint},
-                                       XMLErrorReporter.SEVERITY_WARNING);
+                                       // when using namespace, then hint is optional,
+                                       // and it's not an error if the file is not found
+                                       // but if not using namespace (include/redefine),
+                                       // it's an error if the file is not found.
+                                       useNamespace ?
+                                       XMLErrorReporter.SEVERITY_WARNING :
+                                       XMLErrorReporter.SEVERITY_ERROR);
         }
         catch (IOException ex) {
             // REVISIT: report an error!
