@@ -59,27 +59,29 @@
 	<xsl:template match="categories" mode="toc">
 		<h2>Requirement Categories</h2>
 		<xsl:for-each select="cat">
-				<a>
-					<xsl:attribute name="href">#cat.{.}</xsl:attribute>
-					<xsl:value-of select="."/>
-				</a>
+			<a>
+				<xsl:attribute name="href">#cat.{.}</xsl:attribute>
+				<xsl:value-of select="."/>
+			</a>
 			<br/>
 		</xsl:for-each>
 		<hr/>
 	</xsl:template>
-	
 	<xsl:template name="indexByNumber">
 		<h2>Requirements by Number</h2>
 		<xsl:for-each select="/requirementCatalog/requirements/req">
-			<a href="#req.{@id}"><xsl:value-of select="@id"/></a>&nbsp;	&nbsp;
+			<a href="#req.{@id}">
+				<xsl:value-of select="@id"/>
+			</a>&nbsp;	&nbsp;
 			<xsl:value-of select="substring(def,1,120)"/>
 			<xsl:if test="string-length(def)>120">...</xsl:if>
 			<br/>
-			<xsl:if test="@id mod 5 = 0"><br/></xsl:if>
+			<xsl:if test="@id mod 5 = 0">
+				<br/>
+			</xsl:if>
 		</xsl:for-each>
 		<hr/>
 	</xsl:template>
-	
 	<xsl:template match="categories">
 		<h2>Requirements by Category</h2>
 		<xsl:for-each select="cat">
@@ -96,7 +98,6 @@
 			</table>
 		</xsl:for-each>
 	</xsl:template>
-	
 	<xsl:template match="req">
 		<xsl:variable name="reqId" select="@id"/>
 		<tr>
@@ -106,7 +107,7 @@
 						<xsl:attribute name="name">req.<xsl:value-of select="$reqId"/></xsl:attribute>
 					</a>
 					<b>
-<!--						<xsl:value-of select="@id"/>.</b> -->
+						<!--						<xsl:value-of select="@id"/>.</b> -->
 						<xsl:value-of select="$reqId"/>.</b>
 					<br/>
         &nbsp;&nbsp;<xsl:value-of select="@strength"/>
@@ -122,15 +123,40 @@
 				</p>
 				<blockquote>
 					<xsl:if test="seeAlso">
-						<xsl:apply-templates select="seeAlso"/><br/>
+						<p><xsl:apply-templates select="seeAlso"/></p>
 					</xsl:if>
+					<xsl:apply-templates select="voteSet"/>
 					<xsl:apply-templates select="edReqNote"/>
+					<xsl:if test="refs/ref">
+						<b><i>References</i></b>
+						<br/>
+					</xsl:if>
 					<xsl:apply-templates select="refs/ref"/>
 				</blockquote>
 			</td>
 		</tr>
 	</xsl:template>
-	
+	<xsl:template match="voteSet">
+		<b>
+			<i>Voted</i>
+		</b> on from <xsl:value-of select="@opened"/> to <xsl:value-of select="@closed"/>.  Votes:
+	<ul>
+			<xsl:apply-templates select="vote"/>
+		</ul>
+	</xsl:template>
+	<xsl:template match="vote">
+		<li>
+			<a href="mailto:{@email}">
+				<xsl:value-of select="@voter"/>
+			</a>: <xsl:value-of select="@vote"/>
+			<xsl:apply-templates select="voteComment"/>
+		</li>
+	</xsl:template>
+	<xsl:template match="voteComment">
+		<blockquote>
+			<xsl:copy-of select="."/>
+		</blockquote>
+	</xsl:template>
 	<xsl:template match="seeAlso">
 		<xsl:if test="@type">
 			<xsl:value-of select="concat(@type,':')"/>
@@ -138,21 +164,28 @@
 		<xsl:if test="not(@type)">
 			See also:
 		</xsl:if>
-		
-		<a href="#req.{@id}"><xsl:value-of select="@id"/></a>&nbsp;&nbsp;
+		<a href="#req.{@id}">
+			<xsl:value-of select="@id"/>
+		</a>&nbsp;&nbsp;
 	</xsl:template>
 	<xsl:template match="edReqNote">
-		<blockquote><i>Ed:</i><xsl:value-of select="."/></blockquote>
+		<blockquote>
+			<i>Ed:</i>
+			<xsl:value-of select="."/>
+		</blockquote>
 	</xsl:template>
-	
 	<xsl:template match="ref">
-		<p><xsl:if test="string(.)">"<xsl:copy-of select="."/>"<br/></xsl:if>
+		<p>
+			<xsl:if test="string(.)">"<xsl:copy-of select="."/>"<br/>
+			</xsl:if>
 			<xsl:apply-templates select="/requirementCatalog/mailHeaderSets/mailHeaderSet[@id=current()/@set]/li[a/@name=current()/@id]"/>
 		</p>
 	</xsl:template>
 	<xsl:template match="li">
 		<xsl:copy-of select="."/>
 	</xsl:template>
-	<xsl:template match="br"><br/></xsl:template>
+	<xsl:template match="br">
+		<br/>
+	</xsl:template>
 	<xsl:template match="mailHeaderSets"/>
 </xsl:stylesheet>

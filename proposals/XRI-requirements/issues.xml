@@ -2,7 +2,7 @@
 <!-- edited with XML Spy v3.0 (http://www.xmlspy.com) by Edward Staub (private) -->
 <?xml-stylesheet type="text/xsl" href="issues.xsl"?>
 <!DOCTYPE requirementCatalog SYSTEM "issues.dtd">
-<requirementCatalog date="6 August 2000" version="1.4">
+<requirementCatalog date="4 September 2000" version="1.5">
 	<!-- Checked apache general list through messages 2091 through 2375 -->
 	<!-- Checked apache xerces-j-dev list messages 1160 through 1380 -->
 	<categories>
@@ -15,9 +15,29 @@
 		<cat>Other</cat>
 	</categories>
 	<requirements>
-		<req id="1" status="hardnessConflict" strength="hard" cat="Quality">
+		<req id="1" status="approved" strength="hard" cat="Quality">
 			<def>The code shall be maintainable and simple to read.</def>
 			<seeAlso id="5"/>
+			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1">
+					<voteComment>+1 on intent.  But how can this be a "shall" when there is not a measure
+for maintainability or simplicity.  Are there specific criteria that we
+want to establish such as the Sun's Java coding conventions or something
+else from the Apache world?
+</voteComment>
+				</vote>
+				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1">
+					<voteComment>I have an easy way to measure this.. Committers should only be committers if
+they are prepared to read the code commits. If the code commit isn't
+readable to somebody and they throw a flag, then it probably fails the test.
+For example, my criteria on such code would be that I can understand it. If
+everybody's criteria is this, then it works.
+</voteComment>
+				</vote>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2091"> Above all, this is the primary goal        for any openly developed project as without the ability to read the        code, it's impossible for people to contribute and get involved.</ref>
 				<ref set="gen" id="2138"/>
@@ -27,11 +47,22 @@
 				<ref set="gen" id="2311"/>
 			</refs>
 		</req>
-		<req id="2" strength="soft" cat="Memory">
+		<req id="2" status="approved" strength="soft" cat="Memory">
 			<def>The parser should have a competitive memory footprint (competitive
-against the other Java based parsers out there).</def>
+against the other Java based parsers out there).
+</def>
 			<seeAlso id="3"/>
-			<edReqNote>This needs refinement of target applications, quantification of sizes.</edReqNote>
+			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1">
+					<voteComment>I assume that the comparison would be some basket of scenarios, so
+that being efficient with large documents could offset a slightly
+greater initial load size.</voteComment>
+				</vote>
+				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2091">This means small distribution size (JAR file)        and small memory footprint.</ref>
 				<ref set="gen" id="2203"/>
@@ -39,10 +70,34 @@ against the other Java based parsers out there).</def>
 				<ref set="gen" id="2345"/>
 			</refs>
 		</req>
-		<req id="3" strength="hard" cat="Architecture">
-			<def>The parser shall be designed so as to allow deployment of minimal subsets suitable for low-end, memory-constrained applications</def>
+		<req id="3" status="approved" strength="hard" cat="Architecture">
+			<def>The parser shall be designed so as to allow deployment of minimal subsets suitable for low-end, memory-constrained applications
+			<br/>The build process shall create both:
+<ul>
+					<li>a .jar file containing all standard components of Xerces (xerces.jar).</li>
+					<li>a set of .jar files which together contain everything in xerces.jar, broken into the following components:
+<ul>
+							<li>xerces kernel, which supports the “internal APIs” and SAX support</li>
+							<li>DOM support</li>
+							<li>Validation support</li>
+							<li>other components of large size which can be easily factored and for which there is a significant audience who will benefit from not including them in a deployment.</li>
+						</ul>
+					</li>
+				</ul>
+			</def>
 			<seeAlso id="2"/>
 			<seeAlso id="13"/>
+			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1">
+					<voteComment>If this type of surgery is possible, then it should help
+requirement 2 since loading unused classes could be avoided.
+</voteComment>
+				</vote>
+				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2091">It should be possible to build a parser as a set of Jar files        so that a smaller parser can be assembled which fits the need of a        particular implementation. For example, in TV sets do you really need        validation?</ref>
 				<ref set="gen" id="2223">Where I am now we use XML as a wire format, so the data volume is small,  and parsing takes place on the client (the customer's e-commerce  environment) and on the server. Small footprint (memory *and* disk)  are much more important in this context than speed or even validation.  </ref>
@@ -66,17 +121,32 @@ against the other Java based parsers out there).</def>
 				<ref set="gen" id="2091"/>
 			</refs>
 		</req>
-		<req id="6" status="approved" strength="soft" cat="Memory">
+				<req id="6" status="rejected" strength="soft" cat="Memory">
 			<def>The parser should have the smallest possible distribution (JAR) size.</def>
 			<seeAlso id="3"/>
-			<edReqNote>This needs refinement of target applications, quantification of sizes.</edReqNote>
+			<edReqNote>The votes below were votes to remove this requirement.  Its concerns are addressed elsewhere.</edReqNote>
+			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+1 to remove"/>
+				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1 to remove"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1 to remove"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1 to remove"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1 to remove"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2091">This means small distribution size (JAR file)        and small memory footprint.  </ref>
 				<ref set="gen" id="2093">These two requirements [small memory footprint, small jar size -ed] are in direct conflict.   </ref>
 			</refs>
 		</req>
-		<req id="7" strength="soft" cat="Quality">
+
+		<req id="7" status="approved" strength="soft" cat="Quality">
 			<def>The design of the parser should be documented, with diagrams where they are more expressive than text.</def>
+			<voteSet opened="26-Aug-00" closed="4-Sept-00">
+				<vote voter="Curt Arnold" email="CurtA@techie.com" vote="+0"/>
+				<vote voter="Chris Laprun" email="chris.laprun@nist.gov" vote="+1"/>
+				<vote voter="Ted Leung" email="twleung@sauria.com" vote="+1"/>
+				<vote voter="James Duncan Davidson" email="duncan@x180.com" vote="+1"/>
+				<vote voter="Mikael Helbo Kjaer" email="mhk@dia.dk" vote="+1"/>
+			</voteSet>
 			<refs>
 				<ref set="gen" id="2104">... would benefit greatly from requirements and design documentation; most especially some diagrams. I find that a dozen or so good diagrams often do a better job of  conveying the design and, perhaps more importantly, the design approach or  philosophy, than written documents.  </ref>
 			</refs>
