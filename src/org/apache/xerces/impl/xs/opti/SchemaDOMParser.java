@@ -234,7 +234,8 @@ public class SchemaDOMParser extends DefaultXMLDocumentHandler {
             } 
             else if(fGenerateSyntheticAnnotation) {
                 fSawAnnotation.push(Boolean.FALSE);
-                fHasNonSchemaAttributes.push(Boolean.valueOf(hasNonSchemaAttributes(attributes)));
+                fHasNonSchemaAttributes.push((hasNonSchemaAttributes(attributes) == true)
+                        ? Boolean.TRUE : Boolean.FALSE);
             }
         } else if(fDepth == fAnnotationDepth+1) {
             fInnerAnnotationDepth = fDepth;
