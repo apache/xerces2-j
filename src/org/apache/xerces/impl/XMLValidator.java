@@ -2071,14 +2071,19 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                         fValNMTOKENS.validate( value, null );
                     }
                 } catch (InvalidDatatypeValueException ex) {
-                    System.out.println("ex = " + ex.getMessage() );
-                    /*
-                    String  key = ex.getKeyIntoReporter();
-                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                    key,
-                    new Object[]{ },
-                    XMLErrorReporter.SEVERITY_ERROR );
-                    */
+
+                    //System.out.println("ex = " + ex.getMessage() );
+                    if( isAlistAttribute == true ){
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                        "NMTOKENSInvalid",
+                        new Object[]{ value },
+                        XMLErrorReporter.SEVERITY_ERROR );
+                    } else{
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                        "NMTOKENInvalid",
+                         new Object[]{ value },
+                         XMLErrorReporter.SEVERITY_ERROR );
+                    }
                 }
 
                 /*
