@@ -2494,7 +2494,8 @@ public class XMLSchemaValidator
         
         // PSVI: attribute declaration
         attrPSVI.fDeclaration = currDecl;
-        attrPSVI.fSchemaDefault = currDecl.fDefault.normalizedValue;
+        if (currDecl != null && currDecl.fDefault != null)
+            attrPSVI.fSchemaDefault = currDecl.fDefault.normalizedValue;
         // PSVI: attribute type
         attrPSVI.fTypeDecl = attDV;
 
