@@ -69,7 +69,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import org.apache.xerces.dom.traversal.NodeIteratorImpl;
+import org.apache.xerces.dom.NodeIteratorImpl;
 import org.w3c.dom.traversal.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
