@@ -93,18 +93,24 @@ public class ASModelImpl implements ASModel {
     //
     // Data
     //
-    
+    boolean fNamespaceAware = true;
+
     // conceptually, an ASModel may contain grammar information and/or
     // other ASModels.  These two fields divide that function.
     protected Vector fASModels;
     protected SchemaGrammar fGrammar = null;
     
     //
-    // Constructor
+    // Constructors
     //
     
     public ASModelImpl() {
     	fASModels = new Vector();
+    }
+
+    public ASModelImpl(boolean isNamespaceAware) {
+    	fASModels = new Vector();
+        fNamespaceAware = isNamespaceAware;
     }
     
     //
@@ -226,7 +232,7 @@ public class ASModelImpl implements ASModel {
      * <code>QNames</code>.
      */
     public boolean getIsNamespaceAware() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not Supported");
+    	return fNamespaceAware;
     }
 
     /**

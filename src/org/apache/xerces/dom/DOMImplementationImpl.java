@@ -68,7 +68,15 @@ import org.apache.xerces.dom3.ls.DOMImplementationLS;
 import org.apache.xerces.dom3.ls.DOMBuilder;
 import org.apache.xerces.dom3.ls.DOMWriter;
 import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.apache.xerces.dom3.as.DOMImplementationAS;
+import org.apache.xerces.dom3.as.ASModel;
+import org.apache.xerces.dom3.as.DOMASBuilder;
+import org.apache.xerces.dom3.as.DOMASWriter;
+import org.apache.xerces.parsers.DOMBuilderImpl;
+import org.apache.xerces.parsers.DOMASBuilderImpl;
 import org.apache.xml.serialize.XMLSerializer;
+
+
 
 /**
  * The DOMImplementation class is description of a particular
@@ -83,7 +91,7 @@ import org.apache.xml.serialize.XMLSerializer;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DOMImplementationImpl  
-    implements DOMImplementation, DOMImplementationLS {
+    implements DOMImplementation, DOMImplementationLS, DOMImplementationAS {
 
     //
     // Data
@@ -214,18 +222,67 @@ public class DOMImplementationImpl
     }
     
     // DOM L3 LS
-    
+    /**
+     * DOM Level 3 WD - Experimental.
+     */
     public DOMBuilder createDOMBuilder(short mode)
                                        throws DOMException {
-        return null;
+        if (mode == DOMImplementationLS.MODE_ASYNCHRONOUS) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                                   "Asynchronous mode is not supported");
+        }
+        return new DOMBuilderImpl();
     }
-                    
+    /**
+     * DOM Level 3 WD - Experimental.
+     */                
     public DOMWriter createDOMWriter() {
         return new XMLSerializer();
     }
-    
+    /**
+     * DOM Level 3 WD - Experimental.
+     */
     public DOMInputSource createDOMInputSource() {
-        return null;
+        return new DOMInputSourceImpl();
     }
+
+    //
+    // DOM L3 Abstract Schemas
+    //
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Creates an ASModel.
+     * @param isNamespaceAware Allow creation of <code>ASModel</code> with 
+     *   this attribute set to a specific value.
+     * @return A <code>null</code> return indicates failure.what is a 
+     *   failure? Could be a system error.
+     */
+    public ASModel createAS(boolean isNamespaceAware){
+        return new ASModelImpl(isNamespaceAware);
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Creates an <code>DOMASBuilder</code>.Do we need the method since we 
+     * already have <code>DOMImplementationLS.createDOMBuilder</code>?
+     * @return 
+     */
+    public DOMASBuilder createDOMASBuilder(){
+        return new DOMASBuilderImpl();
+    }
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Creates an <code>DOMASWriter</code>.
+     * @return 
+     */
+    public DOMASWriter createDOMASWriter(){
+        throw new  DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                                   "ASWriter is not implemented.");
+    }
+    
+
 
 } // class DOMImplementationImpl
