@@ -207,7 +207,7 @@ public class AttrImpl
         }
         super.setOwnerDocument(doc);
         if (!hasStringValue()) {
-            for (ChildNode child = firstChild;
+            for (ChildNode child = (ChildNode) value;
                  child != null; child = child.nextSibling) {
                 child.setOwnerDocument(doc);
             }
