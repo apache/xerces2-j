@@ -163,25 +163,31 @@ public class XSAttributeGroupDecl {
    public String validRestrictionOf(XSAttributeGroupDecl baseGroup) {
 
         String errorCode = null;
+        XSAttributeUse attrUse = null;
+        XSAttributeDecl attrDecl = null;
+        XSAttributeUse baseAttrUse = null;
+	XSAttributeDecl baseAttrDecl = null;
+
         for (int i=0; i<fAttrUseNum; i++) {
 
-           XSAttributeUse attrUse = fAttributeUses[i];
-           XSAttributeDecl attrDecl = attrUse.fAttrDecl;
+           attrUse = fAttributeUses[i];
+           attrDecl = attrUse.fAttrDecl;
 
            // Look for a match in the base
-           XSAttributeUse baseAttrUse = baseGroup.getAttributeUse(
+           baseAttrUse = baseGroup.getAttributeUse(
                                     attrDecl.fTargetNamespace,attrDecl.fName);
            if (baseAttrUse != null) {
              //
              // derivation-ok-restriction.  Constraint 2.1.1
              //
+
              if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED &&
                  attrUse.fUse != SchemaSymbols.USE_REQUIRED) {
                errorCode = "derivation-ok-restriction.2.1.1";
                return errorCode;
              }
 
-             XSAttributeDecl baseAttrDecl = baseAttrUse.fAttrDecl;
+             baseAttrDecl = baseAttrUse.fAttrDecl;
              //
              // derivation-ok-restriction.  Constraint 2.1.1
              //
@@ -196,10 +202,31 @@ public class XSAttributeGroupDecl {
              //
              // derivation-ok-restriction.  Constraint 2.1.3
              //
-             if (baseAttrDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE &&
-                 attrDecl.fConstraintType != XSAttributeDecl.FIXED_VALUE) {
-               errorCode="derivation-ok-restriction.2.1.3";
-               return errorCode;
+             int baseConsType=baseAttrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT?
+                                 baseAttrUse.fConstraintType:baseAttrDecl.fConstraintType;
+             int thisConstType = attrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT? 
+                                 attrUse.fConstraintType:attrDecl.fConstraintType;
+             
+             if (baseConsType == XSAttributeDecl.FIXED_VALUE) { 
+          
+                 if (thisConstType != XSAttributeDecl.FIXED_VALUE) {
+                   errorCode="derivation-ok-restriction.2.1.3";
+                   return errorCode;
+                 }
+                 else {
+                   // check the values are the same.  NB - this should not be a string 
+                   // comparison REVISIT when we have new datatype design! 
+                   String baseFixedValue=(String) (baseAttrUse.fDefault!=null ? 
+                                         baseAttrUse.fDefault: baseAttrDecl.fDefault);
+                   String thisFixedValue=(String) (attrUse.fDefault!=null ? 
+                                         attrUse.fDefault: attrDecl.fDefault); 
+                   if (!baseFixedValue.equals(thisFixedValue)) {
+                     errorCode="derivation-ok-restriction.2.1.3";
+                     return errorCode;
+                   }
+
+                 }
+ 
              }
            }
            else {
@@ -213,6 +240,28 @@ public class XSAttributeGroupDecl {
                  (!baseGroup.fAttributeWC.allowNamespace(attrDecl.fTargetNamespace))) {
 
                errorCode = "derivation-ok-restriction.2.2";
+               return errorCode;
+             }
+           }
+        }
+
+        //
+        // Check that any REQUIRED attributes in the base have matching attributes 
+        // in this group
+        // derivation-ok-restriction.  Constraint 3
+        //
+        for (int i=0; i<baseGroup.fAttrUseNum; i++) {
+
+           baseAttrUse = baseGroup.fAttributeUses[i];
+
+           if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED) {
+           
+             baseAttrDecl = baseAttrUse.fAttrDecl;
+             // Look for a match in this group
+             XSAttributeUse thisAttrUse = getAttributeUse(
+                                    baseAttrDecl.fTargetNamespace,baseAttrDecl.fName);
+             if (thisAttrUse == null) { 
+               errorCode = "derivation-ok-restriction.3";
                return errorCode;
              }
            }
