@@ -57,6 +57,7 @@
 
 package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
+import java.util.Vector;
 import java.lang.reflect.*;
 import org.apache.xerces.validators.datatype.*;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -429,6 +430,17 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             }
         }
         return validator;
+    }
+
+    public DatatypeValidator createDatatypeValidator(String typeName, Vector validators) {
+         DatatypeValidator simpleType = null;
+         if (validators!=null) {
+             simpleType = new UnionDatatypeValidator(validators);
+         }
+         if (simpleType !=null) {
+             addValidator(typeName, simpleType);
+         }
+         return simpleType;
     }
 
 
