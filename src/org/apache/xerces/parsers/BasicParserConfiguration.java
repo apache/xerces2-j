@@ -248,18 +248,19 @@ public abstract class BasicParserConfiguration
 
         // add default recognized features
         final String[] recognizedFeatures = {
+        	PARSER_SETTINGS,
             VALIDATION,                 
             NAMESPACES, 
             EXTERNAL_GENERAL_ENTITIES,  
             EXTERNAL_PARAMETER_ENTITIES,
         };
         addRecognizedFeatures(recognizedFeatures);
-
+        fFeatures.put(PARSER_SETTINGS, Boolean.TRUE);
         // set state for default features
-        setFeature(VALIDATION, false);
-        setFeature(NAMESPACES, true);
-        setFeature(EXTERNAL_GENERAL_ENTITIES, true);
-        setFeature(EXTERNAL_PARAMETER_ENTITIES, true);
+		fFeatures.put(VALIDATION, Boolean.FALSE);
+		fFeatures.put(NAMESPACES, Boolean.TRUE);
+		fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
+		fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
 
         // add default recognized properties
         final String[] recognizedProperties = {
@@ -274,7 +275,7 @@ public abstract class BasicParserConfiguration
             symbolTable = new SymbolTable();
         }
         fSymbolTable = symbolTable;
-        setProperty(SYMBOL_TABLE, fSymbolTable);
+        fProperties.put(SYMBOL_TABLE, fSymbolTable);
 
     } // <init>(SymbolTable)
 
@@ -584,5 +585,41 @@ public abstract class BasicParserConfiguration
         super.checkProperty(propertyId);
 
     } // checkProperty(String)
+    
+    
+	/**
+	 * Check a feature. If feature is know and supported, this method simply
+	 * returns. Otherwise, the appropriate exception is thrown.
+	 *
+	 * @param featureId The unique identifier (URI) of the feature.
+	 *
+	 * @throws XMLConfigurationException Thrown for configuration error.
+	 *                                   In general, components should
+	 *                                   only throw this exception if
+	 *                                   it is <strong>really</strong>
+	 *                                   a critical error.
+	 */
+	protected void checkFeature(String featureId)
+		throws XMLConfigurationException {
+
+		//
+		// Xerces Features
+		//
+		if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
+			String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
+
+			//
+			// special performance feature: no one by component manager is allowed to set it
+			//
+			if (feature.equals(Constants.PARSER_SETTINGS)) {
+				short type = XMLConfigurationException.NOT_SUPPORTED;
+				throw new XMLConfigurationException(type, featureId);
+			}
+		}
+
+		super.checkFeature(featureId);
+
+	} // checkFeature(String)
+
 
 } // class XMLParser
