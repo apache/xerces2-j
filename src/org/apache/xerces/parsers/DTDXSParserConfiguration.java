@@ -76,12 +76,6 @@ import org.apache.xerces.xni.parser.XMLComponentManager;
  */
 public class DTDXSParserConfiguration extends StandardParserConfiguration {
 
-    /** Property identifier: XML Schema validator. */
-    protected static final String SCHEMA_VALIDATOR =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
-
-    /** XML Schema Validator. */
-    protected XMLSchemaValidator fSchemaValidator;
 
     //
     // Constructors

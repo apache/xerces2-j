@@ -72,6 +72,9 @@ import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.impl.validation.GrammarPool;
+
+import org.apache.xerces.impl.xs.XSMessageFormatter;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
@@ -195,6 +198,11 @@ public class StandardParserConfiguration
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
 
+    /** Property identifier: XML Schema validator. */
+    protected static final String SCHEMA_VALIDATOR =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
+
+
     // debugging
 
     /** Set to true and recompile to print exception stack trace. */
@@ -223,6 +231,9 @@ public class StandardParserConfiguration
     /** Document scanner. */
     protected XMLDocumentScanner fScanner;
 
+    /** Input Source */
+    protected XMLInputSource fInputSource;
+
     /** DTD scanner. */
     protected XMLDTDScanner fDTDScanner;
 
@@ -231,6 +242,9 @@ public class StandardParserConfiguration
 
     /** Namespace binder. */
     protected XMLNamespaceBinder fNamespaceBinder;
+
+    /** XML Schema Validator. */
+    protected XMLSchemaValidator fSchemaValidator;
 
     protected ValidationManager fValidationManager;
     // state
@@ -434,27 +448,14 @@ public class StandardParserConfiguration
      */
     public void setInputSource(XMLInputSource inputSource)
         throws XMLConfigurationException, IOException {
+        
+        // REVISIT: this method used to reset all the components and
+        //          construct the pipeline. Now reset() is called
+        //          in parse (boolean) just before we parse the document
+        //          Should this method still throw exceptions..?
 
-        try {
-            reset();
-            fScanner.setInputSource(inputSource);
-        } 
-        catch (XNIException ex) {
-            if (PRINT_EXCEPTION_STACK_TRACE)
-                ex.printStackTrace();
-            throw ex;
-        } 
-        catch (IOException ex) {
-            if (PRINT_EXCEPTION_STACK_TRACE)
-                ex.printStackTrace();
-            throw ex;
-        } 
-        catch (Exception ex) {
-            if (PRINT_EXCEPTION_STACK_TRACE)
-                ex.printStackTrace();
-            throw new XNIException(ex);
-        }
-
+        fInputSource = inputSource;
+        
     } // setInputSource(XMLInputSource)
 
     /**
@@ -474,7 +475,32 @@ public class StandardParserConfiguration
      * @see #setInputSource
      */
     public boolean parse(boolean complete) throws XNIException, IOException {
-        
+        //
+        // reset and configure pipeline and set InputSource.
+        if (fInputSource !=null) {
+            try {
+                // resets and sets the pipeline.
+                reset();
+                fScanner.setInputSource(fInputSource);
+                fInputSource = null;
+            } 
+            catch (XNIException ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw ex;
+            } 
+            catch (IOException ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw ex;
+            } 
+            catch (Exception ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw new XNIException(ex);
+            }
+        }
+
         try {
             return fScanner.scanDocument(complete);
         } 
@@ -594,6 +620,34 @@ public class StandardParserConfiguration
             }
         }
 
+        if ( getFeature(Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE)) {
+            // If schema validator was not in the pipeline insert it.
+            if (fSchemaValidator == null) {
+                fSchemaValidator = new XMLSchemaValidator(); 
+            
+                // add schema component
+                fProperties.put(SCHEMA_VALIDATOR, fSchemaValidator);
+                addComponent(fSchemaValidator);
+                 // add schema message formatter
+                if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+                    XSMessageFormatter xmft = new XSMessageFormatter();
+                    fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+                }
+
+            }
+            fNamespaceBinder.setDocumentHandler(fSchemaValidator);
+            fSchemaValidator.setDocumentHandler(fDocumentHandler);
+            
+
+            // REVISIT: we probably should not remove schema validator from the pipeline
+            // if schema feature is off, since user might want to have some PSVI 
+            // of the document.
+            // On the other hand, if user constructed a parser with the default config,
+            // turned schema on before first parse(), and then turned it off, is it possible
+            // that user would assume that we will remove XML Schema validator?
+        } 
+
+
     } // configurePipeline()
 
     // features and properties
@@ -633,6 +687,11 @@ public class StandardParserConfiguration
             //   on each document instance, automatically.
             //
             if (feature.equals(Constants.DYNAMIC_VALIDATION_FEATURE)) {
+                return;
+            }
+
+            // activate full schema checking
+            if (feature.equals(Constants.SCHEMA_FULL_CHECKING)) {
                 return;
             }
             //
