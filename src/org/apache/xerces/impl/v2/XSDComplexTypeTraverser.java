@@ -97,6 +97,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private class ComplexTypeRecoverableError extends Exception {
 
       Object[] errorSubstText=null;
+      ComplexTypeRecoverableError() {super();}
       ComplexTypeRecoverableError(String msgKey) {super(msgKey);}
       ComplexTypeRecoverableError(String msgKey, Object[] args) 
           {super(msgKey);
@@ -200,8 +201,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_COMPLEXCONTENT)) {
-              //traverseComplexContent(child, complexType, mixedAtt.booleanValue(),
-                //                     schemaDoc, grammar);
+              traverseComplexContent(child, complexType, mixedAtt.booleanValue(),
+                                     schemaDoc, grammar);
             }
             else {
               //
@@ -225,6 +226,214 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
 
     }
+
+    private void traverseComplexContent(Element complexContentElement, 
+                                        XSComplexTypeDecl typeInfo,
+                                        boolean mixedOnType, XSDocumentInfo schemaDoc, 
+                                        SchemaGrammar grammar) 
+                                  throws ComplexTypeRecoverableError {
+
+  
+       String typeName = typeInfo.fName;
+       Object[] attrValues = fAttrChecker.checkAttributes(complexContentElement, false,
+                              schemaDoc);
+
+
+       // -----------------------------------------------------------------------
+       // Determine if this is mixed content 
+       // -----------------------------------------------------------------------
+       boolean mixedContent = mixedOnType; 
+       Boolean mixedAtt     = (Boolean) attrValues[XSAttributeChecker.ATTIDX_MIXED];
+       if (mixedAtt != null) {
+         mixedContent = mixedAtt.booleanValue();
+       }
+
+
+       // -----------------------------------------------------------------------
+       // Since the type must have complex content, set the simple type validators
+       // to null
+       // -----------------------------------------------------------------------
+       typeInfo.fDatatypeValidator = null;
+
+       Element complexContent = checkContent(DOMUtil.getFirstChildElement(complexContentElement), attrValues, schemaDoc);
+
+       fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+       // If there are no children, return
+       if (complexContent==null) {
+          throw new ComplexTypeRecoverableError();
+       }
+          
+       // -----------------------------------------------------------------------
+       // The content should be either "restriction" or "extension"
+       // -----------------------------------------------------------------------
+       String complexContentName = complexContent.getLocalName();
+       if (complexContentName.equals(SchemaSymbols.ELT_RESTRICTION))
+         typeInfo.fDerivedBy = SchemaSymbols.RESTRICTION;
+       else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
+         typeInfo.fDerivedBy = SchemaSymbols.EXTENSION;
+       else {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "Child of complexContent must be restriction or extension"); 
+          throw new ComplexTypeRecoverableError();   
+       }
+       if (DOMUtil.getNextSiblingElement(complexContent) != null) {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "Invalid child of complexContent"); 
+          throw new ComplexTypeRecoverableError();   
+       }
+
+       attrValues = fAttrChecker.checkAttributes(complexContent, false,
+                              schemaDoc);
+       QName baseTypeName = (QName)  attrValues[XSAttributeChecker.ATTIDX_BASE];
+       fAttrChecker.returnAttrArray(attrValues, schemaDoc);
+
+
+       // -----------------------------------------------------------------------
+       // Need a base type.  Check that it's a complex type
+       // -----------------------------------------------------------------------
+       if (baseTypeName==null)  {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "The base attribute must be specified for the restriction or extension");
+          throw new ComplexTypeRecoverableError();   
+       }
+
+       XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, 
+                                         XSDHandler.TYPEDECL_TYPE, baseTypeName);
+       if (! (type instanceof XSComplexTypeDecl)) {
+          // REVISIT - should create a msg in properties file 
+          reportGenericSchemaError("ComplexType " + typeName + ": " + 
+           "The base type must be complex");
+          throw new ComplexTypeRecoverableError();   
+       }
+       XSComplexTypeDecl baseType = (XSComplexTypeDecl)type; 
+
+       // -----------------------------------------------------------------------
+       // Check that the base permits the derivation       
+       // -----------------------------------------------------------------------
+       if ((baseType.fFinal & typeInfo.fDerivedBy)!=0) {
+          //REVISIT - generate error 
+
+       }
+
+       // -----------------------------------------------------------------------
+       // Skip over any potential annotations  
+       // -----------------------------------------------------------------------
+       complexContent = checkContent(DOMUtil.getFirstChildElement(complexContent), 
+                                     null, schemaDoc);
+
+       // -----------------------------------------------------------------------
+       // Process the content.  Note:  should I try to catch any complexType errors
+       // here in order to return the attr array?   
+       // -----------------------------------------------------------------------
+       processComplexContent(complexContent, typeInfo, mixedContent, schemaDoc, 
+                             grammar);
+       
+       // -----------------------------------------------------------------------
+       // Compose the final content and attribute uses
+       // -----------------------------------------------------------------------
+       XSParticleDecl baseContent = baseType.fParticle;
+       if (typeInfo.fDerivedBy==SchemaSymbols.RESTRICTION) {
+
+          // This is an RESTRICTION
+
+          if (typeInfo.fParticle==null && (!(baseContent==null || 
+                                             baseContent.emptiable()))) {
+            //REVISIT - need better error msg 
+            throw new ComplexTypeRecoverableError("derivation-ok-restriction",   
+             null);
+          }
+          if (typeInfo.fParticle!=null && baseContent==null) {
+            //REVISIT - need better error msg 
+            throw new ComplexTypeRecoverableError("derivation-ok-restriction",   
+             null);
+          }
+
+          mergeAttributes(baseType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
+          if (!typeInfo.fAttrGrp.validRestrictionOf(baseType.fAttrGrp)) {
+            throw new ComplexTypeRecoverableError();
+          }
+          
+       }
+       else {
+
+          // This is an EXTENSION
+
+          //
+          // Check if the contentType of the base is consistent with the new type
+          // cos-ct-extends.1.4.2.2
+          if (baseType.fContentType != XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
+             if (((baseType.fContentType == 
+                   XSComplexTypeDecl.CONTENTTYPE_ELEMENT) &&
+                   mixedContent) ||
+                  ((baseType.fContentType ==
+                   XSComplexTypeDecl.CONTENTTYPE_MIXED) && !mixedContent)) {
+
+               // REVISIT - need to add a property message
+
+               reportGenericSchemaError("cos-ct-extends.1.4.2.2.2.1: The content type of the base type " + baseTypeName + " and derived type " + 
+                 typeName + " must both be mixed or element-only");
+               throw new ComplexTypeRecoverableError();
+             }
+
+          }
+
+
+          // Create the particle 
+          if (typeInfo.fParticle == null) {
+             typeInfo.fParticle = baseContent;
+          }
+          else {
+             if (typeInfo.fParticle!=null && baseContent!=null && 
+                 (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_ALL || 
+                 baseType.fParticle.fType == XSParticleDecl.PARTICLE_ALL)) {
+               reportGenericSchemaError("cos-all-limited.1.2:  An \"all\" model group that is part of a complex type definition must constitute the entire {content type} of the definition");
+               throw new ComplexTypeRecoverableError();
+             }
+             XSParticleDecl temp = new XSParticleDecl();
+             temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
+             temp.fValue = baseContent;
+             temp.fOtherValue = typeInfo.fParticle; 
+             typeInfo.fParticle = temp;
+          }
+
+          mergeAttributes(baseType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
+
+       }
+       
+    } // end of traverseComplexContent
+
+
+    // This method merges attribute uses from the base, into the derived set. 
+    // The first duplicate attribute, if any, is returned.   
+    // LM: may want to merge with attributeGroup processing. 
+    private void mergeAttributes(XSAttributeGroupDecl fromAttrGrp, 
+                                 XSAttributeGroupDecl toAttrGrp,
+                                 String typeName,
+                                 boolean duplicatesAreError)  
+                                 throws ComplexTypeRecoverableError {
+       XSAttributeUse[] attrUseS = fromAttrGrp.getAttributeUses();
+       XSAttributeUse existingAttrUse, duplicateAttrUse =  null;
+       for (int i=0; i<attrUseS.length; i++) {
+       	 existingAttrUse = toAttrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
+           	                                   attrUseS[i].fAttrDecl.fName);
+         if (existingAttrUse == null) {
+    	   toAttrGrp.addAttributeUse(attrUseS[i]);
+	 }
+         else {
+           if (duplicatesAreError) {
+              //REVISIT - should create a msg in properties file 
+              reportGenericSchemaError("ComplexType " + typeName + ": " + 
+                "Duplicate attribute use " + existingAttrUse.fAttrDecl.fName );
+              throw new ComplexTypeRecoverableError();   
+           }
+         }
+       }
+    }
+
+
 
     private void processComplexContent(Element complexContentChild,
                                  XSComplexTypeDecl typeInfo, 
@@ -350,7 +559,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private void handleComplexTypeError(String messageId,Object[] args,
                                         XSComplexTypeDecl typeInfo) { 
 
-        reportSchemaError(messageId, args); 
+        if (messageId!=null) {
+          reportSchemaError(messageId, args); 
+        }
 
         //
         //  Mock up the typeInfo structure so that there won't be problems during
