@@ -148,33 +148,7 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
     } // hasFeature(String,String):boolean
 
     
-    /**
-     * Introduced in DOM Level 2. <p>
-     * 
-     * Creates an empty DocumentType node.
-     *
-     * @param qualifiedName The qualified name of the document type to be created. 
-     * @param publicID The document type public identifier.
-     * @param systemID The document type system identifier.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public DocumentType       createDocumentType(String qualifiedName, 
-                                                 String publicID, 
-                                                 String systemID)
-    {
-    	if (!CoreDocumentImpl.isXMLName(qualifiedName)) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
-    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-        }
-        int index = qualifiedName.indexOf(':');
-        int lastIndex = qualifiedName.lastIndexOf(':');
-        // it is an error for NCName to have more than one ':'
-        if (index == 0 || index == qualifiedName.length() - 1 || lastIndex!=index) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-	        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-	    }
-    	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
-    }
+
     /**
      * Introduced in DOM Level 2. <p>
      * 

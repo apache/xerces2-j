@@ -58,6 +58,7 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.DOMException;
+import org.apache.xerces.xni.NamespaceContext;
 
 /**
  * AttrNSImpl inherits from AttrImpl and adds namespace support. 
@@ -108,53 +109,43 @@ public class AttrNSImpl
         setName(namespaceURI, qualifiedName);
     }
 
-    private void setName(String namespaceURI, String qualifiedName)
-        throws DOMException
-    {
-        int index = qualifiedName.indexOf(':');
+    private void setName(String namespaceURI, String qname){
+        
         String prefix;
-        // DOM Level 3: namespace URI is never empty string.
-        this.namespaceURI = (namespaceURI !=null &&
-                             namespaceURI.length() == 0) ? null : namespaceURI;
-        
-        
-        if (index < 0) {
-            prefix = null;
-            localName = qualifiedName;
-            if (ownerDocument().errorChecking) {
-                if ( qualifiedName.equals("xmlns") &&
-                (namespaceURI == null || !namespaceURI.equals(xmlnsURI)) ||
-                     (namespaceURI !=null && namespaceURI.equals(xmlnsURI) && !qualifiedName.equals("xmlns"))) {
-                String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                }
-            }
-        }
-        else {
-            prefix = qualifiedName.substring(0, index); 
-            localName = qualifiedName.substring(index+1);
-        
-            if (ownerDocument().errorChecking) {
-                if (this.namespaceURI == null
-                    || (localName.length() == 0)
-                    || (localName.indexOf(':') >= 0)) {
-                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                } else if (prefix.equals("xml")) {
-                    if (!namespaceURI.equals(xmlURI)) {
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                    }
-                } else if (prefix.equals("xmlns") && !namespaceURI.equals(xmlnsURI) ||
-                           (!prefix.equals("xmlns") && namespaceURI != null && 
-                            namespaceURI.equals(xmlnsURI))) {
-                        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                        throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                } else if (index == 0) {
-                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
-                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                }
-            }
+		// DOM Level 3: namespace URI is never empty string.
+        this.namespaceURI = namespaceURI;
+        if (namespaceURI !=null) {
+  	        this.namespaceURI = (namespaceURI.length() == 0)? null
+                                 : namespaceURI.intern();
+
+		}
+		int colon1 = qname.indexOf(':');
+		int colon2 = qname.lastIndexOf(':');
+		ownerDocument().checkNamespaceWF(qname, colon1, colon2);
+		if (colon1 < 0) {
+			// there is no prefix
+			localName = qname;
+			ownerDocument().checkQName(null, localName);
+			if (ownerDocument().errorChecking) {
+				if (qname.equals("xmlns")
+					&& (namespaceURI == null
+						|| namespaceURI != NamespaceContext.XMLNS_URI)
+					|| (namespaceURI == NamespaceContext.XMLNS_URI
+						&& !qname.equals("xmlns"))) {
+					String msg =
+						DOMMessageFormatter.formatMessage(
+							DOMMessageFormatter.DOM_DOMAIN,
+							"NAMESPACE_ERR",
+							null);
+					throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+				}
+			}
+		}
+		else {
+			prefix = qname.substring(0, colon1);
+			localName = qname.substring(colon2+1);
+			ownerDocument().checkQName(prefix, localName);
+            ownerDocument().checkDOMNSErr(prefix, namespaceURI);
         }
     } 
 

@@ -98,6 +98,7 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.ShadowedSymbolTable;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -1985,10 +1986,6 @@ public class CoreDocumentImpl
     public Attr createAttributeNS(String namespaceURI, String qualifiedName)
         throws DOMException
     {
-        if (errorChecking && !isXMLName(qualifiedName)) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
-            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
-        }
         return new AttrNSImpl(this, namespaceURI, qualifiedName);
     }
 
@@ -2066,6 +2063,7 @@ public class CoreDocumentImpl
 
     } // isXMLName(String):boolean
 
+   
     //
     // Protected methods
     //
@@ -2333,7 +2331,122 @@ public class CoreDocumentImpl
             fConfiguration.setProperty(DOMValidationConfiguration.GRAMMAR_POOL, grammarPool);
         }
     }
+    
+    protected final void checkNamespaceWF( String qname, int colon1,
+		                                             int colon2) {
+                                                        
+		if (!errorChecking) {
+			return;
+		}
+		// it is an error for NCName to have more than one ':'
+		// check if it is valid QName [Namespace in XML production 6]
+		if (colon1 == 0 || colon1 == qname.length() - 1 || colon2 != colon1) {
+			String msg =
+				DOMMessageFormatter.formatMessage(
+					DOMMessageFormatter.DOM_DOMAIN,
+					"NAMESPACE_ERR",
+					null);
+			throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+		}
+	}
+ 	protected final void checkDOMNSErr(String prefix,
+		                                 String namespace) {
+            
+		if (errorChecking) {
+			if (namespace == null) {
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"NAMESPACE_ERR",
+						null);
+				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+			}
+			else if (
+				prefix.equals("xml")
+					&& namespace != NamespaceContext.XML_URI) {
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"NAMESPACE_ERR",
+						null);
+				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+			}
+			else if (
+				prefix.equals("xmlns")
+					&& namespace != NamespaceContext.XMLNS_URI
+					|| (!prefix.equals("xmlns")
+						&& namespace == NamespaceContext.XMLNS_URI)) {
+				String msg =
+					DOMMessageFormatter.formatMessage(
+						DOMMessageFormatter.DOM_DOMAIN,
+						"NAMESPACE_ERR",
+						null);
+				throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+			}
+		}
+	}
 
+    /**
+     * 
+     * @param n
+     * @param data
+     */
+     protected final void checkQName(String prefix, 
+                                       String local){
+        if (!errorChecking) {
+            return;
+        }
+        int length;
+        if (prefix != null) {
+            length=prefix.length();
+			// check that prefix is NCName
+            if (!XMLChar.isNCNameStart(prefix.charAt(0))) {
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "INVALID_CHARACTER_ERR",
+                        null);
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
+            }
+            for (int i = 1; i < length; i++) {
+                if (!XMLChar.isNCName(prefix.charAt(i))) {
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                            DOMMessageFormatter.DOM_DOMAIN,
+                            "INVALID_CHARACTER_ERR",
+                            null);
+                    throw new DOMException(
+                        DOMException.INVALID_CHARACTER_ERR,
+                        msg);
+                }
+            }            
+
+		} 
+        length = local.length();
+        // check local part 
+        if (!XMLChar.isNCNameStart(local.charAt(0))) {
+            // REVISIT: add qname parameter to the message
+            String msg =
+                DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "INVALID_CHARACTER_ERR",
+                    null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
+        }
+        for (int i = 1; i < length; i++) {
+            if (!XMLChar.isNCName(local.charAt(i))) {
+                String msg =
+                    DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "INVALID_CHARACTER_ERR",
+                        null);
+                throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
+            }
+        }           
+    }
+
+    
+    
     /**
      * NON-DOM: kept for backward compatibility
      * Store user data related to a given node

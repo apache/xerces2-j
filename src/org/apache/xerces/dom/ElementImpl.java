@@ -623,41 +623,49 @@ public class ElementImpl
      *                          namespaceURI is null or an empty string.
      * @since WD-DOM-Level-2-19990923
      */
-    public void setAttributeNS(String namespaceURI, String qualifiedName, String value) {
-
-    	if (ownerDocument.errorChecking && isReadOnly()) {
-            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
-        }
-
-        if (needsSyncData()) {
-            synchronizeData();
-        }
-
-        int index = qualifiedName.indexOf(':');
-        String prefix, localName;
-        if (index < 0) {
-            prefix = null;
-            localName = qualifiedName;
-        } 
-        else {
-            prefix = qualifiedName.substring(0, index); 
-            localName = qualifiedName.substring(index+1);
-        }
-    	Attr newAttr = getAttributeNodeNS(namespaceURI, localName);
-        if (newAttr == null) {
-            newAttr =
-                getOwnerDocument().createAttributeNS(namespaceURI, qualifiedName);
-
-            if (attributes == null) {
-                attributes = new AttributeMap(this, null);
-            }
-	    newAttr.setNodeValue(value);
-            attributes.setNamedItemNS(newAttr);
-    	}
-	else {
-	    newAttr.setNodeValue(value);
-	}
+     public void setAttributeNS(String namespaceURI,String qualifiedName,
+		                          String value) {
+		if (ownerDocument.errorChecking && isReadOnly()) {
+			String msg =
+				DOMMessageFormatter.formatMessage(
+					DOMMessageFormatter.DOM_DOMAIN,
+					"NO_MODIFICATION_ALLOWED_ERR",
+					null);
+			throw new DOMException(
+				DOMException.NO_MODIFICATION_ALLOWED_ERR,
+				msg);
+		}
+		if (needsSyncData()) {
+			synchronizeData();
+		}
+		int index = qualifiedName.indexOf(':');
+		String prefix, localName;
+		if (index < 0) {
+			prefix = null;
+			localName = qualifiedName;
+		}
+		else {
+			prefix = qualifiedName.substring(0, index);
+			localName = qualifiedName.substring(index + 1);
+		}
+		Attr newAttr = getAttributeNodeNS(namespaceURI, localName);
+		if (newAttr == null) {
+            // REVISIT: this is not efficient, we are creating twice the same
+            //          strings for prefix and localName.
+			newAttr = getOwnerDocument().createAttributeNS(
+					namespaceURI,
+					qualifiedName);
+			if (attributes == null) {
+				attributes = new AttributeMap(this, null);
+			}
+			newAttr.setNodeValue(value);
+			attributes.setNamedItemNS(newAttr);
+		}
+		else {
+            // change prefix and value
+            ((AttrNSImpl)newAttr).name= prefix+":"+localName;
+			newAttr.setNodeValue(value);
+		}
 
     } // setAttributeNS(String,String,String)
     
