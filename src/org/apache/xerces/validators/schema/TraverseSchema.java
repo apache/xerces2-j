@@ -478,7 +478,7 @@ public class TraverseSchema implements
 
         //REVISIT, !!!! a hack: needs to be updated later, cause now we only use localpart to key build-in datatype.
         if ( prefix.length()==0 && uriStr.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) 
-             && ! fTargetNSURIString.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+             && fTargetNSURIString.length() == 0) {
             uriStr = "";
         }
 
@@ -2631,7 +2631,7 @@ public class TraverseSchema implements
             // check if the type is from the same Schema
             if ( !typeURI.equals(fTargetNSURIString) 
                  && !typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)
-                 && !(typeURI.length() == 0) ) {
+                 && typeURI.length() != 0) {  // REVISIT, only needed because of resolvePrifixToURI.
                 fromAnotherSchema = typeURI;
                 typeInfo = getTypeInfoFromNS(typeURI, localpart);
                 if (typeInfo == null) {
@@ -2648,7 +2648,8 @@ public class TraverseSchema implements
                 typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
                 if (typeInfo == null) {
                     dv = fDatatypeRegistry.getDatatypeValidator(localpart);
-                    if (dv == null) {
+                    if (dv == null )
+                    if (!typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
                         Element topleveltype = getTopLevelComponentByName(SchemaSymbols.ELT_COMPLEXTYPE,localpart);
                         if (topleveltype != null) {
                             if (fCurrentTypeNameStack.search((Object)localpart) > - 1) {
@@ -2673,11 +2674,16 @@ public class TraverseSchema implements
                             else {
                                 noErrorSoFar = false;
                                 // REVISIT: Localize
-                                reportGenericSchemaError("type not found : " + localpart);
+                                reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
                             }
 
                         }
 
+                    }
+                    else {
+                        noErrorSoFar = false;
+                        // REVISIT: Localize
+                        reportGenericSchemaError("type not found : " + typeURI+":"+localpart);
                     }
                 }
             }
