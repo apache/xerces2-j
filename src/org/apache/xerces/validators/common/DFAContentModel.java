@@ -494,7 +494,7 @@ public class DFAContentModel
 
             // If we didn't find it, then obviously not valid
             if (elemIndex == fElemMapSize) {
-                if (!DEBUG_VALIDATE_CONTENT) {
+                if (DEBUG_VALIDATE_CONTENT) {
                     System.out.println("!!! didn't find it");
 
                     System.out.println("curElem : " +curElem );
