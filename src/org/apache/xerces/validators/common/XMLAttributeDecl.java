@@ -85,7 +85,8 @@ public class XMLAttributeDecl {
 
     public static final int TYPE_ANY_ANY = 8;
     public static final int TYPE_ANY_OTHER = 9;
-    public static final int TYPE_ANY_LOCAL = 10;
+    //"Local" is treated as a member of the list
+    //public static final int TYPE_ANY_LOCAL = 10;
     public static final int TYPE_ANY_LIST = 11;
 
     // default types in DTD

@@ -2365,10 +2365,6 @@ public final class XMLValidator
             if (fGrammarIsSchemaGrammar) {
                if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY) {
                   return attDefIndex;
-               } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
-                  if (attribute.uri == StringPool.EMPTY_STRING) {
-                     return attDefIndex;
-                  }
                } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
                   if (attribute.uri != fTempAttDecl.name.uri) {
                      return attDefIndex;
@@ -3448,7 +3444,6 @@ public final class XMLValidator
                               else if ( fGrammarIsSchemaGrammar && 
                                         (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
-                                         ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
 
                                  if ((fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_SKIP) > 0) {
@@ -3460,11 +3455,14 @@ public final class XMLValidator
                                     boolean processContentStrict = 
                                     (fTempAttDecl.defaultType & XMLAttributeDecl.PROCESSCONTENTS_STRICT) > 0;
 
-                                    if (fTempQName.uri == StringPool.EMPTY_STRING) {
-                                       if (processContentStrict) {
-                                          reportError = true;
-                                       }
-                                    } else {
+                                    // ??? REVISIT: can't tell whether it's a local attribute
+                                    //     or a global one with empty namespace
+                                    //if (fTempQName.uri == StringPool.EMPTY_STRING) {
+                                    //   if (processContentStrict) {
+                                    //      reportError = true;
+                                    //   }
+                                    //} else {
+                                    {
                                        Grammar aGrammar = 
                                        fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
 

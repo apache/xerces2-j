@@ -1995,9 +1995,10 @@ public class TraverseSchema implements
             //          seem to work in this case -el 
 			// Simplify! - ng
             //String uri = child.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
-			String uri = fTargetNSURIString;
-			int uriIndex = fStringPool.addSymbol(uri);
-            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
+			//???String uri = fTargetNSURIString;
+			//???int uriIndex = fStringPool.addSymbol(uri);
+            //???anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, uriIndex, false);
+            anyIndex = fSchemaGrammar.addContentSpecNode(processContentsAny, -1, StringPool.EMPTY_STRING, false);
         }
         else if (namespace.equals("##other")) {
 			String uri = fTargetNSURIString;
@@ -2087,21 +2088,23 @@ public class TraverseSchema implements
             anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_OTHER;
             anyAttDecl.name.uri = fStringPool.addSymbol(curTargetUri);
         }
-        else if (namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
-            anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_LOCAL;
-        }
         else if (namespace.length() > 0){
             anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_LIST;
 
             StringTokenizer tokenizer = new StringTokenizer(namespace);
             int aStringList = fStringPool.startStringList();
             Vector tokens = new Vector();
+            int tokenStr;
             while (tokenizer.hasMoreElements()) {
                 String token = tokenizer.nextToken();
-                if (token.equals("##targetNamespace")) {
+                if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDLOCAL)) {
+                    tokenStr = fStringPool.EMPTY_STRING;
+                } else {
+                    if (token.equals(SchemaSymbols.ATTVAL_TWOPOUNDTARGETNS))
                     token = curTargetUri;
+                    tokenStr = fStringPool.addSymbol(token);
                 }
-                if (!fStringPool.addStringToList(aStringList, fStringPool.addSymbol(token))){
+                if (!fStringPool.addStringToList(aStringList, tokenStr)){
                     reportGenericSchemaError("Internal StringPool error when reading the "+
                                              "namespace attribute for anyattribute declaration");
                 }
@@ -2129,7 +2132,16 @@ public class TraverseSchema implements
         return anyAttDecl; 
     }
 
-    private XMLAttributeDecl mergeTwoAnyAttribute(XMLAttributeDecl oneAny, XMLAttributeDecl anotherAny) {
+    // Schema Component Constraint: Attribute Wildcard Intersection
+    // For a wildcard's {namespace constraint} value to be the intensional intersection of two other such values (call them O1 and O2): the appropriate case among the following must be true:
+    // 1 If O1 and O2 are the same value, then that value must be the value.
+    // 2 If either O1 or O2 is any, then the other must be the value.
+    // 3 If either O1 or O2 is a pair of not and a namespace name and the other is a set of (namespace names or ·absent·), then that set, minus the negated namespace name if it was in the set, must be the value.
+    // 4 If both O1 and O2 are sets of (namespace names or ·absent·), then the intersection of those sets must be the value.
+    // 5 If the two are negations of different namespace names, then the intersection is not expressible.
+    // In the case where there are more than two values, the intensional intersection is determined by identifying the intensional intersection of two of the values as above, then the intensional intersection of that value with the third (providing the first intersection was expressible), and so on as required.
+    private XMLAttributeDecl AWildCardIntersection(XMLAttributeDecl oneAny, XMLAttributeDecl anotherAny) {
+        // if either one is not expressible, the result is still not expressible
         if (oneAny.type == -1) {
             return oneAny;
         }
@@ -2137,84 +2149,109 @@ public class TraverseSchema implements
             return anotherAny;
         }
 
+        // 1 If O1 and O2 are the same value, then that value must be the value.
+        // this one is dealt with in different branches
+
+        // 2 If either O1 or O2 is any, then the other must be the value.
         if (oneAny.type == XMLAttributeDecl.TYPE_ANY_ANY) {
             return anotherAny;
         }
-
         if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_ANY) {
             return oneAny;
         }
 
-        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
-            if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+        // 3 If either O1 or O2 is a pair of not and a namespace name and the other is a set of (namespace names or ·absent·), then that set, minus the negated namespace name if it was in the set, must be the value.
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_OTHER &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST ||
+            oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            XMLAttributeDecl anyList, anyOther;
+            if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                anyList = oneAny;
+                anyOther = anotherAny;
+            } else {
+                anyList = anotherAny;
+                anyOther = oneAny;
+                }
 
-                if ( anotherAny.name.uri == oneAny.name.uri ) {
-                    return oneAny;
-                }
-                else {
-                    oneAny.type = -1;
-                    return oneAny;
-                }
-
-            }
-            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
-                return anotherAny;
-            }
-            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
-                if (!fStringPool.stringInList(anotherAny.enumeration, oneAny.name.uri) ) {
-                    return anotherAny;
-                }
-                else {
-                    int[] anotherAnyURIs = fStringPool.stringListAsIntArray(anotherAny.enumeration);
+            int[] uriList = fStringPool.stringListAsIntArray(anyList.enumeration);
+            if (elementInSet(anyOther.name.uri, uriList)) {
                     int newList = fStringPool.startStringList();
-                    for (int i=0; i< anotherAnyURIs.length; i++) {
-                        if (anotherAnyURIs[i] != oneAny.name.uri ) {
-                            fStringPool.addStringToList(newList, anotherAnyURIs[i]);
+                for (int i=0; i< uriList.length; i++) {
+                    if (uriList[i] != anyOther.name.uri ) {
+                        fStringPool.addStringToList(newList, uriList[i]);
                         }
                     }
                     fStringPool.finishStringList(newList);
-                    anotherAny.enumeration = newList;
-                    return anotherAny;
+                anyList.enumeration = newList;
                 }
-            }
+
+            return anyList;
         }
 
-        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
-            if ( anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER
-                || anotherAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+        // 4 If both O1 and O2 are sets of (namespace names or ·absent·), then the intersection of those sets must be the value.
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+            int[] result = intersect2sets(fStringPool.stringListAsIntArray(oneAny.enumeration),
+                                          fStringPool.stringListAsIntArray(anotherAny.enumeration));
+            int newList = fStringPool.startStringList();
+            for (int i=0; i<result.length; i++) {
+                fStringPool.addStringToList(newList, result[i]);
+            }
+            fStringPool.finishStringList(newList);
+            oneAny.enumeration = newList;
                 return oneAny;
             }
-            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+
+        // 5 If the two are negations of different namespace names, then the intersection is not expressible.
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_OTHER &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            if (oneAny.name.uri == anotherAny.name.uri) {
+                return oneAny;
+            } else {
                 oneAny.type = -1;
                 return oneAny;
             }
         }
 
-        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
-            if ( anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER){
-                if (!fStringPool.stringInList(oneAny.enumeration, anotherAny.name.uri) ) {
-                    return oneAny;
-                }
-                else {
-                    int[] oneAnyURIs = fStringPool.stringListAsIntArray(oneAny.enumeration);
-                    int newList = fStringPool.startStringList();
-                    for (int i=0; i< oneAnyURIs.length; i++) {
-                        if (oneAnyURIs[i] != anotherAny.name.uri ) {
-                            fStringPool.addStringToList(newList, oneAnyURIs[i]);
-                        }
-                    }
-                    fStringPool.finishStringList(newList);
-                    oneAny.enumeration = newList;
+        // should never go there;
                     return oneAny;
                 }
 
+    // Schema Component Constraint: Attribute Wildcard Union
+    // For a wildcard's {namespace constraint} value to be the intensional union of two other such values (call them O1 and O2): the appropriate case among the following must be true:
+    // 1 If O1 and O2 are the same value, then that value must be the value.
+    // 2 If either O1 or O2 is any, then any must be the value.
+    // 3 If both O1 and O2 are sets of (namespace names or ·absent·), then the union of those sets must be the value.
+    // 4 If the two are negations of different namespace names, then any must be the value.
+    // 5 If either O1 or O2 is a pair of not and a namespace name and the other is a set of (namespace names or ·absent·), then The appropriate case among the following must be true:
+    // 5.1 If the set includes the negated namespace name, then any must be the value.
+    // 5.2 If the set does not include the negated namespace name, then whichever of O1 or O2 is a pair of not and a namespace name must be the value.
+    // In the case where there are more than two values, the intensional union is determined by identifying the intensional union of two of the values as above, then the intensional union of that value with the third, and so on as required.
+    private XMLAttributeDecl AWildCardUnion(XMLAttributeDecl oneAny, XMLAttributeDecl anotherAny) {
+        // if either one is not expressible, the result is still not expressible
+        if (oneAny.type == -1) {
+                    return oneAny;
+                }
+        if (anotherAny.type == -1) {
+            return anotherAny;
             }
-            else if ( anotherAny.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
-                oneAny.type = -1;
+
+        // 1 If O1 and O2 are the same value, then that value must be the value.
+        // this one is dealt with in different branches
+
+        // 2 If either O1 or O2 is any, then any must be the value.
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_ANY) {
                 return oneAny;
             }
-            else if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
-                int[] result = intersect2sets( fStringPool.stringListAsIntArray(oneAny.enumeration), 
+        if (anotherAny.type == XMLAttributeDecl.TYPE_ANY_ANY) {
+            return anotherAny;
+        }
+
+        // 3 If both O1 and O2 are sets of (namespace names or ·absent·), then the union of those sets must be the value.
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+            int[] result = union2sets(fStringPool.stringListAsIntArray(oneAny.enumeration),
                                                fStringPool.stringListAsIntArray(anotherAny.enumeration));
                 int newList = fStringPool.startStringList();
                 for (int i=0; i<result.length; i++) {
@@ -2224,10 +2261,140 @@ public class TraverseSchema implements
                 oneAny.enumeration = newList;
                 return oneAny;
             }
+
+        // 4 If the two are negations of different namespace names, then any must be the value.
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_OTHER &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            if (oneAny.name.uri == anotherAny.name.uri) {
+                return oneAny;
+            } else {
+                oneAny.type = XMLAttributeDecl.TYPE_ANY_ANY;
+                return oneAny;
+            }
+        }
+
+        // 5 If either O1 or O2 is a pair of not and a namespace name and the other is a set of (namespace names or ·absent·), then The appropriate case among the following must be true:
+        if (oneAny.type == XMLAttributeDecl.TYPE_ANY_OTHER &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_LIST ||
+            oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST &&
+            anotherAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            XMLAttributeDecl anyList, anyOther;
+            if (oneAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                anyList = oneAny;
+                anyOther = anotherAny;
+            } else {
+                anyList = anotherAny;
+                anyOther = oneAny;
+        }
+            // 5.1 If the set includes the negated namespace name, then any must be the value.
+            if (elementInSet(anyOther.name.uri,
+                             fStringPool.stringListAsIntArray(anyList.enumeration))) {
+                anyOther.type = XMLAttributeDecl.TYPE_ANY_ANY;
+            }
+            // 5.2 If the set does not include the negated namespace name, then whichever of O1 or O2 is a pair of not and a namespace name must be the value.
+
+            return anyOther;
         }
 
         // should never go there;
         return oneAny;
+    }
+
+    // Schema Component Constraint: Wildcard Subset
+    // For a namespace constraint (call it sub) to be an intensional subset of another namespace constraint (call it super) one of the following must be true:
+    // 1 super must be any.
+    // 2 All of the following must be true:
+    // 2.1 sub must be a pair of not and a namespace name or ·absent·.
+    // 2.2 super must be a pair of not and the same value.
+    // 3 All of the following must be true:
+    // 3.1 sub must be a set whose members are either namespace names or ·absent·.
+    // 3.2 One of the following must be true:
+    // 3.2.1 super must be the same set or a superset thereof.
+    // 3.2.2 super must be a pair of not and a namespace name or ·absent· and that value must not be in sub's set.
+    private boolean AWildCardSubset(XMLAttributeDecl subAny, XMLAttributeDecl superAny) {
+        // if either one is not expressible, it can't be a subset
+        if (subAny.type == -1 || superAny.type == -1)
+            return false;
+
+        // 1 super must be any.
+        if (superAny.type == XMLAttributeDecl.TYPE_ANY_ANY)
+            return true;
+
+        // 2 All of the following must be true:
+        // 2.1 sub must be a pair of not and a namespace name or ·absent·.
+        if (subAny.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            // 2.2 super must be a pair of not and the same value.
+            if (superAny.type == XMLAttributeDecl.TYPE_ANY_OTHER &&
+                subAny.name.uri == superAny.name.uri) {
+                return true;
+            }
+        }
+
+        // 3 All of the following must be true:
+        // 3.1 sub must be a set whose members are either namespace names or ·absent·.
+        if (subAny.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+        // 3.2 One of the following must be true:
+            // 3.2.1 super must be the same set or a superset thereof.
+            if (superAny.type == XMLAttributeDecl.TYPE_ANY_LIST &&
+                subset2sets(fStringPool.stringListAsIntArray(subAny.enumeration),
+                            fStringPool.stringListAsIntArray(superAny.enumeration))) {
+                return true;
+            }
+
+            // 3.2.2 super must be a pair of not and a namespace name or ·absent· and that value must not be in sub's set.
+            if (superAny.type == XMLAttributeDecl.TYPE_ANY_OTHER &&
+                !elementInSet(superAny.name.uri, fStringPool.stringListAsIntArray(superAny.enumeration))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Validation Rule: Wildcard allows Namespace Name
+    // For a value which is either a namespace name or ·absent· to be ·valid· with respect to a wildcard constraint (the value of a {namespace constraint}) one of the following must be true:
+    // 1 The constraint must be any.
+    // 2 All of the following must be true:
+    // 2.1 The constraint is a pair of not and a namespace name or ·absent· ([Definition:]  call this the namespace test).
+    // 2.2 The value must not be identical to the ·namespace test·.
+    // 2.3 The value must not be ·absent·.
+    // 3 The constraint is a set, and the value is identical to one of the members of the set.
+    private boolean AWildCardAllowsNameSpace(XMLAttributeDecl wildcard, String uri) {
+        // if the constrain is not expressible, then nothing is allowed
+        if (wildcard.type == -1)
+            return false;
+
+        // 1 The constraint must be any.
+        if (wildcard.type == XMLAttributeDecl.TYPE_ANY_ANY)
+            return true;
+
+        int uriStr = fStringPool.addString(uri);
+
+        // 2 All of the following must be true:
+        // 2.1 The constraint is a pair of not and a namespace name or ·absent· ([Definition:]  call this the namespace test).
+        if (wildcard.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+            // 2.2 The value must not be identical to the ·namespace test·.
+            // 2.3 The value must not be ·absent·.
+            if (uriStr != wildcard.name.uri && uriStr != StringPool.EMPTY_STRING)
+                return true;
+        }
+
+        // 3 The constraint is a set, and the value is identical to one of the members of the set.
+        if (wildcard.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+            if (elementInSet(uriStr, fStringPool.stringListAsIntArray(wildcard.enumeration)))
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean isAWildCard(XMLAttributeDecl a) {
+        if (a.type == XMLAttributeDecl.TYPE_ANY_ANY
+            ||a.type == XMLAttributeDecl.TYPE_ANY_LIST
+            ||a.type == XMLAttributeDecl.TYPE_ANY_OTHER )
+            return true;
+        else
+            return false;
     }
 
     int[] intersect2sets(int[] one, int[] theOther){
@@ -2236,17 +2403,50 @@ public class TraverseSchema implements
         // simple implemention, 
         int count = 0;
         for (int i=0; i<one.length; i++) {
-            for(int j=0; j<theOther.length; j++) {
-                if (one[i]==theOther[j]) {
+            if (elementInSet(one[i], theOther))
                     result[count++] = one[i];
                 }
-            }
-        }
 
         int[] result2 = new int[count];
         System.arraycopy(result, 0, result2, 0, count);
 
         return result2;
+    }
+
+    int[] union2sets(int[] one, int[] theOther){
+        int[] result1 = new int[one.length];
+
+        // simple implemention,
+        int count = 0;
+        for (int i=0; i<one.length; i++) {
+            if (!elementInSet(one[i], theOther))
+                result1[count++] = one[i];
+        }
+
+        int[] result2 = new int[count+theOther.length];
+        System.arraycopy(result1, 0, result2, 0, count);
+        System.arraycopy(theOther, 0, result2, count, theOther.length);
+
+        return result2;
+    }
+
+    boolean subset2sets(int[] subSet, int[] superSet){
+        for (int i=0; i<subSet.length; i++) {
+            if (!elementInSet(subSet[i], superSet))
+                return false;
+        }
+
+        return true;
+    }
+
+    boolean elementInSet(int ele, int[] set){
+        boolean found = false;
+        for (int i=0; i<set.length && !found; i++) {
+            if (ele==set[i])
+                found = true;
+        }
+
+        return found;
     }
 
     /**
@@ -3337,13 +3537,13 @@ public class TraverseSchema implements
             if ( count > 0) {
                 fromGroup = (XMLAttributeDecl) anyAttDecls.elementAt(0);
                 for (int i=1; i<count; i++) {
-                    fromGroup = mergeTwoAnyAttribute(
+                    fromGroup = AWildCardIntersection(
                                 fromGroup,(XMLAttributeDecl)anyAttDecls.elementAt(i));
                 }
             }
             if (fromGroup != null) {
                 int saveProcessContents = attWildcard.defaultType;
-                attWildcard = mergeTwoAnyAttribute(attWildcard, fromGroup);
+                attWildcard = AWildCardIntersection(attWildcard, fromGroup);
                 attWildcard.defaultType = saveProcessContents;
             }
         }
@@ -3379,7 +3579,6 @@ public class TraverseSchema implements
                 aGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
                 if (fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
                     ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
-                    ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
                     ||fTempAttributeDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER ) {
                     if (attWildcard == null) {
                         baseAttWildcard = fTempAttributeDecl;
@@ -3459,7 +3658,7 @@ public class TraverseSchema implements
        while ( attDefIndex > -1 ) {
           fTempAttributeDecl.clear();
           dGrammar.getAttributeDecl(attDefIndex, fTempAttributeDecl);
-          if (isWildCard(fTempAttributeDecl))  {
+          if (isAWildCard(fTempAttributeDecl)) {
              attDefIndex = dGrammar.getNextAttributeDeclIndex(attDefIndex);
              continue;
           }
@@ -3496,7 +3695,7 @@ public class TraverseSchema implements
              // derivation-ok-restriction.  Constraint 2.2
              // 
              if ((bAttWildCard==null) ||
-              !wildcardAllowsNameSpace(bAttWildCard, dGrammar.getTargetNamespaceURI())) {
+              !AWildCardAllowsNameSpace(bAttWildCard, dGrammar.getTargetNamespaceURI())) {
                 throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.2:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' has a target namespace which is not valid with respect to a base type definition's wildcard or, the base does not contain a wildcard");
                
              }
@@ -3511,35 +3710,11 @@ public class TraverseSchema implements
             throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.1: An attribute wildcard is present in the derived type, but not the base"); 
           }
                 
-          if (!wildcardSubset(dAttWildCard,bAttWildCard)) {
+          if (!AWildCardSubset(dAttWildCard,bAttWildCard)) {
             throw new ComplexTypeRecoverableError("derivation-ok-restriction.4.2: The attribute wildcard in the derived type is not a valid subset of that in the base");
 
           }
        }
-          
-          
-    }
-
-    // TO BE DONE 
-    private boolean wildcardAllowsNameSpace(XMLAttributeDecl wildcard, String uri) {
-        return true;
-    }
-
-    // TO BE DONE 
-    private boolean wildcardSubset(XMLAttributeDecl derivedWildcard, 
-                                   XMLAttributeDecl baseWildcard) {
-        return true;
-    }
-
-    private boolean isWildCard(XMLAttributeDecl a) {
-
-        if (a.type == XMLAttributeDecl.TYPE_ANY_ANY 
-           ||a.type == XMLAttributeDecl.TYPE_ANY_LIST
-           ||a.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
-           ||a.type == XMLAttributeDecl.TYPE_ANY_OTHER ) 
-          return true;
-        else
-          return false;
     }
         
     private boolean isAttrOrAttrGroup(Element e) 

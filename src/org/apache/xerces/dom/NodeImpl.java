@@ -1151,8 +1151,8 @@ public abstract class NodeImpl
 	    NodeImpl owner = null;
 	    if (enclosingAttr != null) {
                 LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-                if(lc.captures+lc.bubbles+lc.defaults>0) {
                     owner=((NodeImpl)(enclosingAttr.getOwnerElement()));
+                if(lc.captures+lc.bubbles+lc.defaults>0) {
                     if(owner!=null) {
                         MutationEventImpl me= new MutationEventImpl();
                         me.initMutationEvent(

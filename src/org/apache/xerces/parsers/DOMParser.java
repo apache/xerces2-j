@@ -1689,7 +1689,7 @@ public class DOMParser
                         false, // specified
                         false); // search
                     fAttrList.addAttr(
-                        fStringPool.addSymbol("nullable"), // name
+                        fStringPool.addSymbol("nillable"), // name
                         fStringPool.addString("false"), // value
                         fStringPool.addSymbol("ENUMERATION"), // type
                         false, // specified
@@ -1830,8 +1830,8 @@ public class DOMParser
                     element.setAttribute("name", elementName);
                     element.setAttribute("minOccurs", "1");
                     ((AttrImpl)element.getAttributeNode("minOccurs")).setSpecified(false);
-                    element.setAttribute("nullable", "false");
-                    ((AttrImpl)element.getAttributeNode("nullable")).setSpecified(false);
+                    element.setAttribute("nillable", "false");
+                    ((AttrImpl)element.getAttributeNode("nillable")).setSpecified(false);
                     element.setAttribute("abstract", "false");
                     ((AttrImpl)element.getAttributeNode("abstract")).setSpecified(false);
                     element.setAttribute("final", "false");
