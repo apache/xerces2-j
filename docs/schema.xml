@@ -2,7 +2,7 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 <s1 title="Schema">
 	<s2 title="Disclaimer">
-		<p>This package contains an implementation of the W3C XML 
+		<p>!!! No Schema support in this release !!! This package contains an implementation of the W3C XML 
 		Schema language. This implementation is experimental. The 
 		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump> 
 		language is still in working draft stage: you 

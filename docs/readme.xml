@@ -6,7 +6,6 @@
 		<p>The &javaparsernamelong; &javaparserversion; supports 
 		<jump href="http://www.w3.org/TR/1998/REC-xml-19980210">XML 1.0</jump> 
 		recommendation and contains advanced parser functionality, such as 
-		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump>, 
 		<jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2 version 1.0</jump>, and 
 		<jump href="http://www.megginson.com/SAX/">SAX Version 2</jump>, 
 		in addition to supporting the industry-standard 
@@ -19,7 +18,8 @@
 		Watch <jump href="http://xml.apache.org">xml.apache.org</jump> 
 		for new updates. Since it is an alpha release, defects are expected in the source code, documentation
                 and packaging. 
-		
+	</p>
+	<p>	
                 Note that because some of the standards
 		are still not complete, the stable API will definitely be 
 		different from its current form in &javaparsername; &javaparserversion;. 
@@ -53,17 +53,20 @@
 		</ul>
 	</s2>
 	<s2 title="XML Schema (alpha) Support">
-		<p>!!! Not supported in this release !!! This release includes preliminary 
+		<p>!!! Not supported in this release !!! </p>
+		<!-- 
+		<p>
+		This release includes preliminary 
 		support for the W3C XML Schema Language. The <link idref="schema">Schema</link> 
 		page contains a complete description of the 
 		schema capabilities of this release. We intend to track the W3C XML 
-		Schema Language in subsequent updates of &javaparsername;.</p>
+		Schema Language in subsequent updates of &javaparsername;.</p> -->
 	</s2>
 	<s2 title="DOM Level 2 (beta) Support">
 		<p>This release includes support for the 
 		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2</jump>.
                 As of this writing, the DOM Level 2 specification is now a
-                Candidate Recommendation.</p>
+                W3C Recommendation.</p>
 	</s2>
 	<s2 title="SAX 2 Support">
 		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/">
