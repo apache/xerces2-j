@@ -558,8 +558,8 @@ public abstract class NodeImpl
      */
     public boolean supports(String feature, String version)
     {
-        return getOwnerDocument().getImplementation().hasFeature(feature,
-                                                                 version);
+        return ownerDocument().getImplementation().hasFeature(feature,
+                                                              version);
     }
 
     /**
