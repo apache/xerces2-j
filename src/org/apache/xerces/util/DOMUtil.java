@@ -59,7 +59,6 @@ package org.apache.xerces.util;
 
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.NodeImpl;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -207,7 +206,7 @@ public class DOMUtil {
         Node child = parent.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE &&
-                !((NodeImpl)child).getReadOnly()) {
+                !isHidden(child)) {
                 return (Element)child;
             }
             child = child.getNextSibling();
@@ -242,7 +241,7 @@ public class DOMUtil {
         Node child = parent.getLastChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE &&
-                    ((NodeImpl)child).getReadOnly()) {
+                !isHidden(child)) {
                 return (Element)child;
             }
             child = child.getPreviousSibling();
@@ -277,7 +276,7 @@ public class DOMUtil {
         Node sibling = node.getNextSibling();
         while (sibling != null) {
             if (sibling.getNodeType() == Node.ELEMENT_NODE &&
-                !((NodeImpl)sibling).getReadOnly()) {
+                !isHidden(sibling)) {
                 return (Element)sibling;
             }
             sibling = sibling.getNextSibling();
@@ -290,17 +289,27 @@ public class DOMUtil {
 
     // set this Node as being hidden
     public static void setHidden(Node node) {
-        ((NodeImpl)node).setReadOnly(true, false);
+        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)
+            ((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(true, false);
+        else if (node instanceof org.apache.xerces.dom.NodeImpl)
+            ((org.apache.xerces.dom.NodeImpl)node).setReadOnly(true, false);
     } // setHidden(node):void
 
     // set this Node as being visible
     public static void setVisible(Node node) {
-        ((NodeImpl)node).setReadOnly(false, false);
+        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)
+            ((org.apache.xerces.impl.xs.opti.NodeImpl)node).setReadOnly(false, false);
+        else if (node instanceof org.apache.xerces.dom.NodeImpl)
+            ((org.apache.xerces.dom.NodeImpl)node).setReadOnly(false, false);
     } // setVisible(node):void
 
     // is this node hidden?
     public static boolean isHidden(Node node) {
-        return ((NodeImpl)node).getReadOnly();
+        if (node instanceof org.apache.xerces.impl.xs.opti.NodeImpl)
+            return ((org.apache.xerces.impl.xs.opti.NodeImpl)node).getReadOnly();
+        else if (node instanceof org.apache.xerces.dom.NodeImpl)
+            return ((org.apache.xerces.dom.NodeImpl)node).getReadOnly();
+        return false;
     } // isHidden(Node):boolean
 
     /** Finds and returns the first child node with the given name. */
