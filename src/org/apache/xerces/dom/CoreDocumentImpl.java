@@ -1596,6 +1596,15 @@ public class CoreDocumentImpl
         return getIdentifier(elementId);
     }
 
+	/**
+	 * Remove all identifiers from the ID table
+	 */
+    protected final void clearIdentifiers (){
+        if (identifiers != null){
+            identifiers.clear();
+        }
+    }
+
     /**
      * Registers an identifier name with a specified element node.
      * If the identifier is already registered, the new element

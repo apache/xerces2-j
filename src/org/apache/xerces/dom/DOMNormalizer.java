@@ -64,6 +64,8 @@ import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
+import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -218,8 +220,12 @@ public class DOMNormalizer implements XMLDocumentHandler {
             
 			// check if we need to fill in PSVI
             fPSVI = ((fConfiguration.features & DOMConfigurationImpl.PSVI) !=0)?true:false;
-			// REVISIT: pass namespace context to the XML Schema validator
-			 ((XMLComponent) fValidationHandler).reset(fConfiguration);
+            
+            // reset ID table           
+            fDocument.clearIdentifiers();
+            
+            // reset schema validator
+			((XMLComponent) fValidationHandler).reset(fConfiguration);
 		}
 
 		fErrorHandler = (DOMErrorHandler) fConfiguration.getParameter("error-handler");
@@ -739,6 +745,9 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     */
                     // XML 1.0 Attribute value normalization
                     value = normalizeAttributeValue(value, attr);
+                    
+                    // reset id-attributes
+                    ((AttrImpl)attr).setIdAttribute(false);
 
 
                     uri = fSymbolTable.addSymbol(uri);
@@ -793,6 +802,9 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     int colon = name.indexOf(':');
                     // XML 1.0 Attribute value normalization
                     value = normalizeAttributeValue(value, attr);
+                    // reset id-attributes
+                    ((AttrImpl)attr).setIdAttribute(false);
+
                     if (colon > -1) {
                         // It is an error if document has DOM L1 nodes.
                         boolean continueProcess = true;
@@ -1067,7 +1079,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
 
 
-        public void setType(int attrIndex, String attrType){            
+        public void setType(int attrIndex, String attrType){
             // REVISIT: implement
         }
 
@@ -1292,10 +1304,26 @@ public class DOMNormalizer implements XMLDocumentHandler {
 			Attr attr = null;
 
 			attr = currentElement.getAttributeNodeNS(fAttrQName.uri, fAttrQName.localpart);
-			AttributePSVI attrPSVI =
+            AttributePSVI attrPSVI =
 				(AttributePSVI) attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
 
 			if (attrPSVI != null) {
+                //REVISIT: instead we should be using augmentations:
+                // to set/retrieve Id attributes
+                XSTypeDefinition decl = attrPSVI.getMemberTypeDefinition();
+                boolean id = false;
+                if (decl != null){
+                    id = ((XSSimpleType)decl).isIDType();
+                } else{
+                    decl = attrPSVI.getTypeDefinition();
+                    if (decl !=null){
+                       id = ((XSSimpleType)decl).isIDType(); 
+                    }
+                }
+                if (id){
+                    ((ElementImpl)currentElement).setIdAttributeNode(attr);
+                }
+                
 				if (fPSVI) {
 					((PSVIAttrNSImpl) attr).setPSVI(attrPSVI);
 				}
