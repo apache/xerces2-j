@@ -75,42 +75,42 @@ public class AttrNSImpl
     }
 
     private void setName(String namespaceURI, String qname){
-        
+        CoreDocumentImpl ownerDocument = ownerDocument();
         String prefix;
-		// DOM Level 3: namespace URI is never empty string.
+        // DOM Level 3: namespace URI is never empty string.
         this.namespaceURI = namespaceURI;
         if (namespaceURI !=null) {
-  	        this.namespaceURI = (namespaceURI.length() == 0)? null
-                                 : namespaceURI;
-
-		}
-		int colon1 = qname.indexOf(':');
-		int colon2 = qname.lastIndexOf(':');
-		ownerDocument().checkNamespaceWF(qname, colon1, colon2);
-		if (colon1 < 0) {
-			// there is no prefix
-			localName = qname;
-			ownerDocument().checkQName(null, localName);
-			if (ownerDocument().errorChecking) {
-				if (qname.equals("xmlns")
-					&& (namespaceURI == null
-						|| !namespaceURI.equals(NamespaceContext.XMLNS_URI))
-					|| (namespaceURI!=null && namespaceURI.equals(NamespaceContext.XMLNS_URI)
-						&& !qname.equals("xmlns"))) {
-					String msg =
-						DOMMessageFormatter.formatMessage(
-							DOMMessageFormatter.DOM_DOMAIN,
-							"NAMESPACE_ERR",
-							null);
-					throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-				}
-			}
-		}
-		else {
-			prefix = qname.substring(0, colon1);
-			localName = qname.substring(colon2+1);
-			ownerDocument().checkQName(prefix, localName);
-            ownerDocument().checkDOMNSErr(prefix, namespaceURI);
+            this.namespaceURI = (namespaceURI.length() == 0)? null
+                    : namespaceURI;
+            
+        }
+        int colon1 = qname.indexOf(':');
+        int colon2 = qname.lastIndexOf(':');
+        ownerDocument.checkNamespaceWF(qname, colon1, colon2);
+        if (colon1 < 0) {
+            // there is no prefix
+            localName = qname;
+            if (ownerDocument.errorChecking) {
+                ownerDocument.checkQName(null, localName);
+                
+                if (qname.equals("xmlns") && (namespaceURI == null
+                    || !namespaceURI.equals(NamespaceContext.XMLNS_URI))
+                    || (namespaceURI!=null && namespaceURI.equals(NamespaceContext.XMLNS_URI)
+                    && !qname.equals("xmlns"))) {
+                    String msg =
+                        DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.DOM_DOMAIN,
+                                "NAMESPACE_ERR",
+                                null);
+                    throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+                }
+            }
+        }
+        else {
+            prefix = qname.substring(0, colon1);
+            localName = qname.substring(colon2+1);
+            ownerDocument.checkQName(prefix, localName);
+            ownerDocument.checkDOMNSErr(prefix, namespaceURI);
         }
     } 
 
