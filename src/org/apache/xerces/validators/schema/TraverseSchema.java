@@ -2755,8 +2755,8 @@ public class TraverseSchema implements
         void initializeRegistry() {
             Hashtable facets = null;
             fRegistry.put("boolean", new BooleanValidator());
-            DatatypeValidator integerValidator = new IntegerValidator();
-            fRegistry.put("integer", integerValidator);
+            //DatatypeValidator integerValidator = new IntegerValidator();
+            //fRegistry.put("integer", integerValidator);
             fRegistry.put("string", new StringValidator());
             fRegistry.put("decimal", new DecimalValidator());
             fRegistry.put("float", new FloatValidator());
@@ -2764,7 +2764,7 @@ public class TraverseSchema implements
             //fRegistry.put("timeDuration", new TimeDurationValidator());
             //fRegistry.put("timeInstant", new TimeInstantValidator());
             fRegistry.put("binary", new BinaryValidator());
-            fRegistry.put("uri", new URIValidator());
+            fRegistry.put("uri", new URIReferenceValidator());
             //REVISIT - enable the below
             //fRegistry.put("date", new DateValidator());
             //fRegistry.put("timePeriod", new TimePeriodValidator());
