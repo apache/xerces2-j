@@ -2,7 +2,7 @@
 <!-- edited with XML Spy v3.0 (http://www.xmlspy.com) by Edward Staub (private) -->
 <?xml-stylesheet type="text/xsl" href="issues.xsl"?>
 <!DOCTYPE requirementCatalog SYSTEM "issues.dtd">
-<requirementCatalog date="21 July 2000" version="1.1">
+<requirementCatalog date="29 July 2000" version="1.3">
 	<!-- Checked apache general list through messages 2091 through 2375 -->
 	<!-- Checked apache xerces-j-dev list messages 1160 through 1380 -->
 	<categories>
@@ -67,8 +67,8 @@ devices vs. "as-small-and-cheap-as-possible" devices</ref>
 			</refs>
 		</req>
 		<req id="4" status="approved" strength="hard" cat="Speed">
-			<def>The parser shall be optimized in a way that is compatible 
-      with modern virtual machines such as HotSpot.</def>
+			<def>The parser shall run well on all virutal machines and
+			shall not be optimized toward a particular virtual machine.</def>
 			<refs>
 				<ref set="gen" id="2091"/>
 				<ref set="xdev" id="1299"/>
@@ -158,27 +158,66 @@ can accommodate any OO language...</ref>
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
-		<req id="13" strength="soft" cat="Features">
-			<def>The parser should be suitable for implementation of XSLT (especially Xalan2. Subrequirements: 
-			<br/>1) SAX2, of course. 
-<br/>2) Read-only, memory conservative, high performance DOM subset. In some 
+		<req id="13a" strength="soft" cat="Features">
+			<def>
+<br/>Read-only, memory conservative, high performance DOM subset. In some 
 ways, this is optional, since the alternative is that the XSLT processor 
 implement it's own DOM, as it does today. But it would be neat and simpler 
 if only one DOM implementation needed to exist. 
-<br/>  2a) Document-order indexes or API as a DOM extension. I know of few or 
+<br/>  a) Document-order indexes or API as a DOM extension. I know of few or 
 no conformant XSLT processors that can do without this. 
-<br/>  2b) [optional] isWhite() method as a DOM extensions (pure telling of 
+<br/>  b) [optional] isWhite() method as a DOM extensions (pure telling of 
 whether or not the text contains non-whitespace), for performance reasons. 
-<br/>  2c) Some sort of weak reference, where nodes could be released if not 
+<br/>  c) Some sort of weak reference, where nodes could be released if not 
 referenced, and then rebuilt if requested. For performance and memory 
 footprint. 
-<br/>3) parse-next function, with added control over buffer size. 
-<br/>4) Some sort of way to tell if a SAX char buffer is going to be 
+</def>
+			<refs>
+				<ref set="gen" id="2203"/>
+				<ref set="gen" id="2296"/>
+			</refs>
+		</req>
+		<req id="13b" strength="soft" cat="Features">
+			<def>
+<br/>parse-next function, with added control over buffer size. 
+</def>
+			<refs>
+				<ref set="gen" id="2203"/>
+				<ref set="gen" id="2296"/>
+			</refs>
+		</req>
+		<req id="13c" strength="soft" cat="Features">
+			<def>
+<br/>Some sort of way to tell if a SAX char buffer is going to be 
 overwritten, so data doesn't have to be copied until this occurs. 
-<br/>5) Serialization support, as is currently in Assaf's classes. 
-<br/>6) Schema data-type support, which will be needed for XSLT2, and Xalan 2.0 
+</def>
+			<refs>
+				<ref set="gen" id="2203"/>
+				<ref set="gen" id="2296"/>
+			</refs>
+		</req>
+		<req id="13d" strength="soft" cat="Features">
+			<def>
+<br/>Serialization support, as is currently in Assaf's classes. 
+</def>
+			<refs>
+				<ref set="gen" id="2203"/>
+				<ref set="gen" id="2296"/>
+			</refs>
+		</req>
+		<req id="13e" strength="soft" cat="Features">
+			<def>
+<br/>Schema data-type support, which will be needed for XSLT2, and Xalan 2.0 
 extensions.
-<br/>8) Small core footprint for standalone, compiled stylesheet capability, for 
+</def>
+			<refs>
+				<ref set="gen" id="2203"/>
+				<ref set="gen" id="2296"/>
+			</refs>
+		</req>
+		<req id="13f" strength="soft" cat="Features">
+			<def>
+<br/>Small core footprint for standalone, compiled stylesheet capability, for 
 use on small devices. This would need to include the Serializer. I'm not 
 sure if this should really be a separate micro-parser?  
 </def>
@@ -288,7 +327,7 @@ The parser should support grammar caching and precompilation.
 				<ref set="gen" id="2261"/>
 			</refs>
 		</req>
-		<req id="27" strength="soft" cat="Speed">
+<!--		<req id="27" strength="soft" cat="Speed">
 			<def>
 The parser should provide mid to upper range validation performance across all JVMs.
 </def>
@@ -296,9 +335,11 @@ The parser should provide mid to upper range validation performance across all J
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
+-->
 		<req id="28" strength="soft" cat="Features">
 			<def>
-The parser should provide a reasonable core (fast!) upon which to layer JDOM
+The parser should provide a reasonable core (fast!) upon which to
+layer other API's.  Examples of such API's include SAX2, DOM, and JDOM
 </def>
 			<seeAlso id="10"/>
 			<refs>
@@ -362,7 +403,8 @@ The parser shall support Java 1.1
 		<req id="33" strength="soft" cat="Features">
 			<def>
 The parser should support loading and validating only certainrequested portions of a document -- a useful feature 
-when dealing with large xml databases, for example. 
+when dealing with large xml databases, for example.   See the W3C
+<a href="http://www.w3.org/TR/WD-xml-fragment"><em>XML Fragement Interchange</em></a> Working Draft.
 </def>
 			<refs>
 				<ref set="gen" id="2276"/>
@@ -404,6 +446,21 @@ The DOM should emit events to interested listeners when changes are made to the 
 </def>
 			<refs>
 				<ref set="xdev" id="1201"/>
+			</refs>
+		</req>
+		<req id="38" strength="soft" cat="Features">
+			<def>
+The parser should support <a href="http://www.xml.gr.jp/relax/"><em>RELAX</em></a>.
+</def>
+			<refs>
+			</refs>
+		</req>
+		<req id="39" strength="soft" cat="Features">
+			<def>
+The parser should allow for automatic detection of
+compressed/encrypted documents.
+</def>
+			<refs>
 			</refs>
 		</req>
 	</requirements>

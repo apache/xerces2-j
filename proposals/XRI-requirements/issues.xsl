@@ -9,11 +9,11 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Proposed XRI Requirements -  <xsl:value-of select="/requirementCatalog/@date"/>
+				<title>Proposed Xerces2 / XRI Requirements -  <xsl:value-of select="/requirementCatalog/@date"/>
 				</title>
 			</head>
 			<body bgcolor="#FFFFFF">
-				<h1>Proposed XRI Requirements</h1>
+				<h1>Proposed Xerces2 / XRI Requirements</h1>
 				<h4>Date: <xsl:value-of select="/requirementCatalog/@date"/>
 					<br/>
   Editors: &nbsp;&nbsp;<a href="mailto:estaub@mediaone.net">Ed Staub</a>&nbsp;&nbsp;<a href="mailto:twleung@sauria.com">Ted Leung</a>

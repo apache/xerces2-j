@@ -9,7 +9,7 @@
 >
 <!ELEMENT cat (#PCDATA)>
 <!ELEMENT categories (cat+)>
-<!ELEMENT def (#PCDATA | br)*>
+<!ELEMENT def (#PCDATA | br | a)*>
 <!ELEMENT br EMPTY>
 <!ELEMENT seeAlso EMPTY>
 <!ELEMENT edReqNote (#PCDATA)>
