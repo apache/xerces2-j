@@ -108,18 +108,18 @@ public class AttributeMap extends NamedNodeMapImpl {
 
     	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
         NodeImpl argn = (NodeImpl)arg;
 
     	if (argn.isOwned()) {
-            throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
+            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
 
@@ -149,7 +149,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             // MUTATION POST-EVENTS:
             ownerNode.dispatchAggregateEvents(
                 (AttrImpl)arg,
-                previous==null ? null : previous.getNodeValue()
+                previous==null ? null : previous.getNodeValue(),
+                previous==null ?
+                           MutationEvent.ADDITION : MutationEvent.MODIFICATION
                 );
         }
     	return previous;
@@ -168,18 +170,18 @@ public class AttributeMap extends NamedNodeMapImpl {
 
     	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     
     	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
         NodeImpl argn = (NodeImpl)arg;
     	if (argn.isOwned()) {
-            throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
+            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
 
@@ -221,7 +223,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             // MUTATION POST-EVENTS:
             ownerNode.dispatchAggregateEvents(
                 (AttrImpl)arg,
-                previous==null ? null : previous.getNodeValue()
+                previous==null ? null : previous.getNodeValue(),
+                previous==null ?
+                           MutationEvent.ADDITION : MutationEvent.MODIFICATION
                 );
         }
     	return previous;
@@ -261,13 +265,13 @@ public class AttributeMap extends NamedNodeMapImpl {
     final protected Node internalRemoveNamedItem(String name, boolean raiseEx){
     	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	int i = findNamePoint(name,0);
     	if (i < 0) {
             if (raiseEx) {
-                throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+                throw new DOMException(DOMException.NOT_FOUND_ERR,
                                            "DOM008 Not found");
             } else {
                 return null;
@@ -326,19 +330,23 @@ public class AttributeMap extends NamedNodeMapImpl {
     	    // If we have to send DOMAttrModified (determined earlier),
             // do so.
             if(lc.captures+lc.bubbles+lc.defaults>0) {
-                MutationEvent me= new MutationEventImpl();
+                MutationEventImpl me= new MutationEventImpl();
                 //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
                                      true, false,
                                      null, n.getNodeValue(),
 				     null, name);
+                // REVISIT: The DOM Level 2 PR has a bug: the init method
+                // should let this attribute be specified. Since it doesn't we
+                // have to set it directly.
+                me.attrChange = MutationEvent.REMOVAL;
                 ownerNode.dispatchEvent(me);
             }
 
             // We can hand off to process DOMSubtreeModified, though.
             // Note that only the Element needs to be informed; the
             // Attr's subtree has not been changed by this operation.
-            ownerNode.dispatchAggregateEvents(null,null);
+            ownerNode.dispatchAggregateEvents(null,null,(short)0);
         }
 
         return n;
@@ -384,13 +392,13 @@ public class AttributeMap extends NamedNodeMapImpl {
                                                    boolean raiseEx) {
     	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	int i = findNamePoint(namespaceURI, name);
     	if (i < 0) {
             if (raiseEx) {
-                throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+                throw new DOMException(DOMException.NOT_FOUND_ERR,
                                            "DOM008 Not found");
             } else {
                 return null;
@@ -456,19 +464,23 @@ public class AttributeMap extends NamedNodeMapImpl {
     	    // If we have to send DOMAttrModified (determined earlier),
             // do so.
             if(lc.captures+lc.bubbles+lc.defaults>0) {
-                MutationEvent me= new MutationEventImpl();
+                MutationEventImpl me= new MutationEventImpl();
                 //?????ownerDocument.createEvent("MutationEvents");
                 me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
                                      true, false,
                                      null, n.getNodeValue(),
 				     null, name);
+                // REVISIT: The DOM Level 2 PR has a bug: the init method
+                // should let this attribute be specified. Since it doesn't we
+                // have to set it directly.
+                me.attrChange = MutationEvent.REMOVAL;
                 ownerNode.dispatchEvent(me);
             }
 
             // We can hand off to process DOMSubtreeModified, though.
             // Note that only the Element needs to be informed; the
             // Attr's subtree has not been changed by this operation.
-            ownerNode.dispatchAggregateEvents(null,null);
+            ownerNode.dispatchAggregateEvents(null,null,(short)0);
         }
         return n;
 

@@ -339,7 +339,7 @@ public class DocumentImpl
         if (errorChecking) {
             if((type == Node.ELEMENT_NODE && docElement != null) ||
                (type == Node.DOCUMENT_TYPE_NODE && docType != null)) {
-                throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
                                            "DOM006 Hierarchy request error");
             }
         }
@@ -424,7 +424,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if(errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR,
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
 
@@ -479,7 +479,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(tagName)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
 
@@ -501,7 +501,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
 
@@ -526,7 +526,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if(errorChecking && !isXMLName(target)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR,
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR,
     		                           "DOM002 Illegal character");
         }
 
@@ -668,7 +668,7 @@ public class DocumentImpl
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
     	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
@@ -693,7 +693,7 @@ public class DocumentImpl
         // REVISIT: Should we be checking XML name chars?
         /***
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         /***/
@@ -720,7 +720,7 @@ public class DocumentImpl
         // REVISIT: Should we be checking XML name chars?
         /***
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         /***/
@@ -739,7 +739,7 @@ public class DocumentImpl
         // REVISIT: Should we be checking XML name chars?
         /***
     	if (errorChecking && !isXMLName(name)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         /***/
@@ -940,7 +940,7 @@ public class DocumentImpl
 
     	    case DOCUMENT_NODE : // Document can't be child of Document
     	    default: {		// Unknown node type
-		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR,
+		throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
 					   "DOM006 Hierarchy request error");
             }
         }
@@ -973,7 +973,7 @@ public class DocumentImpl
      **/
     public void adoptNode(Node source) {
 	if (!(source instanceof NodeImpl)) {
-	    throw new DOMExceptionImpl(DOMException.NOT_SUPPORTED_ERR,
+	    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 		      "cannot move a node in from another DOM implementation");
 	}
 	Node parent = source.getParentNode();
@@ -1245,7 +1245,7 @@ public class DocumentImpl
                                        boolean entityReferenceExpansion)
     {
     	if( root==null) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NOT_SUPPORTED_ERR, 
 			"DOM007 Not supported");
         }
@@ -1407,8 +1407,8 @@ public class DocumentImpl
 	 * as DOMNodeInserted. This parameter is case-sensitive.
 	 * @return an uninitialized Event object. Call the appropriate
 	 * <code>init...Event()</code> method before dispatching it.
-	 * @exception DOMException UNSUPPORTED_EVENT_TYPE if the requested
-	 * event set is not supported in this DOM.
+	 * @exception DOMException NOT_SUPPORTED_ERR if the requested
+	 * event type is not supported in this DOM.
      * @since WD-DOM-Level-2-19990923
      */
     public Event createEvent(String type) 
@@ -1418,7 +1418,7 @@ public class DocumentImpl
 	    if("MutationEvent".equals(type))
 	        return new MutationEventImpl();
 	    else
-	        throw new DOMExceptionImpl(DOMExceptionImpl.UNSUPPORTED_EVENT_TYPE,
+	        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 					   "DOM007 Not supported");
 	}
      

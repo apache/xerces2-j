@@ -177,7 +177,7 @@ public class NotationImpl
     public void setPublicId(String id) {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"DOM001 Modification not allowed");
         }
@@ -195,7 +195,7 @@ public class NotationImpl
     public void setSystemId(String id) {
 
     	if(isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"DOM001 Modification not allowed");
         }

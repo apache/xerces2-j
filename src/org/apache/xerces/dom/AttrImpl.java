@@ -58,6 +58,7 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.*;
+import org.w3c.dom.events.MutationEvent;
 import org.apache.xerces.dom.events.MutationEventImpl;
 
 /**
@@ -209,7 +210,7 @@ public class AttrImpl
     public void setValue(String value) {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -269,7 +270,7 @@ public class AttrImpl
         if(MUTATIONEVENTS && ownerDocument.mutationEvents)
         {
             // MUTATION POST-EVENTS:
-            dispatchAggregateEvents(this,oldvalue);            
+            dispatchAggregateEvents(this,oldvalue,MutationEvent.MODIFICATION);
         }
 		
     } // setValue(String)

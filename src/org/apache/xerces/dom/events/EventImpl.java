@@ -70,7 +70,7 @@ public class EventImpl implements Event
 {
     public String type=null;
     public EventTarget target;
-    public Node currentNode;
+    public EventTarget currentTarget;
     public short eventPhase;
     public boolean initialized=false, bubbles=true, cancelable=false;
     public boolean stopPropagation=false, preventDefault=false;
@@ -116,9 +116,9 @@ public class EventImpl implements Event
     /** @return the Node (EventTarget) whose EventListeners are currently
         being processed. During capture and bubble phases, this may not be
         the target node. */
-    public Node getCurrentNode()
+    public EventTarget getCurrentTarget()
     {
-        return currentNode;
+        return currentTarget;
     }
 
     /** @return the current processing phase for this event -- 
@@ -149,7 +149,7 @@ public class EventImpl implements Event
     }
 
     /** Causes exit from in-progress event dispatch before the next
-        currentNode is selected. Replaces the preventBubble() and 
+        currentTarget is selected. Replaces the preventBubble() and 
         preventCapture() methods which were present in early drafts; 
         they may be reintroduced in future levels of the DOM. */
     public void stopPropagation()

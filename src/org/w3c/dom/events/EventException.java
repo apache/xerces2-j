@@ -6,8 +6,8 @@
  * Intellectual Property License. This program is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
  * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE. See W3C License http://www.w3.org/Consortium/Legal/ for more
- * details.
+ * PURPOSE.
+ * See W3C License http://www.w3.org/Consortium/Legal/ for more details.
  */
 
 package org.w3c.dom.events;
@@ -15,6 +15,8 @@ package org.w3c.dom.events;
 /**
  *  Event operations may throw an <code>EventException</code> as specified in 
  * their method descriptions. 
+ * <p>See also the <a href='http://www.w3.org/TR/2000/PR-DOM-Level-2-Events-20000927'>Document Object Model (DOM) Level 2 Events Specification</a>.
+ * @since DOM Level 2
  */
 public class EventException extends RuntimeException {
     public EventException(short code, String message) {
@@ -23,7 +25,12 @@ public class EventException extends RuntimeException {
     }
     public short   code;
     // EventExceptionCode
+    /**
+     *  If the <code>Event</code>'s type was not specified by initializing the 
+     * event before the method was called. Specification of the Event's type 
+     * as <code>null</code> or an empty string will also trigger this 
+     * exception. 
+     */
     public static final short UNSPECIFIED_EVENT_TYPE_ERR = 0;
 
 }
-

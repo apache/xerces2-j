@@ -208,11 +208,11 @@ public class NamedNodeMapImpl
         throws DOMException {
 
     	if (isReadOnly()) {
-            throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
     	if (arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
@@ -247,12 +247,12 @@ public class NamedNodeMapImpl
         throws DOMException {
 
     	if (isReadOnly()) {
-            throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
     
     	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
@@ -291,12 +291,12 @@ public class NamedNodeMapImpl
 
     	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	int i = findNamePoint(name,0);
     	if (i < 0) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
                                        "DOM008 Not found");
         }
 
@@ -326,12 +326,12 @@ public class NamedNodeMapImpl
 
     	if (isReadOnly()) {
             throw
-                new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
         }
     	int i = findNamePoint(namespaceURI, name);
     	if (i < 0) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
                                        "DOM008 Not found");
         }
 

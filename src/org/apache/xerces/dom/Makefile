@@ -28,7 +28,6 @@ TARGETS=\
 	DocumentFragmentImpl.class\
 	DocumentImpl.class\
 	DocumentTypeImpl.class\
-	DOMExceptionImpl.class\
 	DOMImplementationImpl.class\
 	ElementDefinitionImpl.class\
 	ElementImpl.class\

@@ -60,7 +60,6 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.CharacterData;
-import org.apache.xerces.dom.DOMExceptionImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.range.*;
 import java.util.Vector;
@@ -164,7 +163,7 @@ public class RangeImpl  implements Range {
                          throws RangeException, DOMException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -184,7 +183,7 @@ public class RangeImpl  implements Range {
                        throws RangeException, DOMException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -203,7 +202,7 @@ public class RangeImpl  implements Range {
         throws RangeException 
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -223,7 +222,7 @@ public class RangeImpl  implements Range {
         throws RangeException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -243,7 +242,7 @@ public class RangeImpl  implements Range {
         throws RangeException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -264,7 +263,7 @@ public class RangeImpl  implements Range {
         throws RangeException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -283,7 +282,7 @@ public class RangeImpl  implements Range {
     public void collapse(boolean toStart) {
         
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -301,7 +300,7 @@ public class RangeImpl  implements Range {
         throws RangeException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -328,7 +327,7 @@ public class RangeImpl  implements Range {
         throws RangeException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
@@ -357,7 +356,7 @@ public class RangeImpl  implements Range {
         throws DOMException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
@@ -626,7 +625,7 @@ public class RangeImpl  implements Range {
         throws DOMException, RangeException
     {
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
@@ -695,7 +694,7 @@ public class RangeImpl  implements Range {
         if (newParent==null) return;
         
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
@@ -737,7 +736,7 @@ public class RangeImpl  implements Range {
         
     public Range cloneRange(){
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
@@ -750,7 +749,7 @@ public class RangeImpl  implements Range {
     
     public String toString(){
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
@@ -1262,7 +1261,7 @@ public class RangeImpl  implements Range {
     void checkIndex(Node refNode, int offset) throws DOMException
     {
         if (offset < 0) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INDEX_SIZE_ERR, 
 			"DOM004 Index out of bounds");
     	}
@@ -1274,7 +1273,7 @@ public class RangeImpl  implements Range {
         || type == Node.COMMENT_NODE
         || type == Node.PROCESSING_INSTRUCTION_NODE)
         && offset > refNode.getNodeValue().length()){
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INDEX_SIZE_ERR, 
 			"DOM004 Index out of bounds");
         }
@@ -1285,7 +1284,7 @@ public class RangeImpl  implements Range {
             child = child.getNextSibling();
         }
         if (i > offset) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.INDEX_SIZE_ERR, 
 			"DOM004 Index out of bounds");
         }

@@ -315,13 +315,13 @@ public abstract class ParentNode
         throws DOMException {
 
     	if (isReadOnly())
-            throw new DOMExceptionImpl(
+            throw new DOMException(
                         DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                         "DOM001 Modification not allowed");
 
         boolean errorChecking = ownerDocument.errorChecking;
     	if (errorChecking && newChild.getOwnerDocument() != ownerDocument) {
-            throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
                                        "DOM005 Wrong document");
         }
 
@@ -338,13 +338,13 @@ public abstract class ParentNode
                 treeSafe = newChild != a;
             }
             if(!treeSafe) {
-                throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+                throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
                                            "DOM006 Hierarchy request error");
             }
 
             // refChild must in fact be a child of this node (or null)
             if(refChild != null && refChild.getParentNode() != this) {
-                throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
+                throw new DOMException(DOMException.NOT_FOUND_ERR,
                                            "DOM008 Not found");
             }
         }
@@ -372,7 +372,7 @@ public abstract class ParentNode
                  kid = kid.getNextSibling()) {
 
                 if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
-                    throw new DOMExceptionImpl(
+                    throw new DOMException(
                                            DOMException.HIERARCHY_REQUEST_ERR, 
                                            "DOM006 Hierarchy request error");
                 }
@@ -386,7 +386,7 @@ public abstract class ParentNode
                  (!(newChild instanceof ChildNode)
                   ||
                   !ownerDocument.isKidOK(this, newChild))) {
-            throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
                                        "DOM006 Hierarchy request error");
         }
         else {
@@ -567,14 +567,14 @@ public abstract class ParentNode
         throws DOMException {
 
         if (isReadOnly()) {
-            throw new DOMExceptionImpl(
+            throw new DOMException(
                 DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                 "DOM001 Modification not allowed");
         }
          
         if (ownerDocument.errorChecking && 
             oldChild != null && oldChild.getParentNode() != this) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+            throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
         }
 

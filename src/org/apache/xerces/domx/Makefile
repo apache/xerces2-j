@@ -1,7 +1,7 @@
 # Makefile for directory ./org/apache/xerces/domx
 
 TARGETS=\
-	DOMException.class
+	XGrammarWriter.class
 
 DIRS =
 

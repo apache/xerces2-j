@@ -161,7 +161,7 @@ public class TextImpl
         throws DOMException {
 
     	if (isReadOnly()) {
-            throw new DOMExceptionImpl(
+            throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -170,7 +170,7 @@ public class TextImpl
             synchronizeData();
         }
     	if (offset < 0 || offset > data.length() - 1) {
-            throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, 
                                        "DOM004 Index out of bounds");
         }
     		

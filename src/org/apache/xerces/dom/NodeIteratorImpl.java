@@ -60,7 +60,6 @@ package org.apache.xerces.dom;
 import org.w3c.dom.*;
 import org.w3c.dom.traversal.*;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.dom.DOMExceptionImpl;
 
 /** DefaultNodeIterator implements a NodeIterator, which iterates a 
  *  DOM tree in the expected depth first way. 
@@ -164,8 +163,8 @@ public class NodeIteratorImpl implements NodeIterator {
     public Node               nextNode() {
         
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
-    			DOMExceptionImpl.INVALID_STATE_ERR, 
+    		throw new DOMException(
+    			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
         
@@ -220,8 +219,8 @@ public class NodeIteratorImpl implements NodeIterator {
     public Node               previousNode() {
         
     	if( fDetach) {
-    		throw new DOMExceptionImpl(
-    			DOMExceptionImpl.INVALID_STATE_ERR, 
+    		throw new DOMException(
+    			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
         }
  

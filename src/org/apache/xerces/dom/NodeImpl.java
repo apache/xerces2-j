@@ -62,7 +62,6 @@ import java.util.Vector;
 
 import org.w3c.dom.*;
 
-//import org.apache.xerces.domx.events.*;
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
 import org.w3c.dom.events.*;
@@ -439,7 +438,7 @@ public abstract class NodeImpl
      */
     public Node insertBefore(Node newChild, Node refChild) 
 	throws DOMException {
-	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+	throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
 				   "DOM006 Hierarchy request error");
     }
 
@@ -460,7 +459,7 @@ public abstract class NodeImpl
      */
     public Node removeChild(Node oldChild) 
 		throws DOMException {
-	throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+	throw new DOMException(DOMException.NOT_FOUND_ERR, 
 				   "DOM008 Not found");
     }
 
@@ -490,7 +489,7 @@ public abstract class NodeImpl
      */
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
-	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
+	throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, 
 				   "DOM006 Hierarchy request error");
     }
 
@@ -566,7 +565,7 @@ public abstract class NodeImpl
      *                      specified feature is supported, false otherwise.
      * @since WD-DOM-Level-2-19990923
      */
-    public boolean supports(String feature, String version)
+    public boolean isSupported(String feature, String version)
     {
         return ownerDocument().getImplementation().hasFeature(feature,
                                                               version);
@@ -637,7 +636,7 @@ public abstract class NodeImpl
     public void setPrefix(String prefix)
         throws DOMException
     {
-	throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+	throw new DOMException(DOMException.NAMESPACE_ERR, 
 				   "DOM003 Namespace error");
     }
 
@@ -876,8 +875,8 @@ public abstract class NodeImpl
         // VALIDATE -- must have been initialized at least once, must have
         // a non-null non-blank name.
         if(!evt.initialized || evt.type==null || evt.type.equals(""))
-            throw new DOMExceptionImpl(DOMExceptionImpl.UNSPECIFIED_EVENT_TYPE,
-				       "DOM010 Unspecified event type");
+            throw new EventException(EventException.UNSPECIFIED_EVENT_TYPE_ERR,
+                                     "DOM010 Unspecified event type");
         
         // If nobody is listening for this event, discard immediately
         LCount lc=LCount.lookup(evt.getType());
@@ -923,7 +922,7 @@ public abstract class NodeImpl
                     
                 // Handle all capturing listeners on this node
                 NodeImpl nn=(NodeImpl)pv.elementAt(j);
-                evt.currentNode=nn;
+                evt.currentTarget=nn;
                 Vector nodeListeners = ownerDocument().getEventListeners(nn);
                 if(nodeListeners!=null)
                 {
@@ -952,7 +951,7 @@ public abstract class NodeImpl
             //on the target node. Note that capturing listeners on the target node 
             //are _not_ invoked, even during the capture phase.
             evt.eventPhase=Event.AT_TARGET;
-            evt.currentNode=this;
+            evt.currentTarget=this;
             Vector nodeListeners = ownerDocument().getEventListeners(this);
             if(!evt.stopPropagation && nodeListeners!=null)
             {
@@ -986,7 +985,7 @@ public abstract class NodeImpl
                     
                     // Handle all bubbling listeners on this node
                     NodeImpl nn=(NodeImpl)pv.elementAt(j);
-                    evt.currentNode=nn;
+                    evt.currentTarget=nn;
                     nodeListeners = ownerDocument().getEventListeners(nn);
                     if(nodeListeners!=null)
                     {
@@ -1017,7 +1016,7 @@ public abstract class NodeImpl
         if(lc.defaults>0 && (!evt.cancelable || !evt.preventDefault))
         {
             // evt.eventPhase=Event.DEFAULT_PHASE;
-            // evt.currentNode=this;
+            // evt.currentTarget=this;
             // DO_DEFAULT_OPERATION
         }
 
@@ -1111,9 +1110,10 @@ public abstract class NodeImpl
 	void dispatchAggregateEvents(EnclosingAttr ea)
 	{
 	    if(ea!=null)
-	        dispatchAggregateEvents(ea.node,ea.oldvalue);
-        else
-	        dispatchAggregateEvents(null,null);
+	        dispatchAggregateEvents(ea.node, ea.oldvalue,
+                                        MutationEvent.MODIFICATION);
+            else
+	        dispatchAggregateEvents(null,null,(short)0);
 	        
 	} // dispatchAggregateEvents(EnclosingAttr) :void
 
@@ -1136,8 +1136,12 @@ public abstract class NodeImpl
 	 * been changed as a result of the DOM operation. Null if none such.
 	 * @param oldValue The String value previously held by the
 	 * enclosingAttr. Ignored if none such.
+         * @param change Type of modification to the attr. See
+         * MutationEvent.attrChange
 	 */
-	void dispatchAggregateEvents(AttrImpl enclosingAttr,String oldvalue)
+	void dispatchAggregateEvents(AttrImpl enclosingAttr,
+                                     String oldvalue,
+                                     short change)
 	{
       if(MUTATIONEVENTS && ownerDocument().mutationEvents)
       {
@@ -1151,11 +1155,14 @@ public abstract class NodeImpl
                 owner=((NodeImpl)(enclosingAttr.getOwnerElement()));
                 if(owner!=null)
                 {
-                    MutationEvent me=
-                        new MutationEventImpl();
+                    MutationEventImpl me= new MutationEventImpl();
                     //?????ownerDocument.createEvent("MutationEvents");
                     me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,true,false,
                        null,oldvalue,enclosingAttr.getNodeValue(),enclosingAttr.getNodeName());
+                    // REVISIT: The DOM Level 2 PR has a bug: the init method
+                    // should let this attribute be specified. Since it doesn't
+                    // we have to set it directly.
+                    me.attrChange = change;
                     owner.dispatchEvent(me);
                 }
             }

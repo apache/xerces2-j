@@ -151,7 +151,7 @@ public abstract class CharacterDataImpl
      */
     public void setNodeValue(String value) {
     	if (isReadOnly())
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         // revisit: may want to set the value in ownerDocument.
@@ -245,7 +245,7 @@ public abstract class CharacterDataImpl
     public void appendData(String data) {
 
         if (isReadOnly()) {
-        	throw new DOMExceptionImpl(
+        	throw new DOMException(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR,
         		"DOM001 Modification not allowed");
         }
@@ -275,13 +275,13 @@ public abstract class CharacterDataImpl
         throws DOMException {
 
         if (isReadOnly()) {
-        	throw new DOMExceptionImpl(
+        	throw new DOMException(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
         }
 
         if (count < 0) {
-        	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
         	                           "DOM004 Index out of bounds");
         }
 
@@ -299,7 +299,7 @@ public abstract class CharacterDataImpl
             ownerDocument().deletedText(this, offset, count);
         }
         catch (StringIndexOutOfBoundsException e) {
-        	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
         	                           "DOM004 Index out of bounds");
         }
 
@@ -318,7 +318,7 @@ public abstract class CharacterDataImpl
         throws DOMException {
 
         if (isReadOnly()) {
-        	throw new DOMExceptionImpl(
+        	throw new DOMException(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
         }
@@ -335,7 +335,7 @@ public abstract class CharacterDataImpl
             ownerDocument().insertedText(this, offset, data.length());
         }
         catch (StringIndexOutOfBoundsException e) {
-        	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+        	throw new DOMException(DOMException.INDEX_SIZE_ERR, 
         	                           "DOM004 Index out of bounds");
         }
 
@@ -418,7 +418,7 @@ public abstract class CharacterDataImpl
         
         int length = data.length();
         if (count < 0 || offset < 0 || offset > length - 1) {
-            throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
+            throw new DOMException(DOMException.INDEX_SIZE_ERR, 
                                        "DOM004 Index out of bounds");
         }
 

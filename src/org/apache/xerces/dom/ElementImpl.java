@@ -332,7 +332,7 @@ public class ElementImpl
     public void removeAttribute(String name) {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -371,7 +371,7 @@ public class ElementImpl
         {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -381,7 +381,7 @@ public class ElementImpl
         }
 
         if (attributes == null) {
-            throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+            throw new DOMException(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
         }
         return (Attr) attributes.removeNamedItem(oldAttr.getName());
@@ -411,7 +411,7 @@ public class ElementImpl
     public void setAttribute(String name, String value) {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -455,7 +455,7 @@ public class ElementImpl
         {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -466,7 +466,7 @@ public class ElementImpl
 
     	if (ownerDocument.errorChecking
             && newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "DOM005 Wrong document");
         }
 
@@ -554,7 +554,7 @@ public class ElementImpl
     public void setAttributeNS(String namespaceURI, String localName, String value) {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -598,7 +598,7 @@ public class ElementImpl
     public void removeAttributeNS(String namespaceURI, String localName) {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -669,7 +669,7 @@ public class ElementImpl
         {
 
     	if (isReadOnly()) {
-    		throw new DOMExceptionImpl(
+    		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
@@ -680,7 +680,7 @@ public class ElementImpl
 
     	if (ownerDocument.errorChecking
             && newAttr.getOwnerDocument() != ownerDocument) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
     		"DOM005 Wrong document");
         }
 

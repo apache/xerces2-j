@@ -147,12 +147,12 @@ public class DOMImplementationImpl
                                                  String systemID)
     {
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
-    		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
+    		throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
         int index = qualifiedName.indexOf(':');
         if (index == 0 || index == qualifiedName.length() - 1) {
-	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+	    throw new DOMException(DOMException.NAMESPACE_ERR, 
 				       "DOM003 Namespace error");
 	}
     	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
@@ -183,7 +183,7 @@ public class DOMImplementationImpl
                                              throws DOMException
     {
     	if (doctype != null && doctype.getOwnerDocument() != null) {
-    		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
+    		throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "DOM005 Wrong document");
         }
         DocumentImpl doc = new DocumentImpl(doctype);
