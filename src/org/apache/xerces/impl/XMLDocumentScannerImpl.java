@@ -25,7 +25,6 @@ import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XMLEntityDescriptionImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
