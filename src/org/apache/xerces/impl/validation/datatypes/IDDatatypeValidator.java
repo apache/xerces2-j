@@ -129,6 +129,7 @@ import java.util.NoSuchElementException;
  * @version $Id$
  * @see org.apache.xerces.impl.validation.datatypes.AbstractDatatypeValidator
  * @see org.apache.xerces.impl.validation.DatatypeValidator
+ * @see org.apache.xerces.impl.validation.datatypes.IDREFDatatypeValidator
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
    private DatatypeValidator       fBaseValidator;
