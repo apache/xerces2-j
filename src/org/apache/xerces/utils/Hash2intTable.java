@@ -78,8 +78,8 @@ public final class Hash2intTable {
             bucket = new int[1 + 3*INITIAL_BUCKET_SIZE];
             bucket[0] = 1;
             bucket[1] = key1;
-	    bucket[2] = key2;
-	    bucket[3] = value;
+            bucket[2] = key2;
+            bucket[3] = value;
             fHashTable[hash] = bucket;
         } else {
             int count = bucket[0];
@@ -92,19 +92,19 @@ public final class Hash2intTable {
                 fHashTable[hash] = bucket;
             }
             boolean found = false;
-	    int j=1;
+            int j=1;
             for (int i=0; i<count; i++){
                 if ( bucket[j] == key1 && bucket[j+1] == key2) {
                     bucket[j+2] = value;
                     found = true;
                     break;
                 }
-		j += 3;
+                j += 3;
             }
             if (! found) {
                 bucket[offset++] = key1;
                 bucket[offset++] = key2;
-		bucket[offset]= value;
+                bucket[offset]= value;
                 bucket[0] = ++count;
             }
             
@@ -115,18 +115,19 @@ public final class Hash2intTable {
         int hash = (key1+key2+1) % HASHTABLE_SIZE;
         int[] bucket = fHashTable[hash];
 
-	if (bucket == null) {
-	    return -1;
-	}
+        if (bucket == null) {
+            return -1;
+        }
         int count = bucket[0];
 
         boolean found = false;
-	int j=1;
+        int j=1;
         for (int i=0; i<count; i++){
             if ( bucket[j] == key1 && bucket[j+1] == key2) {
                 found = true;
                 return bucket[j+2];
-                }
+            }
+            j += 3;
         }
         if (! found) {
             return -1;
