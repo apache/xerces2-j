@@ -669,6 +669,7 @@ public class XMLDTDScanner
             }
             fStringBuffer.clear();
             fStringBuffer.append('(');
+            fMarkUpDepth++;
             skipSeparator(false, !scanningInternalSubset());
 
             // Mixed content model
@@ -722,7 +723,7 @@ public class XMLDTDScanner
      *
      * @param elName The element type name this declaration is about.
      *
-     * <strong>Note:</strong> Called after scanning past the open paranthesis.
+     * <strong>Note:</strong> Called after scanning past '(#PCDATA'.
      */
     private final void scanMixed(String elName)
         throws IOException, SAXException {
@@ -759,6 +760,7 @@ public class XMLDTDScanner
             reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
                              new Object[]{elName});
         }
+        fMarkUpDepth--;
         // we are done
     }
 
@@ -790,6 +792,7 @@ public class XMLDTDScanner
         int c;
         while (true) {
             if (fEntityScanner.skipChar('(')) {
+                fMarkUpDepth++;
                 // call handler
                 if (fDTDContentModelHandler != null) {
                     fDTDContentModelHandler.childrenStartGroup();
@@ -901,6 +904,7 @@ public class XMLDTDScanner
                     fEntityScanner.scanChar();
                     fStringBuffer.append(')');
                 }
+                fMarkUpDepth--;
                 if (fContentDepth == 0) {
                     return;
                 }
@@ -1065,6 +1069,7 @@ public class XMLDTDScanner
                 reportFatalError("MSG_OPEN_PAREN_REQUIRED_IN_NOTATIONTYPE",
                                  new Object[]{elName, atName});
             }
+            fMarkUpDepth++;
             do {
                 String aName = fEntityScanner.scanName();
                 if (aName == null) {
@@ -1080,6 +1085,7 @@ public class XMLDTDScanner
                 reportFatalError("NotationTypeUnterminated",
                                  new Object[]{elName, atName});
             }
+            fMarkUpDepth--;
         }
         else {              // Enumeration
             type = "ENUMERATION";
@@ -1090,6 +1096,7 @@ public class XMLDTDScanner
                 reportFatalError("AttTypeRequiredInAttDef",
                                  new Object[]{elName, atName});
             }
+            fMarkUpDepth++;
             do {
                 String token = fEntityScanner.scanNmtoken();
                 if (token == null) {
@@ -1105,6 +1112,7 @@ public class XMLDTDScanner
                 reportFatalError("EnumerationUnterminated",
                                  new Object[]{elName, atName});
             }
+            fMarkUpDepth--;
         }
         return type;
 
