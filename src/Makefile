@@ -393,12 +393,6 @@ package_src:
 #-source
 	${CP}  ../Makefile    ../source
 
-#-source
-	${CP}  ../BuildAll.bat    ../source
-
-#-source
-	${CP}  ../BuildAll    ../source
-
 #-src
 	${CP}  ../src/Makefile    ../source/src
 
