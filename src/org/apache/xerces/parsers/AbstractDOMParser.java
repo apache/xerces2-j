@@ -585,7 +585,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         if (!fDeferNodeExpansion) {
             if (fCurrentEntityDecl != null && !fFilterReject) {
                 fCurrentEntityDecl.setXmlEncoding(encoding);
-                fCurrentEntityDecl.setXmlVersion(version);
+                if (version != null)
+                	fCurrentEntityDecl.setXmlVersion(version);
             }
         }
         else {
@@ -854,13 +855,15 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             // REVISIT: when DOM Level 3 is REC rely on Document.support
             //          instead of specific class
             if (fDocumentImpl != null) {
-                fDocumentImpl.setXmlVersion(version);
+                if (version != null)
+                	fDocumentImpl.setXmlVersion(version);
                 fDocumentImpl.setXmlEncoding(encoding);
                 fDocumentImpl.setXmlStandalone("yes".equals(standalone));
             }
         }
         else {
-            fDeferredDocumentImpl.setXmlVersion(version);
+        	if (version != null)
+            	fDeferredDocumentImpl.setXmlVersion(version);
             fDeferredDocumentImpl.setXmlEncoding(encoding);
             fDeferredDocumentImpl.setXmlStandalone("yes".equals(standalone));
         }
