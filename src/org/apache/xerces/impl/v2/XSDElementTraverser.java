@@ -335,42 +335,34 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         element.fType = elementType;
 
-        // get 'identity constaint'
+        // get 'identity constraint'
 
         // see if there's something here; it had better be key, keyref or unique.
         if (child != null) {
-            String childName = DOMUtil.getLocalName(child);
+            String childName = fSymbolTable.addSymbol(DOMUtil.getLocalName(child));
             while (child != null &&
                    (childName.equals(SchemaSymbols.ELT_KEY) ||
                     childName.equals(SchemaSymbols.ELT_KEYREF) ||
                     childName.equals(SchemaSymbols.ELT_UNIQUE))) {
+                if(childName == SchemaSymbols.ELT_KEY ||
+                        childName == SchemaSymbols.ELT_UNIQUE) {
+                    fSchemaHandler.fUniqueOrKeyTraverser.traverse(child, element, schemaDoc, grammar);
+                    if(DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME).length() != 0 ) {
+                        fSchemaHandler.checkForDuplicateNames(
+                            (schemaDoc.fTargetNamespace == null) ? ","+DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME)
+                            : schemaDoc.fTargetNamespace+","+ DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME),
+                            fSchemaHandler.getIDRegistry(),
+                            child, schemaDoc);
+                    }
+                } else if (childName == SchemaSymbols.ELT_KEYREF) {
+                    fSchemaHandler.storeKeyRef(child, schemaDoc, element);
+                }
                 child = DOMUtil.getNextSiblingElement(child);
                 if (child != null) {
-                    childName = DOMUtil.getLocalName(child);
+                    childName = fSymbolTable.addSymbol(DOMUtil.getLocalName(child));
                 }
             }
         }
-
-        //
-        // REVISIT: key/keyref/unique processing
-        //
-
-        /*Element ic = XUtil.getFirstChildElementNS(elementDecl, IDENTITY_CONSTRAINTS);
-        if (ic != null) {
-            XInt elementIndexObj = XIntPool.getXInt(elementIndex);
-            Vector identityConstraints = (Vector)fIdentityConstraints.get(elementIndexObj);
-            if (identityConstraints == null) {
-                identityConstraints = new Vector();
-                fIdentityConstraints.put(elementIndexObj, identityConstraints);
-            }
-            while (ic != null) {
-                if (DEBUG_IC_DATATYPES) {
-                    System.out.println("<ICD>: adding ic for later traversal: "+ic);
-                }
-                identityConstraints.addElement(ic);
-                ic = XUtil.getNextSiblingElementNS(ic, IDENTITY_CONSTRAINTS);
-            }
-        }*/
 
         // Step 2: register the element decl to the grammar
         if (nameAtt != null)

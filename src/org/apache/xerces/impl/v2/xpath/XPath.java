@@ -1828,7 +1828,7 @@ public class XPath {
                     nameHandle = symbolTable.addSymbol(data.substring(nameOffset, currentOffset));
                     boolean isNameTestNCName = false;
                     boolean isAxisName = false;
-                    prefixHandle = null;
+                    prefixHandle = "";
                     if (ch == ':') {
                         if (++currentOffset == endOffset) {
                 // System.out.println("abort 5");

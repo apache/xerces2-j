@@ -91,6 +91,7 @@ public class SchemaNamespaceSupport
      * being imported had better be using the same SymbolTable.
      */
     void setEffectiveContext (String [] namespaceDecls) {
+        if(namespaceDecls == null || namespaceDecls.length == 0) return;
         if(fCurrentContext == fContext.length) {
             // expand size of fContext
             int[] newContext = new int[fContext.length*2];

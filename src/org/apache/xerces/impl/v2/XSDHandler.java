@@ -230,6 +230,20 @@ class XSDHandler {
     private int[] fAllContext;
     private String [][] fLocalElemNamespaceContext;
 
+    // these data members are needed for the deferred traversal
+    // of keyrefs.
+
+    // the initial size of the array to store deferred keyrefs
+    private static final int INIT_KEYREF_STACK = 2;
+    // the incremental size of the array to store deferred keyrefs
+    private static final int INC_KEYREF_STACK_AMOUNT = 2;
+    // current position of the array (# of deferred keyrefs)
+    private int fKeyrefStackPos;
+
+    private Element [] fKeyrefs;
+    private XSElementDecl [] fKeyrefElems;
+    private String [][] fKeyrefNamespaceContext;
+
     // Constructors
 
     // it should be possible to use the same XSDHandler to parse
@@ -287,7 +301,7 @@ class XSDHandler {
         traverseLocalElements();
 
         // fifth phase:  handle Keyrefs
-//        resolveKeyRefs();
+        resolveKeyRefs();
 
         // sixth phase:  handle derivation constraint checking
         // and UPA, and validate attribute of non-schema namespaces
@@ -318,6 +332,7 @@ class XSDHandler {
             if(currSchemaInfo.fTargetNamespace == null) {
                 currSchemaInfo.fTargetNamespace = callerTNS;
             } else if(callerTNS != currSchemaInfo.fTargetNamespace) {
+                System.err.println(callerTNS + " and " + currSchemaInfo.fTargetNamespace);
                 fElementTraverser.reportSchemaError("src-include.2", new Object [] {callerTNS, currSchemaInfo.fTargetNamespace});
             }
         }
@@ -767,7 +782,50 @@ class XSDHandler {
     // from the elementTraverser class (which must ignore keyrefs),
     // but there seems to be no efficient way around this...
     protected void resolveKeyRefs() {
+        for (int i=0; i<fKeyrefStackPos; i++) {
+            Document keyrefDoc = DOMUtil.getDocument(fKeyrefs[i]);
+            XSDocumentInfo keyrefSchemaDoc = (XSDocumentInfo)fDoc2XSDocumentMap.get(keyrefDoc);
+            keyrefSchemaDoc.fNamespaceSupport.makeGlobal();
+            keyrefSchemaDoc.fNamespaceSupport.setEffectiveContext( fKeyrefNamespaceContext[i] );
+            SchemaGrammar keyrefGrammar = fGrammarResolver.getGrammar(keyrefSchemaDoc.fTargetNamespace);
+            fKeyrefTraverser.traverse(fKeyrefs[i], fKeyrefElems[i], keyrefSchemaDoc, keyrefGrammar);
+        }
     } // end resolveKeyRefs
+
+    // an accessor method.  Just makes sure callers
+    // who want the Identity constraint registry vaguely know what they're about.
+    protected Hashtable getIDRegistry() {
+        return fUnparsedIdentityConstraintRegistry;
+    }
+
+    // This method squirrels away <keyref> declarations--along with the element
+    // decls and namespace bindings they might find handy.  
+    protected void storeKeyRef (Element keyrefToStore, XSDocumentInfo schemaDoc, 
+            XSElementDecl currElemDecl) {
+        String keyrefName = DOMUtil.getAttrValue(keyrefToStore, SchemaSymbols.ATT_NAME);
+        if(keyrefName.length() != 0) {
+            String keyrefQName = schemaDoc.fTargetNamespace == null?
+                "," + keyrefName: schemaDoc.fTargetNamespace+","+keyrefName;
+            checkForDuplicateNames(keyrefQName, fUnparsedIdentityConstraintRegistry, keyrefToStore, schemaDoc);
+        }
+        // now set up all the registries we'll need...
+        
+        // check array sizes
+        if(fKeyrefStackPos == fKeyrefs.length) {
+            Element [] elemArray = new Element [fKeyrefStackPos + INC_KEYREF_STACK_AMOUNT];
+            System.arraycopy(fKeyrefs, 0, elemArray, 0, fKeyrefStackPos);
+            fKeyrefs = elemArray;
+            XSElementDecl [] declArray = new XSElementDecl [fKeyrefStackPos + INC_KEYREF_STACK_AMOUNT];
+            System.arraycopy(fKeyrefElems, 0, declArray, 0, fKeyrefStackPos);
+            fKeyrefElems = declArray;
+            String[][] stringArray = new String [fKeyrefStackPos + INC_KEYREF_STACK_AMOUNT][];
+            System.arraycopy(fKeyrefNamespaceContext, 0, stringArray, 0, fKeyrefStackPos);
+            fKeyrefNamespaceContext = stringArray;
+        }
+        fKeyrefs[fKeyrefStackPos] = keyrefToStore;
+        fKeyrefElems[fKeyrefStackPos] = currElemDecl;
+        fKeyrefNamespaceContext[fKeyrefStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
+    } // storeKeyref (Element, XSDocumentInfo, XSElementDecl): void
 
     // This method is responsible for schema resolution.  If it finds
     // a schema document that the XMLEntityResolver resolves to with
@@ -873,6 +931,12 @@ class XSDHandler {
         // err on the small side for num. of local namespaces declared...
         fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
 
+        // and do same for keyrefs.
+        fKeyrefStackPos = 0;
+        fKeyrefs = new Element[INIT_KEYREF_STACK];
+        fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];;
+        fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
+
         // reset traversers
         fAttributeChecker.reset(fErrorReporter, fSymbolTable);
         fAttributeGroupTraverser.reset(fErrorReporter, fSymbolTable);
@@ -939,10 +1003,12 @@ class XSDHandler {
      * right schema.  It then renames the component correctly.  If it
      * detects a collision--a duplicate definition--then it complains.
      */
-    private void checkForDuplicateNames(String qName,
+    void checkForDuplicateNames(String qName,
             Hashtable registry, Element currComp,
             XSDocumentInfo currSchema) {
         Object objElem = null;
+        // REVISIT:  when we add derivation checking, we'll have to make
+        // sure that ID constraint collisions don't necessarily result in error messages.
         if((objElem = registry.get(qName)) == null) {
             // just add it in!
             registry.put(qName, currComp);
@@ -1224,7 +1290,9 @@ class XSDHandler {
     public static void main (String args[]) throws Exception {
         DefaultHandler handler = new DefaultHandler();
         XSDHandler me = new XSDHandler(new XSGrammarResolver());
-        me.reset(new XMLErrorReporter(), new EntityResolverWrapper(new org.apache.xerces.impl.v2.XSDHandler.DummyResolver()), new SymbolTable());
+        XMLErrorReporter rep = new XMLErrorReporter();
+        rep.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
+        me.reset(rep, new EntityResolverWrapper(new org.apache.xerces.impl.v2.XSDHandler.DummyResolver()), new SymbolTable());
         me.parseSchema(args[0], args[1]);
         Enumeration types = me.fUnparsedTypeRegistry.keys();
         String name = null;
