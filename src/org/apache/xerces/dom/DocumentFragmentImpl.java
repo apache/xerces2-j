@@ -135,8 +135,9 @@ public class DocumentFragmentImpl
                 else
                 {
                     // If kid is empty, remove it
-                    if ( kid.getNodeValue().length()==0 )
+                    if ( kid.getNodeValue() == null || kid.getNodeValue().length() == 0 ) {
                         removeChild( kid );
+                    }
                 }
             }
 
