@@ -218,6 +218,7 @@ Copyright:
         <fileset dir="${samples.dir}" />
     </copy>
     <javac srcdir="${build.samples}"
+           excludes="**/DOMAddLines.java "
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
            debug="${debug}"/>
