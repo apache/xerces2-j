@@ -2,7 +2,7 @@
 <!-- This test doesn't test anything in particular.  But it is an example of a
      somewhat complicated setup. -->
 <xit:myRoot	xmlns:xit="http://www.schemaTest.org/xinclude-test"
-            xmlns:xi="http://www.w3.org/2001/XInclude"
+            xmlns:xi="http://www.w3.org/2003/XInclude"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.schemaTest.org/xinclude-test tests.xsd">
 	<xi:include xmlns:test01="http://www.test.org/test02" href="../included/invalid.xml">
