@@ -149,6 +149,7 @@ public class XMLGrammarCachingConfiguration
     protected XSGrammarBucket fXSGrammarBucket;
     protected SubstitutionGroupHandler fSubGroupHandler;
     protected CMBuilder fCMBuilder;
+    protected XSDDescription fXSDDescription = new XSDDescription();
 
     //
     // Constructors
@@ -306,8 +307,15 @@ public class XMLGrammarCachingConfiguration
        // Should check whether the grammar with this namespace is already in
        // the grammar resolver. But since we don't know the target namespace
        // of the document here, we leave such check to XSDHandler
-       SchemaGrammar grammar = fSchemaHandler.parseSchema(null, is,
-                                                          XSDDescription.CONTEXT_PREPARSE);
+       fXSDDescription.reset();
+       fXSDDescription.setContextType(XSDDescription.CONTEXT_PREPARSE);
+       String sid = is.getSystemId();
+       if (sid != null) {
+           fXSDDescription.setLiteralSystemId(sid);
+           fXSDDescription.setExpandedSystemId(sid);
+           fXSDDescription.setLocationHints(new String[]{sid});
+       }
+       SchemaGrammar grammar = fSchemaHandler.parseSchema(is, fXSDDescription);
 
        if (getFeature(SCHEMA_FULL_CHECKING)) {
            XSConstraints.fullSchemaChecking(fXSGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
