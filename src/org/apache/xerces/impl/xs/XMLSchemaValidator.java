@@ -842,6 +842,13 @@ public class XMLSchemaValidator
 
     // state
 
+    /** String representation of the validation root. */
+    // REVISIT: what do we store here? QName, XPATH, some ID? use rawname now.
+    String fValidationRoot;
+
+    /** The depth of the validaton root from the root element. */
+    int fValidationRootDepth;
+
     /** Skip validation. */
     int fSkipValidationDepth;
 
@@ -1054,6 +1061,8 @@ public class XMLSchemaValidator
         fCurrCMState = null;
         fBuffer.setLength(0);
         fSawCharacters=false;
+        fValidationRootDepth = -1;
+        fValidationRoot = null;
         fSkipValidationDepth = -1;
         fElementDepth = -1;
         fChildCount = 0;
@@ -1266,10 +1275,6 @@ public class XMLSchemaValidator
 
             // parse schemas specified via schema location properties
             parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
-
-            // REVISIT: is this a right place to do it?
-            // put ElementPSVI item into Augmentations
-            augs.putItem(ELEM_PSVI, fElemPSVI);
         }
 
         fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
@@ -1297,12 +1302,6 @@ public class XMLSchemaValidator
             // only
 
             fDoValidation = fValidation;
-
-            // PSVI: validation context
-            // REVISIT: for now we assume there is one validation root in the doc
-            //         if there are more than one, who is responsible for keeping track
-            //         of validation context? Could it be PSVIWriter? DOMParser?
-            fCurrentPSVI.fValidationContext = element.toString();
         }
 
         // if we are in the content of "skip", then just skip this element
@@ -1380,11 +1379,6 @@ public class XMLSchemaValidator
         if (fCurrentElemDecl != null && fCurrentElemDecl.isAbstract())
             reportSchemaError("cvc-elt.2", new Object[]{element.rawname});
 
-        //
-        // PSVI: add element declaration
-        //
-        fCurrentPSVI.fDeclaration = fCurrentElemDecl;
-
         // get the type for the current element
         fCurrentType = null;
         if (fCurrentElemDecl != null) {
@@ -1397,51 +1391,59 @@ public class XMLSchemaValidator
         if (xsiType != null)
             getAndCheckXsiType(element, xsiType);
 
-
-        //
-        // PSVI: add element type
-        //
-        fCurrentPSVI.fTypeDecl = fCurrentType;
-
-        // Element Locally Valid (Type)
-        // 2 Its {abstract} must be false.
-        if (fCurrentType != null) {
-            if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
-                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                if (ctype.isAbstractType()) {
-                    reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
-                }
-            }
-        }
-
         // if the element decl is not found
         if (fCurrentType == null) {
             if (fDoValidation) {
-
-                // if this is the root element, or wildcard = strict, report error
-                if (fElementDepth == 0) {
+                // if this is no validation root, report an error, because
+                // we can't find eith decl or type for this element
+                if (fValidationRootDepth == -1) {
                     // report error, because it's root element
                     reportSchemaError("cvc-elt.1", new Object[]{element.rawname});
                 }
+                // if wildcard = strict, report error
                 else if (wildcard != null &&
                          wildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT) {
                     // report error, because wilcard = strict
                     reportSchemaError("cvc-complex-type.2.4.c", new Object[]{element.rawname});
                 }
             }
-            // no element decl found, have to skip this element
-            fSkipValidationDepth = fElementDepth;
+            // no element decl or type found for this element.
+            // if there is a validation root, then skip the whole element
+            // otherwise, don't skip sub-elements
+            if (fValidationRootDepth >= 0)
+                fSkipValidationDepth = fElementDepth;
             return;
         }
 
+        // we found a decl or a type, but there is no vlaidatoin root,
+        // make the current element validation root
+        if (fValidationRootDepth == -1) {
+            fValidationRootDepth = fElementDepth;
+            fValidationRoot = element.rawname;
+        }
+
+        // PSVI: add validation context
+        fCurrentPSVI.fValidationContext = fValidationRoot;
+        // PSVI: add element declaration
+        fCurrentPSVI.fDeclaration = fCurrentElemDecl;
+        // PSVI: add element type
+        fCurrentPSVI.fTypeDecl = fCurrentType;
+
+        // Element Locally Valid (Type)
+        // 2 Its {abstract} must be false.
+        if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+            XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+            if (ctype.isAbstractType()) {
+                reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
+            }
+        }
 
         // then try to get the content model
         fCurrentCM = null;
-        if (fCurrentType != null) {
-            if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
-                fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
-            }
+        if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+            fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
         }
+
         // and get the initial content model state
         fCurrCMState = null;
         if (fCurrentCM != null)
@@ -1512,7 +1514,8 @@ public class XMLSchemaValidator
         fCurrentPSVI.reset();
 
         // if we are skipping, return
-        if (fSkipValidationDepth >= 0) {
+        // if there is no validation root, return
+        if (fSkipValidationDepth >= 0 || fValidationRootDepth == -1) {
             // but if this is the top element that we are skipping,
             // restore the states.
             if (fSkipValidationDepth == fElementDepth &&
@@ -1537,15 +1540,17 @@ public class XMLSchemaValidator
 
             // pop error reporter context: get all errors for the current
             // element, and remove them from the error list
-            // REVISIT: PSVI should get error codes here
             String[] errors = fXSIErrorReporter.popContext();
 
             // PSVI: validation attempted:
-            // validation attempted = none
-            fCurrentPSVI.fValidationAttempted = ElementPSVI.NO_VALIDATION;
-            fCurrentPSVI.fValidity = ElementPSVI.UNKNOWN_VALIDITY;
-            // we should not report any errors for element that was not assessed
-            // fCurrentPSVI.fErrorCodes = errors;
+            // use default values in psvi item for
+            // validation attempted, validity, and error codes
+
+            // check extra schema constraints on root element
+            if (fElementDepth == -1 && fDoValidation && fFullChecking) {
+                XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
+            }
+
             return null;
         }
 
@@ -1589,14 +1594,24 @@ public class XMLSchemaValidator
         }
         fValueStoreCache.endElement();
 
+        // have we reached the end tag of the validation root?
+        if (fValidationRootDepth == fElementDepth) {
+            fValidationRootDepth = -1;
+            fValidationRoot = null;
+
+            if (fDoValidation) {
+                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
+                if (!fValidationState.checkIDRefID()) {
+                    reportSchemaError("ValidationRoot", null);
+                }
+            }
+            fValidationState.resetIDTables();
+        }
+
         // decrease element depth and restore states
         fElementDepth--;
         if (fElementDepth == -1) {
             if (fDoValidation) {
-                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
-                if (!fValidationState.checkIDRefID()) {
-                    reportSchemaError("ValidationRoot",null);
-                }
                 // check extra schema constraints
                 if (fFullChecking) {
                     XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
@@ -1620,7 +1635,6 @@ public class XMLSchemaValidator
 
         // pop error reporter context: get all errors for the current
         // element, and remove them from the error list
-        // REVISIT: PSVI should get error codes here
         String[] errors = fXSIErrorReporter.popContext();
 
         // PSVI: error codes
@@ -1755,7 +1769,7 @@ public class XMLSchemaValidator
                 augs.putItem(ATTR_PSVI, attrPSVI);
             }
             // PSVI attribute: validation context
-            attrPSVI.fValidationContext = element.toString();
+            attrPSVI.fValidationContext = element.rawname;
         }
 
         // add default attributes
@@ -1764,19 +1778,19 @@ public class XMLSchemaValidator
         }
 
         // if we don't do validation, we don't need to validate the attributes
-        if (!fDoValidation){ 
+        if (!fDoValidation){
             // PSVI: validity is unknown, and validation attempted is none
             // this is a default value thus we should not set anything else here.
             return;
         }
 
         // Element Locally Valid (Type)
-        // 3.1.1 The element information item's [attributes] must be empty, excepting those 
-        // whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and 
+        // 3.1.1 The element information item's [attributes] must be empty, excepting those
+        // whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and
         // whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation.
         if (fCurrentType == null || fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             int attCount = attributes.getLength();
-            
+
             // REVISIT: what should be PSVI info for those?
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
@@ -1823,7 +1837,7 @@ public class XMLSchemaValidator
         // 3 For each attribute information item in the element information item's [attributes] excepting those whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation, the appropriate case among the following must be true:
         // get the corresponding attribute decl
         for (int index = 0; index < attCount; index++) {
-            
+
             // get attribute PSVI
             attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(ATTR_PSVI);
             // PSVI: set Attribute valid and attempted validation to full.
@@ -1832,7 +1846,7 @@ public class XMLSchemaValidator
             // PSVI: normalized value is equal to the one supplied by xmlattributes
             //       need to fill in for xsi: attributes
             attrPSVI.fNormalizedValue = attributes.getValue(index);
-            
+
             attributes.getName(index, fTempQName);
             // if it's from xsi namespace, it must be one of the four
             if (fTempQName.uri == URI_XSI) {
@@ -1907,7 +1921,7 @@ public class XMLSchemaValidator
                     // 5.1 There must be no more than one item in wild IDs.
                     if (currDecl.fType.getXSType() == XSTypeDecl.SIMPLE_TYPE &&
                         ((XSSimpleType)currDecl.fType).isIDType()) {
-                        if (wildcardIDName != null){                        
+                        if (wildcardIDName != null){
                             reportSchemaError("cvc-complex-type.5.1", new Object[]{element.rawname, currDecl.fName, wildcardIDName});
 
                             // PSVI: attribute is invalid, record errors
@@ -1927,7 +1941,7 @@ public class XMLSchemaValidator
             // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
             // get simple type
             XSSimpleType attDV = currDecl.fType;
-            
+
             // PSVI: attribute declaration
             attrPSVI.fDeclaration = currDecl;
             // PSVI: attribute type
@@ -1936,12 +1950,12 @@ public class XMLSchemaValidator
             // PSVI: validation attempted:
             attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
 
-            // needed to update type for DOM Parser to implement getElementById                 
+            // needed to update type for DOM Parser to implement getElementById
             if (attributes.getType(index).equals("CDATA")) {
                 String type = (currDecl.fType.isIDType())?"ID":"CDATA";
                 attributes.setType(index, type);
             }
-            
+
             // get attribute value
             String attrValue = attributes.getValue(index);
 
@@ -1972,7 +1986,7 @@ public class XMLSchemaValidator
             // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
             if (actualValue != null &&
                 currDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE) {
-                if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){ 
+                if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
 
                     // PSVI: attribute is invalid, record errors
                     attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
@@ -1994,14 +2008,12 @@ public class XMLSchemaValidator
         } // end of for (all attributes)
 
         // 5.2 If wild IDs is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
-        
-        if (attrGrp.fIDAttrName != null && wildcardIDName != null){        
-            
+        if (attrGrp.fIDAttrName != null && wildcardIDName != null){
             // PSVI: attribute is invalid, record errors
             attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
             attrPSVI.addErrorCode("cvc-complex-type.3.1");
             reportSchemaError("cvc-complex-type.5.2", new Object[]{element.rawname, wildcardIDName, attrGrp.fIDAttrName});
-        }        
+        }
 
     } //processAttributes
 
@@ -2039,8 +2051,8 @@ public class XMLSchemaValidator
             isSpecified = attributes.getValue(currDecl.fTargetNamespace, currDecl.fName) != null;
 
             // Element Locally Valid (Complex Type)
-            // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose 
-            // {required} is true matches one of the attribute information items in the element 
+            // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose
+            // {required} is true matches one of the attribute information items in the element
             // information item's [attributes] as per clause 3.1 above.
             if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
                 if (!isSpecified)
@@ -2049,12 +2061,12 @@ public class XMLSchemaValidator
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
-                
-                // needed to update type for DOM Parser to implement getElementById                 
+
+                // needed to update type for DOM Parser to implement getElementById
                 String type = (currDecl.fType.isIDType())?"ID":"CDATA";
-                
+
                 int attrIndex = attributes.addAttribute(attName, type, (defaultValue!=null)?defaultValue.normalizedValue:"");
-                
+
                 // PSVI: attribute is "schema" specified
                 Augmentations augs = attributes.getAugmentations(attrIndex);
 
@@ -2063,17 +2075,17 @@ public class XMLSchemaValidator
                 // check if PSVIAttribute was added to Augmentations.
                 // it is possible that we just created new chunck of attributes
                 // in this case PSVI attribute are not there.
-                 if (attrPSVI == null) {
+                if (attrPSVI != null) {
+                    attrPSVI.reset();
+                } else {
                     attrPSVI = new AttributePSVImpl();
                     augs.putItem(ATTR_PSVI, attrPSVI);
-                }  
-                
+                }
+
                 attrPSVI.fSpecified = false;
                 // PSVI attribute: validation context
-                attrPSVI.fValidationContext = element.toString();
-               
+                attrPSVI.fValidationContext = element.rawname;
             }
-
 
         } // for
     } // addDefaultAttributes
