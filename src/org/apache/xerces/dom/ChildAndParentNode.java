@@ -165,7 +165,7 @@ public abstract class ChildAndParentNode
         newnode.ownerDocument = ownerDocument;
 
         // REVISIT: Do we need to synchronize at this point? -Ac
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
 
@@ -211,7 +211,7 @@ public abstract class ChildAndParentNode
      * set the ownerDocument of this node and its children
      */
     void setOwnerDocument(DocumentImpl doc) {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         ownerDocument = doc;
@@ -226,7 +226,7 @@ public abstract class ChildAndParentNode
      * for (Node.getFirstChild()!=null)
      */
     public boolean hasChildNodes() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         return firstChild != null;
@@ -248,7 +248,7 @@ public abstract class ChildAndParentNode
     public NodeList getChildNodes() {
         // JKESS: KNOWN ISSUE HERE 
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         return this;
@@ -258,7 +258,7 @@ public abstract class ChildAndParentNode
     /** The first child of this Node, or null if none. */
     public Node getFirstChild() {
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
     	return firstChild;
@@ -268,7 +268,7 @@ public abstract class ChildAndParentNode
     /** The last child of this Node, or null if none. */
     public Node getLastChild() {
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         return lastChild();
@@ -329,7 +329,7 @@ public abstract class ChildAndParentNode
     Node internalInsertBefore(Node newChild, Node refChild,int mutationMask) 
         throws DOMException {
 
-    	if (readOnly())
+    	if (isReadOnly())
             throw new DOMExceptionImpl(
                         DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                         "DOM001 Modification not allowed");
@@ -340,7 +340,7 @@ public abstract class ChildAndParentNode
                                        "DOM005 Wrong document");
         }
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
 
@@ -438,13 +438,13 @@ public abstract class ChildAndParentNode
 
             // Attach up
             newInternal.ownerNode = this;
-            newInternal.owned(true);
+            newInternal.isOwned(true);
 
             // Attach after
             newInternal.previousSibling = prev;
             if (refInternal == firstChild) {
                 firstChild = newInternal;
-                newInternal.firstChild(true);
+                newInternal.isFirstChild(true);
             }
             else {
                 prev.nextSibling = newInternal;
@@ -458,7 +458,7 @@ public abstract class ChildAndParentNode
             }
             else {
                 refInternal.previousSibling = newInternal;
-                refInternal.firstChild(false);
+                refInternal.isFirstChild(false);
             }
 
             changed();
@@ -556,7 +556,7 @@ public abstract class ChildAndParentNode
     Node internalRemoveChild(Node oldChild,int mutationMask)
         throws DOMException {
 
-        if (readOnly()) {
+        if (isReadOnly()) {
             throw new DOMExceptionImpl(
                 DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                 "DOM001 Modification not allowed");
@@ -640,10 +640,10 @@ public abstract class ChildAndParentNode
             prev.nextSibling = next;
         }
         else {
-            oldInternal.firstChild(false);
+            oldInternal.isFirstChild(false);
             firstChild = next;
             if (next != null) {
-                next.firstChild(true);
+                next.isFirstChild(true);
             }
         }
 
@@ -659,7 +659,7 @@ public abstract class ChildAndParentNode
 
         // Remove oldInternal's references to tree
         oldInternal.ownerNode       = ownerDocument;
-        oldInternal.owned(false);
+        oldInternal.isOwned(false);
         oldInternal.nextSibling     = null;
         oldInternal.previousSibling = null;
 
@@ -831,7 +831,7 @@ public abstract class ChildAndParentNode
 
         if (deep) {
 
-            if (syncChildren()) {
+            if (needsSyncChildren()) {
                 synchronizeChildren();
             }
 
@@ -872,7 +872,7 @@ public abstract class ChildAndParentNode
      */
     protected void synchronizeChildren() {
         // By default just change the flag to avoid calling this method again
-        syncChildren(false);
+        needsSyncChildren(false);
     }
 
     /**
@@ -886,7 +886,7 @@ public abstract class ChildAndParentNode
     protected final void synchronizeChildren(int nodeIndex) {
 
         // no need to sync in the future
-        syncChildren(false);
+        needsSyncChildren(false);
 
         // create children and link them as siblings
         DeferredDocumentImpl ownerDocument =
@@ -905,13 +905,13 @@ public abstract class ChildAndParentNode
                 first.previousSibling = node;
             }
             node.ownerNode = this;
-            node.owned(true);
+            node.isOwned(true);
             node.nextSibling = first;
             first = node;
         }
         if (last != null) {
             firstChild = first;
-            first.firstChild(true);
+            first.isFirstChild(true);
             lastChild(last);
         }
 
@@ -925,7 +925,7 @@ public abstract class ChildAndParentNode
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize chilren
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         // write object
@@ -943,7 +943,7 @@ public abstract class ChildAndParentNode
         // hardset synchildren - so we don't try to sync- it does not make any sense
         // to try to synchildren when we just desealize object.
 
-        syncChildren(false);
+        needsSyncChildren(false);
 
         // initialize transients
         nodeListLength = -1;

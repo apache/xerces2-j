@@ -113,7 +113,7 @@ public class ProcessingInstructionImpl
      * Returns the target
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return target;
@@ -135,7 +135,7 @@ public class ProcessingInstructionImpl
      * Note that getNodeName is aliased to getTarget.
      */
     public String getTarget() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return target;
@@ -155,7 +155,7 @@ public class ProcessingInstructionImpl
      * Note that getNodeValue is aliased to getData
      */
     public String getData() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data;

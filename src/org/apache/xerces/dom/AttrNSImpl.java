@@ -154,7 +154,7 @@ public class AttrNSImpl
      */
     public String getNamespaceURI()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         // REVIST: This code could/should be done at a lower-level, such that the namespaceURI
@@ -175,7 +175,7 @@ public class AttrNSImpl
      */
     public String getPrefix()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         int index = name.indexOf(':');
@@ -197,7 +197,7 @@ public class AttrNSImpl
     public void setPrefix(String prefix)
         throws DOMException
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 	if (namespaceURI == null ||
@@ -227,7 +227,7 @@ public class AttrNSImpl
      */
     public String getLocalName()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return localName;

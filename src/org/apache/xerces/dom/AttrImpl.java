@@ -130,7 +130,7 @@ public class AttrImpl
     	super(ownerDocument);
         this.name = name;
         /** False for default attributes. */
-        specified(true);
+        isSpecified(true);
     }
 
     // for AttrNS
@@ -142,7 +142,7 @@ public class AttrImpl
     
     public Node cloneNode(boolean deep) {
         AttrImpl clone = (AttrImpl) super.cloneNode(deep);
-        clone.specified(true);
+        clone.isSpecified(true);
         return clone;
     }
 
@@ -158,7 +158,7 @@ public class AttrImpl
      * Returns the attribute name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -194,7 +194,7 @@ public class AttrImpl
      */
     public String getName() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return name;
@@ -208,7 +208,7 @@ public class AttrImpl
      */
     public void setValue(String value) {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
@@ -234,7 +234,7 @@ public class AttrImpl
         {
             // Can no longer just discard the kids; they may have
             // event listeners waiting for them to disconnect.
-            if (syncChildren()) {
+            if (needsSyncChildren()) {
                 synchronizeChildren();
             }
             while(firstChild!=null)
@@ -246,11 +246,11 @@ public class AttrImpl
             if (firstChild != null) {
                 // remove ref from first child to last child
                 firstChild.previousSibling = null;
-                firstChild.firstChild(false);
+                firstChild.isFirstChild(false);
                 // then remove ref to first child
                 firstChild   = null;
             }
-            syncChildren(false);
+            needsSyncChildren(false);
         }
 
         // Create and add the new one, generating only non-aggregate events
@@ -258,7 +258,7 @@ public class AttrImpl
         // capture/bubble listeners on the Attr.
         // Note that aggregate events are NOT dispatched here,
         // since we need to combine the remove and insert.
-    	specified(true);
+    	isSpecified(true);
         if (value != null) {
             internalInsertBefore(ownerDocument.createTextNode(value),null,
                                  MUTATION_LOCAL);
@@ -280,7 +280,7 @@ public class AttrImpl
      */
     public String getValue() {
 
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
         if (firstChild == null) {
@@ -312,10 +312,10 @@ public class AttrImpl
      */
     public boolean getSpecified() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-    	return specified();
+    	return isSpecified();
 
     } // getSpecified():boolean
 
@@ -335,7 +335,7 @@ public class AttrImpl
     public Element getElement() {
         // if we have an owner, ownerNode is our ownerElement, otherwise it's
         // our ownerDocument and we don't have an ownerElement
-        return (Element) (owned() ? ownerNode : null);
+        return (Element) (isOwned() ? ownerNode : null);
     }
 
     /**
@@ -347,7 +347,7 @@ public class AttrImpl
     public Element getOwnerElement() {
         // if we have an owner, ownerNode is our ownerElement, otherwise it's
         // our ownerDocument and we don't have an ownerElement
-        return (Element) (owned() ? ownerNode : null);
+        return (Element) (isOwned() ? ownerNode : null);
     }
     
     public void normalize() {
@@ -378,10 +378,10 @@ public class AttrImpl
     /** NON-DOM, for use by parser */
     public void setSpecified(boolean arg) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-    	specified(arg);
+    	isSpecified(arg);
 
     } // setSpecified(boolean)
 

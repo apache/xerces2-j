@@ -110,8 +110,8 @@ public class DeferredDocumentTypeImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
-        syncChildren(true);
+        needsSyncData(true);
+        needsSyncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -132,7 +132,7 @@ public class DeferredDocumentTypeImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
@@ -153,7 +153,7 @@ public class DeferredDocumentTypeImpl
     protected void synchronizeChildren() {
 
         // no need to synchronize again
-        syncChildren(false);
+        needsSyncChildren(false);
 
         // create new node maps
         DeferredDocumentImpl ownerDocument =

@@ -111,7 +111,7 @@ public class ElementImpl
     public ElementImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
-        syncData(true);         // synchronizeData will initialize attributes
+        needsSyncData(true);    // synchronizeData will initialize attributes
     }
 
     // for ElementNSImpl
@@ -134,7 +134,7 @@ public class ElementImpl
      * Returns the element name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -148,7 +148,7 @@ public class ElementImpl
      */
     public NamedNodeMap getAttributes() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -167,7 +167,7 @@ public class ElementImpl
      */
     public Node cloneNode(boolean deep) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -207,7 +207,7 @@ public class ElementImpl
      */
     public String getAttribute(String name) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -228,7 +228,7 @@ public class ElementImpl
      */
     public Attr getAttributeNode(String name) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -266,7 +266,7 @@ public class ElementImpl
      * way in.
      */
     public String getTagName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	return name;
@@ -331,13 +331,13 @@ public class ElementImpl
      */
     public void removeAttribute(String name) {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -370,13 +370,13 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -410,13 +410,13 @@ public class ElementImpl
      */
     public void setAttribute(String name, String value) {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -450,13 +450,13 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     	
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -494,7 +494,7 @@ public class ElementImpl
      */
     public String getAttributeNS(String namespaceURI, String localName) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -549,13 +549,13 @@ public class ElementImpl
      */
     public void setAttributeNS(String namespaceURI, String localName, String value) {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -590,13 +590,13 @@ public class ElementImpl
      */
     public void removeAttributeNS(String namespaceURI, String localName) {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     		
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -621,7 +621,7 @@ public class ElementImpl
      */
     public Attr getAttributeNodeNS(String namespaceURI, String localName){
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         if (attributes == null) {
@@ -661,13 +661,13 @@ public class ElementImpl
         throws DOMException
         {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
     	
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -743,7 +743,7 @@ public class ElementImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // attributes
         setupDefaultAttributes();

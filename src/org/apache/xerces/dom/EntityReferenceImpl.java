@@ -142,7 +142,7 @@ public class EntityReferenceImpl
     public EntityReferenceImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
-        readOnly(true);
+        isReadOnly(true);
     }
     
     //
@@ -161,7 +161,7 @@ public class EntityReferenceImpl
      * Returns the name of the entity referenced
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -249,7 +249,7 @@ public class EntityReferenceImpl
                 return;
 
             // If entity's definition exists, clone its kids
-            readOnly(false);
+            isReadOnly(false);
             for (Node defkid = entDef.getFirstChild();
                  defkid != null;
                  defkid = defkid.getNextSibling()) {

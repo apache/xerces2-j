@@ -117,10 +117,10 @@ public class TextImpl
      */
     public void setIgnorableWhitespace(boolean ignore) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-        ignorableWhitespace(ignore);
+        isIgnorableWhitespace(ignore);
 
     } // setIgnorableWhitespace(boolean)
     
@@ -130,10 +130,10 @@ public class TextImpl
      */
     public boolean isIgnorableWhitespace() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-        return ignorableWhitespace();
+        return internalIsIgnorableWhitespace();
 
     } // isIgnorableWhitespace():boolean
     
@@ -160,13 +160,13 @@ public class TextImpl
     public Text splitText(int offset) 
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	if (offset < 0 || offset > data.length() - 1) {

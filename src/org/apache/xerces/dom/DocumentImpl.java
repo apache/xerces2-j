@@ -475,7 +475,7 @@ public class DocumentImpl
 	 * it will be null.
 	 */
     public DocumentType getDoctype() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
 	    return docType;
@@ -491,7 +491,7 @@ public class DocumentImpl
 	 * (HTML not yet supported.)
      */
     public Element getDocumentElement() {
-        if (syncChildren()) {
+        if (needsSyncChildren()) {
             synchronizeChildren();
         }
 	    return docElement;
@@ -770,7 +770,7 @@ public class DocumentImpl
     	    case ENTITY_REFERENCE_NODE: {
 		newnode = createEntityReference(source.getNodeName());
                 // allow deep import temporarily
-                ((EntityReferenceImpl)newnode).readOnly(false);
+                ((EntityReferenceImpl)newnode).isReadOnly(false);
 		break;
             }
 
@@ -782,7 +782,7 @@ public class DocumentImpl
 		newentity.setSystemId(srcentity.getSystemId());
 		newentity.setNotationName(srcentity.getNotationName());
 		// Kids carry additional value
-                newentity.readOnly(false); // allow deep import temporarily
+                newentity.isReadOnly(false); // allow deep import temporarily
 		newnode = newentity;
 		break;
             }
@@ -923,7 +923,7 @@ public class DocumentImpl
             return;
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -944,7 +944,7 @@ public class DocumentImpl
      */
     public Element getIdentifier(String idName) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -965,7 +965,7 @@ public class DocumentImpl
      */
     public void removeIdentifier(String idName) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 
@@ -980,7 +980,7 @@ public class DocumentImpl
     /** Returns an enumeration registered of identifier names. */
     public Enumeration getIdentifiers() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 

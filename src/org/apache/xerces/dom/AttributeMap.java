@@ -106,7 +106,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     public Node setNamedItem(Node arg)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -118,14 +118,14 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         NodeImpl argn = (NodeImpl)arg;
 
-    	if (argn.owned()) {
+    	if (argn.isOwned()) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
 
         // set owner
         argn.ownerNode = ownerNode;
-        argn.owned(true);
+        argn.isOwned(true);
 
    	int i = findNamePoint(arg.getNodeName(),0);
     	NodeImpl previous = null;
@@ -133,9 +133,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
             previous.ownerNode = ownerNode.ownerDocument();
-            previous.owned(false);
+            previous.isOwned(false);
             // make sure it won't be mistaken with defaults in case it's reused
-            previous.specified(true);
+            previous.isSpecified(true);
     	} else {
             i = -1 - i; // Insert point (may be end of list)
             if (null == nodes) {
@@ -165,7 +165,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     public Node setNamedItemNS(Node arg)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -177,14 +177,14 @@ public class AttributeMap extends NamedNodeMapImpl {
         }
 
         NodeImpl argn = (NodeImpl)arg;
-    	if (argn.owned()) {
+    	if (argn.isOwned()) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
 
         // set owner
         argn.ownerNode = ownerNode;
-        argn.owned(true);
+        argn.isOwned(true);
 
     	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
     	NodeImpl previous = null;
@@ -192,9 +192,9 @@ public class AttributeMap extends NamedNodeMapImpl {
             previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
             previous.ownerNode = ownerNode.ownerDocument();
-            previous.owned(false);
+            previous.isOwned(false);
             // make sure it won't be mistaken with defaults in case it's reused
-            previous.specified(true);
+            previous.isSpecified(true);
     	} else {
     	    // If we can't find by namespaceURI, localName, then we find by
     	    // nodeName so we know where to insert.
@@ -257,7 +257,7 @@ public class AttributeMap extends NamedNodeMapImpl {
      * must be thrown if the specified name is not found.
      */
     final protected Node internalRemoveNamedItem(String name, boolean raiseEx){
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -283,8 +283,8 @@ public class AttributeMap extends NamedNodeMapImpl {
             
                 NodeImpl clone = (NodeImpl)d.cloneNode(true);
                 clone.ownerNode = ownerNode;
-                clone.owned(true);
-                clone.specified(false);
+                clone.isOwned(true);
+                clone.isSpecified(false);
                 nodes.setElementAt(clone, i);
             } else {
                 nodes.removeElementAt(i);
@@ -297,9 +297,9 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         // remove owning element
         n.ownerNode = ownerNode.ownerDocument();
-        n.owned(false);
+        n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
-        n.specified(true);
+        n.isSpecified(true);
         return n;
 
     } // removeNamedItem(String):Node
@@ -341,7 +341,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     final protected Node internalRemoveNamedItemNS(String namespaceURI,
                                                    String name,
                                                    boolean raiseEx) {
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -384,8 +384,8 @@ public class AttributeMap extends NamedNodeMapImpl {
                     if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
                         NodeImpl clone = (NodeImpl)d.cloneNode(true);
                         clone.ownerNode = ownerNode;
-                        clone.owned(true);
-                        clone.specified(false);
+                        clone.isOwned(true);
+                        clone.isSpecified(false);
                         nodes.setElementAt(clone, i);
                     } else {
                         nodes.removeElementAt(i);
@@ -402,9 +402,9 @@ public class AttributeMap extends NamedNodeMapImpl {
         // Need to remove references to an Attr's owner before the
         // MutationEvents fire.
         n.ownerNode = ownerNode.ownerDocument();
-        n.owned(false);
+        n.isOwned(false);
         // make sure it won't be mistaken with defaults in case it's reused
-        n.specified(true);
+        n.isSpecified(true);
 
         // We can't use the standard dispatchAggregate, since it assumes
         // that the Attr is still attached to an owner. This code is
@@ -517,7 +517,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     			        if (DEBUG) System.out.println("reconcile (test==0, specified = false): clone default");
                         NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                         clone.ownerNode = ownerNode;
-                        clone.owned(true);
+                        clone.isOwned(true);
     				    nodes.setElementAt(clone, n);
     				    // Advance over both, since names in sync
     				    ++n;
@@ -536,7 +536,7 @@ public class AttributeMap extends NamedNodeMapImpl {
     			    if (DEBUG) System.out.println("reconcile (test>0): insert new default");
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                     clone.ownerNode = ownerNode;
-                    clone.owned(true);
+                    clone.isOwned(true);
     				nodes.insertElementAt(clone, n);
     				// Now in sync, so advance over both
     				++n;
@@ -569,7 +569,7 @@ public class AttributeMap extends NamedNodeMapImpl {
                     dnode = (AttrImpl)defaults.nodes.elementAt(d++);
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
                     clone.ownerNode = ownerNode;
-                    clone.owned(true);
+                    clone.isOwned(true);
     			    if (DEBUG) System.out.println("reconcile: adding"+clone);
                     nodes.addElement(clone);
                 }

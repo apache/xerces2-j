@@ -238,7 +238,7 @@ public abstract class NodeImpl
      */
     public Node cloneNode(boolean deep) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
 	}
     	
@@ -254,10 +254,10 @@ public abstract class NodeImpl
     	
         // Need to break the association w/ original kids
     	newnode.ownerNode      = ownerDocument();
-        newnode.owned(false);
+        newnode.isOwned(false);
 
         // REVISIT: What to do when readOnly? -Ac
-        newnode.readOnly(false);
+        newnode.isReadOnly(false);
 
     	return newnode;
 
@@ -271,7 +271,7 @@ public abstract class NodeImpl
     public Document getOwnerDocument() {
         // if we have an owner simply forward the request
         // otherwise ownerNode is our ownerDocument
-        if (owned()) {
+        if (isOwned()) {
             return ownerNode.ownerDocument();
         } else {
             return (Document) ownerNode;
@@ -285,7 +285,7 @@ public abstract class NodeImpl
     DocumentImpl ownerDocument() {
         // if we have an owner simply forward the request
         // otherwise ownerNode is our ownerDocument
-        if (owned()) {
+        if (isOwned()) {
             return ownerNode.ownerDocument();
         } else {
             return (DocumentImpl) ownerNode;
@@ -297,12 +297,12 @@ public abstract class NodeImpl
      * set the ownerDocument of this node
      */
     void setOwnerDocument(DocumentImpl doc) {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         // if we have an owner we rely on it to have it right
         // otherwise ownerNode is our ownerDocument
-	if (!owned()) {
+	if (!isOwned()) {
             ownerNode = doc;
         }
     }
@@ -1193,10 +1193,10 @@ public abstract class NodeImpl
      */
     public void setReadOnly(boolean readOnly, boolean deep) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-    	readOnly(readOnly);
+    	isReadOnly(readOnly);
 
     } // setReadOnly(boolean,boolean)
 
@@ -1206,10 +1206,10 @@ public abstract class NodeImpl
      */
     public boolean getReadOnly() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
-        return readOnly();
+        return isReadOnly();
 
     } // getReadOnly():boolean
 
@@ -1262,7 +1262,7 @@ public abstract class NodeImpl
      */
     protected void synchronizeData() {
         // By default just change the flag to avoid calling this method again
-        syncData(false);
+        needsSyncData(false);
     }
 
 
@@ -1270,67 +1270,68 @@ public abstract class NodeImpl
      * Flags setters and getters
      */
 
-    final boolean readOnly() {
+    final boolean isReadOnly() {
         return (flags & READONLY) != 0;
     }
 
-    final void readOnly(boolean value) {
+    final void isReadOnly(boolean value) {
         flags = (short) (value ? flags | READONLY : flags & ~READONLY);
     }
 
-    final boolean syncData() {
+    final boolean needsSyncData() {
         return (flags & SYNCDATA) != 0;
     }
 
-    final void syncData(boolean value) {
+    final void needsSyncData(boolean value) {
         flags = (short) (value ? flags | SYNCDATA : flags & ~SYNCDATA);
     }
 
-    final boolean syncChildren() {
+    final boolean needsSyncChildren() {
         return (flags & SYNCCHILDREN) != 0;
     }
 
-    final void syncChildren(boolean value) {
+    final void needsSyncChildren(boolean value) {
         flags = (short) (value ? flags | SYNCCHILDREN : flags & ~SYNCCHILDREN);
     }
 
-    final boolean owned() {
+    final boolean isOwned() {
         return (flags & OWNED) != 0;
     }
 
-    final void owned(boolean value) {
+    final void isOwned(boolean value) {
         flags = (short) (value ? flags | OWNED : flags & ~OWNED);
     }
 
-    final boolean firstChild() {
+    final boolean isFirstChild() {
         return (flags & FIRSTCHILD) != 0;
     }
 
-    final void firstChild(boolean value) {
+    final void isFirstChild(boolean value) {
         flags = (short) (value ? flags | FIRSTCHILD : flags & ~FIRSTCHILD);
     }
 
-    final boolean specified() {
+    final boolean isSpecified() {
         return (flags & SPECIFIED) != 0;
     }
 
-    final void specified(boolean value) {
+    final void isSpecified(boolean value) {
         flags = (short) (value ? flags | SPECIFIED : flags & ~SPECIFIED);
     }
 
-    final boolean ignorableWhitespace() {
+    // inconsistent name to avoid clash with public method on TextImpl
+    final boolean internalIsIgnorableWhitespace() {
         return (flags & IGNORABLEWS) != 0;
     }
 
-    final void ignorableWhitespace(boolean value) {
+    final void isIgnorableWhitespace(boolean value) {
         flags = (short) (value ? flags | IGNORABLEWS : flags & ~IGNORABLEWS);
     }
 
-    final boolean setValue() {
+    final boolean setValueCalled() {
         return (flags & SETVALUE) != 0;
     }
 
-    final void setValue(boolean value) {
+    final void setValueCalled(boolean value) {
         flags = (short) (value ? flags | SETVALUE : flags & ~SETVALUE);
     }
 
@@ -1351,7 +1352,7 @@ public abstract class NodeImpl
     private void writeObject(ObjectOutputStream out) throws IOException {
 
         // synchronize data
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         // write object

@@ -154,7 +154,7 @@ public class ElementNSImpl
      */
     public String getNamespaceURI()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return namespaceURI;
@@ -172,7 +172,7 @@ public class ElementNSImpl
      */
     public String getPrefix()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         int index = name.indexOf(':');
@@ -194,7 +194,7 @@ public class ElementNSImpl
     public void setPrefix(String prefix)
         throws DOMException
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
 	if (namespaceURI == null ||
@@ -219,7 +219,7 @@ public class ElementNSImpl
      */
     public String             getLocalName()
     {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return localName;

@@ -120,7 +120,7 @@ public class DeferredElementImpl
         super(ownerDoc, null);
 
         fNodeIndex = nodeIndex;
-        syncChildren(true);
+        needsSyncChildren(true);
 
     } // <init>(DocumentImpl,int)
 
@@ -141,7 +141,7 @@ public class DeferredElementImpl
     protected final void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =

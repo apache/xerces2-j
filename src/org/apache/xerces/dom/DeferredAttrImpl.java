@@ -133,8 +133,8 @@ public final class DeferredAttrImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
-        syncChildren(true);
+        needsSyncData(true);
+        needsSyncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -155,7 +155,7 @@ public final class DeferredAttrImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
@@ -163,7 +163,7 @@ public final class DeferredAttrImpl
         int elementTypeName = ownerDocument.getNodeName(fNodeIndex);
         StringPool pool = ownerDocument.getStringPool();
         name = pool.toString(elementTypeName);
-        specified(ownerDocument.getNodeValue(fNodeIndex) == 1);
+        isSpecified(ownerDocument.getNodeValue(fNodeIndex) == 1);
 
     } // synchronizeData()
 

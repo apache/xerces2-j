@@ -140,8 +140,8 @@ public class DeferredEntityReferenceImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
-        syncChildren(true);
+        needsSyncData(true);
+        needsSyncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -165,7 +165,7 @@ public class DeferredEntityReferenceImpl
     protected void synchronizeData() {
 
         // no need to sychronize again
-        syncData(false);
+        needsSyncData(false);
 
         // get the node data
         DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
@@ -177,7 +177,7 @@ public class DeferredEntityReferenceImpl
     protected void synchronizeChildren() {
 
         // no need to synchronize again
-        syncChildren(false);
+        needsSyncChildren(false);
 
         // get children
         DocumentType doctype = ownerDocument.getDoctype();
@@ -192,7 +192,7 @@ public class DeferredEntityReferenceImpl
                     found = true;
 
                     // clone entity at this reference
-                    readOnly(false);
+                    isReadOnly(false);
                     Node child = entity.getFirstChild();
                     while (child != null) {
                         appendChild(child.cloneNode(true));
@@ -205,7 +205,7 @@ public class DeferredEntityReferenceImpl
 
         // if not found, create entity at this reference
         if (!found) {
-            readOnly(false);
+            isReadOnly(false);
             synchronizeChildren(fNodeIndex);
             setReadOnly(true, true);
         }

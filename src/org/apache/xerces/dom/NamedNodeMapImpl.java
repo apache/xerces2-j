@@ -207,7 +207,7 @@ public class NamedNodeMapImpl
     public Node setNamedItem(Node arg)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
@@ -246,7 +246,7 @@ public class NamedNodeMapImpl
     public Node setNamedItemNS(Node arg)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
@@ -289,7 +289,7 @@ public class NamedNodeMapImpl
     public Node removeNamedItem(String name)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -324,7 +324,7 @@ public class NamedNodeMapImpl
      public Node removeNamedItemNS(String namespaceURI, String name)
         throws DOMException {
 
-    	if (readOnly()) {
+    	if (isReadOnly()) {
             throw
                 new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                      "DOM001 Modification not allowed");
@@ -363,7 +363,7 @@ public class NamedNodeMapImpl
             for (int i = 0; i < srcmap.nodes.size(); ++i) {
                 NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
                 NodeImpl clone = (NodeImpl) n.cloneNode(true);
-                clone.specified(n.specified());
+                clone.isSpecified(n.isSpecified());
                 nodes.insertElementAt(clone, i);
             }
         }
@@ -386,7 +386,7 @@ public class NamedNodeMapImpl
      */
     void setReadOnly(boolean readOnly, boolean deep) {
 
-        readOnly(readOnly);
+        isReadOnly(readOnly);
     	if(deep && nodes != null) {
     		Enumeration e=nodes.elements();
     		while(e.hasMoreElements()) {
@@ -401,7 +401,7 @@ public class NamedNodeMapImpl
      *
      */
     boolean getReadOnly() {
-    	return readOnly();
+    	return isReadOnly();
     } // getReadOnly()
     
 
@@ -421,11 +421,11 @@ public class NamedNodeMapImpl
         }
     }
 
-    final boolean readOnly() {
+    final boolean isReadOnly() {
         return (flags & READONLY) != 0;
     }
 
-    final void readOnly(boolean value) {
+    final void isReadOnly(boolean value) {
         flags = (short) (value ? flags | READONLY : flags & ~READONLY);
     }
 

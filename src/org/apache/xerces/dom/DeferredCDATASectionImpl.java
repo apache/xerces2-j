@@ -114,7 +114,7 @@ public class DeferredCDATASectionImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
+        needsSyncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
     
@@ -135,13 +135,13 @@ public class DeferredCDATASectionImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl) this.ownerDocument();
         data = ownerDocument.getNodeValueString(fNodeIndex);
-        ignorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);
+        isIgnorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);
 
     } // synchronizeData()
 

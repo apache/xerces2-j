@@ -123,7 +123,7 @@ public abstract class CharacterDataImpl
      * returns the content of this node
      */
     public String getNodeValue() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data;
@@ -140,9 +140,9 @@ public abstract class CharacterDataImpl
         /** flag to indicate whether setNodeValue was called by the
          *  client or from the DOM.
          */
-        setValue(true);
+        setValueCalled(true);
         setNodeValue(value);
-        setValue(false);
+        setValueCalled(false);
     }
     
     /**
@@ -150,13 +150,13 @@ public abstract class CharacterDataImpl
      * and updating ranges (via notification to the document)
      */
     public void setNodeValue(String value) {
-    	if (readOnly())
+    	if (isReadOnly())
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
     			"DOM001 Modification not allowed");
         // revisit: may want to set the value in ownerDocument.
     	// Default behavior, overridden in some subclasses
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
             
@@ -177,7 +177,7 @@ public abstract class CharacterDataImpl
         } // End mutation preprocessing
             
     	this.data = value;
-    	if (!setValue()) {
+    	if (!setValueCalled()) {
             // notify document
             ownerDocument().replacedText(this);
         }
@@ -217,7 +217,7 @@ public abstract class CharacterDataImpl
      * instead retrieve the data in chunks via the substring() operation.  
      */
     public String getData() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data;
@@ -228,7 +228,7 @@ public abstract class CharacterDataImpl
      * data. It may be 0, meaning that the value is an empty string. 
      */
     public int getLength() {   
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return data.length();
@@ -244,13 +244,13 @@ public abstract class CharacterDataImpl
      */
     public void appendData(String data) {
 
-        if (readOnly()) {
+        if (isReadOnly()) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR,
         		"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         
@@ -274,7 +274,7 @@ public abstract class CharacterDataImpl
     public void deleteData(int offset, int count) 
         throws DOMException {
 
-        if (readOnly()) {
+        if (isReadOnly()) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
@@ -285,7 +285,7 @@ public abstract class CharacterDataImpl
         	                           "DOM004 Index out of bounds");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         int tailLength = Math.max(data.length() - count - offset, 0);
@@ -317,13 +317,13 @@ public abstract class CharacterDataImpl
     public void insertData(int offset, String data) 
         throws DOMException {
 
-        if (readOnly()) {
+        if (isReadOnly()) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
         		"DOM001 Modification not allowed");
         }
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         try {
@@ -412,7 +412,7 @@ public abstract class CharacterDataImpl
     public String substringData(int offset, int count) 
         throws DOMException {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         

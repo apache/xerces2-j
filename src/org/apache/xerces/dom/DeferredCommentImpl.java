@@ -95,7 +95,7 @@ public class DeferredCommentImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
+        needsSyncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
     
@@ -116,7 +116,7 @@ public class DeferredCommentImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =

@@ -190,8 +190,8 @@ public class DeferredDocumentImpl
 
         fStringPool = stringPool;
 
-        syncData(true);
-        syncChildren(true);
+        needsSyncData(true);
+        needsSyncChildren(true);
 
         fNamespacesEnabled = namespaces;
 
@@ -1287,7 +1287,7 @@ public class DeferredDocumentImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff up enough nodes to fill identifiers hash
         if (fIdElement != null) {
@@ -1364,20 +1364,20 @@ public class DeferredDocumentImpl
      */
     protected void synchronizeChildren() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
             /*
              * when we have elements with IDs this method is being recursively
              * called from synchronizeData, in which case we've already gone
              * through the following and we can now simply stop here.
              */
-            if (!syncChildren()) {
+            if (!needsSyncChildren()) {
                 return;
             }
         }
 
         // no need to sync in the future
-        syncChildren(false);
+        needsSyncChildren(false);
 
         getNodeType(0);
 
@@ -1396,7 +1396,7 @@ public class DeferredDocumentImpl
                 first.previousSibling = node;
             }
             node.ownerNode = this;
-            node.owned(true);
+            node.isOwned(true);
             node.nextSibling = first;
             first = node;
 
@@ -1412,7 +1412,7 @@ public class DeferredDocumentImpl
 
         if (first != null) {
             firstChild = first;
-            first.firstChild(true);
+            first.isFirstChild(true);
             lastChild(last);
         }
 

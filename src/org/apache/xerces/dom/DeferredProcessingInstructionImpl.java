@@ -97,7 +97,7 @@ public class DeferredProcessingInstructionImpl
         super(ownerDocument, null, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
+        needsSyncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -118,7 +118,7 @@ public class DeferredProcessingInstructionImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =

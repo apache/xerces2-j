@@ -105,7 +105,7 @@ public class DeferredTextImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
+        needsSyncData(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -126,7 +126,7 @@ public class DeferredTextImpl
     protected void synchronizeData() {
 
         // no need for future synchronizations
-        syncData(false);
+        needsSyncData(false);
 
         // get initial text value
         DeferredDocumentImpl ownerDocument =
@@ -138,7 +138,7 @@ public class DeferredTextImpl
         //       getNodeValueString() method. -Ac
 
         // ignorable whitespace
-        ignorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);
+        isIgnorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);
 
     } // synchronizeData()
 

@@ -105,8 +105,8 @@ public final class DeferredAttrNSImpl
         super(ownerDocument, null);
 
         fNodeIndex = nodeIndex;
-        syncData(true);
-        syncChildren(true);
+        needsSyncData(true);
+        needsSyncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -127,7 +127,7 @@ public final class DeferredAttrNSImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
@@ -148,7 +148,7 @@ public final class DeferredAttrNSImpl
             localName = name.substring(index + 1);
         }
 
-        specified(ownerDocument.getNodeValue(fNodeIndex) == 1);
+        isSpecified(ownerDocument.getNodeValue(fNodeIndex) == 1);
 	//namespaceURI = pool.toString(ownerDocument.getNodeURI(attrQName));
         namespaceURI = pool.toString(ownerDocument.getNodeURI(fNodeIndex));
 	// DOM Level 2 wants all namespace declaration attributes

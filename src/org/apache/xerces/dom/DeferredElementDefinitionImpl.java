@@ -98,8 +98,8 @@ public class DeferredElementDefinitionImpl
         super(ownerDocument, null);
         
         fNodeIndex = nodeIndex;
-        syncData(true);
-        syncChildren(true);
+        needsSyncData(true);
+        needsSyncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -120,7 +120,7 @@ public class DeferredElementDefinitionImpl
     protected void synchronizeData() {
 
         // no need to sync in the future
-        syncData(false);
+        needsSyncData(false);
 
         // fluff data
         DeferredDocumentImpl ownerDocument =
@@ -133,7 +133,7 @@ public class DeferredElementDefinitionImpl
     protected void synchronizeChildren() {
 
         // attributes are now synced
-        syncChildren(false);
+        needsSyncChildren(false);
 
         // create attributes node map
         DeferredDocumentImpl ownerDocument =

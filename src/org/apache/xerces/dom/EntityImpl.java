@@ -128,7 +128,7 @@ public class EntityImpl
     public EntityImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
-        readOnly(true);
+        isReadOnly(true);
     }
     
     //
@@ -147,7 +147,7 @@ public class EntityImpl
      * Returns the entity name
      */
     public String getNodeName() {
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return name;
@@ -169,7 +169,7 @@ public class EntityImpl
      */
     public String getPublicId() {
         
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return publicId;
@@ -182,7 +182,7 @@ public class EntityImpl
      */
     public String getSystemId() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return systemId;
@@ -197,7 +197,7 @@ public class EntityImpl
      */
     public String getNotationName() {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
         return notationName;
@@ -213,7 +213,7 @@ public class EntityImpl
      * this will be null. */
     public void setPublicId(String id) {
         
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	publicId = id;
@@ -226,7 +226,7 @@ public class EntityImpl
      */
     public void setSystemId(String id) {
 
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	systemId = id;
@@ -241,7 +241,7 @@ public class EntityImpl
      */
     public void setNotationName(String name) {
         
-        if (syncData()) {
+        if (needsSyncData()) {
             synchronizeData();
         }
     	notationName = name;
