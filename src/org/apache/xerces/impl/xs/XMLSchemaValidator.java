@@ -146,11 +146,8 @@ public class XMLSchemaValidator
     // Constants
     //
     private static final boolean DEBUG = false;
+
     // feature identifiers
-
-
-    protected static final String NAMESPACES =
-    Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
@@ -221,7 +218,6 @@ public class XMLSchemaValidator
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
         VALIDATION,
-        NAMESPACES,
         SCHEMA_VALIDATION,
         DYNAMIC_VALIDATION,
         SCHEMA_FULL_CHECKING,
@@ -240,17 +236,12 @@ public class XMLSchemaValidator
 
     // this is the number of valuestores of each kind
     // we expect an element to have.  It's almost
-    // never > 1; so leave it at that.  
+    // never > 1; so leave it at that.
     protected static final int ID_CONSTRAINT_NUM = 1;
 
     //
     // Data
     //
-    protected boolean fSeenRoot = false;
-    // features
-    // REVISIT: what does it mean if namespaces is off
-    //          while schema validation is on?
-    protected boolean fNamespaces = false;
 
     /** PSV infoset information for element */
     protected final  ElementPSVImpl fElemPSVI = new ElementPSVImpl();
@@ -355,7 +346,7 @@ public class XMLSchemaValidator
     }
 
     /** Error reporter. */
-    protected XSIErrorReporter fXSIErrorReporter = new XSIErrorReporter();
+    protected final XSIErrorReporter fXSIErrorReporter = new XSIErrorReporter();
 
     /** Entity resolver */
     protected XMLEntityResolver fEntityResolver;
@@ -373,7 +364,7 @@ public class XMLSchemaValidator
     protected Object fJaxpSchemaSource = null ;
 
     //ResourceIdentifier for use in calling EntityResolver
-    XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
+    final XMLResourceIdentifierImpl fResourceIdentifier = new XMLResourceIdentifierImpl();
 
     /** Schema Grammar Description passed,  to give a chance to application to supply the Grammar */
     protected final XSDDescription fXSDDescription = new XSDDescription() ;
@@ -387,7 +378,7 @@ public class XMLSchemaValidator
 
     /** Document handler. */
     protected XMLDocumentHandler fDocumentHandler;
-    
+
     protected XMLDocumentSource fDocumentSource;
 
     //
@@ -635,7 +626,7 @@ public class XMLSchemaValidator
     public void characters(XMLString text, Augmentations augs) throws XNIException {
 
         boolean emptyAug = false;
-        
+
         if (fNormalizeData) {
             if (augs == null) {
                 emptyAug = true;
@@ -805,7 +796,7 @@ public class XMLSchemaValidator
 
     public boolean characterData(String data, Augmentations augs){
 
-        // REVISIT: this methods basically duplicates implementation of 
+        // REVISIT: this methods basically duplicates implementation of
         //          handleCharacters(). We should be able to reuse some code
 
         boolean allWhiteSpace = true;
@@ -842,7 +833,7 @@ public class XMLSchemaValidator
             }
         }
 
-        if (DEBUG) {                
+        if (DEBUG) {
             System.out.println("==>characters("+data+")," +fCurrentType.getName()+","+mixed);
         }
 
@@ -884,11 +875,11 @@ public class XMLSchemaValidator
         }
         return allWhiteSpace;
     }
-    
+
     public void elementDefault(String data){
         // no-op
     }
-    
+
 
     //
     // XMLDocumentHandler and XMLDTDHandler methods
@@ -1106,10 +1097,10 @@ public class XMLSchemaValidator
 
     /** notation value of the current element */
     XSNotationDecl fNotation;
-    
+
     /** notation stack */
     XSNotationDecl[] fNotationStack = new XSNotationDecl[INITIAL_STACK_SIZE];
-    
+
     /** Current type. */
     XSTypeDecl fCurrentType;
 
@@ -1190,6 +1181,12 @@ public class XMLSchemaValidator
         // initialize the schema loader
         fSchemaLoader = new XMLSchemaLoader(fXSIErrorReporter.fErrorReporter, fGrammarBucket, fSubGroupHandler, fCMBuilder);
 
+        fValidationState.setNamespaceSupport(fNamespaceSupport);
+        fState4XsiType.setExtraChecking(false);
+        fState4XsiType.setNamespaceSupport(fNamespaceSupport);
+        fState4ApplyDefault.setFacetChecking(false);
+        fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
+
     } // <init>()
 
     /*
@@ -1216,16 +1213,9 @@ public class XMLSchemaValidator
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
             fSchemaLoader.setProperty(SYMBOL_TABLE, symbolTable);
+            fSymbolTable = symbolTable;
         }
-        fSymbolTable = symbolTable;
 
-        // sax features
-        try {
-            fNamespaces = componentManager.getFeature(NAMESPACES);
-        }
-        catch (XMLConfigurationException e) {
-            fNamespaces = true;
-        }
         try {
             fValidation = componentManager.getFeature(VALIDATION);
         }
@@ -1273,21 +1263,20 @@ public class XMLSchemaValidator
         }
 
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
-        fSchemaLoader.setEntityResolver(fEntityResolver); 
-        
+        fSchemaLoader.setEntityResolver(fEntityResolver);
+
         // initialize namespace support
         fNamespaceSupport.reset();
         fPushForNextBinding = true;
         fValidationManager = (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.addValidationState(fValidationState);
-        fValidationState.setNamespaceSupport(fNamespaceSupport);
         fValidationState.setSymbolTable(fSymbolTable);
 
         // get schema location properties
         try {
             fExternalSchemas = (String)componentManager.getProperty(SCHEMA_LOCATION);
             fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
-        } 
+        }
         catch (XMLConfigurationException e) {
             fExternalSchemas = null;
             fExternalNoNamespaceSchema = null;
@@ -1296,7 +1285,7 @@ public class XMLSchemaValidator
         fSchemaLoader.setProperty(SCHEMA_NONS_LOCATION, fExternalNoNamespaceSchema);
 
 
-        try {        
+        try {
             fJaxpSchemaSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);
         }
         catch (XMLConfigurationException e){
@@ -1307,7 +1296,7 @@ public class XMLSchemaValidator
         fResourceIdentifier.clear();
 
         // clear grammars, and put the one for schema namespace there
-        try {        
+        try {
             fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
         }
         catch (XMLConfigurationException e){
@@ -1365,15 +1354,8 @@ public class XMLSchemaValidator
         fMatcherStack.clear();
         fBaseURI = null;
 
-        fState4XsiType.setExtraChecking(false);
         fState4XsiType.setSymbolTable(symbolTable);
-        fState4XsiType.setSymbolTable(symbolTable);
-        fState4XsiType.setNamespaceSupport(fNamespaceSupport);
-
-        fState4ApplyDefault.setFacetChecking(false);
         fState4ApplyDefault.setSymbolTable(symbolTable);
-        fState4ApplyDefault.setSymbolTable(symbolTable);
-        fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
 
     } // reset(XMLComponentManager)
 
@@ -1460,7 +1442,7 @@ public class XMLSchemaValidator
             XSNotationDecl[] newArrayN = new XSNotationDecl[newSize];
             System.arraycopy(fNotationStack, 0, newArrayN, 0, fElementDepth);
             fNotationStack = newArrayN;
-            
+
             XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
             System.arraycopy(fTypeStack, 0, newArrayT, 0, fElementDepth);
             fTypeStack = newArrayT;
@@ -1650,7 +1632,7 @@ public class XMLSchemaValidator
         int leading = 0;
         int trailing = 0;
         int c;
-        int size = value.length();        
+        int size = value.length();
         fNormalizedStr.setLength(0);
         for (int i = 0; i < size; i++) {
             c = value.charAt(i);
@@ -1694,6 +1676,9 @@ public class XMLSchemaValidator
         if (fSkipValidationDepth >= 0)
             return;
 
+        // REVISIT: the same process needs to be performed as handleCharacters.
+        // only it's simpler here: we know all characters are whitespaces.
+
     } // handleIgnorableWhitespace(XMLString)
 
     /** Handle element. */
@@ -1702,14 +1687,18 @@ public class XMLSchemaValidator
         if (DEBUG) {
             System.out.println("==>handleStartElement: " +element);
         }
-        // should really determine whether a null augmentation is to
-        // be returned on a case-by-case basis, rather than assuming
-        // this method will always produce augmentations...
+
         if(augs == null) {
             augs = fAugmentations;
             augs.clear();
         }
 
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
+        if (fCurrentPSVI == null) {
+            fCurrentPSVI = fElemPSVI;
+            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+        }
+        fCurrentPSVI.reset();
 
         // we receive prefix binding events before this one,
         // so at this point, the prefix bindings for this element is done,
@@ -1728,19 +1717,12 @@ public class XMLSchemaValidator
             // at this point we assume that no XML schemas found in the instance document
             // thus we will not validate in the case dynamic feature is on or we found dtd grammar
             fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
-            
+
             //store the external schema locations, these locations will be set at root element, so any other
             // schemaLocation declaration for the same namespace will be effectively ignored.. becuase we
             // choose to take first location hint available for a particular namespace.
-            storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ; 
+            storeLocations(fExternalSchemas, fExternalNoNamespaceSchema) ;
         }
-
-        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
-        if (fCurrentPSVI == null) {
-            fCurrentPSVI = fElemPSVI;
-            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
-        }
-        fCurrentPSVI.reset();
 
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
         // parse them to get the grammars
@@ -1765,7 +1747,7 @@ public class XMLSchemaValidator
 
             fDoValidation = fValidation;
         }
-        
+
         // update normalization flags
         if (fNormalizeData) {
             // reset values
@@ -1792,7 +1774,7 @@ public class XMLSchemaValidator
         // error reported here (if any) is stored within the parent element's
         // context, instead of that of the current element.
         Object decl = null;
-        if (fSkipValidationDepth < 0 && fCurrentCM != null) {
+        if (fCurrentCM != null) {
             decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
             // it could be an element decl or a wildcard decl
             if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
@@ -1824,8 +1806,8 @@ public class XMLSchemaValidator
             fStringContent[fElementDepth] = fSawCharacters;
             fSawChildrenStack[fElementDepth] = fSawChildren;
         }
-        
-        // increase the element depth after we've saved 
+
+        // increase the element depth after we've saved
         // all states for the parent element
         fElementDepth++;
         fCurrentElemDecl = null;
@@ -1839,7 +1821,7 @@ public class XMLSchemaValidator
         fSawCharacters = false;
         fSawChildren = false;
 
-        // check what kind of declaration the "decl" from 
+        // check what kind of declaration the "decl" from
         // oneTransition() maps to
         if (decl != null) {
             if (decl instanceof XSElementDecl) {
@@ -2025,6 +2007,7 @@ public class XMLSchemaValidator
         if (DEBUG) {
             System.out.println("==>handleEndElement:" +element);
         }
+
         if(augs == null) { // again, always assume adding augmentations...
             augs = fAugmentations;
             augs.clear();
@@ -2082,11 +2065,6 @@ public class XMLSchemaValidator
             return augs;
         }
 
-        fCurrentPSVI.fDeclaration = this.fCurrentElemDecl;
-        fCurrentPSVI.fTypeDecl = this.fCurrentType;
-        fCurrentPSVI.fNotation = this.fNotation;
-        fCurrentPSVI.fValidationContext = this.fValidationRoot;
-
         // now validate the content of the element
         XMLString defaultValue = processElementContent(element);
 
@@ -2129,20 +2107,6 @@ public class XMLSchemaValidator
         }
         fValueStoreCache.endElement();
 
-        // PSVI: validation attempted
-        if (fElementDepth <= fPartialValidationDepth) {
-            // the element had child with a content skip.
-            fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_PARTIAL;
-            if (fElementDepth == fPartialValidationDepth) {
-                // set depth to the depth of the parent
-                fPartialValidationDepth--;
-            }
-        }
-        else {
-            fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_FULL;
-        }
-
-
         // decrease element depth and restore states
         fElementDepth--;
         // have we reached the end tag of the validation root?
@@ -2159,7 +2123,7 @@ public class XMLSchemaValidator
                 }
             }
             fValidationState.resetIDTables();
-            
+
             SchemaGrammar[] grammars = fGrammarBucket.getGrammars();
             // return the final set of grammars validator ended up with
             if (fGrammarPool != null) {
@@ -2185,6 +2149,24 @@ public class XMLSchemaValidator
         // discarded.
         fNamespaceSupport.popContext();
 
+        fCurrentPSVI.fDeclaration = this.fCurrentElemDecl;
+        fCurrentPSVI.fTypeDecl = this.fCurrentType;
+        fCurrentPSVI.fNotation = this.fNotation;
+        fCurrentPSVI.fValidationContext = this.fValidationRoot;
+
+        // PSVI: validation attempted
+        if (fElementDepth <= fPartialValidationDepth) {
+            // the element had child with a content skip.
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_PARTIAL;
+            if (fElementDepth == fPartialValidationDepth) {
+                // set depth to the depth of the parent
+                fPartialValidationDepth--;
+            }
+        }
+        else {
+            fCurrentPSVI.fValidationAttempted = ElementPSVI.VALIDATION_FULL;
+        }
+
         // pop error reporter context: get all errors for the current
         // element, and remove them from the error list
         String[] errors = fXSIErrorReporter.popContext();
@@ -2193,7 +2175,7 @@ public class XMLSchemaValidator
         fCurrentPSVI.fErrorCodes = errors;
         // PSVI: validity
         fCurrentPSVI.fValidity = (errors == null) ? ElementPSVI.VALIDITY_VALID
-                                                  : ElementPSVI.VALIDITY_INVALID;
+        : ElementPSVI.VALIDITY_INVALID;
 
         fDefaultValue = defaultValue;
 
@@ -2285,13 +2267,12 @@ public class XMLSchemaValidator
             }
             if (grammar == null) {
                 // try to parse the grammar using location hints from that namespace..
-                fLocationPairs.put("", fNoNamespaceLocationArray);
                 try {
                     XMLInputSource xis = XMLSchemaLoader.resolveDocument(fXSDDescription, fLocationPairs, fEntityResolver);
-                    grammar = fSchemaLoader.loadSchema(fXSDDescription, xis, fLocationPairs); 
+                    grammar = fSchemaLoader.loadSchema(fXSDDescription, xis, fLocationPairs);
                 } catch (IOException ex) {
                     fXSIErrorReporter.fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                              "schema_reference.4", 
+                              "schema_reference.4",
                               new Object[]{fXSDDescription.getLocationHints()[0]},
                               XMLErrorReporter.SEVERITY_WARNING);
                 }
@@ -2378,15 +2359,17 @@ public class XMLSchemaValidator
 
     void processAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
 
+        if (DEBUG) {
+            System.out.println("==>processAttributes: " +attributes.getLength());
+        }
+
         // REVISIT: should we assume that XMLAttributeImpl removes
         //          all augmentations from Augmentations? if yes.. we loose objects
         //         if no - we always produce attribute psvi objects which may not be filled in
         //         in this case we need to create/reset here all objects
         Augmentations augs = null;
         AttributePSVImpl attrPSVI = null;
-        if (DEBUG) {
-            System.out.println("==>processAttributes: " +attributes.getLength());
-        }
+
         for (int k=0;k<attributes.getLength();k++) {
             augs = attributes.getAugmentations(k);
             attrPSVI = (AttributePSVImpl) augs.getItem(Constants.ATTRIBUTE_PSVI);
@@ -2399,7 +2382,7 @@ public class XMLSchemaValidator
             // PSVI attribute: validation context
             attrPSVI.fValidationContext = fValidationRoot;
         }
-        
+
         // add default attributes
         if (attrGrp != null) {
             addDefaultAttributes(element, attributes, attrGrp);
@@ -2421,13 +2404,13 @@ public class XMLSchemaValidator
 
             for (int index = 0; index < attCount; index++) {
 
-                if (DEBUG) {            
+                if (DEBUG) {
                     System.out.println("==>process attribute: "+fTempQName);
                 }
                 attributes.getName(index, fTempQName);
                 // get attribute PSVI
                 attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
-                
+
                 // for the 4 xsi attributes, get appropriate decl, and validate
                 if (fTempQName.uri == SchemaSymbols.URI_XSI) {
                     XSAttributeDecl attrDecl = null;
@@ -2469,12 +2452,12 @@ public class XMLSchemaValidator
         // get the corresponding attribute decl
         for (int index = 0; index < attCount; index++) {
             attributes.getName(index, fTempQName);
-            if (DEBUG) {            
+            if (DEBUG) {
                 System.out.println("==>process attribute: "+fTempQName);
             }
-            // get attribute PSVI 
+            // get attribute PSVI
             attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
-            
+
             // for the 4 xsi attributes, get appropriate decl, and validate
             if (fTempQName.uri == SchemaSymbols.URI_XSI) {
                 XSAttributeDecl attrDecl = null;
@@ -2492,12 +2475,12 @@ public class XMLSchemaValidator
                     continue;
                 }
             }
-            
+
             // for namespace attributes, no_validation/unknow_validity
             if (fTempQName.rawname == XMLSymbols.PREFIX_XMLNS || fTempQName.rawname.startsWith("xmlns:")) {
                 continue;
             }
-            
+
             // it's not xmlns, and not xsi, then we need to find a decl for it
             XSAttributeUseImpl currUse = null, oneUse;
             for (int i = 0; i < useCount; i++) {
@@ -2569,7 +2552,7 @@ public class XMLSchemaValidator
                     }
                 }
             }
-    
+
             processOneAttribute(element, attributes.getValue(index),
                                 currDecl, currUse, attrPSVI);
         } // end of for (all attributes)
@@ -2592,16 +2575,16 @@ public class XMLSchemaValidator
         // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
         // get simple type
         XSSimpleType attDV = currDecl.fType;
-    
+
         // PSVI: attribute declaration
         attrPSVI.fDeclaration = currDecl;
         // PSVI: attribute type
         attrPSVI.fTypeDecl = attDV;
-    
+
         // PSVI: validation attempted:
         attrPSVI.fValidationAttempted = AttributePSVI.VALIDATION_FULL;
         attrPSVI.fValidity = AttributePSVI.VALIDITY_VALID;
-    
+
         Object actualValue = null;
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
@@ -2612,13 +2595,13 @@ public class XMLSchemaValidator
                 attDV.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION){
                 QName qName = (QName)actualValue;
                 SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
-    
+
                 //REVISIT: is it possible for the notation to be in different namespace than the attribute
                 //with which it is associated, CHECK !!  <fof n1:att1 = "n2:notation1" ..>
                 // should we give chance to the application to be able to  retrieve a grammar - nb
                 //REVISIT: what would be the triggering component here.. if it is attribute value that
                 // triggered the loading of grammar ?? -nb
-    
+
                 if (grammar != null) {
                     fNotation = grammar.getGlobalNotationDecl(qName.localpart);
                     fCurrentPSVI.fNotation = fNotation;
@@ -2626,7 +2609,7 @@ public class XMLSchemaValidator
             }
         }
         catch (InvalidDatatypeValueException idve) {
-    
+
             // PSVI: attribute is invalid, record errors
             attrPSVI.fValidity = AttributePSVI.VALIDITY_INVALID;
             attrPSVI.addErrorCode("cvc-attribute.3");
@@ -2638,20 +2621,20 @@ public class XMLSchemaValidator
         // because it might still be useful to the user. But when the it's
         // not valid, the normalized value is not trustable.
         attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
-    
+
         // get the value constraint from use or decl
         // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
         if (actualValue != null &&
             currDecl.getConstraintType() == XSConstants.VC_FIXED) {
             if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
-    
+
                 // PSVI: attribute is invalid, record errors
                 attrPSVI.fValidity = AttributePSVI.VALIDITY_INVALID;
                 attrPSVI.addErrorCode("cvc-attribute.4");
                 reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
         }
-    
+
         // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an absent {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be valid with respect to that attribute use as per Attribute Locally Valid (Use) (3.5.4). In this case the {attribute declaration} of that attribute use is the context-determined declaration for the attribute information item with respect to Schema-Validity Assessment (Attribute) (3.2.4) and Assessment Outcome (Attribute) (3.2.5).
         if (actualValue != null &&
             currUse != null && currUse.fConstraintType == XSConstants.VC_FIXED) {
@@ -2663,7 +2646,7 @@ public class XMLSchemaValidator
             }
         }
     }
-    
+
     void addDefaultAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
         // Check after all specified attrs are scanned
         // (1) report error for REQUIRED attrs that are missing (V_TAGc)
@@ -3521,8 +3504,8 @@ public class XMLSchemaValidator
         /** stores all global Values stores. */
         protected final Vector fValueStores = new Vector();
 
-        /** 
-         * Values stores associated to specific identity constraints. 
+        /**
+         * Values stores associated to specific identity constraints.
          * This hashtable maps IdentityConstraints and
          * the 0-based element on which their selectors first matched to
          * a corresponding ValueStore.  This should take care
@@ -3591,7 +3574,7 @@ public class XMLSchemaValidator
             Hashtable oldMap = (Hashtable)fGlobalMapStack.pop();
             // return if there is no element
             if (oldMap == null) return;
-            
+
             Enumeration keys = oldMap.keys();
             while (keys.hasMoreElements()) {
                 IdentityConstraint id = (IdentityConstraint)keys.nextElement();
@@ -3602,7 +3585,6 @@ public class XMLSchemaValidator
                         fGlobalIDConstraintMap.put(id, oldVal);
                     else {
                         currVal.append(oldVal);
-                        fGlobalIDConstraintMap.put(id, currVal);
                     }
                 }
             }
