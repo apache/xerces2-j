@@ -332,10 +332,20 @@ public interface XSConstants {
      * represent a restricted duration containing the day and 
      * time portion of the duration value space.
      */
-    public static final short DAYTIMEDURATION_DT		= 46;
+    public static final short DAYTIMEDURATION_DT		= 46;   
+    /**
+     * precisionDecimal
+     * 
+     * The type represents new datatype introduced in Schema 1.1
+     */
+    public static final short PRECISIONDECIMAL_DT		= 47;
+    /**
+     * anyAtomicType
+     */
+    public static final short ANYATOMICTYPE_DT			= 48;
     /**
      * The built-in type category is not available.
      */
-    public static final short UNAVAILABLE_DT            = 47;
+    public static final short UNAVAILABLE_DT            = 49;
 
 }

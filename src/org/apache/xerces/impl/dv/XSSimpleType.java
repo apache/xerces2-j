@@ -84,8 +84,10 @@ public interface XSSimpleType extends XSSimpleTypeDefinition {
     public static final short PRIMITIVE_ANYURI        = 17;
     /** "QName" type */
     public static final short PRIMITIVE_QNAME         = 18;
+    /** "precisionDecimal" type */
+    public static final short PRIMITIVE_PRECISIONDECIMAL = 19;
     /** "NOTATION" type */
-    public static final short PRIMITIVE_NOTATION      = 19;
+    public static final short PRIMITIVE_NOTATION      = 20;
 
     /**
      * return an ID representing the built-in primitive base type.

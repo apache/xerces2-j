@@ -19,6 +19,7 @@ package org.apache.xerces.impl.dv.xs;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
@@ -27,6 +28,12 @@ import org.apache.xerces.impl.dv.ValidationContext;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
+import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.util.ShortListImpl;
+import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
@@ -36,12 +43,6 @@ import org.apache.xerces.xs.XSNamespaceItem;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.util.ShortListImpl;
-import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.impl.xs.util.XSObjectListImpl;
-import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.xni.NamespaceContext;
 
 /**
  * @author Sandy Gao, IBM
@@ -69,6 +70,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final short DV_BASE64BINARY  = PRIMITIVE_BASE64BINARY;
     static final short DV_ANYURI        = PRIMITIVE_ANYURI;
     static final short DV_QNAME         = PRIMITIVE_QNAME;
+    static final short DV_PRECISIONDECIMAL = PRIMITIVE_PRECISIONDECIMAL;
     static final short DV_NOTATION      = PRIMITIVE_NOTATION;
 
     static final short DV_ANYSIMPLETYPE = 0;
@@ -80,72 +82,77 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     static final short DV_UNION         = DV_NOTATION + 6;
     static final short DV_YEARMONTHDURATION = DV_NOTATION + 7;
     static final short DV_DAYTIMEDURATION	= DV_NOTATION + 8;
+    static final short DV_ANYATOMICTYPE = DV_NOTATION + 9;
 
     static final TypeValidator[] fDVs = {
-        new AnySimpleDV(),
-        new StringDV(),
-        new BooleanDV(),
-        new DecimalDV(),
-        new FloatDV(),
-        new DoubleDV(),
-        new DurationDV(),
-        new DateTimeDV(),
-        new TimeDV(),
-        new DateDV(),
-        new YearMonthDV(),
-        new YearDV(),
-        new MonthDayDV(),
-        new DayDV(),
-        new MonthDV(),
-        new HexBinaryDV(),
-        new Base64BinaryDV(),
-        new AnyURIDV(),
-        new QNameDV(),
-        new QNameDV(),   // notation use the same one as qname
-        new IDDV(),
-        new IDREFDV(),
-        new EntityDV(),
-        new IntegerDV(),
-        new ListDV(),
-        new UnionDV(),
-        new YearMonthDurationDV(), // XML Schema 1.1 type
-        new DayTimeDurationDV() // XML Schema 1.1 type
+            new AnySimpleDV(),
+            new StringDV(),
+            new BooleanDV(),
+            new DecimalDV(),
+            new FloatDV(),
+            new DoubleDV(),
+            new DurationDV(),
+            new DateTimeDV(),
+            new TimeDV(),
+            new DateDV(),
+            new YearMonthDV(),
+            new YearDV(),
+            new MonthDayDV(),
+            new DayDV(),
+            new MonthDV(),
+            new HexBinaryDV(),
+            new Base64BinaryDV(),
+            new AnyURIDV(),
+            new QNameDV(),
+            new PrecisionDecimalDV(), // XML Schema 1.1 type
+            new QNameDV(),   // notation use the same one as qname
+            new IDDV(),
+            new IDREFDV(),
+            new EntityDV(),
+            new IntegerDV(),
+            new ListDV(),
+            new UnionDV(),
+            new YearMonthDurationDV(), // XML Schema 1.1 type
+            new DayTimeDurationDV(), // XML Schema 1.1 type
+            new AnyAtomicDV() // XML Schema 1.1 type
     };
-
+	    	
     static final short NORMALIZE_NONE = 0;
     static final short NORMALIZE_TRIM = 1;
     static final short NORMALIZE_FULL = 2;
     static final short[] fDVNormalizeType = {
-        NORMALIZE_NONE, //AnySimpleDV(),
-        NORMALIZE_FULL, //StringDV(),
-        NORMALIZE_TRIM, //BooleanDV(),
-        NORMALIZE_TRIM, //DecimalDV(),
-        NORMALIZE_TRIM, //FloatDV(),
-        NORMALIZE_TRIM, //DoubleDV(),
-        NORMALIZE_TRIM, //DurationDV(),
-        NORMALIZE_TRIM, //DateTimeDV(),
-        NORMALIZE_TRIM, //TimeDV(),
-        NORMALIZE_TRIM, //DateDV(),
-        NORMALIZE_TRIM, //YearMonthDV(),
-        NORMALIZE_TRIM, //YearDV(),
-        NORMALIZE_TRIM, //MonthDayDV(),
-        NORMALIZE_TRIM, //DayDV(),
-        NORMALIZE_TRIM, //MonthDV(),
-        NORMALIZE_TRIM, //HexBinaryDV(),
-        NORMALIZE_NONE, //Base64BinaryDV(),  // Base64 know how to deal with spaces
-        NORMALIZE_TRIM, //AnyURIDV(),
-        NORMALIZE_TRIM, //QNameDV(),
-        NORMALIZE_TRIM, //QNameDV(),   // notation
-        NORMALIZE_TRIM, //IDDV(),
-        NORMALIZE_TRIM, //IDREFDV(),
-        NORMALIZE_TRIM, //EntityDV(),
-        NORMALIZE_TRIM, //IntegerDV(),
-        NORMALIZE_FULL, //ListDV(),
-        NORMALIZE_NONE, //UnionDV(),
-        NORMALIZE_TRIM, //YearMonthDurationDV() (Schema 1.1)
-        NORMALIZE_TRIM, //DayTimeDurationDV() (Schema 1.1)
+            NORMALIZE_NONE, //AnySimpleDV(),
+            NORMALIZE_FULL, //StringDV(),
+            NORMALIZE_TRIM, //BooleanDV(),
+            NORMALIZE_TRIM, //DecimalDV(),
+            NORMALIZE_TRIM, //FloatDV(),
+            NORMALIZE_TRIM, //DoubleDV(),
+            NORMALIZE_TRIM, //DurationDV(),
+            NORMALIZE_TRIM, //DateTimeDV(),
+            NORMALIZE_TRIM, //TimeDV(),
+            NORMALIZE_TRIM, //DateDV(),
+            NORMALIZE_TRIM, //YearMonthDV(),
+            NORMALIZE_TRIM, //YearDV(),
+            NORMALIZE_TRIM, //MonthDayDV(),
+            NORMALIZE_TRIM, //DayDV(),
+            NORMALIZE_TRIM, //MonthDV(),
+            NORMALIZE_TRIM, //HexBinaryDV(),
+            NORMALIZE_NONE, //Base64BinaryDV(),  // Base64 know how to deal with spaces
+            NORMALIZE_TRIM, //AnyURIDV(),
+            NORMALIZE_TRIM, //QNameDV(),
+            NORMALIZE_TRIM, //PrecisionDecimalDV() (Schema 1.1)
+            NORMALIZE_TRIM, //QNameDV(),   // notation
+            NORMALIZE_TRIM, //IDDV(),
+            NORMALIZE_TRIM, //IDREFDV(),
+            NORMALIZE_TRIM, //EntityDV(),
+            NORMALIZE_TRIM, //IntegerDV(),
+            NORMALIZE_FULL, //ListDV(),
+            NORMALIZE_NONE, //UnionDV(),
+            NORMALIZE_TRIM, //YearMonthDurationDV() (Schema 1.1)
+            NORMALIZE_TRIM, //DayTimeDurationDV() (Schema 1.1)
+            NORMALIZE_NONE, //AnyAtomicDV() (Schema 1.1)
     };
-
+	    	
     static final short SPECIAL_PATTERN_NONE     = 0;
     static final short SPECIAL_PATTERN_NMTOKEN  = 1;
     static final short SPECIAL_PATTERN_NAME     = 2;
@@ -570,12 +577,18 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
     public short getPrimitiveKind() {
         if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
-            if (fValidationDV == DV_ID || fValidationDV == DV_IDREF || fValidationDV == DV_ENTITY)
+            if (fValidationDV == DV_ID || fValidationDV == DV_IDREF || fValidationDV == DV_ENTITY) {
                 return DV_STRING;
-            else if (fValidationDV == DV_INTEGER)
+            }
+            else if (fValidationDV == DV_INTEGER) {
                 return DV_DECIMAL;
-            else
+            }
+            else if (Constants.SCHEMA_1_1_SUPPORT && (fValidationDV == DV_YEARMONTHDURATION || fValidationDV == DV_DAYTIMEDURATION)) {
+                return DV_DURATION;
+            }
+            else {
                 return fValidationDV;
+            }
         }
         else {
             // REVISIT: error situation. runtime exception?
@@ -2255,6 +2268,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         else if (validationDV == DV_INTEGER) {
             return DV_DECIMAL;
         }
+        else if (Constants.SCHEMA_1_1_SUPPORT && (validationDV == DV_YEARMONTHDURATION || validationDV == DV_DAYTIMEDURATION)) {
+            return DV_DURATION;
+        }
         else {
             return validationDV;
         }
@@ -2530,6 +2546,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     
     static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYSIMPLETYPE_DT);
 
+    static final XSSimpleTypeDecl fAnyAtomicType = new XSSimpleTypeDecl(fAnySimpleType, "anyAtomicType", DV_ANYATOMICTYPE, ORDERED_FALSE, false, true, false, true, XSConstants.ANYATOMICTYPE_DT);
+	
     /**
      * Validation context used to validate facet values.
      */
