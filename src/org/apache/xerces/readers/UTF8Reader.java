@@ -146,7 +146,7 @@ final class UTF8Reader extends XMLEntityReader {
             fCurrentChunk = fCurrentChunk.nextChunk();
             fCurrentIndex = 0;
             fMostRecentData = fCurrentChunk.toByteArray();
-            return (fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
+            return(fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
         } else {
             fCurrentChunk = UTF8DataChunk.createChunk(fStringPool, fCurrentChunk);
             return fillCurrentChunk();
@@ -166,14 +166,14 @@ final class UTF8Reader extends XMLEntityReader {
             if (++fCurrentIndex == UTF8DataChunk.CHUNK_SIZE)
                 return slowLoadNextByte();
             else
-                return (fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
+                return(fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
         }
     }
     //
     //
     //
     private boolean atEOF(int offset) {
-        return (offset > fLength);
+        return(offset > fLength);
     }
     //
     //
@@ -425,20 +425,30 @@ final class UTF8Reader extends XMLEntityReader {
         // ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12) + ((0x3f & b2)<<6) + (0x3f & b3); // u uuuu zzzz yyyy yyxx xxxx (0x10000 to 0x1ffff)
         // if (ch >= 0x110000)
         boolean result = false;
-        if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
-            if (skipPastChar) {
-                fCharacterCounter++;
-                loadNextByte();
-                return true;
+
+        if (( 0xf8 & b0 ) == 0xf0 ) {
+            if (!(b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90))) { // [#x10000-#x10FFFF]
+                if (skipPastChar) {
+                    fCharacterCounter++;
+                    loadNextByte();
+                    return true;
+                }
+                result = true;
             }
-            result = true;
+            fCurrentChunk = saveChunk;
+            fCurrentIndex = saveIndex;
+            fCurrentOffset = saveOffset;
+            fMostRecentData = saveChunk.toByteArray();
+            fMostRecentByte = b0;
+            return result;
+        } else{
+            fCurrentChunk = saveChunk;
+            fCurrentIndex = saveIndex;
+            fCurrentOffset = saveOffset;
+            fMostRecentData = saveChunk.toByteArray();
+            fMostRecentByte = b0;
+            return result;
         }
-        fCurrentChunk = saveChunk;
-        fCurrentIndex = saveIndex;
-        fCurrentOffset = saveOffset;
-        fMostRecentData = saveChunk.toByteArray();
-        fMostRecentByte = b0;
-        return result;
     }
     //
     //
@@ -794,7 +804,7 @@ final class UTF8Reader extends XMLEntityReader {
             int b1 = loadNextByte();
             if ((0xe0 & b0) == 0xc0) { // 110yyyyy 10xxxxxx
                 ch = ((0x1f & b0)<<6) + (0x3f & b1);
-            } else {
+            } else if(( 0xf8 & b0 ) == 0xf0 ){
                 int b2 = loadNextByte();
                 if ((0xf0 & b0) == 0xe0) { // 1110zzzz 10yyyyyy 10xxxxxx
                     // if ((ch >= 0xD800 && ch <= 0xDFFF) || ch >= 0xFFFE)
@@ -802,7 +812,7 @@ final class UTF8Reader extends XMLEntityReader {
                 } else {
                     int b3 = loadNextByte(); // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
                     ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12)
-                           + ((0x3f & b2)<<6) + (0x3f & b3);
+                         + ((0x3f & b2)<<6) + (0x3f & b3);
                 }
             }
         }
@@ -2504,10 +2514,29 @@ final class UTF8Reader extends XMLEntityReader {
             loadNextByte();
             return true;
         }
+
         int b3 = loadNextByte();  // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
         // ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12) + ((0x3f & b2)<<6) + (0x3f & b3); // u uuuu zzzz yyyy yyxx xxxx (0x10000 to 0x1ffff)
         // if (ch >= 0x110000)
-        if (b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90)) {
+        if (( 0xf8 & b0 ) == 0xf0 ) {
+            if (b0 > 0xF4 || (b0 == 0xF4 && b1 >= 0x90)) {
+                fCurrentChunk = saveChunk;
+                fCurrentIndex = saveIndex;
+                fCurrentOffset = saveOffset;
+                fMostRecentData = saveChunk.toByteArray();
+                fMostRecentByte = b0;
+                return false;
+            }
+            int ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12) + ((0x3f & b2)<<6) + (0x3f & b3);
+            if (ch < 0x10000) {
+                appendCharData(ch);
+            } else {
+                appendCharData(((ch-0x00010000)>>10)+0xd800);
+                appendCharData(((ch-0x00010000)&0x3ff)+0xdc00);
+            }
+            loadNextByte();
+            return true;
+        } else {
             fCurrentChunk = saveChunk;
             fCurrentIndex = saveIndex;
             fCurrentOffset = saveOffset;
@@ -2515,15 +2544,6 @@ final class UTF8Reader extends XMLEntityReader {
             fMostRecentByte = b0;
             return false;
         }
-        int ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12) + ((0x3f & b2)<<6) + (0x3f & b3);
-        if (ch < 0x10000) {
-            appendCharData(ch);
-        } else {
-            appendCharData(((ch-0x00010000)>>10)+0xd800);
-            appendCharData(((ch-0x00010000)&0x3ff)+0xdc00);
-        }
-        loadNextByte();
-        return true;
     }
     private boolean skipMultiByteCharData(int b0) throws Exception {
         UTF8DataChunk saveChunk = fCurrentChunk;
@@ -2696,7 +2716,7 @@ final class UTF8Reader extends XMLEntityReader {
     //
     //
     //
-    private static final char[] cdata_string = { 'C','D','A','T','A','[' };
+    private static final char[] cdata_string = { 'C','D','A','T','A','['};
     private StringPool.CharArrayRange fCharArrayRange = null;
     private InputStream fInputStream = null;
     private StringPool fStringPool = null;
@@ -2719,7 +2739,7 @@ final class UTF8Reader extends XMLEntityReader {
             fMostRecentData = buf;
             fCurrentIndex = 0;
             fCurrentChunk.setByteArray(fMostRecentData);
-            return (fMostRecentByte = fMostRecentData[0] & 0xFF);
+            return(fMostRecentByte = fMostRecentData[0] & 0xFF);
         }
         if (buf == null)
             buf = new byte[UTF8DataChunk.CHUNK_SIZE];
@@ -2753,6 +2773,6 @@ final class UTF8Reader extends XMLEntityReader {
         fLength += offset;
         fCurrentIndex = 0;
         fCurrentChunk.setByteArray(fMostRecentData);
-        return (fMostRecentByte = fMostRecentData[0] & 0xFF);
+        return(fMostRecentByte = fMostRecentData[0] & 0xFF);
     }
 }
