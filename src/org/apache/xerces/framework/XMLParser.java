@@ -132,7 +132,7 @@ public abstract class XMLParser
         "http://apache.org/xml/features/validation/warn-on-undeclared-elemdef",
         "http://apache.org/xml/features/allow-java-encodings",
         "http://apache.org/xml/features/continue-after-fatal-error",
-        "http://apache.org/xml/features/load-DTDGrammar"
+        "http://apache.org/xml/features/nonvalidating/load-DTDGrammar"
     };
 
     /** Properties recognized by this parser. */
@@ -599,7 +599,7 @@ public abstract class XMLParser
      * <p>
      * This method is the equivalent to the feature:
      * <pre>
-     * http://apache.org/xml/features/load-DTDGrammar
+     * http://apache.org/xml/features/nonvalidating/load-DTDGrammar
      * </pre>
      *
      * @param loadDTDGrammar True to turn on the feature; false to
@@ -612,7 +612,7 @@ public abstract class XMLParser
         throws SAXNotRecognizedException, SAXNotSupportedException {
         if (fParseInProgress) {
             // REVISIT: Localize message
-            throw new SAXNotSupportedException("http://apache.org/xml/features/load-DTDGrammar: parse is in progress");
+            throw new SAXNotSupportedException("http://apache.org/xml/features/nonvalidating/load-DTDGrammar: parse is in progress");
         }
         try {
             fValidator.setLoadDTDGrammar(loadDTDGrammar);
@@ -1154,9 +1154,9 @@ public abstract class XMLParser
                 throw new SAXNotSupportedException(featureId);
             }
             //
-            // http://apache.org/xml/features/validation/load-DTDGrammar
+            // http://apache.org/xml/features/validation/nonvalidating/load-DTDGrammar
             //
-            if (feature.equals("load-DTDGrammar")) {
+            if (feature.equals("nonvalidating/load-DTDGrammar")) {
                 setLoadDTDGrammar(state);
                 return;
             }
