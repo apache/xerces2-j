@@ -235,11 +235,13 @@ public class CMBuilder {
         }
         else if (isMixed) {
             if (type ==XSParticleDecl.PARTICLE_ALL) {
-                // REVISIT: 
                 // All the nodes under an ALL must be additional ALL nodes and
                 // ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
                 // We collapse the ELEMENTs into a single vector.
-                
+                XSAllCM allContent = new XSAllCM(false);
+                gatherAllLeaves ((XSParticleDecl)(particle.fValue), allContent);
+                gatherAllLeaves ((XSParticleDecl)(particle.fOtherValue), allContent);
+                return allContent; 
                 
             }
             else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
@@ -248,10 +250,9 @@ public class CMBuilder {
 
                 // An ALL node can appear under a ZERO_OR_ONE node.
                 if (type ==XSParticleDecl.PARTICLE_ALL) {
-                    // REVISIT: 
-                    //AllContentModel allContent = new AllContentModel(true,true);
-                    //gatherAllLeaves(zeroOrOneChildIndex, contentSpec,
-                    //                allContent);
+                    XSAllCM allContent = new XSAllCM(true);
+                    gatherAllLeaves (left, allContent);
+                    return allContent;
 
                 }
             }
@@ -295,6 +296,16 @@ public class CMBuilder {
             }
 
         }
+		 else if (type == XSParticleDecl.PARTICLE_ALL) {
+        
+            XSParticleDecl left = (XSParticleDecl)particle.fValue;
+            XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
+            
+            XSAllCM allContent = new XSAllCM(false);
+            gatherAllLeaves (left, allContent);
+            gatherAllLeaves (right, allContent);
+            return allContent;
+        }
         else if ((type == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
                  ||  (type == XSParticleDecl.PARTICLE_ZERO_OR_MORE)
                  ||  (type == XSParticleDecl.PARTICLE_ONE_OR_MORE)) {
@@ -313,7 +324,9 @@ public class CMBuilder {
                 return new XSSimpleCM(type, (XSElementDecl)left.fValue);
             }
             else if (left.fType==XSParticleDecl.PARTICLE_ALL) {
-                // REVISIT: add ALL content model
+		 		 XSAllCM allContent = new XSAllCM(true);
+                gatherAllLeaves (left, allContent);
+                return allContent;
             }
 
 
@@ -410,6 +423,50 @@ public class CMBuilder {
         }
 
         return particle;
+    }
+
+    /**
+     *  Recursively builds an AllContentModel based on a particle tree
+     *  rooted at an ALL node.
+     */
+     private void gatherAllLeaves(XSParticleDecl particle,
+                                        XSAllCM allContent) {
+
+        XSParticleDecl left = (XSParticleDecl) particle.fValue;
+        XSParticleDecl right = (XSParticleDecl) particle.fOtherValue;
+        int type = particle.fType;
+
+        if (type == XSParticleDecl.PARTICLE_ALL) {
+          
+            // At an all node, visit left and right subtrees
+          
+            gatherAllLeaves (left, allContent);
+            gatherAllLeaves (right, allContent);
+        }
+        else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
+          
+            // At leaf, add the element to list of elements permitted in the all
+          
+            allContent.addElement ((XSElementDecl)(particle.fValue), false);
+        }
+        else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
+          
+            // At ZERO_OR_ONE node, subtree must be an element
+            // that was specified with minOccurs=0, maxOccurs=1
+            // Add the optional element to list of elements permitted in the all
+          
+            if (left.fType == XSParticleDecl.PARTICLE_ELEMENT) {
+          		   allContent.addElement ((XSElementDecl)left.fValue, true);
+            }
+            else {
+          		   // report error
+		 		   throw new RuntimeException("ImplementationMessages.VAL_CST");
+            }		  		 
+        }
+        else { 
+            // report error
+            throw new RuntimeException("ImplementationMessages.VAL_CST");
+        }
     }
 
     private XSParticleDecl createParticle (short type,
