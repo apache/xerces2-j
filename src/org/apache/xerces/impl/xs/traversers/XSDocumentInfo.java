@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.validation.ValidationState;
+import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -108,13 +109,14 @@ class XSDocumentInfo {
 
     SymbolTable fSymbolTable = null;
 
-    XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable) {
+    XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker, SymbolTable symbolTable)
+                    throws XMLSchemaException {
         fSchemaDoc = schemaDoc;
         fNamespaceSupport = new SchemaNamespaceSupport();
         fIsChameleonSchema = false;
-        
+
         fSymbolTable = symbolTable;
-        // During XML Schema traversal bind "xml" prefix to 
+        // During XML Schema traversal bind "xml" prefix to
         // "http://www.w3.org/XML/1998/namespace"
         // per Namespace Constraint: Prefix Declared (Namespaces in XML REC)
         fNamespaceSupport.declarePrefix(symbolTable.addSymbol("xml"), symbolTable.addSymbol("http://www.w3.org/XML/1998/namespace"));
@@ -122,6 +124,12 @@ class XSDocumentInfo {
         if(schemaDoc != null) {
             Element root = DOMUtil.getRoot(schemaDoc);
             Object[] schemaAttrs = attrChecker.checkAttributes(root, true, this);
+            // schemaAttrs == null means it's not an <xsd:schema> element
+            // throw an exception, but we don't know the document systemId,
+            // so we leave that to the caller.
+            if (schemaAttrs == null) {
+                throw new XMLSchemaException(null, null);
+            }
             fAreLocalAttributesQualified =
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
             fAreLocalElementsQualified =
@@ -132,8 +140,6 @@ class XSDocumentInfo {
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-            if(fTargetNamespace != null && fTargetNamespace.length() == 0)
-                fTargetNamespace = null;
             if (fTargetNamespace != null)
                 fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 

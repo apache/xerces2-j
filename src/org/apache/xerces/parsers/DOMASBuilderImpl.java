@@ -57,9 +57,6 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.Vector;
 
 import org.w3c.dom.DOMException;
@@ -73,6 +70,7 @@ import org.apache.xerces.dom3.as.DOMASBuilder;
 import org.apache.xerces.dom3.as.DOMASException;
 
 import org.apache.xerces.dom.ASModelImpl;
+import org.apache.xerces.dom.DOMInputSourceImpl;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
 import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.xni.XNIException;
@@ -83,6 +81,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
+import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.models.CMBuilder;
@@ -254,45 +253,8 @@ public class DOMASBuilderImpl
      */
     public ASModel parseASURI(String uri)
                               throws DOMASException, Exception {
-       if (fSchemaHandler == null) {
-           fGrammarBucket = new XSGrammarBucket();
-           fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
-           fSchemaHandler = new XSDHandler(fGrammarBucket);
-           fCMBuilder = new CMBuilder(new XSDeclarationPool());
-       }
-
-       fErrorReporter = (XMLErrorReporter)fConfiguration.getProperty(ERROR_REPORTER);
-       fEntityResolver = (XMLEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
-       if (fEntityResolver == null)
-           fEntityResolver = (XMLEntityResolver)fConfiguration.getProperty(ENTITY_MANAGER);
-
-       fSymbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
-       String externalSchemas =
-            (String)(fConfiguration.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_LOCATION));
-       String noNamespaceExternalSchemas =
-            (String)(fConfiguration.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_NONS_LOCATION));
-
-       XMLNS = fSymbolTable.addSymbol(SchemaSymbols.O_XMLNS);
-       URI_XSI = fSymbolTable.addSymbol(SchemaSymbols.URI_XSI);
-       XSI_SCHEMALOCATION = fSymbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCATION);
-       XSI_NONAMESPACESCHEMALOCATION = fSymbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION);
-       XSI_TYPE = fSymbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
-       XSI_NIL = fSymbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
-       URI_SCHEMAFORSCHEMA = fSymbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
-
-       initGrammarBucket();
-       fSubGroupHandler.reset();
-       fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas);
-
-       SchemaGrammar grammar = fSchemaHandler.parseSchema(null,uri);
-
-       if (getFeature(SCHEMA_FULL_CHECKING)) {
-           XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
-       }
-
-       ASModelImpl newAsModel = new ASModelImpl();
-       addGrammars(newAsModel, fGrammarBucket);
-       return newAsModel;
+        // need to wrap the uri with an XMLInputSource
+        return parseASInputSource(new XMLInputSource(null, uri, null));
     }
 
     /**
@@ -322,6 +284,13 @@ public class DOMASBuilderImpl
      */
     public ASModel parseASInputSource(DOMInputSource is)
                                       throws DOMASException, Exception {
+        // need to wrap the DOMInputSource with an XMLInputSource
+        XMLInputSource xis = this.dom2xmlInputSource(is);
+        return parseASInputSource(xis);
+    }
+
+    ASModel parseASInputSource(XMLInputSource is) throws Exception {
+                                      
        if (fSchemaHandler == null) {
            fGrammarBucket = new XSGrammarBucket();
            fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
@@ -350,7 +319,11 @@ public class DOMASBuilderImpl
        fSubGroupHandler.reset();
        fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas);
 
-       SchemaGrammar grammar = fSchemaHandler.parseSchema(is.getBaseURI(),is.getSystemId());
+       // Should check whether the grammar with this namespace is already in
+       // the grammar resolver. But since we don't know the target namespace
+       // of the document here, we leave such check to XSDHandler
+       SchemaGrammar grammar = fSchemaHandler.parseSchema(null, is,
+                                                          XSDDescription.CONTEXT_PREPARSE);
 
        if (getFeature(SCHEMA_FULL_CHECKING)) {
            XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
@@ -364,7 +337,6 @@ public class DOMASBuilderImpl
     // put all the grammars we have access to in the GrammarBucket
     private void initGrammarBucket() {
         fGrammarBucket.reset();
-        fGrammarBucket.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
         if (fAbstractSchema != null)
             initGrammarBucketRecurse(fAbstractSchema);
     }

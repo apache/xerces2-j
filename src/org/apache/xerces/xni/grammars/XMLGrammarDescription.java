@@ -66,12 +66,14 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
  * @author Neil Graham, IBM
  * @version $Id$
  */
-
 public interface XMLGrammarDescription  
         extends XMLResourceIdentifier {
-    // the type of the grammar (e.g., DTD or XSD); 
-    // @see org.apache.xerces.xni.grammars.Grammar
-    
+
+    /**
+     * the type of the grammar (e.g., DTD or XSD);
+     *  
+     * @see org.apache.xerces.xni.grammars.Grammar
+     */
     public String getGrammarType();
 
 } // XMLGrammarDescription

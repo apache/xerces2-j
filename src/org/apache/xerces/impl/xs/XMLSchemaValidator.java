@@ -1052,7 +1052,6 @@ public class XMLSchemaValidator
 
         // clear grammars, and put the one for schema namespace there
         fGrammarBucket.reset();
-        fGrammarBucket.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
         fGrammarPool = (XMLGrammarPool)componentManager.getProperty(XMLGRAMMAR_POOL);
         if(fGrammarPool instanceof XMLGrammarPoolImpl) {
             XMLGrammarPoolImpl poolImpl = (XMLGrammarPoolImpl)fGrammarPool;
@@ -1440,6 +1439,7 @@ public class XMLSchemaValidator
             }
             // no element decl or type found for this element.
             // if there is a validation root, then skip the whole element
+            // because we choose not to do lax acssessment
             // otherwise, don't skip sub-elements
             if (fValidationRootDepth >= 0)
                 fSkipValidationDepth = fElementDepth;
@@ -1721,13 +1721,16 @@ public class XMLSchemaValidator
                     break;
                 }
                 location = t.nextToken();
-                if (fGrammarBucket.getGrammar(namespace) == null)
-                    fSchemaHandler.parseSchema(namespace, location);
+                if (fGrammarBucket.getGrammar(namespace) == null) {
+                    fSchemaHandler.parseSchema(namespace, location,
+                                               XSDDescription.CONTEXT_INSTANCE);
+                }
             }
         }
         if (nsLocation != null) {
             if (fGrammarBucket.getGrammar(null) == null)
-                fSchemaHandler.parseSchema(null, nsLocation);
+                fSchemaHandler.parseSchema(null, nsLocation,
+                                           XSDDescription.CONTEXT_INSTANCE);
         }
     }
 
@@ -1749,9 +1752,17 @@ public class XMLSchemaValidator
 
         // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
         XSTypeDecl type = null;
-        SchemaGrammar grammar = fGrammarBucket.getGrammar(typeName.uri);
-        if (grammar != null)
-            type = grammar.getGlobalTypeDecl(typeName.localpart);
+        // if the namespace is schema namespace, first try built-in types
+        if (typeName.uri == URI_SCHEMAFORSCHEMA) {
+            type = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(typeName.localpart);
+        }
+        // if it's not schema built-in types, then try to get a grammar
+        if (type == null) {
+            SchemaGrammar grammar = fGrammarBucket.getGrammar(typeName.uri);
+            if (grammar != null)
+                type = grammar.getGlobalTypeDecl(typeName.localpart);
+        }
+        // still couldn't find the type, report an error
         if (type == null) {
             reportSchemaError("cvc-elt.4.2", new Object[]{element.rawname, xsiType});
             return;

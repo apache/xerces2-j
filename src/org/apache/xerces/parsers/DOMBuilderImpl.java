@@ -60,6 +60,7 @@ package org.apache.xerces.parsers;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
@@ -294,7 +295,7 @@ public class DOMBuilderImpl
      */
     public void reset() {
         super.reset();
-	try {
+        try {
             fNamespaceDeclarations = fConfiguration.getFeature(NAMESPACE_DECLARATIONS);
             fValidateIfSchema = fConfiguration.getFeature(VALIDATE_IF_SCHEMA);
             fValidateAgainstDTD = fConfiguration.getFeature(VALIDATE_AGAINST_DTD);
@@ -327,7 +328,7 @@ public class DOMBuilderImpl
      * entity.
      */
     public DOMEntityResolver getEntityResolver() {
-    	DOMEntityResolver domEntityResolver = null;
+        DOMEntityResolver domEntityResolver = null;
         try {
             DOMEntityResolver entityResolver = (DOMEntityResolver)fConfiguration.getProperty(ENTITY_RESOLVER);
             if (entityResolver != null && 
@@ -349,9 +350,9 @@ public class DOMBuilderImpl
      * entity.
      */
     public void setEntityResolver(DOMEntityResolver entityResolver) {
-    	try {
+        try {
             fConfiguration.setProperty(ENTITY_RESOLVER, 
-            				new DOMEntityResolverWrapper(entityResolver));
+                                        new DOMEntityResolverWrapper(entityResolver));
         }
         catch (XMLConfigurationException e) {
             
@@ -370,7 +371,7 @@ public class DOMBuilderImpl
      * result in implementation dependent behavour. 
      */
     public DOMErrorHandler getErrorHandler() {
-    	DOMErrorHandler errorHandler = null;
+        DOMErrorHandler errorHandler = null;
         try {
             DOMErrorHandler domErrorHandler = 
                 (DOMErrorHandler)fConfiguration.getProperty(ERROR_HANDLER);
@@ -397,7 +398,7 @@ public class DOMBuilderImpl
      * result in implementation dependent behavour. 
      */
     public void setErrorHandler(DOMErrorHandler errorHandler) {
-    	try {
+        try {
             fConfiguration.setProperty(ERROR_HANDLER, 
                                        new DOMErrorHandlerWrapper(errorHandler));
         }
@@ -416,7 +417,7 @@ public class DOMBuilderImpl
      * happens before the filter is called. 
      */
     public DOMBuilderFilter getFilter() {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
     
     /**
@@ -429,7 +430,7 @@ public class DOMBuilderImpl
      * happens before the filter is called. 
      */
     public void setFilter(DOMBuilderFilter filter) {
-    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
 
     /**
@@ -450,31 +451,31 @@ public class DOMBuilderImpl
      */
     public void setFeature(String name, boolean state) throws DOMException {
         try {
-    	    if (canSetFeature(name, state)) {
-            	if (name.equals(VALIDATION)) {
-            	    fConfiguration.setFeature(VALIDATION_FEATURE, state);
-            	}
-            	else if (name.equals(EXTERNAL_PARAMETER_ENTITIES)) {
-            	    fConfiguration.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE, state);
-            	}
-            	else if (name.equals(EXTERNAL_GENERAL_ENTITIES)) {
-            	    fConfiguration.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE, state);
-            	}
-            	else if (name.equals(EXTERNAL_DTD_SUBSET)) {
-            	    fConfiguration.setFeature(LOAD_EXTERNAL_DTD_FEATURE, state);
-            	}
-            	else if (name.equals(COMMENTS)) {
-            	    fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, state);
-            	}
-            	else if(name.equals(CREATE_ENTITY_REFERENCE_NODES)) {
-            	    fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, state);
-            	}
-            	else {
-            	    fConfiguration.setFeature(name, state);
-            	}
+            if (canSetFeature(name, state)) {
+                if (name.equals(VALIDATION)) {
+                    fConfiguration.setFeature(VALIDATION_FEATURE, state);
+                }
+                else if (name.equals(EXTERNAL_PARAMETER_ENTITIES)) {
+                    fConfiguration.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE, state);
+                }
+                else if (name.equals(EXTERNAL_GENERAL_ENTITIES)) {
+                    fConfiguration.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE, state);
+                }
+                else if (name.equals(EXTERNAL_DTD_SUBSET)) {
+                    fConfiguration.setFeature(LOAD_EXTERNAL_DTD_FEATURE, state);
+                }
+                else if (name.equals(COMMENTS)) {
+                    fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, state);
+                }
+                else if(name.equals(CREATE_ENTITY_REFERENCE_NODES)) {
+                    fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, state);
+                }
+                else {
+                    fConfiguration.setFeature(name, state);
+                }
             }
             else {
-            	throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature \""+name+"\" cannot be set to \""+state+"\"");
             }
         }
         catch (XMLConfigurationException e) {
@@ -500,29 +501,29 @@ public class DOMBuilderImpl
      *   the feature itself is not changed.
      */
     public boolean canSetFeature(String name, boolean state) {
-    	if (name.equals(NAMESPACE_DECLARATIONS) && !state) {
-    	    return false;
-    	}
-    	else if(name.equals(VALIDATE_IF_SCHEMA) && state) {
-    	    return false;
-    	}
-    	else if(name.equals(VALIDATE_AGAINST_DTD) && state) {
-    	    return false;
-    	}
-    	else if(name.equals(CREATE_ENTITY_NODES) && !state) {
-    	    return false;
-    	}
-    	else if(name.equals(WHITESPACE_IN_ELEMENT_CONTENT) && !state) {
-    	    return false;
-    	}
-    	else if(name.equals(LOAD_AS_INFOSET) && state) {
-    	    return false;
-    	}
-    	else if(name.equals(SUPPORTED_MEDIATYPES_ONLY) && state) {
-    	    return false;
-    	}
-    	
-    	return true;
+        if (name.equals(NAMESPACE_DECLARATIONS) && !state) {
+            return false;
+        }
+        else if(name.equals(VALIDATE_IF_SCHEMA) && state) {
+            return false;
+        }
+        else if(name.equals(VALIDATE_AGAINST_DTD) && state) {
+            return false;
+        }
+        else if(name.equals(CREATE_ENTITY_NODES) && !state) {
+            return false;
+        }
+        else if(name.equals(WHITESPACE_IN_ELEMENT_CONTENT) && !state) {
+            return false;
+        }
+        else if(name.equals(LOAD_AS_INFOSET) && state) {
+            return false;
+        }
+        else if(name.equals(SUPPORTED_MEDIATYPES_ONLY) && state) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -538,7 +539,7 @@ public class DOMBuilderImpl
      *   recognize the feature name.
      */
     public boolean getFeature(String name) throws DOMException {
-    	try {
+        try {
             if (name.equals(VALIDATION)) {
                 return fConfiguration.getFeature(VALIDATION_FEATURE);
             }
@@ -600,7 +601,7 @@ public class DOMBuilderImpl
             Exception ex = e.getException();
             throw ex;
         }
-            	
+                
         // close stream opened by the parser
         finally {
             try {
@@ -642,13 +643,10 @@ public class DOMBuilderImpl
      *   ErrorHandlers are not required to do so. 
      */
     public Document parse(DOMInputSource is) throws Exception {
-    	
-    	try {
-            XMLInputSource xmlInputSource = 
-                new XMLInputSource(is.getPublicId(), is.getSystemId(), is.getBaseURI());
-            xmlInputSource.setByteStream(is.getByteStream());
-            xmlInputSource.setCharacterStream(is.getCharacterStream());
-            xmlInputSource.setEncoding(is.getEncoding());
+        
+        try {
+            // need to wrap the DOMInputSource with an XMLInputSource
+            XMLInputSource xmlInputSource = dom2xmlInputSource(is);
             parse(xmlInputSource);
         }
         catch (XNIException e) {
@@ -656,7 +654,7 @@ public class DOMBuilderImpl
             throw ex;
         }
                 
-    	return getDocument();
+        return getDocument();
     }
                           
     /**
@@ -681,8 +679,39 @@ public class DOMBuilderImpl
     public void parseWithContext(DOMInputSource is, Node cnode, 
                                  short action) throws DOMException {
         // REVISIT: need to implement.
-	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
     
+    XMLInputSource dom2xmlInputSource(DOMInputSource is) {
+        // need to wrap the DOMInputSource with an XMLInputSource
+        XMLInputSource xis = null;
+        // if there is a string data, use a StringReader
+        // according to DOM, we need to treat such data as "UTF-16".
+        if (is.getStringData() != null) {
+            xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+                                     is.getBaseURI(), new StringReader(is.getStringData()),
+                                     "UTF-16");
+        }
+        // check whether there is a Reader
+        // according to DOM, we need to treat such reader as "UTF-16".
+        else if (is.getCharacterStream() != null) {
+            xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+                                     is.getBaseURI(), is.getCharacterStream(),
+                                     "UTF-16");
+        }
+        // check whether there is an InputStream
+        else if (is.getByteStream() != null) {
+            xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+                                     is.getBaseURI(), is.getByteStream(),
+                                     is.getEncoding());
+        }
+        // otherwise, just use the public/system/base Ids
+        else {
+            xis = new XMLInputSource(is.getPublicId(), is.getSystemId(),
+                                     is.getBaseURI());
+        }
         
-} // class DOMASBuilderImpl
+        return xis;
+    }
+            
+} // class DOMBuilderImpl
