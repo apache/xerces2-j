@@ -806,7 +806,9 @@ public class DeferredDocumentImpl
 
                 nchunk = index >> CHUNK_SHIFT;
                 nindex = index & CHUNK_MASK;
-                if (getChunkValue(fNodeName, nchunk, nindex) == elementName) {
+                if (getChunkIndex(fNodeType, nchunk, nindex) ==
+                                           NodeImpl.ELEMENT_DEFINITION_NODE
+                 && getChunkValue(fNodeName, nchunk, nindex) == elementName) {
                     return index;
                 }
             }
