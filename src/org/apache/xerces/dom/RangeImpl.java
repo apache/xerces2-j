@@ -108,26 +108,57 @@ public class RangeImpl  implements Range {
     }
     
     public Node getStartContainer() {
+        if ( fDetach ) {
+            throw new DOMException(
+                DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }
         return fStartContainer;
     }
     
     public int getStartOffset() {
+        if ( fDetach ) {
+            throw new DOMException(
+                DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }
         return fStartOffset;
     }
     
     public Node getEndContainer() {
+        if ( fDetach ) {
+            throw new DOMException(
+                DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }
         return fEndContainer;
     }
+    
     public int getEndOffset() {
+        if ( fDetach ) {
+            throw new DOMException(
+                DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }    
         return fEndOffset;
     }
     
     public boolean getCollapsed() {
+        if ( fDetach ) {
+            throw new DOMException(
+                DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }
         return (fStartContainer == fEndContainer 
              && fStartOffset == fEndOffset);
     }
     
-    public Node getCommonAncestorContainer(){
+    public Node getCommonAncestorContainer() {
+        if ( fDetach ) {
+            throw new DOMException(
+                DOMException.INVALID_STATE_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
+        }
         Vector startV = new Vector();
         Node node;
         for (node=fStartContainer; node != null; 
