@@ -85,7 +85,7 @@ public class DurationDV extends AbstractDateTimeDV {
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return parse(content, null);
+            return parse(content);
         } catch (Exception ex) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "duration"});
         }
@@ -99,25 +99,18 @@ public class DurationDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
+    protected int[] parse(String str) throws SchemaDateTimeException{
+        int len = str.length();
+        int[] date=new int[TOTAL_SIZE];
 
-        //PnYn MnDTnH nMnS: -P1Y2M3DT10H30M
-        resetBuffer(str);
-
-        //create structure to hold an object
-        if ( date== null ) {
-            date=new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
-
-
-        char c=fBuffer.charAt(fStart++);
+        int start = 0;
+        char c=str.charAt(start++);
         if ( c!='P' && c!='-' ) {
             throw new SchemaDateTimeException();
         }
         else {
             date[utc]=(c=='-')?'-':0;
-            if ( c=='-' && fBuffer.charAt(fStart++)!='P' ) {
+            if ( c=='-' && str.charAt(start++)!='P' ) {
                 throw new SchemaDateTimeException();
             }
         }
@@ -131,77 +124,77 @@ public class DurationDV extends AbstractDateTimeDV {
         //at least one number and designator must be seen after P
         boolean designator = false;
 
-        int endDate = indexOf (fStart, fEnd, 'T');
+        int endDate = indexOf (str, start, len, 'T');
         if ( endDate == -1 ) {
-            endDate = fEnd;
+            endDate = len;
         }
         //find 'Y'
-        int end = indexOf (fStart, endDate, 'Y');
+        int end = indexOf (str, start, endDate, 'Y');
         if ( end!=-1 ) {
             //scan year
-            date[CY]=negate * parseInt(fStart,end);
-            fStart = end+1;
+            date[CY]=negate * parseInt(str,start,end);
+            start = end+1;
             designator = true;
         }
 
-        end = indexOf (fStart, endDate, 'M');
+        end = indexOf (str, start, endDate, 'M');
         if ( end!=-1 ) {
             //scan month
-            date[M]=negate * parseInt(fStart,end);
-            fStart = end+1;
+            date[M]=negate * parseInt(str,start,end);
+            start = end+1;
             designator = true;
         }
 
-        end = indexOf (fStart, endDate, 'D');
+        end = indexOf (str, start, endDate, 'D');
         if ( end!=-1 ) {
             //scan day
-            date[D]=negate * parseInt(fStart,end);
-            fStart = end+1;
+            date[D]=negate * parseInt(str,start,end);
+            start = end+1;
             designator = true;
         }
 
-        if ( fEnd == endDate && fStart!=fEnd ) {
+        if ( len == endDate && start!=len ) {
             throw new SchemaDateTimeException();
         }
-        if ( fEnd !=endDate ) {
+        if ( len !=endDate ) {
 
             //scan hours, minutes, seconds
             //REVISIT: can any item include a decimal fraction or only seconds?
             //
 
-            end = indexOf (++fStart, fEnd, 'H');
+            end = indexOf (str, ++start, len, 'H');
             if ( end!=-1 ) {
                 //scan hours
-                date[h]=negate * parseInt(fStart,end);
-                fStart=end+1;
+                date[h]=negate * parseInt(str,start,end);
+                start=end+1;
                 designator = true;
             }
 
-            end = indexOf (fStart, fEnd, 'M');
+            end = indexOf (str, start, len, 'M');
             if ( end!=-1 ) {
                 //scan min
-                date[m]=negate * parseInt(fStart,end);
-                fStart=end+1;
+                date[m]=negate * parseInt(str,start,end);
+                start=end+1;
                 designator = true;
             }
 
-            end = indexOf (fStart, fEnd, 'S');
+            end = indexOf (str, start, len, 'S');
             if ( end!=-1 ) {
                 //scan seconds
-                int mlsec = indexOf (fStart, end, '.');
+                int mlsec = indexOf (str, start, end, '.');
                 if ( mlsec >0 ) {
-                    date[s]  = negate * parseInt (fStart, mlsec);
-                    date[ms] = negate * parseInt (mlsec+1, end);
+                    date[s]  = negate * parseInt (str, start, mlsec);
+                    date[ms] = negate * parseInt (str, mlsec+1, end);
                 }
                 else {
-                    date[s]=negate * parseInt(fStart,end);
+                    date[s]=negate * parseInt(str, start,end);
                 }
-                fStart=end+1;
+                start=end+1;
                 designator = true;
             }
             // no additional data shouls appear after last item
             // P1Y1M1DT is illigal value as well
-            if ( fStart != fEnd || fBuffer.charAt(--fStart)=='T' ) {
+            if ( start != len || str.charAt(--start)=='T' ) {
                 throw new SchemaDateTimeException();
             }
         }
@@ -352,7 +345,7 @@ public class DurationDV extends AbstractDateTimeDV {
     }
 
     protected String dateToString(int[] date) {
-        message.setLength(0);
+        StringBuffer message = new StringBuffer(30);
         int negate = 1;
         if ( date[CY]<0 ) {
             message.append('-');

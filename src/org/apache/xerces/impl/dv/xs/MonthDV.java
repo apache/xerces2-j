@@ -79,7 +79,7 @@ public class MonthDV extends AbstractDateTimeDV {
      */
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return parse(content, null);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gMonth"});
         }
@@ -94,39 +94,34 @@ public class MonthDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
-
-        resetBuffer(str);
-
-        //create structure to hold an object
-        if ( date== null ) {
-            date=new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
+    protected int[] parse(String str) throws SchemaDateTimeException{
+        int len = str.length();
+        int[] date=new int[TOTAL_SIZE];
+        int[] timeZone = new int[2];
 
         //set constants
         date[CY]=YEAR;
         date[D]=DAY;
-        if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-') {
+        if (str.charAt(0)!='-' || str.charAt(1)!='-') {
             throw new SchemaDateTimeException("Invalid format for gMonth: "+str);
         }
-        int stop = fStart +4;
-        date[M]=parseInt(fStart+2,stop);
+        int stop = 4;
+        date[M]=parseInt(str,2,stop);
 
-        if ( MONTH_SIZE<fEnd ) {
-            int sign = findUTCSign(MONTH_SIZE, fEnd);
+        if ( MONTH_SIZE<len ) {
+            int sign = findUTCSign(str, MONTH_SIZE, len);
             if ( sign<0 ) {
                 throw new SchemaDateTimeException ("Error in month parsing: "+str);
             }
             else {
-                getTimeZone(date, sign);
+                getTimeZone(str, date, sign, len, timeZone);
             }
         }
         //validate and normalize
-        validateDateTime(date);
+        validateDateTime(date, timeZone);
 
         if ( date[utc]!=0 && date[utc]!='Z' ) {
-            normalize(date);
+            normalize(date, timeZone);
         }
         return date;
     }
@@ -180,8 +175,7 @@ public class MonthDV extends AbstractDateTimeDV {
      * @return lexical representation of month: --MM with an optional time zone sign
      */
     protected String dateToString(int[] date) {
-
-        message.setLength(0);
+        StringBuffer message = new StringBuffer(5);
         message.append('-');
         message.append('-');
         message.append(date[M]);

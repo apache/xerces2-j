@@ -74,7 +74,7 @@ public class DayDV extends AbstractDateTimeDV {
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
         try{
-            return parse(content, null);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gDay"});
         }
@@ -90,16 +90,12 @@ public class DayDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException {
+    protected int[] parse(String str) throws SchemaDateTimeException {
+        int len = str.length();
+        int[] date=new int[TOTAL_SIZE];
+        int[] timeZone = new int[2];
 
-        resetBuffer(str);
-
-        //create structure to hold an object
-        if ( date== null ) {
-            date=new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
-        if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-' || fBuffer.charAt(2)!='-') {
+        if (str.charAt(0)!='-' || str.charAt(1)!='-' || str.charAt(2)!='-') {
             throw new SchemaDateTimeException ("Error in day parsing");
         }
 
@@ -107,24 +103,23 @@ public class DayDV extends AbstractDateTimeDV {
         date[CY]=YEAR;
         date[M]=MONTH;
 
-        date[D]=parseInt(fStart+3,fStart+5);
+        date[D]=parseInt(str, 3,5);
 
-
-        if ( DAY_SIZE<fEnd ) {
-            int sign = findUTCSign(DAY_SIZE, fEnd);
+        if ( DAY_SIZE<len ) {
+            int sign = findUTCSign(str, DAY_SIZE, len);
             if ( sign<0 ) {
                 throw new SchemaDateTimeException ("Error in day parsing");
             }
             else {
-                getTimeZone(date, sign);
+                getTimeZone(str, date, sign, len, timeZone);
             }
         }
 
        //validate and normalize
-        validateDateTime(date);
+        validateDateTime(date, timeZone);
 
         if ( date[utc]!=0 && date[utc]!='Z' ) {
-            normalize(date);
+            normalize(date, timeZone);
         }
         return date;
     }
@@ -136,7 +131,7 @@ public class DayDV extends AbstractDateTimeDV {
      * @return lexical representation of gDay: ---DD with an optional time zone sign
      */
     protected String dateToString(int[] date) {
-        message.setLength(0);
+        StringBuffer message = new StringBuffer(6);
         message.append('-');
         message.append('-');
         message.append('-');

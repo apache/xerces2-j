@@ -72,7 +72,7 @@ public class DateDV extends DateTimeDV {
 
     public Object getActualValue(String content) throws InvalidDatatypeValueException {
         try{
-            return parse(content, null);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "date"});
         }
@@ -87,29 +87,22 @@ public class DateDV extends DateTimeDV {
      * @return normalized dateTime representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
-        resetBuffer(str);
-        //create structure to hold an object
+    protected int[] parse(String str) throws SchemaDateTimeException{
+        int len = str.length();
+        int[] date = new int[TOTAL_SIZE];
+        int[] timeZone = new int[2];
 
-        if ( date == null ) {
-            date = new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
-        // get date
-
-        getDate(fStart, fEnd, date);
-        parseTimeZone (fEnd, date);
+        int end = getDate(str, 0, len, date);
+        parseTimeZone (str, end, len, date, timeZone);
 
         //validate and normalize
         //REVISIT: do we need SchemaDateTimeException?
-        validateDateTime(date);
+        validateDateTime(date, timeZone);
 
         if ( date[utc]!=0 && date[utc]!='Z' ) {
-            normalize(date);
+            normalize(date, timeZone);
         }
         return date;
     }
 
 }
-
-

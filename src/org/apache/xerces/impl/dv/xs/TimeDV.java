@@ -78,7 +78,7 @@ public class TimeDV extends AbstractDateTimeDV {
      */
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return parse(content, null);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "time"});
         }
@@ -94,31 +94,26 @@ public class TimeDV extends AbstractDateTimeDV {
      * @return normalized time representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
-
-        resetBuffer(str);
-
-        //create structure to hold an object
-        if ( date == null ) {
-            date = new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
+    protected int[] parse(String str) throws SchemaDateTimeException{
+        int len = str.length();
+        int[] date = new int[TOTAL_SIZE];
+        int[] timeZone = new int[2];
 
         // time
         // initialize to default values
         date[CY]=YEAR;
         date[M]=MONTH;
         date[D]=DAY;
-        getTime(fStart, fEnd, date);
+        getTime(str, 0, len, date, timeZone);
 
         //validate and normalize
 
-        validateDateTime(date);
+        validateDateTime(date, timeZone);
 
         if ( date[utc]!=0 ) {
-            normalize(date);
+            normalize(date, timeZone);
         }
-                return date;
+        return date;
     }
 
     /**
@@ -128,7 +123,7 @@ public class TimeDV extends AbstractDateTimeDV {
      * @return lexical representation of time: hh:mm:ss.sss with an optional time zone sign
      */
     protected String dateToString(int[] date) {
-        message.setLength(0);
+        StringBuffer message = new StringBuffer(16);
         message.append(date[h]);
         message.append(':');
         message.append(date[m]);

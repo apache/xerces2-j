@@ -79,7 +79,7 @@ public class YearDV extends AbstractDateTimeDV {
      */
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException{
         try{
-            return parse(content, null);
+            return parse(content);
         } catch(Exception ex){
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "gYear"});
         }
@@ -94,27 +94,23 @@ public class YearDV extends AbstractDateTimeDV {
      * @return normalized date representation
      * @exception SchemaDateTimeException Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
-        resetBuffer(str);
-
-        //create structure to hold an object
-        if ( date == null ) {
-            date = new int[TOTAL_SIZE];
-        }
-        resetDateObj(date);
+    protected int[] parse(String str) throws SchemaDateTimeException{
+        int len = str.length();
+        int[] date = new int[TOTAL_SIZE];
+        int[] timeZone = new int[2];
 
         // check for preceding '-' sign
         int start = 0;
-        if (fBuffer.charAt(0)=='-') {
+        if (str.charAt(0)=='-') {
             start = 1;
         }
-        int sign = findUTCSign(start, fEnd);
+        int sign = findUTCSign(str, start, len);
         if (sign == -1) {
-            date[CY]=parseIntYear(fEnd);
+            date[CY]=parseIntYear(str, len);
         }
         else {
-            date[CY]=parseIntYear(sign);
-            getTimeZone (date, sign);
+            date[CY]=parseIntYear(str, sign);
+            getTimeZone (str, date, sign, len, timeZone);
         }
 
         //initialize values
@@ -122,10 +118,10 @@ public class YearDV extends AbstractDateTimeDV {
         date[D]=1;
 
         //validate and normalize
-        validateDateTime(date);
+        validateDateTime(date, timeZone);
 
         if ( date[utc]!=0 && date[utc]!='Z' ) {
-            normalize(date);
+            normalize(date, timeZone);
         }
         return date;
     }
@@ -137,8 +133,7 @@ public class YearDV extends AbstractDateTimeDV {
      * @return lexical representation of month: CCYY with optional time zone sign
      */
     protected String dateToString(int[] date) {
-
-        message.setLength(0);
+        StringBuffer message = new StringBuffer(5);
         message.append(date[CY]);
         message.append((char)date[utc]);
         return message.toString();

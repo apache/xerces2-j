@@ -94,54 +94,15 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     //date obj size for gMonth datatype (without time zone): --09
     protected final static int MONTH_SIZE = 4;
 
-    //date obj must have at least 6 chars after year (without time zone): "-MM-DD"
-    private final static int YEARMONTH_SIZE = 7;
-
     //define constants to be used in assigning default values for
     //all date/time excluding duration
-    protected final static int YEAR=2001;
+    protected final static int YEAR=2000;
     protected final static int MONTH=01;
     protected final static int DAY = 15;
-
-    //obj to store timeZone for date/time object excluding duration
-    protected int[] timeZone;
-
-    //size of enumeration if any
-    protected int  fEnumSize;
-
-    //size of string buffer
-    protected int fEnd;
-    protected int fStart;
-
-    //storage for string value of date/time object
-    protected StringBuffer fBuffer;
-
-    //obj to store all date/time objects with fields:
-    // {CY, M, D, h, m, s, ms, utc}
-    protected int[] fDateValue;
-    private int[] fTempDate;
-
-    //error message buffer
-    protected StringBuffer message;
-
-    public AbstractDateTimeDV(){
-        initializeValues();
-    }
-
-    protected void initializeValues(){
-        fDateValue = new int[TOTAL_SIZE];
-        fTempDate = new int[TOTAL_SIZE];
-        fEnd = 30;
-        fStart = 0;
-        message = new StringBuffer(TOTAL_SIZE);
-        fBuffer = new StringBuffer(fEnd);
-        timeZone = new int[2];
-    }
 
     public short getAllowedFacets(){
         return ( XSSimpleTypeDecl.FACET_PATTERN | XSSimpleTypeDecl.FACET_WHITESPACE | XSSimpleTypeDecl.FACET_ENUMERATION |XSSimpleTypeDecl.FACET_MAXINCLUSIVE |XSSimpleTypeDecl.FACET_MININCLUSIVE | XSSimpleTypeDecl.FACET_MAXEXCLUSIVE  | XSSimpleTypeDecl.FACET_MINEXCLUSIVE  );
     }//getAllowedFacets()
-
 
     // the parameters are in compiled form (from getActualValue)
     public boolean isEqual(Object value1, Object value2){
@@ -156,19 +117,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     }//compare()
 
     /**
-     * Implemented by each subtype, calling appropriate function to parse
-     * given date/time
-     *
-     * @param content String value of the date/time
-     * @param date    Storage to represent date/time object.
-     *                If null - new object will be created, otherwise
-     *                date will be reset and reused
-     * @return updated date/time object
-     * @exception SchemaDateTimeException
-     */
-     abstract protected int[] parse (String content, int[] date) throws SchemaDateTimeException;
-
-     /**
      * Compare algorithm described in dateDime (3.2.7).
      * Duration datatype overwrites this method
      *
@@ -182,26 +130,29 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             return compareOrder(date1, date2);
         }
         short c1, c2;
+        
+        int[] tempDate = new int[TOTAL_SIZE];
+        int[] timeZone = new int[2];
 
         if ( date1[utc]=='Z' ) {
 
             //compare date1<=date1<=(date2 with time zone -14)
             //
-            cloneDate(date2); //clones date1 value to global temporary storage: fTempDate
+            cloneDate(date2, tempDate); //clones date1 value to global temporary storage: fTempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
-            fTempDate[utc]='+';
-            normalize(fTempDate);
-            c1 = compareOrder(date1, fTempDate);
+            tempDate[utc]='+';
+            normalize(tempDate, timeZone);
+            c1 = compareOrder(date1, tempDate);
 
             //compare date1>=(date2 with time zone +14)
             //
-            cloneDate(date2); //clones date1 value to global temporary storage: fTempDate
+            cloneDate(date2, tempDate); //clones date1 value to global temporary storage: tempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
-            fTempDate[utc]='-';
-            normalize(fTempDate);
-            c2 = compareOrder(date1, fTempDate);
+            tempDate[utc]='-';
+            normalize(tempDate, timeZone);
+            c2 = compareOrder(date1, tempDate);
 
             if ( (c1 < 0 && c2 > 0) ||
                  (c1 == 0 && c2 == 0) ) {
@@ -214,30 +165,30 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
             //compare (date1 with time zone -14)<=date2
             //
-            cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
+            cloneDate(date1, tempDate); //clones date1 value to global temporary storage: tempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
 
-            fTempDate[utc]='-';
+            tempDate[utc]='-';
             if (DEBUG) {
-               System.out.println("fTempDate=" + dateToString(fTempDate));
+               System.out.println("tempDate=" + dateToString(tempDate));
             }
-            normalize(fTempDate);
-            c1 = compareOrder(fTempDate, date2);
+            normalize(tempDate, timeZone);
+            c1 = compareOrder(tempDate, date2);
             if (DEBUG) {
                 System.out.println("date=" + dateToString(date2));
-                System.out.println("fTempDate=" + dateToString(fTempDate));
+                System.out.println("tempDate=" + dateToString(tempDate));
             }
             //compare (date1 with time zone +14)<=date2
             //
-            cloneDate(date1); //clones date1 value to global temporary storage: fTempDate
+            cloneDate(date1, tempDate); //clones date1 value to global temporary storage: tempDate
             timeZone[hh]=14;
             timeZone[mm]=0;
-            fTempDate[utc]='+';
-            normalize(fTempDate);
-            c2 = compareOrder(fTempDate, date2);
+            tempDate[utc]='+';
+            normalize(tempDate, timeZone);
+            c2 = compareOrder(tempDate, date2);
             if (DEBUG) {
-               System.out.println("fTempDate=" + dateToString(fTempDate));
+               System.out.println("tempDate=" + dateToString(tempDate));
             }
             if ( (c1 < 0 && c2 > 0) ||
                  (c1 == 0 && c2 == 0) ) {
@@ -279,35 +230,35 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param data
      * @exception RuntimeException
      */
-    protected  void getTime (int start, int end, int[] data) throws RuntimeException{
+    protected  void getTime (String buffer, int start, int end, int[] data, int[] timeZone) throws RuntimeException{
 
         int stop = start+2;
 
         //get hours (hh)
-        data[h]=parseInt(start,stop);
+        data[h]=parseInt(buffer, start,stop);
 
         //get minutes (mm)
 
-        if (fBuffer.charAt(stop++)!=':') {
+        if (buffer.charAt(stop++)!=':') {
                 throw new RuntimeException("Error in parsing time zone" );
         }
         start = stop;
         stop = stop+2;
-        data[m]=parseInt(start,stop);
+        data[m]=parseInt(buffer, start,stop);
 
         //get seconds (ss)
-        if (fBuffer.charAt(stop++)!=':') {
+        if (buffer.charAt(stop++)!=':') {
                 throw new RuntimeException("Error in parsing time zone" );
         }
         start = stop;
         stop = stop+2;
-        data[s]=parseInt(start,stop);
+        data[s]=parseInt(buffer, start,stop);
 
         //get miliseconds (ms)
-        int milisec = indexOf(start, end, '.');
+        int milisec = indexOf(buffer, start, end, '.');
 
         //find UTC sign if any
-        int sign = findUTCSign((milisec!=-1)?milisec:start, end);
+        int sign = findUTCSign(buffer, (milisec!=-1)?milisec:start, end);
 
         //parse miliseconds
         if ( milisec != -1 ) {
@@ -315,19 +266,19 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             if ( sign<0 ) {
 
                 //get all digits after "."
-                data[ms]=parseInt(milisec+1,fEnd);
+                data[ms]=parseInt(buffer, milisec+1, buffer.length());
             }
             else {
 
                 //get ms before UTC sign
-                data[ms]=parseInt(milisec+1,sign);
+                data[ms]=parseInt(buffer, milisec+1,sign);
             }
 
         }
 
         //parse UTC time zone (hh:mm)
         if ( sign>0 ) {
-            getTimeZone(data,sign);
+            getTimeZone(buffer, data, sign, end, timeZone);
         }
     }
 
@@ -339,16 +290,16 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param data
      * @exception RuntimeException
      */
-    protected void getDate (int start, int end, int[] date) throws RuntimeException{
+    protected int getDate (String buffer, int start, int end, int[] date) throws RuntimeException{
 
-        getYearMonth(start, end, date);
+        start = getYearMonth(buffer, start, end, date);
 
-        if (fBuffer.charAt(fStart++) !='-') {
+        if (buffer.charAt(start++) !='-') {
             throw new RuntimeException("CCYY-MM must be followed by '-' sign");
         }
-        int stop = fStart + 2;
-        date[D]=parseInt(fStart, stop);
-        fStart = stop;  //fStart points right after the Day
+        int stop = start + 2;
+        date[D]=parseInt(buffer, start, stop);
+        return stop;
     }
 
     /**
@@ -359,31 +310,31 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param data
      * @exception RuntimeException
      */
-    protected void getYearMonth (int start, int end, int[] date) throws RuntimeException{
+    protected int getYearMonth (String buffer, int start, int end, int[] date) throws RuntimeException{
 
-        if ( fBuffer.charAt(0)=='-' ) {
+        if ( buffer.charAt(0)=='-' ) {
             // REVISIT: date starts with preceding '-' sign
             //          do we have to do anything with it?
             //
             start++;
         }
-        int i = indexOf(start, end, '-');
+        int i = indexOf(buffer, start, end, '-');
         if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced");
         int length = i-start;
         if (length<4) {
             throw new RuntimeException("Year must have 'CCYY' format");
         }
-        else if (length > 4 && fBuffer.charAt(start)=='0'){
+        else if (length > 4 && buffer.charAt(start)=='0'){
             throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden");
         }
-        date[CY]= parseIntYear(i);
-        if (fBuffer.charAt(i)!='-') {
+        date[CY]= parseIntYear(buffer, i);
+        if (buffer.charAt(i)!='-') {
             throw new RuntimeException("CCYY must be followed by '-' sign");
         }
         start = ++i;
         i = start +2;
-        date[M]=parseInt(start, i);
-        fStart = i; //fStart points right after the MONTH
+        date[M]=parseInt(buffer, start, i);
+        return i; //fStart points right after the MONTH
     }
 
     /**
@@ -394,17 +345,17 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param date
      * @exception RuntimeException
      */
-    protected void parseTimeZone (int end, int[] date) throws RuntimeException{
+    protected void parseTimeZone (String buffer, int start, int end, int[] date, int[] timeZone) throws RuntimeException{
 
         //fStart points right after the date
 
-        if ( fStart<fEnd ) {
-            int sign = findUTCSign(fStart, fEnd);
+        if ( start<end ) {
+            int sign = findUTCSign(buffer, start, end);
             if ( sign<0 ) {
                 throw new RuntimeException ("Error in month parsing");
             }
             else {
-                getTimeZone(date, sign);
+                getTimeZone(buffer, date, sign, end, timeZone);
             }
         }
     }
@@ -416,28 +367,28 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param sign
      * @exception RuntimeException
      */
-    protected void getTimeZone (int[] data, int sign) throws RuntimeException{
-        data[utc]=fBuffer.charAt(sign);
+    protected void getTimeZone (String buffer, int[] data, int sign, int end, int[] timeZone) throws RuntimeException{
+        data[utc]=buffer.charAt(sign);
 
-        if ( fBuffer.charAt(sign) == 'Z' ) {
-            if (fEnd>(++sign)) {
+        if ( buffer.charAt(sign) == 'Z' ) {
+            if (end>(++sign)) {
                 throw new RuntimeException("Error in parsing time zone");
             }
             return;
         }
-        if ( sign<=(fEnd-6) ) {
+        if ( sign<=(end-6) ) {
 
             //parse [hh]
             int stop = ++sign+2;
-            timeZone[hh]=parseInt(sign, stop);
-            if (fBuffer.charAt(stop++)!=':') {
+            timeZone[hh]=parseInt(buffer, sign, stop);
+            if (buffer.charAt(stop++)!=':') {
                 throw new RuntimeException("Error in parsing time zone" );
             }
 
             //parse [ss]
-            timeZone[mm]=parseInt(stop, stop+2);
+            timeZone[mm]=parseInt(buffer, stop, stop+2);
 
-            if ( stop+2!=fEnd ) {
+            if ( stop+2!=end ) {
                 throw new RuntimeException("Error in parsing time zone");
             }
 
@@ -458,9 +409,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param ch     character to look for in StringBuffer
      * @return index of ch within StringBuffer
      */
-    protected  int indexOf (int start, int end, char ch) {
+    protected  int indexOf (String buffer, int start, int end, char ch) {
         for ( int i=start;i<end;i++ ) {
-            if ( fBuffer.charAt(i) == ch ) {
+            if ( buffer.charAt(i) == ch ) {
                 return i;
             }
         }
@@ -473,7 +424,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      *
      * @param data
      */
-    protected void validateDateTime (int[]  data) {
+    protected void validateDateTime (int[] data, int[] timeZone) {
 
         //REVISIT: should we throw an exception for not valid dates
         //          or reporting an error message should be sufficient?
@@ -526,10 +477,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param end
      * @return index of the UTC character that was found
      */
-    protected int findUTCSign (int start, int end) {
+    protected int findUTCSign (String buffer, int start, int end) {
         int c;
         for ( int i=start;i<end;i++ ) {
-            c=fBuffer.charAt(i);
+            c=buffer.charAt(i);
             if ( c == 'Z' || c=='+' || c=='-' ) {
                 return i;
             }
@@ -546,7 +497,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param end    end position
      * @return  return integer representation of characters
      */
-    protected  int parseInt (int start, int end)
+    protected  int parseInt (String buffer, int start, int end)
     throws NumberFormatException{
         //REVISIT: more testing on this parsing needs to be done.
         int radix=10;
@@ -556,11 +507,11 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         int multmin = limit / radix;
         int i = start;
         do {
-            digit = Character.digit(fBuffer.charAt(i),radix);
-            if ( digit < 0 ) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
-            if ( result < multmin ) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            digit = getDigit(buffer.charAt(i));
+            if ( digit < 0 ) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+            if ( result < multmin ) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
             result *= radix;
-            if ( result < limit + digit ) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            if ( result < limit + digit ) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
             result -= digit;
 
         }while ( ++i < end );
@@ -568,7 +519,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
     }
 
     // parse Year differently to support negative value.
-    protected int parseIntYear (int end){
+    protected int parseIntYear (String buffer, int end){
         int radix=10;
         int result = 0;
         boolean negative = false;
@@ -577,7 +528,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         int multmin;
         int digit=0;
 
-        if (fBuffer.charAt(0) == '-'){
+        if (buffer.charAt(0) == '-'){
             negative = true;
             limit = Integer.MIN_VALUE;
             i++;
@@ -589,18 +540,18 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         multmin = limit / radix;
         while (i < end)
         {
-            digit = Character.digit(fBuffer.charAt(i++),radix);
-            if (digit < 0) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
-            if (result < multmin) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            digit = getDigit(buffer.charAt(i++));
+            if (digit < 0) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
+            if (result < multmin) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
             result *= radix;
-            if (result < limit + digit) throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            if (result < limit + digit) throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
             result -= digit;
         }
 
         if (negative)
         {
             if (i > 1) return result;
-            else throw new NumberFormatException("'"+fBuffer.toString()+"' has wrong format");
+            else throw new NumberFormatException("'"+buffer.toString()+"' has wrong format");
         }
         return -result;
 
@@ -612,7 +563,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
      * @param date   CCYY-MM-DDThh:mm:ss+03
      * @return CCYY-MM-DDThh:mm:ssZ
      */
-    protected  void normalize (int[] date) {
+    protected  void normalize (int[] date, int[] timeZone) {
 
         // REVISIT: we have common code in addDuration() for durations
         //          should consider reorganizing it.
@@ -665,21 +616,6 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         date[utc]='Z';
     }
 
-
-    /**
-     * Resets fBuffer to store string representation of
-     * date/time
-     *
-     * @param str    Lexical representation of date/time
-     */
-    protected void resetBuffer (String str) {
-        fBuffer.setLength(0);
-        fStart=fEnd=0;
-        timeZone[hh]=timeZone[mm]=0;
-        fBuffer.append(str);
-        fEnd = fBuffer.length();
-
-    }
 
     /**
      * Resets object representation of date/time
@@ -762,7 +698,7 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 
 
     protected String dateToString(int[] date) {
-        message.setLength(0);
+        StringBuffer message = new StringBuffer(25);
         message.append(date[CY]);
         message.append('-');
         message.append(date[M]);
@@ -780,27 +716,12 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         return message.toString();
     }
 
-
-    /**
-     * Use this function to report errors in constructor
-     *
-     * @param msg
-     * @param value
-     */
-    protected void reportError(String msg, String value) {
-        System.err.println("[Error]: " +msg+": Value  '"+value+"' is not legal for current datatype");
-    }
-
-
     //
     //Private help functions
     //
 
-    private void cloneDate (int[] finalValue) {
-        resetDateObj(fTempDate);
-        for ( int i=0;i<TOTAL_SIZE;i++ ) {
-            fTempDate[i]=finalValue[i];
-        }
+    private void cloneDate (int[] finalValue, int[] tempDate) {
+        System.arraycopy(finalValue, 0, tempDate, 0, TOTAL_SIZE);
     }
 
 }
