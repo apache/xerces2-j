@@ -233,56 +233,21 @@ public class XMLDTDScanner
     public boolean scanDTD(boolean complete)
         throws IOException, SAXException {
 
-        // set starting state
-        setScannerState(SCANNER_STATE_TEXT_DECL);
-
-        fSeenExternalDTD = true;
-
-        scanTextDecl(complete);
-
-        if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
-            return false;
-        }
-
-        // next state is markup decls regardless of whether there
-        // is a TextDecl or not
-        setScannerState(SCANNER_STATE_MARKUP_DECL);
-
-        // keep dispatching "events"
-        while (complete) {
-            if (!scanDecls(complete)) {
+        if (fScannerState == SCANNER_STATE_TEXT_DECL) {
+            fSeenExternalDTD = true;
+            boolean more = scanTextDecl(complete);
+            if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
                 return false;
             }
+            else if (!more || !complete) {
+                return more;
+            }
+            else {
+                // next state is markup decls regardless of whether there
+                // is a TextDecl or not
+                setScannerState(SCANNER_STATE_MARKUP_DECL);
+            }
         }
-
-        // return that there is more to scan
-        return true;
-
-    } // scanDTD
-
-    /**
-     * scanDTDFragment
-     * 
-     * @param complete Whether to parse to completion or just a piece of it.
-     * 
-     * @return Whether there is more to parse or not.
-     */
-    public boolean scanDTDFragment(boolean complete)
-        throws IOException, SAXException {
-
-        // set starting state
-        setScannerState(SCANNER_STATE_TEXT_DECL);
-
-        scanTextDecl(complete);
-
-        if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
-            return false;
-        }
-
-        // next state is markup decls regardless of whether there
-        // is a TextDecl or not
-        setScannerState(SCANNER_STATE_MARKUP_DECL);
-
         // keep dispatching "events"
         do {
             if (!scanDecls(complete)) {
@@ -293,7 +258,7 @@ public class XMLDTDScanner
         // return that there is more to scan
         return true;
 
-    } // scanDTDFragment
+    } // scanDTD
 
     /**
      * Scan an internal subset (starting after '[' and ending at ']').
@@ -306,15 +271,15 @@ public class XMLDTDScanner
                                          boolean hasExtDTD)
         throws IOException, SAXException {
 
-        // call handler
-        if (fDTDHandler != null) {
-            fDTDHandler.startDTD();
-            fStartDTDCalled = true;
+        if (fScannerState == SCANNER_STATE_TEXT_DECL) {
+            // call handler
+            if (fDTDHandler != null) {
+                fDTDHandler.startDTD();
+                fStartDTDCalled = true;
+            }
+            // set starting state for internal subset
+            setScannerState(SCANNER_STATE_MARKUP_DECL);
         }
-
-        // set starting state
-        setScannerState(SCANNER_STATE_MARKUP_DECL);
-
         // keep dispatching "events"
         do {
             if (!scanDecls(complete)) {
@@ -322,7 +287,8 @@ public class XMLDTDScanner
                 if (fDTDHandler != null && hasExtDTD == false) {
                     fDTDHandler.endDTD();
                 }
-                // we're done
+                // we're done, set starting state for external subset
+                setScannerState(SCANNER_STATE_TEXT_DECL);
                 return false;
             }
         } while (complete);
@@ -360,6 +326,9 @@ public class XMLDTDScanner
         fStandalone = false;
         fSeenExternalDTD = false;
         fSeenExternalPE = false;
+
+        // set starting state
+        setScannerState(SCANNER_STATE_TEXT_DECL);
 
     } // reset
 
