@@ -983,18 +983,18 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
+                if (fDocumentTypeIndex == -1) {
+                    fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
+                    fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
+                }
                 if (fGrammarAccess) {
                     // REVISIT: How do we know which grammar is in use?
                     //Document schemaDocument = fValidator.getSchemaDocument();
-                    if (fGrammarResolver.size() > 0) {
+                    int size = fGrammarResolver.size();
+                    if (size > 0) {
                         Enumeration schemas = fGrammarResolver.nameSpaceKeys();
                         Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
                         if (schemaDocument != null) {
-                            if (fDocumentTypeIndex == -1) {
-                                fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
-                                fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
-                            }
-
                             Element schema = schemaDocument.getDocumentElement();
                             copyInto(schema, fDocumentTypeIndex);
                         }
@@ -1076,20 +1076,19 @@ public class DOMParser
             // copy schema grammar, if needed
             if (!fSeenRootElement) {
                 fSeenRootElement = true;
+                if (fDocumentType == null) {
+                    String rootName = elementName;
+                    String systemId = ""; // REVISIT: How do we get this value? -Ac
+                    String publicId = ""; // REVISIT: How do we get this value? -Ac
+                    fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
+                    fDocument.appendChild(fDocumentType);
+                }
                 if (fDocumentImpl != null && fGrammarAccess)  {
                     //Document schemaDocument = fValidator.getSchemaDocument();
                     if (fGrammarResolver.size() > 0) {
                         Enumeration schemas = fGrammarResolver.nameSpaceKeys();
                         Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
                         if (schemaDocument != null) {
-                            if (fDocumentType == null) {
-                                String rootName = elementName;
-                                String systemId = ""; // REVISIT: How do we get this value? -Ac
-                                String publicId = ""; // REVISIT: How do we get this value? -Ac
-                                fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
-                                fDocument.appendChild(fDocumentType);
-                            }
-
                             Element schema = schemaDocument.getDocumentElement();
                             XUtil.copyInto(schema, fDocumentType);
                         }
