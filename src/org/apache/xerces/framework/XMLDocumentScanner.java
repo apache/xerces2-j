@@ -800,6 +800,10 @@ public final class XMLDocumentScanner {
                                                 XMLMessages.P22_INVALID_CHARACTER,
                                                 arg);
                         }
+                    } else {
+                        fDispatcher = new EndOfInputDispatcher();
+                        setScannerState(SCANNER_STATE_END_OF_INPUT);
+                        return true;
                     }
                 } else {
                     reportFatalXMLError(XMLMessages.MSG_MARKUP_NOT_RECOGNIZED_IN_PROLOG,
