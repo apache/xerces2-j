@@ -47,17 +47,19 @@ public final class  HexBin {
            hexNumberTable[i] = (byte) ( i-'a' + 10 );
         }
 
-        for(int i = 0; i<10; i++ )
+        for(int i = 0; i<10; i++ ) {
             lookUpHexAlphabet[i] = (char)('0'+i);
-        for(int i = 10; i<=15; i++ )
+        }
+        for(int i = 10; i<=15; i++ ) {
             lookUpHexAlphabet[i] = (char)('A'+i -10);
+        }
     }
 
     /**
      * Encode a byte array to hex string
      *
-     * @param binaryData  array of byte to encode
-     * @return return     encoded string
+     * @param binaryData array of byte to encode
+     * @return return encoded string
      */
     static public String encode(byte[] binaryData) {
         if (binaryData == null)
@@ -79,8 +81,8 @@ public final class  HexBin {
     /**
      * Decode hex string to a byte array
      *
-     * @param encoded  encoded string
-     * @return return     array of byte to encode
+     * @param encoded encoded string
+     * @return return array of byte to encode
      */
     static public byte[] decode(String encoded) {
         if (encoded == null)
@@ -93,11 +95,14 @@ public final class  HexBin {
         int lengthDecode = lengthData / 2;
         byte[] decodedData = new byte[lengthDecode];
         byte temp1, temp2;
+        char tempChar;
         for( int i = 0; i<lengthDecode; i++ ){
-            temp1 = hexNumberTable[binaryData[i*2]];
+            tempChar = binaryData[i*2];
+            temp1 = (tempChar < BASELENGTH) ? hexNumberTable[tempChar] : -1;
             if (temp1 == -1)
                 return null;
-            temp2 = hexNumberTable[binaryData[i*2+1]];
+            tempChar = binaryData[i*2+1];
+            temp2 = (tempChar < BASELENGTH) ? hexNumberTable[tempChar] : -1;
             if (temp2 == -1)
                 return null;
             decodedData[i] = (byte)((temp1 << 4) | temp2);
