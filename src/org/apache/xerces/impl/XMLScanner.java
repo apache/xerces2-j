@@ -127,6 +127,9 @@ public abstract class XMLScanner
     /** String buffer. */
     protected XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
+    /** Array of 3 strings. */
+    protected String[] fStrings = new String[3];
+
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
     
@@ -171,11 +174,6 @@ public abstract class XMLScanner
 
     /** Symbol: "apos". */
     protected String fAposSymbol;
-
-    // pseudo-attribute values
-
-    /** Pseudo-attribute string buffer. */
-    private XMLStringBuffer fPseudoAttrStringBuffer = new XMLStringBuffer();
 
     //
     // XMLComponent methods
@@ -390,7 +388,7 @@ public abstract class XMLScanner
      *
      * @return The name of the attribute
      *
-     * <strong>Note:</strong> This method uses fPseudoAttrStringBuffer, anything in it
+     * <strong>Note:</strong> This method uses fStringBuffer2, anything in it
      * at the time of calling is lost.
      */
     public String scanPseudoAttribute(boolean scanningTextDecl, 
@@ -413,12 +411,12 @@ public abstract class XMLScanner
         fEntityScanner.scanChar();
         int c = fEntityScanner.scanLiteral(quote, value);
         if (c != quote) {
-            fPseudoAttrStringBuffer.clear();
+            fStringBuffer2.clear();
             do {
-                fPseudoAttrStringBuffer.append(value);
+                fStringBuffer2.append(value);
                 if (c != -1) {
                     if (c == '&' || c == '%' || c == '<' || c == ']') {
-                        fPseudoAttrStringBuffer.append((char)fEntityScanner.scanChar());
+                        fStringBuffer2.append((char)fEntityScanner.scanChar());
                     }
                     else if (XMLChar.isInvalid(c)) {
                         String key = scanningTextDecl 
@@ -431,8 +429,8 @@ public abstract class XMLScanner
                 }
                 c = fEntityScanner.scanLiteral(quote, value);
             } while (c != quote);
-            fPseudoAttrStringBuffer.append(value);
-            value.setValues(fPseudoAttrStringBuffer);
+            fStringBuffer2.append(value);
+            value.setValues(fStringBuffer2);
         }
         if (!fEntityScanner.skipChar(quote)) {
             reportFatalError("CloseQuoteMissingInTextDecl",
@@ -724,6 +722,75 @@ public abstract class XMLScanner
 
 
     /**
+     * Scans External ID and return the public and system IDs.
+     *
+     * @param identifiers An array of size 2 to return the system id,
+     *                    and public id (in that order).
+     * @param optionalSystemId Specifies whether the system id is optional.
+     *
+     * <strong>Note:</strong> This method uses fString and fStringBuffer,
+     * anything in them at the time of calling is lost.
+     */
+    protected void scanExternalID(String[] identifiers,
+                                  boolean optionalSystemId)
+        throws IOException, SAXException {
+
+        String systemId = null;
+        String publicId = null;
+        if (fEntityScanner.skipString("PUBLIC")) {
+            if (!fEntityScanner.skipSpaces()) {
+                reportFatalError("SpaceRequiredAfterPUBLIC", null);
+            }
+            scanPubidLiteral(fString);
+            publicId = fString.toString();
+
+            if (!fEntityScanner.skipSpaces() && !optionalSystemId) {
+                reportFatalError("SpaceRequiredBetweenPublicAndSystem", null);
+            }
+        }
+
+        if (publicId != null || fEntityScanner.skipString("SYSTEM")) {
+            if (publicId == null && !fEntityScanner.skipSpaces()) {
+                reportFatalError("SpaceRequiredAfterSYSTEM", null);
+            }
+            int quote = fEntityScanner.peekChar();
+            if (quote != '\'' && quote != '"') {
+                if (publicId != null && optionalSystemId) {
+                    // looks like we don't have any system id
+                    // simply return the public id
+                    identifiers[0] = null;
+                    identifiers[1] = publicId;
+                    return;
+                }
+                reportFatalError("QuoteRequiredInSystemID", null);
+            }
+            fEntityScanner.scanChar();
+            XMLString ident = fString;
+            if (fEntityScanner.scanLiteral(quote, ident) != quote) {
+                fStringBuffer.clear();
+                do {
+                    fStringBuffer.append(ident);
+                    int c = fEntityScanner.peekChar();
+                    if (XMLChar.isMarkup(c) || c == ']') {
+                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                    }
+                } while (fEntityScanner.scanLiteral(quote, ident) != quote);
+                fStringBuffer.append(ident);
+                ident = fStringBuffer;
+            }
+            systemId = ident.toString();
+            if (!fEntityScanner.skipChar(quote)) {
+                reportFatalError("SystemIDUnterminated", null);
+            }
+        }
+
+        // store result in array
+        identifiers[0] = systemId;
+        identifiers[1] = publicId;
+    }
+
+
+    /**
      * Scans public ID literal.
      *
      * [12] PubidLiteral ::= '"' PubidChar* '"' | "'" (PubidChar - "'")* "'" 
@@ -738,6 +805,9 @@ public abstract class XMLScanner
      *
      * @param literal The string to fill in with the public ID literal.
      * @returns True on success.
+     *
+     * <strong>Note:</strong> This method uses fStringBuffer, anything in it at
+     * the time of calling is lost.
      */
     protected boolean scanPubidLiteral(XMLString literal)
         throws IOException, SAXException
