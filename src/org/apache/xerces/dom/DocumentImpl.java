@@ -82,11 +82,11 @@ import org.apache.xerces.dom.events.*;
  * <p>
  * The DocumentImpl class also implements the DOM Level 2 DocumentTraversal
  * interface. This interface is comprised of factory methods needed to
- * create NodeIterators and TreeWalkers. The process of creating these
- * traversal objects also adds these references to this document.
- * After finishing with the It is important to remove the traversal objects
+ * create NodeIterators and TreeWalkers. The process of creating NodeIterator
+ * objects also adds these references to this document.
+ * After finishing with an iterator it is important to remove the object
  * using the remove methods in this implementation. This allows the release of
- * all the references from the traversal objects to the DOM Nodes.
+ * the references from the iterator objects to the DOM Nodes.
  * <p>
  * <b>Note:</b> When any node in the document is serialized, the
  * entire document is serialized along with it.
@@ -124,10 +124,6 @@ public class DocumentImpl
     // REVISIT: Should this be transient? -Ac
     protected Vector iterators;
 
-    /** Tree walkers */
-    // REVISIT: Should this be transient? -Ac
-    protected Vector treeWalkers;
-	
      /** Ranges */
     // REVISIT: Should this be transient? -Ac
     protected Vector ranges;
@@ -260,7 +256,6 @@ public class DocumentImpl
         //newdoc.identifiers = (Hashtable)identifiers.clone(); // WRONG!
         newdoc.identifiers = null;
         newdoc.iterators = null;
-        newdoc.treeWalkers = null;
         newdoc.ranges = null;
         newdoc.userData = null;
 
@@ -1109,12 +1104,7 @@ public class DocumentImpl
 
     /**
      * NON-DOM extension:
-     * Create and return a TreeWalker. The TreeWalker is
-     * added to a list of TreeWalkers so that it can be
-     * removed to free up the DOM Nodes it references.
-     * @see #removeTreeWalker
-     * @see #removeTreeWalkers
-     * @see #getTreeWalkers
+     * Create and return a TreeWalker.
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -1127,12 +1117,7 @@ public class DocumentImpl
         return createTreeWalker(root,whatToShow,filter,true);
     }
     /**
-     * Create and return a TreeWalker. The TreeWalker is
-     * added to a list of TreeWalkers so that it can be
-     * removed to free up the DOM Nodes it references.
-     * @see #removeTreeWalker
-     * @see #removeTreeWalkers
-     * @see #getTreeWalkers
+     * Create and return a TreeWalker.
      *
      * @param root The root of the iterator.
      * @param whatToShow The whatToShow mask.
@@ -1155,12 +1140,6 @@ public class DocumentImpl
                                                    whatToShow,
                                                    filter,
                                                    entityReferenceExpansion);
-        if (treeWalkers == null) {
-            treeWalkers = new Vector();
-        }
-
-        treeWalkers.addElement(treeWalker);
-
         return treeWalker;
     }
 
@@ -1182,15 +1161,6 @@ public class DocumentImpl
         iterators.removeElement(nodeIterator);
     }
 
-    /** Remove a TreeWalker from the list of TreeWalkers. */
-    public void removeTreeWalker(TreeWalker treeWalker) {
-
-        if (treeWalker == null) return;
-        if (treeWalkers == null) return;
-
-        treeWalkers.removeElement(treeWalker);
-    }
-
     /** Return an Enumeration of all NodeIterators. */
     public Enumeration getNodeIterators() {
         if (iterators == null) return null;
@@ -1198,13 +1168,6 @@ public class DocumentImpl
         return iterators.elements();
     }
 
-    /** Return an Enumeration of all TreeWalkers. */
-    public Enumeration getTreeWalkers() {
-        if (treeWalkers == null) return null;
-
-        return treeWalkers.elements();
-    }
-    
     //
     // DocumentRange methods
     //
