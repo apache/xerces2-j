@@ -212,6 +212,11 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
+    // returns the fBaseValidators Vector; added so that
+    // 2.2.4 of SchemaStructures spec section 3.14.6 can be implemented.
+    public Vector getBaseValidators() {
+        return fBaseValidators;
+    }
 
     /**
     * check if enum is subset of fEnumeration

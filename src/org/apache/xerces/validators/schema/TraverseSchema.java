@@ -412,10 +412,18 @@ public class TraverseSchema implements
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
         fAttributeDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
-        fBlockDefault = 
-            parseBlockSet(root.getAttribute(SchemaSymbols.ATT_BLOCKDEFAULT));
-        fFinalDefault = 
-            parseFinalSet(root.getAttribute(SchemaSymbols.ATT_FINALDEFAULT));
+        Attr blockAttr = root.getAttributeNode(SchemaSymbols.ATT_BLOCKDEFAULT);
+        if (blockAttr == null) 
+            fBlockDefault = 0;
+        else
+            fBlockDefault = 
+                parseBlockSet(blockAttr.getValue());
+        Attr finalAttr = root.getAttributeNode(SchemaSymbols.ATT_FINALDEFAULT);
+        if (finalAttr == null) 
+            fFinalDefault = 0;
+        else
+            fFinalDefault = 
+                parseFinalSet(finalAttr.getValue());
         
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
@@ -743,10 +751,18 @@ public class TraverseSchema implements
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
         fAttributeDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
-        fBlockDefault = 
-            parseBlockSet(root.getAttribute(SchemaSymbols.ATT_BLOCKDEFAULT));
-        fFinalDefault = 
-            parseFinalSet(root.getAttribute(SchemaSymbols.ATT_FINALDEFAULT));
+        Attr blockAttr = root.getAttributeNode(SchemaSymbols.ATT_BLOCKDEFAULT);
+        if (blockAttr == null) 
+            fBlockDefault = 0;
+        else
+            fBlockDefault = 
+                parseBlockSet(blockAttr.getValue());
+        Attr finalAttr = root.getAttributeNode(SchemaSymbols.ATT_FINALDEFAULT);
+        if (finalAttr == null) 
+            fFinalDefault = 0;
+        else
+            fFinalDefault = 
+                parseFinalSet(finalAttr.getValue());
         
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
@@ -1489,7 +1505,10 @@ public class TraverseSchema implements
             return fStringPool.addSymbol(qualifiedName);
         }
         
-        int finalProperty = parseFinalSet(simpleTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
+        Attr finalAttr = simpleTypeDecl.getAttributeNode(SchemaSymbols.ATT_FINAL);
+        int finalProperty = 0;
+        if(finalAttr != null) 
+            finalProperty = parseFinalSet(finalAttr.getValue());
         // REVISIT:  is "extension" allowed???
         
         // if we have a nonzero final , store it in the hash...
@@ -2132,8 +2151,14 @@ public class TraverseSchema implements
         // Get the attributes of the type
         // ------------------------------------------------------------------
         String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
-        String blockSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_BLOCK );
-        String finalSet = complexTypeDecl.getAttribute( SchemaSymbols.ATT_FINAL );
+        String blockSet = null;
+        Attr blockAttr = complexTypeDecl.getAttributeNode( SchemaSymbols.ATT_BLOCK );
+        if (blockAttr != null)
+            blockSet = blockAttr.getValue();
+        String finalSet = null;
+        Attr finalAttr = complexTypeDecl.getAttributeNode( SchemaSymbols.ATT_FINAL );
+        if (finalAttr != null)
+            finalSet = finalAttr.getValue();
         String typeId = complexTypeDecl.getAttribute( SchemaSymbols.ATTVAL_ID );
         String typeName = complexTypeDecl.getAttribute(SchemaSymbols.ATT_NAME); 
         String mixed = complexTypeDecl.getAttribute(SchemaSymbols.ATT_MIXED);
@@ -2225,7 +2250,7 @@ public class TraverseSchema implements
           }
           typeInfo.blockSet = parseBlockSet(blockSet); 
           // make sure block's value was absent, #all or in {extension, restriction}
-          if( !blockSet.equals("") &&
+          if( (blockSet != null ) && !blockSet.equals("") &&
                 (!blockSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((typeInfo.blockSet & SchemaSymbols.RESTRICTION) == 0) && 
                 ((typeInfo.blockSet & SchemaSymbols.EXTENSION) == 0))))  
@@ -2233,7 +2258,7 @@ public class TraverseSchema implements
 
           typeInfo.finalSet = parseFinalSet(finalSet); 
           // make sure final's value was absent, #all or in {extension, restriction}
-          if( !finalSet.equals("") &&
+          if( (finalSet != null ) && !finalSet.equals("") &&
                 (!finalSet.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((typeInfo.finalSet & SchemaSymbols.RESTRICTION) == 0) && 
                 ((typeInfo.finalSet & SchemaSymbols.EXTENSION) == 0))))  
@@ -4093,17 +4118,23 @@ public class TraverseSchema implements
         }
         
         // parse out 'block', 'final', 'nullable', 'abstract'
-        String blockSetStr = elementDecl.getAttribute(SchemaSymbols.ATT_BLOCK);
+        String blockSetStr = null;
+        Attr blockAttr = elementDecl.getAttributeNode( SchemaSymbols.ATT_BLOCK );
+        if (blockAttr != null)
+            blockSetStr = blockAttr.getValue();
         int blockSet = parseBlockSet(blockSetStr);
-        if( !blockSetStr.equals("") &&
+        if( (blockSetStr != null) && !blockSetStr.equals("") &&
                 (!blockSetStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((blockSet & SchemaSymbols.RESTRICTION) == 0) && 
                 (((blockSet & SchemaSymbols.EXTENSION) == 0) &&
                 ((blockSet & SchemaSymbols.SUBSTITUTION) == 0)))))  
             reportGenericSchemaError("The values of the 'block' attribute of an element must be either #all or a list of 'substitution', 'restriction' and 'extension'; " + blockSetStr + " was found");
-        String finalSetStr = elementDecl.getAttribute(SchemaSymbols.ATT_FINAL);
+        String finalSetStr = null;
+        Attr finalAttr = elementDecl.getAttributeNode( SchemaSymbols.ATT_FINAL );
+        if (finalAttr != null)
+            finalSetStr = finalAttr.getValue();
         int finalSet = parseFinalSet(finalSetStr);
-        if( !finalSetStr.equals("") &&
+        if( (finalSetStr != null) && !finalSetStr.equals("") &&
                 (!finalSetStr.equals(SchemaSymbols.ATTVAL_POUNDALL) &&
                 (((finalSet & SchemaSymbols.RESTRICTION) == 0) && 
                 ((finalSet & SchemaSymbols.EXTENSION) == 0))))  
@@ -4983,9 +5014,31 @@ public class TraverseSchema implements
                         if(dTemp == substitutionGroupEltDV) break;
                     }
                     if (dTemp == null) {
-                        // REVISIT:  localize
-                        reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
-                        noErrorSoFar = false;
+                        if(typeInfo.baseDataTypeValidator instanceof UnionDatatypeValidator) {
+                            // dv must derive from one of its members...
+                            Vector subUnionMemberDV = ((UnionDatatypeValidator)typeInfo.baseDataTypeValidator).getBaseValidators();
+                            int subUnionSize = subUnionMemberDV.size();
+                            boolean found = false;
+                            for (int i=0; i<subUnionSize && !found; i++) {
+                                DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
+                                for(; dTempSub != null; dTempSub = dTempSub.getBaseValidator()) {
+                                    // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                                    if(dTempSub == typeInfo.baseDataTypeValidator) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(!found) {
+                                // REVISIT:  localize
+                                reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                                noErrorSoFar = false;
+                            }
+                        } else {
+                            // REVISIT:  localize
+                            reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                            noErrorSoFar = false;
+                        }
                     } else { // now let's see if substitutionGroup element allows this:
                         if((derivationMethod & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                             noErrorSoFar = false;
@@ -5026,9 +5079,31 @@ public class TraverseSchema implements
                 if(dTemp == substitutionGroupEltDV) break;
             }
             if (dTemp == null) {
-                // REVISIT:  localize
-                reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
-                noErrorSoFar = false;
+                if(substitutionGroupEltDV instanceof UnionDatatypeValidator) {
+                    // dv must derive from one of its members...
+                    Vector subUnionMemberDV = ((UnionDatatypeValidator)substitutionGroupEltDV).getBaseValidators();
+                    int subUnionSize = subUnionMemberDV.size();
+                    boolean found = false;
+                    for (int i=0; i<subUnionSize && !found; i++) {
+                        DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i); 
+                        for(; dTempSub != null; dTempSub = dTempSub.getBaseValidator()) {
+                            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+                            if(dTempSub == substitutionGroupEltDV) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(!found) {
+                        // REVISIT:  localize
+                        reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                        noErrorSoFar = false;
+                    }
+                } else {
+                    // REVISIT:  localize
+                    reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                    noErrorSoFar = false;
+                }
             } else { // now let's see if substitutionGroup element allows this:
                 if((SchemaSymbols.RESTRICTION & fSchemaGrammar.getElementDeclFinalSet(substitutionGroupElementDeclIndex)) != 0) {
                     noErrorSoFar = false;
@@ -5984,7 +6059,9 @@ public class TraverseSchema implements
 
     private int parseBlockSet (String blockString)  throws Exception
     {
-            if ( blockString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
+            if( blockString == null) 
+                return fBlockDefault;
+            else if ( blockString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
                     return SchemaSymbols.SUBSTITUTION+SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
             } else {
                     int extend = 0;
@@ -6045,7 +6122,9 @@ public class TraverseSchema implements
 
     private int parseFinalSet (String finalString)  throws Exception
     {
-            if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
+            if( finalString == null) 
+                return fFinalDefault;
+            else if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
                     return SchemaSymbols.EXTENSION+SchemaSymbols.LIST+SchemaSymbols.RESTRICTION+SchemaSymbols.UNION;
             } else {
                     int extend = 0;
