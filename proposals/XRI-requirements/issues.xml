@@ -2,11 +2,12 @@
 <!-- edited with XML Spy v3.0 (http://www.xmlspy.com) by Edward Staub (private) -->
 <?xml-stylesheet type="text/xsl" href="issues.xsl"?>
 <!DOCTYPE requirementCatalog SYSTEM "issues.dtd">
-<requirementCatalog date="14 July 2000" version="1.0">
-	<!-- Checked apache general list through messages 2091 through 2366 -->
-	<!-- Checked apache xerces-j-dev list messages 1160 through 1322 -->
+<requirementCatalog date="21 July 2000" version="1.1">
+	<!-- Checked apache general list through messages 2091 through 2375 -->
+	<!-- Checked apache xerces-j-dev list messages 1160 through 1380 -->
 	<categories>
 		<cat>Architecture</cat>
+		<cat>Standards</cat>
 		<cat>Features</cat>
 		<cat>Memory</cat>
 		<cat>Speed</cat>
@@ -30,9 +31,10 @@ is too damned hard to read... </ref>
 				<ref set="gen" id="2311"/>
 			</refs>
 		</req>
-		<req id="2" status="approved" strength="soft" cat="Memory">
+		<req id="2" strength="soft" cat="Memory">
 			<def>The parser should have the smallest possible memory footprint.</def>
 			<seeAlso id="3"/>
+			<seeAlso id="24" type="Conflict"/>
 			<edReqNote>This needs refinement of target applications, quantification of sizes.</edReqNote>
 			<refs>
 				<ref set="gen" id="2091">This means small distribution size (JAR file) 
@@ -57,19 +59,23 @@ environment) and on the server. Small footprint (memory *and* disk)
 are much more important in this context than speed or even validation. 
 </ref>
 				<ref set="gen" id="2223">... many applications could benefit ...</ref>
+<ref set="xdev" id="1324">"small-but-performant-ambitious" 
+devices vs. "as-small-and-cheap-as-possible" devices</ref>
+<ref set="xdev" id="1361">I [am] a proponent [of support for] "small-but-perfrormant-ambitious", not 
+"as-small-and-cheap-as-possible" [devices]
+</ref>
 			</refs>
 		</req>
-		<req id="4" status="approved" cat="Speed" strength="hard">
+		<req id="4" status="approved" strength="hard" cat="Speed">
 			<def>The parser shall be optimized in a way that is compatible 
       with modern virtual machines such as HotSpot.</def>
 			<refs>
 				<ref set="gen" id="2091"/>
 				<ref set="xdev" id="1299"/>
 				<ref set="xdev" id="1307"/>
-				
 			</refs>
 		</req>
-		<req id="5" strength="soft" cat="Quality">
+		<req id="5" status="approved" strength="soft" cat="Quality">
 			<def>Optimizations that interfere with readability, 
       modularity, or size should be shunned. 
 </def>
@@ -78,7 +84,7 @@ are much more important in this context than speed or even validation.
 				<ref set="gen" id="2091"/>
 			</refs>
 		</req>
-		<req id="6" strength="soft" cat="Memory">
+		<req id="6" status="approved" strength="soft" cat="Memory">
 			<def>The parser should have the smallest possible distribution (JAR) size.</def>
 			<seeAlso id="3"/>
 			<edReqNote>This needs refinement of target applications, quantification of sizes.</edReqNote>
@@ -112,8 +118,8 @@ philosophy, than written documents.
 				<ref set="gen" id="2110">Whatever happened to making things upgrade compatiable. </ref>
 			</refs>
 		</req>
-		<req id="10" strength="soft" cat="Quality" status="approved">
-			<def>The parser must be cleanly modular.</def>
+		<req id="10" status="approved" strength="hard" cat="Quality">
+			<def>The parser shall be cleanly modular.</def>
 			<refs>
 				<ref set="gen" id="2091"/>
 				<ref set="gen" id="2122"/>
@@ -144,7 +150,7 @@ can accommodate any OO language...</ref>
 				<ref set="gen" id="2248"/>
 			</refs>
 		</req>
-		<req id="12" strength="hard" cat="Features" status="approved">
+		<req id="12" status="approved" strength="hard" cat="Standards">
 			<def>The parser shall support SAX2.</def>
 			<seeAlso id="13"/>
 			<refs>
@@ -181,20 +187,20 @@ sure if this should really be a separate micro-parser?
 				<ref set="gen" id="2296"/>
 			</refs>
 		</req>
-		<req id="14" strength="hard" cat="Features" status="approved">
+		<req id="14" status="approved" strength="hard" cat="Standards">
 			<def>The parser shall validate XML 1.0.</def>
 			<refs>
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
-		<req id="15" strength="hard" cat="Features" status="approved">
+		<req id="15" status="approved" strength="hard" cat="Standards">
 			<def>
 The parser shall support namespaces.</def>
 			<refs>
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
-		<req id="16" strength="hard" cat="Features" status="approved">
+		<req id="16" status="approved" strength="hard" cat="Features">
 			<def>
 The parser shall support DOM Level 2.
 </def>
@@ -202,7 +208,7 @@ The parser shall support DOM Level 2.
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
-		<req id="18" strength="hard" cat="Features" status="approved">
+		<req id="18" status="approved" strength="hard" cat="Standards">
 			<def>
 The parser shall support XML Schema.
 </def>
@@ -211,7 +217,7 @@ The parser shall support XML Schema.
 				<ref set="gen" id="2243"/>
 			</refs>
 		</req>
-		<req id="19" strength="hard" cat="Features" status="approved">
+		<req id="19" status="approved" strength="hard" cat="Standards">
 			<def>
 The parser shall support XPath.
 </def>
@@ -224,7 +230,7 @@ The parser shall support XPath.
 				<ref set="xdev" id="1277"/>
 			</refs>
 		</req>
-		<req id="20" strength="soft" cat="Features">
+		<req id="20" strength="soft" cat="Standards">
 			<def>
 The parser should support XInclude.
 </def>
@@ -242,9 +248,9 @@ The parser should support write validation of a DOM tree or revalidation.
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
-		<req id="22" strength="soft" cat="Features">
+		<req id="22" strength="hard" cat="Standards">
 			<def>
-The parser should support grammar access for both DTD and Schema.
+The parser shall support grammar access for both DTD and Schema.
 </def>
 			<seeAlso id="13"/>
 			<refs>
@@ -263,8 +269,15 @@ When not validating, the parser should run almost as fast as a non-validating pa
 			<def>
 The parser should provide best-of-breed performance across all JIT's (not just Hotspot).
 </def>
-			<refs>				<ref set="xdev" id="1317">-1 (on JDK 1.1)</ref>
-</refs>
+			<seeAlso id="2" type="Conflict"/>
+			<refs>
+				<ref set="xdev" id="1317">-1 (on JDK 1.1)</ref>
+				<ref set="xdev" id="1323">Fast enough to not notice that a parse happened for most data (10 lines to 
+10K).  To expand on that, when I have Ant read it's data from build.xml, I 
+shouldn't notice. If I send a bit of form encoded XML data to a server, and 
+then get some back, it shouldn't be appreciable considering the connection 
+cost. </ref>
+			</refs>
 		</req>
 		<req id="25" strength="soft" cat="Speed">
 			<def>
@@ -302,7 +315,7 @@ The project should produce testcases for both conformance and benchmarking.
 				<ref set="gen" id="2242"/>
 			</refs>
 		</req>
-		<req id="30" strength="soft" cat="Features" status="rejected">
+		<req id="30" status="rejected" strength="hard" cat="Standards">
 			<def>
 The parse shall support SAX 1
 </def>
@@ -329,13 +342,12 @@ The core parser should not directly support any tree model.
 				<ref set="xdev" id="1179"/>
 				<ref set="xdev" id="1185"/>
 				<ref set="xdev" id="1211"/>
-				<ref set="xdev" id="1320"></ref>
-				<ref set="xdev" id="1321"></ref>
-				<ref set="xdev" id="1322"></ref>
-
+				<ref set="xdev" id="1320"/>
+				<ref set="xdev" id="1321"/>
+				<ref set="xdev" id="1322"/>
 			</refs>
 		</req>
-		<req id="32" strength="hard" cat="Features" status="rejected">
+		<req id="32" status="rejected" strength="hard" cat="Standards">
 			<def>
 The parser shall support Java 1.1
 </def>
@@ -345,8 +357,6 @@ The parser shall support Java 1.1
 				<ref set="gen" id="2271">-1</ref>
 				<ref set="xdev" id="1314">+1</ref>
 				<ref set="xdev" id="1317">+-0</ref>
-
-				
 			</refs>
 		</req>
 		<req id="33" strength="soft" cat="Features">
@@ -358,7 +368,7 @@ when dealing with large xml databases, for example.
 				<ref set="gen" id="2276"/>
 			</refs>
 		</req>
-		<req id="34" strength="hard" cat="Features">
+		<req id="34" strength="hard" cat="Standards">
 			<def>
 The parser shall support the XML 
 Information Set.
@@ -1837,6 +1847,528 @@ The DOM should emit events to interested listeners when changes are made to the 
 				</a>
 				<a name="1322">
 					<em>Arved Sandstrom <small>(Sat Jul 15 2000 -         01:08:07 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1323.html">
+					<strong>Re: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1323">
+					<em>James Duncan Davidson <small>(Sat Jul 15 2000 -         06:31:24 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1324.html">
+					<strong>RE: REDOM Design discussion.</strong>
+				</a>
+				<a name="1324">
+					<em>Paulo Gaspar <small>(Sat Jul 15 2000 - 15:33:49         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1325.html">
+					<strong>RE: REDOM Design discussion.</strong>
+				</a>
+				<a name="1325">
+					<em>Paulo Gaspar <small>(Sat Jul 15 2000 - 15:37:32         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1326.html">
+					<strong>RE: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1326">
+					<em>Paulo Gaspar <small>(Sat Jul 15 2000 - 15:41:04         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1328.html">
+					<strong>Re: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1328">
+					<em>Ted Leung <small>(Sat Jul 15 2000 - 23:50:01         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1327.html">
+					<strong>Re: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1327">
+					<em>Ted Leung <small>(Sat Jul 15 2000 - 23:49:06         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1329.html">
+					<strong>Re: XRI requirements</strong>
+				</a>
+				<a name="1329">
+					<em>Ted Leung <small>(Sun Jul 16 2000 - 00:02:31         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1330.html">
+					<strong>Re: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1330">
+					<em>Arved Sandstrom <small>(Sun Jul 16 2000 -         01:00:16 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1331.html">
+					<strong>Re: XRI requirements</strong>
+				</a>
+				<a name="1331">
+					<em>Arved Sandstrom <small>(Sun Jul 16 2000 - 01:21:42         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1332.html">
+					<strong>Away</strong>
+				</a>
+				<a name="1332">
+					<em>Ted Leung         <small>(Sun Jul 16 2000 - 09:04:34 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1333.html">
+					<strong>RE: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1333">
+					<em>Paulo         Gaspar <small>(Sun Jul 16 2000 - 17:56:17         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1334.html">
+					<strong>[XRI] XRI requirements list posted to Apache         website</strong>
+				</a>
+				<a name="1334">
+					<em>Ed Staub <small>         (Sun Jul 16 2000 - 18:08:56 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1335.html">
+					<strong>RE: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1335">
+					<em>Ed Staub         <small>(Sun Jul 16 2000 - 18:42:45 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1336.html">
+					<strong>RE: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1336">
+					<em>Arved         Sandstrom <small>(Sun Jul 16 2000 - 18:31:44         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1337.html">
+					<strong>Re: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1337">
+					<em>N. Sean         Timm <small>(Sun Jul 16 2000 - 18:48:11         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1338.html">
+					<strong>Xerces vs. com.sun.xml</strong>
+				</a>
+				<a name="1338">
+					<em>Magnus ?or Torfason <small>(Sun Jul 16 2000 - 19:12:38         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1339.html">
+					<strong>Re: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1339">
+					<em>Arved         Sandstrom <small>(Sun Jul 16 2000 - 19:18:25         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1340.html">
+					<strong>An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1340">
+					<em>Ed Staub <small>         (Mon Jul 17 2000 - 06:00:25 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1341.html">
+					<strong>RE: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1341">
+					<em>Paulo         Gaspar <small>(Mon Jul 17 2000 - 07:21:27         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1342.html">
+					<strong>RE: An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1342">
+					<em>Paulo Gaspar         <small>(Mon Jul 17 2000 - 07:21:28 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1343.html">
+					<strong>Re: An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1343">
+					<em>Pae Choi <small>         (Sun Jul 16 2000 - 07:45:04 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1344.html">
+					<strong>Re: An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1344">
+					<em>markd@lutris.com         <small>(Mon Jul 17 2000 - 07:47:39 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1345.html">
+					<strong>RE: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1345">
+					<em>Arved         Sandstrom <small>(Mon Jul 17 2000 - 07:50:19         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1346.html">
+					<strong>RE: An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1346">
+					<em>Ed Staub <small>         (Mon Jul 17 2000 - 13:55:29 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1347.html">
+					<strong>Cannot obtain elements from the         DTD(documentTypeImpl Object)</strong>
+				</a>
+				<a name="1347">
+					<em>Grengbondai, Jules C. <small>(Mon Jul 17 2000 -         15:09:39 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1348.html">
+					<strong>RE: An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1348">
+					<em>Ed Staub <small>         (Mon Jul 17 2000 - 16:58:10 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1349.html">
+					<strong>setValidating method</strong>
+				</a>
+				<a name="1349">
+					<em>Martin Fuhrer <small>(Mon Jul 17 2000 - 17:54:04         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1350.html">
+					<strong>parsing problem with:         &lt;URL&gt;..344&amp;CONTEXT=34..&lt;/URL&gt;</strong>
+				</a>
+				<a name="1350">
+					<em>Armin S. A. Roehrl <small>(Mon Jul 17         2000 - 19:59:02 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1351.html">
+					<strong>Re: parsing problem with:         &lt;URL&gt;..344&amp;CONTEXT=34..&lt;/URL&gt;</strong>
+				</a>
+				<a name="1351">
+					<em>Eric Ye <small>(Mon Jul 17 2000 -         20:12:16 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1352.html">
+					<strong>Re: serialize.XMLSerializer little         patch</strong>
+				</a>
+				<a name="1352">
+					<em>Jeffrey Rodriguez         <small>(Mon Jul 17 2000 - 20:13:38 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1353.html">
+					<strong>Re: setValidating method</strong>
+				</a>
+				<a name="1353">
+					<em>Eric Ye <small>(Mon Jul 17 2000 - 20:54:18         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1354.html">
+					<strong>Re: parsing problem with:         &lt;URL&gt;..344&amp;CONTEXT=34..&lt;/URL&gt;</strong>
+				</a>
+				<a name="1354">
+					<em>Ye_Tao@i2.com <small>(Mon Jul 17 2000 -         20:05:18 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1355.html">
+					<strong>RE: Cannot obtain elements from the         DTD(documentTypeImpl Object)</strong>
+				</a>
+				<a name="1355">
+					<em>Grengbondai, Jules C. <small>(Mon Jul 17 2000 -         21:05:36 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1356.html">
+					<strong>Re: [XRI] XRI requirements list posted to Apache         website</strong>
+				</a>
+				<a name="1356">
+					<em>Edwin Goei <small>         (Mon Jul 17 2000 - 21:26:51 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1357.html">
+					<strong>Re: Cannot obtain elements from the         DTD(documentTypeImpl Object)</strong>
+				</a>
+				<a name="1357">
+					<em>Eric Ye <small>(Mon Jul 17 2000 - 21:49:54         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1358.html">
+					<strong>RE: Cannot obtain elements from the         DTD(documentTypeImpl Object)</strong>
+				</a>
+				<a name="1358">
+					<em>Grengbondai, Jules C. <small>(Mon Jul 17 2000 -         21:58:37 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1359.html">
+					<strong>Special characters</strong>
+				</a>
+				<a name="1359">
+					<em>         Igor Seletskiy <small>(Mon Jul 17 2000 - 22:20:50         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1360.html">
+					<strong>RE: Cannot obtain elements from the         DTD(documentTypeImpl Object)</strong>
+				</a>
+				<a name="1360">
+					<em>Jeffrey Rodriguez <small>(Mon Jul 17 2000 - 22:35:54         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1361.html">
+					<strong>Re: REDOM Design discussion.</strong>
+				</a>
+				<a name="1361">
+					<em>James Duncan Davidson <small>(Tue Jul 18 2000 -         00:28:02 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1362.html">
+					<strong>Re: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1362">
+					<em>James Duncan Davidson <small>(Tue Jul 18 2000 -         00:30:08 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1363.html">
+					<strong>Re: [XRI] XRI requirements list posted to Apache         website</strong>
+				</a>
+				<a name="1363">
+					<em>James Duncan         Davidson <small>(Tue Jul 18 2000 - 00:41:10         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1364.html">
+					<strong>Re: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1364">
+					<em>James         Duncan Davidson <small>(Tue Jul 18 2000 - 00:53:14         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1365.html">
+					<strong>Re: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1365">
+					<em>Mike Pogue <small>(Tue Jul 18 2000 - 01:45:44         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1366.html">
+					<strong>Re: XRI requirements - and overdefensiveness in         OpenSourceLand...</strong>
+				</a>
+				<a name="1366">
+					<em>Mike         Pogue <small>(Tue Jul 18 2000 - 01:48:48         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1367.html">
+					<strong>Re: Special characters</strong>
+				</a>
+				<a name="1367">
+					<em>Mike Pogue <small>(Tue Jul 18 2000 - 01:49:22         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1368.html">
+					<strong>RE: An extensibility framework for Xerces and its         clients?</strong>
+				</a>
+				<a name="1368">
+					<em>Paulo Gaspar         <small>(Tue Jul 18 2000 - 02:44:46 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1369.html">
+					<strong>RE: REDOM Design discussion.</strong>
+				</a>
+				<a name="1369">
+					<em>Paulo Gaspar <small>(Tue Jul 18 2000 - 02:49:20         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1370.html">
+					<strong>RE: REDOM Design discussion.</strong>
+				</a>
+				<a name="1370">
+					<em>Paulo Gaspar <small>(Tue Jul 18 2000 - 02:51:47         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1371.html">
+					<strong>RE: [Xerces2] What is CORE?</strong>
+				</a>
+				<a name="1371">
+					<em>Paulo Gaspar <small>(Tue Jul 18 2000 - 03:37:20         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1372.html">
+					<strong>The Deferred DOM (was Re: REDOM Design         discussion.)</strong>
+				</a>
+				<a name="1372">
+					<em>Arnaud Le Hors         <small>(Tue Jul 18 2000 - 03:50:57 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1375.html">
+					<strong>NodeContainer (was Re: entity resolution with         schema validation)</strong>
+				</a>
+				<a name="1375">
+					<em>Arnaud         Le Hors <small>(Tue Jul 18 2000 - 03:51:15         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1373.html">
+					<strong>Managing/implementing several DOM         implementations</strong>
+				</a>
+				<a name="1373">
+					<em>Arnaud Le         Hors <small>(Tue Jul 18 2000 - 03:51:32         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1374.html">
+					<strong>Re: Stupid Question (ints,string)</strong>
+				</a>
+				<a name="1374">
+					<em>Arnaud Le Hors <small>(Tue Jul 18 2000 -         03:52:11 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1376.html">
+					<strong>RE: Managing/implementing several DOM         implementations</strong>
+				</a>
+				<a name="1376">
+					<em>Paulo         Gaspar <small>(Tue Jul 18 2000 - 04:52:39         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1377.html">
+					<strong>Re: The Deferred DOM (was Re: REDOM Design         discussion.)</strong>
+				</a>
+				<a name="1377">
+					<em>Ryan Schmidt         <small>(Tue Jul 18 2000 - 04:54:48 MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1378.html">
+					<strong>Re: BUG: SAXParser endElement reports incorrect         local name w/ namespaces</strong>
+				</a>
+				<a name="1378">
+					<em>         Jeffrey Rodriguez <small>(Tue Jul 18 2000 - 05:50:47         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1379.html">
+					<strong>Xerces Redesign</strong>
+				</a>
+				<a name="1379">
+					<em>         Andy Clark <small>(Tue Jul 18 2000 - 06:09:44         MEST)</small>
+					</em>
+				</a>
+			</li>
+			<li>
+				<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1380.html">
+					<strong>Re: setValidating method</strong>
+				</a>
+				<a name="1380">
+					<em>Martin Fuhrer <small>(Tue Jul 18 2000 - 09:36:31         MEST)</small>
 					</em>
 				</a>
 			</li>

@@ -1,12 +1,11 @@
 <html>
 <head>
-<META http-equiv="Content-Type" content="text/html; charset=UTF-16">
-<title>Proposed Xerces2 Requirements -  14 July 2000</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Proposed XRI Requirements -  21 July 2000</title>
 </head>
 <body bgcolor="#FFFFFF">
-<h1>Proposed Xerces2 Requirements</h1>
-<h4>Date: 14 July 2000<br>
+<h1>Proposed XRI Requirements</h1>
+<h4>Date: 21 July 2000<br>
   Editors:   <a href="mailto:estaub@mediaone.net">Ed Staub</a>  <a href="mailto:twleung@sauria.com">Ted Leung</a>
 </h4>
 <hr>
@@ -18,7 +17,7 @@
 <dl>
 <dt>Possible "hardness" values are:</dt>
 <dd>
-<b>hard</b> - Xerces 2 must and shall meet this requirement<br><b>soft</b> - Xerces 2 should meet this requirement, but it may be dropped 
+<b>hard</b> - XRI must and shall meet this requirement<br><b>soft</b> - XRI should meet this requirement, but it may be dropped 
     because of conflicting requirements or time pressures</dd>
 <dt>
 <br>
@@ -32,8 +31,58 @@
 					</dd>
 </dl>
 <hr>
+<h2>Requirements by Number</h2>
+<a href="#req.1">1</a>  The code shall be maintainable and simple to read.<br><a href="#req.2">2</a>  The parser should have the smallest possible memory footprint.<br><a href="#req.3">3</a>  The parser shall be designed so as to allow deployment of minimal subsets suitable for low-end, memory-constrained appli...<br><a href="#req.4">4</a>  The parser shall be optimized in a way that is compatible 
+      with modern virtual machines such as HotSpot.<br><a href="#req.5">5</a>  Optimizations that interfere with readability, 
+      modularity, or size should be shunned. 
+<br><br><a href="#req.6">6</a>  The parser should have the smallest possible distribution (JAR) size.<br><a href="#req.7">7</a>  The design of the parser should be documented, with diagrams where they are more expressive than text.<br><a href="#req.8">8</a>  The parser should have the characteristics needed for it to be included in the JDK.<br><a href="#req.9">9</a>  The parser should be upwardly compatible with Xerces.<br><a href="#req.10">10</a>  The parser shall be cleanly modular.<br><br><a href="#req.11">11</a>  Development should be coordinated with xerces-c.<br><a href="#req.12">12</a>  The parser shall support SAX2.<br><a href="#req.13">13</a>  The parser should be suitable for implementation of XSLT (especially Xalan2. Subrequirements: 
+			1) SAX2, of course. 
+2...<br><a href="#req.14">14</a>  The parser shall validate XML 1.0.<br><a href="#req.15">15</a>  
+The parser shall support namespaces.<br><br><a href="#req.16">16</a>  
+The parser shall support DOM Level 2.
+<br><a href="#req.18">18</a>  
+The parser shall support XML Schema.
+<br><a href="#req.19">19</a>  
+The parser shall support XPath.
+<br><a href="#req.20">20</a>  
+The parser should support XInclude.
+<br><br><a href="#req.21">21</a>  
+The parser should support write validation of a DOM tree or revalidation.
+<br><a href="#req.22">22</a>  
+The parser shall support grammar access for both DTD and Schema.
+<br><a href="#req.23">23</a>  
+No significant speed penalty should be invoked for unused features, notably validation.
+When not validating, the parser...<br><a href="#req.24">24</a>  
+The parser should provide best-of-breed performance across all JIT's (not just Hotspot).
+<br><a href="#req.25">25</a>  
+The parser should support grammar caching and precompilation.
+<br><br><a href="#req.27">27</a>  
+The parser should provide mid to upper range validation performance across all JVMs.
+<br><a href="#req.28">28</a>  
+The parser should provide a reasonable core (fast!) upon which to layer JDOM
+<br><a href="#req.29">29</a>  
+The project should produce testcases for both conformance and benchmarking. 
+<br><a href="#req.30">30</a>  
+The parse shall support SAX 1
+<br><br><a href="#req.31">31</a>  
+The core parser should not directly support any tree model.
+<br><a href="#req.32">32</a>  
+The parser shall support Java 1.1
+<br><a href="#req.33">33</a>  
+The parser should support loading and validating only certainrequested portions of a document -- a useful feature 
+when...<br><a href="#req.34">34</a>  
+The parser shall support the XML 
+Information Set.
+<br><a href="#req.35">35</a>  
+The parser should support pull model parsing.
+<br><br><a href="#req.36">36</a>  
+The parser should support compilation of a high-speed customized parser based on a W3C schema.
+<br><a href="#req.37">37</a>  
+The DOM should emit events to interested listeners when changes are made to the DOM
+<br>
+<hr>
 <h2>Requirement Categories</h2>
-<a href="#cat.{.}">Architecture</a><br><a href="#cat.{.}">Features</a><br><a href="#cat.{.}">Memory</a><br><a href="#cat.{.}">Speed</a><br><a href="#cat.{.}">Quality</a><br><a href="#cat.{.}">Other</a><br>
+<a href="#cat.{.}">Architecture</a><br><a href="#cat.{.}">Standards</a><br><a href="#cat.{.}">Features</a><br><a href="#cat.{.}">Memory</a><br><a href="#cat.{.}">Speed</a><br><a href="#cat.{.}">Quality</a><br><a href="#cat.{.}">Other</a><br>
 <hr>
 <h2>Requirements by Category</h2>
 <h3>
@@ -49,7 +98,10 @@
 <b><def>The parser shall be designed so as to allow deployment of minimal subsets suitable for low-end, memory-constrained applications</def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.2">2</a><a href="#req.13">13</a><br>
+			See also:
+		<a href="#req.2">2</a>  
+			See also:
+		<a href="#req.13">13</a>  <br>
 <p>"<ref set="gen" id="2091">It should be possible to build a parser as a set of Jar files 
       so that a smaller parser can be assembled which fits the need of a 
       particular implementation. For example, in TV sets do you really need 
@@ -69,12 +121,23 @@ are much more important in this context than speed or even validation.
 <a href="http://xml-archive.webweaving.org/xml-archive-general/2223.html"> <strong>Re: [spinnaker] Announce</strong> </a> <a name="2223"> <em>Rod McChesney</em> </a> <em>(Wed Jul 12 2000         - 01:32:31 MEST)</em>
 </li>
 </p>
+<p>"<ref set="xdev" id="1324">"small-but-performant-ambitious" 
+devices vs. "as-small-and-cheap-as-possible" devices</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1324.html"> <strong>RE: REDOM Design discussion.</strong> </a> <a name="1324"> <em>Paulo Gaspar <small>(Sat Jul 15 2000 - 15:33:49         MEST)</small> </em> </a>
+</li>
+</p>
+<p>"<ref set="xdev" id="1361">I [am] a proponent [of support for] "small-but-perfrormant-ambitious", not 
+"as-small-and-cheap-as-possible" [devices]
+</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1361.html"> <strong>Re: REDOM Design discussion.</strong> </a> <a name="1361"> <em>James Duncan Davidson <small>(Tue Jul 18 2000 -         00:28:02 MEST)</small> </em> </a>
+</li>
+</p>
 </blockquote>
 </td>
 </tr>
 </table>
 <h3>
-<a name="#cat.{.}"></a>Features</h3>
+<a name="#cat.{.}"></a>Standards</h3>
 <table width="95%" border="1">
 <tr>
 <td valign="top">
@@ -86,56 +149,14 @@ are much more important in this context than speed or even validation.
 <b><def>The parser shall support SAX2.</def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.13">13</a><br>
+			See also:
+		<a href="#req.13">13</a>  <br>
 <p><li>
 <a href="http://xml-archive.webweaving.org/xml-archive-general/2203.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2203"> <em>Scott         Boag/CAM/Lotus</em> </a> <em>(Tue Jul 11 2000 -         23:42:10 MEST)</em>
 </li>
 </p>
 <p><li>
 <a href="http://xml-archive.webweaving.org/xml-archive-general/2243.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2243"> <em>Arnaud Le         Hors</em> </a> <em>(Wed Jul 12 2000 - 02:49:04         MEST)</em>
-</li>
-</p>
-</blockquote>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<p>
-<a name="req.13"></a><b>13.</b><br>  soft<br>  unevaluated</p>
-</td>
-<td valign="top">
-<p>
-<b><def>The parser should be suitable for implementation of XSLT (especially Xalan2. Subrequirements: 
-			<br>1) SAX2, of course. 
-<br>2) Read-only, memory conservative, high performance DOM subset. In some 
-ways, this is optional, since the alternative is that the XSLT processor 
-implement it's own DOM, as it does today. But it would be neat and simpler 
-if only one DOM implementation needed to exist. 
-<br>  2a) Document-order indexes or API as a DOM extension. I know of few or 
-no conformant XSLT processors that can do without this. 
-<br>  2b) [optional] isWhite() method as a DOM extensions (pure telling of 
-whether or not the text contains non-whitespace), for performance reasons. 
-<br>  2c) Some sort of weak reference, where nodes could be released if not 
-referenced, and then rebuilt if requested. For performance and memory 
-footprint. 
-<br>3) parse-next function, with added control over buffer size. 
-<br>4) Some sort of way to tell if a SAX char buffer is going to be 
-overwritten, so data doesn't have to be copied until this occurs. 
-<br>5) Serialization support, as is currently in Assaf's classes. 
-<br>6) Schema data-type support, which will be needed for XSLT2, and Xalan 2.0 
-extensions.
-<br>8) Small core footprint for standalone, compiled stylesheet capability, for 
-use on small devices. This would need to include the Serializer. I'm not 
-sure if this should really be a separate micro-parser?  
-</def></b>
-</p>
-<blockquote>
-<p><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2203.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2203"> <em>Scott         Boag/CAM/Lotus</em> </a> <em>(Tue Jul 11 2000 -         23:42:10 MEST)</em>
-</li>
-</p>
-<p><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2296.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2296"> <em>Scott         Boag/CAM/Lotus</em> </a> <em>(Wed Jul 12 2000 -         19:59:46 MEST)</em>
 </li>
 </p>
 </blockquote>
@@ -167,25 +188,6 @@ sure if this should really be a separate micro-parser?
 <p>
 <b><def>
 The parser shall support namespaces.</def></b>
-</p>
-<blockquote>
-<p><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2243.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2243"> <em>Arnaud Le         Hors</em> </a> <em>(Wed Jul 12 2000 - 02:49:04         MEST)</em>
-</li>
-</p>
-</blockquote>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<p>
-<a name="req.16"></a><b>16.</b><br>  hard<br>  approved</p>
-</td>
-<td valign="top">
-<p>
-<b><def>
-The parser shall support DOM Level 2.
-</def></b>
 </p>
 <blockquote>
 <p><li>
@@ -287,15 +289,17 @@ The parser should support XInclude.
 <tr>
 <td valign="top">
 <p>
-<a name="req.21"></a><b>21.</b><br>  soft<br>  unevaluated</p>
+<a name="req.22"></a><b>22.</b><br>  hard<br>  unevaluated</p>
 </td>
 <td valign="top">
 <p>
 <b><def>
-The parser should support write validation of a DOM tree or revalidation.
+The parser shall support grammar access for both DTD and Schema.
 </def></b>
 </p>
 <blockquote>
+			See also:
+		<a href="#req.13">13</a>  <br>
 <p><li>
 <a href="http://xml-archive.webweaving.org/xml-archive-general/2242.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2242"> <em>Eric         Ye</em> </a> <em>(Wed Jul 12 2000 - 02:48:42 MEST)</em>
 </li>
@@ -306,52 +310,7 @@ The parser should support write validation of a DOM tree or revalidation.
 <tr>
 <td valign="top">
 <p>
-<a name="req.22"></a><b>22.</b><br>  soft<br>  unevaluated</p>
-</td>
-<td valign="top">
-<p>
-<b><def>
-The parser should support grammar access for both DTD and Schema.
-</def></b>
-</p>
-<blockquote>
-						See also: <a href="#req.13">13</a><br>
-<p><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2242.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2242"> <em>Eric         Ye</em> </a> <em>(Wed Jul 12 2000 - 02:48:42 MEST)</em>
-</li>
-</p>
-</blockquote>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<p>
-<a name="req.28"></a><b>28.</b><br>  soft<br>  unevaluated</p>
-</td>
-<td valign="top">
-<p>
-<b><def>
-The parser should provide a reasonable core (fast!) upon which to layer JDOM
-</def></b>
-</p>
-<blockquote>
-						See also: <a href="#req.10">10</a><br>
-<p><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2207.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2207"> <em>Brett         McLaughlin</em> </a> <em>(Wed Jul 12 2000 - 00:28:32         MEST)</em>
-</li>
-</p>
-<p>"<ref set="gen" id="2221">JDOM is an important up and coming API that already has established a large and rapidly growing groundswell of support and in the 
-developer community.</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2221.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2221"> <em>James         Duncan Davidson</em> </a> <em>(Wed Jul 12 2000 -         01:15:59 MEST)</em>
-</li>
-</p>
-</blockquote>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<p>
-<a name="req.30"></a><b>30.</b><br>  soft<br>  rejected</p>
+<a name="req.30"></a><b>30.</b><br>  hard<br>  rejected</p>
 </td>
 <td valign="top">
 <p>
@@ -378,6 +337,176 @@ The parse shall support SAX 1
 <tr>
 <td valign="top">
 <p>
+<a name="req.32"></a><b>32.</b><br>  hard<br>  rejected</p>
+</td>
+<td valign="top">
+<p>
+<b><def>
+The parser shall support Java 1.1
+</def></b>
+</p>
+<blockquote>
+<p>"<ref set="gen" id="2249">-1</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2249.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2249"> <em>Brett         McLaughlin</em> </a> <em>(Wed Jul 12 2000 - 03:07:59         MEST)</em>
+</li>
+</p>
+<p>"<ref set="gen" id="2257">-1</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2257.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2257"> <em>N. Sean         Timm</em> </a> <em>(Wed Jul 12 2000 - 05:59:47         MEST)</em>
+</li>
+</p>
+<p>"<ref set="gen" id="2271">-1</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2271.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2271"> <em>Stefano         Mazzocchi</em> </a> <em>(Wed Jul 12 2000 - 15:02:47         MEST)</em>
+</li>
+</p>
+<p>"<ref set="xdev" id="1314">+1</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1314.html"> <strong>Re: REDOM Design discussion.</strong> </a> <a name="1314"> <em>Jeffrey Rodriguez <small>(Fri Jul 14 2000 -         18:47:28 MEST)</small> </em> </a>
+</li>
+</p>
+<p>"<ref set="xdev" id="1317">+-0</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1317.html"> <strong>Re: REDOM Design discussion.</strong> </a> <a name="1317"> <em>James Duncan Davidson <small>(Fri Jul 14 2000 -         19:22:19 MEST)</small> </em> </a>
+</li>
+</p>
+</blockquote>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<p>
+<a name="req.34"></a><b>34.</b><br>  hard<br>  unevaluated</p>
+</td>
+<td valign="top">
+<p>
+<b><def>
+The parser shall support the XML 
+Information Set.
+</def></b>
+</p>
+<blockquote>
+<p>"<ref set="gen" id="2298">+1</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2298.html"> <strong>Re: [Xerces2] Requirements list; 'Xerces2'?;         cross-posting</strong> </a> <a name="2298"> <em>Arnaud         Le Hors</em> </a> <em>(Wed Jul 12 2000 - 20:46:38         MEST)</em>
+</li>
+</p>
+<p>"<ref set="gen" id="2321">+1</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2321.html"> <strong>Re: [Xerces2] Requirements list; 'Xerces2'?;         cross-posting</strong> </a> <a name="2321"> <em>Stefano         Mazzocchi</em> </a> <em>(Thu Jul 13 2000 - 01:13:00         MEST)</em>
+</li>
+</p>
+</blockquote>
+</td>
+</tr>
+</table>
+<h3>
+<a name="#cat.{.}"></a>Features</h3>
+<table width="95%" border="1">
+<tr>
+<td valign="top">
+<p>
+<a name="req.13"></a><b>13.</b><br>  soft<br>  unevaluated</p>
+</td>
+<td valign="top">
+<p>
+<b><def>The parser should be suitable for implementation of XSLT (especially Xalan2. Subrequirements: 
+			<br>1) SAX2, of course. 
+<br>2) Read-only, memory conservative, high performance DOM subset. In some 
+ways, this is optional, since the alternative is that the XSLT processor 
+implement it's own DOM, as it does today. But it would be neat and simpler 
+if only one DOM implementation needed to exist. 
+<br>  2a) Document-order indexes or API as a DOM extension. I know of few or 
+no conformant XSLT processors that can do without this. 
+<br>  2b) [optional] isWhite() method as a DOM extensions (pure telling of 
+whether or not the text contains non-whitespace), for performance reasons. 
+<br>  2c) Some sort of weak reference, where nodes could be released if not 
+referenced, and then rebuilt if requested. For performance and memory 
+footprint. 
+<br>3) parse-next function, with added control over buffer size. 
+<br>4) Some sort of way to tell if a SAX char buffer is going to be 
+overwritten, so data doesn't have to be copied until this occurs. 
+<br>5) Serialization support, as is currently in Assaf's classes. 
+<br>6) Schema data-type support, which will be needed for XSLT2, and Xalan 2.0 
+extensions.
+<br>8) Small core footprint for standalone, compiled stylesheet capability, for 
+use on small devices. This would need to include the Serializer. I'm not 
+sure if this should really be a separate micro-parser?  
+</def></b>
+</p>
+<blockquote>
+<p><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2203.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2203"> <em>Scott         Boag/CAM/Lotus</em> </a> <em>(Tue Jul 11 2000 -         23:42:10 MEST)</em>
+</li>
+</p>
+<p><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2296.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2296"> <em>Scott         Boag/CAM/Lotus</em> </a> <em>(Wed Jul 12 2000 -         19:59:46 MEST)</em>
+</li>
+</p>
+</blockquote>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<p>
+<a name="req.16"></a><b>16.</b><br>  hard<br>  approved</p>
+</td>
+<td valign="top">
+<p>
+<b><def>
+The parser shall support DOM Level 2.
+</def></b>
+</p>
+<blockquote>
+<p><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2243.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2243"> <em>Arnaud Le         Hors</em> </a> <em>(Wed Jul 12 2000 - 02:49:04         MEST)</em>
+</li>
+</p>
+</blockquote>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<p>
+<a name="req.21"></a><b>21.</b><br>  soft<br>  unevaluated</p>
+</td>
+<td valign="top">
+<p>
+<b><def>
+The parser should support write validation of a DOM tree or revalidation.
+</def></b>
+</p>
+<blockquote>
+<p><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2242.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2242"> <em>Eric         Ye</em> </a> <em>(Wed Jul 12 2000 - 02:48:42 MEST)</em>
+</li>
+</p>
+</blockquote>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<p>
+<a name="req.28"></a><b>28.</b><br>  soft<br>  unevaluated</p>
+</td>
+<td valign="top">
+<p>
+<b><def>
+The parser should provide a reasonable core (fast!) upon which to layer JDOM
+</def></b>
+</p>
+<blockquote>
+			See also:
+		<a href="#req.10">10</a>  <br>
+<p><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2207.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2207"> <em>Brett         McLaughlin</em> </a> <em>(Wed Jul 12 2000 - 00:28:32         MEST)</em>
+</li>
+</p>
+<p>"<ref set="gen" id="2221">JDOM is an important up and coming API that already has established a large and rapidly growing groundswell of support and in the 
+developer community.</ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-general/2221.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2221"> <em>James         Duncan Davidson</em> </a> <em>(Wed Jul 12 2000 -         01:15:59 MEST)</em>
+</li>
+</p>
+</blockquote>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<p>
 <a name="req.31"></a><b>31.</b><br>  soft<br>  unevaluated</p>
 </td>
 <td valign="top">
@@ -387,7 +516,8 @@ The core parser should not directly support any tree model.
 </def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.10">10</a><br>
+			See also:
+		<a href="#req.10">10</a>  <br>
 <p>"<ref set="gen" id="2154">My understanding of the design, which I think is good, is that the 
 "core" actually doesn't directly support any tree model. 
 <br>                API Layer JDOM DOM SAX2 
@@ -438,41 +568,6 @@ The core parser should not directly support any tree model.
 <tr>
 <td valign="top">
 <p>
-<a name="req.32"></a><b>32.</b><br>  hard<br>  rejected</p>
-</td>
-<td valign="top">
-<p>
-<b><def>
-The parser shall support Java 1.1
-</def></b>
-</p>
-<blockquote>
-<p>"<ref set="gen" id="2249">-1</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2249.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2249"> <em>Brett         McLaughlin</em> </a> <em>(Wed Jul 12 2000 - 03:07:59         MEST)</em>
-</li>
-</p>
-<p>"<ref set="gen" id="2257">-1</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2257.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2257"> <em>N. Sean         Timm</em> </a> <em>(Wed Jul 12 2000 - 05:59:47         MEST)</em>
-</li>
-</p>
-<p>"<ref set="gen" id="2271">-1</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2271.html"> <strong>Re: parser-next-gen goals, plan, and         requirements</strong> </a> <a name="2271"> <em>Stefano         Mazzocchi</em> </a> <em>(Wed Jul 12 2000 - 15:02:47         MEST)</em>
-</li>
-</p>
-<p>"<ref set="xdev" id="1314">+1</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1314.html"> <strong>Re: REDOM Design discussion.</strong> </a> <a name="1314"> <em>Jeffrey Rodriguez <small>(Fri Jul 14 2000 -         18:47:28 MEST)</small> </em> </a>
-</li>
-</p>
-<p>"<ref set="xdev" id="1317">+-0</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1317.html"> <strong>Re: REDOM Design discussion.</strong> </a> <a name="1317"> <em>James Duncan Davidson <small>(Fri Jul 14 2000 -         19:22:19 MEST)</small> </em> </a>
-</li>
-</p>
-</blockquote>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<p>
 <a name="req.33"></a><b>33.</b><br>  soft<br>  unevaluated</p>
 </td>
 <td valign="top">
@@ -485,30 +580,6 @@ when dealing with large xml databases, for example.
 <blockquote>
 <p><li>
 <a href="http://xml-archive.webweaving.org/xml-archive-general/2276.html"> <strong>RE: XRI requirements</strong> </a> <a name="2276"> <em>James Snell</em> </a> <em>(Wed Jul 12 2000 -         07:25:50 MEST)</em>
-</li>
-</p>
-</blockquote>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<p>
-<a name="req.34"></a><b>34.</b><br>  hard<br>  unevaluated</p>
-</td>
-<td valign="top">
-<p>
-<b><def>
-The parser shall support the XML 
-Information Set.
-</def></b>
-</p>
-<blockquote>
-<p>"<ref set="gen" id="2298">+1</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2298.html"> <strong>Re: [Xerces2] Requirements list; 'Xerces2'?;         cross-posting</strong> </a> <a name="2298"> <em>Arnaud         Le Hors</em> </a> <em>(Wed Jul 12 2000 - 20:46:38         MEST)</em>
-</li>
-</p>
-<p>"<ref set="gen" id="2321">+1</ref>"<br><li>
-<a href="http://xml-archive.webweaving.org/xml-archive-general/2321.html"> <strong>Re: [Xerces2] Requirements list; 'Xerces2'?;         cross-posting</strong> </a> <a name="2321"> <em>Stefano         Mazzocchi</em> </a> <em>(Thu Jul 13 2000 - 01:13:00         MEST)</em>
 </li>
 </p>
 </blockquote>
@@ -594,14 +665,15 @@ The DOM should emit events to interested listeners when changes are made to the 
 <tr>
 <td valign="top">
 <p>
-<a name="req.2"></a><b>2.</b><br>  soft<br>  approved</p>
+<a name="req.2"></a><b>2.</b><br>  soft<br>  unevaluated</p>
 </td>
 <td valign="top">
 <p>
 <b><def>The parser should have the smallest possible memory footprint.</def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.3">3</a><br>
+			See also:
+		<a href="#req.3">3</a>  Conflict:<a href="#req.24">24</a>  <br>
 <blockquote><i>Ed:</i>This needs refinement of target applications, quantification of sizes.</blockquote>
 <p>"<ref set="gen" id="2091">This means small distribution size (JAR file) 
       and small memory footprint.</ref>"<br><li>
@@ -626,14 +698,15 @@ The DOM should emit events to interested listeners when changes are made to the 
 <tr>
 <td valign="top">
 <p>
-<a name="req.6"></a><b>6.</b><br>  soft<br>  unevaluated</p>
+<a name="req.6"></a><b>6.</b><br>  soft<br>  approved</p>
 </td>
 <td valign="top">
 <p>
 <b><def>The parser should have the smallest possible distribution (JAR) size.</def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.3">3</a><br>
+			See also:
+		<a href="#req.3">3</a>  <br>
 <blockquote><i>Ed:</i>This needs refinement of target applications, quantification of sizes.</blockquote>
 <p>"<ref set="gen" id="2091">This means small distribution size (JAR file) 
       and small memory footprint. 
@@ -692,7 +765,8 @@ When not validating, the parser should run almost as fast as a non-validating pa
 </def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.10">10</a><br>
+			See also:
+		<a href="#req.10">10</a>  <br>
 </blockquote>
 </td>
 </tr>
@@ -707,9 +781,17 @@ When not validating, the parser should run almost as fast as a non-validating pa
 The parser should provide best-of-breed performance across all JIT's (not just Hotspot).
 </def></b>
 </p>
-<blockquote>
+<blockquote>Conflict:<a href="#req.2">2</a>  <br>
 <p>"<ref set="xdev" id="1317">-1 (on JDK 1.1)</ref>"<br><li>
 <a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1317.html"> <strong>Re: REDOM Design discussion.</strong> </a> <a name="1317"> <em>James Duncan Davidson <small>(Fri Jul 14 2000 -         19:22:19 MEST)</small> </em> </a>
+</li>
+</p>
+<p>"<ref set="xdev" id="1323">Fast enough to not notice that a parse happened for most data (10 lines to 
+10K).  To expand on that, when I have Ant read it's data from build.xml, I 
+shouldn't notice. If I send a bit of form encoded XML data to a server, and 
+then get some back, it shouldn't be appreciable considering the connection 
+cost. </ref>"<br><li>
+<a href="http://xml-archive.webweaving.org/xml-archive-xerces-j-dev/1323.html"> <strong>Re: [Xerces2] What is CORE?</strong> </a> <a name="1323"> <em>James Duncan Davidson <small>(Sat Jul 15 2000 -         06:31:24 MEST)</small> </em> </a>
 </li>
 </p>
 </blockquote>
@@ -771,7 +853,8 @@ The parser should provide mid to upper range validation performance across all J
 <b><def>The code shall be maintainable and simple to read.</def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.5">5</a><br>
+			See also:
+		<a href="#req.5">5</a>  <br>
 <p>"<ref set="gen" id="2091"> Above all, this is the primary goal 
       for any openly developed project as without the ability to read the 
       code, it's impossible for people to contribute and get involved.</ref>"<br><li>
@@ -806,7 +889,7 @@ is too damned hard to read... </ref>"<br><li>
 <tr>
 <td valign="top">
 <p>
-<a name="req.5"></a><b>5.</b><br>  soft<br>  unevaluated</p>
+<a name="req.5"></a><b>5.</b><br>  soft<br>  approved</p>
 </td>
 <td valign="top">
 <p>
@@ -815,7 +898,8 @@ is too damned hard to read... </ref>"<br><li>
 </def></b>
 </p>
 <blockquote>
-						See also: <a href="#req.1">1</a><br>
+			See also:
+		<a href="#req.1">1</a>  <br>
 <p><li>
 <a href="http://xml-archive.webweaving.org/xml-archive-general/2091.html"> <strong>[spinnaker] Announce</strong> </a> <a name="2091"> <em>James Duncan Davidson</em> </a> <em>(Sat Jul         08 2000 - 07:31:16 MEST)</em>
 </li>
@@ -864,11 +948,11 @@ philosophy, than written documents.
 <tr>
 <td valign="top">
 <p>
-<a name="req.10"></a><b>10.</b><br>  soft<br>  approved</p>
+<a name="req.10"></a><b>10.</b><br>  hard<br>  approved</p>
 </td>
 <td valign="top">
 <p>
-<b><def>The parser must be cleanly modular.</def></b>
+<b><def>The parser shall be cleanly modular.</def></b>
 </p>
 <blockquote>
 <p><li>

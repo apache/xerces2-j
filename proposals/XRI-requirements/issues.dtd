@@ -35,6 +35,7 @@
 >
 <!ATTLIST seeAlso
 	id CDATA #REQUIRED
+	type (Conflict) #IMPLIED
 >
 <!ELEMENT requirementCatalog (categories, requirements, mailHeaderSets)>
 <!ATTLIST requirementCatalog

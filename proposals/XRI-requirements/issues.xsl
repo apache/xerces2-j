@@ -5,16 +5,15 @@
 	<!ENTITY nbsp "&#160;">
 ]>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
-	<xsl:output media-type="text/html"/>
+	<xsl:output media-type="text/html" encoding="UTF-8"/>
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Proposed Xerces2 Requirements -  <xsl:value-of select="/requirementCatalog/@date"/>
+				<title>Proposed XRI Requirements -  <xsl:value-of select="/requirementCatalog/@date"/>
 				</title>
-				<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 			</head>
 			<body bgcolor="#FFFFFF">
-				<h1>Proposed Xerces2 Requirements</h1>
+				<h1>Proposed XRI Requirements</h1>
 				<h4>Date: <xsl:value-of select="/requirementCatalog/@date"/>
 					<br/>
   Editors: &nbsp;&nbsp;<a href="mailto:estaub@mediaone.net">Ed Staub</a>&nbsp;&nbsp;<a href="mailto:twleung@sauria.com">Ted Leung</a>
@@ -28,8 +27,8 @@
 				<dl>
 					<dt>Possible &quot;hardness&quot; values are:</dt>
 					<dd>
-						<b>hard</b> - Xerces 2 must and shall meet this requirement<br/>
-						<b>soft</b> - Xerces 2 should meet this requirement, but it may be dropped 
+						<b>hard</b> - XRI must and shall meet this requirement<br/>
+						<b>soft</b> - XRI should meet this requirement, but it may be dropped 
     because of conflicting requirements or time pressures</dd>
 					<dt>
 						<br/>
@@ -53,6 +52,7 @@
 		</html>
 	</xsl:template>
 	<xsl:template match="requirementCatalog">
+		<xsl:call-template name="indexByNumber"/>
 		<xsl:apply-templates select="categories" mode="toc"/>
 		<xsl:apply-templates select="categories"/>
 	</xsl:template>
@@ -68,6 +68,19 @@
 		</xsl:for-each>
 		<hr/>
 	</xsl:template>
+	
+	<xsl:template name="indexByNumber">
+		<h2>Requirements by Number</h2>
+		<xsl:for-each select="/requirementCatalog/requirements/req">
+			<a href="#req.{@id}"><xsl:value-of select="@id"/></a>&nbsp;	&nbsp;
+			<xsl:value-of select="substring(def,1,120)"/>
+			<xsl:if test="string-length(def)>120">...</xsl:if>
+			<br/>
+			<xsl:if test="@id mod 5 = 0"><br/></xsl:if>
+		</xsl:for-each>
+		<hr/>
+	</xsl:template>
+	
 	<xsl:template match="categories">
 		<h2>Requirements by Category</h2>
 		<xsl:for-each select="cat">
@@ -110,7 +123,7 @@
 				</p>
 				<blockquote>
 					<xsl:if test="seeAlso">
-						See also: <xsl:apply-templates select="seeAlso"/><br/>
+						<xsl:apply-templates select="seeAlso"/><br/>
 					</xsl:if>
 					<xsl:apply-templates select="edReqNote"/>
 					<xsl:apply-templates select="refs/ref"/>
@@ -120,7 +133,14 @@
 	</xsl:template>
 	
 	<xsl:template match="seeAlso">
-		<a href="#req.{@id}"><xsl:value-of select="@id"/></a> 
+		<xsl:if test="@type">
+			<xsl:value-of select="concat(@type,':')"/>
+		</xsl:if>
+		<xsl:if test="not(@type)">
+			See also:
+		</xsl:if>
+		
+		<a href="#req.{@id}"><xsl:value-of select="@id"/></a>&nbsp;&nbsp;
 	</xsl:template>
 	<xsl:template match="edReqNote">
 		<blockquote><i>Ed:</i><xsl:value-of select="."/></blockquote>
