@@ -299,7 +299,8 @@ public class XSConstraints {
             // validate the original lexical rep, and set the actual value
             actualValue = dv.validate(value, context, vinfo);
             // validate the canonical lexical rep
-            actualValue = dv.validate(vinfo.stringValue(), context, vinfo);
+            if (vinfo != null)
+                actualValue = dv.validate(vinfo.stringValue(), context, vinfo);
         } catch (InvalidDatatypeValueException ide) {
             return null;
         }
