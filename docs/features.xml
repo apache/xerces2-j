@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 1999-2004 The Apache Software Foundation.
+ * Copyright 1999-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,6 +94,7 @@ catch (SAXException e) {
    <false>
     The methods of the org.xml.sax.ext.EntityResolver2 interface will not be used.
    </false>
+   <default value='true'/>
    <access general='read-write'/>
    <since value='&ParserName; 2.7.0'/>
    <note>
@@ -207,6 +208,30 @@ catch (SAXException e) {
    </note>  
    <see idref='validation'/>
    <see idref='validation.schema'/> 
+  </feature>
+  
+  <feature name='http://apache.org/xml/features/generate-synthetic-annotations'
+           id='generate-synthetic-annotations'>
+   <true>Enable generation of synthetic annotations. A synthetic annotation will be generated when a schema component has non-schema attributes but no child annotation.</true>
+   <false>Do not generate synthetic annotations.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.7.0'/>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+   <see idref='validate-annotations'/>
+  </feature>
+  
+  <feature name='http://apache.org/xml/features/validate-annotations'
+           id='validate-annotations'>
+   <true>Schema annotations will be laxly validated against available schema components.</true>
+   <false>Do not validate schema annotations.</false>
+   <default value='false'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <since value='&ParserName; 2.7.0'/>
+   <see idref='validation'/>
+   <see idref='validation.schema'/>
+   <see idref='generate-synthetic-annotations'/>
   </feature>
   
 
