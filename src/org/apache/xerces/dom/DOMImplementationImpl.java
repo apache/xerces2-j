@@ -105,19 +105,24 @@ public class DOMImplementationImpl
     public boolean hasFeature(String feature, String version) {
 
         // Currently, we support only XML Level 1 version 1.0
+        boolean anyVersion = version == null || version.length() == 0;
         return 
-            (feature.equalsIgnoreCase("XML") 
-            && (version == null || version.length() == 0
+            (feature.equalsIgnoreCase("Core") 
+            && (anyVersion
+		|| version.equals("1.0")
+		|| version.equals("2.0")))
+         || (feature.equalsIgnoreCase("XML") 
+            && (anyVersion
 		|| version.equals("1.0")
 		|| version.equals("2.0")))
          || (feature.equalsIgnoreCase("Events") 
-	     && (version == null || version.length() == 0
+	     && (anyVersion
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("MutationEvents") 
-	     && (version == null || version.length() == 0
+	     && (anyVersion
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("Traversal") 
-	     && (version == null || version.length() == 0
+	     && (anyVersion
 		 || version.equals("2.0")))
             ;
 
