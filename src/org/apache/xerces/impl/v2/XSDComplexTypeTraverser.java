@@ -136,6 +136,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         String complexTypeName = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
         XSComplexTypeDecl type = traverseComplexTypeDecl (complexTypeNode, 
                                  complexTypeName, attrValues, schemaDoc, grammar);
+        grammar.addGlobalTypeDecl(type);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         return type;
