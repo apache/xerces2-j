@@ -991,8 +991,9 @@ public class CoreDocumentImpl
 
     	    case ENTITY_REFERENCE_NODE: {
 		newnode = createEntityReference(source.getNodeName());
-                // allow deep import temporarily
-                ((EntityReferenceImpl)newnode).isReadOnly(false);
+                // the subtree is created according to this doc by the method
+                // above, so avoid carrying over original subtree
+                deep = false;
 		break;
             }
 
@@ -1003,8 +1004,9 @@ public class CoreDocumentImpl
 		newentity.setPublicId(srcentity.getPublicId());
 		newentity.setSystemId(srcentity.getSystemId());
 		newentity.setNotationName(srcentity.getNotationName());
-		// Kids carry additional value
-                newentity.isReadOnly(false); // allow deep import temporarily
+                // Kids carry additional value,
+                // allow deep import temporarily
+                newentity.isReadOnly(false);
 		newnode = newentity;
 		break;
             }
@@ -1091,8 +1093,7 @@ public class CoreDocumentImpl
                                                reversedIdentifiers));
 	    }
         }
-        if (newnode.getNodeType() == Node.ENTITY_REFERENCE_NODE
-            || newnode.getNodeType() == Node.ENTITY_NODE) {
+        if (newnode.getNodeType() == Node.ENTITY_NODE) {
           ((NodeImpl)newnode).setReadOnly(true, true);
         }
     	return newnode;

@@ -145,7 +145,6 @@ public class DeferredEntityReferenceImpl
 
         fNodeIndex = nodeIndex;
         needsSyncData(true);
-        needsSyncChildren(true);
 
     } // <init>(DeferredDocumentImpl,int)
 
@@ -192,9 +191,5 @@ public class DeferredEntityReferenceImpl
         setReadOnly(true, true);
 
     } // synchronizeChildren()
-
-    // inhibit the synchronize inherited from EntityReferenceImpl
-    protected void synchronize() {
-    }
 
 } // class DeferredEntityReferenceImpl

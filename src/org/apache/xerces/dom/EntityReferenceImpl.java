@@ -151,6 +151,7 @@ public class EntityReferenceImpl
     	super(ownerDoc);
         this.name = name;
         isReadOnly(true);
+        needsSyncChildren(true);
     }
     
     //
@@ -175,80 +176,16 @@ public class EntityReferenceImpl
         return name;
     }
 
-    // REVISIT: Return original entity reference code. -Ac
-
-    /**
-     * Perform synchronize() before accessing children.
-     * 
-     * @return org.w3c.dom.NodeList
-     */
-    public NodeList getChildNodes() {
-    	synchronize();
-    	return super.getChildNodes();
-    }
-
-    /**
-     * Perform synchronize() before accessing children.
-     * 
-     * @return org.w3c.dom.NodeList
-     */
-    public Node getFirstChild() {
-    	synchronize();
-    	return super.getFirstChild();
-    }
-
-    /**
-     * Perform synchronize() before accessing children.
-     * 
-     * @return org.w3c.dom.NodeList
-     */
-    public Node getLastChild() {
-    	synchronize();
-    	return super.getLastChild();
-    }
-
-    /**
-     * Query the number of children in the entity definition.
-     * (A bit more work than asking locally, but may be able to avoid
-     * or defer building the clone subtree.)
-     *
-     * @return org.w3c.dom.NodeList
-     */
-    public int getLength() {
-        synchronize();
-    	return super.getLength();
-    }
-
-    /**
-     * Returns whether this node has any children.
-     * @return boolean
-     */
-    public boolean hasChildNodes() {
-    	synchronize();
-    	return super.hasChildNodes();
-    }
-
-    /** Returns the node at the given index. */
-    public Node item(int index) {
-    	synchronize();
-    	return super.item(index);
-    }
-
-
     /**
      * EntityReference's children are a reflection of those defined in the
      * named Entity. This method creates them if they haven't been created yet.
-     * This doesn't really support editing the Entity though.
+     * This doesn't support editing the Entity though, since this only called
+     * once for all.
      */
-    protected void synchronize() {
-        /***
-        // NOTE: This should *not* be done here because if the user
-        //       access the Entity *before* the entity reference, then
-        //       it will be out of sync. Therefore, the code that builds
-        //       the DOM tree must handle filling in the entity node. -Ac
-        if (firstChild != null) {
-            return;
-        }
+    protected void synchronizeChildren() {
+        // no need to synchronize again
+        needsSyncChildren(false);
+
     	DocumentType doctype;
     	NamedNodeMap entities;
     	EntityImpl entDef;
@@ -267,11 +204,10 @@ public class EntityReferenceImpl
                  defkid != null;
                  defkid = defkid.getNextSibling()) {
                 Node newkid = defkid.cloneNode(true);
-                insertBefore(newkid,null);
+                insertBefore(newkid, null);
             }
             setReadOnly(true, true);
     	}
-        /***/
     }
 
 
