@@ -209,7 +209,7 @@ public class SchemaGrammar {
     private SchemaGrammar(SymbolTable symbolTable, boolean fullSet) {
         fSymbolTable = symbolTable;
 
-        fXSTypeCount = fullSet?BASICSET_COUNT:FULLSET_COUNT;
+        fXSTypeCount = fullSet?FULLSET_COUNT:BASICSET_COUNT;
         fTypeDeclType = new XSType[1][fXSTypeCount];
         topLevelTypeDecls = new Hashtable();
 

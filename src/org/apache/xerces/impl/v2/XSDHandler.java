@@ -77,6 +77,8 @@ import java.util.Stack;
 import java.util.Vector;
 import java.io.IOException;
 
+// REVISIT:  needed for the main method
+import org.apache.xerces.util.EntityResolverWrapper;
 
 /**
  * The purpose of this class is to co-ordinate the construction of a
@@ -228,6 +230,10 @@ class XSDHandler {
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, schemaHint);
         fRoot = constructTrees(schemaRoot);
+        if(fRoot == null) {
+            // REVISIT:  something went wrong; print error about no schema found
+            return null;
+        }
         fDoc2XSDocumentMap.put(schemaRoot, fRoot);
 
         // second phase:  fill global registries.
@@ -261,6 +267,7 @@ class XSDHandler {
     // the DependencyMap object what XSDocumentInfo objects its XSDocumentInfo
     // depends on.
     protected XSDocumentInfo constructTrees(Document schemaRoot) {
+        if(schemaRoot == null) return null;
         XSDocumentInfo currSchemaInfo = new
                                         XSDocumentInfo(schemaRoot);
         Vector dependencies = new Vector();
@@ -937,4 +944,11 @@ class XSDHandler {
         // import the one containing decl...
         return null;
     } // findXSDocumentForDecl(XSDocumentInfo, Element):  XSDocumentInfo
+
+    /******* only for testing!  *******/
+    public static void main (String args[]) throws Exception {
+        XSDHandler me = new XSDHandler(new XSGrammarResolver(), new XMLErrorReporter(), new EntityResolverWrapper(), new SymbolTable());
+        me.parseSchema(args[0], args[1]);
+        System.err.println("traversing completed!"); 
+    } // main
 } // XSDHandler

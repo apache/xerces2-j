@@ -70,7 +70,7 @@ import java.util.Hashtable;
  * affect the contents of that schema document alone.
  *
  * @author Neil Graham, IBM
- * @version $ID$
+ * @version $Id$
  */
 
 class XSDocumentInfo {
@@ -96,10 +96,12 @@ class XSDocumentInfo {
 
     XSDocumentInfo (Document schemaDoc) {
         fSchemaDoc = schemaDoc;
-        Element root = DOMUtil.getRoot(schemaDoc);
+        if(schemaDoc != null) {
+            Element root = DOMUtil.getRoot(schemaDoc);
 
-        // assign attributes appropriately according to
-        // generalAttrCheck as applied to root.
+            // assign attributes appropriately according to
+            // generalAttrCheck as applied to root.
+        }
     }
 } // XSDocumentInfo
 

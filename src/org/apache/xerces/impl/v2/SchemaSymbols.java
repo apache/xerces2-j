@@ -266,5 +266,6 @@ public final  class SchemaSymbols {
     public static final int WS_COLLAPSE = 2;
 
     // maxOccurs = "unbounded"
-    public static final int OCCURRENCE_UNBOUNDED = -1;
+    // REVISIT:  the original value (-1) causes an ArrayIndexOutOfBoundsException at XSAttributeChecker:167
+    public static final int OCCURRENCE_UNBOUNDED = 0;
 }
