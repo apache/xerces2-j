@@ -146,12 +146,12 @@ public abstract class XMLParser
         fSymbolTable = symbolTable;
         fProperties.put(XERCES_PROPERTIES_PREFIX + "symbol-table",
                         fSymbolTable);
-        fErrorReporter = new XMLErrorReporter();
-        fProperties.put(XERCES_PROPERTIES_PREFIX + "error-reporter",
-                        fErrorReporter);
         fEntityManager = new XMLEntityManager();
         fProperties.put(XERCES_PROPERTIES_PREFIX + "entity-manager",
                         fEntityManager);
+        fErrorReporter = new XMLErrorReporter( fEntityManager.getEntityScanner() );
+        fProperties.put(XERCES_PROPERTIES_PREFIX + "error-reporter",
+                        fErrorReporter);
 
         // set features to their default values
     }

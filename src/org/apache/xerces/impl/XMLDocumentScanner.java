@@ -1938,6 +1938,7 @@ public class XMLDocumentScanner
      * Dispatcher to handle trailing miscellaneous section scanning.
      *
      * @author Andy Clark, IBM
+     * @author Eric Ye, IBM
      */
     protected final class TrailingMiscDispatcher
         implements Dispatcher {
@@ -1961,7 +1962,46 @@ public class XMLDocumentScanner
         public boolean dispatch(boolean complete) 
             throws IOException, SAXException {
 
-            // TODO
+            do {
+
+                if (fEntityScanner.skipChar('<')) {
+                    setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                    if (fEntityScanner.skipChar('?')) {
+                        scanPI();
+                    }
+                    else if ( fEntityScanner.skipChar('!')) {
+                        scanComment();
+                    }
+                    setScannerState(SCANNER_STATE_TRAILING_MISC);
+                }
+                else if ( fEntityScanner.skipSpaces() ) {
+                    // do nothing
+                }
+                else {
+                    int ch = fEntityScanner.peekChar();
+
+                    if (XMLChar.isInvalid(ch)) {
+                        if (ch == -1 ) {
+                            setScannerState(SCANNER_STATE_END_OF_INPUT);
+                            setDispatcher(fEndOfInputDispatcher);
+                            return true;
+                        }
+                        else {
+                            // REVISIT report error
+                            // throw new SAXException("invalid char in trailing Misc);
+                            setScannerState(SCANNER_STATE_END_OF_INPUT);
+                            setDispatcher(fEndOfInputDispatcher);
+                            return false;
+                        }
+                    }
+                    else {
+                        //REVISIT: report error
+                        throw new SAXException("not recognized in trailing Misc");
+                    }
+                }
+
+            } while ( complete );
+
             setScannerState(SCANNER_STATE_END_OF_INPUT);
             setDispatcher(fEndOfInputDispatcher);
             return true;

@@ -125,8 +125,9 @@ public class XMLErrorReporter
     /**
      * 
      */
-    public XMLErrorReporter() {
+    public XMLErrorReporter(Locator locator) {
         fMessageFormatters = new Hashtable();
+        fLocator = locator;
     }
 
     //
@@ -228,8 +229,9 @@ public class XMLErrorReporter
      * 
      * @param configurationManager 
      */
-    public void reset(XMLComponentManager configurationManager)
+    public void reset(XMLComponentManager componentManager)
         throws SAXException {
+        fErrorHandler = (ErrorHandler)componentManager.getProperty(XERCES_PROPERTIES_PREFIX + "internal/error-handler");
     } // reset
 
     /**
