@@ -232,7 +232,7 @@ extends AbstractDOMParser implements DOMBuilder {
 
         // DOM Filter
         if (fSkippedElemStack!=null) {        
-            fSkippedElemStack.clear();
+            fSkippedElemStack.removeAllElements();
         }
         fRejectedElement.clear();
         fFilterReject = false;
