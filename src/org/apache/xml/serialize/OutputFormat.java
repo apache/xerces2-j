@@ -804,54 +804,6 @@ public class OutputFormat
     
 
     /**
-     * Returns the document type public identifier
-     * specified for this document, or null.
-     */
-    public static String whichDoctypePublic( Document doc )
-    {
-        DocumentType doctype;
-        
-        /* XXX  Delayed until DOM Level 2 is introduced into the code base
-           doctype = doc.getDoctype();
-           if ( doctype != null ) {
-           // Note on catch: DOM Level 1 does not specify this method
-           // and the code will throw a NoSuchMethodError
-           try {
-           return doctype.getPublicID();
-           } catch ( Error except ) {  }
-           }
-        */
-        if ( doc instanceof HTMLDocument )
-            return DTD.XHTMLPublicId;
-        return null;
-    }
-
-
-    /**
-     * Returns the document type system identifier
-     * specified for this document, or null.
-     */
-    public static String whichDoctypeSystem( Document doc )
-    {
-        DocumentType doctype;
-        
-        /* XXX  Delayed until DOM Level 2 is introduced into the code base
-           doctype = doc.getDoctype();
-           if ( doctype != null ) {
-           // Note on catch: DOM Level 1 does not specify this method
-           // and the code will throw a NoSuchMethodError
-           try {
-           return doctype.getSystemID();
-           } catch ( Error except ) { }
-           }
-        */
-        if ( doc instanceof HTMLDocument )
-            return DTD.XHTMLSystemId;
-        return null;
-    }
-
-
-    /**
      * Returns the suitable media format for a document
      * output with the specified method.
      */
