@@ -205,6 +205,9 @@ public class AttrImpl
         AttrImpl clone = (AttrImpl) super.cloneNode(deep);
 
         // take care of case where there are kids
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
     	if (!clone.hasStringValue()) {
 
             // Need to break the association w/ original kids
