@@ -31,7 +31,7 @@ Copyright:
     <property name='jar.parser' value='xercesImpl.jar'/>
     <property name='jar.samples' value='xercesSamples.jar'/>
 
-    <property name="year" value="1999-2001"/>
+    <property name="year" value="1999-2002"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
