@@ -475,7 +475,7 @@ public class Writer
                         }
                         catch (Exception ex) {
                             parser = null;
-                            System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");
+                            System.err.println("error: Unable to instantiate parser ("+parserName+")");
                         }
                     }
                     continue;
