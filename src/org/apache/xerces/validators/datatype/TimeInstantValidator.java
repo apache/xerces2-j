@@ -65,7 +65,7 @@ import java.util.GregorianCalendar;
 import java.text.ParseException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 
-public class RecurringDurationValidator implements DatatypeValidator {
+public class TimeInstantValidator implements DatatypeValidator {
 
     /**
      * 
@@ -119,7 +119,7 @@ public class RecurringDurationValidator implements DatatypeValidator {
     // REVISIT
 
     public int compare( DatatypeValidator o1, DatatypeValidator o2) {
-        -1;
+        return -1;
     }
 
 }
