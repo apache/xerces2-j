@@ -292,7 +292,7 @@ implements Locator {
     public boolean scanContent(XMLString content)
     throws IOException {
 
-    return false;
+        return false;
     } // scanContent
 
 
@@ -322,11 +322,14 @@ implements Locator {
      * 
      */
     public void skipSpaces() throws IOException {
-        int readChar = this.fPushbackReader.read();
+        int readChar           = this.fPushbackReader.read();
+        int countScannedSpaces = 0;
         while (  XMLChar.isSpace( readChar ) == true ) {
             fCharPosition++;
             readChar = this.fPushbackReader.read();
         }
+        if( readChar != -1 )
+            this.fPushbackReader.unread( readChar);
     } // skipSpaces
 
 
@@ -337,13 +340,28 @@ implements Locator {
      */
     public boolean skipString(String s) throws IOException {
         int     charValue;
-        char[]  scanStringBuffer = s.toCharArray();
+        int     sLength           = s.length();
+        char[]  skippedString     = s.toCharArray();
+        char[]  scannedChars      = new char[sLength];
 
-        for( int i = 0; i< s.length(); i++ ) {
+        for ( int countScannedChars = 0; countScannedChars< sLength;) {
             charValue = this.fPushbackReader.read();
-            fCharPosition++;
-            if( charValue != scanStringBuffer[i])
+            if ( charValue == -1) {//EOF
+                if ( countScannedChars > 0) {
+                    this.fPushbackReader.unread(scannedChars, 0, countScannedChars);
+                    fCharPosition -= countScannedChars;
+                }
                 return false;
+            } else if (charValue != skippedString[countScannedChars] ) {//not able to skip
+                if ( countScannedChars == 0 ) {
+                    this.fPushbackReader.unread( charValue ); 
+                } else {
+                    this.fPushbackReader.unread(scannedChars, 0, countScannedChars);
+                }
+                return false;
+            }
+            scannedChars[countScannedChars++] = (char) charValue;
+            fCharPosition++;
         }
         return true;
     } // skipString
@@ -391,8 +409,8 @@ implements Locator {
     protected void setXMLEntityReader(){
         Reader inSource =this.fInputSource.getCharacterStream();
         if ( inSource != null  ) {
-            fPushbackReader = new PushbackReader(inSource);//One character reader
-            
+            fPushbackReader = new PushbackReader(inSource, 2048);//One character reader
+
         }
     }
 
