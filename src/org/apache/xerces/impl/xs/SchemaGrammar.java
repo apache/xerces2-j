@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs;
+package org.apache.xerces.impl.xs; 
 
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
@@ -63,11 +63,18 @@ import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
+import org.apache.xerces.impl.validation.Grammar;
+
 import java.util.Hashtable;
 
 /**
  * This class is to hold all schema component declaration that are declared
  * within one namespace.
+ *
+ * The Grammar class this class extends contains what little
+ * commonality there is between XML Schema and DTD grammars.  It's
+ * useful to distinguish grammar objects from other kinds of object
+ * when they exist in pools or caches.
  *
  * @author Sandy Gao, IBM
  * @author Elena Litani, IBM
@@ -75,7 +82,7 @@ import java.util.Hashtable;
  * @version $Id$
  */
 
-public class SchemaGrammar {
+public class SchemaGrammar  extends Grammar {
 
     /** Symbol table. */
     private SymbolTable fSymbolTable;
@@ -146,6 +153,11 @@ public class SchemaGrammar {
         addGlobalTypeDecl(fAnyType);
 
     } // <init>(SymbolTable, boolean)
+
+    // DTDGrammar methods
+    public boolean isNamespaceAware () {
+        return true;
+    } // isNamespaceAware():boolean
 
     /**
      * Returns this grammar's target namespace.

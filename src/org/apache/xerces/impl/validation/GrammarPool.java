@@ -57,8 +57,9 @@
 
 package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.impl.dtd.Grammar;
+import org.apache.xerces.impl.validation.Grammar;
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 /**
  * Stores grammars in a pool associated to a specific key. This grammar pool
@@ -82,6 +83,7 @@ public class GrammarPool {
 
     /** Grammars associated with namespaces. */
     protected Hashtable fGrammarsNS = new Hashtable();
+    protected Grammar fNoNSGrammar = null;
 
     //
     // Constructors
@@ -114,7 +116,11 @@ public class GrammarPool {
      * @param grammar   The grammar.
      */
     public void putGrammarNS(String namespace, Grammar grammar) {
-        fGrammarsNS.put(namespace, grammar);
+        if(namespace != null) {
+            fGrammarsNS.put(namespace, grammar);
+        } else {
+            fNoNSGrammar = grammar;
+        }
     } // putGrammarNS(String,Grammar)
 
     /**
@@ -132,7 +138,9 @@ public class GrammarPool {
      * @param namespace Target namespace.
      */
     public Grammar getGrammarNS(String namespace) {
-        return (Grammar)fGrammarsNS.get(namespace);
+        return ((namespace == null)?
+            fNoNSGrammar :
+            (Grammar)fGrammarsNS.get(namespace));
     } // getGrammarNS(String):Grammar
 
     /**
@@ -155,7 +163,11 @@ public class GrammarPool {
      * @param namespace Target namespace.
      */
     public Grammar removeGrammarNS(String namespace) {
-        if (fGrammarsNS.contains(namespace)) {
+        if(namespace == null) {
+            Grammar tempGrammar = fNoNSGrammar;
+            fNoNSGrammar = null;
+            return tempGrammar;
+        } else if (fGrammarsNS.contains(namespace)) {
             return (Grammar)fGrammarsNS.remove(namespace);
         }
         return null;
@@ -181,4 +193,31 @@ public class GrammarPool {
         return fGrammarsNS.containsKey(namespace);
     } // containsGrammarNS(String):boolean
 
+    public Grammar [] getGrammars() {
+        int grammarSize = fGrammars.size() ;
+        Grammar [] toReturn = new Grammar[grammarSize];
+        int pos = 0;
+        Enumeration grammars = fGrammars.elements();
+        while (grammars.hasMoreElements()) {
+            toReturn[pos++] = (Grammar)grammars.nextElement();
+        }
+        return toReturn;
+    } // getGrammars()
+
+    /**
+     * Returns all grammars associated with namespaces.
+     * 
+     */
+    public Grammar [] getGrammarsNS() {
+        int grammarSize = fGrammarsNS.size() + ((fNoNSGrammar == null) ? 0 : 1);
+        Grammar [] toReturn = new Grammar[grammarSize];
+        int pos = 0;
+        Enumeration grammarsNS = fGrammarsNS.elements();
+        while (grammarsNS.hasMoreElements()) {
+            toReturn[pos++] = (Grammar)grammarsNS.nextElement();
+        }
+        if(pos < grammarSize) 
+            toReturn[pos++] = fNoNSGrammar;
+        return toReturn; 
+    } // getGrammarsNS()
 } // class GrammarPool

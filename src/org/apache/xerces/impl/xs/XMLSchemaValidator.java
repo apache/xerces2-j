@@ -63,6 +63,8 @@ import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.identity.*;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.validation.ValidationManager;
+import org.apache.xerces.impl.validation.GrammarPool;
+import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.traversers.XSAttributeChecker;
@@ -165,9 +167,13 @@ public class XMLSchemaValidator
     public static final String ERROR_REPORTER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
-    /** Property identifier: entiry resolver. */
+    /** Property identifier: entity resolver. */
     public static final String ENTITY_RESOLVER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+
+    /** Property identifier: grammar pool. */
+    public static final String GRAMMAR_POOL =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
 
     protected static final String VALIDATION_MANAGER =
     Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
@@ -316,6 +322,7 @@ public class XMLSchemaValidator
     // updated during reset
     protected ValidationManager fValidationManager = null;
     protected ValidationState fValidationState = null;
+    protected GrammarPool fGrammarPool;
 
     // schema location property values
     protected String fExternalSchemas = null;
@@ -1024,6 +1031,11 @@ public class XMLSchemaValidator
         // clear grammars, and put the one for schema namespace there
         fGrammarResolver.reset();
         fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
+        fGrammarPool = (GrammarPool)componentManager.getProperty(GRAMMAR_POOL);
+        Grammar [] initialGrammars = fGrammarPool.getGrammarsNS();
+        for (int i = 0; i < initialGrammars.length; i++) {
+            fGrammarResolver.putGrammar((SchemaGrammar)(initialGrammars[i]));
+        }
 
         // clear thing in substitution group handler
         fSubGroupHandler.reset();

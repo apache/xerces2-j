@@ -100,7 +100,7 @@ import org.apache.xerces.xni.QName;
  *
  * @version $Id$
  */
-public abstract class Grammar implements EntityState {
+public abstract class Grammar extends org.apache.xerces.impl.validation.Grammar implements EntityState {
 
     //
     // Constants
