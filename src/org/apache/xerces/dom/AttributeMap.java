@@ -107,11 +107,11 @@ public class AttributeMap extends NamedNodeMapImpl {
     public Node setNamedItem(Node arg)
         throws DOMException {
 
-    	if (isReadOnly()) {
+        if (isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);
         }
-    	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
+        if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
@@ -122,7 +122,7 @@ public class AttributeMap extends NamedNodeMapImpl {
 
         AttrImpl argn = (AttrImpl)arg;
 
-    	if (argn.isOwned()){
+        if (argn.isOwned()){
             if (argn.getOwnerElement() != ownerNode) {
                    String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
                    throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
@@ -135,16 +135,16 @@ public class AttributeMap extends NamedNodeMapImpl {
         argn.ownerNode = ownerNode;
         argn.isOwned(true);
 
-   	int i = findNamePoint(arg.getNodeName(),0);
-    	AttrImpl previous = null;
-    	if (i >= 0) {
+    int i = findNamePoint(arg.getNodeName(),0);
+        AttrImpl previous = null;
+        if (i >= 0) {
             previous = (AttrImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
             previous.ownerNode = ownerNode.ownerDocument();
             previous.isOwned(false);
             // make sure it won't be mistaken with defaults in case it's reused
             previous.isSpecified(true);
-    	} else {
+        } else {
             i = -1 - i; // Insert point (may be end of list)
             if (null == nodes) {
                 nodes = new Vector(5, 10);
@@ -174,12 +174,12 @@ public class AttributeMap extends NamedNodeMapImpl {
     public Node setNamedItemNS(Node arg)
         throws DOMException {
 
-    	if (isReadOnly()) {
+        if (isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
     
-    	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
+        if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);
         }
@@ -190,7 +190,7 @@ public class AttributeMap extends NamedNodeMapImpl {
         }
         AttrImpl argn = (AttrImpl)arg;
 
-    	if (argn.isOwned()){
+        if (argn.isOwned()){
             if (argn.getOwnerElement() != ownerNode) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INUSE_ATTRIBUTE_ERR", null);
                 throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, msg);
@@ -203,19 +203,19 @@ public class AttributeMap extends NamedNodeMapImpl {
         argn.ownerNode = ownerNode;
         argn.isOwned(true);
 
-    	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
-    	AttrImpl previous = null;
-    	if (i >= 0) {
+        int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
+        AttrImpl previous = null;
+        if (i >= 0) {
             previous = (AttrImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
             previous.ownerNode = ownerNode.ownerDocument();
             previous.isOwned(false);
             // make sure it won't be mistaken with defaults in case it's reused
             previous.isSpecified(true);
-    	} else {
-    	    // If we can't find by namespaceURI, localName, then we find by
-    	    // nodeName so we know where to insert.
-    	    i = findNamePoint(arg.getNodeName(),0);
+        } else {
+            // If we can't find by namespaceURI, localName, then we find by
+            // nodeName so we know where to insert.
+            i = findNamePoint(arg.getNodeName(),0);
             if (i >=0) {
                 previous = (AttrImpl) nodes.elementAt(i);
                 nodes.insertElementAt(arg,i);
@@ -305,12 +305,12 @@ public class AttributeMap extends NamedNodeMapImpl {
      * must be thrown if the specified name is not found.
      */
     final protected Node internalRemoveNamedItem(String name, boolean raiseEx){
-    	if (isReadOnly()) {            
+        if (isReadOnly()) {            
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
-    	int i = findNamePoint(name,0);
-    	if (i < 0) {
+        int i = findNamePoint(name,0);
+        if (i < 0) {
             if (raiseEx) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
@@ -412,12 +412,12 @@ public class AttributeMap extends NamedNodeMapImpl {
     final protected Node internalRemoveNamedItemNS(String namespaceURI,
                                                    String name,
                                                    boolean raiseEx) {
-    	if (isReadOnly()) {
+        if (isReadOnly()) {
             String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, msg);            
         }
-    	int i = findNamePoint(namespaceURI, name);
-    	if (i < 0) {
+        int i = findNamePoint(namespaceURI, name);
+        if (i < 0) {
             if (raiseEx) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_FOUND_ERR", null);
                 throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
@@ -498,31 +498,33 @@ public class AttributeMap extends NamedNodeMapImpl {
      */
      
     public NamedNodeMapImpl cloneMap(NodeImpl ownerNode) {
-    	AttributeMap newmap =
+        AttributeMap newmap =
             new AttributeMap((ElementImpl) ownerNode, null);
         newmap.hasDefaults(hasDefaults());
         newmap.cloneContent(this);
-    	return newmap;
+        return newmap;
     } // cloneMap():AttributeMap
 
     /**
      * Override parent's method to set the ownerNode correctly
      */
     protected void cloneContent(NamedNodeMapImpl srcmap) {
-    	if (srcmap.nodes != null) {
-            if (nodes == null) {
-                nodes = new Vector(srcmap.nodes.size());
-            }
-            else {
-                nodes.ensureCapacity(srcmap.nodes.size());
-            }
-            for (int i = 0; i < srcmap.nodes.size(); ++i) {
-                NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
-                NodeImpl clone = (NodeImpl) n.cloneNode(true);
-                clone.isSpecified(n.isSpecified());
-                nodes.insertElementAt(clone, i);
-                clone.ownerNode = ownerNode;
-                clone.isOwned(true);
+        Vector srcnodes = srcmap.nodes;
+        if (srcnodes != null) {
+            int size = srcnodes.size();
+            if (size != 0) {
+                if (nodes == null) {
+                    nodes = new Vector(size);
+                }
+                nodes.setSize(size);
+                for (int i = 0; i < size; ++i) {
+                    NodeImpl n = (NodeImpl) srcnodes.elementAt(i);
+                    NodeImpl clone = (NodeImpl) n.cloneNode(true);
+                    clone.isSpecified(n.isSpecified());
+                    nodes.setElementAt(clone, i);
+                    clone.ownerNode = ownerNode;
+                    clone.isOwned(true);
+                }
             }
         }
     } // cloneContent():AttributeMap
@@ -563,7 +565,7 @@ public class AttributeMap extends NamedNodeMapImpl {
             }
         }
         // add the new defaults
-    	if (defaults == null) {
+        if (defaults == null) {
             return;
         }
         if (nodes == null || nodes.size() == 0) {
