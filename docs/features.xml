@@ -253,7 +253,7 @@ http://apache.org/xml/features/validation/warn-on-duplicate-attdef
     </tr>
     <tr>
         <th>Default:</th>
-        <td>true</td>
+        <td>false</td>
     </tr>
 </table>
 
@@ -272,7 +272,7 @@ http://apache.org/xml/features/validation/warn-on-undeclared-elemdef
     </tr>
     <tr>
         <th>Default:</th>
-        <td>true</td>
+        <td>false</td>
     </tr>
 </table>
 
