@@ -12,17 +12,20 @@ include ../../../../../src/Makefile.incl
 
 TARGETS=\
 	AttrImpl.class\
+	AttrNSImpl.class\
 	CDATASectionImpl.class\
 	CharacterDataImpl.class\
 	CommentImpl.class\
 	DeepNodeListImpl.class\
 	DeferredAttrImpl.class\
+	DeferredAttrNSImpl.class\
 	DeferredCDATASectionImpl.class\
 	DeferredCommentImpl.class\
 	DeferredDocumentImpl.class\
 	DeferredDocumentTypeImpl.class\
 	DeferredElementDefinitionImpl.class\
 	DeferredElementImpl.class\
+	DeferredElementNSImpl.class\
 	DeferredEntityImpl.class\
 	DeferredEntityReferenceImpl.class\
 	DeferredNode.class\
@@ -36,19 +39,16 @@ TARGETS=\
 	DOMImplementationImpl.class\
 	ElementDefinitionImpl.class\
 	ElementImpl.class\
+	ElementNSImpl.class\
 	EntityImpl.class\
 	EntityReferenceImpl.class\
 	LCount.class\
 	NamedNodeMapImpl.class\
+	NodeContainer.class\
 	NodeImpl.class\
 	NotationImpl.class\
 	ProcessingInstructionImpl.class\
-	TextImpl.class \
-	NodeContainer.class \
-	AttrNSImpl.class \
-	ElementNSImpl.class \
-	DeferredAttrNSImpl.class \
-	DeferredElementNSImpl.class
+	TextImpl.class
 
 all: dirs compile
 
