@@ -59,6 +59,7 @@ package xni;
 
 import java.io.PrintWriter;
 
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -415,7 +416,8 @@ public class Counter
 
                     // create parser
                     try {
-                        parserConfig = (XMLParserConfiguration)Class.forName(parserName).newInstance();
+                        parserConfig = (XMLParserConfiguration)ObjectFactory.newInstance(parserName,
+                            ObjectFactory.findClassLoader(), true);
                         parserConfig.addRecognizedFeatures(new String[] {
                             NAMESPACE_PREFIXES_FEATURE_ID,
                         });
@@ -496,7 +498,8 @@ public class Counter
 
                 // create parser
                 try {
-                    parserConfig = (XMLParserConfiguration)Class.forName(DEFAULT_PARSER_CONFIG).newInstance();
+                    parserConfig = (XMLParserConfiguration)ObjectFactory.newInstance(DEFAULT_PARSER_CONFIG,
+                        ObjectFactory.findClassLoader(), true);
                     parserConfig.addRecognizedFeatures(new String[] {
                         NAMESPACE_PREFIXES_FEATURE_ID,
                     });

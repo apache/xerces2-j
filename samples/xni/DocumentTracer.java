@@ -64,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -1428,7 +1429,8 @@ public class DocumentTracer
 
                     // create parser
                     try {
-                        parserConfig = (XMLParserConfiguration)Class.forName(parserName).newInstance();
+                        parserConfig = (XMLParserConfiguration)ObjectFactory.newInstance(parserName, 
+                            ObjectFactory.findClassLoader(), true);
                         parser = null;
                     }
                     catch (Exception e) {
@@ -1468,7 +1470,8 @@ public class DocumentTracer
 
                 // create parser
                 try {
-                    parserConfig = (XMLParserConfiguration)Class.forName(DEFAULT_PARSER_CONFIG).newInstance();
+                    parserConfig = (XMLParserConfiguration)ObjectFactory.newInstance(DEFAULT_PARSER_CONFIG,
+                        ObjectFactory.findClassLoader(), true);
                 }
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser configuration ("+DEFAULT_PARSER_CONFIG+")");
