@@ -66,9 +66,16 @@ import  org.w3c.dom.Element;
 
 //REVISIT: for now, import everything in the DOM package
 import  org.w3c.dom.*;
+import java.util.*;
 
 //Unit Test 
 import  org.apache.xerces.parsers.DOMParser;
+import  org.apache.xerces.validators.common.XMLValidator;
+import  org.apache.xerces.validators.datatype.DatatypeValidator;
+import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
+import  org.apache.xerces.framework.XMLContentSpec;
+import  org.apache.xerces.utils.QName;
+
 import  org.xml.sax.InputSource;
 import  org.xml.sax.SAXParseException;
 import  org.xml.sax.EntityResolver;
@@ -78,6 +85,7 @@ import  java.io.IOException;
 import  org.w3c.dom.Document;
 import  org.apache.xml.serialize.OutputFormat;
 import  org.apache.xml.serialize.XMLSerializer;
+
 
 
 
@@ -369,9 +377,7 @@ public class TraverseSchema {
     private NodeList fGlobalAttrs;
     private NodeList fGlobalAttrGrps;
 
-    
-    private string targetNSUriString = "";
-
+    private DatatypeValidatorRegistry fDatatypeRegistry = new DatatypeValidatorRegistry();
     private Hashtable fComplexTypeRegistry;
 
     private int fAnonTypeCount =0;
@@ -379,6 +385,8 @@ public class TraverseSchema {
     private int fCurrentScope=0;
 
     private boolean defaultQualified = false;
+    private int targetNSURI;
+    private String targetNSUriString = "";
 
     class ComplexTypeInfo {
 	public String typeName;
@@ -417,9 +425,9 @@ public class TraverseSchema {
 	fScopeCount++;
 	fCurrentScope = 0;
 
-	fGlobalGroups = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_GROUP);
-	fGlobalAttrs  = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTE);
-	fGlobalAttrGrps = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTEGROUP);
+	//fGlobalGroups = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_GROUP);
+	//fGlobalAttrs  = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTE);
+	//fGlobalAttrGrps = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTEGROUP);
 
 
         for (Element child = XUtil.getFirstChildElement(root); child != null;
@@ -532,7 +540,7 @@ public class TraverseSchema {
      */
     
     //REVISIT: TO DO, base and derivation ???
-    private int traverseComplexTypeDecl( Element complexTypeDecl ) { 
+    private int traverseComplexTypeDecl( Element complexTypeDecl ) throws Exception{ 
         int complexTypeAbstract  = fStringPool.addSymbol(
                                                         complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT ));
 	String isAbstract = complexTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
@@ -605,7 +613,7 @@ public class TraverseSchema {
 	     child = XUtil.getNextSiblingElement(child)) 
 	{
 	    //REVISIT: SimpleType restriction handling
-	    if (child.getNodeName().equals(SchemaSymbols.ELT_RESTRICTIONS))
+	    //if (child.getNodeName().equals(SchemaSymbols.ELT_RESTRICTIONS))
 		reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
 				  new Object [] { "Restriction" });
 	}
@@ -639,7 +647,7 @@ public class TraverseSchema {
                 contentSpecType = fStringPool.addSymbol("MIXED");
 		mixedContent = true;
 		csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-	    } else if (content.equals(SchemaSymbols.ATTVAL_ELEMONLY)) {
+	    } else if (content.equals(SchemaSymbols.ATTVAL_ELEMENTONLY)) {
 		elementContent = true;
 	    } else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
 		textContent = true;
@@ -665,12 +673,12 @@ public class TraverseSchema {
 
 		String childName = child.getNodeName();
 
-		if (childName.equals(SchemaSymbols.ELT_ELEMENTDECL)) {
+		if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
 		    //if (child.getAttribute(SchemaSymbols.ATT_REF).equals("") ) {
 
 			if (mixedContent || elementContent) {
 			    //REVISIT: unfinished
-			    QName eltQName = traverseElementDecl(Child);
+			    QName eltQName = traverseElementDecl(child);
 			    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
 								   eltQName.localpart,
 								   eltQName.uri, 
@@ -689,7 +697,7 @@ public class TraverseSchema {
 			//index = traverseElementRef(child);
 
 		} 
-		else if (childName.equals(SchemaSymbols.ELT_GROUPDECL)) {
+		else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
 		    /* //if (elementContent) {
 			int groupNameIndex = 0;
 			if (child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
@@ -701,7 +709,7 @@ public class TraverseSchema {
 			//reportSchemaError(SchemaMessageProvider.OnlyInEltContent,
 				//	  new Object [] { "group" });
 		     */
-		    index = traverseGroup(child);
+		    index = traverseGroupDecl(child);
 		    seeParticle = true;
 		  
 		} 
@@ -720,8 +728,8 @@ public class TraverseSchema {
 		    seeParticle = true;
 		  
 		} 
-		else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEDECL) ||
-			   childName.equals(SchemaSymbols.ELT_ATTRGROUPDECL)) {
+		else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
+			   childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
 		    break; // attr processing is done below
 		} 
 		else if (childName.equals(SchemaSymbols.ELT_ANY)) {
@@ -729,7 +737,7 @@ public class TraverseSchema {
 		    left = -1;
 		} 
 		else { // datatype qual   
-		    if (complextTypeBase.equals(""))
+		    if (base.equals(""))
 			reportSchemaError(SchemaMessageProvider.DatatypeWithType, null);
                     else
 			reportSchemaError(SchemaMessageProvider.DatatypeQualUnsupported,
@@ -768,21 +776,21 @@ public class TraverseSchema {
 	//int typeIndex = fValidator.addElementDecl(typeNameIndex, contentSpecType, left, false);
 
 	if (!typeName.startsWith("#")) {
-	    typeName = targetNSUriString + "," + typename;
+	    typeName = targetNSUriString + "," + typeName;
 	}
 	ComplexTypeInfo typeInfo = new ComplexTypeInfo();
 	typeInfo.base = base;
-	typeInfo.derivedBy = parseComplexDerivedby(complexTypeDecl.getAttribute(SchemaSymbols.ATT_DERIVEDBY);
-	typeInfo.scopeDefined = scopedefined; 
+	typeInfo.derivedBy = parseComplexDerivedBy(complexTypeDecl.getAttribute(SchemaSymbols.ATT_DERIVEDBY));
+	typeInfo.scopeDefined = scopeDefined; 
 	typeInfo.contentSpecHandle = left;
 	typeInfo.contentType = contentSpecType;
-	typeInfo.blockSet = parseBlockSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_BLOCK);
-	typeInfo.finalSet = parseFinalSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL);
+	typeInfo.blockSet = parseBlockSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_BLOCK));
+	typeInfo.finalSet = parseFinalSet(complexTypeDecl.getAttribute(SchemaSymbols.ATT_FINAL));
 
 	fComplexTypeRegistry.put(typeName,typeInfo);
 
-	for (int x = 0; x < uses.size(); x++)
-	    addUse(typeNameIndex, (Integer)uses.elementAt(x));
+	//for (int x = 0; x < uses.size(); x++)
+	    //addUse(typeNameIndex, (Integer)uses.elementAt(x));
 
 	
 	int typeNameIndex = fStringPool.addSymbol(typeName); //REVISIT namespace clashes possible
@@ -795,7 +803,7 @@ public class TraverseSchema {
 
 	    String childName = child.getNodeName();
 
-	    if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEDECL)) {
+	    if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
 		traverseAttributeDecl(child, typeInfo);
 	    } 
 	/*    else if (childName.equals(SchemaSymbols.ELT_ATTRGROUPDECL) 
@@ -825,12 +833,12 @@ public class TraverseSchema {
 
     } // end of method: traverseComplexTypeDecl
 
-    int expandContentModel ( int index, Element particle) {
+    int expandContentModel ( int index, Element particle) throws Exception {
 	
 	String minOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);
 	String maxOccurs = particle.getAttribute(SchemaSymbols.ATT_MINOCCURS);    
 
-	int min, max;
+	int min=1, max=1;
 
 	if (minOccurs.equals("")) {
 	    minOccurs = "1";
@@ -845,26 +853,26 @@ public class TraverseSchema {
 	}
 
 
-	int leafIndex = index
+	int leafIndex = index;
 	//REVISIT: !!! minoccurs, maxoccurs.
-	if (minOccurs.equals("1")&& maxOccurrs.equals("1")) {
+	if (minOccurs.equals("1")&& maxOccurs.equals("1")) {
 
 	}
-	else if (minOccurs.equals("0")&& maxOccurrs.equals("1")) {
+	else if (minOccurs.equals("0")&& maxOccurs.equals("1")) {
 	    //zero or one
 	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE,
 						   index,
 						   -1,
 						   false);
 	}
-	else if (minOccurs.equals("0")&& maxOccurrs.equals("unbounded")) {
+	else if (minOccurs.equals("0")&& maxOccurs.equals("unbounded")) {
 	    //zero or more
 	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
 						   index,
 						   -1,
 						   false);
 	}
-	else if (minOccurs.equals("1")&& maxOccurrs.equals("unbounded")) {
+	else if (minOccurs.equals("1")&& maxOccurs.equals("unbounded")) {
 	    //one or more
 	    index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE,
 						   index,
@@ -893,7 +901,7 @@ public class TraverseSchema {
 	    for (int i=0; i < (min-1); i++) {
 		index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
 						      index,
-						      leafindex,
+						      leafIndex,
 						      false);
 	    }
 
@@ -901,23 +909,23 @@ public class TraverseSchema {
 	else {
 	    // {n,m} => a,a,a,...(a),(a),...
 	    try {
-		min = Integer.parseInt(minOccurs);
-		max = Integer.parseInt(maxOccurs);
+    		min = Integer.parseInt(minOccurs);
+	    	max = Integer.parseInt(maxOccurs);
 	    }
-	    catch {
+	    catch (Exception e){
 		//REVISIT; error handling
 		e.printStackTrace();
 	    }
 	    for (int i=0; i<(min-1); i++) {
 		index = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_SEQ,
 						      index,
-						      leafindex,
+						      leafIndex,
 						      false);
 
 	    }
 	    if (max>min ) {
-		int optional = fvalidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-							     leafindex,
+		int optional = fValidator.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
+							     leafIndex,
 							     -1,
 							     false);
 		for (int i=0; i < (max-min); i++) {
@@ -952,42 +960,42 @@ public class TraverseSchema {
      */
     private int traverseAttributeDecl( Element attrDecl, ComplexTypeInfo typeInfo ) throws Exception {
         int attributeForm  =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_FORM ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATT_FORM ));
 
         int attributeID    =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATTVAL_ID ));
 
         int attributeName  =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
         int attributeRef   =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_REF ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
         int attributeType  =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATT_TYPE ));
 
         int attributeUse   =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_USE ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATT_USE ));
 
         int attributeValue =  fStringPool.addSymbol(
-                                                   attributeDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
+                                                   attrDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
 
 	// attribute name
-	int attName = fStringPool.addSymbol(attrDecl.getAttribute(ATT_NAME));
+	int attName = fStringPool.addSymbol(attrDecl.getAttribute(SchemaSymbols.ATT_NAME));
 	// form attribute
-	String isQName = elementDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
+	String isQName = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
 	// attribute type
 	int attType = -1;
 	int enumeration = -1;
 
-	String datatype = attrDecl.getAttribute(ATT_TYPE);
+	String datatype = attrDecl.getAttribute(SchemaSymbols.ATT_TYPE);
 
 	if (datatype.equals("")) {
 	    Element child = XUtil.getFirstChildElement(attrDecl);
-	    while (child != null && !child.getNodeName().equals(ELT_DATATYPEDECL))
+	    while (child != null && !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
 		child = XUtil.getNextSiblingElement(child);
-	    if (child != null && child.getNodeName().equals(ELT_DATATYPEDECL)) {
+	    if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
 		attType = fStringPool.addSymbol("DATATYPE");
 		enumeration = traverseSimpleTypeDecl(child);
 	    } else 
@@ -1022,7 +1030,7 @@ public class TraverseSchema {
 		}
 	    } else if (datatype.equals("NMTOKENS")) {
 		attType = fStringPool.addSymbol("NMTOKENS");
-	    } else if (datatype.equals(ELT_NOTATIONDECL)) {
+	    } else if (datatype.equals(SchemaSymbols.ELT_NOTATION)) {
 		attType = fStringPool.addSymbol("NOTATION");
 	    } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
 		//REVISIT check against list of validators to ensure valid type name
@@ -1035,7 +1043,7 @@ public class TraverseSchema {
 	int attDefaultType = -1;
 	int attDefaultValue = -1;
 
-	String useVal = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
+	String use = attrDecl.getAttribute(SchemaSymbols.ATT_USE);
 	boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
 	if (required) {
@@ -1050,7 +1058,7 @@ public class TraverseSchema {
 	    }
 	    else if (use.equals(SchemaSymbols.ATTVAL_DEFAULT)) {
 		// attribute default value
-		String defaultValue = attrDecl.getAttribute(ATT_VALUE);
+		String defaultValue = attrDecl.getAttribute(SchemaSymbols.ATT_VALUE);
 		if (!defaultValue.equals("")) {
 		    attDefaultType = fStringPool.addSymbol("");
 		    attDefaultValue = fStringPool.addString(defaultValue);
@@ -1074,7 +1082,7 @@ public class TraverseSchema {
 					  new Object [] { type });
 		} catch (InvalidDatatypeValueException idve) {
 		    reportSchemaError(SchemaMessageProvider.IncorrectDefaultType,
-				      new Object [] { attrDecl.getAttribute(ATT_NAME), idve.getMessage() });
+				      new Object [] { attrDecl.getAttribute(SchemaSymbols.ATT_NAME), idve.getMessage() });
 		} catch (Exception e) {
 		    e.printStackTrace();
 		    System.out.println("Internal error in attribute datatype validation");
@@ -1088,7 +1096,7 @@ public class TraverseSchema {
 	    uriIndex = targetNSURI;
 	}
 
-	QName attQName = new QName(-1,attrName,attrName,uriIndex);
+	QName attQName = new QName(-1,attName,attName,uriIndex);
 
 	// add attribute to attr decl pool in fValidator, and get back the head
 	typeInfo.attlistHead = fValidator.addAttDef( typeInfo.attlistHead, 
@@ -1229,10 +1237,10 @@ public class TraverseSchema {
 		localpart = ref.substring(colonptr+1);
 	    }
             int localpartIndex = fStringPool.addSymbol(localpart);
-	    QName eltName = new QName(fStringPool.addSymbol(prefix),
+	    QName eltName = new QName(  fStringPool.addSymbol(prefix),
 				      localpartIndex,
 				      fStringPool.addSymbol(ref),
-				      fStringPool.addSymbol(resolvePrefixToURI(prefix) );
+				      fStringPool.addSymbol(resolvePrefixToURI(prefix)) );
  	    int elementIndex = fValidator.getDeclaration(localpartIndex, 0);
 	    //if not found, traverse the top level element that if referenced
 	    if (elementIndex == -1 ) {
@@ -1242,12 +1250,12 @@ public class TraverseSchema {
 	}
 		
 	
-	ComplexTypeInfo typeInfo;
+	ComplexTypeInfo typeInfo = new ComplexTypeInfo();
 
 	// element has a single child element, either a datatype or a type, null if primitive
 	Element content = XUtil.getFirstChildElement(elementDecl);
 	
-	while (content != null && content.getNodeName().equals(ELT_ANNOTATION))
+	while (content != null && content.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
             content = XUtil.getNextSiblingElement(content);
 	
 	boolean typeSet = false;
@@ -1259,17 +1267,17 @@ public class TraverseSchema {
 	    if (contentName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
 		
 		typeNameIndex = traverseComplexTypeDecl(content);
-		ComplexTypeInfo typeInfo = 
+		typeInfo = (ComplexTypeInfo)
 		    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
 
 		contentSpecNodeIndex = typeInfo.contentSpecHandle;
-		contentSpecType = typeInfo.conentType;
+		contentSpecType = typeInfo.contentType;
 		scopeDefined = typeInfo.scopeDefined;
 
 		typeSet = true;
 
 	    } 
-	    else if (contentName.equals(ELT_SIMPLETYPEDECL)) {
+	    else if (contentName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
 		//REVISIT: TO-DO, contenttype and simpletypevalidator.
 		
 		traverseSimpleTypeDecl(content);
@@ -1298,19 +1306,19 @@ public class TraverseSchema {
 		prefix = type.substring(0,colonptr);
 		localpart = type.substring(colonptr+1);
 	    }
-	    String typeURI = resolvePrefix(prefix);
-	    if (!typeURI.equals(targetNSURIString)) {
+	    String typeURI = resolvePrefixToURI(prefix);
+	    if (!typeURI.equals(targetNSUriString)) {
 		typeInfo = getTypeInfoFromNS(typeURI, localpart);
 	    }
-	    typeInfo = fComplexTypeRegistry.get(typeURI+","+localpart);
+	    typeInfo = (ComplexTypeInfo) fComplexTypeRegistry.get(typeURI+","+localpart);
 	    if (typeInfo == null) {
 		//REVISIT try to find in the DataTypeRegistry first;
-		int typeNameIndex = traverseComplexTypeDecl(getTopLevelComplexTypeByName(localpart));
-		typeInfo = 
+		typeNameIndex = traverseComplexTypeDecl(getTopLevelComplexTypeByName(localpart));
+		typeInfo = (ComplexTypeInfo)
 		    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
 	    }
 	    contentSpecNodeIndex = typeInfo.contentSpecHandle;
-	    contentSpecType = typeInfo.conentType;
+	    contentSpecType = typeInfo.contentType;
 	    scopeDefined = typeInfo.scopeDefined;
    
 	}
@@ -1319,7 +1327,7 @@ public class TraverseSchema {
 	// Create element decl
 	//
 
-	int elementNameIndex     = fStringPool.addSymbol(elementDecl.getAttribute(ATT_NAME));
+	int elementNameIndex     = fStringPool.addSymbol(elementDecl.getAttribute(SchemaSymbols.ATT_NAME));
 	int localpartIndex = elementNameIndex;
 	int uriIndex = -1;
 	int enclosingScope = fCurrentScope;
@@ -1350,18 +1358,25 @@ public class TraverseSchema {
 
     }
 
-    Element getToplevelElementByName(String name) {
+    Element getTopLevelElementByName(String name) {
+        return null;
     }
 
     Element getTopLevelComplexTypeByName(String name) {
+        return null;
     }
 
-    Element getTopLevelGroupbyName(String name) {
+    Element getTopLevelGroupByName(String name) {
+        return null;
     }
 
     boolean isTopLevel(Element component) {
+        return true;
     }
-
+    
+    ComplexTypeInfo getTypeInfoFromNS(String typeURI, String localpart){
+	return null;
+    }
     /**
      * Traverse attributeGroup Declaration
      * 
@@ -1410,15 +1425,13 @@ public class TraverseSchema {
         int groupMinOccurs  =  fStringPool.addSymbol(
 	    groupDecl.getAttribute( SchemaSymbols.ATT_MINOCCURS ));
 
-        int groupName      =  fStringPool.addSymbol(
-	    groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
+        //int groupName      =  fStringPool.addSymbol(
+	    //groupDecl.getAttribute( SchemaSymbols.ATT_NAME ));
 
         int grouRef        =  fStringPool.addSymbol(
 	    groupDecl.getAttribute( SchemaSymbols.ATT_REF ));
 
 	String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
-	String collection = groupDecl.getAttribute(SchemaSymbols.ATT_COLLECTION);
-	String order = groupDecl.getAttribute(SchemaSymbols.ATT_ORDER);
 	String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
 
 	if (!ref.equals("")) {
@@ -1432,18 +1445,18 @@ public class TraverseSchema {
 		localpart = ref.substring(colonptr+1);
 	    }
             int localpartIndex = fStringPool.addSymbol(localpart);
-	    int contentSpecIndex = traverseElementDecl(getTopLevelGroupByName(localpart));
+	    int contentSpecIndex = traverseGroupDecl(getTopLevelGroupByName(localpart));
 	    
 	    return contentSpecIndex;
 	}
 
 	boolean traverseElt = true; 
 	if (fCurrentScope == 0) {
-	    tarverseElt = false;
+	    traverseElt = false;
 	}
 
 	Element child = XUtil.getFirstChildElement(groupDecl);
-	while (child != null && child.getNodeName().equals(ELT_ANNOTATION))
+	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
 	    child = XUtil.getNextSiblingElement(child);
 
 	int contentSpecType = 0;
@@ -1466,8 +1479,8 @@ public class TraverseSchema {
 
 	    boolean seeParticle = false;
 	    String childName = child.getNodeName();
-	    if (childName.equals(ELT_ELEMENTDECL)) {
-		QName eltQName = traverseElementDecl(Child);
+	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+		QName eltQName = traverseElementDecl(child);
 		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
 						       eltQName.localpart,
 						       eltQName.uri, 
@@ -1475,8 +1488,8 @@ public class TraverseSchema {
 		seeParticle = true;
 
 	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUPDECL)) {
-		index = traverseGroup(child);
+	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+		index = traverseGroupDecl(child);
 		seeParticle = true;
 
 	    } 
@@ -1531,10 +1544,10 @@ public class TraverseSchema {
     * </sequence>
     * 
     **/
-    int traverseSequence (Element sequenceDecl) {
+    int traverseSequence (Element sequenceDecl) throws Exception {
 	    
 	Element child = XUtil.getFirstChildElement(sequenceDecl);
-	while (child != null && child.getNodeName().equals(ELT_ANNOTATION))
+	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
 	    child = XUtil.getNextSiblingElement(child);
 
 	int contentSpecType = 0;
@@ -1555,8 +1568,8 @@ public class TraverseSchema {
 
 	    boolean seeParticle = false;
 	    String childName = child.getNodeName();
-	    if (childName.equals(ELT_ELEMENTDECL)) {
-		QName eltQName = traverseElementDecl(Child);
+	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+		QName eltQName = traverseElementDecl(child);
 		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
 						       eltQName.localpart,
 						       eltQName.uri, 
@@ -1564,8 +1577,8 @@ public class TraverseSchema {
 		seeParticle = true;
 
 	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUPDECL)) {
-		index = traverseGroup(child);
+	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+		index = traverseGroupDecl(child);
 		seeParticle = true;
 
 	    } 
@@ -1620,11 +1633,11 @@ public class TraverseSchema {
     * </choice>
     * 
     **/
-    int traverseChoice (Element choiceDecl) {
+    int traverseChoice (Element choiceDecl) throws Exception {
 	    
 	// REVISIT: traverseChoice, traverseSequence can be combined
 	Element child = XUtil.getFirstChildElement(choiceDecl);
-	while (child != null && child.getNodeName().equals(ELT_ANNOTATION))
+	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
 	    child = XUtil.getNextSiblingElement(child);
 
 	int contentSpecType = 0;
@@ -1645,8 +1658,8 @@ public class TraverseSchema {
 
 	    boolean seeParticle = false;
 	    String childName = child.getNodeName();
-	    if (childName.equals(ELT_ELEMENTDECL)) {
-		QName eltQName = traverseElementDecl(Child);
+	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+		QName eltQName = traverseElementDecl(child);
 		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
 						       eltQName.localpart,
 						       eltQName.uri, 
@@ -1654,8 +1667,8 @@ public class TraverseSchema {
 		seeParticle = true;
 
 	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUPDECL)) {
-		index = traverseGroup(child);
+	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+		index = traverseGroupDecl(child);
 		seeParticle = true;
 
 	    } 
@@ -1712,12 +1725,12 @@ public class TraverseSchema {
     * 	
     **/
 
-    int traverseAll( Element allDecl) {
+    int traverseAll( Element allDecl) throws Exception {
 
 
 	Element child = XUtil.getFirstChildElement(allDecl);
 
-	while (child != null && child.getNodeName().equals(ELT_ANNOTATION))
+	while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
 	    child = XUtil.getNextSiblingElement(child);
 
 	int allChildren[] = null;
@@ -1734,8 +1747,8 @@ public class TraverseSchema {
 
 	    String childName = child.getNodeName();
 
-	    if (childName.equals(ELT_ELEMENTDECL)) {
-		QName eltQName = traverseElementDecl(Child);
+	    if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+		QName eltQName = traverseElementDecl(child);
 		index = fValidator.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
 						       eltQName.localpart,
 						       eltQName.uri, 
@@ -1743,8 +1756,8 @@ public class TraverseSchema {
 		seeParticle = true;
 
 	    } 
-	    else if (childName.equals(SchemaSymbols.ELT_GROUPDECL)) {
-		index = traverseGroup(child);
+	    else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+		index = traverseGroupDecl(child);
 		seeParticle = true;
 
 	    } 
@@ -1947,6 +1960,10 @@ public class TraverseSchema {
     }
     
     
+    private String resolvePrefixToURI(String prefix) {
+        return "";
+    }
+
     // utilities from Tom Watson's SchemaParser class
     // TODO: Need to make this more conformant with Schema int type parsing
 
@@ -2144,6 +2161,61 @@ public class TraverseSchema {
 	    }
     }
 
+    private int parseFinalSet (String finalString)  throws Exception
+    {
+	    if ( finalString.equals ("#all") ) {
+		    return Schema.EQUIVCLASS+Schema.EXTENSION+Schema.LIST+Schema.RESTRICTION+Schema.REPRODUCTION;
+	    } else {
+		    int extend = 0;
+		    int restrict = 0;
+		    int reproduce = 0;
+
+		    StringTokenizer t = new StringTokenizer (finalString, " ");
+		    while (t.hasMoreTokens()) {
+			    String token = t.nextToken ();
+
+			    if ( token.equals (Schema.VAL_EQUIVCLASS) ) {
+				    if ( extend == 0 ) {
+					    extend = Schema.EQUIVCLASS;
+				    } else {
+					    reportGenericSchemaError ( "'equivClass' already in set" );
+				    }
+			    } else if ( token.equals (Schema.VAL_EXTENSION) ) {
+				    if ( extend == 0 ) {
+					    extend = Schema.EXTENSION;
+				    } else {
+					    reportGenericSchemaError ( "extension already in set" );
+				    }
+			    } else if ( token.equals (Schema.VAL_LIST) ) {
+				    if ( extend == 0 ) {
+					    extend = Schema.LIST;
+				    } else {
+					    reportGenericSchemaError ( "'list' already in set" );
+				    }
+			    } else if ( token.equals (Schema.VAL_RESTRICTION) ) {
+				    if ( restrict == 0 ) {
+					    restrict = Schema.RESTRICTION;
+				    } else {
+					    reportGenericSchemaError ( "restriction already in set" );
+				    }
+			    } else if ( token.equals (Schema.VAL_REPRODUCTION) ) {
+				    if ( reproduce == 0 ) {
+					    reproduce = Schema.REPRODUCTION;
+				    } else {
+					    reportGenericSchemaError ( "reproduction already in set" );
+				    }
+			    } else {
+				    reportGenericSchemaError ( "Invalid final value (" + finalString + ")" );
+			    }
+		    }
+
+		    return extend+restrict+reproduce;
+	    }
+    }
+
+    private void reportGenericSchemaError (String error) throws Exception {
+	    reportSchemaError (SchemaMessageProvider.GenericError, new Object[] { error });
+    }
 
     private void reportSchemaError(int major, Object args[]) {
         try {
@@ -2157,6 +2229,64 @@ public class TraverseSchema {
             e.printStackTrace();
         }
     }
+
+    class DatatypeValidatorRegistry {
+	Hashtable fRegistry = new Hashtable();
+
+	String integerSubtypeTable[][] = {
+	    { "non-negative-integer", DatatypeValidator.MININCLUSIVE , "0"},
+	    { "positive-integer", DatatypeValidator.MININCLUSIVE, "1"},
+	    { "non-positive-integer", DatatypeValidator.MAXINCLUSIVE, "0"},
+	    { "negative-integer", DatatypeValidator.MAXINCLUSIVE, "-1"}
+        };
+
+	void initializeRegistry() {
+            Hashtable facets = null;
+            //fRegistry.put("boolean", new BooleanValidator());
+            //DatatypeValidator integerValidator = new IntegerValidator();
+            //fRegistry.put("integer", integerValidator);
+            //fRegistry.put("string", new StringValidator());
+            //fRegistry.put("decimal", new DecimalValidator());
+            //fRegistry.put("float", new FloatValidator());
+            //fRegistry.put("double", new DoubleValidator());
+            //fRegistry.put("timeDuration", new TimeDurationValidator());
+            //fRegistry.put("timeInstant", new TimeInstantValidator());
+            //fRegistry.put("binary", new BinaryValidator());
+            //fRegistry.put("uri", new URIValidator());
+            //REVISIT - enable the below
+            //fRegistry.put("date", new DateValidator());
+            //fRegistry.put("timePeriod", new TimePeriodValidator());
+            //fRegistry.put("time", new TimeValidator());
+
+
+            DatatypeValidator v = null;
+            /*for (int i = 0; i < integerSubtypeTable.length; i++) {
+                v = new IntegerValidator();
+                facets = new Hashtable();
+                facets.put(integerSubtypeTable[i][1],integerSubtypeTable[i][2]);
+                v.setBasetype(integerValidator);
+                try {
+                    v.setFacets(facets);
+                } catch (IllegalFacetException ife) {
+                    System.out.println("Internal error initializing registry - Illegal facet: "+integerSubtypeTable[i][0]);
+                } catch (IllegalFacetValueException ifve) {
+                    System.out.println("Internal error initializing registry - Illegal facet value: "+integerSubtypeTable[i][0]);
+                } catch (UnknownFacetException ufe) {
+                    System.out.println("Internal error initializing registry - Unknown facet: "+integerSubtypeTable[i][0]);
+                }
+                fRegistry.put(integerSubtypeTable[i][0], v);
+            }*/
+        }
+
+        DatatypeValidator getValidatorFor(String type) {
+            return (DatatypeValidator) fRegistry.get(type);
+        }
+
+        void addValidator(String name, DatatypeValidator v) {
+            fRegistry.put(name,v);
+        }
+    }
+
 
     //Unit Test here
     public static void main( String args[] ) {
