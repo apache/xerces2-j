@@ -91,6 +91,13 @@
    validation and/or assessment and also provide a means for accessing the PSVI 
    from a document instance.
   </p>
+  <p>
+   Some of the interfaces in the XML Schema API reference interfaces
+   from <jump href="http://www.w3.org/DOM/DOMTR#dom3">DOM Level 3</jump>
+   which are now in the <code>org.apache.xerces.dom3</code> package. The
+   API will be updated to use the official DOM Level 3 package when DOM
+   becomes a W3C Recommendation.
+  </p>
   <ul>
    <li>
     <jump href='javadocs/xs/index.html'>XML Schema API</jump>
