@@ -79,9 +79,6 @@ source: ../bin/${JARFILE}
 #-src/org/apache/xerces/readers
 	${MKDIR} ../class/org/apache/xerces/readers
 	${CP}  ../src/org/apache/xerces/readers/*.class                  ../class/org/apache/xerces/readers
-
-#-src/org/apache/xerces/readers
-	${MKDIR} ../class/org/apache/xerces/readers
 	${CP}  ../src/org/apache/xerces/readers/*.dtd                    ../class/org/apache/xerces/readers
 
 #-src/org/apache/xerces/utils
@@ -99,9 +96,8 @@ source: ../bin/${JARFILE}
 #-src/org/apache/xerces/validaters/schema
 	${MKDIR} ../class/org/apache/xerces/validators/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.class        ../class/org/apache/xerces/validators/schema
-
-#-src/org/apache/xerces/validaters/schema
 	${CP}  ../src/org/apache/xerces/validators/schema/*.dtd          ../class/org/apache/xerces/validators/schema
+	${CP}  ../src/org/apache/xerces/validators/schema/*.ent          ../class/org/apache/xerces/validators/schema
 
 #-src/org/apache/xml/serialize
 	${MKDIR} ../class/org/apache/xml/serialize
