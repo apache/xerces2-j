@@ -159,7 +159,7 @@ catch (SAXException e) {
    <false>
     Do not report a warning when a duplicate attribute is re-declared.
    </false>
-   <default value='true'/>
+   <default value='false'/>
   </feature>
   <feature name='http://apache.org/xml/features/validation/warn-on-undeclared-elemdef'
            id='validation.warn-on-undeclared-elemdef'>
@@ -171,7 +171,7 @@ catch (SAXException e) {
     Do not report a warning if an element referenced in a content model
     is not declared.  
    </false>
-   <default value='true'/>
+   <default value='false'/>
   </feature>
   <feature name='http://apache.org/xml/features/allow-java-encodings'
            id='allow-java-encodings'>
