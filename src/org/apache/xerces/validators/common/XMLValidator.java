@@ -200,6 +200,9 @@ public final class XMLValidator
     private int[] fElementEntityStack = new int[8];
     private int[] fElementIndexStack = new int[8];
     private int[] fContentSpecTypeStack = new int[8];
+
+    private int[] fElementLocalPartStack = new int[8];
+
     
     private QName[] fElementChildren = new QName[32];
     private int fElementChildrenLength = 0;
@@ -747,6 +750,7 @@ public final class XMLValidator
         fCurrentElement.setValues(element);
         fCurrentElementEntity = fEntityHandler.getReaderId();
         fElementTypeStack[fElementDepth] = fCurrentElement.rawname;
+        fElementLocalPartStack[fElementDepth]=fCurrentElement.localpart;
         fElementEntityStack[fElementDepth] = fCurrentElementEntity;
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
@@ -760,24 +764,30 @@ public final class XMLValidator
   
         if (newElementDepth == fElementTypeStack.length) {
             int[] newStack = new int[newElementDepth * 2];
-
             System.arraycopy(fScopeStack, 0, newStack, 0, newElementDepth);
             fScopeStack = newStack;
+
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fGrammarNameSpaceIndexStack, 0, newStack, 0, newElementDepth);
             fGrammarNameSpaceIndexStack = newStack;
 
             newStack = new int[newElementDepth * 2];
-
-
             System.arraycopy(fElementTypeStack, 0, newStack, 0, newElementDepth);
             fElementTypeStack = newStack;
+
+            newStack = new int[newElementDepth * 2];
+            System.arraycopy( this.fElementLocalPartStack , 0, newStack, 0, newElementDepth);
+            fElementLocalPartStack = newStack;
+
+
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fElementEntityStack, 0, newStack, 0, newElementDepth);
             fElementEntityStack = newStack;
+
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fElementIndexStack, 0, newStack, 0, newElementDepth);
             fElementIndexStack = newStack;
+
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fContentSpecTypeStack, 0, newStack, 0, newElementDepth);
             fContentSpecTypeStack = newStack;
@@ -865,7 +875,13 @@ public final class XMLValidator
         //restore enclosing element to all the "current" variables
         // REVISIT: Validation. This information needs to be stored.
         fCurrentElement.prefix = -1;
-        fCurrentElement.localpart = fElementTypeStack[fElementDepth];
+
+        if (fNamespacesEnabled) { //If Namespace enable then localName != rawName
+           fCurrentElement.localpart = fElementLocalPartStack[fElementDepth];
+        } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
+           fCurrentElement.localpart = fElementTypeStack[fElementDepth];
+        }
+
         fCurrentElement.rawname = fElementTypeStack[fElementDepth];
         fCurrentElementEntity = fElementEntityStack[fElementDepth];
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
