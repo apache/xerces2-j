@@ -688,6 +688,15 @@ public class DocumentTracer
             printQuotedString(defaultValue.ch, defaultValue.offset,
                               defaultValue.length);
         }
+        fOut.print(',');
+        fOut.print("nonNormalizedDefaultValue=");
+        if (nonNormalizedDefaultValue == null) {
+            fOut.print("null");
+        }
+        else {
+            printQuotedString(nonNormalizedDefaultValue.ch, nonNormalizedDefaultValue.offset,
+                              nonNormalizedDefaultValue.length);
+        }
         fOut.println(')');
         fOut.flush();
 
