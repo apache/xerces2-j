@@ -601,7 +601,8 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         throws XNIException {
         if (fDocumentHandler == null)
             return;
-
+        
+        checkForChildren();
         sendIndentedElement("element");
         sendElementEvent("namespaceName", element.uri);
         sendElementEvent("localName", element.localpart);
@@ -774,8 +775,8 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         for (int i = 0; i < attrCount; i++) {
             String localpart = attributes.getLocalName(i);
             String prefix = attributes.getPrefix(i);
-            if (prefix == XMLSymbols.PREFIX_XMLNS
-                || localpart == XMLSymbols.PREFIX_XMLNS) {
+            if (prefix.equals(XMLSymbols.PREFIX_XMLNS)
+                || localpart.equals(XMLSymbols.PREFIX_XMLNS)) {
                 namespaceAttribute = true;
                 continue;
             }
@@ -835,8 +836,8 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         for (int i = 0; i < attrCount; i++) {
             String localpart = attributes.getLocalName(i);
             String prefix = attributes.getPrefix(i);
-            if (!(prefix == XMLSymbols.PREFIX_XMLNS
-                || localpart == XMLSymbols.PREFIX_XMLNS))
+            if (!(prefix.equals(XMLSymbols.PREFIX_XMLNS)
+                || localpart.equals(XMLSymbols.PREFIX_XMLNS)))
                 continue;
             sendIndentedElement("attribute");
             sendElementEvent("namespaceName", NamespaceContext.XMLNS_URI);
@@ -1167,7 +1168,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         sendElementEvent(
             "psv:derivationMethod",
             this.translateDerivation(type.getDerivationMethod()));
-        sendElementEvent("psv:final", this.translateFinal(type.getFinal()));
+        sendElementEvent("psv:final", this.translateBlockOrFinal(type.getFinal()));
         sendElementEvent("psv:abstract", String.valueOf(type.getAbstract()));
         processPSVIAttributeUses(type.getAttributeUses());
         processPSVIAttributeWildcard(type.getAttributeWildcard());
@@ -1180,7 +1181,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         sendUnIndentedElement("psv:contentType");
         sendElementEvent(
             "psv:prohibitedSubstitutions",
-            this.translateFinal(type.getProhibitedSubstitutions()));
+            this.translateBlockOrFinal(type.getProhibitedSubstitutions()));
         processPSVIAnnotations(type.getAnnotations());
         sendUnIndentedElement("psv:complexTypeDefinition");
     }
@@ -1214,7 +1215,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         sendUnIndentedElement("psv:numeric");
         sendUnIndentedElement("psv:fundamentalFacets");
 
-        sendElementEvent("psv:final", this.translateFinal(type.getFinal()));
+        sendElementEvent("psv:final", this.translateBlockOrFinal(type.getFinal()));
         sendElementEvent(
             "psv:variety",
             this.translateVariety(type.getVariety()));
@@ -1343,13 +1344,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             for (int i = 0; i < uses.getLength(); i++) {
                 XSAttributeUse use = (XSAttributeUse)uses.item(i);
                 sendIndentedElement("psv:attributeUse");
-                sendElementEvent(
-                    "psv:required",
-                    String.valueOf(use.getRequired()));
+                sendElementEvent("psv:required", String.valueOf(use.getRequired()));
                 processPSVIAttributeDeclarationOrRef(use.getAttrDeclaration());
-                sendElementEvent(
-                    "psv:valueConstraint",
-                    use.getConstraintValue());
+                processPSVIValueConstraint(use.getConstraintType(), use.getConstraintValue());
                 sendUnIndentedElement("psv:attributeUse");
             }
             sendUnIndentedElement("psv:attributeUses");
@@ -1449,7 +1446,19 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 sendElementEvent("textContent", DOMUtil.getChildText(child));
                 sendUnIndentedElement("character");
                 sendUnIndentedElement("children");
-                processDOMAttributes(child, "attributes");
+
+                //Create XMLAttributes from DOM
+                Attr[] atts = (Element) node == null ? null : DOMUtil.getAttrs((Element) node);
+                XMLAttributes attrs = new XMLAttributesImpl();
+                for (int i=0; i<atts.length; i++) {
+                    Attr att = (Attr)atts[i];
+                    attrs.addAttribute(
+                            new QName(att.getPrefix(), att.getLocalName(), att.getName(), att.getNamespaceURI()),
+                            "CDATA" ,att.getValue()
+                            );
+                }
+                
+                processAttributes(attrs);
                 sendUnIndentedElement("element");
             }
         }
@@ -1475,9 +1484,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 sendElementEvent("localName", DOMUtil.getLocalName(att));
                 sendElementEvent("prefix", att.getPrefix());
                 sendElementEvent("normalizedValue", att.getValue());
-                sendElementEvent(
-                    "specified",
-                    String.valueOf(att.getSpecified()));
+                sendElementEvent("specified", String.valueOf(att.getSpecified()));
                 sendElementEvent("attributeType");
 
                 // this property isn't relevent to PSVI
@@ -1498,21 +1505,18 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         processPSVITypeDefinitionOrRef(
             "psv:typeDefinition",
             elem.getTypeDefinition());
-        sendElementEvent("psv:scope", this.translateScope(elem.getScope()));
-        sendElementEvent("psv:valueConstraint", elem.getConstraintValue());
+        processPSVIScope("psv:scope", elem.getEnclosingCTDefinition(), elem.getScope());
+        processPSVIValueConstraint(elem.getConstraintType(), elem.getConstraintValue());
         sendElementEvent("psv:nillable", String.valueOf(elem.getNillable()));
         processPSVIIdentityConstraintDefinitions(elem.getIdentityConstraints());
-        processPSVIElementRef(
-            "psv:substitutionGroupAffiliation",
-            elem.getSubstitutionGroupAffiliation());
-        // We can use translateFinal() for these, because substitution group exclusions
-        // is a subset of final values.
+        processPSVISubstitutionGroupAffiliation(elem);
+
         sendElementEvent(
             "psv:substitutionGroupExclusions",
-            this.translateFinal(elem.getSubstitutionGroupExclusions()));
+            this.translateBlockOrFinal(elem.getSubstitutionGroupExclusions()));
         sendElementEvent(
             "psv:disallowedSubstitutions",
-            this.translateFinal(elem.getDisallowedSubstitutions()));
+            this.translateBlockOrFinal(elem.getDisallowedSubstitutions()));
         sendElementEvent("psv:abstract", String.valueOf(elem.getAbstract()));
         processPSVIAnnotation(elem.getAnnotation());
         sendUnIndentedElement("psv:elementDeclaration");
@@ -1527,8 +1531,8 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         processPSVITypeDefinitionOrRef(
             "psv:typeDefinition",
             attr.getTypeDefinition());
-        sendElementEvent("psv:scope", this.translateScope(attr.getScope()));
-        sendElementEvent("psv:valueConstraint", attr.getConstraintValue());
+        processPSVIScope("psv:scope", attr.getEnclosingCTDefinition(), attr.getScope());
+        processPSVIValueConstraint(attr.getConstraintType(), attr.getConstraintValue());
         processPSVIAnnotation(attr.getAnnotation());
         sendUnIndentedElement("psv:attributeDeclaration");
     }
@@ -1793,6 +1797,40 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         }
         else {
             processPSVIElementDeclaration(elem);
+        }
+    }
+    
+    private void processPSVIScope(
+        String enclose,
+        XSComplexTypeDefinition enclosingCTD,
+        short scope) {
+        if (scope == XSConstants.SCOPE_ABSENT || scope == XSConstants.SCOPE_GLOBAL) {
+            sendElementEvent(enclose, this.translateScope(scope));
+        } else {  // XSConstants.SCOPE_LOCAL
+            processPSVITypeDefinitionRef(enclose, enclosingCTD);
+        }
+    }
+    
+    private void processPSVIValueConstraint(
+        short constraintType,
+        String constraintValue) {
+        if (constraintType == XSConstants.VC_NONE) {
+            sendElementEvent("psv:valueConstraint");
+        } else {
+            sendIndentedElement("psv:valueConstraint");
+            sendElementEvent("psv:variety", translateValueConstraintType(constraintType));
+            sendElementEvent("psv:value", constraintValue);
+            sendUnIndentedElement("psv:valueConstraint");
+        }
+    }    
+    
+    private void processPSVISubstitutionGroupAffiliation(XSElementDeclaration elem) {
+        if (elem.getSubstitutionGroupAffiliation() == null) {
+            sendElementEvent("psv:substitutionGroupAffiliation");
+        } else {
+            sendIndentedElement("psv:substitutionGroupAffiliation");
+            processPSVIElementRef("psv:elementDeclaration", elem.getSubstitutionGroupAffiliation());
+            sendUnIndentedElement("psv:substitutionGroupAffiliation");
         }
     }
 
@@ -2105,26 +2143,42 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 return "unknown";
         }
     }
-
-    private String translateFinal(short finalVal) {
+    
+    private String translateValueConstraintType(short type) {
+        switch (type) {
+            case XSConstants.VC_DEFAULT :
+                return "default";
+            case XSConstants.VC_FIXED :
+                return "fixed";
+            default :
+                return "unknown";
+        }
+    }
+    
+    private String translateBlockOrFinal(short val) {
         String ret = "";
-        if ((finalVal & XSConstants.DERIVATION_EXTENSION) != 0) {
-            ret += SchemaSymbols.ELT_EXTENSION;
+        if ((val & XSConstants.DERIVATION_EXTENSION) != 0) {
+            ret += SchemaSymbols.ATTVAL_EXTENSION;
         }
-        if ((finalVal & XSConstants.DERIVATION_LIST) != 0) {
+        if ((val & XSConstants.DERIVATION_LIST) != 0) {
             if (ret.length() != 0)
                 ret += " ";
-            ret += SchemaSymbols.ELT_LIST;
+            ret += SchemaSymbols.ATTVAL_LIST;
         }
-        if ((finalVal & XSConstants.DERIVATION_RESTRICTION) != 0) {
+        if ((val & XSConstants.DERIVATION_RESTRICTION) != 0) {
             if (ret.length() != 0)
                 ret += " ";
-            ret += SchemaSymbols.ELT_RESTRICTION + " ";
+            ret += SchemaSymbols.ATTVAL_RESTRICTION + " ";
         }
-        if ((finalVal & XSConstants.DERIVATION_UNION) != 0) {
+        if ((val & XSConstants.DERIVATION_UNION) != 0) {
             if (ret.length() != 0)
                 ret += " ";
-            ret += SchemaSymbols.ELT_UNION + " ";
+            ret += SchemaSymbols.ATTVAL_UNION + " ";
+        }
+        if ((val & XSConstants.DERIVATION_SUBSTITUTION) != 0) {
+            if (ret.length() != 0)
+                ret += " ";
+            ret += SchemaSymbols.ATTVAL_SUBSTITUTION + " ";
         }
         return ret;
     }
