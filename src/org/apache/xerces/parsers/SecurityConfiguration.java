@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,7 @@ import org.apache.xerces.util.SymbolTable;
  *
  * @version $Id$
  */
-public class SecurityConfiguration extends IntegratedParserConfiguration
+public class SecurityConfiguration extends XML11Configuration
 {
 
     //

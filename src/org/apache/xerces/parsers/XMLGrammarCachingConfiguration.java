@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * @version $Id$
  */
 public class XMLGrammarCachingConfiguration 
-    extends StandardParserConfiguration {
+    extends XML11Configuration {
 
     //
     // Constants
