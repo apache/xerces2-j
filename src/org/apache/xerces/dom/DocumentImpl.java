@@ -250,6 +250,12 @@ public class DocumentImpl
                                            NodeFilter filter,
                                            boolean entityReferenceExpansion)
     {
+        
+        if (root == null) {
+                  String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+                  throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        }
+
         NodeIterator iterator = new NodeIteratorImpl(this,
                                                      root,
                                                      whatToShow,
