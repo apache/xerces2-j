@@ -108,7 +108,6 @@ import java.util.StringTokenizer;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
- *  <li>http://xml.org/sax/features/namespaces</li>
  *  <li>http://xml.org/sax/features/validation</li>
  *  <li>http://apache.org/xml/features/validation/dynamic</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>

@@ -446,7 +446,6 @@ public class MyComponent
   </ul>
   <p>Recognized features:</p>
   <ul>
-   <li>http://xml.org/sax/features/namespaces</li>
    <li>http://xml.org/sax/features/validation</li>
    <li>http://apache.org/xml/features/validation/dynamic</li>
   </ul>
