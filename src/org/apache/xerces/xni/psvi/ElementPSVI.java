@@ -82,4 +82,12 @@ public interface ElementPSVI extends ItemPSVI {
      */
     public XSNotationDeclaration getNotation();
 
+    /**
+     * [schema information]
+     * @see <a href="http://www.w3.org/TR/xmlschema-1/#e-schema_information">XML Schema Part 1: Structures [schema information]</a>
+     * @return The schema information property if it's the validation root,
+     *         null otherwise.
+     */
+    public XSModel getSchemaInformation();
+    
 }
