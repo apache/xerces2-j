@@ -88,7 +88,7 @@ public class Test implements DOMErrorHandler{
             DOMWriter writer = impl.createDOMWriter();
             builder.setFeature("http://xml.org/sax/features/namespaces",namespaces);
             builder.setFeature("http://xml.org/sax/features/validation",false);
-
+            
             //************************
             // TEST: lookupNamespacePrefix
             //       isDefaultNamespace
@@ -470,16 +470,50 @@ public class Test implements DOMErrorHandler{
         }
     }
 
-
+    StringBuffer fError = new StringBuffer();
     public boolean handleError(DOMError error){
+        fError.setLength(0);
         short severity = error.getSeverity();
         if (severity == error.SEVERITY_ERROR) {
-            System.out.println(error.getMessage());
+            fError.append("[Error]");
         }
 
-        if (severity == error.SEVERITY_WARNING) {
-            System.out.println("[Warning]: "+error.getMessage());
+        if (severity == error.SEVERITY_FATAL_ERROR) {
+            fError.append("[FatalError]");
         }
+        if (severity == error.SEVERITY_WARNING) {
+            fError.append("[Warning]");
+        }
+
+        DOMLocator locator = error.getLocation();
+        if (locator != null) {
+            // line:colon:offset
+            fError.append(locator.getLineNumber());
+            fError.append(":");
+            fError.append(locator.getColumnNumber());
+            fError.append(":");
+            fError.append(locator.getOffset());
+            Node node = locator.getErrorNode();
+            if (node != null) {
+
+                fError.append("[");
+                fError.append(locator.getErrorNode().getNodeName());
+                fError.append("]");
+            }
+            String systemId = locator.getUri();
+            if (systemId != null) {
+                int index = systemId.lastIndexOf('/');
+                if (index != -1)
+                    systemId = systemId.substring(index + 1);
+                fError.append(":");
+                fError.append(systemId);
+            }
+
+            fError.append(": ");
+            fError.append(error.getMessage());
+
+        }
+        System.out.println(fError.toString());
         return true;
 
     }
