@@ -236,6 +236,11 @@ public class XMLSchemaValidator
         JAXP_SCHEMA_SOURCE
     };
 
+    // this is the number of valuestores of each kind
+    // we expect an element to have.  It's almost
+    // never > 1; so leave it at that.  
+    protected static final int ID_CONSTRAINT_NUM = 1;
+
     //
     // Data
     //
@@ -1368,14 +1373,12 @@ public class XMLSchemaValidator
      *
      * @param identityConstraint The identity constraint.
      */
-    public void startValueScopeFor(IdentityConstraint identityConstraint)
+    public void startValueScopeFor(IdentityConstraint identityConstraint,
+                int initialDepth)
     throws XNIException {
 
-        for (int i=0; i<identityConstraint.getFieldCount(); i++) {
-            Field field = identityConstraint.getFieldAt(i);
-            ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(field);
-            valueStore.startValueScope();
-        }
+        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(identityConstraint, initialDepth);
+        valueStore.startValueScope();
 
     } // startValueScopeFor(IdentityConstraint identityConstraint)
 
@@ -1385,8 +1388,8 @@ public class XMLSchemaValidator
      *
      * @param field The field to activate.
      */
-    public XPathMatcher activateField(Field field) throws XNIException {
-        ValueStore valueStore = fValueStoreCache.getValueStoreFor(field);
+    public XPathMatcher activateField(Field field, int initialDepth) {
+        ValueStore valueStore = fValueStoreCache.getValueStoreFor(field.getIdentityConstraint(), initialDepth);
         field.setMayMatch(true);
         XPathMatcher matcher = field.createMatcher(valueStore);
         fMatcherStack.addMatcher(matcher);
@@ -1399,10 +1402,10 @@ public class XMLSchemaValidator
      *
      * @param identityConstraint The identity constraint.
      */
-    public void endValueScopeFor(IdentityConstraint identityConstraint)
+    public void endValueScopeFor(IdentityConstraint identityConstraint, int initialDepth)
     throws XNIException {
 
-        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(identityConstraint);
+        ValueStoreBase valueStore = fValueStoreCache.getValueStoreFor(identityConstraint, initialDepth);
         valueStore.endValueScope();
 
     } // endValueScopeFor(IdentityConstraint)
@@ -1413,7 +1416,7 @@ public class XMLSchemaValidator
         FieldActivator activator = this;
         if (selector == null)
             return;
-        XPathMatcher matcher = selector.createMatcher(activator);
+        XPathMatcher matcher = selector.createMatcher(activator, fElementDepth);
         fMatcherStack.addMatcher(matcher);
         matcher.startDocumentFragment(fSymbolTable);
     }
@@ -2087,19 +2090,25 @@ public class XMLSchemaValidator
         // handle everything *but* keyref's.
         for (int i = oldCount - 1; i >= newCount; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            IdentityConstraint id;
-            if ((id = matcher.getIDConstraint()) != null && id.getCategory() != IdentityConstraint.IC_KEYREF) {
-                fValueStoreCache.transplant(id);
+            if(matcher instanceof Selector.Matcher) {
+                Selector.Matcher selMatcher = (Selector.Matcher)matcher;
+                IdentityConstraint id;
+                if ((id = selMatcher.getIdentityConstraint()) != null && id.getCategory() != IdentityConstraint.IC_KEYREF) {
+                    fValueStoreCache.transplant(id, selMatcher.getInitialDepth());
+                }
             }
         }
         // now handle keyref's/...
         for (int i = oldCount - 1; i >= newCount; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            IdentityConstraint id;
-            if ((id = matcher.getIDConstraint()) != null && id.getCategory() == IdentityConstraint.IC_KEYREF) {
-                ValueStoreBase values = fValueStoreCache.getValueStoreFor(id);
-                if (values != null) // nothing to do if nothing matched!
-                    values.endDocumentFragment();
+            if(matcher instanceof Selector.Matcher) {
+                Selector.Matcher selMatcher = (Selector.Matcher)matcher;
+                IdentityConstraint id;
+                if ((id = selMatcher.getIdentityConstraint()) != null && id.getCategory() == IdentityConstraint.IC_KEYREF) {
+                    ValueStoreBase values = fValueStoreCache.getValueStoreFor(id, selMatcher.getInitialDepth());
+                    if (values != null) // nothing to do if nothing matched!
+                        values.endDocumentFragment();
+                }
             }
         }
         fValueStoreCache.endElement();
@@ -3098,11 +3107,11 @@ public class XMLSchemaValidator
 
         // destroys this ValueStore; useful when, for instance, a
         // locally-scoped ID constraint is involved.
-        public void destroy() {
+        public void clear() {
             fValuesCount = 0;
             fValues.clear();
             fValueTuples.removeAllElements();
-        } // end destroy():void
+        } // end clear():void
 
         // appends the contents of one ValueStore to those of us.
         public void append(ValueStoreBase newVal) {
@@ -3498,7 +3507,15 @@ public class XMLSchemaValidator
         /** stores all global Values stores. */
         protected final Vector fValueStores = new Vector();
 
-        /** Values stores associated to specific identity constraints. */
+        /** 
+         * Values stores associated to specific identity constraints. 
+         * This hashtable maps IdentityConstraints and
+         * the 0-based element on which their selectors first matched to
+         * a corresponding ValueStore.  This should take care
+         * of all cases, including where ID constraints with
+         * descendant-or-self axes occur on recursively-defined
+         * elements.
+         */
         protected final Hashtable fIdentityConstraint2ValueStoreMap = new Hashtable();
 
         // sketch of algorithm:
@@ -3574,8 +3591,7 @@ public class XMLSchemaValidator
          * Initializes the value stores for the specified element
          * declaration.
          */
-        public void initValueStoresFor(XSElementDecl eDecl)
-        throws XNIException {
+        public void initValueStoresFor(XSElementDecl eDecl) {
             // initialize value stores for unique fields
             IdentityConstraint [] icArray = eDecl.fIDConstraints;
             int icCount = eDecl.fIDCPos;
@@ -3584,56 +3600,52 @@ public class XMLSchemaValidator
                 case (IdentityConstraint.IC_UNIQUE):
                     // initialize value stores for unique fields
                     UniqueOrKey unique = (UniqueOrKey)icArray[i];
-                    UniqueValueStore uniqueValueStore = (UniqueValueStore)fIdentityConstraint2ValueStoreMap.get(unique);
-                    if (uniqueValueStore != null) {
-                        // NOTE: If already initialized, don't need to
-                        //       do it again. -Ac
-                        continue;
+                    LocalIDKey toHash = new LocalIDKey (unique, fElementDepth);
+                    UniqueValueStore  uniqueValueStore = (UniqueValueStore)fIdentityConstraint2ValueStoreMap.get(toHash);
+                    if (uniqueValueStore == null) {
+                        uniqueValueStore = new UniqueValueStore(unique);
+                        fIdentityConstraint2ValueStoreMap.put(toHash, uniqueValueStore);
+                    } else {
+                        uniqueValueStore.clear();
                     }
-                    uniqueValueStore = new UniqueValueStore(unique);
                     fValueStores.addElement(uniqueValueStore);
-                    fIdentityConstraint2ValueStoreMap.put(unique, uniqueValueStore);
                     break;
                 case (IdentityConstraint.IC_KEY):
                     // initialize value stores for key fields
                     UniqueOrKey key = (UniqueOrKey)icArray[i];
-                    KeyValueStore keyValueStore = (KeyValueStore)fIdentityConstraint2ValueStoreMap.get(key);
-                    if (keyValueStore != null) {
-                        // NOTE: If already initialized, don't need to
-                        //       do it again. -Ac
-                        continue;
+                    toHash = new LocalIDKey(key, fElementDepth);
+                    KeyValueStore  keyValueStore = (KeyValueStore)fIdentityConstraint2ValueStoreMap.get(toHash);
+                    if (keyValueStore == null) {
+                        keyValueStore = new KeyValueStore(key);
+                        fIdentityConstraint2ValueStoreMap.put(toHash, keyValueStore);
+                    } else {
+                        keyValueStore.clear();
                     }
-                    keyValueStore = new KeyValueStore(key);
                     fValueStores.addElement(keyValueStore);
-                    fIdentityConstraint2ValueStoreMap.put(key, keyValueStore);
                     break;
                 case (IdentityConstraint.IC_KEYREF):
-                    // initialize value stores for key reference fields
+                    // initialize value stores for keyRef fields
                     KeyRef keyRef = (KeyRef)icArray[i];
-                    KeyRefValueStore keyRefValueStore = (KeyRefValueStore)fIdentityConstraint2ValueStoreMap.get(keyRef);
-                    if (keyRefValueStore != null) {
-                        // NOTE: If already initialized, don't need to
-                        //       do it again. -Ac
-                        continue;
+                    toHash = new LocalIDKey(keyRef, fElementDepth);
+                    KeyRefValueStore  keyRefValueStore = (KeyRefValueStore)fIdentityConstraint2ValueStoreMap.get(toHash);
+                    if (keyRefValueStore == null) {
+                        keyRefValueStore = new KeyRefValueStore(keyRef, null);
+                        fIdentityConstraint2ValueStoreMap.put(toHash, keyRefValueStore);
+                    } else {
+                        keyRefValueStore.clear();
                     }
-                    keyRefValueStore = new KeyRefValueStore(keyRef, null);
                     fValueStores.addElement(keyRefValueStore);
-                    fIdentityConstraint2ValueStoreMap.put(keyRef, keyRefValueStore);
                     break;
                 }
             }
         } // initValueStoresFor(XSElementDecl)
 
-        /** Returns the value store associated to the specified field. */
-        public ValueStoreBase getValueStoreFor(Field field) {
-            IdentityConstraint identityConstraint = field.getIdentityConstraint();
-            return(ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(identityConstraint);
-        } // getValueStoreFor(Field):ValueStoreBase
-
         /** Returns the value store associated to the specified IdentityConstraint. */
-        public ValueStoreBase getValueStoreFor(IdentityConstraint id) {
-            return(ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(id);
-        } // getValueStoreFor(IdentityConstraint):ValueStoreBase
+        public ValueStoreBase getValueStoreFor(IdentityConstraint id, int initialDepth) {
+            ValueStoreBase vb = (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(new LocalIDKey(id, initialDepth));
+            // vb should *never* be null!
+            return vb;
+        } // getValueStoreFor(IdentityConstraint, int):ValueStoreBase
 
         /** Returns the global value store associated to the specified IdentityConstraint. */
         public ValueStoreBase getGlobalValueStoreFor(IdentityConstraint id) {
@@ -3643,10 +3655,9 @@ public class XMLSchemaValidator
         // associated with id and moves them into the global
         // hashtable, if id is a <unique> or a <key>.
         // If it's a <keyRef>, then we leave it for later.
-        public void transplant(IdentityConstraint id) {
+        public void transplant(IdentityConstraint id, int initialDepth) {
+            ValueStoreBase newVals = (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(new LocalIDKey(id, initialDepth));
             if (id.getCategory() == IdentityConstraint.IC_KEYREF) return;
-            ValueStoreBase newVals = (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(id);
-            fIdentityConstraint2ValueStoreMap.remove(id);
             ValueStoreBase currVals = (ValueStoreBase)fGlobalIDConstraintMap.get(id);
             if (currVals != null) {
                 currVals.append(newVals);
@@ -3658,7 +3669,7 @@ public class XMLSchemaValidator
         } // transplant(id)
 
         /** Check identity constraints. */
-        public void endDocument() throws XNIException {
+        public void endDocument() {
 
             int count = fValueStores.size();
             for (int i = 0; i < count; i++) {
@@ -3875,4 +3886,30 @@ public class XMLSchemaValidator
         } // class Entry
 
     } // class OrderedHashtable
+
+    // the purpose of this class is to enable IdentityConstraint,int
+    // pairs to be used easily as keys in Hashtables.
+    protected class LocalIDKey {
+        private IdentityConstraint fId;
+        private int fDepth;
+
+        public LocalIDKey (IdentityConstraint id, int depth) {
+            fId = id;
+            fDepth = depth;
+        } // init(IdentityConstraint, int)
+
+        // object method
+        public int hashCode() {
+            return fId.hashCode()+fDepth;
+        }
+
+        public boolean equals(Object localIDKey) {
+            if(localIDKey instanceof LocalIDKey) {
+                LocalIDKey lIDKey = (LocalIDKey)localIDKey;
+                return (lIDKey.fId == fId && lIDKey.fDepth == fDepth);
+            }
+            return false;
+        }
+    } // class LocalIDKey
+
 } // class SchemaValidator

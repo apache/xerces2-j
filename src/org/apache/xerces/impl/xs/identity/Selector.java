@@ -88,6 +88,10 @@ public class Selector {
     /** Identity constraint. */
     protected IdentityConstraint fIdentityConstraint;
 
+    // the Identity constraint we're the matcher for.  Only
+    // used for selectors!
+    protected IdentityConstraint fIDConstraint;
+
     //
     // Constructors
     //
@@ -109,15 +113,19 @@ public class Selector {
     } // getXPath():org.apache.xerces.v1.schema.identity.XPath
 
     /** Returns the identity constraint. */
-    public IdentityConstraint getIdentityConstraint() {
+    public IdentityConstraint getIDConstraint() {
         return fIdentityConstraint;
-    } // getIdentityConstraint():IdentityConstraint
+    } // getIDConstraint():IdentityConstraint
 
     // factory method
 
-    /** Creates a selector matcher. */
-    public XPathMatcher createMatcher(FieldActivator activator) {
-        return new Selector.Matcher(fXPath, activator);
+    /** Creates a selector matcher. 
+     * @param activator     The activator for this selector's fields.
+     * @param initialDepth  The depth in the document at which this matcher began its life;
+     *                          used in correctly handling recursive elements.
+     */
+    public XPathMatcher createMatcher(FieldActivator activator, int initialDepth) {
+        return new Selector.Matcher(fXPath, activator, initialDepth);
     } // createMatcher(FieldActivator):XPathMatcher
 
     //
@@ -176,7 +184,7 @@ public class Selector {
      *
      * @author Andy Clark, IBM
      */
-    protected class Matcher
+    public class Matcher
     extends XPathMatcher {
 
         //
@@ -185,6 +193,9 @@ public class Selector {
 
         /** Field activator. */
         protected FieldActivator fFieldActivator;
+
+        /** Initial depth in the document at which this matcher was created. */
+        protected int fInitialDepth;
 
         /** Element depth. */
         protected int fElementDepth;
@@ -197,9 +208,11 @@ public class Selector {
         //
 
         /** Constructs a selector matcher. */
-        public Matcher(Selector.XPath xpath, FieldActivator activator) {
-            super(xpath, Selector.this.fIdentityConstraint);
+        public Matcher(Selector.XPath xpath, FieldActivator activator,
+                int initialDepth) {
+            super(xpath);
             fFieldActivator = activator;
+            fInitialDepth = initialDepth;
         } // <init>(Selector.XPath,FieldActivator)
 
         //
@@ -234,11 +247,11 @@ public class Selector {
             if ((fMatchedDepth == -1 && ((matched & MATCHED) == MATCHED)) ||
                     ((matched & MATCHED_DESCENDANT) == MATCHED_DESCENDANT)) {
                 fMatchedDepth = fElementDepth;
-                fFieldActivator.startValueScopeFor(fIdentityConstraint);
+                fFieldActivator.startValueScopeFor(fIdentityConstraint, fInitialDepth);
                 int count = fIdentityConstraint.getFieldCount();
                 for (int i = 0; i < count; i++) {
                     Field field = fIdentityConstraint.getFieldAt(i);
-                    XPathMatcher matcher = fFieldActivator.activateField(field);
+                    XPathMatcher matcher = fFieldActivator.activateField(field, fInitialDepth);
                     matcher.startElement(element, attributes, elementDecl);
                 }
             }
@@ -249,9 +262,19 @@ public class Selector {
             super.endElement(element, eDecl, ePSVI);
             if (fElementDepth-- == fMatchedDepth) {
                 fMatchedDepth = -1;
-                fFieldActivator.endValueScopeFor(fIdentityConstraint);
+                fFieldActivator.endValueScopeFor(fIdentityConstraint, fInitialDepth);
             }
         }
+
+        /** Returns the identity constraint. */
+        public IdentityConstraint getIdentityConstraint() {
+            return fIdentityConstraint;
+        } // getIdentityConstraint():IdentityConstraint
+
+        /** get the initial depth at which this selector matched. */
+        public int getInitialDepth() {
+            return fInitialDepth;
+        } // getInitialDepth():  int
 
         //
         // Protected methods

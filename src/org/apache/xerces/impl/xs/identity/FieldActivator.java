@@ -80,8 +80,10 @@ public interface FieldActivator {
      * the value store.
      *
      * @param identityConstraint The identity constraint.
+     * @param initialDepth  the depth at which the selector began matching
      */
-    public void startValueScopeFor(IdentityConstraint identityConstraint);
+    public void startValueScopeFor(IdentityConstraint identityConstraint,
+            int initialDepth);
 
     /** 
      * Request to activate the specified field. This method returns the
@@ -90,14 +92,16 @@ public interface FieldActivator {
      * it is permitted to match a value--that is, to call the field's setMayMatch(boolean) method.
      *
      * @param field The field to activate.
+     * @param initialDepth  the 0-indexed depth in the instance document at which the Selector began to match.
      */
-    public XPathMatcher activateField(Field field);
+    public XPathMatcher activateField(Field field, int initialDepth);
 
     /**
      * Ends the value scope for the specified identity constraint.
      *
      * @param identityConstraint The identity constraint.
+     * @param initialDepth  the 0-indexed depth where the Selector began to match.
      */
-    public void endValueScopeFor(IdentityConstraint identityConstraint);
+    public void endValueScopeFor(IdentityConstraint identityConstraint, int initialDepth);
 
 } // interface FieldActivator

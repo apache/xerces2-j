@@ -147,10 +147,6 @@ public class XPathMatcher {
      */
     private int [] fNoMatchDepth;
 
-    // the Identity constraint we're the matcher for.  Only
-    // used for selectors!
-    protected IdentityConstraint fIDConstraint;
-
     // the symbolTable for the XPath parser
     protected SymbolTable fSymbolTable;
 
@@ -165,22 +161,7 @@ public class XPathMatcher {
      * @param xpath   The xpath.
      */
     public XPathMatcher(XPath xpath) {
-        this(xpath, null);
-    } // <init>(XPath)
-
-    /**
-     * Constructs an XPath matcher that implements a document fragment
-     * handler.
-     *
-     * @param xpath   The xpath.
-     * @param shouldBufferContent True if the matcher should buffer the
-     *                            matched content.
-     * @param idConstraint:  the identity constraint we're matching for;
-     *      null unless it's a Selector.
-     */
-    public XPathMatcher(XPath xpath, IdentityConstraint idConstraint) {
         fLocationPaths = xpath.getLocationPaths();
-        fIDConstraint = idConstraint;
         fStepIndexes = new IntStack[fLocationPaths.length];
         for(int i=0; i<fStepIndexes.length; i++) fStepIndexes[i] = new IntStack();
         fCurrentStep = new int[fLocationPaths.length];
@@ -189,7 +170,7 @@ public class XPathMatcher {
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#<init>()");
         }
-    } // <init>(XPath,boolean)
+    } // <init>(XPath)
 
     //
     // Public methods
@@ -205,16 +186,6 @@ public class XPathMatcher {
             if ((fMatched[i] & MATCHED) == MATCHED) return fMatched[i];
         return 0;
     } // isMatched():int
-
-    // returns whether this XPathMatcher was matching a Selector
-    public boolean getIsSelector() {
-        return (fIDConstraint == null);
-    } // end getIsSelector():boolean
-
-    // returns the ID constraint
-    public IdentityConstraint getIDConstraint() {
-        return fIDConstraint;
-    } // end getIDConstraint():IdentityConstraint
 
     /** Returns the matched string. */
     public String getMatchedString() {
@@ -494,7 +465,6 @@ public class XPathMatcher {
         if (DEBUG_METHODS2) {
             System.out.println(toString()+"#endElement("+
                                "element={"+element+"},"+
-                               "ID constraint="+fIDConstraint+
                                ")");
         }
         for(int i = 0; i<fLocationPaths.length; i++) {
