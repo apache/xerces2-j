@@ -184,6 +184,8 @@ public class XMLEntityManager
     protected static final String ENTITY_EXPANSION_LIMIT  =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_EXPANSION_LIMIT;
 
+    //SYSTEM PROPERTY
+    protected static final String SYSTEM_PROPERTY_ENTITY_EXPANSION_LIMIT = "entityExpansionLimit" ;    
 
     // recognized features and properties
 
@@ -1067,12 +1069,22 @@ public class XMLEntityManager
         catch (XMLConfigurationException e) {
             fEntityExpansionLimit = null;
         }
+                
+        //its good to check for system property value again (though this is little overhead) for every parse, 
+        //an application might set the different limit for another XML document
         
-        // initialize state
+        //determines the integer value of the system property
+        Integer entityExpansionLimit = Integer.getInteger(SYSTEM_PROPERTY_ENTITY_EXPANSION_LIMIT);
+        if(entityExpansionLimit != null){
+            fEntityExpansionLimit = entityExpansionLimit ;
+        }
+
+        // initialize state        
         fStandalone = false;
         fEntities.clear();
         fEntityStack.removeAllElements();
-
+        //reset entity expansion count.
+        fEntityExpansionCount = 0 ;
         fCurrentEntity = null;
 
         // DEBUG
