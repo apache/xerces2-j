@@ -696,7 +696,7 @@ public abstract class AbstractDOMParser
                 Attr attr;
                 if (fNamespaceAware) {
                     attr = fDocument.createAttributeNS(fAttrQName.uri,
-                                                   fAttrQName.rawname);
+						       fAttrQName.rawname);
                 }
                 else {
                     attr = fDocument.createAttribute(fAttrQName.rawname);
@@ -712,40 +712,37 @@ public abstract class AbstractDOMParser
                     AttrImpl attrImpl = (AttrImpl)attr;
                     boolean specified = attributes.isSpecified(i);
                     attrImpl.setSpecified(specified);
+		    // identifier registration
+		    if (attributes.getType(i).equals("ID")) {
+                        fDocumentImpl.putIdentifier(attrValue, el);
+                    }
                 }
                 // REVISIT: Handle entities in attribute value.
             }
             fCurrentNode.appendChild(el);
             fCurrentNode = el;
-
-            // identifier registration
-            for (int i = 0; i < attrCount; i++) {
-                 if (attributes.getType(i).equals("ID")) {
-                        String identifier = attributes.getValue(i);
-                        fDocumentImpl.putIdentifier(identifier, el);
-                    }
-            }
         }
         else {
-            int el = fDeferredDocumentImpl.
-                createDeferredElement(fNamespaceAware ?
-                                      element.uri : null,
-                                      element.rawname, attributes);
-
-            fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, el);
-            fCurrentNodeIndex = el;
-
-            // identifier registration
+            int el =
+		fDeferredDocumentImpl.createDeferredElement(fNamespaceAware ?
+							    element.uri : null,
+							    element.rawname);
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
-                 if (attributes.getType(i).equals("ID")) {
-                        String identifier = attributes.getValue(i);
-                        fDeferredDocumentImpl.putIdentifier(identifier, el);
-                 }
-                   
+		String attrValue = attributes.getValue(i);
+		fDeferredDocumentImpl.setDeferredAttribute(el,
+						    attributes.getQName(i),
+						    attributes.getURI(i),
+						    attrValue,
+						    attributes.isSpecified(i));
+		// identifier registration
+		if (attributes.getType(i).equals("ID")) {
+		    fDeferredDocumentImpl.putIdentifier(attrValue, el);
+		}
             }
-            
-        }
+            fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, el);
+            fCurrentNodeIndex = el;
+	}
     } // startElement(QName,XMLAttributes)
 
     /**

@@ -60,7 +60,6 @@ package org.apache.xerces.dom;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import org.apache.xerces.xni.XMLAttributes;
 import java.util.Vector;
 
 /**
@@ -335,14 +334,12 @@ public class DeferredDocumentImpl
     } // createDeferredEntityReference(String):int
 
     /** Creates an element node in the table. */
-    public int createDeferredElement(String elementName,
-                                     XMLAttributes attrList) {
-        return createDeferredElement(null, elementName, attrList);
+    public int createDeferredElement(String elementName) {
+        return createDeferredElement(null, elementName);
     }
 
     /** Creates an element node with a URI in the table. */
-    public int createDeferredElement(String elementURI, String elementName,
-                                     XMLAttributes attrList) {
+    public int createDeferredElement(String elementURI, String elementName) {
 
         // create node
         int elementNodeIndex = createNode(Node.ELEMENT_NODE);
@@ -350,46 +347,45 @@ public class DeferredDocumentImpl
         int elementIndex     = elementNodeIndex & CHUNK_MASK;
         setChunkValue(fNodeName, elementName, elementChunk, elementIndex);
         setChunkValue(fNodeURI, elementURI, elementChunk, elementIndex);
-
-        // create attributes
-        int attrCount = attrList.getLength();
-        int lastAttrNodeIndex = -1;
-        int lastAttrChunk = -1;
-        int lastAttrIndex = -1;
-        for (int i = 0; i < attrCount; i++) {
-            // create attribute
-            int attrNodeIndex =
-                createDeferredAttribute(attrList.getQName(i),
-                                        attrList.getURI(i),
-                                        attrList.getValue(i),
-                                        attrList.isSpecified(i));
-            int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
-            int attrIndex  = attrNodeIndex & CHUNK_MASK;
-
-            setChunkIndex(fNodeParent, elementNodeIndex, attrChunk, attrIndex);
-
-            // add links
-            if (i == 0) {
-                // from element to first attribute
-                setChunkIndex(fNodeExtra, attrNodeIndex,
-                              elementChunk, elementIndex);
-            }
-            else {
-                // from last attribute to new attribute
-                setChunkIndex(fNodePrevSib, attrNodeIndex,
-                              lastAttrChunk, lastAttrIndex);
-            }
-
-            // save last chunk and index
-            lastAttrNodeIndex = attrNodeIndex;
-            lastAttrChunk     = attrChunk;
-            lastAttrIndex     = attrIndex;
-        }
  
         // return node index
         return elementNodeIndex;
 
-    } // createDeferredElement(String,XMLAttributes):int
+    } // createDeferredElement(String,String):int
+
+    /** Sets an attribute on an element node. */
+    public int setDeferredAttribute(int elementNodeIndex,
+				    String attrName, String attrURI,
+				    String attrValue, boolean specified) {
+        // create attribute
+	int attrNodeIndex =
+	    createDeferredAttribute(attrName, attrURI, attrValue, specified);
+	int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
+	int attrIndex  = attrNodeIndex & CHUNK_MASK;
+	// set attribute's parent to element
+	setChunkIndex(fNodeParent, elementNodeIndex, attrChunk, attrIndex);
+
+        int elementChunk     = elementNodeIndex >> CHUNK_SHIFT;
+        int elementIndex     = elementNodeIndex & CHUNK_MASK;
+
+	// get element's last attribute
+	int lastAttrNodeIndex = getChunkIndex(fNodeExtra,
+					      elementChunk, elementIndex);
+	if (lastAttrNodeIndex != 0) {
+	    int lastAttrChunk = lastAttrNodeIndex >> CHUNK_SHIFT;
+	    int lastAttrIndex = lastAttrNodeIndex & CHUNK_MASK;
+	    // add link from new attribute to last attribute
+	    setChunkIndex(fNodePrevSib, lastAttrNodeIndex,
+			  attrChunk, attrIndex);
+	}
+	// add link from element to new last attribute
+	setChunkIndex(fNodeExtra, attrNodeIndex,
+		      elementChunk, elementIndex);
+ 
+        // return node index
+        return attrNodeIndex;
+
+    } // setDeferredAttribute(int,String,String,String,boolean):int
 
     /** Creates an attribute in the table. */
     public int createDeferredAttribute(String attrName,
@@ -413,7 +409,7 @@ public class DeferredDocumentImpl
         // return node index
         return nodeIndex;
 
-    } // createDeferredAttribute(String,String,boolean):int
+    } // createDeferredAttribute(String,String,String,boolean):int
 
     /** Creates an element definition in the table. */
     public int createDeferredElementDefinition(String elementName) {
