@@ -128,8 +128,16 @@ public class SchemaValidator
     private static final boolean DEBUG = false;
     // feature identifiers
 
+
+    protected static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
+    /** Feature identifier: validation. */
+    protected static final String SCHEMA_VALIDATION =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
     /** Feature identifier: dynamic validation. */
@@ -160,8 +168,10 @@ public class SchemaValidator
     // recognized features and properties
 
     /** Recognized features. */
-    protected static final String[] RECOGNIZED_FEATURES = {
+    protected static final String[] RECOGNIZED_FEATURES = {        
         VALIDATION,
+        NAMESPACES,
+        SCHEMA_VALIDATION,
         DYNAMIC_VALIDATION,
     };
 
@@ -176,8 +186,11 @@ public class SchemaValidator
     //
     // Data
     //
-
+    protected boolean fSeenRoot = false;
     // features
+    // REVISIT: what does it mean if namespaces is off
+    //          while schema validation is on?
+    protected boolean fNamespaces = false;
 
     /** Validation. */
     protected boolean fValidation = false;
@@ -235,10 +248,6 @@ public class SchemaValidator
      */
     public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException {
-        if (featureId.equals(VALIDATION))
-            fValidation = state;
-        else if (featureId.equals(DYNAMIC_VALIDATION))
-            fDynamicValidation = state;
     } // setFeature(String,boolean)
 
     /**
@@ -862,6 +871,36 @@ public class SchemaValidator
         }
         fSymbolTable = symbolTable;
 
+        // sax features
+        try {
+            fNamespaces = componentManager.getFeature(NAMESPACES);
+        }
+        catch (XMLConfigurationException e) {
+            fNamespaces = true;
+        }
+        try {
+            fValidation = componentManager.getFeature(VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
+        }
+        try {
+            // REVISIT: should schema validation depend on validation?
+            // fValidation = fValidation && componentManager.getFeature(SCHEMA_VALIDATION);
+            fValidation =  componentManager.getFeature(SCHEMA_VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fValidation = false;
+        }        
+        
+        // Xerces features
+        try {
+            fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
+        }
+        catch (XMLConfigurationException e) {
+            fDynamicValidation = false;
+        }
+
         // get entity resolver. if there is no one, create a default
         // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
@@ -1023,39 +1062,21 @@ public class SchemaValidator
         else
             fPushForNextBinding = true;
 
-        // whether to do validation
         // root element
-        // REVISIT: consider DynamicValidation
         if (fElementDepth == -1) {
-            fDoValidation = fValidation;
+            // at this point we assume that no XML schemas found in the instance document
+            // thus we will not validate in the case dynamic feature is on or we found dtd grammar
+            fDoValidation = fValidation && !(fValidationManager.isGrammarFound() || fDynamicValidation);
+            
             fValidationState = fValidationManager.getValidationState();
             fValidationState.setNamespaceSupport(fNamespaceSupport);
             fValidationState.setSymbolTable(fSymbolTable);
         }
-
-        // if we are in the content of "skip", then just skip this element
-        // REVISIT:  is this the correct behaviour for ID constraints?  -NG
-        if (fSkipValidationDepth >= 0) {
-            fElementDepth++;
-            return;
-        }
-
-        // if it's not the root element, we push the current states in the stacks
-        if (fElementDepth != -1) {
-            ensureStackCapacity();
-            fChildCountStack[fElementDepth] = fChildCount+1;
-            fChildCount = 0;
-            fElemDeclStack[fElementDepth] = fCurrentElemDecl;
-            fNilStack[fElementDepth] = fNil;
-            fTypeStack[fElementDepth] = fCurrentType;
-            fCMStack[fElementDepth] = fCurrentCM;
-            fStringContent[fElementDepth] = fSawCharacters;
-        }
-
         // get xsi:schemaLocation and xsi:noNamespaceSchemaLocation attributes,
         // parse them to get the grammars
         // REVISIT: we'll defer this operation until there is a reference to
         //          a component from that namespace
+
         String sLocation = attributes.getValue(URI_XSI, XSI_SCHEMALOCATION);
         String nsLocation = attributes.getValue(URI_XSI, XSI_NONAMESPACESCHEMALOCATION);
         if (sLocation != null) {
@@ -1076,6 +1097,36 @@ public class SchemaValidator
             if (fGrammarResolver.getGrammar(null) == null)
                 fSchemaHandler.parseSchema(null, nsLocation);
         }
+        // REVISIT: we should not rely on presence of 
+        //          schemaLocation or noNamespaceSchemaLocation
+        //          attributes 
+        if (sLocation !=null || nsLocation !=null) {        
+            // if we found grammar we should attempt to validate
+            // based on values of validation & schema features
+            // only
+
+            fDoValidation = fValidation;
+        }
+        // if we are in the content of "skip", then just skip this element
+        // REVISIT:  is this the correct behaviour for ID constraints?  -NG
+        if (fSkipValidationDepth >= 0) {
+            fElementDepth++;
+            return;
+        }
+
+        // if it's not the root element, we push the current states in the stacks
+        if (fElementDepth != -1) {
+            ensureStackCapacity();
+            fChildCountStack[fElementDepth] = fChildCount+1;
+            fChildCount = 0;
+            fElemDeclStack[fElementDepth] = fCurrentElemDecl;
+            fNilStack[fElementDepth] = fNil;
+            fTypeStack[fElementDepth] = fCurrentType;
+            fCMStack[fElementDepth] = fCurrentCM;
+            fStringContent[fElementDepth] = fSawCharacters;
+        }
+
+        
 
         // get the element decl for this element
         fCurrentElemDecl = null;
@@ -1205,7 +1256,7 @@ public class SchemaValidator
         processAttributes(element, attributes, attrGrp);
 
         // activate identity constraints
-        if (fValidation ) {
+        if (fDoValidation ) {
             fValueStoreCache.startElement();
             fMatcherStack.pushContext();
             if (fCurrentElemDecl != null) {

@@ -73,26 +73,31 @@ public class ValidationManager {
 
     // REVISIT: should validation/state be another property?
     protected final ValidationState fValidationState= new ValidationState();
-    
+    protected boolean fGrammarFound = false;
+
     public ValidationState getValidationState (){
         return fValidationState;
+    }
+
+    public void setGrammarFound(boolean grammar){
+        fGrammarFound = grammar;
+    }
+        
+    public boolean isGrammarFound(){
+        return fGrammarFound;
     }
 
     // REVISIT: handle other validation coordination
     //          the following will depend on the final set of validation
     //          features
     
-    //protected boolean fGrammarFound = false;
     //protected XMLComponent fLastValidator = null;
-
-    // public void setGrammarFound(){
-        
-    // public boolean isGrammarFound(){
     // public boolean isLastValidationComponent( XMLComponent validator){
     // public void setLastValidationComponent( XMLComponent validator){
         
     public void reset (){
         fValidationState.reset();
+        fGrammarFound = false;
     }
 }
 

@@ -156,6 +156,7 @@ public class XMLDTDValidator
     protected static final String DYNAMIC_VALIDATION = 
         Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
+    /** Feature identifier: xml schema validation */
     protected static final String SCHEMA_VALIDATION = 
         Constants.XERCES_FEATURE_PREFIX +Constants.SCHEMA_VALIDATION_FEATURE;
 
@@ -221,7 +222,8 @@ public class XMLDTDValidator
 
     /** Validation. */
     protected boolean fValidation;
-    /** Validation. */
+    
+    /** Validation against only DTD */
     protected boolean fDTDValidation;
 
     /** 
@@ -522,7 +524,8 @@ public class XMLDTDValidator
 
         // clear grammars
         fDTDGrammar = null;
-        
+        fSeenDoctypeDecl = false;
+
         // initialize state
         fInDTD = false;
         fInDTDIgnore = false;
@@ -2561,14 +2564,36 @@ public class XMLDTDValidator
     protected void handleStartElement(QName element, XMLAttributes attributes,
                                       boolean isEmpty) throws XNIException {
 
+        // REVISIT: Here are current assumptions about validation features
+        //          given that XMLSchema validator is in the pipeline
+        //
+        // http://xml.org/sax/features/validation = true
+        // http://apache.org/xml/features/validation/schema = true
+        //
+        //[1] XML instance document only has reference to a DTD 
+        //  Outcome: report validation errors only against dtd.
+        //
+        //[2] XML instance document has only XML Schema grammars:
+        //  Outcome: report validation errors only against schemas (no errors produced from DTD validator)
+        //
+        // [3] XML instance document has DTD and XML schemas:
+        // Outcome: validation errors reported against both grammars: DTD and schemas.
+        //
+        //         
+        //         if dynamic validation is on
+        //            validate only against grammar we've found (depending on settings
+        //            for schema feature)
+        // 
         // set wether we're performing validation
-        fPerformValidation = fValidation && (!fDynamicValidation || fSeenDoctypeDecl) && fDTDValidation;
+        fPerformValidation = fValidation && (!fDynamicValidation || fSeenDoctypeDecl)  
+                            && (fDTDValidation || fSeenDoctypeDecl);
         
         // VC: Root Element Type
         // see if the root element's name matches the one in DoctypeDecl 
         if (!fSeenRootElement) {
             fSeenRootElement = true;
             fValidationManager.getValidationState().setEntityState(fDTDGrammar);
+            fValidationManager.setGrammarFound(fSeenDoctypeDecl);
             rootElementSpecified(element);
         }
 
