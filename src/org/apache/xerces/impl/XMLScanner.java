@@ -410,7 +410,7 @@ public abstract class XMLScanner
                         version = fString.toString();
                         state = STATE_ENCODING;
                         if (!versionSupported(version)) {
-                            reportFatalError("VersionNotSupported", 
+                            reportFatalError(getVersionNotSupportedKey(), 
                                              new Object[]{version});
                         }
                     }
@@ -1320,6 +1320,13 @@ public abstract class XMLScanner
     protected boolean versionSupported(String version ) {
         return version.equals("1.0");
     } // version Supported
+    
+    // returns the error message key for unsupported
+    // versions of XML with respect to the version of
+    // XML understood by this scanner.
+    protected String getVersionNotSupportedKey () {
+        return "VersionNotSupported";
+    } // getVersionNotSupportedKey: String
 
     /**
      * Scans surrogates and append them to the specified buffer.
