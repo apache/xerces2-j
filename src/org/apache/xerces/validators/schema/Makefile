@@ -6,6 +6,7 @@ TARGETS=\
 	SchemaParser.class\
 	Schema.class\
 	SchemaMessageProvider.class\
+	SchemaSymbols.class \
 	XUtil.class
 
 DIRS = 
