@@ -942,7 +942,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 error.fType = "no-input-specified";
                 error.fMessage = "no-input-specified";
                 error.fSeverity = DOMError.SEVERITY_FATAL_ERROR;
-                fErrorHandler.handleError(error);
+                fErrorHandler.getErrorHandler().handleError(error);
             }
             throw new LSException(LSException.PARSE_ERR, "no-input-specified");
         }
