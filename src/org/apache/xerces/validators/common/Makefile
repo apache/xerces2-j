@@ -10,6 +10,7 @@ TARGETS=\
 	MixedContentModel.class\
 	SimpleContentModel.class\
 	XMLContentModel.class\
+	GrammarPool.class \
 	XMLValidator.class
 
 
