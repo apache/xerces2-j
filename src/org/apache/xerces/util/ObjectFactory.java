@@ -90,6 +90,9 @@ public class ObjectFactory {
     // Constants
     //
 
+    // name of default properties file to look for in JDK's jre/lib directory
+    private static final String DEFAULT_PROPERTIES_FILENAME = "xerces.properties";
+
     /** Set to true for debugging */
     private static final boolean DEBUG = false;
 
@@ -135,7 +138,8 @@ public class ObjectFactory {
      * @param factoryId             Name of the factory to find, same as
      *                              a property name
      * @param propertiesFilename The filename in the $java.home/lib directory
-     *                           of the properties file.
+     *                           of the properties file.  If none specified,
+     *                           ${java.home}/lib/xerces.properties will be used.
      * @param fallbackClassName     Implementation class name, if nothing else
      *                              is found.  Use null to mean no fallback.
      *
@@ -162,17 +166,19 @@ public class ObjectFactory {
             // Ignore and continue w/ next location
         }
 
-        // Try to read from $java.home/lib/jaxp.properties
+        // Try to read from propertiesFilename, or $java.home/lib/xerces.properties
         try {
+            if(propertiesFilename ==null) {
             String javah = ss.getSystemProperty("java.home");
-            String configFile = javah + File.separator +
-                "lib" + File.separator + "propertiesFilename";
-            FileInputStream fis = ss.getFileInputStream(new File(configFile));
+                propertiesFilename = javah + File.separator +
+                    "lib" + File.separator + DEFAULT_PROPERTIES_FILENAME;
+            }
+            FileInputStream fis = ss.getFileInputStream(new File(propertiesFilename));
             Properties props = new Properties();
             props.load(fis);
             String factoryClassName = props.getProperty(factoryId);
             if (factoryClassName != null) {
-                debugPrintln("found in jaxp.properties, value=" + factoryClassName);
+                debugPrintln("found in " + propertiesFilename + ", value=" + factoryClassName);
                 return newInstance(factoryClassName, cl, true);
             }
         } catch (Exception x) {
