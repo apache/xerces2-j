@@ -189,6 +189,15 @@ extends StandardParserConfiguration {
                                          XMLGrammarPool grammarPool,
                                          XMLComponentManager parentSettings) {
         super(symbolTable, grammarPool, parentSettings);
+        
+        // create components
+        fNonNSScanner = new XMLDocumentScannerImpl();
+        fNonNSDTDValidator = new XMLDTDValidator();
+
+        // add components
+        addComponent((XMLComponent)fNonNSScanner);
+        addComponent((XMLComponent)fNonNSDTDValidator);
+
     } // <init>(SymbolTable,XMLGrammarPool)
 
     
@@ -249,15 +258,6 @@ extends StandardParserConfiguration {
                 fLastComponent = fDTDValidator;
             } 
             else {
-                if (fNonNSScanner == null) {
-                    fNonNSScanner = new XMLDocumentScannerImpl();
-                    addComponent((XMLComponent)fNonNSScanner);
-                }
-                if (fNonNSDTDValidator == null) {
-                    fNonNSDTDValidator = new XMLDTDValidator();
-                    addComponent((XMLComponent)fNonNSDTDValidator);
-                }
-
                 fScanner = fNonNSScanner;
                 fProperties.put(DTD_VALIDATOR, fNonNSDTDValidator);
                 fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);

@@ -135,13 +135,27 @@ public class StandardParserConfiguration
     protected static final String XMLSCHEMA_VALIDATION = 
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
+    /** feature identifier: XML Schema validation -- full checking */
+    protected static final String XMLSCHEMA_FULL_CHECKING = 
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
+
     // property identifiers
 
     /** Property identifier: XML Schema validator. */
     protected static final String SCHEMA_VALIDATOR =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_VALIDATOR_PROPERTY;
 
+    /** Property identifier: schema location. */
+    protected static final String SCHEMA_LOCATION =
+    Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_LOCATION;
 
+    /** Property identifier: no namespace schema location. */
+    protected static final String SCHEMA_NONS_LOCATION =
+    Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
+
+    /** Property identifier: JAXP schema source. */
+    protected static final String JAXP_SCHEMA_SOURCE =
+    Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
     // debugging
 
@@ -213,6 +227,12 @@ public class StandardParserConfiguration
             NORMALIZE_DATA,
             SCHEMA_ELEMENT_DEFAULT,
             SCHEMA_AUGMENT_PSVI, 
+            // NOTE: These shouldn't really be here but since the XML Schema
+            //       validator is constructed dynamically, its recognized
+            //       features might not have been set and it would cause a
+            //       not-recognized exception to be thrown. -Ac
+            XMLSCHEMA_VALIDATION,
+            XMLSCHEMA_FULL_CHECKING,
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -223,6 +243,16 @@ public class StandardParserConfiguration
 
         // add default recognized properties
     
+        final String[] recognizedProperties = {
+            // NOTE: These shouldn't really be here but since the XML Schema
+            //       validator is constructed dynamically, its recognized
+            //       properties might not have been set and it would cause a
+            //       not-recognized exception to be thrown. -Ac
+            SCHEMA_LOCATION,
+            SCHEMA_NONS_LOCATION,
+            JAXP_SCHEMA_SOURCE,
+        };
+
     } // <init>(SymbolTable,XMLGrammarPool)
 
     //

@@ -231,9 +231,15 @@ public class XMLSchemaValidator
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         null,
-        Boolean.TRUE,
-        Boolean.FALSE,
-        Boolean.FALSE,
+        // NOTE: The following defaults are nulled out on purpose.
+        //       If they are set, then when the XML Schema validator
+        //       is constructed dynamically, these values may override
+        //       those set by the application. This goes against the
+        //       whole purpose of XMLComponent#getFeatureDefault but
+        //       it can't be helped in this case. -Ac
+        null, //Boolean.FALSE,
+        null, //Boolean.FALSE,
+        null, //Boolean.FALSE,
     };
 
     /** Recognized properties. */
