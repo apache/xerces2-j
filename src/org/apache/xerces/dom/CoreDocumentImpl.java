@@ -121,8 +121,10 @@ extends ParentNode implements Document  {
     /**Experimental DOM Level 3 feature: documentURI */
     protected String fDocumentURI;
 
+	//Revisit :: change to a better data structure.
     /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
+
 
     /** Identifiers. */
     protected Hashtable identifiers;
@@ -130,6 +132,9 @@ extends ParentNode implements Document  {
     // DOM Level 3: normalizeDocument
     transient DOMNormalizer domNormalizer = null;
     transient DOMConfigurationImpl fConfiguration= null;
+
+    // support of XPath API
+    transient Object fXPathEvaluator = null;
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
@@ -2151,17 +2156,6 @@ extends ParentNode implements Document  {
     }
 
 
-    /*
-     * a class to store some user data along with its handler
-     */
-    class UserDataRecord implements Serializable {
-        Object fData;
-        UserDataHandler fHandler;
-        UserDataRecord(Object data, UserDataHandler handler) {
-            fData = data;
-            fHandler = handler;
-        }
-    }
 
     /**
      * Associate an object to a key on this node. The object can later be
@@ -2216,6 +2210,7 @@ extends ParentNode implements Document  {
             return null;
         }
     }
+	
 
     /**
      * Retrieves the object associated to a key on a this node. The object
@@ -2289,18 +2284,14 @@ extends ParentNode implements Document  {
         if (userData == null) {
             return;
         }
-        Hashtable t = (Hashtable) userData.get(n);
-        if (t == null || t.isEmpty()) {
-            return;
-        }
-        Enumeration keys = t.keys();
-        while (keys.hasMoreElements()) {
-            String key = (String) keys.nextElement();
-            UserDataRecord r = (UserDataRecord) t.get(key);
-            if (r.fHandler != null) {
-                r.fHandler.handle(operation, key, r.fData, n, c);
-            }
-        }
+        //Hashtable t = (Hashtable) userData.get(n);
+		if(n instanceof NodeImpl){
+			Hashtable t = ((NodeImpl)n).getUserDataRecord();
+			if (t == null || t.isEmpty()) {
+				return;
+			}
+			callUserDataHandlers(n, c, operation,t);
+		}
     }
 
 	/**

@@ -16,6 +16,7 @@
 
 package org.apache.xerces.dom;
 
+import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -24,6 +25,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.apache.xerces.dom3.UserDataHandler;
 
 /**
  * ParentNode inherits from ChildNode and adds the capability of having child
@@ -1008,4 +1010,15 @@ public abstract class ParentNode
 
     } // readObject(ObjectInputStream)
 
+    /*
+     * a class to store some user data along with its handler
+     */
+    class UserDataRecord implements Serializable {
+        Object fData;
+        UserDataHandler fHandler;
+        UserDataRecord(Object data, UserDataHandler handler) {
+            fData = data;
+            fHandler = handler;
+        }
+    }
 } // class ParentNode

@@ -20,6 +20,8 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
+import java.util.Hashtable;
+import org.apache.xerces.dom3.UserDataHandler;
 
 /**
  * This class represents a Document Type <em>declaraction</em> in
@@ -91,7 +93,7 @@ public class DocumentTypeImpl
     //
     // Constructors
     //
-
+    private Hashtable userData =  null;
     /** Factory method for creating a document type node. */
     public DocumentTypeImpl(CoreDocumentImpl ownerDocument, String name) {
         super(ownerDocument);
@@ -433,6 +435,46 @@ public class DocumentTypeImpl
             synchronizeChildren();
         }
     	return elements;
+    }
+    
+    public Object setUserData(String key,
+    Object data, UserDataHandler handler) {
+        if(userData == null)
+            userData = new Hashtable();
+        if (data == null) {
+            if (userData != null) {
+                Object o = userData.remove(key);
+                if (o != null) {
+                    UserDataRecord r = (UserDataRecord) o;
+                    return r.fData;
+                }
+            }
+            return null;
+        }
+        else {
+            Object o = userData.put(key, new UserDataRecord(data, handler));
+            if (o != null) {
+                UserDataRecord r = (UserDataRecord) o;
+                return r.fData;
+            }
+        }
+        return null;
+    }
+    
+    public Object getUserData(String key) {
+        if (userData == null) {
+            return null;
+        }
+        Object o = userData.get(key);
+        if (o != null) {
+            UserDataRecord r = (UserDataRecord) o;
+            return r.fData;
+        }
+        return null;
+    }
+    
+    protected Hashtable getUserDataRecord(){
+        return userData;
     }
     
 } // class DocumentTypeImpl
