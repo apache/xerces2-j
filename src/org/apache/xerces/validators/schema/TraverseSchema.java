@@ -2499,14 +2499,6 @@ public class TraverseSchema implements
                 if (union) {
                     dTValidators.addElement((DatatypeValidator)baseValidator); //add validator to structure
                 }
-                //REVISIT: Should we raise exception here?
-                // if baseValidator.isInstanceOf(LIST) and UNION
-                if ( list && (baseValidator instanceof UnionDatatypeValidator)) {
-                    reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                                      new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
-                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
-                    return -1;
-                }
             }
         } //end - base is available
 
