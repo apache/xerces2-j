@@ -327,8 +327,31 @@ public class XPathMatcher {
             fBufferContent = true && fShouldBufferContent;
         }
         
+        // now if the current step is a descendant step, we let the next
+        // step do its thing; if it fails, we reset ourselves
+        // to look at this step for next time we're called.
+        // so first consume all descendants:
+         int descendantStep = fCurrentStep;
+         while(fCurrentStep < steps.length && steps[fCurrentStep].axis.type == XPath.Axis.DESCENDANT) {
+            if (DEBUG_MATCH) {
+                XPath.Step step = steps[fCurrentStep];
+                System.out.println(toString()+" [DESCENDANT] MATCHED!");
+            }
+            fCurrentStep++;
+        }
+        if (fCurrentStep == steps.length) {
+            if (DEBUG_MATCH) {
+                System.out.println(toString()+" XPath DIDN'T MATCH!");
+            }
+            fNoMatchDepth++;
+            if (DEBUG_MATCH) {
+               System.out.println(toString()+" [CHILD] after NO MATCH");
+            }
+            return;
+         }
+
         // match child::... step, if haven't consumed any self::node()
-        if (fCurrentStep == startStep &&
+        if ((fCurrentStep == startStep || fCurrentStep > descendantStep) &&
             steps[fCurrentStep].axis.type == XPath.Axis.CHILD) {
             XPath.Step step = steps[fCurrentStep];
             XPath.NodeTest nodeTest = step.nodeTest;
@@ -337,6 +360,10 @@ public class XPathMatcher {
             }
             if (nodeTest.type == XPath.NodeTest.QNAME) {
                 if (!nodeTest.name.equals(element)) {
+                     if(fCurrentStep > descendantStep) {
+                        fCurrentStep = descendantStep;
+                        return;
+                     }
                     fNoMatchDepth++;
                     if (DEBUG_MATCH) {
                         System.out.println(toString()+" [CHILD] after NO MATCH");
@@ -392,6 +419,10 @@ public class XPathMatcher {
                 }
             }
             if (!fMatched) {
+               if(fCurrentStep > descendantStep) {
+                  fCurrentStep = descendantStep;
+                  return;
+              }
                 fNoMatchDepth++;
                 if (DEBUG_MATCH) {
                     System.out.println(toString()+" [ATTRIBUTE] after");
