@@ -1125,7 +1125,7 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#peekChar()");
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("peekChar: ");
@@ -1145,7 +1145,7 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#scanChar()");
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(scanChar: ");
@@ -1171,7 +1171,12 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#scanNmtoken()");
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanNmtoken: ");
+                print();
+                System.out.println();
             }
 
             int offset = fCurrentEntity.position;
@@ -1179,8 +1184,10 @@ public class XMLEntityManager
                 if (++fCurrentEntity.position == fCurrentEntity.ch.length) {
                     int length = fCurrentEntity.position - offset;
                     System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
-                    load(length);
                     offset = 0;
+                    if (load(length, false)) {
+                        break;
+                    }
                 }
             }
             int length = fCurrentEntity.position - offset;
@@ -1188,6 +1195,11 @@ public class XMLEntityManager
             String symbol = null;
             if (length > 0) {
                 symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, offset, length);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print(")scanNmtoken: ");
+                print();
+                System.out.println(" -> "+String.valueOf(symbol));
             }
             return symbol;
     
@@ -1202,7 +1214,7 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#scanName()");
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(scanName: ");
@@ -1214,15 +1226,25 @@ public class XMLEntityManager
             if (XMLChar.isNameStart(fCurrentEntity.ch[offset])) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
-                    load(1);
                     offset = 0;
+                    if (load(1, false)) {
+                        String symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 1);
+                        if (DEBUG_PRINT) {
+                            System.out.print(")scanName: ");
+                            print();
+                            System.out.println(" -> "+String.valueOf(symbol));
+                        }
+                        return symbol;
+                    }
                 }
                 while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
                     if (++fCurrentEntity.position == fCurrentEntity.count) {
                         int length = fCurrentEntity.position - offset;
                         System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
-                        load(length);
                         offset = 0;
+                        if (load(length, false)) {
+                            break;
+                        }
                     }
                 }
             }
@@ -1250,15 +1272,29 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#scanQName()");
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanQName, "+qname+": ");
+                print();
+                System.out.println(" -> true");
             }
 
             int offset = fCurrentEntity.position;
             if (XMLChar.isNameStart(fCurrentEntity.ch[offset])) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
-                    load(1);
                     offset = 0;
+                    if (load(1, false)) {
+                        String name = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, 1);
+                        qname.setValues(null, name, name, null);
+                        if (DEBUG_PRINT) {
+                            System.out.print(")scanQName, "+qname+": ");
+                            print();
+                            System.out.println(" -> true");
+                        }
+                        return true;
+                    }
                 }
                 int index = -1;
                 while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
@@ -1272,8 +1308,10 @@ public class XMLEntityManager
                     if (++fCurrentEntity.position == fCurrentEntity.count) {
                         int length = fCurrentEntity.position - offset;
                         System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
-                        load(length);
                         offset = 0;
+                        if (load(length, false)) {
+                            break;
+                        }
                     }
                 }
                 int length = fCurrentEntity.position - offset;
@@ -1290,10 +1328,20 @@ public class XMLEntityManager
                         rawname = localpart;
                     }
                     qname.setValues(prefix, localpart, rawname, null);
+                    if (DEBUG_PRINT) {
+                        System.out.print(")scanQName, "+qname+": ");
+                        print();
+                        System.out.println(" -> true");
+                    }
                     return true;
                 }
             }
 
+            if (DEBUG_PRINT) {
+                System.out.print(")scanQName, "+qname+": ");
+                print();
+                System.out.println(" -> false");
+            }
             return false;
     
         } // scanQName(QName):boolean
@@ -1307,11 +1355,11 @@ public class XMLEntityManager
             throws IOException, SAXException {
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
-                load(1);
+                load(1, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(scanContent: ");
@@ -1356,11 +1404,11 @@ public class XMLEntityManager
             throws IOException, SAXException {
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
-                load(1);
+                load(1, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(scanAttContent, '"+(char)quote+"': ");
@@ -1410,12 +1458,12 @@ public class XMLEntityManager
             int limit = fCurrentEntity.count - delimLen + 1;
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             else if (fCurrentEntity.position == limit) {
                 System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
                                  fCurrentEntity.ch, 0, delimLen - 1);
-                load(delimLen - 1);
+                load(delimLen - 1, true);
                 fCurrentEntity.position = 0;
             }
             if (DEBUG_PRINT) {
@@ -1470,7 +1518,7 @@ public class XMLEntityManager
         public boolean skipChar(int c) throws IOException, SAXException {
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(skipChar, '"+(char)c+"': ");
@@ -1503,7 +1551,7 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#skipSpaces()");
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(skipSpaces: ");
@@ -1520,7 +1568,7 @@ public class XMLEntityManager
                         }
                         fCurrentEntity.position++;
                     }
-                    load(0);
+                    load(0, true);
                 }
                 if (DEBUG_PRINT) {
                     System.out.print(")skipSpaces: ");
@@ -1547,7 +1595,7 @@ public class XMLEntityManager
             if (DEBUG) System.out.println("#skipString(\""+s+"\")");
     
             if (fCurrentEntity.position == fCurrentEntity.count) {
-                load(0);
+                load(0, true);
             }
             if (DEBUG_PRINT) {
                 System.out.print("(skipString, \""+s+"\": ");
@@ -1569,7 +1617,17 @@ public class XMLEntityManager
                 }
                 if (fCurrentEntity.position == fCurrentEntity.count) {
                     System.arraycopy(fCurrentEntity.ch, fCurrentEntity.count - i - 1, fCurrentEntity.ch, 0, i + 1);
-                    load(i + 1);
+                    // REVISIT: Can a string to be skipped cross an
+                    //          entity boundary? -Ac
+                    if (load(i + 1, false)) {
+                        fCurrentEntity.position -= i + 1;
+                        if (DEBUG_PRINT) {
+                            System.out.print(")skipString, \""+s+"\": ");
+                            print();
+                            System.out.println(" -> false");
+                        }
+                        return false;
+                    }
                 }
             }
             if (DEBUG_PRINT) {
@@ -1625,8 +1683,22 @@ public class XMLEntityManager
         // Private methods
         //
     
-        /** Loads a chunk of text. */
-        private final void load(int offset) throws IOException, SAXException {
+        /** 
+         * Loads a chunk of text. 
+         *
+         * @param offset       The offset into the character buffer to 
+         *                     read the next batch of characters.
+         * @param changeEntity True if the load should change entities
+         *                     at the end of the entity, otherwise leave
+         *                     the current entity in place and the entity
+         *                     boundary will be signaled by the return
+         *                     value.
+         *
+         * @returns Returns true if the entity changed as a result of this
+         *          load operation.
+         */
+        private final boolean load(int offset, boolean changeEntity) 
+            throws IOException, SAXException {
             if (DEBUG) System.out.println("*** load() ***");
             if (DEBUG_PRINT) {
                 System.out.print("(load, "+offset+": ");
@@ -1641,6 +1713,7 @@ public class XMLEntityManager
             if (DEBUG_PRINT) System.out.println("  length actually read:  "+count);
 
             // reset count and position
+            boolean entityChanged = false;
             if (count != -1) {
                 fCurrentEntity.count = count + offset;
                 fCurrentEntity.position = fCurrentEntity.count > 0 ? offset : -1;
@@ -1648,18 +1721,24 @@ public class XMLEntityManager
 
             // end of this entity
             else {
-                endEntity();
-                if (fCurrentEntity == null) {
-                    throw new EOFException();
+                entityChanged = true;
+                if (changeEntity) {
+                    endEntity();
+                    if (fCurrentEntity == null) {
+                        throw new EOFException();
+                    }
+                    // REVISIT: Does anything else have to occur here? -Ac
                 }
-                // REVISIT: Does anything else have to occur here? -Ac
             }
             if (DEBUG_PRINT) {
                 System.out.print(")load, "+offset+": ");
                 print();
                 System.out.println();
             }
-        } // load(int)
+
+            return entityChanged;
+
+        } // load(int):boolean
     
     } // class EntityScanner
 
