@@ -178,7 +178,7 @@ public class XSAttributeDecl implements XSAttributeDeclaration {
         // REVISIT: SCAPI: what's the proper representation
         return getConstraintType() == XSConstants.VC_NONE ?
                null :
-               fDefault.actualValue.toString();
+               fDefault.stringValue();
     }
 
     /**
