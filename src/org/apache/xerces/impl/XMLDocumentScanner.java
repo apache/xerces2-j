@@ -1804,25 +1804,36 @@ public class XMLDocumentScanner
             setDispatcher(fPrologDispatcher);
 
             // scan XMLDecl
-            if (fEntityScanner.skipString("<?xml")) {
-                fMarkupEntity = fEntityManager.getCurrentEntity();
-                // NOTE: special case where document starts with a PI
-                //       whose name starts with "xml" (e.g. "xmlfoo")
-                if (XMLChar.isName(fEntityScanner.peekChar())) {
-                    fStringBuffer.clear();
-                    fStringBuffer.append("xml");
-                    while (XMLChar.isName(fEntityScanner.peekChar())) {
-                        fStringBuffer.append((char)fEntityScanner.scanChar());
+            try {
+                if (fEntityScanner.skipString("<?xml")) {
+                    fMarkupEntity = fEntityManager.getCurrentEntity();
+                    // NOTE: special case where document starts with a PI
+                    //       whose name starts with "xml" (e.g. "xmlfoo")
+                    if (XMLChar.isName(fEntityScanner.peekChar())) {
+                        fStringBuffer.clear();
+                        fStringBuffer.append("xml");
+                        while (XMLChar.isName(fEntityScanner.peekChar())) {
+                            fStringBuffer.append((char)fEntityScanner.scanChar());
+                        }
+                        String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
+                        scanPIData(target, fString);
                     }
-                    String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
-                    scanPIData(target, fString);
-                }
 
-                // standard XML declaration
-                else {
-                    scanXMLDeclOrTextDecl(false);
+                    // standard XML declaration
+                    else {
+                        scanXMLDeclOrTextDecl(false);
+                    }
+                    return complete;
                 }
-                return complete;
+            }
+
+            // premature end of file
+            catch (EOFException e) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "PrematureEOF",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                throw e;
             }
 
             // if no XMLDecl, then scan piece of prolog
@@ -1859,105 +1870,116 @@ public class XMLDocumentScanner
         public boolean dispatch(boolean complete) 
             throws IOException, SAXException {
 
-            boolean again;
-            do {
-                again = false;
-                switch (fScannerState) {
-                    case SCANNER_STATE_PROLOG: {
-                        fEntityScanner.skipSpaces();
-                        if (fEntityScanner.skipChar('<')) {
-                            setScannerState(SCANNER_STATE_START_OF_MARKUP);
-                            again = true;
-                        }
-                        else if (fEntityScanner.skipChar('&')) {
-                            setScannerState(SCANNER_STATE_REFERENCE);
-                            again = true;
-                        }
-                        else {
-                            setScannerState(SCANNER_STATE_CONTENT);
-                            again = true;
-                        }
-                        break;
-                    }
-                    case SCANNER_STATE_START_OF_MARKUP: {
-                        fMarkupEntity = fEntityManager.getCurrentEntity();
-                        if (fEntityScanner.skipChar('?')) {
-                            setScannerState(SCANNER_STATE_PI);
-                            again = true;
-                        }
-                        else if (fEntityScanner.skipChar('!')) {
-                            if (fEntityScanner.skipChar('-')) {
-                                if (!fEntityScanner.skipChar('-')) {
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                               "InvalidCommentStart",
-                                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                }
-                                setScannerState(SCANNER_STATE_COMMENT);
+            try {
+                boolean again;
+                do {
+                    again = false;
+                    switch (fScannerState) {
+                        case SCANNER_STATE_PROLOG: {
+                            fEntityScanner.skipSpaces();
+                            if (fEntityScanner.skipChar('<')) {
+                                setScannerState(SCANNER_STATE_START_OF_MARKUP);
                                 again = true;
                             }
-                            else if (fEntityScanner.skipString("DOCTYPE")) {
-                                setScannerState(SCANNER_STATE_DOCTYPE);
+                            else if (fEntityScanner.skipChar('&')) {
+                                setScannerState(SCANNER_STATE_REFERENCE);
                                 again = true;
+                            }
+                            else {
+                                setScannerState(SCANNER_STATE_CONTENT);
+                                again = true;
+                            }
+                            break;
+                        }
+                        case SCANNER_STATE_START_OF_MARKUP: {
+                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            if (fEntityScanner.skipChar('?')) {
+                                setScannerState(SCANNER_STATE_PI);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipChar('!')) {
+                                if (fEntityScanner.skipChar('-')) {
+                                    if (!fEntityScanner.skipChar('-')) {
+                                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                                   "InvalidCommentStart",
+                                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                    }
+                                    setScannerState(SCANNER_STATE_COMMENT);
+                                    again = true;
+                                }
+                                else if (fEntityScanner.skipString("DOCTYPE")) {
+                                    setScannerState(SCANNER_STATE_DOCTYPE);
+                                    again = true;
+                                }
+                                else {
+                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                               "MarkupNotRecognizedInProlog",
+                                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                }
+                            }
+                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                                setScannerState(SCANNER_STATE_ROOT_ELEMENT);
+                                setDispatcher(fContentDispatcher);
+                                return true;
                             }
                             else {
                                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                            "MarkupNotRecognizedInProlog",
                                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
+                            break;
                         }
-                        else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
-                            setScannerState(SCANNER_STATE_ROOT_ELEMENT);
-                            setDispatcher(fContentDispatcher);
-                            return true;
+                        case SCANNER_STATE_COMMENT: {
+                            scanComment();
+                            setScannerState(SCANNER_STATE_PROLOG);
+                            break;  
                         }
-                        else {
+                        case SCANNER_STATE_PI: {
+                            scanPI();
+                            setScannerState(SCANNER_STATE_PROLOG);
+                            break;  
+                        }
+                        case SCANNER_STATE_DOCTYPE: {
+                            if (fSeenDoctypeDecl) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "AlreadySeenDoctype",
+                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            }
+                            fSeenDoctypeDecl = true;
+                            scanDoctypeDecl();
+                            setScannerState(SCANNER_STATE_PROLOG);
+                            break;
+                        }
+                        case SCANNER_STATE_CONTENT: {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MarkupNotRecognizedInProlog",
+                                                       "ContentIllegalInProlog",
                                                        null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
-                        break;
-                    }
-                    case SCANNER_STATE_COMMENT: {
-                        scanComment();
-                        setScannerState(SCANNER_STATE_PROLOG);
-                        break;  
-                    }
-                    case SCANNER_STATE_PI: {
-                        scanPI();
-                        setScannerState(SCANNER_STATE_PROLOG);
-                        break;  
-                    }
-                    case SCANNER_STATE_DOCTYPE: {
-                        if (fSeenDoctypeDecl) {
+                        case SCANNER_STATE_REFERENCE: {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "AlreadySeenDoctype",
+                                                       "ReferenceIllegalInProlog",
                                                        null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
-                        fSeenDoctypeDecl = true;
-                        scanDoctypeDecl();
-                        setScannerState(SCANNER_STATE_PROLOG);
-                        break;
                     }
-                    case SCANNER_STATE_CONTENT: {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "ContentIllegalInProlog",
-                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                    case SCANNER_STATE_REFERENCE: {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "ReferenceIllegalInProlog",
-                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
+                } while (complete || again);
+    
+                if (fEntityScanner.scanChar() != '<') {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "RootElementRequired",
+                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
-            } while (complete || again);
-
-            if (fEntityScanner.scanChar() != '<') {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "RootElementRequired",
-                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                setScannerState(SCANNER_STATE_ROOT_ELEMENT);
+                setDispatcher(fContentDispatcher);
             }
-            setScannerState(SCANNER_STATE_ROOT_ELEMENT);
-            setDispatcher(fContentDispatcher);
+
+            // premature end of file
+            catch (EOFException e) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "PrematureEOF",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                throw e;
+            }
 
             return complete;
 
@@ -1993,172 +2015,183 @@ public class XMLDocumentScanner
         public boolean dispatch(boolean complete) 
             throws IOException, SAXException {
 
-            boolean again;
-            do {
-                again = false;
-                switch (fScannerState) {
-                    case SCANNER_STATE_CONTENT: {
-                        if (fEntityScanner.skipChar('<')) {
-                            setScannerState(SCANNER_STATE_START_OF_MARKUP);
-                            again = true;
-                        }
-                        else if (fEntityScanner.skipChar('&')) {
-                            setScannerState(SCANNER_STATE_REFERENCE);
-                            again = true;
-                        }
-                        else {
-                            do {
-                                int c = scanContent();
-                                if (c == '<') {
-                                    fMarkupEntity = fEntityManager.getCurrentEntity();
-                                    fEntityScanner.scanChar();
-                                    setScannerState(SCANNER_STATE_START_OF_MARKUP);
-                                    break;
-                                }
-                                else if (c == '&') {
-                                    fMarkupEntity = fEntityManager.getCurrentEntity();
-                                    fEntityScanner.scanChar();
-                                    setScannerState(SCANNER_STATE_REFERENCE);
-                                    break;
-                                }
-                                else if (c == ']') {
-                                    if (fEntityScanner.skipChar(']')) {
-                                        if (fEntityScanner.skipChar('>')) {
-                                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                                       "CDEndInContent",
-                                                                       null,
-                                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            try {
+                boolean again;
+                do {
+                    again = false;
+                    switch (fScannerState) {
+                        case SCANNER_STATE_CONTENT: {
+                            if (fEntityScanner.skipChar('<')) {
+                                setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipChar('&')) {
+                                setScannerState(SCANNER_STATE_REFERENCE);
+                                again = true;
+                            }
+                            else {
+                                do {
+                                    int c = scanContent();
+                                    if (c == '<') {
+                                        fMarkupEntity = fEntityManager.getCurrentEntity();
+                                        fEntityScanner.scanChar();
+                                        setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                                        break;
+                                    }
+                                    else if (c == '&') {
+                                        fMarkupEntity = fEntityManager.getCurrentEntity();
+                                        fEntityScanner.scanChar();
+                                        setScannerState(SCANNER_STATE_REFERENCE);
+                                        break;
+                                    }
+                                    else if (c == ']') {
+                                        if (fEntityScanner.skipChar(']')) {
+                                            if (fEntityScanner.skipChar('>')) {
+                                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                                           "CDEndInContent",
+                                                                           null,
+                                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                            }
                                         }
                                     }
-                                }
-                                else if (c != -1 && XMLChar.isInvalid(c)) {
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
-                                                               "InvalidCharInContent",
-                                                               new Object[] {Integer.toString(c, 16)},
-                                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                }
-                            } while (complete);
+                                    else if (c != -1 && XMLChar.isInvalid(c)) {
+                                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                                                   "InvalidCharInContent",
+                                                                   new Object[] {Integer.toString(c, 16)},
+                                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                    }
+                                } while (complete);
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case SCANNER_STATE_START_OF_MARKUP: {
-                        fMarkupEntity = fEntityManager.getCurrentEntity();
-                        if (fEntityScanner.skipChar('?')) {
-                            setScannerState(SCANNER_STATE_PI);
-                            again = true;
-                        }
-                        else if (fEntityScanner.skipChar('!')) {
-                            if (fEntityScanner.skipChar('-')) {
-                                if (!fEntityScanner.skipChar('-')) {
+                        case SCANNER_STATE_START_OF_MARKUP: {
+                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            if (fEntityScanner.skipChar('?')) {
+                                setScannerState(SCANNER_STATE_PI);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipChar('!')) {
+                                if (fEntityScanner.skipChar('-')) {
+                                    if (!fEntityScanner.skipChar('-')) {
+                                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                                   "InvalidCommentStart",
+                                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                    }
+                                    setScannerState(SCANNER_STATE_COMMENT);
+                                    again = true;
+                                }
+                                else if (fEntityScanner.skipString("[CDATA[")) {
+                                    setScannerState(SCANNER_STATE_CDATA);
+                                    again = true;
+                                }
+                                else if (fEntityScanner.skipString("DOCTYPE")) {
+                                    setScannerState(SCANNER_STATE_DOCTYPE);
+                                }
+                                else {
                                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                               "InvalidCommentStart",
-                                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                                               "MarkupNotRecognizedInContent",
+                                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                                 }
-                                setScannerState(SCANNER_STATE_COMMENT);
-                                again = true;
                             }
-                            else if (fEntityScanner.skipString("[CDATA[")) {
-                                setScannerState(SCANNER_STATE_CDATA);
-                                again = true;
+                            else if (fEntityScanner.skipChar('/')) {
+                                if (scanEndElement() == 0) {
+                                    setScannerState(SCANNER_STATE_TRAILING_MISC);
+                                    setDispatcher(fTrailingMiscDispatcher);
+                                    return complete;
+                                }
+                                setScannerState(SCANNER_STATE_CONTENT);
                             }
-                            else if (fEntityScanner.skipString("DOCTYPE")) {
-                                setScannerState(SCANNER_STATE_DOCTYPE);
+                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                                scanStartElement();
+                                setScannerState(SCANNER_STATE_CONTENT);
                             }
                             else {
                                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                            "MarkupNotRecognizedInContent",
                                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
+                            break;
                         }
-                        else if (fEntityScanner.skipChar('/')) {
-                            if (scanEndElement() == 0) {
+                        case SCANNER_STATE_COMMENT: {
+                            scanComment();
+                            setScannerState(SCANNER_STATE_CONTENT);
+                            break;  
+                        }
+                        case SCANNER_STATE_PI: {
+                            scanPI();
+                            setScannerState(SCANNER_STATE_CONTENT);
+                            break;  
+                        }
+                        case SCANNER_STATE_CDATA: {
+                            scanCDATASection(complete);
+                            break;
+                        }
+                        case SCANNER_STATE_REFERENCE: {
+                            fMarkupEntity = fEntityManager.getCurrentEntity();
+                            // NOTE: We need to set the state beforehand
+                            //       because the XMLEntityHandler#startEntity
+                            //       callback could set the state to
+                            //       SCANNER_STATE_TEXT_DECL and we don't want
+                            //       to override that scanner state.
+                            setScannerState(SCANNER_STATE_CONTENT);
+                            if (fEntityScanner.skipChar('#')) {
+                                scanCharReference();
+                            }
+                            else {
+                                scanEntityReference();
+                            }
+                            break;
+                        }
+                        case SCANNER_STATE_TEXT_DECL: {
+                            // scan text decl
+                            if (fEntityScanner.skipString("<?xml")) {
+                                fMarkupEntity = fEntityManager.getCurrentEntity();
+                                // NOTE: special case where entity starts with a PI
+                                //       whose name starts with "xml" (e.g. "xmlfoo")
+                                if (XMLChar.isName(fEntityScanner.peekChar())) {
+                                    fStringBuffer.clear();
+                                    fStringBuffer.append("xml");
+                                    while (XMLChar.isName(fEntityScanner.peekChar())) {
+                                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                                    }
+                                    String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
+                                    scanPIData(target, fString);
+                                }
+                
+                                // standard text declaration
+                                else {
+                                    scanXMLDeclOrTextDecl(true);
+                                }
+                            }
+                            setScannerState(SCANNER_STATE_CONTENT);
+                            break;
+                        }
+                        case SCANNER_STATE_ROOT_ELEMENT: {
+                            if (scanStartElement()) {
                                 setScannerState(SCANNER_STATE_TRAILING_MISC);
                                 setDispatcher(fTrailingMiscDispatcher);
                                 return complete;
                             }
                             setScannerState(SCANNER_STATE_CONTENT);
+                            break;
                         }
-                        else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
-                            scanStartElement();
-                            setScannerState(SCANNER_STATE_CONTENT);
-                        }
-                        else {
+                        case SCANNER_STATE_DOCTYPE: {
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MarkupNotRecognizedInContent",
+                                                       "DoctypeIllegalInContent",
                                                        null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         }
-                        break;
                     }
-                    case SCANNER_STATE_COMMENT: {
-                        scanComment();
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;  
-                    }
-                    case SCANNER_STATE_PI: {
-                        scanPI();
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;  
-                    }
-                    case SCANNER_STATE_CDATA: {
-                        scanCDATASection(complete);
-                        break;
-                    }
-                    case SCANNER_STATE_REFERENCE: {
-                        fMarkupEntity = fEntityManager.getCurrentEntity();
-                        // NOTE: We need to set the state beforehand
-                        //       because the XMLEntityHandler#startEntity
-                        //       callback could set the state to
-                        //       SCANNER_STATE_TEXT_DECL and we don't want
-                        //       to override that scanner state.
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        if (fEntityScanner.skipChar('#')) {
-                            scanCharReference();
-                        }
-                        else {
-                            scanEntityReference();
-                        }
-                        break;
-                    }
-                    case SCANNER_STATE_TEXT_DECL: {
-                        // scan text decl
-                        if (fEntityScanner.skipString("<?xml")) {
-                            fMarkupEntity = fEntityManager.getCurrentEntity();
-                            // NOTE: special case where entity starts with a PI
-                            //       whose name starts with "xml" (e.g. "xmlfoo")
-                            if (XMLChar.isName(fEntityScanner.peekChar())) {
-                                fStringBuffer.clear();
-                                fStringBuffer.append("xml");
-                                while (XMLChar.isName(fEntityScanner.peekChar())) {
-                                    fStringBuffer.append((char)fEntityScanner.scanChar());
-                                }
-                                String target = fSymbolTable.addSymbol(fStringBuffer.ch, fStringBuffer.offset, fStringBuffer.length);
-                                scanPIData(target, fString);
-                            }
-            
-                            // standard text declaration
-                            else {
-                                scanXMLDeclOrTextDecl(true);
-                            }
-                        }
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;
-                    }
-                    case SCANNER_STATE_ROOT_ELEMENT: {
-                        if (scanStartElement()) {
-                            setScannerState(SCANNER_STATE_TRAILING_MISC);
-                            setDispatcher(fTrailingMiscDispatcher);
-                            return complete;
-                        }
-                        setScannerState(SCANNER_STATE_CONTENT);
-                        break;
-                    }
-                    case SCANNER_STATE_DOCTYPE: {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "DoctypeIllegalInContent",
-                                                   null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
-                }
-            } while (complete || again);
+                } while (complete || again);
+            }
+    
+            // premature end of file
+            catch (EOFException e) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "PrematureEOF",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                throw e;
+            }
 
             return complete;
 
@@ -2195,53 +2228,90 @@ public class XMLDocumentScanner
             throws IOException, SAXException {
 
             try {
+                boolean again;
                 do {
-                    if (fScannerState == SCANNER_STATE_TERMINATED) {
-                        break;
-                    }
-                    if (fScannerState == SCANNER_STATE_TRAILING_MISC) {
-                        fEntityScanner.skipSpaces();
-                        if (fEntityScanner.skipChar('<')) {
+                    again = false;
+                    switch (fScannerState) {
+                        case SCANNER_STATE_TRAILING_MISC: {
+                            fEntityScanner.skipSpaces();
+                            if (fEntityScanner.skipChar('<')) {
+                                setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                                again = true;
+                            }
+                            else {
+                                setScannerState(SCANNER_STATE_CONTENT);
+                                again = true;
+                            }
+                            break;
+                        }
+                        case SCANNER_STATE_START_OF_MARKUP: {
                             fMarkupEntity = fEntityManager.getCurrentEntity();
                             if (fEntityScanner.skipChar('?')) {
-                                scanPI();
+                                setScannerState(SCANNER_STATE_PI);
+                                again = true;
                             }
                             else if (fEntityScanner.skipChar('!')) {
-                                if (!fEntityScanner.skipString("--")) {
-                                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                               "InvalidCommentStart",
-                                                               null,
-                                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                                }
-                                scanComment();
+                                setScannerState(SCANNER_STATE_COMMENT);
+                                again = true;
                             }
+                            break;
                         }
-                        else {
+                        case SCANNER_STATE_PI: {
+                            scanPI();
+                            break;
+                        }
+                        case SCANNER_STATE_COMMENT: {
+                            if (!fEntityScanner.skipString("--")) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "InvalidCommentStart",
+                                                           null,
+                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            }
+                            scanComment();
+                            break;
+                        }
+                        case SCANNER_STATE_CONTENT: {
                             int ch = fEntityScanner.peekChar();
-                            if (ch == -1 ) {
+                            if (ch == -1) {
                                 setScannerState(SCANNER_STATE_TERMINATED);
                                 return false;
                             }
-                            else if (XMLChar.isInvalid(ch)) {
+                            if (XMLChar.isInvalid(ch)) {
                                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                            "MarkupNotRecognizedInMisc",
                                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
                             else {
-                                // REVISIT: Should never get here!
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "ContentIllegalInTrailingMisc",
+                                                           null,
+                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
+                            setScannerState(SCANNER_STATE_TRAILING_MISC);
+                            break;
+                        }
+                        case SCANNER_STATE_REFERENCE: {
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "ReferenceIllegalInTrailingMisc",
+                                                       null,
+                                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            setScannerState(SCANNER_STATE_TRAILING_MISC);
+                            break;
                         }
                     }
-                    else {
-                        // REVISIT: Should never get here!
-                    }
-    
-                } while ( complete );
+                } while (complete || again);
             }
             catch (EOFException e) {
                 // NOTE: This is the only place we're allowed to reach
-                //       the real end of the document stream. So ignore
-                //       the exception and move to end of input. -Ac
+                //       the real end of the document stream. Unless the
+                //       end of file was reached prematurely.
+                if (fMarkupEntity != null) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "PrematureEOF",
+                                               null,
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    throw e;
+                }
             }
 
             setScannerState(SCANNER_STATE_TERMINATED);
