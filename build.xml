@@ -276,7 +276,7 @@ Copyright:
     <mkdir dir="${distsrc.dir}/docs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
-    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*, *.class"
+    <copydir src="${src.dir}" dest="${distsrc.dir}/src" excludes="**/CVS*, **/.#*, **/*.class"
              includes="**/Makefile, **/Makefile.incl, org/**, javax/**"/>
     <copydir src="${data.dir}" dest="${distsrc.dir}/data" excludes="**/CVS*, **/.#*"/>
     <copydir src="${docs.dir}" dest="${distsrc.dir}/docs"
