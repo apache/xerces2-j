@@ -318,6 +318,14 @@ Copyright:
       doctitle='Xerces Native Interface'
       bottom='${copyright}'
       locale='en_US'/>
+    <mkdir dir='${build.dir}/docs/javadocs/dom3-api'/>
+    <javadoc packagenames='org.apache.xerces.dom3.*'
+     sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/dom3-api'
+     author='true' version='true'
+     windowtitle='DOM Level 3 API' doctitle='DOM Level 3 API'
+     bottom='${copyright}'
+     locale='en_US'/>
+    
     <mkdir dir='${build.dir}/docs/javadocs/xerces2'/>
     <javadoc packagenames='org.apache.xerces.dom.*,
                            org.apache.xerces.impl.*,
