@@ -49,7 +49,7 @@
 		<q>How do I extract code from CVS?</q>
 		<a>
 			<p>
-    	   		 <br/>set CVSROOT=:pserver:anoncvs@xml.apache.org:/home/cvspublic
+    	   		 <br/>set CVSROOT=:pserver:anoncvs@cvs.apache.org:/home/cvspublic
 		        <br/>cvs login        <em>(password: anoncvs)</em>
         		<br/>cvs checkout -d xerces_j xml-xerces/java 
 			</p>
