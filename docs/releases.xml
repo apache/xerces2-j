@@ -7,6 +7,18 @@
         TBD
     </desc>
     <changes>
+      <add>
+          <note>Implemented several DOM Level 3 features, including DOMConfiguration, exposing type
+          information via DOM, and allowing to set an ID attribute in the DOM.
+          </note>
+          <submitter name='Elena Litani'/>
+        </add>      
+        <add>
+          <note>Modified several XNI interfaces, i.e. NamespaceContext, XMLResourceIdentifier, and updated implementation
+          accordingly.
+          </note>
+          <submitter name='Elena Litani'/>
+        </add>      
       <fix>
         <note>
           Fix comment parsing bug that prevented Tomcat 4.1.12 from making
