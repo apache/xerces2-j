@@ -184,47 +184,56 @@ public class ObjectFactory {
         String factoryClassName = null;
         // no properties file name specified; use $JAVA_HOME/lib/xerces.properties:
         if (propertiesFilename == null) {
-            String javah = ss.getSystemProperty("java.home");
-            propertiesFilename = javah + File.separator +
-                "lib" + File.separator + DEFAULT_PROPERTIES_FILENAME;
-            File propertiesFile = new File(propertiesFilename);
-            boolean propertiesFileExists = ss.getFileExists(propertiesFile);
+            File propertiesFile = null;
+            boolean propertiesFileExists = false;
+            try {
+                String javah = ss.getSystemProperty("java.home");
+                propertiesFilename = javah + File.separator +
+                    "lib" + File.separator + DEFAULT_PROPERTIES_FILENAME;
+                propertiesFile = new File(propertiesFilename);
+                propertiesFileExists = ss.getFileExists(propertiesFile);
+            } catch (SecurityException e) {
+                // try again...
+                fLastModified = -1;
+                fXercesProperties = null;
+            }
+
             synchronized (ObjectFactory.class) {
                 boolean loadProperties = false;
-                // file existed last time
-                if(fLastModified >= 0) {
-                    if(propertiesFileExists &&
-                            (fLastModified < (fLastModified = ss.getLastModified(propertiesFile)))) {
-                        loadProperties = true;
+                try {
+                    // file existed last time
+                    if(fLastModified >= 0) {
+                        if(propertiesFileExists &&
+                                (fLastModified < (fLastModified = ss.getLastModified(propertiesFile)))) {
+                            loadProperties = true;
+                        } else {
+                            // file has stopped existing...
+                            if(!propertiesFileExists) {
+                                fLastModified = -1;
+                                fXercesProperties = null;
+                            } // else, file wasn't modified!
+                        }
                     } else {
-                        // file has stopped existing...
-                        if(!propertiesFileExists) {
-                            fLastModified = -1;
-                            fXercesProperties = null;
-                        } // else, file wasn't modified!
+                        // file has started to exist:
+                        if(propertiesFileExists) {
+                            loadProperties = true;
+                            fLastModified = ss.getLastModified(propertiesFile);
+                        } // else, nothing's changed
                     }
-                } else {
-                    // file has started to exist:
-                    if(propertiesFileExists) {
-                        loadProperties = true;
-                        fLastModified = ss.getLastModified(propertiesFile);
-                    } // else, nothing's changed
-                }
-                if(loadProperties) {
-                    try {
+                    if(loadProperties) {
                         // must never have attempted to read xerces.properties before (or it's outdeated)
                         fXercesProperties = new Properties();
                         FileInputStream fis = ss.getFileInputStream(propertiesFile);
                         fXercesProperties.load(fis);
                         fis.close();
-	                } catch (Exception x) {
-	                    fXercesProperties = null;
-	                    fLastModified = -1;
-	                    // assert(x instanceof FileNotFoundException
-	                    //        || x instanceof SecurityException)
-	                    // In both cases, ignore and continue w/ next location
-	                }
-                }
+                    }
+	            } catch (Exception x) {
+	                fXercesProperties = null;
+	                fLastModified = -1;
+                    // assert(x instanceof FileNotFoundException
+	                //        || x instanceof SecurityException)
+	                // In both cases, ignore and continue w/ next location
+	            }
             }
             if(fXercesProperties != null) {
                 factoryClassName = fXercesProperties.getProperty(factoryId);
