@@ -110,6 +110,7 @@
 		<p>We also emphasize that support for schema ID constraints is
 		highly experimental.  Some of the limitations of this support
 		are:
+		</p>
 		<ul>
 		<li>Very little error-checking has been performed.</li> 
 		<li>Identity constraints will not work if the schema under
@@ -122,7 +123,6 @@
 		 Therefore, the values "1" and "1.0" are NOT equal for a 
 		 field of type "decimal" (even though they should be).</li>
 		 </ul>
-		 </p>
 		 <p>Finally, note that in all model groups fewer than 8 elements must
 		 be used.</p>
 	</s2>
