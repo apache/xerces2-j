@@ -89,7 +89,7 @@
     </li>
    </ul>
   <p>
-  Those APIs are unstable and may change:
+  These APIs are unstable and may change:
   <jump href='javadocs/dom3-api/index.html'>org.apache.xerces.dom3</jump> 
 </p>
 </s2>
