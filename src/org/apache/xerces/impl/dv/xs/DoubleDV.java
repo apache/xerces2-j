@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,12 +148,12 @@ public class DoubleDV extends TypeValidator {
                 // this = NaN = other
                 if (oval != oval)
                     return 0;
-                // this is this = NaN > other
-                return 1;
+                // this is NaN <> other
+                return INDETERMINATE;
             }
 
-            // this < NaN = other
-            return -1;
+            // other is NaN <> this
+            return INDETERMINATE;
         }
 
         private String canonical;
