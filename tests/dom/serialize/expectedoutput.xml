@@ -1,64 +1,54 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<s:Envelope xmlns:s="myschema/namespace" xmlns="default namespace" xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance">
-  <s:Body>
-	<length>3</length>
-  </s:Body>
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns="default namespace" xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance">
+<s:Body>
 
-  <!-- xmlns is removed during the modifications -->
-   <empty xmlns="">
-	<elem/>
-	<elem xmlns="newURI"><a/></elem>
-   </empty>
+<size>3</size>
 
-  <!-- both first and second "elem" elements have 
-       xmlns="" declaration      
-   -->
-   <empty xmlns="">
-	<elem xmlns=""/>
-	<elem xmlns="newURI"><a/></elem>
-   </empty>
+<!-- xmlns is removed during the modifications -->
+<empty xmlns="">
+ <elem/>
+ <elem xmlns="newURI"><a/></elem>
+</empty>
 
+<!-- both first and second "elem" elements have xmlns="" declaration -->
+<empty xmlns="">
+ <elem xmlns=""/>
+ <elem xmlns="newURI"><a/></elem>
+</empty>
 
-   <!-- the second element "good" had declaration 
-        xmlns:n1="http://www.w3.org" -->
-   <x xmlns="http://www.w3.org" xmlns:n1="http://www.w3.org">
-  	<good a="1" b="2"/>
-  	<good a="1" n1:a="2" xmlns:n1="http://www.w3.org"/>
-   </x>
+<!-- the second element "good" had declaration xmlns:n1="http://www.w3.org" -->
+<x xmlns="http://www.w3.org" xmlns:n1="http://www.w3.org">
+ <good a="1" b="2"/>
+ <good a="1" n1:a="2" xmlns:n1="http://www.w3.org"/>
+</x>
+
 <!--add element in the same scope-->
-<s:bar xmlns:s="urn:schemas-xmlsoap-org:soap.v1"/>
+<s:child1/>
 
 <!--add element with s bound to different namespace-->
-<s:hello xmlns:s="s_bound_to_this"/>
+<s:child2 xmlns:s="http://child2"/>
 
 <!--add element with no prefix bound to different scope than default prefix-->
-<emptyNS xmlns="empty_rebound"/>
+<child3 xmlns="http://child3/default"/>
 
 <!--add element no prefix no namespace-->
-<defaultNamespace xmlns=""/>
+<child4 xmlns=""/>
 
-<!--add element with prefix s and empty namespace-->
-<noNamespace xmlns=""/>
+<!--create element: prefix bound to http://child7, local declaration of xmlns:prefix = http://child8-->
+<prefix:child7 xmlns:prefix="http://child7"/>
 
-<!--create element: _attr_ bound to _hi_, local declaration of xmlns:attr = boo-->
-<attr:foo xmlns:attr="hi"/>
-
-<!--add p:foo, uri=emptyStr, xmlns:p=emptyStr-->
-<foo xmlns=""/>
-
-<!--add s:foo, uri=emptyStr, xmlns:p=emptyStr-->
-<foo xmlns=""/>
+<!--add child5, uri=null, xmlns:p=emptyStr (invalid)-->
+<child5 xmlns=""/>
 
 <!--create element: with 2 xmlns-->
-<elem xmlns="namespace1"/>
+<child6 xmlns="http://child6"/>
 
 <!--
-1) noBooPrefixAttr had no prefix and bound to _boo_ URI (boo is not declared).
-2) dummy attribute with null namespace
-3) s:dummy2 attribute with empty namespace
-4) boowithPrefixS with declared s - no change
+1) attr3 (with no prefix) and bound to http://attr3 (that is not declared).
+2) attr1 attribute with null namespace
+3) attr2 with declared s - no change
 -->
-<s:testAttributes xmlns:s="urn:schemas-xmlsoap-org:soap.v1" dummy="" xmlns:NS1="boo" NS1:noBooPrefixAttr="" s:BooWithPrefixS="" dummy2=""/>
+<s:testAttributes attr1="" xmlns:NS1="http://attr3" NS1:attr3="" s:attr2=""/>
 
 <!--NON-WELLFORMED! xml:space attribute, 
 doml1 valid/invalid namespace declarations, 
@@ -66,9 +56,11 @@ doml2 invalid declarations xmlns:foo=""-->
 <spaces xmlns="" xml:space="" s:level1Node="" xmlns:="" xmlns:k="" xmlns:k:d=""/>
 
 <!--
-1) attr1 with no prefix and uri="hello_world"
-2) attribute xmlns1000:NS bound to xmlns namespace
-3) Attribute _noFooPrefixAttr_ had no prefix and bound to _foo_ URI. There is local default decl bound to _foo_-->
-<s:testAttributes2 xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns:NS2="hello_world" NS2:attr1="" xmlns:NS3="foo" NS3:noFooPrefixAttr="" xmlns="foo" xmlns:xmlns1000="http://www.w3.org/2000/xmlns/" xmlns1000:namespaceAttr2="">
-<s:testAttributes3 xmlns:s="have_no_correct_namespace" xmlns1000:myAttribute="">Has xmlns2000:myAttribute attribute with xmlns namespace(prefix not defined), element has no defined prefix</s:testAttributes3></s:testAttributes2>
+1) attr_B with no prefix and http://attr_B
+2) xmlns1000:attr_D bound to xmlns namespace
+3) attr_A had no prefix and http://attr_A. There is local default decl bound to the same namespace-->
+<s:testAttributes2 xmlns:NS2="http://attr_A" NS2:attr_A="" xmlns:NS3="http://attr_B" NS3:attr_B="" xmlns="http://attr_A" xmlns:attr_D="">
+<s:testAttributes3 xmlns:s="http://testAttributes3" xmlns:attr_C="">Has xmlns2000:attr_C attribute with xmlns namespace(prefix not defined), element has no defined prefix</s:testAttributes3></s:testAttributes2>
+</s:Body>
+
 </s:Envelope>
