@@ -214,7 +214,7 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
                 root.insertBefore(newElem, testElem);
 
                 root.appendChild(core.createElementNS("UndefinedNamespace", "NS1:foo"));
-                config = core.getConfig();
+                config = core.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 core.normalizeDocument();
@@ -265,7 +265,7 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
 
                 testElem.removeAttributeNode(testElem.getAttributeNodeNS(null, "contr"));
                 NamedNodeMap map = testElem.getAttributes();
-                config = core.getConfig();
+                config = core.getDomConfig();
                 errorCounter = 0;
                 config.setParameter("psvi", Boolean.TRUE);
                 config.setParameter("error-handler",errorHandler);
@@ -569,7 +569,7 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
                 errorCounter = 0;
                 config = builder.getConfig();
                 config.setParameter("error-handler",errorHandler);
-                config.setParameter("entity-resolver",resolver);
+                config.setParameter("resource-resolver",resolver);
                 config.setParameter("validate", Boolean.TRUE);
                 config.setParameter("psvi", Boolean.TRUE);
                 
@@ -604,11 +604,11 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
                 Element root = core2.getDocumentElement();
                 root.removeAttributeNS("http://www.w3.org/2001/XMLSchema", "xsi");               
                 root.removeAttributeNS("http://www.w3.org/2001/XMLSchema", "noNamespaceSchemaLocation");
-                config = core2.getConfig();
+                config = core2.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("schema-type", "http://www.w3.org/2001/XMLSchema");
                 config.setParameter("schema-location","personal.xsd");
-                config.setParameter("entity-resolver",resolver);
+                config.setParameter("resource-resolver",resolver);
                 config.setParameter("validate", Boolean.TRUE);
                 core2.normalizeDocument();
                 Assertion.verify(errorCounter == 1, "1 error should be reported: "+errorCounter);
@@ -646,7 +646,7 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
             fError.append(":");
             fError.append(locator.getColumnNumber());
             fError.append(":");
-            fError.append(locator.getOffset());
+            fError.append(locator.getByteOffset());
             Node node = locator.getRelatedNode();
             if (node != null) {
 

@@ -261,7 +261,7 @@ int parse(int fileNum)
             Document doc = fDOMParser.getDocument();
             domCheckSum(doc);
             CoreDocumentImpl core = (CoreDocumentImpl) doc;
-            DOMConfiguration config = core.getConfig();
+            DOMConfiguration config = core.getDomConfig();
             config.setParameter("validate", Boolean.TRUE);
             core.normalizeDocument();
 
