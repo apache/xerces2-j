@@ -164,6 +164,7 @@ public class TraverseSchema implements
     private SchemaGrammar fSchemaGrammar = null;
 
     private Element fSchemaRootElement;
+    private SchemaInfo fSchemaInfoList = null;
 
     private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
 
@@ -642,26 +643,27 @@ public class TraverseSchema implements
                 // the included schema file, because the scope count, anon-type count
                 // should not be reset for a included schema, this can be fixed by saving 
                 // the counters in the Schema Grammar, 
-                boolean saveElementDefaultQualified = fElementDefaultQualified;
-                boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
-                int saveScope = fCurrentScope;
-                String savedSchemaURL = fCurrentSchemaURL;
-                Element saveRoot = fSchemaRootElement;
+                if (fSchemaInfoList == null) 
+                    fSchemaInfoList = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 0, null, null);
+                else {
+                    fSchemaInfoList = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 0, null, fSchemaInfoList);
+                    (fSchemaInfoList.getPrev()).setNext(fSchemaInfoList);
+                }
                 fSchemaRootElement = root;
                 fCurrentSchemaURL = location;
+                traverseIncludedSchemaHeader(root);
                 traverseIncludedSchema(root);
-                fCurrentSchemaURL = savedSchemaURL;
-                fCurrentScope = saveScope;
-                fElementDefaultQualified = saveElementDefaultQualified;
-                fAttributeDefaultQualified = saveAttributeDefaultQualified;
-                fSchemaRootElement = saveRoot;
+                fSchemaInfoList.restore();
+                fSchemaInfoList = fSchemaInfoList.getPrev();
             }
 
         }
 
     }
 
-    private void traverseIncludedSchema(Element root) throws Exception {
+    private void traverseIncludedSchemaHeader(Element root) throws Exception {
         // Retrived the Namespace mapping from the schema element.
         NamedNodeMap schemaEltAttrs = root.getAttributes();
         int i = 0;
@@ -703,8 +705,9 @@ public class TraverseSchema implements
 
         //fScopeCount++;
         fCurrentScope = -1;
+    } // traverseIncludedSchemaHeader 
 
-
+    private void traverseIncludedSchema(Element root) throws Exception {
         checkTopLevelDuplicateNames(root);
 
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
@@ -837,13 +840,22 @@ public class TraverseSchema implements
 			// targetNamespace is right, so let's do the renaming...
 			// and let's keep in mind that the targetNamespace of the redefined
 			// elements is that of the redefined schema!  
-            boolean saveElementDefaultQualified = fElementDefaultQualified;
-            boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
-            int saveScope = fCurrentScope;
-            String savedSchemaURL = fCurrentSchemaURL;
-            Element saveRoot = fSchemaRootElement;
+            if (fSchemaInfoList == null) 
+                fSchemaInfoList = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 0, null, null);
+            else {
+                fSchemaInfoList = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                        fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, 0, null, fSchemaInfoList);
+                (fSchemaInfoList.getPrev()).setNext(fSchemaInfoList);
+            }
             fSchemaRootElement = root;
             fCurrentSchemaURL = location;
+            // get default form xmlns bindings et al. 
+            traverseIncludedSchemaHeader(root);
+            // and then save them...
+            fSchemaInfoList = new SchemaInfo(fElementDefaultQualified, fAttributeDefaultQualified, 
+                    fCurrentScope, fCurrentSchemaURL, fSchemaRootElement, fSchemaInfoList.getLevel()+1, null, fSchemaInfoList);
+            (fSchemaInfoList.getPrev()).setNext(fSchemaInfoList);
 			renameRedefinedComponents(redefineDecl,root);
 
 			// but we're not done yet; now it's time actually to
@@ -872,11 +884,10 @@ public class TraverseSchema implements
 			// so we'll process it the same way, saving all our globals as is done for includes
 			// and imports.  
             traverseIncludedSchema(root);
-            fCurrentSchemaURL = savedSchemaURL;
-            fCurrentScope = saveScope;
-            fElementDefaultQualified = saveElementDefaultQualified;
-            fAttributeDefaultQualified = saveAttributeDefaultQualified;
-            fSchemaRootElement = saveRoot; 
+            // and restore the original globals
+            fSchemaInfoList = fSchemaInfoList.getPrev();
+            fSchemaInfoList.restore();
+            fSchemaInfoList = fSchemaInfoList.getPrev();
 		}
     } // traverseRedefine
 	// the purpose of this method is twofold:  1.  To find and appropriately modify all information items
@@ -977,7 +988,7 @@ public class TraverseSchema implements
 					// REVISIT:  localize
 					reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
 				else if (groupRefsCount == 1) {
-					fixRedefinedSchema(SchemaSymbols.ELT_ATTRIBUTEGROUP, 
+					fixRedefinedSchema(SchemaSymbols.ELT_GROUP, 
 						baseName, baseName+"#redefined", 
 						schemaToRedefine);
 				} else {
@@ -1016,7 +1027,7 @@ public class TraverseSchema implements
                 		localpart = ref.substring(colonptr+1);
             		}
             		String uriStr = resolvePrefixToURI(prefix);
-					if(originalName.equals(new QName(-1, fStringPool.addSymbol(localpart), fStringPool.addSymbol(ref), fStringPool.addSymbol(uriStr)))) {
+					if(originalName.equals(new QName(-1, fStringPool.addSymbol(localpart), fStringPool.addSymbol(localpart), fStringPool.addSymbol(uriStr)))) {
 						child.setAttribute(SchemaSymbols.ATT_REF, ref + "#redefined"); 
 						result++;
 					}
@@ -3521,7 +3532,7 @@ public class TraverseSchema implements
             	}
             	else {
                 	// REVISIT: Localize
-                	reportGenericSchemaError ( "Couldn't find top level attributegroup " + ref);
+                	reportGenericSchemaError ( "Couldn't find top level attributeGroup " + ref);
             	}
  				return -1;
 			}
@@ -4602,46 +4613,77 @@ public class TraverseSchema implements
         //TO DO!!
     }
     
+    // this originally-simple method is much -complicated by the fact that, when we're 
+    // redefining something, we've not only got to look at the space of the thing
+    // we're redefining but at the original schema too.
+    // The basic idea is to look at our level, ten go upward until we hit
+    // the top--unless we're already there of course...
     private Element getTopLevelComponentByName(String componentCategory, String name) throws Exception {
         Element child = null;
 
-        if ( componentCategory.equals(SchemaSymbols.ELT_GROUP) ) {
-            child = (Element) fSchemaGrammar.topLevelGroupDecls.get(name);
-        }
-        else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP ) ) {
-            child = (Element) fSchemaGrammar.topLevelAttrGrpDecls.get(name);
-        }
-        else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTE ) ) {
-            child = (Element) fSchemaGrammar.topLevelAttrDecls.get(name);
-        }
-
-        if (child != null ) {
-            return child;
-        }
-            
-        child = XUtil.getFirstChildElement(fSchemaRootElement);
-
-        if (child == null) {
-            return null;
-        }
-
-        while (child != null ){
-            if ( child.getLocalName().equals(componentCategory)) {
-                if (child.getAttribute(SchemaSymbols.ATT_NAME).equals(name)) {
-                    return child;
-                }
+        int redefineLevel = (fSchemaInfoList == null)? 0 : fSchemaInfoList.getLevel();
+        int i = redefineLevel;
+        for (; i>=0; i--) {
+            if ( componentCategory.equals(SchemaSymbols.ELT_GROUP) ) {
+                child = (Element) fSchemaGrammar.topLevelGroupDecls.get(name);
             }
-            child = XUtil.getNextSiblingElement(child);
-        }
+            else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP ) ) {
+                child = (Element) fSchemaGrammar.topLevelAttrGrpDecls.get(name);
+            }
+            else if ( componentCategory.equals(SchemaSymbols.ELT_ATTRIBUTE ) ) {
+                child = (Element) fSchemaGrammar.topLevelAttrDecls.get(name);
+            }
 
-        return null;
+            if (child != null ) {
+                break;
+            }
+            
+            child = XUtil.getFirstChildElement(fSchemaRootElement);
+
+            if (child == null) {
+                continue;
+            }
+
+            while (child != null ){
+                if ( child.getLocalName().equals(componentCategory)) {
+                    if (child.getAttribute(SchemaSymbols.ATT_NAME).equals(name)) {
+                        break;
+                    }
+                } else if (child.getLocalName().equals(SchemaSymbols.ELT_REDEFINE)) {
+                    Element gChild = XUtil.getFirstChildElement(child);
+                    while (gChild != null ){
+                        if (gChild.getLocalName().equals(componentCategory)) {
+                            if (gChild.getAttribute(SchemaSymbols.ATT_NAME).equals(name)) {
+                                break;
+                            }
+                        }
+                        gChild = XUtil.getNextSiblingElement(gChild);
+                    }
+                    if (gChild != null) {
+                        child = gChild;
+                        break;
+                    }
+                }
+                child = XUtil.getNextSiblingElement(child);
+            }
+            if (child == null && i>0) {
+                fSchemaInfoList = fSchemaInfoList.getPrev();
+                fSchemaInfoList.restore();
+            }
+            else break;
+        }
+        // have to reset fSchemaInfoList
+        for (int j = 0; j < redefineLevel-i; j++) 
+            fSchemaInfoList = fSchemaInfoList.getNext();
+        if (redefineLevel > 0) fSchemaInfoList.restore();
+            
+        return child;
     }
 
     private boolean isTopLevel(Element component) {
         String parentName = component.getParentNode().getLocalName();
-		return (parentName.endsWith(SchemaSymbols.ELT_SCHEMA));
-	//	|| 
-	//		(parentName.endsWith(SchemaSymbols.ELT_REDEFINE)) ); 
+		return (parentName.endsWith(SchemaSymbols.ELT_SCHEMA))
+		    || (parentName.endsWith(SchemaSymbols.ELT_REDEFINE)) ; 
     }
     
     DatatypeValidator getTypeValidatorFromNS(String newSchemaURI, String localpart) throws Exception {
@@ -5691,5 +5733,59 @@ public class TraverseSchema implements
         public void ignorableWhitespace(char ch[], int start, int length) {}
         public void ignorableWhitespace(int dataIdx) {}
     } // class IgnoreWhitespaceParser
+
+    // When in a <redefine>, type definitions being used (and indeed 
+    // refs to <group>'s and <attributeGroup>'s) may refer to info 
+    // items either in the schema being redefined, in the <redefine>, 
+    // or else in the schema doing the redefining.  Because of this 
+    // latter we have to be prepared sometimes to look for our type 
+    // definitions outside the schema stored in fSchemaRoot.  
+    // This simple class does this; it's just a linked list that 
+    // lets us look at the <schema>'s on the queue; note also that this 
+    // should provide us with a mechanism to handle nested <redefine>'s.  
+    // It's also a handy way of saving schema info when importing/including; saves some code.
+    public class SchemaInfo {
+        private Element saveRoot;
+        private boolean saveElementDefaultQualified = fElementDefaultQualified;
+        private boolean saveAttributeDefaultQualified = fAttributeDefaultQualified;
+        private int saveScope = fCurrentScope;
+        private String savedSchemaURL = fCurrentSchemaURL;
+        private int level;
+        private SchemaInfo nextRoot;
+        private SchemaInfo prevRoot;
+
+        public SchemaInfo ( boolean saveElementDefaultQualified, boolean saveAttributeDefaultQualified,
+                int saveScope, String savedSchemaURL, Element saveRoot, int level, SchemaInfo nextRoot, SchemaInfo prevRoot) {
+            this.saveElementDefaultQualified = saveElementDefaultQualified;
+            this.saveAttributeDefaultQualified = saveAttributeDefaultQualified;
+            this.saveScope  = saveScope ;
+            this.savedSchemaURL = savedSchemaURL;
+            this.saveRoot  = saveRoot ;
+            this.level = level;
+            this.nextRoot = nextRoot;
+            this.prevRoot = prevRoot;
+        }
+        public void setNext (SchemaInfo next) {
+            nextRoot = next;
+        }
+        public SchemaInfo getNext () {
+            return nextRoot;
+        }
+        public void setPrev (SchemaInfo prev) {
+            prevRoot = prev;
+        }
+        public SchemaInfo getPrev () {
+            return prevRoot;
+        }
+        public int getLevel() { return level; }
+        // NOTE:  this has side-effects!!!
+        public void restore() {
+            fCurrentSchemaURL = savedSchemaURL;
+            fCurrentScope = saveScope;
+            fElementDefaultQualified = saveElementDefaultQualified;
+            fAttributeDefaultQualified = saveAttributeDefaultQualified;
+            fSchemaRootElement = saveRoot; 
+        }
+    } // class SchemaInfo
 
 } // class TraverseSchema
