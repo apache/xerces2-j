@@ -1150,7 +1150,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         processPSVIParticle(type.getParticle());
         sendUnIndentedElement("psv:contentType");
         sendElementEvent(
-            "psv:final",
+            "psv:prohibitedSubstitutions",
             this.translateFinal(type.getProhibitedSubstitutions()));
         processPSVIAnnotations(type.getAnnotations());
         sendUnIndentedElement("psv:complexTypeDefinition");
@@ -1202,8 +1202,8 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             return;
         XSObjectList facets = type.getFacets();
         XSObjectList multiValueFacets = type.getMultiValueFacets();
-        if ((facets == null || facets.getLength() == 0) &&
-        (multiValueFacets == null || multiValueFacets.getLength() == 0)) {
+        if ((facets == null || facets.getLength() == 0)
+            && (multiValueFacets == null || multiValueFacets.getLength() == 0)) {
             sendElementEvent("psv:facets");
         }
         else {
@@ -1214,14 +1214,17 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                     String name = this.translateFacetKind(facet.getFacetKind());
                     sendIndentedElement("psv:" + name);
                     sendElementEvent("psv:value", facet.getLexicalFacetValue());
-                    sendElementEvent("psv:fixed", String.valueOf(facet.isFixed()));
+                    sendElementEvent(
+                        "psv:fixed",
+                        String.valueOf(facet.isFixed()));
                     processPSVIAnnotation(facet.getAnnotation());
                     sendUnIndentedElement("psv:" + name);
                 }
             }
             if (multiValueFacets != null) {
                 for (int i = 0; i < multiValueFacets.getLength(); i++) {
-                    XSMultiValueFacet facet = (XSMultiValueFacet)multiValueFacets.item(i);
+                    XSMultiValueFacet facet =
+                        (XSMultiValueFacet)multiValueFacets.item(i);
                     String name = this.translateFacetKind(facet.getFacetKind());
                     sendIndentedElement("psv:" + name);
                     StringList values = facet.getLexicalFacetValues();
@@ -1276,7 +1279,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 }
             }
         }
-        
+
         if (empty) {
             sendElementEvent("psv:annotations");
         }
@@ -1559,15 +1562,15 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
     private void processPSVIIdentityConstraintDefinitions(XSNamedMap constraints) {
         if (constraints == null || constraints.getLength() == 0) {
-            sendElementEvent("psv:identityContraintDefinitions");
+            sendElementEvent("psv:identityConstraintDefinitions");
         }
         else {
-            sendIndentedElement("psv:identityContraintDefinitions");
+            sendIndentedElement("psv:identityConstraintDefinitions");
             for (int i = 0; i < constraints.getLength(); i++) {
                 XSIDCDefinition constraint =
                     (XSIDCDefinition)constraints.item(i);
                 sendIndentedElementWithID(
-                    "psv:identityContraintDefinition",
+                    "psv:identityConstraintDefinition",
                     constraint);
                 sendElementEvent("psv:name", constraint.getName());
                 sendElementEvent(
@@ -1584,9 +1587,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                     "psv:referencedKey",
                     constraint.getRefKey());
                 processPSVIAnnotations(constraint.getAnnotations());
-                sendUnIndentedElement("psv:identityContraintDefinition");
+                sendUnIndentedElement("psv:identityConstraintDefinition");
             }
-            sendUnIndentedElement("psv:identityContraintDefinitions");
+            sendUnIndentedElement("psv:identityConstraintDefinitions");
         }
     }
 
@@ -1633,7 +1636,9 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 String.valueOf(part.getMinOccurs()));
             sendElementEvent(
                 "psv:maxOccurs",
-                String.valueOf(part.getMaxOccurs()));
+                part.getMaxOccurs() == SchemaSymbols.OCCURRENCE_UNBOUNDED
+                    ? "unbounded"
+                    : String.valueOf(part.getMaxOccurs()));
             sendIndentedElement("psv:term");
             switch (part.getTerm().getType()) {
                 case XSConstants.ELEMENT_DECLARATION :
