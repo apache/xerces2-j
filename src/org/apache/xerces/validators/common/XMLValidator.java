@@ -4079,7 +4079,7 @@ public final class XMLValidator
 
        for (int i = 0; i < length; i++) {
             c = value.charAt(i);
-            if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
+            if (c == 0x20) {
                 if (!skipSpace) {
                     // take the first whitespace as a space and skip the others
                     fStringBuffer.append(' ');
