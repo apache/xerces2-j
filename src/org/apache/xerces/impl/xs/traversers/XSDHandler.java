@@ -90,9 +90,12 @@ import org.apache.xerces.util.SymbolHash;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.XMLLocator;
 
+import org.apache.xerces.impl.xs.opti.SchemaParsingConfig;
+
 import org.apache.xerces.impl.xs.dom.DOMParser;
 import org.apache.xerces.impl.xs.dom.DOMNodePool;
 import org.apache.xerces.impl.xs.dom.ElementNSImpl;
+import org.apache.xerces.impl.xs.opti.ElementImpl;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Attr;
@@ -283,7 +286,8 @@ public class XSDHandler {
     XSDUniqueOrKeyTraverser fUniqueOrKeyTraverser;
     XSDWildcardTraverser fWildCardTraverser;
 
-    DOMParser fSchemaParser;
+    //DOMParser fSchemaParser;
+    SchemaParsingConfig fSchemaParser;
 
     // these data members are needed for the deferred traversal
     // of local elements.
@@ -1350,7 +1354,8 @@ public class XSDHandler {
                 // If this is the first schema this Handler has
                 // parsed, it has to construct a DOMParser
                 if (fSchemaParser == null) {
-                    fSchemaParser = new DOMParser();
+                    //fSchemaParser = new DOMParser();
+                    fSchemaParser = new SchemaParsingConfig();
                     resetSchemaParserErrorHandler();
                 }
                 fSchemaParser.parse(schemaSource);
@@ -1923,7 +1928,7 @@ public class XSDHandler {
      * no information can be retrieved from the element.
      */
     public SimpleLocator element2Locator(Element e) {
-        if (!(e instanceof ElementNSImpl))
+        if (!(e instanceof ElementNSImpl || e instanceof ElementImpl))
             return null;
         
         SimpleLocator l = new SimpleLocator();
@@ -1936,18 +1941,31 @@ public class XSDHandler {
      * true. Returning false means can't extract or store such information.
      */
     public boolean element2Locator(Element e, SimpleLocator l) {
-        if (!(e instanceof ElementNSImpl) || l == null)
+        if (l == null)
             return false;
-            
-        ElementNSImpl ele = (ElementNSImpl)e;
-        // get system id from document object
-        Document doc = ele.getOwnerDocument();
-        String sid = (String)fDoc2SystemId.get(doc);
-        // line/column numbers are stored in the element node
-        int line = ele.getLineNumber();
-        int column = ele.getColumnNumber();
-        l.setValues(sid, sid, line, column);
-        return true;
+        if (e instanceof ElementImpl) {
+            ElementImpl ele = (ElementImpl)e;
+            // get system id from document object
+            Document doc = ele.getOwnerDocument();
+            String sid = (String)fDoc2SystemId.get(doc);
+            // line/column numbers are stored in the element node
+            int line = ele.getLineNumber();
+            int column = ele.getColumnNumber();
+            l.setValues(sid, sid, line, column);
+            return true;
+        }
+        if (e instanceof ElementNSImpl) {
+            ElementNSImpl ele = (ElementNSImpl)e;
+            // get system id from document object
+            Document doc = ele.getOwnerDocument();
+            String sid = (String)fDoc2SystemId.get(doc);
+            // line/column numbers are stored in the element node
+            int line = ele.getLineNumber();
+            int column = ele.getColumnNumber();
+            l.setValues(sid, sid, line, column);
+            return true;
+        }
+        return false;
     }
     
     void reportSchemaError(String key, Object[] args, Element ele) {
