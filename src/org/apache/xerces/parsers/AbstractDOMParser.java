@@ -196,6 +196,7 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startEntity(String name, String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
         if (fInDocument && !fInDTD) {
