@@ -2666,6 +2666,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
             if (anotherSchemaURI != null) {
                //before switch Grammar, set the elementIndex to be the template elementIndex of its type
+                // but if the content type is empty, we don't bother switching the grammar.
                if (contentSpecType != -1 
                    && contentSpecType != XMLElementDecl.TYPE_EMPTY ) {
                   TraverseSchema.ComplexTypeInfo typeInfo = ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
@@ -2688,6 +2689,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
 
          }
+
+         // since the elementIndex could change since last time we query the content type, so do it again.
+         contentSpecType =  getContentSpecType(elementIndex);
 
          if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
             reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
