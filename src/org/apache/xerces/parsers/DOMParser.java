@@ -1034,6 +1034,25 @@ public class DOMParser
         // deferred expansion
         if (fDeferredDocumentImpl != null) {
 
+            // copy schema grammar, if needed
+            if (!fSeenRootElement) {
+                fSeenRootElement = true;
+                // REVISIT: How do we know which grammar is in use?
+                //Document schemaDocument = fValidator.getSchemaDocument();
+                if (fGrammarAccess && fGrammarResolver.size() > 0) {
+                    if (fDocumentTypeIndex == -1) {
+                        fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
+                        fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
+                    }
+                    Enumeration schemas = fGrammarResolver.nameSpaceKeys();
+                    Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
+                    if (schemaDocument != null) {
+                        Element schema = schemaDocument.getDocumentElement();
+                        copyInto(schema, fDocumentTypeIndex);
+                    }
+                }
+            }
+
             int element =
                 fDeferredDocumentImpl.createElement(elementQName.rawname,
                                                     elementQName.uri,
@@ -1052,28 +1071,6 @@ public class DOMParser
                 }
                 index = xmlAttrList.getNextAttr(index);
             }
-
-            // copy schema grammar, if needed
-            if (!fSeenRootElement) {
-                fSeenRootElement = true;
-                if (fDocumentTypeIndex == -1) {
-                    fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
-                    fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
-                }
-                if (fGrammarAccess) {
-                    // REVISIT: How do we know which grammar is in use?
-                    //Document schemaDocument = fValidator.getSchemaDocument();
-                    int size = fGrammarResolver.size();
-                    if (size > 0) {
-                        Enumeration schemas = fGrammarResolver.nameSpaceKeys();
-                        Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
-                        if (schemaDocument != null) {
-                            Element schema = schemaDocument.getDocumentElement();
-                            copyInto(schema, fDocumentTypeIndex);
-                        }
-                    }
-                }
-            }
         }
 
         // full expansion
@@ -1084,6 +1081,36 @@ public class DOMParser
             catch (SAXException s) {}
 
             String elementName = fStringPool.toString(elementQName.rawname);
+
+            // copy schema grammar, if needed
+            if (!fSeenRootElement) {
+                fSeenRootElement = true;
+                if (fDocumentImpl != null
+                    && fGrammarAccess && fGrammarResolver.size() > 0) {
+                    if (fDocumentType == null) {
+                        String rootName = elementName;
+                        String systemId = ""; // REVISIT: How do we get this value? -Ac
+                        String publicId = ""; // REVISIT: How do we get this value? -Ac
+                        fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
+                        fDocument.appendChild(fDocumentType);
+                        // REVISIT: We could use introspection to get the
+                        //          DOMImplementation#createDocumentType method
+                        //          for DOM Level 2 implementations. The only
+                        //          problem is that the owner document for the
+                        //          node created is null. How does it get set
+                        //          for document when appended? A cursory look
+                        //          at the DOM Level 2 CR didn't yield any
+                        //          information. -Ac
+                    }
+                    Enumeration schemas = fGrammarResolver.nameSpaceKeys();
+                    Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
+                    if (schemaDocument != null) {
+                        Element schema = schemaDocument.getDocumentElement();
+                        XUtil.copyInto(schema, fDocumentType);
+                    }
+                }
+            }
+
             Element e;
             if (nsEnabled) {
                 e = fDocument.createElementNS(
@@ -1144,35 +1171,6 @@ public class DOMParser
 
             // release attributes
             xmlAttrList.releaseAttrList(attrListIndex);
-
-            // copy schema grammar, if needed
-            if (!fSeenRootElement) {
-                fSeenRootElement = true;
-                if (fDocumentImpl != null
-                    && fGrammarAccess && fGrammarResolver.size() > 0) {
-                    if (fDocumentType == null) {
-                        String rootName = elementName;
-                        String systemId = ""; // REVISIT: How do we get this value? -Ac
-                        String publicId = ""; // REVISIT: How do we get this value? -Ac
-                        fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
-                        fDocument.appendChild(fDocumentType);
-                        // REVISIT: We could use introspection to get the
-                        //          DOMImplementation#createDocumentType method
-                        //          for DOM Level 2 implementations. The only
-                        //          problem is that the owner document for the
-                        //          node created is null. How does it get set
-                        //          for document when appended? A cursory look
-                        //          at the DOM Level 2 CR didn't yield any
-                        //          information. -Ac
-                    }
-                    Enumeration schemas = fGrammarResolver.nameSpaceKeys();
-                    Document schemaDocument = fGrammarResolver.getGrammar((String)schemas.nextElement()).getGrammarDocument();
-                    if (schemaDocument != null) {
-                        Element schema = schemaDocument.getDocumentElement();
-                        XUtil.copyInto(schema, fDocumentType);
-                    }
-                }
-            }
         }
 
     } // startElement(QName,XMLAttrList,int)
