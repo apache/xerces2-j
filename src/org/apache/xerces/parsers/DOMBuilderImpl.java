@@ -350,9 +350,16 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
 					if (fSchemaType != Constants.NS_DTD) {
 						fConfiguration.setFeature(XMLSCHEMA, state);
 					}
+                    if (state){
+                        fConfiguration.setFeature(DYNAMIC_VALIDATION, false);
+                    }
 				}
 				else if (name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
 					fConfiguration.setFeature(DYNAMIC_VALIDATION, state);
+                    // Note: validation and dynamic validation are mutually exclusive
+                    if (state){
+                        fConfiguration.setFeature(VALIDATION_FEATURE, false);
+                    }
 				}
 				else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
 					fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, state);
