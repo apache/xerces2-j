@@ -1398,6 +1398,7 @@ public abstract class BaseMarkupSerializer
 	state.preserveSpace = preserveSpace;
 	state.empty = true;
 	state.afterElement = false;
+	state.doCData = state.inCData = false;
 	++_elementStateCount;
 	return state;
     }

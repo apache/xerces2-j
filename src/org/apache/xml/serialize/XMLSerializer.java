@@ -272,7 +272,7 @@ public final class XMLSerializer
 	    // This element is not empty and that last content was
 	    // another element, so print a line break before that
 	    // last element and this element's closing tag.
-	    if ( _format.getIndenting() && ! state.preserveSpace &&  state.afterElement )
+	    if ( _format.getIndenting() && ! state.preserveSpace && state.afterElement )
 		breakLine();
 	    printText( "</" + tagName + ">" );
 	}
