@@ -188,8 +188,8 @@ Copyright:
   <!-- =================================================================== -->
   <target name="compile" depends="prepare-src">
     <copy todir="${build.dest}">
-      <fileset dir="${build.src}">
-        <include name="**/*.res"/>
+      <fileset dir="${build.src}"
+        includes="**/*.res, **/*.properties">
       </fileset>
     </copy>
 
@@ -207,7 +207,7 @@ Copyright:
   <target name="jar" depends="compile">
     <jar jarfile="${build.dir}/${name}.jar"
          basedir="${build.dest}"
-         includes="org/**, javax/**,META-INF/**"/>
+         includes="org/**, javax/**,META-INF/**, org/apache/xerces/utils/regex/*.properties"/>
   </target>
 
   <!-- =================================================================== -->

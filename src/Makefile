@@ -66,6 +66,7 @@ source: ../bin/${JARFILE}
 #-src/org/apache/xerces/utils/regex
 	${MKDIR} ../class/org/apache/xerces/utils/regex
 	${CP}  ../src/org/apache/xerces/utils/regex/*.class                    ../class/org/apache/xerces/utils/regex
+	${CP}  ../src/org/apache/xerces/utils/regex/*.properties                    ../class/org/apache/xerces/utils/regex
 
 #-src/org/apache/xerces/validators/common
 	${MKDIR} ../class/org/apache/xerces/validators/common
@@ -265,6 +266,7 @@ package_src:
 #-src/org/apache/xerces/utils/regex
 	${MKDIR} ../source/src//org/apache/xerces/utils/regex
 	${CP}  ../src/org/apache/xerces/utils/regex/*.java                    ../source/src/org/apache/xerces/utils/regex
+	${CP}  ../src/org/apache/xerces/utils/regex/*.properties                    ../source/src/org/apache/xerces/utils/regex
 
 
 #-src/org/apache/xerces/validaters/common
