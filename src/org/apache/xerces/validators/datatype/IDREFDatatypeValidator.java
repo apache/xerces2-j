@@ -133,7 +133,6 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
             if (state!= null){
                 message = (StateMessageDatatype) state;    
                 if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
-                    //System.out.println("Received a IDREF Clear" );
                     if ( this.fTableOfId != null ){
                         fTableOfId.clear(); //This is pass to us through the state object
                     }
@@ -142,11 +141,9 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                     }
                     return null;
                 } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_VALIDATE ){
-                    //System.out.println("Call to Validate" );
                     this.checkIdRefs();//Validate that all keyRef is a keyIds
                 } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                     this.fTableOfId = (Hashtable) message.getDatatypeObject();
-                    //System.out.println("Conte Be Validated= >>" + content + "<<" );
                     if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
 
                         InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
@@ -263,8 +260,6 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
 
     private void checkIdRefs() throws InvalidDatatypeValueException {
-        //System.out.println("Tab Ids = " + this.fTableOfId );
-        //System.out.println("Tab refs = " + this.fTableIDRefs );
 
         if ( this.fTableIDRefs == null)
             return;
