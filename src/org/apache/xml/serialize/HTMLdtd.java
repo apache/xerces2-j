@@ -413,7 +413,7 @@ public final class HTMLdtd
             is = HTMLdtd.class.getResourceAsStream( ENTITIES_RESOURCE );
             if ( is == null )
                 throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not be found.\n" + ENTITIES_RESOURCE);
-            reader = new BufferedReader( new InputStreamReader( is ) );
+            reader = new BufferedReader( new InputStreamReader( is, "ASCII" ) );
             line = reader.readLine();
             while ( line != null ) {
                 if ( line.length() == 0 || line.charAt( 0 ) == '#' ) {
