@@ -1219,6 +1219,10 @@ public abstract class NodeImpl
      * has been extended with the ability to attach an object to each node.
      * (If you need multiple objects, you can attach a collection such as a
      * vector or hashtable, then attach your application information to that.)
+     * <p><b>Important Note:</b> You are responsible for removing references
+     * to your data on nodes that are no longer used. Failure to do so will
+     * prevent the nodes, your data is attached to, to be garbage collected
+     * until the whole document is.
      *
      * @returns the previous user object, or null if none.
      */
@@ -1226,7 +1230,10 @@ public abstract class NodeImpl
         ownerDocument().setUserData(this, data);
     }
 
-    /** Returns the user data associated to this node. */
+    /**
+     * NON-DOM:
+     * Returns the user data associated to this node.
+     */
     public Object getUserData() {
         return ownerDocument().getUserData(this);
     }
