@@ -1709,7 +1709,7 @@ public class XMLSchemaValidator
             StringTokenizer t = new StringTokenizer(sLocation, " \n\t\r");
             String namespace, location;
             while (t.hasMoreTokens()) {
-                namespace = t.nextToken ();
+                namespace = fSymbolTable.addSymbol(t.nextToken ());
                 if (!t.hasMoreTokens()) {
                     fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                                   "SchemaLocation",
