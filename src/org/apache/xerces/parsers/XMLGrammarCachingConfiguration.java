@@ -80,7 +80,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 /**
  * <p> This configuration provides a generic way of using
  * Xerces's grammar caching facilities.  It extends the
- * StandardParserConfiguration and thus may validate documents
+ * XML11Configuration and thus may validate documents
  * according to XML schemas or DTD's.  It also allows the user to
  * preparse a grammar, and to lock the grammar pool
  * implementation such that no more grammars will be added.</p>
