@@ -181,6 +181,8 @@ public class TraverseSchema implements
     // stores the names of groups that we've traversed so we can avoid multiple traversals
     // qualified group names are keys and their contentSpecIndexes are values.  
     private Hashtable fGroupNameRegistry = new Hashtable();
+    // this Hashtable keeps track of whether a given redefined group does so by restriction.
+    private Hashtable fRestrictedRedefinedGroupRegistry = new Hashtable();
 
     // stores "final" values of simpleTypes--no clean way to integrate this into the existing datatype validation structure...
     private Hashtable fSimpleTypeFinalRegistry = new Hashtable();
@@ -1084,6 +1086,13 @@ public class TraverseSchema implements
                 traverseAttributeDecl( child, null , false);
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
                 String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                if(fGroupNameRegistry.get(fTargetNSURIString + ","+dName) == null) {
+                    // we've been renamed already
+                    traverseGroupDecl(child);
+                    continue;
+                }
+                // if we're here: must have been a restriction.
+                // we have yet to be renamed.
                 try {
                     Integer i = (Integer)fGroupNameRegistry.get(fTargetNSURIString + ","+dName);
                 } catch (ClassCastException c) {
@@ -1281,8 +1290,14 @@ public class TraverseSchema implements
            	} else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE )) {
                	traverseComplexTypeDecl(child);
            	} else if (name.equals(SchemaSymbols.ELT_GROUP)) {
-               	traverseGroupDecl(child);
                 String dName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                if(fGroupNameRegistry.get(fTargetNSURIString +","+ dName) == null || 
+                        ((fRestrictedRedefinedGroupRegistry.get(fTargetNSURIString+","+dName) != null) &&
+                        !((Boolean)fRestrictedRedefinedGroupRegistry.get(fTargetNSURIString+","+dName)).booleanValue())) { // extension!
+               	    traverseGroupDecl(child);
+                    continue;
+                } 
+               	traverseGroupDecl(child);
                 Integer bCSIndexObj = null;
                 try {
                     bCSIndexObj = (Integer)fGroupNameRegistry.get(fTargetNSURIString +","+ dName+redefIdentifier);
@@ -1645,12 +1660,15 @@ public class TraverseSchema implements
 			int groupRefsCount = changeRedefineGroup(processedBaseName, eltLocalname, newName, child);
 			if(groupRefsCount > 1) {
                 fRedefineSucceeded = false;
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
 				// REVISIT:  localize
 				reportGenericSchemaError("if a group child of a <redefine> element contains a group ref'ing itself, it must have exactly 1; this one has " + groupRefsCount);
 			} else if (groupRefsCount == 1) {
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(false)); 
                 return true;
 			}  else {
                 fGroupNameRegistry.put(fTargetNSURIString + "," + oldName, newName);
+                fRestrictedRedefinedGroupRegistry.put(fTargetNSURIString+","+oldName, new Boolean(true)); 
             }
 		} else {
             fRedefineSucceeded = false;
