@@ -152,6 +152,10 @@ public class StandardParserConfiguration
     protected static final String ENTITY_MANAGER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
     
+    /** Property identifier: locator. */
+    protected static final String LOCATOR = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCATOR_PROPERTY;
+    
     /** Property identifier document scanner: */
     protected static final String DOCUMENT_SCANNER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
@@ -262,8 +266,9 @@ public class StandardParserConfiguration
 
         // add default recognized properties
         final String[] recognizedProperties = {
-            ERROR_REPORTER, ENTITY_MANAGER, 
-            GRAMMAR_POOL,   DATATYPE_VALIDATOR_FACTORY
+            ERROR_REPORTER,             ENTITY_MANAGER, 
+            LOCATOR,                    GRAMMAR_POOL,   
+            DATATYPE_VALIDATOR_FACTORY,
         };
         addRecognizedProperties(recognizedProperties);
 
@@ -284,6 +289,7 @@ public class StandardParserConfiguration
             fProperties.put(ENTITY_MANAGER, fEntityManager);
             addComponent(fEntityManager);
             fLocator = (Locator)fEntityManager.getEntityScanner();
+            fProperties.put(LOCATOR, fLocator);
         }
 
         if (fErrorReporter == null) {

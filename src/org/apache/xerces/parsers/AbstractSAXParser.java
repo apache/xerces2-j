@@ -194,13 +194,28 @@ public abstract class AbstractSAXParser
     public void startDocument(String systemId, String encoding) 
         throws SAXException {
 
+        // get the locator
+        Locator locator = null;
+        try {
+            locator = (Locator)fConfiguration.getProperty(LOCATOR);
+        }
+        catch (SAXException e) {
+            // ignore
+        }
+
         // SAX1
         if (fDocumentHandler != null) {
+            if (locator != null) {
+                fDocumentHandler.setDocumentLocator(locator);
+            }
             fDocumentHandler.startDocument();
         }
 
         // SAX2
         if (fContentHandler != null) {
+            if (locator != null) {
+                fContentHandler.setDocumentLocator(locator);
+            }
             fContentHandler.startDocument();
         }
 
