@@ -7,32 +7,32 @@ compile: compile_src compile_samples
 package: package_bin package_src 
 
 compile_src:
-	echo Building Source
+	@echo Building Source
 	${MAKE} -C src
 
 compile_samples: compile_src
-	echo Building Samples
+	@echo Building Samples
 	${MAKE} -C samples
 
 jars: compile
-	echo Building Jar files in bin directory
+	@echo Building Jar files in bin directory
 	${MKDIR} class
 	${MKDIR} bin
 	${MAKE} -C src jars
 
 docs: src/classfiles_updated
-	echo Building Stylebook docs in docs directory
-	$(JAVA12) -classpath "$(CLASSPATH)" org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
+	@echo Building Stylebook docs in docs directory
+	$(JAVA12) org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
 
 apidocs:
-	echo Building apiDocs in docs directory.
+	@echo Building apiDocs in docs directory.
 	${MKDIR} docs/apiDocs
 	${MAKE} -C src apidocs
 
 package_bin: jars apidocs ${BINZIPFILE}
 ${BINZIPFILE}: ./src/classfiles_updated
 
-	echo Building a jar file for binary release.
+	@echo Building a jar file for binary release.
 	${MKDIR} bin
 	${CP} -r docs bin
 	${RM} -r bin/docs/CVS
@@ -48,7 +48,7 @@ ${BINZIPFILE}: ./src/classfiles_updated
 package_src: ./source/src/Makefile
 ./source/src/Makefile: ./src/classfiles_updated
 
-	echo Building a jar file for source release.
+	@echo Building a jar file for source release.
 	${MAKE} -C src package_src
 	${CP} -r data source
 	${RM} -r source/data/CVS

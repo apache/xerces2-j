@@ -11,17 +11,19 @@ endif
 # Define the environment commands and/or utilities
 #
 JAR = jar c0vf 
-EXTRA_CLASSPATH = $(TOP)/src$(CLPATHSEP)$(TOP)/samples$(CLPATHSEP)$(TOP)/tools/stylebook-1.0-b2.jar$(CLPATHSEP)$(TOP)/tools/xalan-0.19.2.jar
-JAVAC = javac -classpath "$(EXTRA_CLASSPATH)$(CLPATHSEP)$(CLASSPATH)"
-JAVA = java
-JAVADOC = javadoc
+XERCES_CLASSPATH = $(TOP)/src$(CLPATHSEP)$(TOP)/samples$(CLPATHSEP)$(TOP)/tools/stylebook-1.0-b2.jar$(CLPATHSEP)$(TOP)/tools/xalan-0.19.2.jar
+CLPATH = $(XERCES_CLASSPATH)$(CLPATHSEP)$(CLASSPATH)
+
+JAVAC = javac -classpath "$(CLPATH)"
+JAVA = java -classpath "$(CLPATH)"
+JAVADOC = javadoc -classpath "$(CLPATH)"
 
 ifeq ($(JDK12BIN),)
-JAVA12 = java
-JAVADOC12 = javadoc
+JAVA12 = java -classpath "$(CLPATH)"
+JAVADOC12 = javadoc -classpath "$(CLPATH)"
 else
-JAVA12 = $(JDK12BIN)/java
-JAVADOC12 = $(JDK12BIN)/javadoc
+JAVA12 = $(JDK12BIN)/java -classpath "$(CLPATH)"
+JAVADOC12 = $(JDK12BIN)/javadoc -classpath "$(CLPATH)"
 endif
 
 MKDIR = mkdir -p 
