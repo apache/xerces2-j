@@ -61,7 +61,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.ls.DOMSerializer;
+import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.dom.DOMImplementationImpl;
 import org.apache.xml.serialize.OutputFormat;
@@ -69,7 +69,7 @@ import org.apache.xml.serialize.Serializer;
 import org.apache.xml.serialize.SerializerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMOutput;
+import org.w3c.dom.ls.LSOutput;
 import org.apache.xerces.dom.DOMOutputImpl;
 
 /**
@@ -114,10 +114,10 @@ public class TestXmlns {
             // create DOM Serializer
 
             System.out.println("\n---DOMWriter output---");
-            DOMSerializer domWriter = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createDOMSerializer();
+            LSSerializer domWriter = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createLSSerializer();
             
             try {
-                DOMOutput dOut = new DOMOutputImpl();
+                LSOutput dOut = new DOMOutputImpl();
                 dOut.setByteStream(System.out);
                 domWriter.write(document,dOut);
             } catch (Exception e){

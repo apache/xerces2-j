@@ -79,22 +79,22 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.ls.DOMParser;
-import org.w3c.dom.ls.DOMResourceResolver;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.DOMInput;
-import org.w3c.dom.ls.DOMSerializer;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSSerializer;
 
 import dom.util.Assertion;
 
 /**
  * The program tests vacarious DOM Level 3 functionality
  */
-public class Test implements DOMErrorHandler, DOMResourceResolver{
+public class Test implements DOMErrorHandler, LSResourceResolver{
     
     static int errorCounter = 0;
     static DOMErrorHandler errorHandler = new Test();
-    static DOMResourceResolver resolver = new Test();
+    static LSResourceResolver resolver = new Test();
     
     public static void main( String[] argv) {
         try {
@@ -107,10 +107,10 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
 
             Assertion.verify(impl!=null, "domImplementation != null");
 
-            DOMParser builder = impl.createDOMParser(DOMImplementationLS.MODE_SYNCHRONOUS,
+            LSParser builder = impl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS,
                                                        null);
 
-            DOMSerializer writer = impl.createDOMSerializer();
+            LSSerializer writer = impl.createLSSerializer();
             DOMConfiguration config = writer.getConfig();
             config.setParameter("namespaces",(namespaces)?Boolean.TRUE:Boolean.FALSE);
             config.setParameter("validate",Boolean.FALSE);
@@ -421,7 +421,7 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
                 writer.getConfig().setParameter("namespaces", Boolean.TRUE);
                 String xmlData = writer.writeToString(doc);
                 Reader r = new StringReader(xmlData);
-                DOMInput in = impl.createDOMInput();
+                LSInput in = impl.createLSInput();
                 in.setCharacterStream(r);
                 doc = builder.parse(in);
 
@@ -673,14 +673,14 @@ public class Test implements DOMErrorHandler, DOMResourceResolver{
     }
     
 	/**
-	 * @see org.w3c.dom.ls.DOMEntityResolver#resolveEntity(String, String, String)
+	 * @see org.w3c.dom.ls.DOMEntityResolver#resolveEntity(String, String, String, String, String)
 	 */
-	public DOMInput resolveResource(String publicId, String systemId, String baseURI) {
+	public LSInput resolveResource(String type, String namespace, String publicId, String systemId, String baseURI) {
 		try {
 			DOMImplementationLS impl =
 				(DOMImplementationLS) DOMImplementationRegistry.newInstance().getDOMImplementation(
 					"LS");
-			DOMInput source = impl.createDOMInput();
+			LSInput source = impl.createLSInput();
 			if (systemId.equals("personal.xsd")) {
 				source.setSystemId("data/personal.xsd");
 			}

@@ -206,10 +206,7 @@ public class TestCompare extends TestCase
             for( int j=0; j<ranges.length; ++j )
             {
                 int result = ranges[i].compareBoundaryPoints( how, ranges[j] );
-                assert( 
-                    "Compare returned the wrong value i="+i+" j="+j + " result="+result,
-                    result == results[i][j] 
-                );
+                assert( "Compare returned the wrong value i="+i+" j="+j + " result="+result, result == results[i][j] );
             }
         }
     }

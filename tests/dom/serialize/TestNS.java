@@ -59,8 +59,8 @@ package dom.serialize;
 import  org.w3c.dom.*;
 
 import org.apache.xerces.dom.*;
-import org.w3c.dom.ls.DOMSerializer;
-import org.w3c.dom.ls.DOMOutput;
+import org.w3c.dom.ls.LSSerializer;
+import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.parsers.*;
 import org.apache.xml.serialize.*;
@@ -71,7 +71,7 @@ import java.io.*;
  * This class is testing namespace algorithm during serialization.
  * The class takes as a parameter xml document, parses it using the DOM parser.
  * By default it will perform modifications to the tree, and then serialize
- * the document using DOMSerializer.
+ * the document using LSSerializer.
  * 
  * @author Elena Litani, IBM
  * @version $Id$
@@ -82,7 +82,7 @@ public class TestNS {
 
             System.out.println("DOM Serializer test for namespace algorithm.");
             DOMParser parser = new DOMParser();
-            DOMOutput dOut = new DOMOutputImpl();
+            LSOutput dOut = new DOMOutputImpl();
 
             if (argv.length == 0) {
                 printUsage();
@@ -366,7 +366,7 @@ public class TestNS {
 
                 
                 // create DOM Serializer
-                DOMSerializer writer = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createDOMSerializer();
+                LSSerializer writer = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createLSSerializer();
                 
 
                 // Serializer that ouputs tree in not pretty print format
