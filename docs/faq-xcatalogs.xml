@@ -17,14 +17,14 @@
       site.
      </p>
      <p>
-      As a convienence for users the parser provides a utility class:
+      As a convenience for users the parser provides a utility class:
       <code>org.apache.xerces.util.XMLCatalogResolver</code> which encapsulates
       the XML Commons Resolver exposing methods relevant to resolving XML entities.
       It implements both the (<code>org.apache.xerces.xni.parser.XMLEntityResolver</code>)
       XNI entity resolver and the (<code>org.xml.sax.EntityResolver</code>) SAX entity resolver 
       interfaces. In <code>XMLCatalogResolver</code> the resolveEntity methods only query the 
       catalog for a mapping of the given identifier. These methods may be overrided if
-      other behaviour is required. 
+      other behaviour is required.
      </p>
      <p>
       To use <code>XMLCatalogResolver</code> as an XNI EntityResolver you need
@@ -196,7 +196,7 @@ catalog2.xml:
       No, the parser has no built in support for these processing instructions,
       however the XML Commons Resolver includes a SAX XMLFilter called
       <code>org.apache.xml.resolver.tools.ResolvingXMLFilter</code> which
-      has been enabled to process them. 
+      is able to process them. 
      </p>
     </a>
   </faq>
@@ -207,10 +207,10 @@ catalog2.xml:
      <p>
       Xerces only includes a utility class for OASIS XML Catalogs, however
       the XML Commons Resolver supports several other catalog formats
-      including: the plain text format described by 
+      including: the plain text format described by OASIS
       <jump href="http://www.oasis-open.org/specs/a401.htm">TR 9401</jump>,
       the XCatalog XML format defined by John Cowan, and an extended
-      version of OASIS XML Catalogs which supports suffix matching. for
+      version of OASIS XML Catalogs which supports suffix matching. For
       more information visit the 
       <jump href="http://xml.apache.org/commons/">XML Commons</jump> site.
      </p>
