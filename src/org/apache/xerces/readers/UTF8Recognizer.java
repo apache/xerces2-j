@@ -83,6 +83,8 @@ final class UTF8Recognizer extends XMLDeclRecognizer {
                                                    boolean allowJavaEncodingName) throws Exception {
         XMLEntityHandler.EntityReader reader = null;
         byte b0 = data.byteAt(0);
+        boolean debug = false;
+
         if (b0 == '<') {
             int b1 = data.byteAt(1);
             if (b1 == '?') {
@@ -118,7 +120,8 @@ final class UTF8Recognizer extends XMLDeclRecognizer {
                             } catch (UnsupportedEncodingException e) {
                                 throw new UnsupportedEncodingException(encname);
                             } catch (Exception e) {
-                                e.printStackTrace();            // Internal Error
+                                if( debug == true )
+                                   e.printStackTrace();            // Internal Error
                             }
                         } else {
                             data.rewind();
@@ -209,13 +212,13 @@ final class UTF8Recognizer extends XMLDeclRecognizer {
         // The rest of the methods in XMLReader are not used for parsing XMLDecl/TextDecl.
         //
         public void append(XMLEntityHandler.CharBuffer charBuffer, int offset, int length) {
-            throw new RuntimeException("cannot happen 7");
+            throw new RuntimeException("RDR002 cannot happen 7");
         }
         public int addString(int offset, int length) {
-            throw new RuntimeException("cannot happen 8");
+            throw new RuntimeException("RDR003 cannot happen 8");
         }
         public int addSymbol(int offset, int length) {
-            throw new RuntimeException("cannot happen 9");
+            throw new RuntimeException("RDR004 cannot happen 9");
         }
         public void skipToChar(char ch) throws IOException {
             throw new IOException("cannot happen 10");

@@ -1686,7 +1686,7 @@ final class UTF8Reader extends XMLEntityReader {
                     }
                 } else {
                     entries = cacheLines[entry];
-                    throw new RuntimeException("untested 1"); // REVISIT
+                    throw new RuntimeException("RDR001 untested 1"); // REVISIT
                 }
             }
             offset = 1 + ((entries[0] - 1) * SymbolCache.CACHE_RECORD_SIZE);
