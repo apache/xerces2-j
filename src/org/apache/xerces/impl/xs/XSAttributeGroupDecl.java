@@ -273,11 +273,15 @@ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
         //
         if (fAttributeWC != null) {
             if (baseGroup.fAttributeWC == null) {
-                errorCode = "derivation-ok-restriction.4";
+                errorCode = "derivation-ok-restriction.4.1";
                 return errorCode;
             }
             if (! fAttributeWC.isSubsetOf(baseGroup.fAttributeWC)) {
-                errorCode="derivation-ok-restriction.4";
+                errorCode="derivation-ok-restriction.4.2";
+                return errorCode;
+            }
+            if (fAttributeWC.weakerProcessContents(baseGroup.fAttributeWC)) {
+                errorCode="derivation-ok-restriction.4.3";
                 return errorCode;
             }
         }

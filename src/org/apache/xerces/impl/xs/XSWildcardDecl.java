@@ -199,6 +199,16 @@ public class XSWildcardDecl implements XSWildcard {
     } // isSubsetOf
 
     /**
+     * Check whether this wildcard has a weaker process contents than the super.
+     */
+    public boolean weakerProcessContents(XSWildcardDecl superWildcard) {
+        return fProcessContents == XSWildcardDecl.PC_LAX &&
+               superWildcard.fProcessContents == XSWildcardDecl.PC_STRICT ||
+               fProcessContents == XSWildcardDecl.PC_SKIP &&
+               superWildcard.fProcessContents != XSWildcardDecl.PC_SKIP;
+    }
+
+    /**
      * Schema Component Constraint: Attribute Wildcard Union
      */
     public XSWildcardDecl performUnionWith(XSWildcardDecl wildcard,

@@ -1145,6 +1145,9 @@ public class XSConstraints {
          throw new XMLSchemaException("rcase-NSSubset.1",null);
       }
 
+      if (dWildcard.weakerProcessContents(bWildcard)) {
+          throw new XMLSchemaException("rcase-NSSubset.3",null);
+      }
 
     }
 

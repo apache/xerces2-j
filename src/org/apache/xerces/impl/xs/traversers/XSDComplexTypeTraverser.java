@@ -707,10 +707,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
 
             mergeAttributes(baseType.getAttrGrp(), fAttrGrp, fName, false, complexContent);
-            String error = fAttrGrp.validRestrictionOf(baseType.getAttrGrp());
-            if (error != null) {
-                throw new ComplexTypeRecoverableError(error,
-                          new Object[]{fName}, complexContent);
+            if (baseType != SchemaGrammar.fAnyType) {
+                String error = fAttrGrp.validRestrictionOf(baseType.getAttrGrp());
+                if (error != null) {
+                    throw new ComplexTypeRecoverableError(error,
+                            new Object[]{fName}, complexContent);
+                }
             }
 
             // Remove prohibited uses.   Must be done after merge for RESTRICTION.
