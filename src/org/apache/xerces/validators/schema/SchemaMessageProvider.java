@@ -194,7 +194,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "OrderIsAll",                   //  11, "{0} not allowed if the order is all."
         "DatatypeWithType",             //  12, "Datatype qualifiers can only be used if you specify a type attribute."},
         "DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
-        "GroupContentRestricted",       //  14, "Error: {0} content must be one of element, group, modelGroupRef.  Saw {1}"
+        "GroupContentRestricted",       //  14, "Error: {0} content must be one of choice, all or sequence.  Saw {1}"
         "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." },
         "BadAttWithRef",          //  16, "ref cannot appear with any of type, abstract, block, final, nullable, default or fixed"},
         "NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"

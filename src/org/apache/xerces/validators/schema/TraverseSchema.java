@@ -169,6 +169,9 @@ public class TraverseSchema implements
 
     private Hashtable fComplexTypeRegistry = new Hashtable();
     private Hashtable fAttributeDeclRegistry = new Hashtable();
+	// stores the names of groups that we've traversed so we can avoid multiple traversals
+	// qualified group names are keys and their contentSpecIndexes are values.  
+	private Hashtable fGroupNameRegistry = new Hashtable();
 
     private Vector fIncludeLocations = new Vector();
     private Vector fImportLocations = new Vector();
@@ -2784,36 +2787,39 @@ public class TraverseSchema implements
             }
 
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
-            if (referredAttribute != null) {
-                traverseAttributeDecl(referredAttribute, typeInfo, true);
-				// this nasty hack needed to ``override'' the "use" on the 
-				// global attribute with that on the ref'ing attribute.
-				int referredAttName = fStringPool.addSymbol(referredAttribute.getAttribute(SchemaSymbols.ATT_NAME));
-        		int uriIndex = StringPool.EMPTY_STRING;
-        		if ( fTargetNSURIString.length() > 0) {
+            if (referredAttribute != null) { 
+				if (typeInfo != null) {
+					// don't need to traverse ref'd attribute if we're global; just make sure it's there...
+               	 	traverseAttributeDecl(referredAttribute, typeInfo, true);
+					// this nasty hack needed to ``override'' the "use" on the 
+					// global attribute with that on the ref'ing attribute.
+					int referredAttName = fStringPool.addSymbol(referredAttribute.getAttribute(SchemaSymbols.ATT_NAME));
+        			int uriIndex = StringPool.EMPTY_STRING;
+        			if ( fTargetNSURIString.length() > 0) {
                     	uriIndex = fTargetNSURI;
-        		}
-        		QName referredAttQName = new QName(-1,referredAttName,referredAttName,uriIndex);
-				if (prohibited) {
-	                int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
-					XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
-					fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
-					referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
-					fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
-				}
-				else if (required) {
-   	             	int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
-					XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
-					fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
-					// now two cases:  if it's othre than fixed, no problem, just overwrite.  
-					// but if it is *it* fixed, specs demand attr be treated as both fixed and required. 
-					if(referredAttrDecl.defaultType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) 
-						referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED_AND_FIXED;
-					else
-						referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-					fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
-				}
-            }
+        			}
+        			QName referredAttQName = new QName(-1,referredAttName,referredAttName,uriIndex);
+					if (prohibited) {
+	                	int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
+						XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
+						fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
+						referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_PROHIBITED;
+						fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+					}
+					else if (required) {
+						int tempIndex = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, referredAttQName);
+						XMLAttributeDecl referredAttrDecl = new XMLAttributeDecl();
+						fSchemaGrammar.getAttributeDecl(tempIndex, referredAttrDecl);
+						// now two cases:  if it's othre than fixed, no problem, just overwrite.  
+						// but if it is *it* fixed, specs demand attr be treated as both fixed and required. 
+						if(referredAttrDecl.defaultType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) 
+							referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED_AND_FIXED;
+						else
+							referredAttrDecl.defaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
+						fSchemaGrammar.setAttributeDecl(typeInfo.templateElementIndex, tempIndex, referredAttrDecl);
+					}
+            	}
+			}
             else {
 
                 if (fAttributeDeclRegistry.get(localpart) != null) {
@@ -3091,24 +3097,26 @@ public class TraverseSchema implements
     *   id = ID 
     *   name = NCName
     *   ref = QName>
-    *   Content: (annotation?, (attribute|attributeGroup), anyAttribute?)
+    *   Content: (annotation?, (attribute|attributeGroup)*, anyAttribute?)
     * </>
     * 
     */
     private int traverseAttributeGroupDecl( Element attrGrpDecl, ComplexTypeInfo typeInfo, Vector anyAttDecls ) throws Exception {
-        // REVISIT: we are traversing Group decl each time it is referenced over and over again
-        // do we really want to do it?!
-        int attGrpName = fStringPool.addSymbol(attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        // attributeGroup name
+        String attGrpNameStr = attrGrpDecl.getAttribute(SchemaSymbols.ATT_NAME);
+        int attGrpName = fStringPool.addSymbol(attGrpNameStr);
         
         String ref = attrGrpDecl.getAttribute(SchemaSymbols.ATT_REF); 
-
-        // attribute type
-        int attType = -1;
-        int enumeration = -1;
+		Element child = checkContent( attrGrpDecl, XUtil.getFirstChildElement(attrGrpDecl), true );
 
         if (!ref.equals("")) {
-            if (XUtil.getFirstChildElement(attrGrpDecl) != null)
-                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+			if(isTopLevel(attrGrpDecl)) 
+				// REVISIT:  localize 
+   	    	    reportGenericSchemaError ( "An attributeGroup with \"ref\" present must not have <schema> or <redefine> as its parent");
+			if(!attGrpNameStr.equals(""))
+				// REVISIT:  localize 
+   	    	    reportGenericSchemaError ( "attributeGroup " + attGrpNameStr + " cannot refer to another attributeGroup, but it refers to " + ref);
+            
             String prefix = "";
             String localpart = ref;
             int colonptr = ref.indexOf(":");
@@ -3127,36 +3135,50 @@ public class TraverseSchema implements
                 // REVISIT: Localize
                 //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
-            Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
-            if (referredAttrGrp != null) {
-                traverseAttributeGroupDecl(referredAttrGrp, typeInfo, anyAttDecls);
-            }
-            else {
-                // REVISIT: Localize
-                reportGenericSchemaError ( "Couldn't find top level attributegroup " + ref);
-            }
-            return -1;
+			if(typeInfo != null) { 
+ 				// only do this if we're traversing because we were ref'd here; when we come 
+				// upon this decl by itself we're just validating.
+            	Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
+            	if (referredAttrGrp != null) {
+                	traverseAttributeGroupDecl(referredAttrGrp, typeInfo, anyAttDecls);
+            	}
+            	else {
+                	// REVISIT: Localize
+                	reportGenericSchemaError ( "Couldn't find top level attributegroup " + ref);
+            	}
+ 				return -1;
+			}
         }
 
-        for ( Element child = XUtil.getFirstChildElement(attrGrpDecl); 
+        for (; 
              child != null ; child = XUtil.getNextSiblingElement(child)) {
        
             if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
                 traverseAttributeDecl(child, typeInfo, false);
             }
             else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
-                traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
+				if(typeInfo != null) 
+ 					// only do this if we're traversing because we were ref'd here; when we come 
+					// upon this decl by itself we're just validating.
+                	traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
             }
-            else if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
+            else 
+				break;
+        }
+		if (child != null) {
+			if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
                 if (anyAttDecls != null) { 
                      anyAttDecls.addElement(traverseAnyAttribute(child));
                 }
-                break;
-            }
-            else if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
-                // REVISIT: what about appInfo
-            }
-        }
+				if (XUtil.getNextSiblingElement(child) != null) 
+					// REVISIT:  localize
+                	reportGenericSchemaError ( "An attributeGroup declaration cannot have any children after an anyAttribute declaration");
+				return -1;
+			}
+			else 
+				// REVISIT:  localize
+               	reportGenericSchemaError ( "An attributeGroup declaration must only contain attribute, attributeGroup and anyAttribute elements");
+		}
         return -1;
     } // end of method traverseAttributeGroup
     
@@ -4306,7 +4328,7 @@ public class TraverseSchema implements
      *         minOccurs = nonNegativeInteger 
      *         name = NCName 
      *         ref = QName>
-     *   Content: (annotation? , (element | group | all | choice | sequence | any)*)
+     *   Content: (annotation? , (all | choice | sequence)?)
      * <group/>
      * 
      * @param elementDecl
@@ -4317,10 +4339,15 @@ public class TraverseSchema implements
 
         String groupName = groupDecl.getAttribute(SchemaSymbols.ATT_NAME);
         String ref = groupDecl.getAttribute(SchemaSymbols.ATT_REF);
+		Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
 
         if (!ref.equals("")) {
-            if (XUtil.getFirstChildElement(groupDecl) != null)
-                reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+			if(isTopLevel(groupDecl)) 
+				// REVISIT:  localize 
+   	    	    reportGenericSchemaError ( "A group with \"ref\" present must not have <schema> or <redefine> as its parent");
+			if(!groupName.equals(""))
+				// REVISIT:  localize 
+   	    	    reportGenericSchemaError ( "group " + groupName + " cannot refer to another group, but it refers to " + ref);
             String prefix = "";
             String localpart = ref;
             int colonptr = ref.indexOf(":");
@@ -4335,7 +4362,9 @@ public class TraverseSchema implements
             if (!uriStr.equals(fTargetNSURIString)) {
                 return traverseGroupDeclFromAnotherSchema(localpart, uriStr);
             }
-
+			Object contentSpecHolder = fGroupNameRegistry.get(uriStr + "," + localpart);
+			if(contentSpecHolder != null ) 	// we've already traversed this group
+				return ((Integer)contentSpecHolder).intValue();
             int contentSpecIndex = -1;
             Element referredGroup = getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart);
             if (referredGroup == null) {
@@ -4348,105 +4377,42 @@ public class TraverseSchema implements
                 contentSpecIndex = traverseGroupDecl(referredGroup);
             }
             
+			System.err.println("group name being ref'd is " + ref + " and its contentSpec is " + contentSpecIndex);
             return contentSpecIndex;
         }
+		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
+		Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
+		if(contentSpecHolder != null ) 	// we've already traversed this group
+			return ((Integer)contentSpecHolder).intValue();
 
-        boolean traverseElt = true; 
-        if (fCurrentScope == TOP_LEVEL_SCOPE) {
-            traverseElt = false;
+		// if we're here then we're traversing a top-level group that we've never seen before.
+        int index = -2;
+
+        boolean illegalChild = false;
+		String childName = 
+        	(child != null) ? child.getLocalName() : "";
+        if (childName.equals(SchemaSymbols.ELT_ALL)) {
+            index = traverseAll(child);
+        } 
+        else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+            index = traverseChoice(child);
+        } 
+        else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+            index = traverseSequence(child);
+        } 
+        else if (!childName.equals("") || (child != null && XUtil.getNextSiblingElement(child) != null)) {
+            illegalChild = true;
+            reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                              new Object [] { "group", childName });
+        }
+System.err.println("we got here!");        
+        if ( ! illegalChild && child != null) {
+            index = expandContentModel( index, child);
         }
 
-        Element child = XUtil.getFirstChildElement(groupDecl);
-        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
-            child = XUtil.getNextSiblingElement(child);
-
-        int contentSpecType = 0;
-        int csnType = 0;
-        int allChildren[] = null;
-        int allChildCount = 0;
-
-        csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
-        
-        int left = -2;
-        int right = -2;
-        boolean hadContent = false;
-        boolean seeAll = false;
-        boolean seeParticle = false;
-
-        for (;
-             child != null;
-             child = XUtil.getNextSiblingElement(child)) {
-            int index = -2;
-            hadContent = true;
-
-            boolean illegalChild = false;
-
-            String childName = child.getLocalName();
-            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                QName eltQName = traverseElementDecl(child);
-                index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-                                                       eltQName.localpart,
-                                                       eltQName.uri, 
-                                                       false);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-                index = traverseGroupDecl(child);
-                if (index == -1) 
-                    continue;
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                index = traverseAll(child);
-                //seeParticle = true;
-                seeAll = true;
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                index = traverseChoice(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                index = traverseSequence(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-                index = traverseAny(child);
-                seeParticle = true;
-            } 
-            else {
-                illegalChild = true;
-                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-                                  new Object [] { "group", childName });
-            }
-            
-            if ( ! illegalChild ) {
-                index = expandContentModel( index, child);
-            }
-
-            if (seeParticle && seeAll) {
-                reportSchemaError( SchemaMessageProvider.GroupContentRestricted,
-                                   new Object [] { "'all' needs to be 'the' only Child", childName});
-            }
-
-            if (left == -2) {
-                left = index;
-            } else if (right == -2) {
-                right = index;
-            } else {
-                left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
-                right = index;
-            }
-        }
-        if (hadContent && right != -2)
-            left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
-
-
-        return left;
+		contentSpecHolder = new Integer(index);
+		fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
+        return index;
     }
 
     private int traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
@@ -4474,95 +4440,42 @@ public class TraverseSchema implements
         fTargetNSURI = fStringPool.addSymbol(aGrammar.getTargetNamespaceURI());
         fNamespacesScope = aGrammar.getNamespacesScope();
 
-        boolean traverseElt = true; 
-        if (fCurrentScope == TOP_LEVEL_SCOPE) {
-            traverseElt = false;
+		Element child = checkContent( groupDecl, XUtil.getFirstChildElement(groupDecl), true );
+
+		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
+		Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
+		if(contentSpecHolder != null ) 	// we've already traversed this group
+			return ((Integer)contentSpecHolder).intValue();
+
+		// if we're here then we're traversing a top-level group that we've never seen before.
+        int index = -2;
+
+        boolean illegalChild = false;
+		String childName = 
+        	(child != null) ? child.getLocalName() : "";
+        if (childName.equals(SchemaSymbols.ELT_ALL)) {
+            index = traverseAll(child);
+        } 
+        else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+            index = traverseChoice(child);
+        } 
+        else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+            index = traverseSequence(child);
+        } 
+        else if (!childName.equals("") || (child != null && XUtil.getNextSiblingElement(child) != null)) {
+            illegalChild = true;
+            reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                              new Object [] { "group", childName });
+        }
+        if ( ! illegalChild && child != null) {
+            index = expandContentModel( index, child);
         }
 
-        Element child = XUtil.getFirstChildElement(groupDecl);
-        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
-            child = XUtil.getNextSiblingElement(child);
-
-        int contentSpecType = 0;
-        int csnType = 0;
-        int allChildren[] = null;
-        int allChildCount = 0;
-
-        csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
-        
-        int left = -2;
-        int right = -2;
-        boolean hadContent = false;
-
-        for (;
-             child != null;
-             child = XUtil.getNextSiblingElement(child)) {
-            int index = -2;
-            hadContent = true;
-
-            boolean seeParticle = false;
-            String childName = child.getLocalName();
-            int childNameIndex = fStringPool.addSymbol(childName);
-            String formAttrVal = child.getAttribute(SchemaSymbols.ATT_FORM);
-            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                QName eltQName = traverseElementDecl(child); 
-                index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
-                                                       eltQName.localpart,
-                                                       eltQName.uri, 
-                                                       false);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-                index = traverseGroupDecl(child);
-                if (index == -1) 
-                    continue;                
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                index = traverseAll(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                index = traverseChoice(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                index = traverseSequence(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-                index = traverseAny(child);
-                seeParticle = true;
-            } 
-            else {
-                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-                                  new Object [] { "group", childName });
-            }
-
-            if (seeParticle) {
-                index = expandContentModel( index, child);
-            }
-            if (left == -2) {
-                left = index;
-            } else if (right == -2) {
-                right = index;
-            } else {
-                left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
-                right = index;
-            }
-        }
-        if (hadContent && right != -2)
-            left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
-
-        fNamespacesScope = saveNSMapping;
-        fTargetNSURI = saveTargetNSUri;
-        return left;
+		contentSpecHolder = new Integer(index);
+		fGroupNameRegistry.put(qualifiedGroupName, contentSpecHolder);
+		fNamespacesScope = saveNSMapping;
+		fTargetNSURI = saveTargetNSUri;
+        return index;
 
 
     } // end of method traverseGroupDeclFromAnotherSchema
@@ -4764,10 +4677,8 @@ public class TraverseSchema implements
 
     int traverseAll( Element allDecl) throws Exception {
 
-        Element child = XUtil.getFirstChildElement(allDecl);
-
-        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
-            child = XUtil.getNextSiblingElement(child);
+        Element child = checkContent(allDecl, XUtil.getFirstChildElement(allDecl), true);
+		if (child == null) return -2;
 
         int allChildren[] = null;
         int allChildCount = 0;
@@ -4792,61 +4703,31 @@ public class TraverseSchema implements
                 seeParticle = true;
 
             } 
-            // For CR implementation, only elements are permitted
-            // TODO - should rewrite this...
-            //
-            else if (CR_IMPL) {
+            else {
                 reportGenericSchemaError("Content of all group is restricted to elements only.  '" +  
                
                 childName + "' was seen and is being ignored");
                 break;
-                
-            }
-            else {
-               
-                if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-                    index = traverseGroupDecl(child);
-                    if (index == -1) 
-                        continue;
-                    seeParticle = true;
-
-                } 
-                else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                        index = traverseChoice(child);
-                        seeParticle = true;
-
-                } 
-                else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                    index = traverseSequence(child);
-                    seeParticle = true;
-
-                } 
-                else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-                    index = traverseAny(child);
-                    seeParticle = true;
-                } 
-                else {
-                    reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
-                                      new Object [] { "group", childName });
-                }
             }
 
             if (seeParticle) {
                 index = expandContentModel( index, child);
             }
-            try {
-                allChildren[allChildCount] = index;
-            }
-            catch (NullPointerException ne) {
-                allChildren = new int[32];
-                allChildren[allChildCount] = index;
-            }
-            catch (ArrayIndexOutOfBoundsException ae) {
-                int[] newArray = new int[allChildren.length*2];
-                System.arraycopy(allChildren, 0, newArray, 0, allChildren.length);
-                allChildren[allChildCount] = index;
-            }
-            allChildCount++;
+			if (index != -2)  {
+	            try {
+	                allChildren[allChildCount] = index;
+	            }
+	            catch (NullPointerException ne) {
+	                allChildren = new int[32];
+	                allChildren[allChildCount] = index;
+	            }
+	            catch (ArrayIndexOutOfBoundsException ae) {
+	                int[] newArray = new int[allChildren.length*2];
+	                System.arraycopy(allChildren, 0, newArray, 0, allChildren.length);
+	                allChildren[allChildCount] = index;
+	            }
+            	allChildCount++;
+			}
         }
 
         // if there were no children, or only invalid children, return...

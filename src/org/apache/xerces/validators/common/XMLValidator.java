@@ -1396,16 +1396,14 @@ public final class XMLValidator
 
       fCurrentScope = fScopeStack[fElementDepth];  
 
-      //if ( DEBUG_SCHEMA_VALIDATION ) {
+      if ( DEBUG_SCHEMA_VALIDATION ) {
 
-/****
-System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
+		System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
                    "\n fCurrentElementIndex : " + fCurrentElementIndex +
                    "\n fCurrentScope : " + fCurrentScope +
                    "\n fCurrentContentSpecType : " + fCurrentContentSpecType +
                    "\n++++++++++++++++++++++++++++++++++++++++++++++++" );
-/****/
-      //}
+      }
 
       // if enclosing element's Schema is different, need to switch "context"
       if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
@@ -2330,6 +2328,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
          if (fNamespacesScope == null) {
             fNamespacesScope = new NamespacesScope(this);
             fNamespacesPrefix = fStringPool.addSymbol("xmlns");
+            //fNamespacesScope.setNamespaceForPrefix(fNamespacesPrefix, StringPool.EMPTY_STRING);
+		// xxxxx
             fNamespacesScope.setNamespaceForPrefix(fNamespacesPrefix, -1);
             int xmlSymbol = fStringPool.addSymbol("xml");
             int xmlNamespace = fStringPool.addSymbol("http://www.w3.org/XML/1998/namespace");
@@ -2483,7 +2483,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                   //schemaCandidateURIs.removeElement(uri);
                }
             }
-
             //TO DO: This should be a feature that can be turned on or off
             /*****
             for (int i=0; i< schemaCandidateURIs.size(); i++) {
@@ -2599,7 +2598,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             //e.printStackTrace();
             reportRecoverableXMLError( XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
                                        XMLMessages.SCHEMA_GENERIC_ERROR, e.getMessage() );
-         }
+         } 
 
          Document     document   = parser.getDocument(); //Our Grammar
 
@@ -2624,6 +2623,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                grammar = new SchemaGrammar();
                grammar.setGrammarDocument(document);
   
+				// Since we've just constructed a schema grammar, we should make sure we know what we've done.
+				fGrammarIsSchemaGrammar = true;
+				fGrammarIsDTDGrammar = false;
 
                     //At this point we should expand the registry table.
 
@@ -2816,7 +2818,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       boolean skipThisOne = false;
       boolean laxThisOne = false;
 
-      if ( fGrammarIsSchemaGrammar && fContentLeafStack[fElementDepth] != null ) {
+      if ( fGrammarIsSchemaGrammar && fElementDepth > -1 && fContentLeafStack[fElementDepth] != null ) {
          ContentLeafNameTypeVector cv = fContentLeafStack[fElementDepth];
 
          QName[] fElemMap = cv.leafNames;
@@ -2944,10 +2946,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                   }
                }
                //if still can't resolve it, try TOP_LEVEL_SCOPE AGAIN
-               /****
-               if ( element.uri == -1 && elementIndex == -1 
+               /****/
+               if ( element.uri == StringPool.EMPTY_STRING && elementIndex == -1 
                && fNamespacesScope != null 
-               && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != -1 ) {
+               && fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING) != StringPool.EMPTY_STRING ) {
                elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
                // REVISIT:
                // this is a hack to handle the situation where namespace prefix "" is bound to nothing, and there
