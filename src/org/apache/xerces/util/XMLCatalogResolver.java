@@ -275,12 +275,14 @@ public class XMLCatalogResolver
         
          String resolvedId = null;
          
-         if(!getUseLiteralSystemId() && baseURI != null){
-             
-             URI base_uri = new URI(baseURI);
-             URI uri = new URI(base_uri, systemId);
-             systemId = uri.toString();
-             
+         if (!getUseLiteralSystemId() && baseURI != null) {
+             // Attempt to resolve the system identifier against the base URI.
+             try {
+                 URI uri = new URI(new URI(baseURI), systemId);
+                 systemId = uri.toString();
+             }
+             // Ignore the exception. Fallback to the literal system identifier.
+             catch (URI.MalformedURIException ex) {}
          }
          
          if (publicId != null && systemId != null) {
@@ -300,8 +302,8 @@ public class XMLCatalogResolver
 
      /**
       * <p>Locates an external subset for documents which do not explicitly
-      * provide one. If no external subset is provided, this method should
-      * return <code>null</code>.</p>
+      * provide one. This method always returns <code>null</code>. It
+      * should be overrided if other behaviour is required.</p>
       * 
       * @param name the identifier of the document root element 
       * @param baseURI the document's base URI
@@ -310,8 +312,7 @@ public class XMLCatalogResolver
       * @throws IOException thrown if some i/o error occurs
       */
      public InputSource getExternalSubset(String name, String baseURI)
-     	 throws SAXException, IOException {
-         
+         throws SAXException, IOException {
          return null;
      }
 
@@ -342,6 +343,16 @@ public class XMLCatalogResolver
             // the external identifier if one exists.
             if (namespaceURI != null) {
                 resolvedId = resolveURI(namespaceURI);
+            }
+            
+            if (!getUseLiteralSystemId() && baseURI != null) {
+                // Attempt to resolve the system identifier against the base URI.
+                try {
+                    URI uri = new URI(new URI(baseURI), systemId);
+                    systemId = uri.toString();
+                }
+                // Ignore the exception. Fallback to the literal system identifier.
+                catch (URI.MalformedURIException ex) {}
             }
         
             // Resolve against an external identifier if one exists. This
