@@ -80,24 +80,52 @@ import java.lang.Integer;
  *                 System.out.println( "V" );
  *                 break;
  * 
+ * @version $id$
  * @author Jeffrey Rodriguez
  */
 
 public class Arguments {
-    private  boolean      fDbug          = false;
-    private  Queue        stackOfOptions = new Queue(20);
-
-    private  Queue        argumentList   = new Queue(20);
-    private  Queue        listOfFiles    = new Queue(20);
-    private  String[]     messageArray   = null; 
-    private  int          lastPopArgument = 0;
+    private  boolean      fDbug                        = false;
+    private  Queue        queueOfSwitches              = new Queue(20);
+    private  Queue        queueStringParameters        = new Queue(20);
+    private  Queue        queueOfOtherStringParameters = new Queue(20);
+    private  String[]     messageArray                 = null; 
+    private  int          lastPopArgument              = 0;
 
 
     public Arguments() {
-        stackOfOptions.push( new Integer( -1 ) );// First Element to push in Stack
-
     }
 
+    /**
+     * Takes the array of standar Args passed
+     * from main method and parses the '-' and
+     * the characters after arg.
+     * 
+     * - The value -1 is a special flag that is
+     * used to indicate the beginning of the queue
+     * of flags and it is also to tell the end of
+     * a group of switches.
+     * 
+     * This method will generate 3 internal queues.
+     * - A queue that has the switch flag arguments.
+     *   e.g. 
+     *          -dvV
+     *   will hold  d, v, V, -1.
+     * 
+     * - A queue holding the string arguments needed by
+     *   the switch flag arguments.
+     *   If character -p requires a string argument.
+     *   The string argument is saved in the string argument
+     *   queue.
+     * 
+     * - A queue holding a list of files string parameters
+     *   not associated with a switch flag.
+     *   -a -v -p myvalue  test.xml test1.xml
+     *   this queue will containt test.xml test1.xml
+     * 
+     * @param arguments
+     * @param argsWithOptions
+     */
     public void    parseArgumentTokens(  String[] arguments , char[] argsWithOptions ){
         int  theDash         = 0;
         int  lengthOfToken   = 0;
@@ -112,49 +140,37 @@ public class Arguments {
                 int   token;
                 for ( int j = 1; j<lengthOfToken; j++ ){
                     token = bufferOfToken[j];
-                    stackOfOptions.push( (Object ) new Integer( token ));
+                    queueOfSwitches.push( (Object ) new Integer( token ));
                     for ( int k = 0; k< argsWithOptions.length; k++) {
                         if ( token == argsWithOptions[k] ){
                             if ( this.fDbug  ) {
                                 System.out.println( "token = " + token );
                             }
-                            //stackOfOptions.push( (Object ) new Integer( -1 ));
-                            argumentList.push( arguments[++i] );
+                            //queueOfSwitches.push( (Object ) new Integer( -1 ));
+                            queueStringParameters.push( arguments[++i] );
                             continue outer;
                         }
                     }
 
                 }
-                stackOfOptions.push( (Object ) new Integer( -1 ));
+                queueOfSwitches.push( (Object ) new Integer( -1 ));
 
             } else{
                 //for ( int j = 0; j< argsWithOptions.length; j++) {
                 //  if( bufferOfToken[i] == argsWithOptions[j] ){
-                //    argumentList.push( arguments[i] );
+                //    queueStringParameters.push( arguments[i] );
                 //}
                 // }
-                listOfFiles.push( arguments[i] );
+                queueOfOtherStringParameters.push( arguments[i] );
             }
         }
 
 
         if ( this.fDbug ) {
-            stackOfOptions.print();
-            argumentList.print();
-            listOfFiles.print();
+            queueOfSwitches.print();
+            queueStringParameters.print();
+            queueOfOtherStringParameters.print();
         }
-    }
-
-    /**
-     * 
-     *              Returns the list of argument switches 
-     *              used by Arguments class.
-     * 
-     * @return 
-     */
-    public  String[] getArgumentTokens( ) {
-        //return ((Integer ) stackOfOptions.push());
-        return null;
     }
 
 
@@ -163,13 +179,7 @@ public class Arguments {
      * @return 
      */
     public  int getArguments(){
-        Integer i;
-        if ( stackOfOptions.empty() ){
-            i = (Integer ) stackOfOptions.pop();
-            lastPopArgument = i.intValue();
-        } else
-            lastPopArgument = -1;
-        return lastPopArgument;
+        return queueOfSwitches.empty() ? -1:((Integer ) queueOfSwitches.pop()).intValue();
     }
 
 
@@ -179,7 +189,7 @@ public class Arguments {
      * @return 
      */
     public String getStringParameter(){
-        String    s = (String) argumentList.pop();
+        String    s = (String) queueStringParameters.pop();
         if ( this.fDbug )  {
                 System.out.println( "string par = " + s );
             }
@@ -189,14 +199,14 @@ public class Arguments {
 
     public String getlistFiles(){
         String    s = null;
-        s = (String) listOfFiles.pop(); 
+        s = (String) queueOfOtherStringParameters.pop(); 
         return s;
     }
 
 
 
     public int stringParameterLeft( ){
-        return argumentList.size();
+        return queueStringParameters.size();
     }
 
 
@@ -210,79 +220,18 @@ public class Arguments {
         }
     }
 
-/*
-
-
-    public static void main( String[] argv){
-        int c;
-
-        Arguments tst = new Arguments();
-
-        tst.setUsage( new String[] {  "usage: java dom.DOMCount (options) uri ...",
-                          "",
-                          "options:",
-                          "  -p name  Specify DOM parser wrapper by name.",
-                          "           Default parser: ",
-                          "  -h       This help screen."} );
-
-        tst.parseArgumentTokens(argv , new char[] { 'e'});
-        while ( (c =  tst.getArguments()) != -1 ){
-            switch (c) {
-            case 'e':
-                System.out.println( "e  = " + tst.getStringParameter() );
-                break;
-
-            case 'v':
-                System.out.println( "v" );
-                break;
-            case 'V':
-                System.out.println( "V" );
-                break;
-            case 'N':
-                System.out.println( "N" );
-                break;
-            case 'n':
-                System.out.println( "n" );
-                break;
-            case 'p':
-                System.out.println( "p  = " + tst.getStringParameter() );
-                break;
-            case 'd':
-                System.out.println( "d" );
-                break;
-            case 'D':
-                System.out.println( "D" );
-                break;
-            case 's':
-                System.out.println( "s" );
-                break;
-            case 'S':
-                System.out.println( "S" );
-                break;
-            case '?':
-            case 'h':
-            case '-':
-                tst.printUsage();
-                break;
-            default:
-                break;
-            }
-        }
-    }
-*/
     // Private methods
-
 
     // Private inner classes
 
 private  class Queue   {
        //private LinkedList queue;
        private static final int  maxIncrement = 10;
-       private Object[]   queue;
-       private int      max;
-       private int      front;
-       private int      rear;
-       private int      items;
+       private Object[]          queue;
+       private int               max;
+       private int               front; 
+       private int               rear;
+       private int               items;
 
 
        public Queue( int size) {
@@ -333,14 +282,6 @@ private  class Queue   {
 
 
        public void print(){
-
-           //ListIterator it          =  queue.listIterator();
-           //int      tokenNumber = 0;
-          // while ( it.hasNext()  ){
-            //   System.out.println( "token[ " +  tokenNumber++
-            //                       + "] = " +   ( it.next().toString()));
-           //}
-
            for( int i = front; i <= rear;i++ ){ 
                  System.out.println( "token[ " +  i
                                    + "] = " +  queue[i] ) ;
