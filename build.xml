@@ -861,14 +861,14 @@ Copyright:
                        **/DatatypeContentModel.java **/ComplexTypeInfo.java
                        **/v1/** **/v2/**
                         javax.xml.parsers.ConvertToURI.java
+                        org/apache/xerces/dom/DOMXSImplementationSourceImpl.java
                         org/apache/xerces/impl/xs/*.java
                         org/apache/xerces/impl/dv/xs/**
                         org/apache/xerces/impl/xs/identity/**
                         org/apache/xerces/impl/xs/traversers/**
                         org/apache/xerces/impl/xs/models/**
 			org/apache/xerces/impl/xs/opti/**
-                        org/apache/xerces/impl/xs/util/NSItemListImpl.java
-                        
+                        org/apache/xerces/impl/xs/util/NSItemListImpl.java                      
                         org/apache/xerces/impl/xs/util/XInt.java
                         org/apache/xerces/impl/xs/util/XIntPool.java
                         org/apache/xerces/impl/xs/util/XSNamedMap4Types.java
@@ -1145,6 +1145,8 @@ Copyright:
     <replace file="${build.src}/org/apache/xerces/dom/DOMLocatorImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationSourceImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DOMXSImplementationSourceImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DOMErrorImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
