@@ -12,26 +12,21 @@
 
 package org.w3c.dom.ls;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 /**
- * DOM Level 3 WD Experimental:
- * The DOM Level 3 specification is at the stage 
- * of Working Draft, which represents work in 
- * progress and thus may be updated, replaced, 
- * or obsoleted by other documents at any time. 
- *
- * <code>DOMBuilderFilter</code>s provide applications the ability to examine 
- * nodes as they are being constructed during a parse. As each node is 
+ * <code>DOMParserFilter</code>s provide applications the ability to examine 
+ * nodes as they are being constructed while parsing. As each node is 
  * examined, it may be modified or removed, or the entire parse may be 
  * terminated early. 
  * <p>At the time any of the filter methods are called by the parser, the 
  * owner Document and DOMImplementation objects exist and are accessible. 
- * The document element is never passed to the <code>DOMBuilderFilter</code> 
+ * The document element is never passed to the <code>DOMParserFilter</code> 
  * methods, i.e. it is not possible to filter out the document element. The 
  * <code>Document</code>, <code>DocumentType</code>, <code>Notation</code>, 
- * and <code>Entity</code> nodes are not passed to the filter.
+ * and <code>Entity</code> nodes are not passed to the 
+ * <code>acceptNode</code> method on the filter.
  * <p>All validity checking while reading a document occurs on the source 
  * document as it appears on the input stream, not on the DOM document as it 
  * is built in memory. With filters, the document in memory may be a subset 
@@ -39,21 +34,18 @@ import org.w3c.dom.Node;
  * the filtering.
  * <p> All default content, including default attributes, must be passed to 
  * the filter methods. 
- * <p> Any exception raised in the filter are ignored by the 
- * <code>DOMBuilder</code>. 
- * <p class="editorial"><b>Note:</b> The description of these methods is not 
- * complete
- * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226'>Document Object Model (DOM) Level 3 Load
+ * <p> The <code>DOMParser</code> ignores any exception raised in the filter. 
+ * <p>See also the <a href='http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
-public interface DOMBuilderFilter {
+public interface DOMParserFilter {
     // Constants returned by startElement and acceptNode
     /**
      * Accept the node.
      */
     public static final short FILTER_ACCEPT             = 1;
     /**
-     * Reject the node abd its children.
+     * Reject the node and its children.
      */
     public static final short FILTER_REJECT             = 2;
     /**
@@ -67,12 +59,12 @@ public interface DOMBuilderFilter {
     public static final short FILTER_INTERRUPT          = 4;
 
     /**
-     * This method will be called by the parser after each <code>Element</code>
-     *  start tag has been scanned, but before the remainder of the 
+     *  The parser will call this method after each <code>Element</code> start 
+     * tag has been scanned, but before the remainder of the 
      * <code>Element</code> is processed. The intent is to allow the 
      * element, including any children, to be efficiently skipped. Note that 
      * only element nodes are passed to the <code>startElement</code> 
-     * function.
+     * function. 
      * <br>The element node passed to <code>startElement</code> for filtering 
      * will include all of the Element's attributes, but none of the 
      * children nodes. The Element may not yet be in place in the document 
@@ -84,8 +76,8 @@ public interface DOMBuilderFilter {
      * the same one as is actually placed in the tree if the node is 
      * accepted. And the actual node (node object identity) may be reused 
      * during the process of reading in and filtering a document.
-     * @param elt The newly encountered element. At the time this method is 
-     *   called, the element is incomplete - it will have its attributes, 
+     * @param element The newly encountered element. At the time this method 
+     *   is called, the element is incomplete - it will have its attributes, 
      *   but no children. 
      * @return 
      * <ul>
@@ -95,14 +87,14 @@ public interface DOMBuilderFilter {
      * <li> 
      *   <code>FILTER_REJECT</code> if the <code>Element</code> and all of 
      *   its children should be rejected. This return value will be ignored 
-     *   if <code>elt</code> is the documentElement, the documentElement can 
-     *   not be rejected. 
+     *   if <code>element</code> is the documentElement, the documentElement 
+     *   cannot be rejected. 
      * </li>
      * <li> <code>FILTER_SKIP</code> if the 
      *   <code>Element</code> should be rejected. All of its children are 
      *   inserted in place of the rejected <code>Element</code> node. This 
-     *   return value will be ignored if <code>elt</code> is the 
-     *   documentElement, the documentElement can not be rejected nor 
+     *   return value will be ignored if <code>element</code> is the 
+     *   documentElement, the documentElement cannot be rejected nor 
      *   skipped. 
      * </li>
      * <li> <code>FILTER_INTERRUPT</code> if the filter wants to stop 
@@ -112,7 +104,7 @@ public interface DOMBuilderFilter {
      * </li>
      * </ul> Returning any other values will result in unspecified behavior. 
      */
-    public short startElement(Element elt);
+    public short startElement(Element element);
 
     /**
      * This method will be called by the parser at the completion of the 
@@ -130,7 +122,7 @@ public interface DOMBuilderFilter {
      * are made on any document modifications made by the filter.
      * <br>If this new node is rejected, the parser might reuse the new node 
      * or any of its descendants.
-     * @param enode The newly constructed element. At the time this method is 
+     * @param node The newly constructed element. At the time this method is 
      *   called, the element is complete - it has all of its children (and 
      *   their children, recursively) and attributes, and is attached as a 
      *   child to its parent. 
@@ -155,14 +147,18 @@ public interface DOMBuilderFilter {
      * </li>
      * </ul>
      */
-    public short acceptNode(Node enode);
+    public short acceptNode(Node node);
 
     /**
-     *  Tells the <code>DOMBuilder</code> what types of nodes to show to the 
+     *  Tells the <code>DOMParser</code> what types of nodes to show to the 
      * filter. See <code>NodeFilter</code> for definition of the constants. 
-     * The constant <code>SHOW_ATTRIBUTE</code> is meaningless here, 
-     * attribute nodes will never be passed to a 
-     * <code>DOMBuilderFilter</code>. 
+     * The constants <code>SHOW_ATTRIBUTE</code>, <code>SHOW_DOCUMENT</code>
+     * , <code>SHOW_DOCUMENT_TYPE</code>, <code>SHOW_NOTATION</code>, 
+     * <code>SHOW_ENTITY</code>, and <code>SHOW_DOCUMENT_FRAGMENT</code> are 
+     * meaningless here, those nodes will never be passed to a 
+     * <code>DOMParserFilter</code>. 
+     * <br> The constants used here are defined in [<a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>DOM Level 2 Traversal and      Range</a>]
+     * . 
      */
     public int getWhatToShow();
 
