@@ -344,11 +344,7 @@ public class TreeWalkerImpl implements TreeWalker {
             return newNode;
         else 
         if (accept == NodeFilter.FILTER_SKIP) {
-            Node fChild =  getFirstChild(newNode);
-            if (fChild == null) {
-                return getNextSibling(newNode);
-            }
-            return fChild;
+            return getFirstChild(newNode);
         }
         else 
         //if (accept == NodeFilter.REJECT_NODE) 
@@ -414,9 +410,9 @@ public class TreeWalkerImpl implements TreeWalker {
         if ( !fEntityReferenceExpansion
              && node.getNodeType() == Node.ENTITY_REFERENCE_NODE)
             return null;
-   
+        
         Node newNode = node.getFirstChild();
-        if (newNode == null)  return null;
+        if (newNode == null)  return getNextSibling(node);
         
         int accept = acceptNode(newNode);
         
