@@ -15,10 +15,9 @@
  */
 package org.apache.html.dom;
 
-
 import org.w3c.dom.html.HTMLCollection;
 import org.w3c.dom.html.HTMLMapElement;
-
+import org.w3c.dom.Node;
 
 /**
  * @version $Revision$ $Date$
@@ -51,8 +50,18 @@ public class HTMLMapElementImpl
     {
         setAttribute( "name", name );
     }
-
     
+    /**
+     * Explicit implementation of cloneNode() to ensure that cache used
+     * for getAreas() gets cleared.
+     */
+    public Node cloneNode( boolean deep )
+    {
+        HTMLMapElementImpl clonedNode = (HTMLMapElementImpl)super.cloneNode( deep );
+        clonedNode._areas = null;
+        return clonedNode;
+    }
+
     /**
      * Constructor requires owner document.
      * 

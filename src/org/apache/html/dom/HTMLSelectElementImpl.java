@@ -196,12 +196,22 @@ public class HTMLSelectElementImpl
         // No scripting in server-side DOM. This method is moot.
     }
 
-    /*
+    /**
      * Explicit implementation of getChildNodes() to avoid problems with
      * overriding the getLength() method hidden in the super class.
      */
     public NodeList getChildNodes() {
         return getChildNodesUnoptimized();
+    }
+    
+    /**
+     * Explicit implementation of cloneNode() to ensure that cache used
+     * for getOptions() gets cleared.
+     */
+    public Node cloneNode(boolean deep) {
+        HTMLSelectElementImpl clonedNode = (HTMLSelectElementImpl)super.cloneNode( deep );
+        clonedNode._options = null;
+        return clonedNode;
     }
   
     /**

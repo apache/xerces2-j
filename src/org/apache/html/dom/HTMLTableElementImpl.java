@@ -375,7 +375,17 @@ public class HTMLTableElementImpl
             child = child.getNextSibling();
         }
     }
-
+    
+    /**
+     * Explicit implementation of cloneNode() to ensure that cache used
+     * for getRows() and getTBodies() gets cleared.
+     */
+    public Node cloneNode( boolean deep ) {
+        HTMLTableElementImpl clonedNode = (HTMLTableElementImpl)super.cloneNode( deep );
+        clonedNode._rows = null;
+        clonedNode._bodies = null;
+        return clonedNode;
+    }
   
     /**
      * Constructor requires owner document.

@@ -15,7 +15,7 @@
  */
 package org.apache.html.dom;
 
-
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLCollection;
 import org.w3c.dom.html.HTMLFormElement;
@@ -136,6 +136,16 @@ public class HTMLFormElementImpl
      */
     public NodeList getChildNodes() {
         return getChildNodesUnoptimized();
+    }
+    
+    /**
+     * Explicit implementation of cloneNode() to ensure that cache used
+     * for getElements() gets cleared.
+     */
+    public Node cloneNode( boolean deep ) {
+        HTMLFormElementImpl clonedNode = (HTMLFormElementImpl)super.cloneNode( deep );
+        clonedNode._elements = null;
+        return clonedNode;
     }
     
     /**

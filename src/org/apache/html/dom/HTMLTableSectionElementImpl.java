@@ -160,7 +160,16 @@ public class HTMLTableSectionElementImpl
         }
         return index;
     }
-
+    
+    /**
+     * Explicit implementation of cloneNode() to ensure that cache used
+     * for getRows() gets cleared.
+     */
+    public Node cloneNode( boolean deep ) {
+        HTMLTableSectionElementImpl clonedNode = (HTMLTableSectionElementImpl)super.cloneNode( deep );
+        clonedNode._rows = null;
+        return clonedNode;
+    }
     
     /**
      * Constructor requires owner document.

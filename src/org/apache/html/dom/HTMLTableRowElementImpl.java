@@ -244,9 +244,18 @@ public class HTMLTableRowElementImpl
     {
         setAttribute( "valign", vAlign );
     }
-
     
-      /**
+    /**
+     * Explicit implementation of cloneNode() to ensure that cache used
+     * for getCells() gets cleared.
+     */
+    public Node cloneNode( boolean deep ) {
+        HTMLTableRowElementImpl clonedNode = (HTMLTableRowElementImpl)super.cloneNode( deep );
+        clonedNode._cells = null;
+        return clonedNode;
+    }
+    
+    /**
      * Constructor requires owner document.
      * 
      * @param owner The owner HTML document
