@@ -700,6 +700,12 @@ public class SchemaValidator
     /** Element decl stack. */
     XSElementDecl[] fElemDeclStack = new XSElementDecl[INITIAL_STACK_SIZE];
 
+    /** nil value of the current element */
+    boolean fNil;
+
+    /** nil value stack */
+    boolean[] fNilStack = new boolean[INITIAL_STACK_SIZE];
+
     /** Current type. */
     XSTypeDecl fCurrentType;
 
@@ -794,6 +800,7 @@ public class SchemaValidator
 
         // initialize state
         fCurrentElemDecl = null;
+        fNil = false;
         fCurrentType = null;
         fCurrentCM = null;
         fCurrCMState = null;
@@ -860,6 +867,7 @@ public class SchemaValidator
             fChildCountStack[fElementDepth] = fChildCount+1;
             fChildCount = 0;
             fElemDeclStack[fElementDepth] = fCurrentElemDecl;
+            fNilStack[fElementDepth] = fNil;
             fTypeStack[fElementDepth] = fCurrentType;
             fCMStack[fElementDepth] = fCurrentCM;
             fBufferStack[fElementDepth] = fBuffer;
@@ -892,6 +900,7 @@ public class SchemaValidator
 
         // get the element decl for this element
         fCurrentElemDecl = null;
+        fNil = false;
 
         XSWildcardDecl wildcard = null;
         // if there is a content model, then get the decl from that
@@ -906,7 +915,7 @@ public class SchemaValidator
             } else if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
                        fDoValidation) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                reportGenericSchemaError("invlid content starting with element '"+element.rawname+"', the content must match "+ctype.fParticle.toString()+"");
+                reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
                 fCurrCMState[0] = XSCMValidator.SUBSEQUENT_ERROR;
             }
         }
@@ -933,28 +942,30 @@ public class SchemaValidator
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
         }
 
+        // Element Locally Valid (Element)
+        // 2 Its {abstract} must be false.
+        if (fCurrentElemDecl != null && fCurrentElemDecl.isAbstract())
+            reportSchemaError("cvc-elt.2", new Object[]{element.rawname});
+
         // get the type for the current element
         fCurrentType = null;
         if (fCurrentElemDecl != null) {
-            // Check whether this element is abstract.  If so, an error
-            if (fCurrentElemDecl.isAbstract()) {
-                reportGenericSchemaError("A member of abstract element " + element.rawname + "'s substitution group must be specified");
-            }
             // then get the type
             fCurrentType = fCurrentElemDecl.fType;
         }
 
         // get type from xsi:type
         String xsiType = attributes.getValue(URI_XSI, XSI_TYPE);
-        if (xsiType != null) {
+        if (xsiType != null)
             getAndCheckXsiType(element, xsiType);
-        } else if (fCurrentType != null) {
-            // if no xsi:type is specified, check whether the type of
-            // the element is abstract
+
+        // Element Locally Valid (Type)
+        // 2 Its {abstract} must be false.
+        if (fCurrentType != null) {
             if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                 if (ctype.isAbstractType()) {
-                    reportGenericSchemaError("Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type");
+                    reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
                 }
             }
         }
@@ -964,11 +975,11 @@ public class SchemaValidator
             // if this is the root element, or wildcard = strict, report error
             if (fElementDepth == 0) {
                 // report error, because it's root element
-                reportGenericSchemaError("can't find decl for root element '"+element.rawname+"'");
+                reportSchemaError("cvc-elt.1", new Object[]{element.rawname});
             } else if (wildcard != null &&
                 wildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT) {
                 // report error, because wilcard = strict
-                reportGenericSchemaError("can't find decl for strict wildcard '"+element.rawname+"'");
+                reportSchemaError("cvc-complex-type.2.4.c", new Object[]{element.rawname});
             }
 
             // no element decl found, have to skip this element
@@ -1021,6 +1032,7 @@ public class SchemaValidator
                 fElementDepth--;
                 fChildCount = fChildCountStack[fElementDepth];
                 fCurrentElemDecl = fElemDeclStack[fElementDepth];
+                fNil = fNilStack[fElementDepth];
                 fCurrentType = fTypeStack[fElementDepth];
                 fCurrentCM = fCMStack[fElementDepth];
                 fCurrCMState = fCMStateStack[fElementDepth];
@@ -1034,26 +1046,29 @@ public class SchemaValidator
         // now validate the content of the element
         processElementContent(element);
 
+        // Element Locally Valid (Element)
+        // 6 The element information item must be ·valid· with respect to each of the {identity-constraint definitions} as per Identity-constraint Satisfied (§3.11.4).
+        // REVISIT: implement
+
         // decrease element depth and restore states
         fElementDepth--;
         if (fElementDepth == -1) {
             if (fDoValidation) {
                 try {
-                    //Do final validation of IDREFS against IDs
+                    // 7 If the element information item is the ·validation root·, it must be ·valid· per Validation Root Valid (ID/IDREF) (§3.3.4).
                     // REVISIT: how to do it? new simpletype design?
                     IDREFDatatypeValidator.checkIdRefs(fTableOfIDs, fTableOfIDRefs);
                 }
                 catch (InvalidDatatypeValueException ex) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_ELEMENT_WITH_ID_REQUIRED",
-                                               new Object[]{ ex.getMessage()},
-                                               XMLErrorReporter.SEVERITY_ERROR);
+                    // REVISIT: put idref value in ex
+                    reportSchemaError("cvc-id.1", new Object[]{ex.getLocalizedMessage()});
                 }
             }
         } else {
             // get the states for the parent element.
             fChildCount = fChildCountStack[fElementDepth];
             fCurrentElemDecl = fElemDeclStack[fElementDepth];
+            fNil = fNilStack[fElementDepth];
             fCurrentType = fTypeStack[fElementDepth];
             fCurrentCM = fCMStack[fElementDepth];
             fCurrCMState = fCMStateStack[fElementDepth];
@@ -1069,75 +1084,70 @@ public class SchemaValidator
     } // handleCharacters(XMLString)
 
     void getAndCheckXsiType(QName element, String xsiType) {
+        // Element Locally Valid (Element)
+        // 4 If there is an attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is type, then all of the following must be true:
+        // 4.1 The ·normalized value· of that attribute information item must be ·valid· with respect to the built-in QName simple type, as defined by String Valid (§3.14.4);
         // REVISIT: bind namespace, get grammar, get type
-        // report error if type not found.
-        // (similar to code in XSAttributeChecker.resolveQName
-        String uri = null, name = null;
-        // uri = resolve; name = substring;
+        QName typeName = new QName();
+        // REVISIT: try{QName typeName = QNameDV.validate(xsiType, nsSupport);} catch {reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, URI_XSI+","+XSI_TYPE, xsitype}}; return;}
+        // 4.2 The ·local name· and ·namespace name· (as defined in QName Interpretation (§3.15.3)), of the ·actual value· of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (§3.15.4)
         XSTypeDecl type = null;
-        SchemaGrammar grammar = fGrammarResolver.getGrammar(uri);
+        SchemaGrammar grammar = fGrammarResolver.getGrammar(typeName.uri);
         if (grammar != null)
-            type = grammar.getGlobalTypeDecl(name);
+            type = grammar.getGlobalTypeDecl(typeName.localpart);
         if (type == null) {
-            reportGenericSchemaError("can't find type '"+xsiType+"'");
+            reportSchemaError("cvc-elt.4.2", new Object[]{element.rawname, xsiType});
             return;
-        }
-
-        // if this is a complex type, check whether it's abstract
-        if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
-            XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
-            if (ctype.isAbstractType())
-                reportGenericSchemaError("Abstract type " + xsiType + " should not be used in xsi:type");
         }
 
         // if there is no current type, set this one as current.
         // and we don't need to do extra checking
-        if (fCurrentType == null) {
-            fCurrentType = type;
-            return;
+        if (fCurrentType != null) {
+            // 4.3 The ·local type definition· must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (§3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (§3.14.6) (if it is a simple type definition).
+            int block = fCurrentElemDecl.fBlock;
+            if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+                block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
+            if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block))
+                reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType});
         }
 
-        // if there is a matching element decl, then this xsi:type must
-        // be validly derived from the type of the element decl
-        int block = fCurrentElemDecl.fBlock;
-        if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
-            block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
-        if (!checkTypeDerivationOk(type, fCurrentType, block))
-            reportGenericSchemaError("xsitype is not validly derived from element type");
+        fCurrentType = type;
     }
 
     void getXsiNil(QName element, String xsiNil) {
-        // get nil: true or false
-        boolean nil = false;
+        // Element Locally Valid (Element)
+        // 3 The appropriate case among the following must be true:
+        // 3.1 If {nillable} is false, then there must be no attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is nil.
+        if (fCurrentElemDecl != null && !fCurrentElemDecl.isNillable())
+            reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+
+        // 3.2 If {nillable} is true and there is such an attribute information item and its ·actual value· is true , then all of the following must be true:
+        // 3.2.2 There must be no fixed {value constraint}.
         if (xsiNil.equals(SchemaSymbols.ATTVAL_TRUE) ||
             xsiNil.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
-            if (fCurrentElemDecl == null || fCurrentElemDecl.isNillable()) {
-                nil = true;
-            } else {
-                reportGenericSchemaError("xsi:nil must not be specified for the element '"+ element.rawname + "' with {nillable} equals 'false'");
+            fNil = true;
+            if (fCurrentElemDecl != null &&
+                fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE) {
+                reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
             }
-        } else if (!xsiNil.equals(SchemaSymbols.ATTVAL_FALSE) &&
-                   !xsiNil.equals(SchemaSymbols.ATTVAL_FALSE_0)) {
-            reportGenericSchemaError("value '" + xsiNil + "' of xsi:nil attribute is not a valid boolean value");
         }
-        // REVISIT: have a stack to hold it, because it's checked at endElement
     }
 
     void processAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
 
         // add default attributes
         if (attrGrp != null) {
-            addDefaultAttributes(attributes, attrGrp);
+            addDefaultAttributes(element, attributes, attrGrp);
         }
 
         // if we don't do validation, we don't need to validate the attributes
         if (!fDoValidation)
             return;
 
-        // if there is no attribute group, meaning no attribute is associated
-        // with this complexType, so no attributes are allowed, other than those
-        // from xsi namespace
-        if (attrGrp == null) {
+        // Element Locally Valid (Type)
+        // 3.1.1 The element information item's [attributes] must be empty, excepting those whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation.
+        if (fCurrentType == null ||
+            (fCurrentType.getXSType()&XSTypeDecl.SIMPLE_TYPE) != 0) {
             int attCount = attributes.getLength();
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
@@ -1146,10 +1156,10 @@ public class SchemaValidator
                         fTempQName.localpart != XSI_NONAMESPACESCHEMALOCACTION &&
                         fTempQName.localpart != XSI_NIL &&
                         fTempQName.localpart != XSI_TYPE) {
-                        reportGenericSchemaError("no attribute is allowed other than those from xsi namespace whose name is one of schemaLocation, noNamespaceSchemaLocation, type, or nil and namespace declarations");
+                        reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
                     }
                 } else if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
-                    reportGenericSchemaError("no attribute is allowed other than those from xsi namespace whose name is one of schemaLocation, noNamespaceSchemaLocation, type, or nil and namespace declarations");
+                    reportSchemaError("cvc-type.3.1.1", new Object[]{element.rawname});
                 }
             }
             return;
@@ -1159,97 +1169,131 @@ public class SchemaValidator
         int useCount = attrUses.length;
         XSWildcardDecl attrWildcard = attrGrp.fAttributeWC;
 
+        // whether we have seen a Wildcard ID.
+        String wildcardIDName = null;
+
         // for each present attribute
         int attCount = attributes.getLength();
+
+        // Element Locally Valid (Complex Type)
+        // 3 For each attribute information item in the element information item's [attributes] excepting those whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation, the appropriate case among the following must be true:
+        // get the corresponding attribute decl
         for (int index = 0; index < attCount; index++) {
             attributes.getName(index, fTempQName);
             // if it's from xsi namespace, it must be one of the four
             if (fTempQName.uri == URI_XSI) {
-                if (fTempQName.localpart != XSI_SCHEMALOCACTION &&
-                    fTempQName.localpart != XSI_NONAMESPACESCHEMALOCACTION &&
-                    fTempQName.localpart != XSI_NIL &&
-                    fTempQName.localpart != XSI_TYPE) {
-                    reportGenericSchemaError("invalid attribute from xsi namespace '"+fTempQName.localpart+"'");
+                if (fTempQName.localpart == XSI_SCHEMALOCACTION ||
+                    fTempQName.localpart == XSI_NONAMESPACESCHEMALOCACTION ||
+                    fTempQName.localpart == XSI_NIL ||
+                    fTempQName.localpart == XSI_TYPE) {
+                    continue;
                 }
-            } else if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
-                // it's not xmlns, and not xsi, then we need to find a decl for it
-                XSAttributeUse currUse = null;
-                for (int i = 0; i < useCount; i++) {
-                    if (attrUses[i].fAttrDecl.fName == fTempQName.localpart &&
-                        attrUses[i].fAttrDecl.fTargetNamespace == fTempQName.uri) {
-                        currUse = attrUses[i];
-                        break;
-                    }
+            } else if (fTempQName.rawname == XMLNS || fTempQName.rawname.startsWith("xmlns:")) {
+                continue;
+            }
+            // it's not xmlns, and not xsi, then we need to find a decl for it
+            XSAttributeUse currUse = null;
+            for (int i = 0; i < useCount; i++) {
+                if (attrUses[i].fAttrDecl.fName == fTempQName.localpart &&
+                    attrUses[i].fAttrDecl.fTargetNamespace == fTempQName.uri) {
+                    currUse = attrUses[i];
+                    break;
                 }
-                // if failed, get it from wildcard
-                if (currUse == null) {
-                    if (!attrWildcard.allowNamespace(fTempQName.uri)) {
-                        // so this attribute is not allowed
-                        reportGenericSchemaError("attribute '"+fTempQName.rawname+"' can't appear in element '"+element.rawname+"'");
-                        continue;
-                    }
-                }
+            }
 
-                // get the corresponding attribute decl
-                XSAttributeDecl currDecl = null;
-                if (currUse != null) {
-                    currDecl = currUse.fAttrDecl;
+            // 3.2 otherwise all of the following must be true:
+            // 3.2.1 There must be an {attribute wildcard}.
+            // 3.2.2 The attribute information item must be ·valid· with respect to it as defined in Item Valid (Wildcard) (§3.10.4).
+
+            // if failed, get it from wildcard
+            if (currUse == null) {
+                //if (attrWildcard == null)
+                //    reportSchemaError("cvc-complex-type.3.2.1", new Object[]{element.rawname, fTempQName.rawname});
+                if (attrWildcard == null ||
+                    !attrWildcard.allowNamespace(fTempQName.uri)) {
+                    // so this attribute is not allowed
+                    reportSchemaError("cvc-complex-type.3.2.2", new Object[]{element.rawname, fTempQName.rawname});
+                    continue;
+                }
+            }
+
+            XSAttributeDecl currDecl = null;
+            if (currUse != null) {
+                currDecl = currUse.fAttrDecl;
+            } else {
+                // which means it matches a wildcard
+                // skip it if it's skip
+                if (attrWildcard.fType == XSWildcardDecl.WILDCARD_SKIP)
+                    continue;
+                // now get the grammar and attribute decl
+                SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempQName.uri);
+                if (grammar != null)
+                    currDecl = grammar.getGlobalAttributeDecl(fTempQName.localpart);
+                // if can't find
+                if (currDecl == null) {
+                    // if strict, report error
+                    if (attrWildcard.fType == XSWildcardDecl.WILDCARD_STRICT)
+                        reportSchemaError("cvc-complex-type.3.2.2", new Object[]{element.rawname, fTempQName.rawname});
+                    // then continue to the next attribute
+                    continue;
                 } else {
-                    // which means it matches a wildcard
-                    // skip it if it's skip
-                    if (attrWildcard.fType == XSWildcardDecl.WILDCARD_SKIP)
-                        continue;
-                    // now get the grammar and attribute decl
-                    SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempQName.uri);
-                    if (grammar != null)
-                        currDecl = grammar.getGlobalAttributeDecl(fTempQName.localpart);
-                    // if can't find
-                    if (currDecl == null) {
-                        // if strict, report error
-                        if (attrWildcard.fType == XSWildcardDecl.WILDCARD_STRICT)
-                            reportGenericSchemaError("can't find the declaration for attribute '"+fTempQName.rawname+"'");
-                        // then continue to the next attribute
-                        continue;
+                    // 5 Let [Definition:]  the wild IDs be the set of all attribute information item to which clause 3.2 applied and whose ·validation· resulted in a ·context-determined declaration· of mustFind or no ·context-determined declaration· at all, and whose [local name] and [namespace name] resolve (as defined by QName resolution (Instance) (§3.15.4)) to an attribute declaration whose {type definition} is or is derived from ID. Then all of the following must be true:
+                    // 5.1 There must be no more than one item in ·wild IDs·.
+                    if (currDecl.fType instanceof IDDatatypeValidator) {
+                        if (wildcardIDName != null)
+                            reportSchemaError("cvc-complex-type.5.1", new Object[]{element.rawname, currDecl.fName, wildcardIDName});
+                        else
+                            wildcardIDName = currDecl.fName;
                     }
                 }
+            }
 
-                // get the value constraint from use or decl
-                // REVISIT: don't quite understand the spec: which value constraint to use
-                short constType = XSAttributeDecl.NO_CONSTRAINT;
-                Object defaultValue = null;
-                if (currUse != null) {
-                    constType = currUse.fConstraintType;
-                    defaultValue = currUse.fDefault;
-                }
-                if (constType == XSAttributeDecl.NO_CONSTRAINT) {
-                    constType = currDecl.fConstraintType;
-                    defaultValue = currDecl.fDefault;
-                }
-                // get simple type
-                DatatypeValidator attDV = currDecl.fType;
-                // get attribute value
-                String attrValue = attributes.getValue(index);
-                // if the value is fixed
-                if (constType == XSAttributeDecl.FIXED_VALUET) {
-                    // REVISIT: get compiled form of value, then compare
-                    if (attDV.compare(attrValue, (String)defaultValue) != 0)
-                        reportGenericSchemaError("attribute value not match fixed value");
-                }
+            // Attribute Locally Valid
+            // For an attribute information item to be locally ·valid· with respect to an attribute declaration all of the following must be true:
+            // 1 The declaration must not be ·absent· (see Missing Sub-components (§5.3) for how this can fail to be the case).
+            // 2 Its {type definition} must not be absent.
+            // 3 The item's ·normalized value· must be locally ·valid· with respect to that {type definition} as per String Valid (§3.14.4).
+            // get simple type
+            DatatypeValidator attDV = currDecl.fType;
+            // get attribute value
+            String attrValue = attributes.getValue(index);
+            // normalize it
+            // REVISIT: or should the normalize() be called within validate()?
+            attrValue = XSAttributeChecker.normalize(attrValue, attDV.getWSFacet());
+            Object acturalValue = null;
+            try {
+                // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
+                acturalValue = attDV.validate(attrValue, null);
+            } catch (InvalidDatatypeValueException idve) {
+                reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+            }
 
-                // now check the value against the simpleType
-                // REVISIT: or should the normalize() be called within validate()?
-                attrValue = XSAttributeChecker.normalize(attrValue, attDV.getWSFacet());
-                try {
-                    // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                    attDV.validate(attrValue, null);
-                } catch (InvalidDatatypeValueException idve) {
-                    reportGenericSchemaError("datatype validation error: "+idve);
-                }
-            } // end of if (not xsi and not xmlns)
+            // get the value constraint from use or decl
+            // REVISIT: don't quite understand the spec: which value constraint to use
+            // 4 The item's ·actual value· must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
+            if (currDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
+                // REVISIT: compare should be equal, and takes object, instead of string
+                //          do it in the new datatype design
+                if (attDV.compare((String)acturalValue, (String)currDecl.fDefault) != 0)
+                    reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+            }
+
+            // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an ·absent· {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be ·valid· with respect to that attribute use as per Attribute Locally Valid (Use) (§3.5.4). In this case the {attribute declaration} of that attribute use is the ·context-determined declaration· for the attribute information item with respect to Schema-Validity Assessment (Attribute) (§3.2.4) and Assessment Outcome (Attribute) (§3.2.5).
+            if (currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
+                // REVISIT: compare should be equal, and takes object, instead of string
+                //          do it in the new datatype design
+                if (attDV.compare((String)acturalValue, (String)currUse.fDefault) != 0)
+                    reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
+            }
         } // end of for (all attributes)
+
+        // 5.2 If ·wild IDs· is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
+        if (attrGrp.fIDAttrName != null && wildcardIDName != null)
+            reportSchemaError("cvc-complex-type.5.2", new Object[]{element.rawname, wildcardIDName, attrGrp.fIDAttrName});
+
     } //processAttributes
 
-    void addDefaultAttributes(XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
+    void addDefaultAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
         // Check after all specified attrs are scanned
         // (1) report error for REQUIRED attrs that are missing (V_TAGc)
         // REVISIT: should we check prohibited attributes?
@@ -1282,10 +1326,11 @@ public class SchemaValidator
             // whether this attribute is specified
             isSpecified = attributes.getValue(currDecl.fTargetNamespace, currDecl.fName) != null;
 
-            // if the use is required, then check whether it's specified
+            // Element Locally Valid (Complex Type)
+            // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose {required} is true matches one of the attribute information items in the element information item's [attributes] as per clause 3.1 above.
             if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
                 if (!isSpecified)
-                    reportGenericSchemaError("required attribute not present '"+currDecl.fName+"'");
+                    reportSchemaError("cvc-complex-type.4", new Object[]{element.rawname, currDecl.fName});
             }
 
             // if the attribute is not specified, then apply the value constraint
@@ -1303,249 +1348,144 @@ public class SchemaValidator
             fCurrentElemDecl.getConstraintType() == XSElementDecl.DEFAULT_VALUE) {
         }
 
-        if (fDoValidation && fCurrentType != null) {
-            // validate against simple type
-            if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
-                if (fChildCount != 0)
-                    reportGenericSchemaError("element content isn't allowed here");
+        if (fDoValidation) {
+            String content = fBuffer.toString();
+
+            // Element Locally Valid (Element)
+            // 3.2.1 The element information item must have no character or element information item [children].
+            if (fNil) {
+                if (fChildCount != 0 || content.length() != 0)
+                    reportSchemaError("cvc-elt.3.2.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+            }
+
+            // 5 The appropriate case among the following must be true:
+            // 5.1 If the declaration has a {value constraint}, the item has neither element nor character [children] and clause 3.2 has not applied, then all of the following must be true:
+            if (fCurrentElemDecl != null &&
+                fCurrentElemDecl.getConstraintType() != XSElementDecl.NO_CONSTRAINT &&
+                fChildCount == 0 && content.length() == 0 && !fNil) {
+                // 5.1.1 If the ·actual type definition· is a ·local type definition· then the canonical lexical representation of the {value constraint} value must be a valid default for the ·actual type definition· as defined in Element Default Valid (Immediate) (§3.3.6).
+                if (fCurrentType != fCurrentElemDecl.fType) {
+                    if (!XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.toString()))
+                        reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getXSTypeName(), fCurrentElemDecl.fDefault.toString()});
+                }
+                // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its ·normalized value· must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).
+                elementLocallyValidType(element, fCurrentElemDecl.fDefault.toString());
+            } else {
+                // 5.2 If the declaration has no {value constraint} or the item has either element or character [children] or clause 3.2 has applied, then all of the following must be true:
+                // 5.2.1 The element information item must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).
+                Object actualValue = elementLocallyValidType(element, content);
+                // 5.2.2 If there is a fixed {value constraint} and clause 3.2 has not applied, all of the following must be true:
+                if (fCurrentElemDecl != null &&
+                    fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE &&
+                    !fNil) {
+                    // 5.2.2.1 The element information item must have no element information item [children].
+                    if (fChildCount != 0)
+                        reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
+                    // 5.2.2.2 The appropriate case among the following must be true:
+                    if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                        XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                        // 5.2.2.2.1 If the {content type} of the ·actual type definition· is mixed, then the ·initial value· of the item must match the canonical lexical representation of the {value constraint} value.
+                        if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                            // REVISIT: how to get the initial value, does whiteSpace count?
+                            if (!fCurrentElemDecl.fDefault.toString().equals(content))
+                                reportSchemaError("cvc-elt.5.2.2.2.1", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.toString()});
+                        }
+                        // 5.2.2.2.2 If the {content type} of the ·actual type definition· is a simple type definition, then the ·actual value· of the item must match the canonical lexical representation of the {value constraint} value.
+                        else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+                            // REVISIT: compare should be equal, and takes object, instead of string
+                            //          do it in the new datatype design
+                            if (ctype.fDatatypeValidator.compare((String)actualValue, (String)fCurrentElemDecl.fDefault) != 0)
+                                reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.toString()});
+                        }
+                    }
+                }
+            }
+        } // if fDoValidation
+    } // processElementContent
+
+    Object elementLocallyValidType(QName element, String textContent) {
+        if (fCurrentType == null)
+            return null;
+
+        Object retValue = null;
+        // Element Locally Valid (Type)
+        // 3 The appropriate case among the following must be true:
+        // 3.1 If the type definition is a simple type definition, then all of the following must be true:
+        if ((fCurrentType.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
+            // 3.1.2 The element information item must have no element information item [children].
+            if (fChildCount != 0)
+                reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});
+            // 3.1.3 If clause 3.2 of Element Locally Valid (Element) (§3.3.4) did not apply, then the ·normalized value· must be ·valid· with respect to the type definition as defined by String Valid (§3.14.4).
+            if (!fNil) {
                 try {
                     DatatypeValidator dv = (DatatypeValidator)fCurrentType;
-                    if (fCurrentElemDecl != null &&
-                        fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUET) {
-                        // REVISIT: get compiled form of value, then compare
-                        if (dv.compare(fBuffer.toString(), (String)fCurrentElemDecl.fDefault) != 0)
-                            reportGenericSchemaError("element value not match fixed value");
-                    }
                     // REVISIT: or should the normalize() be called withing validate()?
-                    String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
+                    String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
+                    // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
+                    retValue = dv.validate(content, null);
+                } catch (InvalidDatatypeValueException e) {
+                    reportSchemaError("cvc-type.3.1.3", new Object[]{element, textContent});
+                }
+            }
+        } else {
+            // 3.2 If the type definition is a complex type definition, then the element information item must be ·valid· with respect to the type definition as per Element Locally Valid (Complex Type) (§3.4.4);
+            elementLocallyValidComplexType(element, textContent);
+        }
+
+        return retValue;
+    } // elementLocallyValidType
+
+    void elementLocallyValidComplexType(QName element, String textContent) {
+        XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+
+        // Element Locally Valid (Complex Type)
+        // For an element information item to be locally ·valid· with respect to a complex type definition all of the following must be true:
+        // 1 {abstract} is false.
+        // 2 If clause 3.2 of Element Locally Valid (Element) (§3.3.4) did not apply, then the appropriate case among the following must be true:
+        if (!fNil) {
+            // 2.1 If the {content type} is empty, then the element information item has no character or element information item [children].
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY &&
+                (fChildCount != 0 || textContent.length() != 0)) {
+                reportSchemaError("cvc-complex-type.2.1", new Object[]{element.rawname});
+            }
+            // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the ·normalized value· of the element information item is ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+                if (fChildCount != 0)
+                    reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
+                DatatypeValidator dv = ctype.fDatatypeValidator;
+                // REVISIT: or should the normalize() be called withing validate()?
+                String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
+                try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
                     dv.validate(content, null);
                 } catch (InvalidDatatypeValueException e) {
-                    reportGenericSchemaError("datatype error: " + e.getMessage());
+                    reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 }
-            } else {
-                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                String content = XSAttributeChecker.normalize(fBuffer.toString(), SchemaSymbols.WS_COLLAPSE);
-                if (fCurrentElemDecl != null &&
-                    fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUET) {
-                    // REVISIT: get compiled form of value, then compare
-                    if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                        if (ctype.fDatatypeValidator.compare(fBuffer.toString(), (String)fCurrentElemDecl.fDefault) != 0)
-                            reportGenericSchemaError("element value not match fixed value");
-                    } else {
-                        if (!content.equals(fBuffer.toString()))
-                            reportGenericSchemaError("element value not match fixed value");
-                    }
-                }
-                boolean hasTextContent = content.length() == 0;
-                // REVISIT: implement nil
-                //if (fNil || ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
-                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
-                    if (fChildCount != 0 || hasTextContent)
-                        reportGenericSchemaError("content must be empty/nil");
-                }
-
-                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                    if (fChildCount != 0)
-                        reportGenericSchemaError("element content isn't allowed here");
-                    DatatypeValidator dv = ctype.fDatatypeValidator;
-                    // REVISIT: or should the normalize() be called withing validate()?
-                    content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
-                    try {
-                        // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                        dv.validate(content, null);
-                    } catch (InvalidDatatypeValueException e) {
-                        reportGenericSchemaError("datatype error: " + e.getMessage());
-                    }
-                }
-
-                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
-                    if (hasTextContent)
-                        reportGenericSchemaError("text content is not allowed for element '"+element.rawname+"'");
-                }
-
-                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT ||
-                    ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-                    if (fCurrentCM == null) {
-                        // the parent element doesn't expect any child element
-                        if (fChildCount != 0)
-                            reportGenericSchemaError("element content isn't allowed here");
-                    }
-                    // if the current state is a valid state, check whether
-                    // it's one of the final states.
-                    else if (fCurrCMState != null && fCurrCMState[0] >= 0 &&
-                        !fCurrentCM.endContentModel(fCurrCMState)) {
-                        reportGenericSchemaError("the content of '"+element.rawname+"' is not complete. it must match ("+ctype.fParticle.toString()+")");
-                    }
-                }
-            } // else for complexType
-        } // if (fDoValidation && fCurrentType != null)
-    } // processElementContent
-
-    // REVISIT: move the following 5 methods to common place
-    boolean checkTypeDerivationOk(XSTypeDecl derived, XSTypeDecl base, int block) {
-        // if derived is anyType, then it's valid only if base is anyType too
-        if (derived.getXSType() == XSTypeDecl.ANY_TYPE)
-            return derived == base;
-        // if derived is anySimpleType, then it's valid only if the base
-        // is ur-type
-        if (derived.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE)
-            return (base.getXSType() & XSTypeDecl.UR_TYPE) != 0;
-
-        // if derived is simple type
-        if ((derived.getXSType() & XSTypeDecl.SIMPLE_TYPE) != 0) {
-            // if base is complex type
-            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
-                // if base is anyType, change base to anySimpleType,
-                // otherwise, not valid
-                if (base.getXSType() == XSTypeDecl.ANY_TYPE)
-                    base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
-                else
-                    return false;
             }
-            return checkSimpleDerivation((DatatypeValidator)derived,
-                                         (DatatypeValidator)base, block);
-        } else {
-            return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
-        }
-    }
-
-    boolean checkSimpleDerivationOk(DatatypeValidator derived, XSTypeDecl base, int block) {
-        // if derived is anySimpleType, then it's valid only if the base
-        // is ur-type
-        if (derived.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE)
-            return (base.getXSType() & XSTypeDecl.UR_TYPE) != 0;
-
-        // if base is complex type
-        if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
-            // if base is anyType, change base to anySimpleType,
-            // otherwise, not valid
-            if (base.getXSType() == XSTypeDecl.ANY_TYPE)
-                base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
-            else
-                return false;
-        }
-        return checkSimpleDerivation((DatatypeValidator)derived,
-                                     (DatatypeValidator)base, block);
-    }
-
-    boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
-        // if derived is anyType, then it's valid only if base is anyType too
-        if (derived.getXSType() == XSTypeDecl.ANY_TYPE)
-            return derived == base;
-        return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
-    }
-
-    /**
-     * Note: this will be a private method, and it assumes that derived is not
-     *       anySimpleType, and base is not anyType. Another method will be
-     *       introduced for public use, which will call this method.
-     */
-    boolean checkSimpleDerivation(DatatypeValidator derived, DatatypeValidator base, int block) {
-        // 1 They are the same type definition.
-        if (derived == base)
-            return true;
-
-        // 2 All of the following must be true:
-        // 2.1 restriction is not in the subset, or in the {final} of its own {base type definition};
-        if ((block & SchemaSymbols.RESTRICTION) != 0 ||
-            (derived.getBaseValidator().getFinalSet() & SchemaSymbols.RESTRICTION) != 0) {
-            return false;
-        }
-
-        // 2.2 One of the following must be true:
-        // 2.2.1 D's ·base type definition· is B.
-        DatatypeValidator directBase = derived.getBaseValidator();
-        if (directBase == base)
-            return true;
-
-        // 2.2.2 D's ·base type definition· is not the ·simple ur-type definition· and is validly derived from B given the subset, as defined by this constraint.
-        if (directBase.getXSType() != XSTypeDecl.ANYSIMPLE_TYPE &&
-            checkSimpleDerivation(directBase, base, block)) {
-            return true;
-        }
-
-        // 2.2.3 D's {variety} is list or union and B is the ·simple ur-type definition·.
-        if ((derived instanceof ListDatatypeValidator ||
-             derived instanceof UnionDatatypeValidator) &&
-            base.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE) {
-            return true;
-        }
-
-        // 2.2.4 B's {variety} is union and D is validly derived from a type definition in B's {member type definitions} given the subset, as defined by this constraint.
-        if (base instanceof UnionDatatypeValidator) {
-            Vector subUnionMemberDV = ((UnionDatatypeValidator)base).getBaseValidators();
-            int subUnionSize = subUnionMemberDV.size();
-            for (int i=0; i<subUnionSize; i++) {
-                base = (DatatypeValidator)subUnionMemberDV.elementAt(i);
-                if (checkSimpleDerivation(derived, base, block))
-                    return true;
+            // 2.3 If the {content type} is element-only, then the element information item has no character information item [children] other than those whose [character code] is defined as a white space in [XML 1.0 (Second Edition)].
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
+                // REVISIT: how to check whether there is any text content?
+                String content = XSAttributeChecker.normalize(textContent, SchemaSymbols.WS_COLLAPSE);
+                if (content.length() != 0)
+                    reportSchemaError("cvc-complex-type.2.3", new Object[]{element.rawname});
+            }
+            // 2.4 If the {content type} is element-only or mixed, then the sequence of the element information item's element information item [children], if any, taken in order, is ·valid· with respect to the {content type}'s particle, as defined in Element Sequence Locally Valid (Particle) (§3.9.4).
+            if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT ||
+                ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                // if the current state is a valid state, check whether
+                // it's one of the final states.
+                if (fCurrCMState[0] >= 0 &&
+                    !fCurrentCM.endContentModel(fCurrCMState)) {
+                    reportSchemaError("cvc-complex-type.2.4.b", new Object[]{element.rawname, ctype.fParticle.toString()});
+                }
             }
         }
-
-        return false;
-    }
-
-    /**
-     * Note: this will be a private method, and it assumes that derived is not
-     *       anyType. Another method will be introduced for public use,
-     *       which will call this method.
-     */
-    boolean checkComplexDerivation(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
-        // 2.1 B and D must be the same type definition.
-        if (derived == base)
-            return true;
-
-        // 1 If B and D are not the same type definition, then the {derivation method} of D must not be in the subset.
-        if ((derived.fDerivedBy & block) != 0)
-            return false;
-
-        // 2 One of the following must be true:
-        XSTypeDecl directBase = derived.fBaseType;
-        // 2.2 B must be D's {base type definition}.
-        if (directBase == base)
-            return true;
-
-        // 2.3 All of the following must be true:
-        int directType = directBase.getXSType();
-        // 2.3.1 D's {base type definition} must not be the ·ur-type definition·.
-        if ((directType & XSTypeDecl.UR_TYPE) != 0)
-            return false;
-
-        // 2.3.2 The appropriate case among the following must be true:
-        // 2.3.2.1 If D's {base type definition} is complex, then it must be validly derived from B given the subset as defined by this constraint.
-        if ((directType & XSTypeDecl.COMPLEX_TYPE) != 0)
-            return checkComplexDerivation((XSComplexTypeDecl)directBase, base, block);
-
-        // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (§3.14.6).
-        if ((directType & XSTypeDecl.SIMPLE_TYPE) != 0) {
-            // if base is complex type
-            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
-                // if base is anyType, change base to anySimpleType,
-                // otherwise, not valid
-                if (base.getXSType() == XSTypeDecl.ANY_TYPE)
-                    base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
-                else
-                    return false;
-            }
-            return checkSimpleDerivation((DatatypeValidator)derived,
-                                         (DatatypeValidator)base, block);
-        }
-
-        return false;
-    }
+    } // elementLocallyValidComplexType
 
     void reportSchemaError(String key, Object[] arguments) {
         if (fDoValidation)
             fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                        key, arguments,
-                                       XMLErrorReporter.SEVERITY_ERROR);
-    }
-
-    void reportGenericSchemaError(String msg) {
-        if (fDoValidation)
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       "General", new Object[]{msg},
                                        XMLErrorReporter.SEVERITY_ERROR);
     }
 

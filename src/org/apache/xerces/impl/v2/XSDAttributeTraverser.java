@@ -128,7 +128,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (defaultAtt != null) {
             consType = XSAttributeDecl.DEFAULT_VALUE;
         } else if (fixedAtt != null) {
-            consType = XSAttributeDecl.FIXED_VALUET;
+            consType = XSAttributeDecl.FIXED_VALUE;
             defaultAtt = fixedAtt;
             fixedAtt = null;
         }
@@ -236,7 +236,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (isGlobal) {
             if (fixedAtt != null) {
                 attribute.fDefault = fixedAtt;
-                attribute.fConstraintType = XSElementDecl.FIXED_VALUET;
+                attribute.fConstraintType = XSElementDecl.FIXED_VALUE;
             } else if (defaultAtt != null) {
                 attribute.fDefault = defaultAtt;
                 attribute.fConstraintType = XSElementDecl.DEFAULT_VALUE;

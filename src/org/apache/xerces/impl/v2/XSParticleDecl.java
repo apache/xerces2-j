@@ -105,7 +105,9 @@ public class XSParticleDecl {
             break;
         case PARTICLE_ELEMENT:
         case PARTICLE_WILDCARD:
+            str.append('(');
             str.append(fValue.toString());
+            str.append(')');
             break;
         case PARTICLE_CHOICE:
         case PARTICLE_SEQUENCE:

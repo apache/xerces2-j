@@ -1108,14 +1108,12 @@ public class XSAttributeChecker {
                     //attrValues.put(attrName, retValue);
                     attrValues[oneAttr.valueIndex] = retValue;
                 }
-            }
-            catch (InvalidDatatypeValueException ide) {
+            } catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("s4s-att-invalid-value",
                                    new Object[] {elName, attrName, ide.getLocalizedMessage()});
                 if (oneAttr.dfltValue != null)
                     //attrValues.put(attrName, oneAttr.dfltValue);
                     attrValues[oneAttr.valueIndex] = oneAttr.dfltValue;
-                    fromDefault |= (1<<oneAttr.valueIndex);
             }
         }
 

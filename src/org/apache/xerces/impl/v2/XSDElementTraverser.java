@@ -274,7 +274,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // get 'value constraint'
         if (fixedAtt != null) {
             element.fDefault = fixedAtt;
-            element.setConstraintType(XSElementDecl.FIXED_VALUET);
+            element.setConstraintType(XSElementDecl.FIXED_VALUE);
         } else if (defaultAtt != null) {
             element.fDefault = defaultAtt;
             element.setConstraintType(XSElementDecl.DEFAULT_VALUE);

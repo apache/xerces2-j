@@ -90,7 +90,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     // flags: whether is abstract; whether contains ID type
     public short fMiscFlags = 0;
     // the attribute group that holds the attribute uses and attribute wildcard
-    public XSAttributeGroupDecl fAttrGrp = null;
+    public XSAttributeGroupDecl fAttrGrp = new XSAttributeGroupDecl();
     // the content type of the complexType
     public short fContentType = CONTENTTYPE_EMPTY;
     // if the content type is simple, then the corresponding simpleType

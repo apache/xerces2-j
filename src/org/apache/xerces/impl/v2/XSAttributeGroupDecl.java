@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.impl.v2.datatypes.IDDatatypeValidator;
+
 /**
  * The XML representation for an attribute group declaration
  * schema component is a global <attributeGroup> element information item
@@ -77,13 +79,18 @@ public class XSAttributeGroupDecl {
     XSAttributeUse[] fAttributeUses = new XSAttributeUse[INITIAL_SIZE];
     // attribute wildcard included by this attribute group
     public XSWildcardDecl fAttributeWC = null;
+    // whether there is an attribute use whose type is or is derived from ID.
+    public String fIDAttrName = null;
 
     void addAttributeUse(XSAttributeUse attrUse) {
         if (fAttrUseNum == fAttributeUses.length) {
             fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
         }
         fAttributeUses[fAttrUseNum++] = attrUse;
-
+        if (fIDAttrName == null &&
+            attrUse.fAttrDecl.fType instanceof IDDatatypeValidator) {
+            fIDAttrName = attrUse.fAttrDecl.fName;
+        }
         //REVISIT: while adding check for duplicate attribute use.
         //This will take care of union of attributeUse(s).
     }
