@@ -864,7 +864,7 @@ extends ParentNode implements Document  {
     public Node renameNode(Node n,String namespaceURI,String name)
     throws DOMException{
 
-        if (n.getOwnerDocument() != this) {
+        if (n.getOwnerDocument() != this && n != this) {
             String msg = DOMMessageFormatter.formatMessage(
             DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null);
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, msg);

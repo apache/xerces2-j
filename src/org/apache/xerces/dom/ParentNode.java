@@ -342,7 +342,7 @@ public abstract class ParentNode
                               DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                               DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null));
             }
-            if (newChild.getOwnerDocument() != ownerDocument) {
+            if (newChild.getOwnerDocument() != ownerDocument && newChild != ownerDocument) {
                 throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
                             DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "WRONG_DOCUMENT_ERR", null));
             }
