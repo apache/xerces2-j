@@ -745,16 +745,19 @@ public class XMLEntityManager
                                 ? fCurrentEntity
                                 : (Entity)fEntityStack.elementAt(i);
             if (activeEntity.name == entityName) {
-                String path = entityName;
+                StringBuffer path = new StringBuffer(entityName);
                 for (int j = i + 1; j < size; j++) {
                     activeEntity = (Entity)fEntityStack.elementAt(j);
-                    path = path + " -> " + activeEntity.name;
+                    path.append(" -> ");
+                    path.append(activeEntity.name);
                 }
-                path = path + " -> " + fCurrentEntity.name;
-                path = path + " -> " + entityName;
+                path.append(" -> ");
+                path.append(fCurrentEntity.name);
+                path.append(" -> ");
+                path.append(entityName);
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "RecursiveReference",
-                                           new Object[] { entityName, path },
+                                           new Object[] { entityName, path.toString() },
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 if (fEntityHandler != null) {
                     fResourceIdentifier.clear();
