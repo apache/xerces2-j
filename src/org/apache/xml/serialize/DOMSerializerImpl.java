@@ -1008,27 +1008,30 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 //no way to test the version...
                 //ignore the exception
             }
-            while (node != null) {
-              verify(node, verifyNames, false);
-              // Move down to first child
-              next = node.getFirstChild();
-              // No child nodes, so walk tree
-              while (next == null) {
-                // Move to sibling if possible.
-                next = node.getNextSibling();
-                if (next == null){
-                    node = node.getParentNode();
-                    if (node == null || root == node){
-                        next = null;
-                        break;                   
+            if (node.getFirstChild() != null) {
+                while (node != null) {
+                    verify(node, verifyNames, false);
+                    // Move down to first child
+                    next = node.getFirstChild();
+                    // No child nodes, so walk tree
+                    while (next == null) {
+                      // Move to sibling if possible.
+                      next = node.getNextSibling();
+                      if (next == null) {
+                          node = node.getParentNode();
+                          if (root == node){
+                              next = null;
+                              break;                   
+                          }
+                          next = node.getNextSibling();
+                      }
                     }
-                    next = node.getNextSibling();
+                    node = next;
                 }
-              }
-              node = next;
-          }
- 
-
+            }
+            else {
+                verify(node, verifyNames, false);
+            }
         }
     }
     
