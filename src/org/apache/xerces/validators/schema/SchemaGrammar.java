@@ -235,42 +235,46 @@ public class SchemaGrammar extends Grammar{
     protected void setElementDefinedScope(int elementDeclIndex, int scopeDefined) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
+        ensureElementDeclCapacity(chunk);
             if (elementDeclIndex > -1 ) {
                 fScopeDefinedByElement[chunk][index] = scopeDefined;
             }
-        }
+        //}
     }
 
     protected  void setElementFromAnotherSchemaURI(int elementDeclIndex, String anotherSchemaURI) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
+        ensureElementDeclCapacity(chunk);
             if (elementDeclIndex > -1 ) {
                 fFromAnotherSchemaURI[chunk][index] = anotherSchemaURI;
             }
-        }
+        //}
     }
 
     protected void setElementComplexTypeInfo(int elementDeclIndex, TraverseSchema.ComplexTypeInfo typeInfo){
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
+            ensureElementDeclCapacity(chunk);
             if (elementDeclIndex > -1 ) {
                 fComplexTypeInfo[chunk][index] = typeInfo;
             }
-        }
+        //}
     }
 
     protected void setElementDefault(int elementDeclIndex, int defaultType, String defaultValue) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex & CHUNK_MASK;
-        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
+        //if ( ensureElementDeclCapacity(chunk) ) { // create an ElementDecl
+            ensureElementDeclCapacity(chunk);
             if (elementDeclIndex > -1 ) {
                 fElementDeclDefaultType[chunk][index] = defaultType;
                 fElementDeclDefaultValue[chunk][index] = defaultValue;
             }
-        }
+        //}
     }
 
     //add methods for TraverseSchema

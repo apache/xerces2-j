@@ -74,6 +74,8 @@ import  org.w3c.dom.Element;
 //REVISIT: for now, import everything in the DOM package
 import  org.w3c.dom.*;
 import java.util.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 //Unit Test 
 import  org.apache.xerces.parsers.DOMParser;
@@ -403,15 +405,20 @@ public class TraverseSchema implements
     private Hashtable fComplexTypeRegistry = new Hashtable();
     private Hashtable fAttributeDeclRegistry = new Hashtable();
 
+    private Vector fIncludeLocations = new Vector();
+    private Vector fImportLocations = new Vector();
+
+
     private int fAnonTypeCount =0;
     private int fScopeCount=0;
     private int fCurrentScope=TOP_LEVEL_SCOPE;
     private int fSimpleTypeAnonCount = 0;
 
-    private boolean fDefaultQualifed = false;
+    private boolean fDefaultQualified = false;
     private int fTargetNSURI;
     private String fTargetNSURIString = "";
     private NamespacesScope fNamespacesScope = null;
+    private String fCurrentSchemaURL = "";
 
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
 
@@ -458,18 +465,19 @@ public class TraverseSchema implements
     private String resolvePrefixToURI (String prefix) throws Exception  {
         String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
         if (uriStr == null) {
-            reportGenericSchemaError("prefix : " + prefix +" can not be resolved to a URI");
+            reportGenericSchemaError("prefix : [" + prefix +"] can not be resolved to a URI");
         }
-
         return uriStr;
     }
 
     public  TraverseSchema(Element root, StringPool stringPool, 
                            SchemaGrammar schemaGrammar, 
                            GrammarResolver grammarResolver,
-                           XMLErrorReporter errorReporter
+                           XMLErrorReporter errorReporter,
+                           String schemaURL
                            ) throws Exception {
         fErrorReporter = errorReporter;
+        fCurrentSchemaURL = schemaURL;
         doTraverseSchema(root, stringPool, schemaGrammar, grammarResolver);
     }
 
@@ -496,6 +504,13 @@ public class TraverseSchema implements
             return;
         }
 
+        //Retrieve the targetnamespace URI information
+        fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+        if (fTargetNSURIString==null) {
+            fTargetNSURIString="";
+        }
+        fTargetNSURI = fStringPool.addSymbol(fTargetNSURIString);
+
         if (fGrammarResolver == null) {
             reportGenericSchemaError("Internal error: don't have a GrammarResolver for TraverseSchema");
         }
@@ -507,20 +522,13 @@ public class TraverseSchema implements
         }
         
 
-        //Retrieve the targetnamespace URI information
-        fTargetNSURIString = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
-        if (fTargetNSURIString==null) {
-            fTargetNSURIString="";
-        }
-        fTargetNSURI = fStringPool.addSymbol(fTargetNSURIString);
 
         // Retrived the Namespace mapping from the schema element.
         NamedNodeMap schemaEltAttrs = root.getAttributes();
         int i = 0;
         Attr sattr = null;
 
-        fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
-                                                fStringPool.addSymbol("") );
+        boolean seenXMLNS = false;                                        
         while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
             String attName = sattr.getName();
             if (attName.startsWith("xmlns:")) {
@@ -530,14 +538,20 @@ public class TraverseSchema implements
                                                         fStringPool.addSymbol(attValue) );
             }
             if (attName.equals("xmlns")) {
+
                 String attValue = sattr.getValue();
                 fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
                                                         fStringPool.addSymbol(attValue) );
+                seenXMLNS = true;
             }
 
         }
+        if (!seenXMLNS && fTargetNSURIString.length() == 0 ) {
+            fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                                                    fStringPool.addSymbol("") );
+        }
 
-        fDefaultQualifed = 
+        fDefaultQualified = 
             root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
 
         //fScopeCount++;
@@ -574,10 +588,10 @@ public class TraverseSchema implements
                 ; //TO DO
             }
             else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
-                ; //TO DO
+                traverseInclude(child); 
             }
             else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
-                ;  //TO DO
+                traverseImport(child); 
             }
         } // for each child node
 
@@ -604,8 +618,297 @@ public class TraverseSchema implements
         } // for each child node
     }
 
-
     /**
+     * Expands a system id and returns the system id as a URL, if
+     * it can be expanded. A return value of null means that the
+     * identifier is already expanded. An exception thrown
+     * indicates a failure to expand the id.
+     *
+     * @param systemId The systemId to be expanded.
+     *
+     * @return Returns the URL object representing the expanded system
+     *         identifier. A null value indicates that the given
+     *         system identifier is already expanded.
+     *
+     */
+    private String expandSystemId(String systemId, String currentSystemId) throws Exception{
+     String id = systemId;
+
+     // check for bad parameters id
+     if (id == null || id.length() == 0) {
+         return systemId;
+     }
+
+     // if id already expanded, return
+     try {
+         URL url = new URL(id);
+         if (url != null) {
+             return systemId;
+         }
+     }
+     catch (MalformedURLException e) {
+         // continue on...
+     }
+
+     // normalize id
+     id = fixURI(id);
+
+     // normalize base
+     URL base = null;
+     URL url = null;
+     try {
+         if (currentSystemId == null) {
+             String dir;
+             try {
+                 dir = fixURI(System.getProperty("user.dir"));
+             }
+             catch (SecurityException se) {
+                 dir = "";
+             }
+             if (!dir.endsWith("/")) {
+                 dir = dir + "/";
+             }
+             base = new URL("file", "", dir);
+         }
+         else {
+             base = new URL(currentSystemId);
+         }
+
+         // expand id
+         url = new URL(base, id);
+     }
+     catch (Exception e) {
+         // let it go through
+     }
+     if (url == null) {
+         return systemId;
+     }
+     return url.toString();
+    }
+    /**
+     * Fixes a platform dependent filename to standard URI form.
+     *
+     * @param str The string to fix.
+     *
+     * @return Returns the fixed URI string.
+     */
+    private static String fixURI(String str) {
+
+        // handle platform dependent strings
+        str = str.replace(java.io.File.separatorChar, '/');
+
+        // Windows fix
+        if (str.length() >= 2) {
+            char ch1 = str.charAt(1);
+            if (ch1 == ':') {
+                char ch0 = Character.toUpperCase(str.charAt(0));
+                if (ch0 >= 'A' && ch0 <= 'Z') {
+                    str = "/" + str;
+                }
+            }
+        }
+
+        // done
+        return str;
+    }
+
+
+    private void traverseInclude(Element includeDecl) throws Exception {
+
+        //TO DO: !!!!! location needs to be resolved first.
+
+        String location = includeDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        location = expandSystemId(location, fCurrentSchemaURL);
+
+        if (fIncludeLocations.contains((Object)location)) {
+            return;
+        }
+        fIncludeLocations.addElement((Object)location);
+
+        DOMParser parser = new DOMParser() {
+            public void ignorableWhitespace(char ch[], int start, int length) {}
+            public void ignorableWhitespace(int dataIdx) {}
+        };
+        parser.setEntityResolver( new Resolver() );
+        parser.setErrorHandler(  new ErrorHandler() );
+
+        try {
+            parser.setFeature("http://xml.org/sax/features/validation", false);
+            parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+        }catch(  org.xml.sax.SAXNotRecognizedException e ) {
+            e.printStackTrace();
+        }catch( org.xml.sax.SAXNotSupportedException e ) {
+            e.printStackTrace();
+        }
+
+        try {
+            parser.parse( location);
+        }catch( IOException e ) {
+            e.printStackTrace();
+        }catch( SAXException e ) {
+            //e.printStackTrace();
+        }
+
+        Document     document   = parser.getDocument(); //Our Grammar
+        Element root = null;
+        if (document != null) {
+            root = document.getDocumentElement();
+        }
+
+        if (root != null) {
+            String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+            if (targetNSURI.length() > 0 && !targetNSURI.equals(fTargetNSURIString) ) {
+                reportGenericSchemaError("included schema '"+location+"' has a different targetNameSpace '"
+                                         +targetNSURI+"'");
+            }
+            else {
+                boolean saveDefaultQualified = fDefaultQualified;
+                int saveScope = fCurrentScope;
+                String savedSchemaURL = fCurrentSchemaURL;
+                fCurrentSchemaURL = location;
+                traverseIncludedSchema(root);
+                fCurrentSchemaURL = savedSchemaURL;
+                fCurrentScope = saveScope;
+                fDefaultQualified = saveDefaultQualified;
+            }
+
+        }
+
+    }
+
+    private void traverseIncludedSchema(Element root) throws Exception {
+        // Retrived the Namespace mapping from the schema element.
+        NamedNodeMap schemaEltAttrs = root.getAttributes();
+        int i = 0;
+        Attr sattr = null;
+
+        boolean seenXMLNS = false;                                        
+        while ((sattr = (Attr)schemaEltAttrs.item(i++)) != null) {
+            String attName = sattr.getName();
+            if (attName.startsWith("xmlns:")) {
+                String attValue = sattr.getValue();
+                String prefix = attName.substring(attName.indexOf(":")+1);
+                fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(prefix),
+                                                        fStringPool.addSymbol(attValue) );
+            }
+            if (attName.equals("xmlns")) {
+
+                String attValue = sattr.getValue();
+                fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                                                        fStringPool.addSymbol(attValue) );
+                seenXMLNS = true;
+            }
+
+        }
+        if (!seenXMLNS && fTargetNSURIString.length() == 0 ) {
+            fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""),
+                                                    fStringPool.addSymbol("") );
+        }
+
+        fDefaultQualified = 
+            root.getAttribute(SchemaSymbols.ATT_ELEMENTFORMDEFAULT).equals(SchemaSymbols.ATTVAL_QUALIFIED);
+
+        //fScopeCount++;
+        fCurrentScope = -1;
+
+
+        checkTopLevelDuplicateNames(root);
+
+        //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
+        extractTopLevel3Components(root);
+
+        for (Element child = XUtil.getFirstChildElement(root); child != null;
+            child = XUtil.getNextSiblingElement(child)) {
+
+            String name = child.getNodeName();
+
+            if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
+                traverseAnnotationDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+                traverseSimpleTypeDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_COMPLEXTYPE )) {
+                traverseComplexTypeDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { // && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+                traverseElementDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                //traverseAttributeGroupDecl(child);
+            } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
+                //traverseAttributeDecl( child );
+            } else if (name.equals( SchemaSymbols.ELT_WILDCARD) ) {
+                traverseWildcardDecl( child);
+            } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+                //traverseGroupDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
+                ; //TO DO
+            }
+            else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
+                traverseInclude(child); 
+            }
+            else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
+                traverseImport(child); 
+            }
+        } // for each child node
+
+    }
+
+    private void traverseImport(Element importDecl)  throws Exception {
+        String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        location = expandSystemId(location, fCurrentSchemaURL);
+
+
+        String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
+        SchemaGrammar importedGrammar = new SchemaGrammar();
+        if (fGrammarResolver.getGrammar(namespaceString) != null) {
+            importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
+        }
+
+        if (fImportLocations.contains((Object)location)) {
+            return;
+        }
+        fImportLocations.addElement((Object)location);
+
+        DOMParser parser = new DOMParser() {
+            public void ignorableWhitespace(char ch[], int start, int length) {}
+            public void ignorableWhitespace(int dataIdx) {}
+        };
+        parser.setEntityResolver( new Resolver() );
+        parser.setErrorHandler(  new ErrorHandler() );
+
+        try {
+            parser.setFeature("http://xml.org/sax/features/validation", false);
+            parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+        }catch(  org.xml.sax.SAXNotRecognizedException e ) {
+            e.printStackTrace();
+        }catch( org.xml.sax.SAXNotSupportedException e ) {
+            e.printStackTrace();
+        }
+
+        try {
+            parser.parse( location);
+        }catch( IOException e ) {
+            e.printStackTrace();
+        }catch( SAXException e ) {
+            e.printStackTrace();
+        }
+
+        Document     document   = parser.getDocument(); //Our Grammar
+        Element root = null;
+        if (document != null) {
+            root = document.getDocumentElement();
+        }
+
+        if (root != null) {
+            String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+            if (!targetNSURI.equals(namespaceString) ) {
+                reportGenericSchemaError("included schema '"+location+"' has a different targetNameSpace '"
+                                         +targetNSURI+"' from what is declared '"+namespaceString+"'.");
+            }
+            else
+                new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location);
+        }
+    }
+
+/**
      * No-op - Traverse Annotation Declaration
      * 
      * @param comment
@@ -1022,21 +1325,26 @@ public class TraverseSchema implements
             //REVISIT: is the default content " elementOnly"
             boolean elementContent = true;
             boolean textContent = false;
+            boolean emptyContent = false;
             left = -2;
             right = -2;
             boolean hadContent = false;
 
             if (content.equals(SchemaSymbols.ATTVAL_EMPTY)) {
                 contentSpecType = XMLElementDecl.TYPE_EMPTY;
+                emptyContent = true;
+                elementContent = false;
                 left = -1; // no contentSpecNode needed
             } else if (content.equals(SchemaSymbols.ATTVAL_MIXED) ) {
                 contentSpecType = XMLElementDecl.TYPE_MIXED;
                 mixedContent = true;
+                elementContent = false;
                 csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             } else if (content.equals(SchemaSymbols.ATTVAL_ELEMENTONLY) || content.equals("")) {
                 elementContent = true;
             } else if (content.equals(SchemaSymbols.ATTVAL_TEXTONLY)) {
                 textContent = true;
+                elementContent = false;
             }
 
             if (mixedContent) {
@@ -1047,6 +1355,9 @@ public class TraverseSchema implements
                                                          -1, false);
                 csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             }
+
+            boolean seeOtherParticle = false;                
+            boolean seeAll = false;
 
             for (child = XUtil.getFirstChildElement(complexTypeDecl);
                  child != null;
@@ -1060,8 +1371,7 @@ public class TraverseSchema implements
                 String childName = child.getNodeName();
 
                 if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                    if (mixedContent || elementContent) 
-                        {
+                    if (mixedContent || elementContent) {
                         if ( DEBUGGING )
                             System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT_NAME));
 
@@ -1071,6 +1381,7 @@ public class TraverseSchema implements
                                                                    eltQName.uri, 
                                                                    false);
                         seeParticle = true;
+                        seeOtherParticle = true;
 
                     } 
                     else {
@@ -1081,22 +1392,23 @@ public class TraverseSchema implements
                 else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                     index = traverseGroupDecl(child);
                     seeParticle = true;
-                  
+                    seeOtherParticle = true;
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                     index = traverseAll(child);
                     seeParticle = true;
+                    seeAll = true;
                   
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                     index = traverseChoice(child);
                     seeParticle = true;
-                  
+                    seeOtherParticle = true;                  
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                     index = traverseSequence(child);
                     seeParticle = true;
-                  
+                    seeOtherParticle = true;                  
                 } 
                 else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
                            childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
@@ -1120,6 +1432,15 @@ public class TraverseSchema implements
                     index = expandContentModel(index, child);
 
                 } //end of if (seeParticle)
+
+                if (seeAll && seeOtherParticle) {
+                    reportGenericSchemaError ( " 'All' group needs to be the only child in Complextype : " + typeName);
+                }
+
+                if (seeAll) {
+                    //TO DO:
+                    //check the minOccurs = 1 and maxOccurs = 1  
+                }
 
                 if (left == -2) {
                     left = index;
@@ -1449,30 +1770,60 @@ public class TraverseSchema implements
             }
 
         } else {
-            if (datatype.equals("ID")) {
-                attType = XMLAttributeDecl.TYPE_ID;
-            } else if (datatype.equals("IDREF")) {
-                attType = XMLAttributeDecl.TYPE_IDREF;
-            } else if (datatype.equals("IDREFS")) {
-                attType = XMLAttributeDecl.TYPE_IDREF;
-                attIsList = true;
-            } else if (datatype.equals("ENTITY")) {
-                attType = XMLAttributeDecl.TYPE_ENTITY;
-            } else if (datatype.equals("ENTITIES")) {
-                attType = XMLAttributeDecl.TYPE_ENTITY;
-                attIsList = true;
-            } else if (datatype.equals("NMTOKEN")) {
+
+            String prefix = "";
+            String localpart = datatype;
+            int colonptr = datatype.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = datatype.substring(0,colonptr);
+                localpart = datatype.substring(colonptr+1);
+            }
+            String typeURI = resolvePrefixToURI(prefix);
+            dataTypeSymbol = fStringPool.addSymbol(localpart);
+
+            if ( typeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
+                if (localpart.equals("ID")) {
+                    attType = XMLAttributeDecl.TYPE_ID;
+                } else if (localpart.equals("IDREF")) {
+                    attType = XMLAttributeDecl.TYPE_IDREF;
+                } else if (localpart.equals("IDREFS")) {
+                    attType = XMLAttributeDecl.TYPE_IDREF;
+                    attIsList = true;
+                } else if (localpart.equals("ENTITY")) {
+                    attType = XMLAttributeDecl.TYPE_ENTITY;
+                } else if (localpart.equals("ENTITIES")) {
+                    attType = XMLAttributeDecl.TYPE_ENTITY;
+                    attIsList = true;
+                } else if (localpart.equals("NMTOKEN")) {
                     attType = XMLAttributeDecl.TYPE_NMTOKEN;
-            } else if (datatype.equals("NMTOKENS")) {
-                attType = XMLAttributeDecl.TYPE_NMTOKEN;
-                attIsList = true;
-            } else if (datatype.equals(SchemaSymbols.ELT_NOTATION)) {
-                attType = XMLAttributeDecl.TYPE_NOTATION;
-            } else { // REVISIT: Danger: assuming all other ATTR types are datatypes
+                } else if (localpart.equals("NMTOKENS")) {
+                    attType = XMLAttributeDecl.TYPE_NMTOKEN;
+                    attIsList = true;
+                } else if (localpart.equals(SchemaSymbols.ELT_NOTATION)) {
+                    attType = XMLAttributeDecl.TYPE_NOTATION;
+                }
+                else {
+                    attType = XMLAttributeDecl.TYPE_SIMPLE;
+                }
+            }
+            else { // REVISIT: Danger: assuming all other ATTR types are datatypes
                 //REVISIT check against list of validators to ensure valid type name
+
+                // check if the type is from the same Schema
+                if (!typeURI.equals(fTargetNSURIString) ) {
+                    dv = getTypeValidatorFromNS(typeURI, localpart);
+                    if (dv == null) {
+                        //TO DO: report error here;
+                        System.out.println("Counld not find base type " +localpart 
+                                           + " in schema " + typeURI);
+                    }
+                }
+                else {
+                        dv = fDatatypeRegistry.getDatatypeValidator(localpart);
+                }
+
                 attType = XMLAttributeDecl.TYPE_SIMPLE;
             }
-            dataTypeSymbol = fStringPool.addSymbol(datatype);
 
         }
 
@@ -1484,8 +1835,14 @@ public class TraverseSchema implements
         boolean required = use.equals(SchemaSymbols.ATTVAL_REQUIRED);
 
         //if (attType == XMLAttributeDecl.TYPE_SIMPLE ) {
+        if(dv==null)
             dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(dataTypeSymbol));
         //}
+
+        if (dv == null) {
+            reportGenericSchemaError("null validator for datatype : " 
+                                     + fStringPool.toString(dataTypeSymbol));
+        }
 
         if (required) {
             attDefaultType = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
@@ -1536,7 +1893,7 @@ public class TraverseSchema implements
 
         int uriIndex = -1;
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fDefaultQualifed || isTopLevel(attrDecl) ) {
+             fDefaultQualified || isTopLevel(attrDecl) ) {
             uriIndex = fTargetNSURI;
         }
 
@@ -1544,16 +1901,17 @@ public class TraverseSchema implements
         if ( DEBUGGING )
             System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
 
-        //put the in the attribute decl registry.
-        fTempAttributeDecl.datatypeValidator = dv;
-        fTempAttributeDecl.name.setValues(attQName);
-        fTempAttributeDecl.type = attType;
-        fTempAttributeDecl.defaultType = attDefaultType;
-        if (attDefaultValue != -1 ) {
-            fTempAttributeDecl.defaultValue = new String(fStringPool.toString(attDefaultValue));
+        //put the top-levels in the attribute decl registry.
+        if (isTopLevel(attrDecl)) {
+            fTempAttributeDecl.datatypeValidator = dv;
+            fTempAttributeDecl.name.setValues(attQName);
+            fTempAttributeDecl.type = attType;
+            fTempAttributeDecl.defaultType = attDefaultType;
+            if (attDefaultValue != -1 ) {
+                fTempAttributeDecl.defaultValue = new String(fStringPool.toString(attDefaultValue));
+            }
+            fAttributeDeclRegistry.put(attNameStr, new XMLAttributeDecl(fTempAttributeDecl));
         }
-
-        fAttributeDeclRegistry.put(attNameStr, new XMLAttributeDecl(fTempAttributeDecl));
 
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
@@ -1592,7 +1950,7 @@ public class TraverseSchema implements
                                   tempAttrDecl.datatypeValidator);
 
 
-        return -1;
+        return 0;
     }
     /*
     * 
@@ -1624,10 +1982,15 @@ public class TraverseSchema implements
                 prefix = ref.substring(0,colonptr);
                 localpart = ref.substring(colonptr+1);
             }
-            if (!resolvePrefixToURI(prefix).equals(fTargetNSURIString)) {
+            String uriStr = resolvePrefixToURI(prefix);
+            if (!uriStr.equals(fTargetNSURIString)) {
+                
+                traverseAttributeGroupDeclFromAnotherSchema(localpart, uriStr, typeInfo);
+
+                return -1;
                 // TO DO 
                 // REVISIST: different NS, not supported yet.
-                reportGenericSchemaError("Feature not supported: see an attribute from different NS");
+                //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
             Element referredAttrGrp = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTEGROUP,localpart);
             if (referredAttrGrp != null) {
@@ -1654,6 +2017,54 @@ public class TraverseSchema implements
         }
         return -1;
     } // end of method traverseAttributeGroup
+    
+    private int traverseAttributeGroupDeclFromAnotherSchema( String attGrpName , String uriStr, ComplexTypeInfo typeInfo ) throws Exception {
+        
+        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            reportGenericSchemaError("!!Schema not found : " + uriStr);
+            return -1;
+        }
+        // attribute name
+        Element attGrpDecl = (Element) aGrammar.topLevelAttrGrpDecls.get((Object)attGrpName);
+        if (attGrpDecl == null) {
+            reportGenericSchemaError( "no attribute group named \"" + attGrpName 
+                                      + "\" was defined in schema : " + uriStr);
+            return -1;
+        }
+
+        // attribute type
+        int attType = -1;
+        int enumeration = -1;
+
+
+        for ( Element child = XUtil.getFirstChildElement(attGrpDecl); 
+             child != null ; child = XUtil.getNextSiblingElement(child)) {
+
+            //child attribute couldn't be a top-level attribute DEFINITION, 
+            if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
+                String childAttName = child.getAttribute(SchemaSymbols.ATT_NAME);
+                if ( childAttName.length() > 0 ) {
+                    Hashtable attDeclRegistry = aGrammar.getAttirubteDeclRegistry();
+                    if (attDeclRegistry != null) {
+                        if (attDeclRegistry.get((Object)childAttName) != null ){
+                            addAttributeDeclFromAnotherSchema(childAttName, uriStr, typeInfo);
+                            return -1;
+                        }
+                    }       
+                }
+                else 
+                    traverseAttributeDecl(child, typeInfo);
+            }
+            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
+                traverseAttributeGroupDecl(child, typeInfo);
+            }
+            else if (child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
+                // REVISIT: what about appInfo
+            }
+        }
+        return -1;
+    } // end of method traverseAttributeGroupFromAnotherSchema
     
 
     /**
@@ -1820,9 +2231,9 @@ public class TraverseSchema implements
             if (elementIndex == -1 ) {
                 Element targetElement = getTopLevelComponentByName(SchemaSymbols.ELT_ELEMENT,localpart);
                 if (targetElement == null ) {
-                    reportGenericSchemaError("Element " + ref + " not found in the Schema");
-                    //REVISIT, for now, return null, this needs to be investigated.
-                    return null;
+                    reportGenericSchemaError("Element " + localpart + " not found in the Schema");
+                    //REVISIT, for now, the QName anyway
+                    return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
                     //return new QName(-1,-1,-1,-1);
                 }
                 else {
@@ -1860,15 +2271,25 @@ public class TraverseSchema implements
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 
                 typeNameIndex = traverseComplexTypeDecl(child);
-                typeInfo = (ComplexTypeInfo)
-                    fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                if (typeNameIndex != -1 ) {
+                    typeInfo = (ComplexTypeInfo)
+                        fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                }
+                else {
+                    reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
+                }
                 
                 haveAnonType = true;
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
                 typeNameIndex = traverseSimpleTypeDecl(child);
-                dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
+                if (typeNameIndex != -1) {
+                    dv = fDatatypeRegistry.getDatatypeValidator(fStringPool.toString(typeNameIndex));
+                }
+                else {
+                    reportGenericSchemaError("traverse simpleType error in element '" + name +"'"); 
+                }
 
                 haveAnonType = true;
             } else if (type.equals("")) { // "ur-typed" leaf
@@ -1961,6 +2382,10 @@ public class TraverseSchema implements
                 ComplexTypeInfo equivClassEltType = fSchemaGrammar.getElementComplexTypeInfo( equivClassElementDeclIndex );
             }
         }
+
+        if (typeInfo == null && dv==null) {
+            reportGenericSchemaError ("untyped element : " + name );
+        }
         // if element belongs to a compelx type
         if (typeInfo!=null) {
             contentSpecNodeIndex = typeInfo.contentSpecHandle;
@@ -1972,20 +2397,27 @@ public class TraverseSchema implements
         if (dv!=null) {
             contentSpecType = XMLElementDecl.TYPE_SIMPLE;
         }
+
         
         //
         // Create element decl
         //
 
-        int elementNameIndex     = fStringPool.addSymbol(elementDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        int elementNameIndex     = fStringPool.addSymbol(name);
         int localpartIndex = elementNameIndex;
         int uriIndex = -1;
         int enclosingScope = fCurrentScope;
 
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
-             fDefaultQualifed || isTopLevel(elementDecl) ) {
+             fDefaultQualified || isTopLevel(elementDecl) ) {
             uriIndex = fTargetNSURI;
             enclosingScope = TOP_LEVEL_SCOPE;
+        }
+
+        //There can never be two elements with the same name in the same scope.
+        if (fSchemaGrammar.getElementDeclIndex(localpartIndex, enclosingScope) > -1) {
+            reportGenericSchemaError("duplicate element decl in the same scope : " + 
+                              fStringPool.toString(localpartIndex));
         }
 
         QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
@@ -2071,7 +2503,12 @@ public class TraverseSchema implements
 
     private boolean isTopLevel(Element component) {
         //REVISIT, is this the right way to check ?
+        /****
         if (component.getParentNode() == fSchemaRootElement ) {
+            return true;
+        }
+        /****/
+        if (component.getParentNode().getNodeName().endsWith(SchemaSymbols.ELT_SCHEMA) ) {
             return true;
         }
         return false;
@@ -2086,7 +2523,7 @@ public class TraverseSchema implements
         }
         else {
             //TO DO: report internal erro here
-            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar");
+            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar in getTypeValidatorFromNS");
         }
         return null;
     }
@@ -2100,7 +2537,7 @@ public class TraverseSchema implements
         }
         else {
             //TO DO: report internal erro here
-            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar");
+            System.out.println("could not resolver URI : " + newSchemaURI + " to a SchemaGrammar in getTypeInfoFromNS");
         }
         return null;
     }
@@ -2172,15 +2609,131 @@ public class TraverseSchema implements
                 localpart = ref.substring(colonptr+1);
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
+            
+            String uriStr = resolvePrefixToURI(prefix);
+            if (!uriStr.equals(fTargetNSURIString)) {
+                return traverseGroupDeclFromAnotherSchema(localpart, uriStr);
+            }
 
-            //TO DO;
-            // here also need to address the issue if the named group is from another schema
-            int contentSpecIndex = 
-                traverseGroupDecl(
-                    getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart)
-                    );
+            int contentSpecIndex = -1;
+            Element referredGroup = getTopLevelComponentByName(SchemaSymbols.ELT_GROUP,localpart);
+            if (referredGroup == null) {
+                reportGenericSchemaError("Group " + localpart + " not found in the Schema");
+                //REVISIT, this should be some custom Exception
+                throw new Exception("Group " + localpart + " not found in the Schema");
+            }
+            else {
+                contentSpecIndex = traverseGroupDecl(referredGroup);
+            }
             
             return contentSpecIndex;
+        }
+
+        boolean traverseElt = true; 
+        if (fCurrentScope == TOP_LEVEL_SCOPE) {
+            traverseElt = false;
+        }
+
+        Element child = XUtil.getFirstChildElement(groupDecl);
+        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+            child = XUtil.getNextSiblingElement(child);
+
+        int contentSpecType = 0;
+        int csnType = 0;
+        int allChildren[] = null;
+        int allChildCount = 0;
+
+        csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
+        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
+        
+        int left = -2;
+        int right = -2;
+        boolean hadContent = false;
+        boolean seeAll = false;
+        boolean seeParticle = false;
+
+        for (;
+             child != null;
+             child = XUtil.getNextSiblingElement(child)) {
+            int index = -2;
+            hadContent = true;
+
+            boolean illegalChild = false;
+
+            String childName = child.getNodeName();
+            if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
+                QName eltQName = traverseElementDecl(child);
+                index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
+                                                       eltQName.localpart,
+                                                       eltQName.uri, 
+                                                       false);
+                seeParticle = true;
+
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
+                index = traverseGroupDecl(child);
+                seeParticle = true;
+
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
+                index = traverseAll(child);
+                //seeParticle = true;
+                seeAll = true;
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
+                index = traverseChoice(child);
+                seeParticle = true;
+
+            } 
+            else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
+                index = traverseSequence(child);
+                seeParticle = true;
+
+            } 
+            else {
+                illegalChild = true;
+                reportSchemaError(SchemaMessageProvider.GroupContentRestricted,
+                                  new Object [] { "group", childName });
+            }
+            
+            if ( ! illegalChild ) {
+                index = expandContentModel( index, child);
+            }
+
+            if (seeParticle && seeAll) {
+                reportSchemaError( SchemaMessageProvider.GroupContentRestricted,
+                                   new Object [] { "'all' needs to be 'the' only Child", childName});
+            }
+
+            if (left == -2) {
+                left = index;
+            } else if (right == -2) {
+                right = index;
+            } else {
+                left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
+                right = index;
+            }
+        }
+        if (hadContent && right != -2)
+            left = fSchemaGrammar.addContentSpecNode(csnType, left, right, false);
+
+
+        return left;
+    }
+
+    private int traverseGroupDeclFromAnotherSchema( String groupName , String uriStr ) throws Exception {
+        
+        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            reportGenericSchemaError("!!Schema not found : " + uriStr);
+            return -1;
+        }
+        
+        Element groupDecl = (Element) aGrammar.topLevelGroupDecls.get((Object)groupName);
+        if (groupDecl == null) {
+            reportGenericSchemaError( "no group named \"" + groupName 
+                                      + "\" was defined in schema : " + uriStr);
+            return -1;
         }
 
         boolean traverseElt = true; 
@@ -2212,8 +2765,10 @@ public class TraverseSchema implements
 
             boolean seeParticle = false;
             String childName = child.getNodeName();
+            int childNameIndex = fStringPool.addSymbol(childName);
+            String formAttrVal = child.getAttribute(SchemaSymbols.ATT_FORM);
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                QName eltQName = traverseElementDecl(child);
+                QName eltQName = traverseElementDecl(child); 
                 index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                        eltQName.localpart,
                                                        eltQName.uri, 
@@ -2263,7 +2818,9 @@ public class TraverseSchema implements
 
 
         return left;
-    }
+
+
+    } // end of method traverseGroupDeclFromAnotherSchema
     
     /**
     *
@@ -2312,11 +2869,6 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                index = traverseAll(child);
                 seeParticle = true;
 
             } 
@@ -2405,11 +2957,6 @@ public class TraverseSchema implements
                 seeParticle = true;
 
             } 
-            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                index = traverseAll(child);
-                seeParticle = true;
-
-            } 
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 index = traverseChoice(child);
                 seeParticle = true;
@@ -2491,11 +3038,6 @@ public class TraverseSchema implements
             } 
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 index = traverseGroupDecl(child);
-                seeParticle = true;
-
-            } 
-            else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                index = traverseAll(child);
                 seeParticle = true;
 
             } 
