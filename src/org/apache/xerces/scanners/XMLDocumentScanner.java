@@ -60,12 +60,14 @@ package org.apache.xerces.scanners;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Stack;
 
 import org.apache.xerces.framework.XMLComponent;
 import org.apache.xerces.framework.XMLComponentManager;
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.framework.XMLString;
 import org.apache.xerces.framework.XMLStringBuffer;
+import org.apache.xerces.readers.XMLEntityHandler;
 import org.apache.xerces.readers.XMLEntityManager;
 import org.apache.xerces.readers.XMLEntityScanner;
 import org.apache.xerces.utils.SymbolTable;
@@ -82,8 +84,8 @@ import org.xml.sax.helpers.NamespaceSupport;
  * and content. The scanner acts as the source for the document
  * information which is communicated to the document handler.
  * <p>
- * The document scanner requires the following features and 
- * properties from the component manager that uses it:
+ * This component requires the following features and properties from the
+ * component manager that uses it:
  * <ul>
  *  <li>http://xml.org/sax/features/namespaces</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
@@ -97,41 +99,95 @@ import org.xml.sax.helpers.NamespaceSupport;
  * @version $Id$
  */
 public class XMLDocumentScanner
-    implements XMLComponent, XMLDocumentSource {
+    implements XMLComponent, XMLDocumentSource, XMLEntityHandler {
 
     //
     // Constants
     //
 
-    // sax2 features
+    // sax features
 
-    /** Namespaces feature id. */
-    protected static final String NAMESPACES = "http://xml.org/sax/features/namespaces";
+    /** SAX feature prefix. */
+    protected static final String SAX_FEATURE_PREFIX = "http://xml.org/sax/features/";
+
+    /** Namespaces feature. */
+    protected static final String NAMESPACES_FEATURE = "namespaces";
 
     // xerces properties
 
-    /** Symbol table property id. */
-    protected static final String SYMBOL_TABLE = "http://apache.org/xml/properties/internal/symbol-table";
+    /** Xerces property prefix. */
+    protected static final String XERCES_PROPERTY_PREFIX = "http://apache.org/xml/properties/";
 
-    /** Error reporter property id. */
-    protected static final String ERROR_REPORTER = "http://apache.org/xml/properties/internal/error-reporter";
+    /** Symbol table property. */
+    protected static final String SYMBOL_TABLE_PROPERTY = "internal/symbol-table";
+    
+    /** Error reporter property. */
+    protected static final String ERROR_REPORTER_PROPERTY = "internal/error-reporter";
 
-    /** Entity manager property id. */
-    protected static final String ENTITY_MANAGER = "http://apache.org/xml/properties/internal/entity-manager";
+    /** Entity manager property. */
+    protected static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
+
+    // scanner states
+
+    /** Scanner state: XML declaration. */
+    protected static final int SCANNER_STATE_XML_DECL = 0;
+
+    /** Scanner state: start of markup. */
+    protected static final int SCANNER_STATE_START_OF_MARKUP = 1;
+
+    /** Scanner state: comment. */
+    protected static final int SCANNER_STATE_COMMENT = 2;
+
+    /** Scanner state: processing instruction. */
+    protected static final int SCANNER_STATE_PI = 3;
+
+    /** Scanner state: DOCTYPE. */
+    protected static final int SCANNER_STATE_DOCTYPE = 4;
+
+    /** Scanner state: prolog. */
+    protected static final int SCANNER_STATE_PROLOG = 5;
+
+    /** Scanner state: root element. */
+    protected static final int SCANNER_STATE_ROOT_ELEMENT = 6;
+
+    /** Scanner state: content. */
+    protected static final int SCANNER_STATE_CONTENT = 7;
+
+    /** Scanner state: reference. */
+    protected static final int SCANNER_STATE_REFERENCE = 8;
+
+    /** Scanner state: attribute list. */
+    protected static final int SCANNER_STATE_ATTRIBUTE_LIST = 9;
+
+    /** Scanner state: attribute name. */
+    protected static final int SCANNER_STATE_ATTRIBUTE_NAME = 10;
+
+    /** Scanner state: attribute value. */
+    protected static final int SCANNER_STATE_ATTRIBUTE_VALUE = 11;
+
+    /** Scanner state: trailing misc. */
+    protected static final int SCANNER_STATE_TRAILING_MISC = 12;
+
+    /** Scanner state: end of input. */
+    protected static final int SCANNER_STATE_END_OF_INPUT = 13;
+
+    /** Scanner state: terminated. */
+    protected static final int SCANNER_STATE_TERMINATED = 14;
 
     // debugging
 
-    /** Debug. */
-    private static final boolean DEBUG = false;
+    /** Debug scanner state. */
+    private static final boolean DEBUG_SCANNER_STATE = false;
+
+    /** Debug dispatcher. */
+    private static final boolean DEBUG_DISPATCHER = false;
+
+    /** Debug content dispatcher scanning. */
+    private static final boolean DEBUG_CONTENT_SCANNING = false;
 
     //
     // Data
     //
-
-    // features
-
-    /** Namespaces. */
-    protected boolean fNamespaces;
 
     // properties
 
@@ -157,16 +213,67 @@ public class XMLDocumentScanner
     /** Entity scanner. */
     protected XMLEntityScanner fEntityScanner;
 
+    /** Entity stack. */
+    protected Stack fEntityStack = new Stack();
+
+    /** Scanner state. */
+    protected int fScannerState;
+
+    /** Seen doctype declaration. */
+    protected boolean fSeenDoctypeDecl;
+    
+    /** Standalone. */
+    protected boolean fStandalone;
+
+    /** Scanning DTD. */
+    protected boolean fScanningDTD;
+
+    // element information
+
+    /** Element depth. */
+    protected int fElementDepth;
+
+    /** Current element. */
+    protected QName fCurrentElement;
+
+    /** Element stack. */
+    protected Stack fElementStack = new Stack();
+
+    // namespaces
+
+    /** Namespaces. */
+    protected boolean fNamespaces = true;
+
     /** Namespace support. */
     protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
+
+    // dispatchers
+
+    /** Active dispatcher. */
+    protected Dispatcher fDispatcher;
+
+    /** XML declaration dispatcher. */
+    protected Dispatcher fXMLDeclDispatcher = new XMLDeclDispatcher();
+
+    /** Prolog dispatcher. */
+    protected Dispatcher fPrologDispatcher = new PrologDispatcher();
+
+    /** Content dispatcher. */
+    protected Dispatcher fContentDispatcher = new ContentDispatcher();
+
+    /** Trailing miscellaneous section dispatcher. */
+    protected Dispatcher fTrailingMiscDispatcher = new TrailingMiscDispatcher();
+
+    /** End of input dispatcher. */
+    protected Dispatcher fEndOfInputDispatcher = new EndOfInputDispatcher();
 
     // private data
 
     /** Element QName. */
-    private QName fElemQName = new QName();
+    private QName fElementQName = new QName();
 
     /** Attribute QName. */
-    private QName fAttrQName = new QName();
+    private QName fAttributeQName = new QName();
 
     /** Element attributes. */
     private XMLAttributes fAttributes = new XMLAttributes();
@@ -176,6 +283,9 @@ public class XMLDocumentScanner
 
     /** String buffer. */
     private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+
+    /** Single character array. */
+    private final char[] fSingleChar = new char[1];
 
     //
     // Constructors
@@ -194,29 +304,22 @@ public class XMLDocumentScanner
      * <p>
      * <strong>Note:</strong> The caller of this method is responsible
      * for having called <code>reset(XMLComponentManager)</code> before
-     * any scanning and initialized the entity manager by starting the
-     * document entity.
+     * any scanning and having initialized the entity manager by starting 
+     * the document entity.
      *
-     * @param complete
+     * @param complete True to completely scan the rest of the document.
      *
-     * @returns
+     * @returns True if scanning is not finished.
      */
     public boolean scanDocument(boolean complete) 
         throws IOException, SAXException {
 
-        // REVISIT: Currently this is implemented without the pull
-        //          parser capability. In the true pull parser, the
-        //          scanner initialization code would need to be
-        //          moved to reset(XMLComponentManager) and the body
-        //          of this method would be a state machine dispatcher
-        //          within a "while (complete)" loop. -Ac
-
-        // initialize scanner
-        fEntityScanner = fEntityManager.getEntityScanner();
-        fNamespaceSupport.reset();
-
-        // scan document
-        scanDocument();
+        // keep dispatching "events"
+        do {
+            if (!fDispatcher.dispatch(complete)) {
+                return false;
+            }
+        } while (complete);
 
         // return success
         return true;
@@ -224,193 +327,412 @@ public class XMLDocumentScanner
     } // scanDocument(boolean):boolean
 
     //
+    // XMLComponent methods
+    //
+
+    /**
+     * 
+     * 
+     * @param componentManager The component manager.
+     *
+     * @throws SAXException Throws exception if required features and
+     *                      properties cannot be found.
+     */
+    public void reset(XMLComponentManager componentManager)
+        throws SAXException {
+
+        // SAX features
+        fNamespaces = componentManager.getFeature(SAX_FEATURE_PREFIX + NAMESPACES_FEATURE);
+        fAttributes.setNamespaces(fNamespaces);
+
+        // Xerces properties
+        fSymbolTable = (SymbolTable)componentManager.getProperty(XERCES_PROPERTY_PREFIX + SYMBOL_TABLE_PROPERTY);
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(XERCES_PROPERTY_PREFIX + ERROR_REPORTER_PROPERTY);
+        fEntityManager = (XMLEntityManager)componentManager.getProperty(XERCES_PROPERTY_PREFIX + ENTITY_MANAGER_PROPERTY);
+        /*** REVISIT: Add DTD support. ***
+        fDTDScanner = (XMLDTDScanner)componentManager.getProperty(XERCES_PROPERTY_PREFIX + DTD_SCANNER_PROPERTY);
+        /***/
+
+        // initialize scanner
+        fEntityScanner = fEntityManager.getEntityScanner();
+        fEntityScanner.setEntityHandler(this);
+        
+        // initialize vars
+        fEntityStack.removeAllElements();
+        fNamespaceSupport.reset();
+
+        fElementDepth = 0;
+        fCurrentElement = null;
+        fElementStack.removeAllElements();
+        
+        fSeenDoctypeDecl = false;
+        fStandalone = false;
+        fScanningDTD = false;
+
+        // setup dispatcher
+        setScannerState(SCANNER_STATE_XML_DECL);
+        setDispatcher(fXMLDeclDispatcher);
+        
+    } // reset(XMLComponentManager)
+
+    /**
+     * Sets the state of a feature during parsing.
+     * 
+     * @param featureId 
+     * @param state 
+     */
+    public void setFeature(String featureId, boolean state)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+
+        // sax features
+        if (featureId.startsWith(SAX_FEATURE_PREFIX)) {
+            String feature = featureId.substring(SAX_FEATURE_PREFIX.length());
+            if (feature.equals(NAMESPACES_FEATURE)) {
+                fNamespaces = state;
+                fAttributes.setNamespaces(fNamespaces);
+            }
+        }
+
+    } // setFeature(String,boolean)
+
+    /**
+     * Sets the value of a property during parsing.
+     * 
+     * @param propertyId 
+     * @param value 
+     */
+    public void setProperty(String propertyId, Object value)
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        
+        // Xerces properties
+        if (propertyId.startsWith(XERCES_PROPERTY_PREFIX)) {
+            String property = propertyId.substring(XERCES_PROPERTY_PREFIX.length());
+            if (property.equals(SYMBOL_TABLE_PROPERTY)) {
+                fSymbolTable = (SymbolTable)value;
+            }
+            else if (property.equals(ERROR_REPORTER_PROPERTY)) {
+                fErrorReporter = (XMLErrorReporter)value;
+            }
+            else if (property.equals(ENTITY_MANAGER_PROPERTY)) {
+                fEntityManager = (XMLEntityManager)value;
+            }
+            return;
+        }
+
+    } // setProperty(String,Object)
+
+    //
+    // XMLDocumentSource methods
+    //
+
+    /**
+     * setDocumentHandler
+     * 
+     * @param documentHandler 
+     */
+    public void setDocumentHandler(XMLDocumentHandler documentHandler) {
+        fDocumentHandler = documentHandler;
+    } // setDocumentHandler(XMLDocumentHandler)
+
+    //
+    // XMLEntityHandler methods
+    //
+
+    /**
+     * startEntity
+     * 
+     * @param name 
+     * @param publicId 
+     * @param systemId 
+     */
+    public void startEntity(String name, String publicId, String systemId)
+        throws SAXException {
+
+        // keep track of this entity
+        Entity entity = new Entity(name, publicId, systemId, fElementDepth);
+        fEntityStack.push(entity);
+
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.startEntity(name, publicId, systemId);
+        }
+
+    } // startEntity(String,String,String)
+
+    /**
+     * endEntity
+     * 
+     * @param name 
+     */
+    public void endEntity(String name) throws SAXException {
+
+        // sanity check
+        Entity entity = (Entity)fEntityStack.pop();
+        if (!name.equals(entity.name)) {
+            // REVISIT: report error
+            throw new SAXException("internal error: startEntity(\""+entity.name+"\") "+
+                                   "doesn't match endEntity(\""+name+"\")");
+        }
+
+        // check for un-balanced entity content
+        // 1) state isn't set back to SCANNER_STATE_CONTENT
+        if (fScannerState != SCANNER_STATE_CONTENT) {
+            switch (fScannerState) {
+                case SCANNER_STATE_COMMENT: {
+                    // REVISIT: report error
+                    throw new SAXException("MSG_COMMENT_NOT_IN_ONE_ENTITY");
+                }
+                case SCANNER_STATE_PI: {
+                    // REVISIT: report error
+                    throw new SAXException("MSG_PI_NOT_IN_ONE_ENTITY");
+                }
+                default: {
+                    // REVISIT: report error
+                    throw new SAXException("at end of entity, state should be CONTENT, not "+fScannerState);
+                }
+            }
+        }
+
+        // 2) scanner markup depth isn't what it was at the start of
+        //    the entity
+        if (fElementDepth != entity.elementDepth) {
+            // REVISIT: report error
+            throw new SAXException("entity content not balanced");
+        }
+
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endEntity(name);
+        }
+
+    } // endEntity(String)
+
+    //
     // Protected methods
     //
 
-    // scanning
+    // scanning methods
 
-    /** 
-     * Scans a document.
+    /**
+     * Scans an XML or text declaration.
      * <p>
      * <pre>
-     * [1] document ::= prolog element Misc*
-     * </pre>
-     */
-    protected void scanDocument() throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanDocument()");
-
-        // call handler
-        if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument();
-        }
-
-        // scan document
-        scanProlog();
-        if (fEntityScanner.scanChar() != '<') {
-            // REVISIT: report error
-            throw new SAXException("expected start of root element");
-        }
-        scanElement();
-        try {
-            scanMisc();
-        }
-        catch (EOFException e) {
-            // ignore; legal end of scanning
-        }
-
-        // call handler
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endDocument();
-        }
-
-        if (DEBUG) System.out.println("<<< scanDocument()");
-    } // scanDocument()
-
-    /** 
-     * Scans the prolog.
-     * <p>
-     * <pre>
-     * [22] prolog ::= XMLDecl? Misc* (doctypedecl Misc*)?
-     * </pre> 
-     */
-    protected void scanProlog() throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanProlog()");
-
-        if (fEntityScanner.skipString("<?xml")) {
-            scanXMLDecl();
-        }
-        scanMisc();
-        if (fEntityScanner.skipString("<!DOCTYPE")) {
-            scanDoctypeDecl();
-        }
-        scanMisc();
-
-        if (DEBUG) System.out.println("<<< scanProlog()");
-    } // scanProlog()
-
-    /** 
-     * Scans the XML declaration.
-     * <pre>
-     * [23] XMLDecl ::= '&lt;?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
+     * [23] XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
      * [24] VersionInfo ::= S 'version' Eq (' VersionNum ' | " VersionNum ")
      * [80] EncodingDecl ::= S 'encoding' Eq ('"' EncName '"' |  "'" EncName "'" )
+     * [81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
      * [32] SDDecl ::= S 'standalone' Eq (("'" ('yes' | 'no') "'")
      *                 | ('"' ('yes' | 'no') '"'))
-     * </pre> 
+     *
+     * [77] TextDecl ::= '<?xml' VersionInfo? EncodingDecl S? '?>'
+     * </pre>
+     *
+     * @param scanningTextDecl True if a text declaration is to
+     *                         be scanned instead of an XML
+     *                         declaration.
      */
-    protected void scanXMLDecl() throws IOException, SAXException {
-        // TODO
-    } // scanXMLDecl()
+    protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl) 
+        throws IOException, SAXException {
 
-    /** 
-     * Scans multiple miscellaneous sections.
-     * <pre>
-     * [27] Misc ::= Comment | PI |  S
-     * </pre> 
-     */
-    protected void scanMisc() throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanMisc()");
+        // pseudo-attribute values
+        String version = null;
+        String encoding = null;
+        String actualEncoding = null;
+        String standalone = null;
 
-        while (true) {
+        // scan pseudo-attributes
+        final int STATE_VERSION = 0;
+        final int STATE_ENCODING = 1;
+        final int STATE_STANDALONE = 2;
+        final int STATE_DONE = 3;
+        int state = STATE_VERSION;
+        fEntityScanner.skipSpaces();
+        while (fEntityScanner.peekChar() != '?') {
+            String name = scanPseudoAttribute(fString);
+            switch (state) {
+                case STATE_VERSION: {
+                    if (name.equals("version")) {
+                        version = fString.toString();
+                        state = STATE_ENCODING;
+                        if (!version.equals("1.0")) {
+                            // REVISIT: report error
+                            throw new SAXException("only support XML version 1.0");
+                        }
+                    }
+                    else if (name.equals("encoding")) {
+                        if (!scanningTextDecl) {
+                            // REVISIT: report error
+                            throw new SAXException("XMLDecl requires version pseudo-attribute");
+                        }
+                        encoding = fString.toString();
+                        state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
+                    }
+                    else {
+                        // REVISIT: report error
+                        if (scanningTextDecl) {
+                            throw new SAXException("expected version or encoding pseudo-attribute");
+                        }
+                        else {
+                            throw new SAXException("expected version pseudo-attribute");
+                        }
+                    }
+                    break;
+                }
+                case STATE_ENCODING: {
+                    if (name.equals("encoding")) {
+                        encoding = fString.toString();
+                        state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
+                        // TODO: check encoding name; set encoding on
+                        //       entity scanner
+                    }
+                    else if (!scanningTextDecl && name.equals("standalone")) {
+                        standalone = fString.toString();
+                        state = STATE_DONE;
+                        if (!standalone.equals("yes") && !standalone.equals("no")) {
+                            // REVISIT: report error
+                            throw new SAXException("standalone pseudo-attribute can only have values of 'yes' or 'no'");
+                        }
+                    }
+                    else {
+                        // REVISIT: report error
+                        throw new SAXException("expected encoding pseudo-attribute");
+                    }
+                    break;
+                }
+                case STATE_STANDALONE: {
+                    if (name.equals("standalone")) {
+                        standalone = fString.toString();
+                        state = STATE_DONE;
+                        if (!standalone.equals("yes") && !standalone.equals("no")) {
+                            // REVISIT: report error
+                            throw new SAXException("standalone pseudo-attribute can only have values of 'yes' or 'no'");
+                        }
+                    }
+                    else {
+                        // REVISIT: report error
+                        throw new SAXException("expected encoding pseudo-attribute");
+                    }
+                    break;
+                }
+                default: {
+                    // REVISIT: report error
+                    throw new SAXException("no more pseudo-attributes allowed");
+                }
+            }
             fEntityScanner.skipSpaces();
-            /***
-            int c = fEntityScanner.scanChar();
-            if (c == '<') {
-                c = fEntityScanner.peekChar();
-                if (c == '?') {
-                    fEntityScanner.scanChar();
-                    scanPI();
-                    continue;
-                }
-                if (c == '!') {
-                    fEntityScanner.scanChar();
-                    c = fEntityScanner.scanChar();
-                    if (c != '-') {
-                        throw new SAXException("expected '-', found '"+(char)c+'\'');
-                    }
-                    c = fEntityScanner.scanChar();
-                    if (c != '-') {
-                        throw new SAXException("expected '-', found '"+(char)c+'\'');
-                    }
-                    scanComment();
-                    continue;
-                }
-                // REVISIT: Assuming that it's an element. -Ac
-                return;
-
-            }
-            throw new SAXException("expected '<', found '"+(char)c+'\'');
-            /***/
-            int c = fEntityScanner.peekChar();
-            if (c == '<') {
-                if (fEntityScanner.skipString("<?")) {
-                    scanPI();
-                    continue;
-                }
-                if (fEntityScanner.skipString("<!--")) {
-                    scanComment();
-                    continue;
-                }
-                break;
-            }
+        }
+        if ((scanningTextDecl && state != STATE_DONE) ||
+            !(state == STATE_STANDALONE || state == STATE_DONE)) {
             // REVISIT: report error
-            throw new SAXException("expected '<', found '"+(char)c+'\'');
-            /***/
+            throw new SAXException("expected more pseudo-attributes");
         }
 
-        if (DEBUG) System.out.println("<<< scanMisc()");
-    } // scanMisc()
-
-    /** 
-     * Scans a comment.
-     * <pre>
-     * [15] Comment ::= '&lt;!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
-     * </pre> 
-     */
-    protected void scanComment() throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanComment()");
-
-        // data
-        fStringBuffer.clear();
-        while (fEntityScanner.scanData("--", fString)) {
-            fStringBuffer.append(fString);
-        }
-        fStringBuffer.append(fString);
-        if (fEntityScanner.scanChar() != '>') {
+        // end
+        if (!fEntityScanner.skipChar('?')) {
             // REVISIT: report error
-            throw new SAXException("comment cannot contain \"--\"");
+            throw new SAXException("expected '?'");
+        }
+        if (!fEntityScanner.skipChar('>')) {
+            // REVISIT: report error
+            throw new SAXException("expected '>'");
         }
 
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.comment(fStringBuffer);
+            if (scanningTextDecl) {
+                fDocumentHandler.textDecl(version, encoding, actualEncoding);
+            }
+            else {
+                fDocumentHandler.xmlDecl(version, encoding, actualEncoding, standalone);
+            }
         }
 
-        if (DEBUG) System.out.println("<<< scanComment()");
-    } // scanComment()
+    } // scanXMLDeclOrTextDecl(boolean)
 
-    /** 
+    /**
+     * Scans a pseudo attribute.
+     */
+    public String scanPseudoAttribute(XMLString value) 
+        throws IOException, SAXException {
+
+        String name = fEntityScanner.scanName();
+        if (name == null) {
+            // REVISIT: report error
+            throw new SAXException("expected pseudo-attribute name");
+        }
+        fEntityScanner.skipSpaces();
+        if (!fEntityScanner.skipChar('=')) {
+            // REVISIT: report error
+            throw new SAXException("expected equals for pseudo-attribute");
+        }
+        fEntityScanner.skipSpaces();
+        int quote = fEntityScanner.peekChar();
+        if (quote != '\'' && quote != '"') {
+            // REVISIT: report error
+            throw new SAXException("expected quote for pseudo-attribute");
+        }
+        fEntityScanner.scanChar();
+        // REVISIT: fix this
+        fEntityScanner.scanAttContent(quote, value);
+        if (!fEntityScanner.skipChar(quote)) {
+            // REVISIT: report error
+            throw new SAXException("expected close quote for pseudo-attribute");
+        }
+
+        // return
+        return name;
+
+    } // scanPseudoAttribute(XMLString):String
+    
+    /**
      * Scans a processing instruction.
+     * <p>
      * <pre>
      * [16] PI ::= '&lt;?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
      * [17] PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
      * </pre>
-     * <p>
-     * <strong>Note:</strong> This method assumes that the leading
-     * "&lt;?" characters have been consumed. 
      */
     protected void scanPI() throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanPI()");
 
         // target
         String target = fEntityScanner.scanName();
+        if (target == null) {
+            // REVISIT: report error
+            throw new SAXException("pi target expected");
+        }
+
+        // scan data
+        scanPIData(target);
+
+    } // scanPI()
+
+    /**
+     * Scans a processing data. This is needed to handle the situation
+     * where a document starts with a processing instruction whose 
+     * target name <em>starts with</em> "xml". (e.g. xmlfoo)
+     */
+    protected void scanPIData(String target) 
+        throws IOException, SAXException {
+
+        // check target
+        if (target.length() == 3) {
+            char c0 = Character.toLowerCase(target.charAt(0));
+            char c1 = Character.toLowerCase(target.charAt(1));
+            char c2 = Character.toLowerCase(target.charAt(2));
+            if (c0 == 'x' && c1 == 'm' && c2 == 'l') {
+                // REVISIT: report error
+                throw new SAXException("MSG_RESERVED_PITARGET");
+            }
+        }
 
         // data
+        // REVISIT: handle invalid character, eof
         XMLString data = fString;
         if (fEntityScanner.scanData("?>", fString)) {
-            do {
+            fStringBuffer.clear();
+            while (fEntityScanner.scanData("?>", fString)) {
                 fStringBuffer.append(fString);
-            } while (fEntityScanner.scanData("?>", fString));
+            }
             fStringBuffer.append(fString);
             data = fStringBuffer;
         }
@@ -420,35 +742,167 @@ public class XMLDocumentScanner
             fDocumentHandler.processingInstruction(target, data);
         }
 
-        if (DEBUG) System.out.println("<<< scanPI()");
-    } // scanPI()
+    } // scanPIData(String)
 
-    /** 
-     * Scans the DOCTYPE declaration.
+    /**
+     * Scans a comment.
+     * <p>
      * <pre>
-     * [28] doctypedecl ::= '&lt;!DOCTYPE' S Name (S ExternalID)? S?
-     *                      ('[' (markupdecl | PEReference | S)* ']' S?)? '>'
-     * </pre> 
+     * [15] Comment ::= '&lt!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!--'
      */
+    protected void scanComment() throws IOException, SAXException {
+
+        // text
+        // REVISIT: handle invalid character, eof
+        fStringBuffer.clear();
+        while (fEntityScanner.scanData("--", fString)) {
+            fStringBuffer.append(fString);
+        }
+        fStringBuffer.append(fString);
+        if (!fEntityScanner.skipChar('>')) {
+            // REVISIT: report error
+            throw new SAXException("MSG_DASH_DASH_IN_COMMENT");
+        }
+
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.comment(fStringBuffer);
+        }
+
+    } // scanComment()
+    
+    /** Scans a doctype declaration. */
     protected void scanDoctypeDecl() throws IOException, SAXException {
-        // TODO
+
+        // spaces
+        if (!fEntityScanner.skipSpaces()) {
+            // REVISIT: report error
+            throw new SAXException("spaces expected after <!DOCTYPE");
+        }
+
+        // root element name
+        String name = fEntityScanner.scanName();
+        if (name == null) {
+            // REVISIT: report error
+            throw new SAXException("root element name expected");
+        }
+
+        // external id
+        String systemId = null;
+        String publicId = null;
+        boolean spaces = fEntityScanner.skipSpaces();
+        if (spaces) {
+            if (fEntityScanner.skipString("SYSTEM")) {
+                if (!fEntityScanner.skipSpaces()) {
+                    // REVISIT: report error
+                    throw new SAXException("spaces required after SYSTEM");
+                }
+                int quote = fEntityScanner.peekChar();
+                if (quote != '\'' && quote != '"') {
+                    // REVISIT: report error
+                    throw new SAXException("expected quote");
+                }
+                fEntityScanner.scanChar();
+                // REVISIT: do right
+                fEntityScanner.scanAttContent(quote, fString);
+                systemId = fString.toString();
+                if (!fEntityScanner.skipChar(quote)) {
+                    // REVISIT: report error
+                    throw new SAXException("expected quote");
+                }
+            }
+            else if (fEntityScanner.skipString("PUBLIC")) {
+                if (!fEntityScanner.skipSpaces()) {
+                    // REVISIT: report error
+                    throw new SAXException("spaces required after PUBLIC");
+                }
+                int quote = fEntityScanner.peekChar();
+                if (quote != '\'' && quote != '"') {
+                    // REVISIT: report error
+                    throw new SAXException("expected quote");
+                }
+                fEntityScanner.scanChar();
+                // REVISIT: do right
+                fEntityScanner.scanAttContent(quote, fString);
+                publicId = fString.toString();
+                if (!fEntityScanner.skipChar(quote)) {
+                    // REVISIT: report error
+                    throw new SAXException("expected quote");
+                }
+                if (!fEntityScanner.skipSpaces()) {
+                    // REVISIT: report error
+                    throw new SAXException("spaces required between publicId and systemId");
+                }
+                quote = fEntityScanner.peekChar();
+                if (quote != '\'' && quote != '"') {
+                    // REVISIT: report error
+                    throw new SAXException("expected quote");
+                }
+                fEntityScanner.scanChar();
+                // REVISIT: do right
+                fEntityScanner.scanAttContent(quote, fString);
+                systemId = fString.toString();
+                if (!fEntityScanner.skipChar(quote)) {
+                    // REVISIT: report error
+                    throw new SAXException("expected quote");
+                }
+            }
+            fEntityScanner.skipSpaces();
+        }
+
+        // internal subset
+        if (fEntityScanner.skipChar('[')) {
+            // TODO: scan internal subset
+            while (fEntityScanner.scanData("]", fString)) {
+                // skip to end of internal subset
+            }
+            fEntityScanner.skipSpaces();
+        }
+
+        // end
+        if (!fEntityScanner.skipChar('>')) {
+            System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
+            // REVISIT: report error
+            throw new SAXException("expected '>' to close doctype");
+        }
+
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.doctypeDecl(name, publicId, systemId);
+        }
+
+        // external subset
+        // TODO: scan external subset
+
     } // scanDoctypeDecl()
 
     /** 
-     * Scans an element.
+     * Scans a start element. This method will handle the binding of
+     * namespace information and notifying the handler of the start
+     * of the element.
      * <p>
      * <pre>
-     * [39] element ::= EmptyElemTag | STag content ETag
-     * [44] EmptyElemTag ::= '<' Name (S Attribute)* S? '/>'
-     * [40] STag ::= '<' Name (S Attribute)* S? '>'
-     * [42] ETag ::= '</' Name S? '>'
+     * [44] EmptyElemTag ::= '&lt;' Name (S Attribute)* S? '/>'
+     * [40] STag ::= '&lt;' Name (S Attribute)* S? '>'
      * </pre> 
      * <p>
      * <strong>Note:</strong> This method assumes that the leading
      * '&lt;' character has been consumed.
+     * <p>
+     * <strong>Note:</strong> This method uses the fElementQName and
+     * fAttributes variables. The contents of these variables will be
+     * destroyed. The caller should copy important information out of
+     * these variables before calling this method.
+     *
+     * @returns True if element is empty. (i.e. It matches
+     *          production [44].
      */
-    protected void scanElement() throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanElement()");
+    protected boolean scanStartElement() 
+        throws IOException, SAXException {
+        if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElement()");
 
         //
         // Start element
@@ -456,13 +910,13 @@ public class XMLDocumentScanner
 
         // name
         if (fNamespaces) {
-            fEntityScanner.scanQName(fElemQName);
+            fEntityScanner.scanQName(fElementQName);
         }
         else {
             String name = fEntityScanner.scanName();
-            fElemQName.setValues(null, name, name, null);
+            fElementQName.setValues(null, name, name, null);
         }
-        String rawname = fElemQName.rawname;
+        String rawname = fElementQName.rawname;
 
         // attributes
         boolean empty = false;
@@ -479,8 +933,7 @@ public class XMLDocumentScanner
             }
             else if (c == '/') {
                 fEntityScanner.scanChar();
-                c = fEntityScanner.scanChar();
-                if (c != '>') {
+                if (!fEntityScanner.skipChar('>')) {
                     // REVISIT: report error
                     throw new SAXException("expected '>'");
                 }
@@ -491,95 +944,33 @@ public class XMLDocumentScanner
                 // REVISIT: report error
                 throw new SAXException("expected attribute name, found '"+(char)c+'\'');
             }
-                
+
             // attributes
             scanAttribute(fAttributes);
 
         } while (true);
 
-        // handle namespaces
-        String uri = null;
+        // bind namespaces
         if (fNamespaces) {
-            // push namespace context
-            fNamespaceSupport.pushContext();
-
-            // bind namespaces
-            bindNamespaces(fElemQName, fAttributes);
-            uri = fElemQName.uri;
+            bindNamespaces(fElementQName, fAttributes);
         }
+
+        // push element stack
+        fCurrentElement = new QName(fElementQName);
+        fElementStack.push(fCurrentElement);
 
         // call handler
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(fElemQName, fAttributes);
-        }
-
-        //
-        // Content
-        //
-
-        if (!empty) {
-            scanContent();
-        }
-
-        //
-        // End element
-        //
-
-        if (!empty) {
-            // slash
-            int c = fEntityScanner.scanChar();
-            if (c != '/') {
-                // REVISIT: report error
-                throw new SAXException("expected '/'");
-            }
-
-            // name
-            if (fNamespaces) {
-                fEntityScanner.scanQName(fElemQName);
-            }
-            else {
-                String name = fEntityScanner.scanName();
-                fElemQName.setValues(null, name, name, uri);
-            }
-
-            // end
-            fEntityScanner.skipSpaces();
-            c = fEntityScanner.scanChar();
-            if (c != '>') {
-                // REVISIT: report error
-                throw new SAXException("expected '>'");
-            }
-
-            // tags must be balanced
-            if (!fElemQName.rawname.equals(rawname)) {
-                // REVISIT: report error
-                throw new SAXException("expected \""+rawname+"\""+
-                                       " but found \""+fElemQName.rawname+'"');
+            fDocumentHandler.startElement(fElementQName, fAttributes);
+            if (empty) {
+                handleEndElement(fElementQName);
             }
         }
 
-        // call handler
-        if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(fElemQName);
-        }
+        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanStartElement(): "+empty);
+        return empty;
 
-        // handle namespaces
-        if (fNamespaces) {
-            // call handler
-            if (fDocumentHandler != null) {
-                Enumeration prefixes = fNamespaceSupport.getDeclaredPrefixes();
-                while (prefixes.hasMoreElements()) {
-                    String prefix = (String)prefixes.nextElement();
-                    fDocumentHandler.endPrefixMapping(prefix);
-                }
-            }
-
-            // pop context
-            fNamespaceSupport.popContext();
-        }
-
-        if (DEBUG) System.out.println("<<< scanElement()");
-    } // scanElement()
+    } // scanStartElement():boolean
 
     /** 
      * Scans an attribute.
@@ -597,38 +988,38 @@ public class XMLDocumentScanner
      */
     protected void scanAttribute(XMLAttributes attributes) 
         throws IOException, SAXException {
-        if (DEBUG) System.out.println(">>> scanAttribute()");
+        if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanAttribute()");
 
         // name
         if (fNamespaces) {
-            fEntityScanner.scanQName(fAttrQName);
+            fEntityScanner.scanQName(fAttributeQName);
         }
         else {
             String name = fEntityScanner.scanName();
-            fAttrQName.setValues(null, name, name, null);
+            fAttributeQName.setValues(null, name, name, null);
         }
 
         // equals
         fEntityScanner.skipSpaces();
-        int equals = fEntityScanner.scanChar();
-        if (equals != '=') {
+        if (!fEntityScanner.skipChar('=')) {
             // REVISIT: report error
-            throw new SAXException("expected '=', found '"+(char)equals+'\'');
+            throw new SAXException("expected '='");
         }
         fEntityScanner.skipSpaces();
 
         // quote
-        int oquote = fEntityScanner.scanChar();
-        if (oquote != '\'' && oquote != '"') {
+        int quote = fEntityScanner.peekChar();
+        if (quote != '\'' && quote != '"') {
             // REVISIT: report error
-            throw new SAXException("expected open quote, found '"+(char)oquote+'\'');
+            throw new SAXException("expected open quote, found '"+(char)quote+'\'');
         }
+        fEntityScanner.scanChar();
 
         // content
         final String CDATA = fSymbolTable.addSymbol("CDATA");
-        attributes.setAttribute(fAttrQName, CDATA, null);
+        attributes.setAttribute(fAttributeQName, CDATA, null);
         XMLString value = fString;
-        if (fEntityScanner.scanAttContent(oquote, fString)) {
+        if (fEntityScanner.scanAttContent(quote, fString) != quote) {
             fStringBuffer.clear();
             do {
                 fStringBuffer.append(fString);
@@ -637,7 +1028,7 @@ public class XMLDocumentScanner
                     // TODO: handle entities in value
                 }
                 /***/
-            } while (fEntityScanner.scanAttContent(oquote, fString));
+            } while (fEntityScanner.scanAttContent(quote, fString) != quote);
             fStringBuffer.append(fString);
             value = fStringBuffer;
         }
@@ -650,87 +1041,167 @@ public class XMLDocumentScanner
             throw new SAXException("expected close quote");
         }
 
-        if (DEBUG) System.out.println("<<< scanAttribute()");
-    } // scanAttribute()
+        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
+    } // scanAttribute(XMLAttributes)
 
     /**
-     * Scans a reference.
+     * Scans an end element.
+     * <p>
      * <pre>
-     * [67] Reference ::= EntityRef | CharRef
-     * [68] EntityRef ::= '&' Name ';'
+     * [42] ETag ::= '&lt;/' Name S? '>'
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> This method uses the fElementQName variable.
+     * The contents of this variable will be destroyed. The caller should
+     * copy the needed information out of this variable before calling
+     * this method.
+     */
+    protected void scanEndElement() throws IOException, SAXException {
+        if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanEndElement()");
+
+        // name
+        if (fNamespaces) {
+            fEntityScanner.scanQName(fElementQName);
+        }
+        else {
+            String name = fEntityScanner.scanName();
+            fElementQName.setValues(null, name, name, null);
+        }
+
+        // end
+        fEntityScanner.skipSpaces();
+        if (!fEntityScanner.skipChar('>')) {
+            // REVISIT: report error
+            throw new SAXException("expected '>'");
+        }
+
+        // handle end element
+        handleEndElement(fElementQName);
+
+        if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanEndElement()");
+    } // scanEndElement()
+
+    /**
+     * Scans a character reference.
+     * <p>
+     * <pre>
      * [66] CharRef ::= '&#' [0-9]+ ';' | '&#x' [0-9a-fA-F]+ ';'
      * </pre>
      */
-    protected void scanReference() throws IOException, SAXException {
-        // TODO
-    } // scanReference()
+    protected void scanCharReference() 
+        throws IOException, SAXException {
 
-    /** 
-     * Scans element content.
-     * <pre>
-     * [43] content ::= (element | CharData | Reference | CDSect | PI | Comment)*
-     * </pre> 
-     */
-    protected void scanContent() throws IOException, SAXException {
-
-        while (true) {
-            boolean more = false;
+        // scan hexadecimal value
+        boolean hex = false;
+        if (fEntityScanner.skipChar('x')) {
+            fStringBuffer.clear();
+            boolean digit = true;
             do {
-                more = fEntityScanner.scanContent(fString);
-                if (fDocumentHandler != null) {
-                    // REVISIT: check for whitespace
-                    fDocumentHandler.characters(fString, false);
-                }
-            } while (more);
-            int c = fEntityScanner.scanChar();
-            if (c == '<') {
-                c = fEntityScanner.peekChar();
-                if (c == '/') {
-                    break;
-                }
-                if (c == '!') {
+                int c = fEntityScanner.peekChar();
+                digit = (c >= '0' && c <= '9') ||
+                        (c >= 'a' && c <= 'f') ||
+                        (c >= 'A' && c <= 'F');
+                if (digit) {
                     fEntityScanner.scanChar();
-                    c = fEntityScanner.scanChar();
-                    if (c == '-') {
-                        fEntityScanner.scanChar();
-                        if (fEntityScanner.scanChar() != '-') {
-                            // REVISIT: report error
-                            throw new SAXException("expected '-'");
-                        }
-                        scanComment();
-                        continue;
-                    }
-                    if (c == '[') {
-                        // TODO
-                        continue;
-                    }
-                    throw new SAXException("what to do now?");
+                    fStringBuffer.append((char)c);
                 }
-                if (c == '?') {
-                    scanPI();
-                    continue;
-                }
-                scanElement();
-            }
-            else if (c == '&') {
-                scanReference();
-            }
-            else {
-                break;
-            }
+            } while (digit);
         }
 
-    } // scanContent()
+        // scan decimal value
+        else {
+            fStringBuffer.clear();
+            boolean digit = true;
+            do {
+                int c = fEntityScanner.peekChar();
+                digit = c >= '0' && c <= '9';
+                if (digit) {
+                    fEntityScanner.scanChar();
+                    fStringBuffer.append((char)c);
+                }
+            } while (digit);
+        }
+
+        // end
+        if (!fEntityScanner.skipChar(';')) {
+            // REVISIT: report error
+            throw new SAXException("character reference must end with semi-colon");
+        }
+        
+        // convert string to number
+        int value = -1;
+        try {
+            value = Integer.parseInt(fStringBuffer.toString(),
+                                     hex ? 16 : 10);
+        }
+        catch (NumberFormatException e) {
+            // let -1 value drop through
+        }
+
+        // character reference must be a valid XML character
+        if (!XMLChar.isValid((char)value)) {
+            // REVISIT: report error
+            throw new SAXException("MSG_INVALID_CHARREF");
+        }
+        
+        // call handler
+        if (fDocumentHandler != null) {
+            fSingleChar[0] = (char)value;
+            fString.setValues(fSingleChar, 0, 1);
+            fDocumentHandler.characters(fString, XMLChar.isSpace(value));
+        }
+
+    } // scanCharReference()
+
+    /**
+     * Scans an entity reference.
+     *
+     * @throws IOException  Thrown if i/o error occurs.
+     * @throws SAXException Thrown if handler throws exception upon
+     *                      notification.
+     */
+    protected void scanEntityReference() throws IOException, SAXException {
+
+        // name
+        String name = fEntityScanner.scanName();
+        if (name == null) {
+            // REVISIT: report error
+            throw new SAXException("entity name expected");
+        }
+
+        // end
+        if (!fEntityScanner.skipChar(';')) {
+            // REVISIT: report error
+            throw new SAXException("entity reference must end with semi-colon");
+        }
+
+        // start entity
+        fEntityManager.startGeneralEntity(name);
+
+    } // scanEntityReference()
 
     // utility methods
-    
+
     /**
-     * Binds the namespaces for the start of an element. This method
-     * searchs for namespace binding attributes and adds the URI
-     * information to the element and attribute qualified names.
+     * Binds the namespaces. This method will handle calling the
+     * document handler to start the prefix mappings.
+     * <p>
+     * <strong>Note:</strong> This method makes use of the
+     * fAttributeQName variable. Any contents of the variable will
+     * be destroyed. Caller should copy the values out of this
+     * temporary variable before calling this method.
+     *
+     * @param element    The element name.
+     * @param attributes The attributes for the element.
+     *
+     * @throws SAXException Thrown if handler throws SAX exception upon
+     *                      notification of start prefix mapping.
      */
-    protected void bindNamespaces(QName element, XMLAttributes attributes) 
+    protected void bindNamespaces(QName element, XMLAttributes attributes)
         throws SAXException {
+
+        // add new namespace context
+        fNamespaceSupport.pushContext();
 
         // search for new namespace bindings
         int length = attributes.getLength();
@@ -764,120 +1235,716 @@ public class XMLDocumentScanner
 
         // bind the attributes
         for (int i = 0; i < length; i++) {
-            attributes.getName(i, fAttrQName);
-            String arawname = fAttrQName.rawname;
-            String aprefix = fAttrQName.prefix != null 
-                          ? fAttrQName.prefix : "";
+            attributes.getName(i, fAttributeQName);
+            String arawname = fAttributeQName.rawname;
+            String aprefix = fAttributeQName.prefix != null 
+                           ? fAttributeQName.prefix : "";
             if (aprefix.equals("xml")) {
-                fAttrQName.uri = NamespaceSupport.XMLNS;
-                attributes.setName(i, fAttrQName);
+                fAttributeQName.uri = NamespaceSupport.XMLNS;
+                attributes.setName(i, fAttributeQName);
             }
             else if (!arawname.equals("xmlns") && !arawname.startsWith("xmlns:")) {
-                if (fAttrQName.prefix != null) {
-                    fAttrQName.uri = fNamespaceSupport.getURI(fAttrQName.prefix);
-                    if (fAttrQName.uri == null) {
+                if (fAttributeQName.prefix != null) {
+                    fAttributeQName.uri = fNamespaceSupport.getURI(fAttributeQName.prefix);
+                    if (fAttributeQName.uri == null) {
                         // REVISIT: report error
-                        throw new SAXException("attribute prefix \""+fAttrQName.prefix+"\" is not bound");
+                        throw new SAXException("attribute prefix \""+fAttributeQName.prefix+"\" is not bound");
                     }
                 }
                 else {
                     // attributes with no prefix get element's uri
-                    fAttrQName.uri = element.uri;
+                    fAttributeQName.uri = element.uri;
                 }
-                attributes.setName(i, fAttrQName);
+                attributes.setName(i, fAttributeQName);
             }
         }
 
     } // bindNamespaces(QName,XMLAttributes)
 
-    //
-    // XMLComponent methods
-    //
-
-    /**
-     * 
-     * 
-     * @param componentManager The component manager.
+    /** 
+     * Handles the end element. This method will make sure that
+     * the end element name matches the current element and notify
+     * the handler about the end of the element and the end of any
+     * relevent prefix mappings.
      *
-     * @throws SAXException Throws exception if required features and
-     *                      properties cannot be found.
+     * @param element The element.
+     *
+     * @throws SAXException Thrown if the handler throws a SAX exception
+     *                      upon notification.
      */
-    public void reset(XMLComponentManager componentManager)
-        throws SAXException {
+    protected void handleEndElement(QName element) throws SAXException {
 
-        // get features
-        fNamespaces = componentManager.getFeature(NAMESPACES);
-        fAttributes.setNamespaces(fNamespaces);
-
-        // get properties
-        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-        fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
-        /*** REVISIT: Add DTD support. ***
-        fDTDScanner = (XMLDTDScanner)componentManager.getProperty("http://apache.org/xml/properties/internal/dtd-scanner");
-        /***/
-
-    } // reset(XMLComponentManager)
-
-    /**
-     * Sets the state of a feature during parsing.
-     * 
-     * @param featureId 
-     * @param state 
-     */
-    public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        /*** NOTE: Namespaces cannot be set during parse. ***
-        final String SAX_FEATURES = "http://xml.org/sax/features/";
-        if (featureId.startsWith(SAX_FEATURES)) {
-            final String feature = featureId.substring(SAX_FEATURES.length());
-            if (feature.equals("namespaces")) {
-                fNamespaces = state;
-            }
-            return;
+        // make sure the elements match
+        QName startElement = (QName)fElementStack.pop();
+        if (!element.rawname.equals(startElement.rawname)) {
+            // REVISIT: report error
+            throw new SAXException("end tag doesn't match start tag");
         }
-        /***/
 
-    } // setFeature(String,boolean)
-
-    /**
-     * Sets the value of a property during parsing.
-     * 
-     * @param propertyId 
-     * @param value 
-     */
-    public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
+        // bind namespaces
+        if (fNamespaces) {
+            element.uri = startElement.uri;
+        }
         
-        final String INTERNAL_PROPERTY = "http://apache.org/xml/properties/internal/";
-        if (propertyId.startsWith(INTERNAL_PROPERTY)) {
-            final String property = propertyId.substring(INTERNAL_PROPERTY.length());
-            if (property.equals("symbol-table")) {
-                fSymbolTable = (SymbolTable)value;
-            }
-            else if (property.equals("error-reporter")) {
-                fErrorReporter = (XMLErrorReporter)value;
-            }
-            else if (property.equals("entity-manager")) {
-                fEntityManager = (XMLEntityManager)value;
-            }
-            return;
+        // call handler
+        if (fDocumentHandler != null) {
+            fDocumentHandler.endElement(element);
         }
 
-    } // setProperty(String,Object)
+        // end prefix mappings
+        if (fNamespaces) {
+            // call handler
+            if (fDocumentHandler != null) {
+                Enumeration prefixes = fNamespaceSupport.getDeclaredPrefixes();
+                while (prefixes.hasMoreElements()) {
+                    String prefix = (String)prefixes.nextElement();
+                    fDocumentHandler.endPrefixMapping(prefix);
+                }
+            }
+
+            // pop context
+            fNamespaceSupport.popContext();
+        }
+
+    } // callEndElement(QName)
+
+    // helper methods
+
+    /**
+     * Sets the scanner state.
+     *
+     * @param state The new scanner state.
+     */
+    protected void setScannerState(int state) {
+
+        fScannerState = state;
+        if (DEBUG_SCANNER_STATE) {
+            System.out.print("### setScannerState: ");
+            System.out.print(getScannerStateName(state));
+            System.out.println();
+        }
+
+    } // setScannerState(int)
+
+    /**
+     * Sets the dispatcher.
+     *
+     * @param dispatcher The new dispatcher.
+     */
+    protected void setDispatcher(Dispatcher dispatcher) {
+        fDispatcher = dispatcher;
+        if (DEBUG_DISPATCHER) {
+            System.out.print("%%% setDispatcher: ");
+            System.out.print(String.valueOf(dispatcher));
+            System.out.println();
+        }
+    }
 
     //
-    // XMLDocumentSource methods
+    // Private methods
+    //
+
+    /** Returns the scanner state name. */
+    private static String getScannerStateName(int state) {
+
+        if (DEBUG_SCANNER_STATE) {
+            switch (state) {
+                case SCANNER_STATE_XML_DECL: return "SCANNER_STATE_XML_DECL";
+                case SCANNER_STATE_START_OF_MARKUP: return "SCANNER_STATE_START_OF_MARKUP";
+                case SCANNER_STATE_COMMENT: return "SCANNER_STATE_COMMENT";
+                case SCANNER_STATE_PI: return "SCANNER_STATE_PI";
+                case SCANNER_STATE_DOCTYPE: return "SCANNER_STATE_DOCTYPE";
+                case SCANNER_STATE_PROLOG: return "SCANNER_STATE_PROLOG";
+                case SCANNER_STATE_ROOT_ELEMENT: return "SCANNER_STATE_ROOT_ELEMENT";
+                case SCANNER_STATE_CONTENT: return "SCANNER_STATE_CONTENT";
+                case SCANNER_STATE_REFERENCE: return "SCANNER_STATE_REFERENCE";
+                case SCANNER_STATE_ATTRIBUTE_LIST: return "SCANNER_STATE_ATTRIBUTE_LIST";
+                case SCANNER_STATE_ATTRIBUTE_NAME: return "SCANNER_STATE_ATTRIBUTE_NAME";
+                case SCANNER_STATE_ATTRIBUTE_VALUE: return "SCANNER_STATE_ATTRIBUTE_VALUE";
+                case SCANNER_STATE_TRAILING_MISC: return "SCANNER_STATE_TRAILING_MISC";
+                case SCANNER_STATE_END_OF_INPUT: return "SCANNER_STATE_END_OF_INPUT";
+                case SCANNER_STATE_TERMINATED: return "SCANNER_STATE_TERMINATED";
+            }
+        }
+
+        return "??? ("+state+')';
+
+    } // getScannerStateName(int):String
+
+    //
+    // Classes
     //
 
     /**
-     * setDocumentHandler
-     * 
-     * @param documentHandler 
+     * Entity for entity stack. 
+     * <p>
+     * <strong>Note:</strong> The fields in this class are public but should
+     * only be set at construction time (or at the time when it is pushed
+     * onto the entity stack). In other words, once pushed onto the entity
+     * stack, the entity information is considered read-only.
+     *
+     * @author Andy Clark, IBM
      */
-    public void setDocumentHandler(XMLDocumentHandler documentHandler) {
-        fDocumentHandler = documentHandler;
-    } // setDocumentHandler(XMLDocumentHandler)
+    protected static class Entity {
+
+        //
+        // Data
+        //
+
+        /** Entity name. */
+        public String name;
+
+        /** Public identifier. */
+        public String publicId;
+
+        /** System identifier. */
+        public String systemId;
+
+        /** Element depth. */
+        public int elementDepth;
+
+        //
+        // Constructors
+        //
+
+        /** Constructs an entity. */
+        public Entity(String name, String publicId, String systemId, 
+                      int elementDepth) {
+            setValues(name, publicId, systemId, elementDepth);
+        } // <init>(String,String,String,int)
+
+        //
+        // Public methods
+        //
+
+        /** Clears the structure. */
+        public void clear() {
+            name = null;
+            publicId = null;
+            systemId = null;
+            elementDepth = -1;
+        } // clear()
+
+        /**
+         * Sets the values of this structure.
+         *
+         * @param name         The name.
+         * @param publicId     The public identifier.
+         * @param systemId     The system identifier.
+         * @param elementDepth The element depth.
+         */
+        public void setValues(String name, String publicId, String systemid,
+                              int elementDepth) {
+            this.name = name;
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.elementDepth = elementDepth;
+        } // setValues(String,String,String,int)
+
+        //
+        // Object methods
+        //
+
+        /** Returns a string representation of this object. */
+        public String toString() {
+
+            StringBuffer str = new StringBuffer();
+            boolean comma = false;
+            if (name != null) {
+                str.append("name=\"");
+                str.append(name);
+                str.append('"');
+                comma = true;
+            }
+            if (publicId != null) {
+                if (comma) {
+                    str.append(',');
+                }
+                str.append("publicId=\"");
+                str.append(publicId);
+                str.append('"');
+                comma = true;
+            }
+            if (systemId != null) {
+                if (comma) {
+                    str.append(',');
+                }
+                str.append("systemId=\"");
+                str.append(systemId);
+                str.append('"');
+                comma = true;
+            }
+            if (elementDepth != -1) {
+                if (comma) {
+                    str.append(',');
+                }
+                str.append("elementDepth=");
+                str.append(elementDepth);
+            }
+            return str.toString();
+
+        } // toString():String
+
+    } // class Entity
+
+    /** 
+     * This interface defines an XML "event" dispatching model. Classes
+     * that implement this interface are responsible for scanning parts
+     * of the XML document and dispatching callbacks.
+     *
+     * @author Glenn Marcy, IBM
+     */
+    protected abstract class Dispatcher {
+
+        //
+        // Public methods
+        //
+
+        /** 
+         * Dispatch an XML "event".
+         *
+         * @param complete True if this dispatcher is intended to scan
+         *                 and dispatch as much as possible.                 
+         *
+         * @returns True if there is more to dispatch either from this 
+         *          or a another dispatcher.
+         *
+         * @throws IOException  Thrown on i/o error.
+         * @throws SAXException Thrown on parse error.
+         */
+        public abstract boolean dispatch(boolean complete) 
+            throws IOException, SAXException;
+
+        //
+        // Object methods
+        //
+
+        /** Returns a string representation of this object. */
+        public String toString() {
+
+            String name = this.getClass().getName();
+            int index = name.lastIndexOf('.');
+            if (index != -1) {
+                name = name.substring(index + 1);
+                index = name.lastIndexOf('$');
+                if (index != -1) {
+                    name = name.substring(index + 1);
+                }
+            }
+            return name;
+
+        } // toString():String
+
+    } // interface Dispatcher
+
+    /**
+     * Dispatcher to handle XMLDecl scanning.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected final class XMLDeclDispatcher 
+        extends Dispatcher {
+
+        //
+        // Dispatcher methods
+        //
+
+        /** 
+         * Dispatch an XML "event".
+         *
+         * @param complete True if this dispatcher is intended to scan
+         *                 and dispatch as much as possible.                 
+         *
+         * @returns True if there is more to dispatch either from this 
+         *          or a another dispatcher.
+         *
+         * @throws IOException  Thrown on i/o error.
+         * @throws SAXException Thrown on parse error.
+         */
+        public boolean dispatch(boolean complete) 
+            throws IOException, SAXException {
+
+            // start the document
+            if (fDocumentHandler != null) {
+                fDocumentHandler.startDocument();
+            }
+
+            // next dispatcher is prolog regardless of whether there
+            // is an XMLDecl in this document
+            setScannerState(SCANNER_STATE_PROLOG);
+            setDispatcher(fPrologDispatcher);
+
+            // scan XMLDecl
+            if (fEntityScanner.skipString("<?xml")) {
+                // NOTE: special case where document starts with a PI
+                //       whose name starts with "xml" (e.g. "xmlfoo")
+                if (XMLChar.isName(fEntityScanner.peekChar())) {
+                    setScannerState(SCANNER_STATE_PROLOG);
+                    setDispatcher(fPrologDispatcher);
+                    fStringBuffer.clear();
+                    fStringBuffer.append("xml");
+                    while (XMLChar.isName(fEntityScanner.peekChar())) {
+                        fStringBuffer.append((char)fEntityScanner.scanChar());
+                    }
+                    scanPIData(fStringBuffer.toString());
+                }
+
+                // standard XML declaration
+                else {
+                    scanXMLDeclOrTextDecl(false);
+                }
+                return complete;
+            }
+
+            // if no XMLDecl, then scan piece of prolog
+            return true;
+
+        } // dispatch(boolean):boolean
+
+    } // class XMLDeclDispatcher
+
+    /**
+     * Dispatcher to handle prolog scanning.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected final class PrologDispatcher
+        extends Dispatcher {
+
+        //
+        // Dispatcher methods
+        //
+
+        /** 
+         * Dispatch an XML "event".
+         *
+         * @param complete True if this dispatcher is intended to scan
+         *                 and dispatch as much as possible.                 
+         *
+         * @returns True if there is more to dispatch either from this 
+         *          or a another dispatcher.
+         *
+         * @throws IOException  Thrown on i/o error.
+         * @throws SAXException Thrown on parse error.
+         */
+        public boolean dispatch(boolean complete) 
+            throws IOException, SAXException {
+
+            // TODO
+            boolean again;
+            do {
+                again = false;
+                switch (fScannerState) {
+                    case SCANNER_STATE_PROLOG: {
+                        fEntityScanner.skipSpaces();
+                        if (fEntityScanner.skipChar('<')) {
+                            setScannerState(SCANNER_STATE_START_OF_MARKUP);
+                            again = true;
+                        }
+                        else if (fEntityScanner.skipChar('&')) {
+                            setScannerState(SCANNER_STATE_REFERENCE);
+                            again = true;
+                        }
+                        else {
+                            setScannerState(SCANNER_STATE_CONTENT);
+                            again = true;
+                        }
+                        break;
+                    }
+                    case SCANNER_STATE_START_OF_MARKUP: {
+                        if (fEntityScanner.skipChar('?')) {
+                            setScannerState(SCANNER_STATE_PI);
+                            again = true;
+                        }
+                        else if (fEntityScanner.skipChar('!')) {
+                            if (fEntityScanner.skipChar('-')) {
+                                if (!fEntityScanner.skipChar('-')) {
+                                    // REVISIT: report error
+                                    throw new SAXException("comment must start with \"<!--\"");
+                                }
+                                setScannerState(SCANNER_STATE_COMMENT);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipString("DOCTYPE")) {
+                                setScannerState(SCANNER_STATE_DOCTYPE);
+                                again = true;
+                            }
+                            else {
+                                // REVISIT: report error
+                                throw new SAXException("expected comment or doctype");
+                            }
+                        }
+                        else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                            setScannerState(SCANNER_STATE_ROOT_ELEMENT);
+                            setDispatcher(fContentDispatcher);
+                            return true;
+                        }
+                        else {
+                            // REVISIT: report error
+                            throw new SAXException("expected comment, pi, doctype, or root element");
+                        }
+                        break;
+                    }
+                    case SCANNER_STATE_COMMENT: {
+                        scanComment();
+                        setScannerState(SCANNER_STATE_PROLOG);
+                        break;  
+                    }
+                    case SCANNER_STATE_PI: {
+                        scanPI();
+                        setScannerState(SCANNER_STATE_PROLOG);
+                        break;  
+                    }
+                    case SCANNER_STATE_DOCTYPE: {
+                        if (fSeenDoctypeDecl) {
+                            // REVISIT: report error
+                            throw new SAXException("already seen doctype");
+                        }
+                        fSeenDoctypeDecl = true;
+                        scanDoctypeDecl();
+                        setScannerState(SCANNER_STATE_PROLOG);
+                        break;
+                    }
+                    case SCANNER_STATE_CONTENT: {
+                        // REVISIT: report error
+                        throw new SAXException("content not allowed in prolog");
+                    }
+                    case SCANNER_STATE_REFERENCE: {
+                        // REVISIT: report error
+                        throw new SAXException("reference not allowed in prolog");
+                    }
+                }
+            } while (complete || again);
+
+            if (fEntityScanner.scanChar() != '<') {
+                throw new SAXException("expecting root element");
+            }
+            setScannerState(SCANNER_STATE_ROOT_ELEMENT);
+            setDispatcher(fContentDispatcher);
+
+            return complete;
+
+        } // dispatch(boolean):boolean
+
+    } // class PrologDispatcher
+
+    /**
+     * Dispatcher to handle content scanning.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected final class ContentDispatcher
+        extends Dispatcher {
+
+        //
+        // Dispatcher methods
+        //
+
+        /** 
+         * Dispatch an XML "event".
+         *
+         * @param complete True if this dispatcher is intended to scan
+         *                 and dispatch as much as possible.                 
+         *
+         * @returns True if there is more to dispatch either from this 
+         *          or a another dispatcher.
+         *
+         * @throws IOException  Thrown on i/o error.
+         * @throws SAXException Thrown on parse error.
+         */
+        public boolean dispatch(boolean complete) 
+            throws IOException, SAXException {
+
+            boolean again;
+            do {
+                again = false;
+                switch (fScannerState) {
+                    case SCANNER_STATE_ROOT_ELEMENT: {
+                        if (scanStartElement()) {
+                            setScannerState(SCANNER_STATE_TRAILING_MISC);
+                            setDispatcher(fTrailingMiscDispatcher);
+                            return complete;
+                        }
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;
+                    }
+                    case SCANNER_STATE_COMMENT: {
+                        scanComment();
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;  
+                    }
+                    case SCANNER_STATE_PI: {
+                        scanPI();
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;  
+                    }
+                    case SCANNER_STATE_DOCTYPE: {
+                        // REVISIT: report error
+                        throw new SAXException("doctype not allowed in content");
+                    }
+                    /***
+                    // REVISIT: Handle CDATA so that we can split up
+                    //          the processing over multiple callbacks.
+                    case SCANNER_STATE_CDATA: {
+                        if (scanCDATASection(complete)) {
+                            setScannerState(SCANNER_STATE_CONTENT);
+                        }
+                        break;
+                    }
+                    /***/
+                    case SCANNER_STATE_REFERENCE: {
+                        if (fEntityScanner.skipChar('#')) {
+                            scanCharReference();
+                        }
+                        else {
+                            scanEntityReference();
+                        }
+                        setScannerState(SCANNER_STATE_CONTENT);
+                        break;
+                    }
+                    case SCANNER_STATE_CONTENT: {
+                        if (fEntityScanner.skipChar('<')) {
+                            if (fEntityScanner.skipChar('?')) {
+                                setScannerState(SCANNER_STATE_PI);
+                                again = true;
+                            }
+                            else if (fEntityScanner.skipChar('!')) {
+                                if (fEntityScanner.skipChar('-')) {
+                                    if (!fEntityScanner.skipChar('-')) {
+                                        // REVISIT: report error
+                                        throw new SAXException("comment must start with \"<!--\"");
+                                    }
+                                }
+                                else if (fEntityScanner.skipString("[CDATA[")) {
+                                    /***
+                                    // REVISIT: Handle CDATA sections
+                                    setScannerState(SCANNER_STATE_CDATA);
+                                    again = true;
+                                    /***/
+                                    throw new SAXException("not implemented");
+                                    /***/
+                                }
+                                else if (fEntityScanner.skipString("DOCTYPE")) {
+                                    setScannerState(SCANNER_STATE_DOCTYPE);
+                                }
+                                else {
+                                    // REVISIT: report error
+                                    throw new SAXException("expected comment, pi, or element");
+                                }
+                            }
+                            else if (fEntityScanner.skipChar('/')) {
+                                scanEndElement();
+                                if (fElementDepth == 0) {
+                                    setScannerState(SCANNER_STATE_TRAILING_MISC);
+                                    setDispatcher(fTrailingMiscDispatcher);
+                                    return complete;
+                                }
+                            }
+                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                                if (scanStartElement()) {
+                                    if (fElementDepth == 0) {
+                                        setScannerState(SCANNER_STATE_TRAILING_MISC);
+                                        setDispatcher(fTrailingMiscDispatcher);
+                                        return complete;
+                                    }
+                                }
+                            }
+                            else {
+                                // REVISIT: report error
+                                throw new SAXException("expected comment, pi, doctype, or root element");
+                            }
+                        }
+                        else if (fEntityScanner.skipChar('&')) {
+                            setScannerState(SCANNER_STATE_REFERENCE);
+                            again = true;
+                        }
+                        else {
+                            // TODO
+                        }
+                        break;
+                    }
+                }
+            } while (complete || again);
+
+            return complete;
+
+        } // dispatch(boolean):boolean
+
+    } // class ContentDispatcher
+
+    /**
+     * Dispatcher to handle trailing miscellaneous section scanning.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected final class TrailingMiscDispatcher
+        extends Dispatcher {
+
+        //
+        // Dispatcher methods
+        //
+
+        /** 
+         * Dispatch an XML "event".
+         *
+         * @param complete True if this dispatcher is intended to scan
+         *                 and dispatch as much as possible.                 
+         *
+         * @returns True if there is more to dispatch either from this 
+         *          or a another dispatcher.
+         *
+         * @throws IOException  Thrown on i/o error.
+         * @throws SAXException Thrown on parse error.
+         */
+        public boolean dispatch(boolean complete) 
+            throws IOException, SAXException {
+
+            // TODO
+            setScannerState(SCANNER_STATE_END_OF_INPUT);
+            setDispatcher(fEndOfInputDispatcher);
+            return true;
+
+        } // dispatch(boolean):boolean
+
+    } // class TrailingMiscDispatcher
+
+    /**
+     * Dispatcher to handle end of input processing.
+     *
+     * @author Andy Clark, IBM
+     */
+    protected final class EndOfInputDispatcher
+        extends Dispatcher {
+
+        //
+        // Dispatcher methods
+        //
+
+        /** 
+         * Dispatch an XML "event".
+         *
+         * @param complete True if this dispatcher is intended to scan
+         *                 and dispatch as much as possible.                 
+         *
+         * @returns True if there is more to dispatch either from this 
+         *          or a another dispatcher.
+         *
+         * @throws IOException  Thrown on i/o error.
+         * @throws SAXException Thrown on parse error.
+         */
+        public boolean dispatch(boolean complete) 
+            throws IOException, SAXException {
+
+            // TODO
+
+            // end the document
+            if (fDocumentHandler != null) {
+                fDocumentHandler.endDocument();
+            }
+            return false;
+
+        } // dispatch(boolean):boolean
+
+    } // class EndOfInputDispatcher
 
 } // class XMLDocumentScanner
