@@ -112,7 +112,7 @@ public class AllContentModel implements XMLContentModel {
         }
 
         // Need to resize arrays?
-        if (fNumElements < fAllElements.length) {
+        if (fNumElements >= fAllElements.length) {
             QName newAllElements[] = new QName[2*fAllElements.length];
             boolean newIsOptionalElements[] =
                                       new boolean[2*fIsOptionalElement.length];
