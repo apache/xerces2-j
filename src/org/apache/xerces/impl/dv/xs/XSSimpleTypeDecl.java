@@ -1887,18 +1887,34 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public boolean isDefinedFacet(short facetName) {
-        return (fFacetsDefined & facetName) != 0;
+        if ((fFacetsDefined & facetName) != 0)
+            return true;
+        if (fPatternType != SPECIAL_PATTERN_NONE)
+            return facetName == FACET_PATTERN;
+        if (fValidationDV == DV_INTEGER)
+            return facetName == FACET_PATTERN || facetName == FACET_FRACTIONDIGITS;
+        return false;
     }
 
     public short getDefinedFacets() {
+        if (fPatternType != SPECIAL_PATTERN_NONE)
+            return (short)(fFacetsDefined | FACET_PATTERN);
+        if (fValidationDV == DV_INTEGER)
+            return (short)(fFacetsDefined | FACET_PATTERN | FACET_FRACTIONDIGITS);
         return fFacetsDefined;
     }
 
     public boolean isFixedFacet(short facetName) {
-        return (fFixedFacet & facetName) != 0;
+        if ((fFixedFacet & facetName) != 0)
+            return true;
+        if (fValidationDV == DV_INTEGER)
+            return facetName == FACET_FRACTIONDIGITS;
+        return false;
     }
 
     public short getFixedFacets() {
+        if (fValidationDV == DV_INTEGER)
+            return (short)(fFixedFacet | FACET_FRACTIONDIGITS);
         return fFixedFacet;
     }
 
@@ -1921,6 +1937,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         case FACET_MININCLUSIVE:
             return (fMinInclusive == null)?null:fMinInclusive.toString();
         case FACET_TOTALDIGITS:
+            if (fValidationDV == DV_INTEGER)
+                return "0";
             return (fTotalDigits == -1)?null:Integer.toString(fTotalDigits);
         case FACET_FRACTIONDIGITS:
             return (fFractionDigits == -1)?null:Integer.toString(fFractionDigits);
@@ -1942,7 +1960,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     public StringList getLexicalPattern() {
-        if (fPatternType == SPECIAL_PATTERN_NONE && fPatternStr == null)
+        if (fPatternType == SPECIAL_PATTERN_NONE && fValidationDV != DV_INTEGER && fPatternStr == null)
             return null;
         if (fLexicalPattern == null){
             int size = fPatternStr == null ? 0 : fPatternStr.size();
@@ -1959,6 +1977,10 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 strs = new String[size+2];
                 strs[size] = "\\i\\c*";
                 strs[size+1] = "[\\i-[:]][\\c-[:]]*";
+            }
+            else if (fValidationDV == DV_INTEGER) {
+                strs = new String[size+1];
+                strs[size] = "[+\\-]?[0-9]+";
             }
             else {
                 strs = new String[size];
@@ -2383,7 +2405,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
      * @see org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition#getFacets()
      */
     public XSObjectList getFacets() {
-        if (fFacets == null && fFacetsDefined != 0) {
+        if (fFacets == null &&
+            (fFacetsDefined != 0 || fValidationDV == DV_INTEGER)) {
 
             XSFacetImpl[] facets = new XSFacetImpl[10];
             int count = 0;
@@ -2430,6 +2453,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                         Integer.toString(fTotalDigits),
                         (fFixedFacet & FACET_TOTALDIGITS) != 0,
                         totalDigitsAnnotation);
+                count++;
+            }
+            if (fValidationDV == DV_INTEGER) {
+                facets[count] =
+                    new XSFacetImpl(
+                        FACET_FRACTIONDIGITS,
+                        "0",
+                        true,
+                        null);
                 count++;
             }
             if (fFractionDigits != -1) {
@@ -2483,13 +2515,17 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
     
     public XSObjectList getMultiValueFacets(){
-        if (fMultiValueFacets == null
-            && (fFacetsDefined & FACET_ENUMERATION) != 0
-            || (fFacetsDefined & FACET_PATTERN) != 0) {
+        if (fMultiValueFacets == null &&
+            ((fFacetsDefined & FACET_ENUMERATION) != 0 ||
+             (fFacetsDefined & FACET_PATTERN) != 0 ||
+             fPatternType != SPECIAL_PATTERN_NONE ||
+             fValidationDV == DV_INTEGER)) {
 
             XSMVFacetImpl[] facets = new XSMVFacetImpl[2];
             int count = 0;
-            if (fPatternStr != null) {
+            if ((fFacetsDefined & FACET_PATTERN) != 0 ||
+                fPatternType != SPECIAL_PATTERN_NONE ||
+                fValidationDV == DV_INTEGER) {
                 facets[count] =
                     new XSMVFacetImpl(
                         FACET_PATTERN,
