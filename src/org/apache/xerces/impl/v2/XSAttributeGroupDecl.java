@@ -112,10 +112,86 @@ public class XSAttributeGroupDecl {
         return fAttributeUses;
     }
 
-   public boolean validRestrictionOf(XSAttributeGroupDecl baseGroup) {
-        return true;
+   // Check that the attributes in this group validly restrict those from a base group  
+   // If an error is found, the error code is returned. 
+   public String validRestrictionOf(XSAttributeGroupDecl baseGroup) {
+
+        String errorCode = null;
+        for (int i=0; i<fAttrUseNum; i++) {
+
+           XSAttributeUse attrUse = fAttributeUses[i];
+           XSAttributeDecl attrDecl = attrUse.fAttrDecl;
+
+           // Look for a match in the base
+           XSAttributeUse baseAttrUse = baseGroup.getAttributeUse(
+                                    attrDecl.fTargetNamespace,attrDecl.fName);
+           if (baseAttrUse != null) {
+             //
+             // derivation-ok-restriction.  Constraint 2.1.1
+             //
+             if (baseAttrUse.fUse == SchemaSymbols.USE_REQUIRED && 
+                 attrUse.fUse != SchemaSymbols.USE_REQUIRED) {
+               errorCode = "derivation-ok-restriction.2.1.1";
+               return errorCode;
+             }
+
+             XSAttributeDecl baseAttrDecl = baseAttrUse.fAttrDecl;
+             //
+             // derivation-ok-restriction.  Constraint 2.1.1
+             //
+             // Need to revisit - not sure where the method to check this is.  LM.
+             //if (!(checkSimpleTypeDerivationOK(attrDecl.fDatatypeValidator,
+             //   baseAttrDecl.fDatatypeValidator))) {
+             //   errorCode="derivation-ok-restriction.2.1.2";
+             //   return errorCode;
+             //}
+
+             
+             //
+             // derivation-ok-restriction.  Constraint 2.1.3
+             //
+             if (baseAttrDecl.fConstraintType == XSAttributeDecl.FIXED_VALUE && 
+                 attrDecl.fConstraintType != XSAttributeDecl.FIXED_VALUE) {
+               errorCode="derivation-ok-restriction.2.1.3";
+               return errorCode;
+             }
+           }
+           else {
+             // No matching attribute in base - there should be a matching wildcard
+
+
+             //
+             // derivation-ok-restriction.  Constraint 2.2
+             //
+             if (baseGroup.fAttributeWC == null ||
+                 (!baseGroup.fAttributeWC.allowNamespace(attrDecl.fTargetNamespace))) {
+
+               errorCode = "derivation-ok-restriction.2.2";
+               return errorCode;
+             }
+           }
+        }               
+            
+
+        // Now, check wildcards
+        //
+        // derivation-ok-restriction.  Constraint 4
+        //
+        if (fAttributeWC != null) {
+          if (baseGroup.fAttributeWC == null) {
+            errorCode = "derivation-ok-restriction.4";
+            return errorCode;
+          }
+          if (! fAttributeWC.isSubsetOf(baseGroup.fAttributeWC)) {
+            errorCode="derivation-ok-restriction.4";
+            return errorCode;
+          }
+        }
+    
+        return null; 
 
    }
+
     static final XSAttributeUse[] resize(XSAttributeUse[] oldArray, int newSize) {
         XSAttributeUse[] newArray = new XSAttributeUse[newSize];
         System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
