@@ -104,11 +104,6 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 public class XMLNSDTDValidator
               extends XMLDTDValidator{
 
-        
-
-    /** Internal property: namespace context */
-    protected static final String NAMESPACE_CONTEXT_PROPERTY =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
     /** Attribute QName. */
     private QName fAttributeQName = new QName();
 

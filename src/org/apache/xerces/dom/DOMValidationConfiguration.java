@@ -121,9 +121,6 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
     protected static final String NORMALIZE_DATA = 
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
-    /** Property identifier: namespace context */
-    protected static final String NAMESPACE_CONTEXT_PROPERTY =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
     
     // property identifiers
 
@@ -242,7 +239,6 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
             ENTITY_MANAGER,
             VALIDATION_MANAGER,
             GRAMMAR_POOL, 
-            NAMESPACE_CONTEXT_PROPERTY
         };
         addRecognizedProperties(recognizedProperties);
 

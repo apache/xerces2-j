@@ -122,10 +122,6 @@ public class XMLNamespaceBinder
     protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
-    /** Internal property: namespace context */
-    protected static final String NAMESPACE_CONTEXT_PROPERTY =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
-
     // recognized features and properties
 
     /** Recognized features. */

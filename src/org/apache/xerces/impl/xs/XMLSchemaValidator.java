@@ -218,10 +218,6 @@ public class XMLSchemaValidator
     protected static final String JAXP_SCHEMA_SOURCE =
     Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE;
 
-    /** Internal property: namespace context */
-    protected static final String NAMESPACE_CONTEXT_PROPERTY =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
-
     // recognized features and properties
 
     /** Recognized features. */
@@ -249,12 +245,10 @@ public class XMLSchemaValidator
         SCHEMA_LOCATION,
         SCHEMA_NONS_LOCATION,
         JAXP_SCHEMA_SOURCE, 
-        NAMESPACE_CONTEXT_PROPERTY
     };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS = {
-        null,
         null,
         null,
         null,
