@@ -1708,7 +1708,10 @@ public class XMLDocumentScannerImpl
                     again = false;
                     switch (fScannerState) {
                         case SCANNER_STATE_DTD_INTERNAL_DECLS: {
-                            boolean moreToScan = fDTDScanner.scanDTDInternalSubset(complete, fStandalone, fHasExternalDTD);
+                            // REVISIT: Should there be a feature for 
+                            //          the "complete" parameter?
+                            boolean completeDTD = true;
+                            boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD);
                             if (!moreToScan) {
                                 // end doctype declaration
                                 if (!fEntityScanner.skipChar(']')) {
@@ -1745,7 +1748,10 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DTD_EXTERNAL_DECLS: {
-                            boolean moreToScan = fDTDScanner.scanDTDExternalSubset(complete);
+                            // REVISIT: Should there be a feature for 
+                            //          the "complete" parameter?
+                            boolean completeDTD = true;
+                            boolean moreToScan = fDTDScanner.scanDTDExternalSubset(completeDTD);
                             if (!moreToScan) {
                                 setScannerState(SCANNER_STATE_PROLOG);
                                 setDispatcher(fPrologDispatcher);
