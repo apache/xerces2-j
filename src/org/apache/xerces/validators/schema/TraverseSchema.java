@@ -1005,7 +1005,15 @@ public class TraverseSchema implements
 
         if( baseTypeQNameProperty!= null ) {
             basetype      = fStringPool.addSymbol( baseTypeQNameProperty );
-            baseValidator = fDatatypeRegistry.getDatatypeValidator( baseTypeQNameProperty );
+            String prefix = "";
+            String localpart = baseTypeQNameProperty;
+            int colonptr = baseTypeQNameProperty.indexOf(":");
+            if ( colonptr > 0) {
+                prefix = baseTypeQNameProperty.substring(0,colonptr);
+                localpart = baseTypeQNameProperty.substring(colonptr+1);
+            }
+
+            baseValidator = fDatatypeRegistry.getDatatypeValidator( localpart );
             if (baseValidator == null) {
                 reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
                 new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
