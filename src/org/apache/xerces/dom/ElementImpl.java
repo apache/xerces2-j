@@ -672,6 +672,20 @@ public class ElementImpl
     
     /**
      * Introduced in DOM Level 2. <p>
+     */
+    public boolean hasAttribute(String name) {
+        return getAttribute(name) != null;
+    }
+
+    /**
+     * Introduced in DOM Level 2. <p>
+     */
+    public boolean hasAttributeNS(String namespaceURI, String localName) {
+        return getAttributeNS(namespaceURI, localName) != null;
+    }
+
+    /**
+     * Introduced in DOM Level 2. <p>
      *
      * Returns a NodeList of all the Elements with a given local name and
      * namespace URI in the order in which they would be encountered in a preorder

@@ -276,5 +276,32 @@ public interface Element extends Node {
     public NodeList getElementsByTagNameNS(String namespaceURI, 
                                            String localName);
 
+    /**
+     *  Returns <code>true</code> when an attribute with a given name is 
+     * specified on this element or has a default value, <code>false</code> 
+     * otherwise.
+     * @param name  The name of the attribute to look for.
+     * @return <code>true</code> if an attribute with the given name is 
+     *   specified on this element or has a default value, <code>false</code> 
+     *   otherwise.
+     * @since DOM Level 2
+     */
+    public boolean hasAttribute(String name);
+
+    /**
+     *  Returns <code>true</code> when an attribute with a given local name 
+     * and namespace URI is specified on this element or has a default value, 
+     * <code>false</code> otherwise. HTML-only DOM implementations do not 
+     * need to implement this method.
+     * @param namespaceURI  The  namespace URI of the attribute to look for.
+     * @param localName  The  local name of the attribute to look for.
+     * @return <code>true</code> if an attribute with the given local name and 
+     *   namespace URI is specified or has a default value on this element, 
+     *   <code>false</code> otherwise.
+     * @since DOM Level 2
+     */
+    public boolean hasAttributeNS(String namespaceURI, 
+                                  String localName);
+
 }
 
