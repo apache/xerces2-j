@@ -291,8 +291,42 @@ implements Locator {
      */
     public boolean scanContent(XMLString content)
     throws IOException {
+        /*
+       int       charValue;
+       int       delimiterLength      = delimiter.length();
+       char[]    delimiterCharArray   = delimiter.toCharArray();
+       char[]    scanContent          = new char[128];
+       char[]    holdUnreadCandidates = new char[delimiterLength];
+       int          countScannedChars = 0;
+       boolean   foundDelimiter       = false;
 
-        return false;
+       while ( countScannedChars < 128 ) {
+           charValue = this.fPushbackReader.read();
+           if ( charValue == delimiterCharArray[0] ) {
+               holdUnreadCandidates[0] = (char) charValue;
+               int i = 1;
+               for ( int candidateValue = 0;i<delimiterLength;i++) {
+                   candidateValue = this.fPushbackReader.read();
+                   holdUnreadCandidates[i-1] = (char) candidateValue;
+                   if ( candidateValue != delimiterCharArray[i] ) {
+                       this.fPushbackReader.unread(holdUnreadCandidates, 0, i );
+                       break;
+                   }
+               }
+               if ( i == delimiterLength) {
+                   fCharPosition += delimiterLength;//we are one char past delimiter
+                   foundDelimiter = true;
+                   break;//found delimiter
+               }
+           }
+           if ( charValue != -1 )
+               scanCharArray[countScannedChars++] = (char) charValue;
+           fCharPosition++;
+       }
+       content.setValues(scanCharArray,0,countScannedChars);
+       return foundDelimiter;
+       */
+       return true;
     } // scanContent
 
 
@@ -310,7 +344,39 @@ implements Locator {
     } // scanAttContent
 
     public boolean scanData( String delimiter, XMLString content ) throws IOException {
-        return false;
+        int       charValue;
+        int       delimiterLength      = delimiter.length();
+        char[]    delimiterCharArray   = delimiter.toCharArray();
+        char[]    scanCharArray        = new char[128];
+        char[]    holdUnreadCandidates = new char[delimiterLength];
+        int          countScannedChars = 0;
+        boolean   foundDelimiter       = false;
+
+        while ( countScannedChars < 128 ) {
+            charValue = this.fPushbackReader.read();
+            if ( charValue == delimiterCharArray[0] ) {
+                holdUnreadCandidates[0] = (char) charValue;
+                int i = 1;
+                for ( int candidateValue = 0;i<delimiterLength;i++) {
+                    candidateValue = this.fPushbackReader.read();
+                    holdUnreadCandidates[i-1] = (char) candidateValue;
+                    if ( candidateValue != delimiterCharArray[i] ) {
+                        this.fPushbackReader.unread(holdUnreadCandidates, 0, i );
+                        break;
+                    }
+                }
+                if ( i == delimiterLength) {
+                    fCharPosition += delimiterLength;//we are one char past delimiter
+                    foundDelimiter = true;
+                    break;//found delimiter
+                }
+            }
+            if ( charValue != -1 )
+                scanCharArray[countScannedChars++] = (char) charValue;
+            fCharPosition++;
+        }
+        content.setValues(scanCharArray,0,countScannedChars);
+        return foundDelimiter;
     }
 
 
@@ -328,7 +394,7 @@ implements Locator {
             fCharPosition++;
             readChar = this.fPushbackReader.read();
         }
-        if( readChar != -1 )
+        if ( readChar != -1 )
             this.fPushbackReader.unread( readChar);
     } // skipSpaces
 
