@@ -21,7 +21,7 @@ jars: compile
 
 docs: src/classfiles_updated
 	echo Building Stylebook docs in docs directory
-	${JDK12BIN} org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
+	${JDK12BIN}/java org.apache.stylebook.StyleBook "targetDirectory=docs/html" docs/docs-book.xml ../../xml-stylebook/styles/apachexml
 
 apidocs:
 	echo Building apiDocs in docs directory.
