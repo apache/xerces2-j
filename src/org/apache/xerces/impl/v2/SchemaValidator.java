@@ -1356,7 +1356,8 @@ public class SchemaValidator
             Object actualValue = null;
             try {
                 // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                actualValue = attDV.validate(attrValue, null);
+                // actualValue = attDV.validate(attrValue, null);
+                attDV.validate(attrValue, null);
             } catch (InvalidDatatypeValueException idve) {
                 reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
@@ -1425,7 +1426,6 @@ public class SchemaValidator
             }
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
-                
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
                 //REVISIT: what's the proper attrType?
                 attributes.addAttribute(attName, null, (defaultValue !=null)?defaultValue.toString():"");
@@ -1519,7 +1519,8 @@ public class SchemaValidator
                 String content = XSAttributeChecker.normalize(textContent, dv.getWSFacet());
                 try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
-                    retValue = dv.validate(content, null);
+                    // retValue = dv.validate(content, null);
+                    dv.validate(content, null);
                 } catch (InvalidDatatypeValueException e) {
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, content});
                 }
