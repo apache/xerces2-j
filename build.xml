@@ -411,6 +411,7 @@ Copyright:
                            org.apache.xerces.xinclude'
       locale='en_US'
       sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xerces2'
+      classpath='${tools.dir}/${jar.resolver}'
       author='true' version='true'
       windowtitle='Xerces2 Implementation' 
       doctitle='Xerces2 Implementation'
@@ -1342,8 +1343,9 @@ Copyright:
     <echo message="Running QueryXS ..." />
     <java fork="yes"
           classpath="${build.dir}/dom3-${jar.apis}:${tools.dir}/${jar.resolver}:${build.dir}/classes"
-          classname="xs.QueryXS"
-          args="${data.dir}/personal.xsd"/>
+          classname="xs.QueryXS">
+       <arg value="${data.dir}/personal.xsd"/>
+    </java>
 
     <!-- The following are samples but not command-line applications.
     <echo message="Running IteratorView ..." />
