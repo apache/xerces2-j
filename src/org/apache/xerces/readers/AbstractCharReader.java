@@ -583,7 +583,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
         return num;
     }
 
-    /**
+    /**               
      *
      */
     public int scanStringLiteral() throws Exception {
@@ -1257,7 +1257,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
      * @return the character skipped
      * @exception java.lang.Exception
      */
-    private int skipAsciiCharData() throws Exception {
+    private int fskipAsciiCharData() throws Exception {
         int index = fCurrentIndex;
         int offset = fCurrentOffset - index;
         while (true) {
