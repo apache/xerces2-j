@@ -219,8 +219,10 @@ implements XMLContentSpec.Provider {
 
         int contentSpecIndex = fElementDeclContentSpecIndex[chunk][index]; 
 
+        /***
         if ( contentSpecIndex == -1 )
             return null;
+        /***/
 
         XMLContentSpec  contentSpec = new XMLContentSpec();
         getContentSpec( contentSpecIndex, contentSpec );
@@ -379,7 +381,7 @@ implements XMLContentSpec.Provider {
         fAttributeDeclName[chunk][index]                    = new QName();
         fAttributeDeclType[chunk][index]                    = -1;
         fAttributeDeclDatatypeValidator[chunk][index]       = null;
-        fAttributeDeclDefaultType[chunk][index] = XMLAttributeDecl.DEFAULT_TYPE_NOTHING;
+        fAttributeDeclDefaultType[chunk][index] = XMLAttributeDecl.DEFAULT_TYPE_IMPLIED;
         fAttributeDeclDefaultValue[chunk][index]            = null;
         fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
         return fAttributeDeclCount++;
@@ -546,15 +548,41 @@ implements XMLContentSpec.Provider {
         //  for this element. So we create a DFAContentModel object. He
         //  encapsulates all of the work to create the DFA.
         //
-        fLeafCount    = 0;
-
-        //fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
+        int leafCount = countLeaves(contentSpecIndex);
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
-        return new DFAContentModel(  cmn, fLeafCount);
+        return new DFAContentModel(  cmn, leafCount);
     }
 
-    private int   fLeafCount = 0;
-    private int   fEpsilonIndex = -1;
+    private int countLeaves(int contentSpecIndex) {
+        return countLeaves(contentSpecIndex, new XMLContentSpec());
+    }
+    private int countLeaves(int contentSpecIndex, XMLContentSpec contentSpec) {
+        /***
+        if (contentSpecIndex == -1) {
+            return 0;
+        }
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+        int type = fContentSpecType[chunk][index];
+        if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            return 1;
+        }
+        int value = fContentSpecValue[chunk][index];
+        int otherValue = fContentSpecOtherValue[chunk][index];
+        return countLeaves(value) + countLeaves(otherValue);
+        /***/
+        getContentSpec(contentSpecIndex, contentSpec);
+        if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
+            return 1;
+        }
+        int value = contentSpec.value;
+        int otherValue = contentSpec.otherValue;
+        return countLeaves(value, contentSpec) + countLeaves(otherValue, contentSpec);
+        /***/
+    }
+
+    private int fLeafCount = 0;
+    private int fEpsilonIndex = -1;
     private final CMNode buildSyntaxTree(int startNode, XMLContentSpec contentSpec) throws CMException
     {
         // We will build a node at this level for the new tree
@@ -634,6 +662,7 @@ implements XMLContentSpec.Provider {
 
         if ( contentSpec.type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
             vectorQName.addElement( new QName( -1, contentSpec.value, -1, contentSpec.otherValue ) );
+            return;
         }
 
         //
