@@ -1262,9 +1262,11 @@ Copyright:
     <replace file="${build.src}/org/apache/xerces/xs/XSLoader.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
    <replace file="${build.src}/org/apache/xerces/dom/DOMStringListImpl.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+   <replace file="${build.src}/org/apache/xerces/impl/xs/XSLoaderImpl.java"
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
    <replace file="${build.src}/org/apache/xerces/impl/xs/XMLSchemaLoader.java"  
-             token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
   </target>
 
   <!-- =================================================================== -->
