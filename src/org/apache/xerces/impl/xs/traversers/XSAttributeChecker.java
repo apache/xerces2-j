@@ -235,6 +235,7 @@ public class XSAttributeChecker {
     protected static final int DT_WHITESPACE       = -14;
     protected static final int DT_BOOLEAN          = -15;
     protected static final int DT_NONNEGINT        = -16;
+    protected static final int DT_POSINT           = -17;
 
     static {
         // step 2: all possible attributes for all elements
@@ -280,6 +281,7 @@ public class XSAttributeChecker {
         int ATT_TYPE_N              = attCount++;
         int ATT_USE_D               = attCount++;
         int ATT_VALUE_NNI_N         = attCount++;
+        int ATT_VALUE_PI_N          = attCount++;
         int ATT_VALUE_STR_N         = attCount++;
         int ATT_VALUE_WS_N          = attCount++;
         int ATT_VERSION_N           = attCount++;
@@ -450,6 +452,10 @@ public class XSAttributeChecker {
                                                         INT_USE_OPTIONAL);
         allAttrs[ATT_VALUE_NNI_N]       =   new OneAttr(SchemaSymbols.ATT_VALUE,
                                                         DT_NONNEGINT,
+                                                        ATTIDX_VALUE,
+                                                        null);
+        allAttrs[ATT_VALUE_PI_N]        =   new OneAttr(SchemaSymbols.ATT_VALUE,
+                                                        DT_POSINT,
                                                         ATTIDX_VALUE,
                                                         null);
         allAttrs[ATT_VALUE_STR_N]       =   new OneAttr(SchemaSymbols.ATT_VALUE,
@@ -916,10 +922,19 @@ public class XSAttributeChecker {
         fEleAttrsMapL.put(SchemaSymbols.ELT_MINLENGTH, oneEle);
         // for element "maxLength" - local
         fEleAttrsMapL.put(SchemaSymbols.ELT_MAXLENGTH, oneEle);
-        // for element "totalDigits" - local
-        fEleAttrsMapL.put(SchemaSymbols.ELT_TOTALDIGITS, oneEle);
         // for element "fractionDigits" - local
         fEleAttrsMapL.put(SchemaSymbols.ELT_FRACTIONDIGITS, oneEle);
+
+        // for element "totalDigits" - local
+        attrList = Container.getContainer(3);
+        // id = ID
+        attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
+        // value = positiveInteger
+        attrList.put(SchemaSymbols.ATT_VALUE, allAttrs[ATT_VALUE_PI_N]);
+        // fixed = boolean : false
+        attrList.put(SchemaSymbols.ATT_FIXED, allAttrs[ATT_FIXED_D]);
+        oneEle = new OneElement (attrList);
+        fEleAttrsMapL.put(SchemaSymbols.ELT_TOTALDIGITS, oneEle);
 
         // for element "pattern" - local
         attrList = Container.getContainer(2);
@@ -1254,6 +1269,15 @@ public class XSAttributeChecker {
             }
             if (((XInt)retValue).intValue() < 0)
                 throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "nonNegativeInteger"});
+            break;
+        case DT_POSINT:
+            try {
+                retValue = fXIntPool.getXInt(Integer.parseInt(value));
+            } catch (NumberFormatException e) {
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "positiveInteger"});
+            }
+            if (((XInt)retValue).intValue() <= 0)
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{value, "positiveInteger"});
             break;
         case DT_BLOCK:
             // block = (#all | List of (substitution | extension | restriction | list | union))
