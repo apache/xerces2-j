@@ -58,6 +58,7 @@
 package org.apache.xerces.framework;
 
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLMessages;
 
@@ -172,6 +173,9 @@ public final class XMLDTDScanner {
     //
     // Instance Variables
     //
+    private QName fElementQName = new QName();
+    private QName fAttributeQName = new QName();
+    private QName fElementRefQName = new QName();
     private EventHandler fEventHandler = null;
     private StringPool fStringPool = null;
     private XMLErrorReporter fErrorReporter = null;
@@ -402,7 +406,7 @@ public final class XMLDTDScanner {
          * @param systemId StringPool handle of the system id
          * @exception java.lang.Exception
          */
-        public void doctypeDecl(int rootElementType, int publicId, int systemId) throws Exception;
+        public void doctypeDecl(QName rootElement, int publicId, int systemId) throws Exception;
         /**
          * Called when the DTDScanner starts reading from the external subset
          *
@@ -424,7 +428,7 @@ public final class XMLDTDScanner {
          * @return handle to the element whose declaration was added
          * @exception java.lang.Exception
          */
-        public int addElementDecl(int elementType) throws Exception;
+        public int addElementDecl(QName elementDecl) throws Exception;
         /**
          * Add an element declaration
          *
@@ -434,7 +438,7 @@ public final class XMLDTDScanner {
          * @return handle to the element declaration that was added 
          * @exception java.lang.Exception
          */
-        public int addElementDecl(int elementType, int contentSpecType, int contentSpec) throws Exception;
+        public int addElementDecl(QName elementDecl, int contentSpecType, int contentSpec) throws Exception;
         /**
          * Add an attribute definition
          *
@@ -447,7 +451,9 @@ public final class XMLDTDScanner {
          * @return handle to the attribute definition
          * @exception java.lang.Exception
          */
-        public int addAttDef(int elementIndex, int attName, int attType, int enumeration, int attDefaultType, int attDefaultValue) throws Exception;
+        public int addAttDef(QName elementDecl, QName attributeDecl, 
+                             int attType, int enumeration, 
+                             int attDefaultType, int attDefaultValue) throws Exception;
         /**
          * create an XMLContentSpec.Node for a leaf
          *
@@ -597,10 +603,13 @@ public final class XMLDTDScanner {
          *
          * @param entityReader reader to read from
          * @param fastchar hint - character likely to terminate the element type
+         * <!--
          * @return StringPool handle for the element type
+         * -->
          * @exception java.lang.Exception
          */
-        public int scanElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception;
+        public void scanElementType(XMLEntityHandler.EntityReader entityReader, 
+                                    char fastchar, QName element) throws Exception;
         /**
          * Scan for an element type at a point in the grammar where parameter
          * entity references are allowed.  If such a reference is encountered,
@@ -610,10 +619,13 @@ public final class XMLDTDScanner {
          *
          * @param entityReader reader to read from
          * @param fastchar hint - character likely to terminate the element type
+         * <!--
          * @return StringPool handle for the element type
+         * -->
          * @exception java.lang.Exception
          */
-        public int checkForElementTypeWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception;
+        public void checkForElementTypeWithPEReference(XMLEntityHandler.EntityReader entityReader, 
+                                                       char fastchar, QName element) throws Exception;
         /**
          * Scan for an attribute name at a point in the grammar where parameter
          * entity references are allowed.  If such a reference is encountered,
@@ -623,10 +635,13 @@ public final class XMLDTDScanner {
          *
          * @param entityReader reader to read from
          * @param fastchar hint - character likely to terminate the attribute name
+         * <!--
          * @return StringPool handle for the attribute name
+         * -->
          * @exception java.lang.Exception
          */
-        public int checkForAttributeNameWithPEReference(XMLEntityHandler.EntityReader entityReader, char fastcheck) throws Exception;
+        public void checkForAttributeNameWithPEReference(XMLEntityHandler.EntityReader entityReader, 
+                                                         char fastcheck, QName attribute) throws Exception;
         /**
          * Scan for a Name at a point in the grammar where parameter entity
          * references are allowed.  If such a reference is encountered, the
@@ -663,7 +678,9 @@ public final class XMLDTDScanner {
          * @return StringPool handle to the default value
          * @exception java.lang.Exception
          */
-        public int scanDefaultAttValue(int elementType, int attrName, int attType, int enumeration) throws Exception;
+        public int scanDefaultAttValue(QName element, QName attribute, 
+                                       int attType, 
+                                       int enumeration) throws Exception;
         /**
          * Supports DOM Level 2 internalSubset additions.
          * Called when the internal subset is completely scanned.
@@ -1082,8 +1099,8 @@ public final class XMLDTDScanner {
             return false;
         }
         fEntityReader.skipPastSpaces();
-        int rootElementType = fEventHandler.scanElementType(fEntityReader, ' ');
-        if (rootElementType == -1) {
+        fEventHandler.scanElementType(fEntityReader, ' ', fElementQName);
+        if (fElementQName.rawname == -1) {
             abortMarkup(XMLMessages.MSG_ROOT_ELEMENT_TYPE_REQUIRED,
                         XMLMessages.P28_ROOT_ELEMENT_TYPE_REQUIRED);
             return false;
@@ -1107,7 +1124,7 @@ public final class XMLDTDScanner {
             }
         } else
             lbrkt = fEntityReader.lookingAtChar('[', true);
-        fEventHandler.doctypeDecl(rootElementType, publicId, systemId);
+        fEventHandler.doctypeDecl(fElementQName, publicId, systemId);
         if (lbrkt) {
             scanDecls(false);
             fEntityReader.skipPastSpaces();
@@ -1116,7 +1133,7 @@ public final class XMLDTDScanner {
             if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                 abortMarkup(XMLMessages.MSG_DOCTYPEDECL_UNTERMINATED,
                             XMLMessages.P28_UNTERMINATED,
-                            rootElementType);
+                            fElementQName.rawname);
             }
             return false;
         }
@@ -1667,18 +1684,22 @@ public final class XMLDTDScanner {
         fEventHandler.callTextDecl(version, encoding);
         restoreScannerState(prevState);
     }
-    //
-    // [45] elementdecl ::= '<!ELEMENT' S Name S contentspec S? '>'
-    //
-    private void scanElementDecl() throws Exception
-    {
+
+    /**
+     * Scans an element declaration.
+     * <pre>
+     * [45] elementdecl ::= '&lt;!ELEMENT' S Name S contentspec S? '&gt;'
+     * </pre>
+     */
+    private void scanElementDecl() throws Exception {
+        
         if (!checkForPEReference(true)) {
             abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ELEMENTDECL,
                         XMLMessages.P45_SPACE_REQUIRED);
             return;
         }
-        int elementType = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ' ');
-        if (elementType == -1) {
+        fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ' ', fElementQName);
+        if (fElementQName.rawname == -1) {
             abortMarkup(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_ELEMENTDECL,
                         XMLMessages.P45_ELEMENT_TYPE_REQUIRED);
             return;
@@ -1686,7 +1707,7 @@ public final class XMLDTDScanner {
         if (!checkForPEReference(true)) {
             abortMarkup(XMLMessages.MSG_SPACE_REQUIRED_BEFORE_CONTENTSPEC_IN_ELEMENTDECL,
                         XMLMessages.P45_SPACE_REQUIRED,
-                        elementType);
+                        fElementQName.rawname);
             return;
         }
         int contentSpecType = -1;
@@ -1698,7 +1719,7 @@ public final class XMLDTDScanner {
         } else if (!fEntityReader.lookingAtChar('(', true)) {
             abortMarkup(XMLMessages.MSG_CONTENTSPEC_REQUIRED_IN_ELEMENTDECL,
                         XMLMessages.P45_CONTENTSPEC_REQUIRED,
-                        elementType);
+                        fElementQName.rawname);
             return;
         } else {
             int contentSpecReader = fReaderId;
@@ -1711,10 +1732,12 @@ public final class XMLDTDScanner {
             boolean skippedPCDATA = fEntityReader.skippedString(pcdata_string);
             if (skippedPCDATA) {
                 contentSpecType = fMIXED;
-                contentSpec = scanMixed(elementType);
+                // REVISIT: Validation. Should we pass in QName?
+                contentSpec = scanMixed(fElementQName);
             } else {
                 contentSpecType = fCHILDREN;
-                contentSpec = scanChildren(elementType);
+                // REVISIT: Validation. Should we pass in QName?
+                contentSpec = scanChildren(fElementQName);
             }
             boolean success = contentSpec != -1;
             restoreScannerState(prevState);
@@ -1733,19 +1756,23 @@ public final class XMLDTDScanner {
         if (!fEntityReader.lookingAtChar('>', true)) {
             abortMarkup(XMLMessages.MSG_ELEMENTDECL_UNTERMINATED,
                         XMLMessages.P45_UNTERMINATED,
-                        elementType);
+                        fElementQName.rawname);
             return;
         }
         decreaseMarkupDepth();
-        int elementIndex = fEventHandler.addElementDecl(elementType, contentSpecType, contentSpec);
-    }
-    //
-    // [51] Mixed ::= '(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
-    //
-    // Called after scanning past '(' S? '#PCDATA'
-    //
-    private int scanMixed(int elementType) throws Exception
-    {
+        int elementIndex = fEventHandler.addElementDecl(fElementQName, contentSpecType, contentSpec);
+
+    } // scanElementDecl()
+
+    
+    /**
+     * Scans mixed content model. Called after scanning past '(' S? '#PCDATA'
+     * <pre>
+     * [51] Mixed ::= '(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
+     * </pre>
+     */
+    private int scanMixed(QName element) throws Exception {
+
         int valueIndex = -1;  // -1 is special value for #PCDATA
         int prevNodeIndex = -1;
         boolean starRequired = false;
@@ -1756,7 +1783,7 @@ public final class XMLDTDScanner {
                 if (!fEntityReader.lookingAtChar(')', true)) {
                     reportFatalXMLError(XMLMessages.MSG_CLOSE_PAREN_REQUIRED_IN_MIXED,
                                         XMLMessages.P51_CLOSE_PAREN_REQUIRED,
-                                        elementType);
+                                        element.rawname);
                     return -1;
                 }
                 decreaseParenDepth();
@@ -1770,7 +1797,7 @@ public final class XMLDTDScanner {
                 } else if (starRequired) {
                     reportFatalXMLError(XMLMessages.MSG_MIXED_CONTENT_UNTERMINATED,
                                         XMLMessages.P51_UNTERMINATED,
-                                        fStringPool.toString(elementType),
+                                        fStringPool.toString(element.rawname),
                                         fEventHandler.getContentSpecNodeAsString(nodeIndex));
                     return -1;
                 }
@@ -1784,23 +1811,29 @@ public final class XMLDTDScanner {
             }
             starRequired = true;
             checkForPEReference(false);
-            valueIndex = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ')');
+            fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ')', fElementRefQName);
+            valueIndex = fElementRefQName.rawname;
             if (valueIndex == -1) {
                 reportFatalXMLError(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_MIXED_CONTENT,
                                     XMLMessages.P51_ELEMENT_TYPE_REQUIRED,
-                                    elementType);
+                                    element.rawname);
                 return -1;
             }
         }
-    }
-    //
-    // [47] children ::= (choice | seq) ('?' | '*' | '+')?
-    // [49] choice ::= '(' S? cp ( S? '|' S? cp )* S? ')'
-    // [50] seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'
-    // [48] cp ::= (Name | choice | seq) ('?' | '*' | '+')?
-    //
-    private int scanChildren(int elementType) throws Exception
-    {
+
+    } // scanMixed(QName):int
+    
+    /**
+     * Scans a children content model.
+     * <pre>
+     * [47] children ::= (choice | seq) ('?' | '*' | '+')?
+     * [49] choice ::= '(' S? cp ( S? '|' S? cp )* S? ')'
+     * [50] seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'
+     * [48] cp ::= (Name | choice | seq) ('?' | '*' | '+')?
+     * </pre>
+     */
+    private int scanChildren(QName element) throws Exception {
+        
         int depth = 1;
         initializeContentModelStack(depth);
         while (true) {
@@ -1811,11 +1844,12 @@ public final class XMLDTDScanner {
                 initializeContentModelStack(depth);
                 continue;
             }
-            int valueIndex = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ')');
+            fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ')', fElementRefQName);
+            int valueIndex = fElementRefQName.rawname;
             if (valueIndex == -1) {
                 reportFatalXMLError(XMLMessages.MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN,
                                     XMLMessages.P47_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED,
-                                    elementType);
+                                    element.rawname);
                 return -1;
             }
             fNodeIndexStack[depth] = fEventHandler.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF, valueIndex);
@@ -1846,7 +1880,7 @@ public final class XMLDTDScanner {
                     if (!fEntityReader.lookingAtChar(')', true)) {
                         reportFatalXMLError(XMLMessages.MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN,
                                             XMLMessages.P47_CLOSE_PAREN_REQUIRED,
-                                            elementType);
+                                            element.rawname);
                     }
                     decreaseParenDepth();
                     if (fPrevNodeIndexStack[depth] != -1) {
@@ -1868,7 +1902,9 @@ public final class XMLDTDScanner {
             }
             checkForPEReference(false);
         }
-    }
+
+    } // scanChildren(QName):int
+
     //
     // [52] AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
     // [53] AttDef ::= S Name S AttType S DefaultDecl
@@ -1881,13 +1917,14 @@ public final class XMLDTDScanner {
                         XMLMessages.P52_SPACE_REQUIRED);
             return;
         }
-        int elementTypeIndex = fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ' ');
+        fEventHandler.checkForElementTypeWithPEReference(fEntityReader, ' ', fElementQName);
+        int elementTypeIndex = fElementQName.rawname;
         if (elementTypeIndex == -1) {
             abortMarkup(XMLMessages.MSG_ELEMENT_TYPE_REQUIRED_IN_ATTLISTDECL,
                         XMLMessages.P52_ELEMENT_TYPE_REQUIRED);
             return;
         }
-        int elementIndex = fEventHandler.addElementDecl(elementTypeIndex);
+        int elementIndex = fEventHandler.addElementDecl(fElementQName);
         boolean sawSpace = checkForPEReference(true);
         if (fEntityReader.lookingAtChar('>', true)) {
             decreaseMarkupDepth();
@@ -1910,11 +1947,12 @@ public final class XMLDTDScanner {
             return;
         }
         while (true) {
-            int attDefName = fEventHandler.checkForAttributeNameWithPEReference(fEntityReader, ' ');
+            fEventHandler.checkForAttributeNameWithPEReference(fEntityReader, ' ', fAttributeQName);
+            int attDefName = fAttributeQName.rawname;
             if (attDefName == -1) {
                 abortMarkup(XMLMessages.MSG_ATTRIBUTE_NAME_REQUIRED_IN_ATTDEF,
                             XMLMessages.P53_NAME_REQUIRED,
-                            elementTypeIndex);
+                            fElementQName.rawname);
                 return;
             }
             if (!checkForPEReference(true)) {
@@ -2009,7 +2047,11 @@ public final class XMLDTDScanner {
                     attDefDefaultType = fFIXED;
                 } else
                     attDefDefaultType = fDEFAULT;
-                attDefDefaultValue = fEventHandler.scanDefaultAttValue(elementTypeIndex, attDefName, attDefType, attDefEnumeration);
+                fElementQName.setValues(-1, elementTypeIndex, elementTypeIndex);
+                fAttributeQName.setValues(-1, attDefName, attDefName);
+                attDefDefaultValue = fEventHandler.scanDefaultAttValue(fElementQName, fAttributeQName, 
+                                                                       attDefType, 
+                                                                       attDefEnumeration);
                 if (attDefDefaultValue == -1) {
                     skipPastEndOfCurrentMarkup();
                     return;
@@ -2033,7 +2075,7 @@ public final class XMLDTDScanner {
             }
             sawSpace = checkForPEReference(true);
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fEventHandler.addAttDef(elementIndex, attDefName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = fEventHandler.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
                 decreaseMarkupDepth();
                 return;
             }
@@ -2050,11 +2092,11 @@ public final class XMLDTDScanner {
                 }
             }
             if (fEntityReader.lookingAtChar('>', true)) {
-                int attDefIndex = fEventHandler.addAttDef(elementIndex, attDefName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                int attDefIndex = fEventHandler.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
                 decreaseMarkupDepth();
                 return;
             }
-            int attDefIndex = fEventHandler.addAttDef(elementIndex, attDefName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+            int attDefIndex = fEventHandler.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
         }
     }
     //
@@ -2119,21 +2161,21 @@ public final class XMLDTDScanner {
      * @return handle in the string pool for the default attribute value
      * @exception java.lang.Exception
      */
-    public int scanDefaultAttValue(int elementType, int attrName) throws Exception
+    public int scanDefaultAttValue(QName element, QName attribute) throws Exception
     {
         boolean single;
         if (!(single = fEntityReader.lookingAtChar('\'', true)) && !fEntityReader.lookingAtChar('\"', true)) {
             reportFatalXMLError(XMLMessages.MSG_QUOTE_REQUIRED_IN_ATTVALUE,
                                 XMLMessages.P10_QUOTE_REQUIRED,
-                                elementType,
-                                attrName);
+                                element.rawname,
+                                attribute.rawname);
             return -1;
         }
         int previousState = setScannerState(SCANNER_STATE_DEFAULT_ATTRIBUTE_VALUE);
         char qchar = single ? '\'' : '\"';
         fDefaultAttValueReader = fReaderId;
-        fDefaultAttValueElementType = elementType;
-        fDefaultAttValueAttrName = attrName;
+        fDefaultAttValueElementType = element.rawname;
+        fDefaultAttValueAttrName = attribute.rawname;
         boolean setMark = true;
         int dataOffset = fLiteralData.length();
         while (true) {
@@ -2204,8 +2246,8 @@ public final class XMLDTDScanner {
                 setMark = true;
                 reportFatalXMLError(XMLMessages.MSG_LESSTHAN_IN_ATTVALUE,
                                     XMLMessages.WFC_NO_LESSTHAN_IN_ATTVALUE,
-                                    elementType,
-                                    attrName);
+                                    element.rawname,
+                                    attribute.rawname);
                 continue;
             }
             //
@@ -2235,8 +2277,8 @@ public final class XMLDTDScanner {
                 if (invChar >= 0) {
                     reportFatalXMLError(XMLMessages.MSG_INVALID_CHAR_IN_ATTVALUE,
                                         XMLMessages.P10_INVALID_CHARACTER,
-                                        fStringPool.toString(elementType),
-                                        fStringPool.toString(attrName),
+                                        fStringPool.toString(element.rawname),
+                                        fStringPool.toString(attribute.rawname),
                                         Integer.toHexString(invChar));
                 }
                 continue;

@@ -57,6 +57,8 @@
 
 package org.apache.xerces.framework;
 
+import org.apache.xerces.utils.QName;
+
 /**
  * XMLValidator defines the interface that XMLDocumentScanner and XML
  * EntityHandler have with an object that serves as a pluggable validator.
@@ -133,7 +135,8 @@ public interface XMLDocumentHandler {
      * @param attrListHandle handle into attrList.  Allows attributes to be retreived.
      * @exception java.lang.Exception
      */
-    public void startElement(int elementType, XMLAttrList attrList, int attrListHandle) throws Exception;
+    public void startElement(QName element, 
+                             XMLAttrList attrList, int attrListHandle) throws Exception;
 
     /**
      * callback for end of element.
@@ -141,7 +144,7 @@ public interface XMLDocumentHandler {
      * @param elementType element handle for the element being scanned
      * @exception java.lang.Exception
      */
-    public void endElement(int elementType) throws Exception;
+    public void endElement(QName element) throws Exception;
 
     /**
      * callback for start of entity reference.
@@ -252,7 +255,7 @@ public interface XMLDocumentHandler {
          * @param systemId string pool index of the DTD's system ID
          * @exception java.lang.Exception
          */
-        public void startDTD(int rootElementType, int publicId, int systemId) throws Exception;
+        public void startDTD(QName rootElement, int publicId, int systemId) throws Exception;
 
         /**
          * Supports DOM Level 2 internalSubset additions.
@@ -281,7 +284,7 @@ public interface XMLDocumentHandler {
          * @see org.apache.xerces.framework.XMLContentSpec
          * @exception java.lang.Exception
          */
-        public void elementDecl(int elementType, XMLContentSpec contentSpec) throws Exception;
+        public void elementDecl(QName elementDecl, XMLContentSpec contentSpec) throws Exception;
 
         /**
          * callback for an attribute list declaration. 
@@ -296,10 +299,8 @@ public interface XMLDocumentHandler {
          *        or -1 if there is no defaultvalue 
          * @exception java.lang.Exception
          */
-        public void attlistDecl(int elementType,
-                                int attrName,
-                                int attType,
-                                String enumString,
+        public void attlistDecl(QName elementDecl, QName attributeDecl,
+                                int attType, String enumString,
                                 int attDefaultType,
                                 int attDefaultValue) throws Exception;
 

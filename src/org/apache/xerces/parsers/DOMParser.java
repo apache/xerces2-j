@@ -67,6 +67,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.framework.XMLDocumentHandler;
 import org.apache.xerces.framework.XMLParser;
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.schema.XUtil;
 
@@ -965,14 +966,14 @@ public class DOMParser
     
 
     /** Start element. */
-    public void startElement(int elementTypeIndex,
+    public void startElement(QName elementQName,
                              XMLAttrList xmlAttrList, int attrListIndex)
         throws Exception {
 
         // deferred expansion
         if (fDeferredDocumentImpl != null) {
 
-            int element = fDeferredDocumentImpl.createElement(elementTypeIndex, xmlAttrList, attrListIndex);
+            int element = fDeferredDocumentImpl.createElement(elementQName.rawname, xmlAttrList, attrListIndex);
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, element);
             fCurrentNodeIndex = element;
             fWithinElement = true;
@@ -994,7 +995,7 @@ public class DOMParser
                     Document schemaDocument = fValidator.getSchemaDocument();
                     if (schemaDocument != null) {
                         if (fDocumentTypeIndex == -1) {
-                            fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementTypeIndex, -1, -1);
+                            fDocumentTypeIndex = fDeferredDocumentImpl.createDocumentType(elementQName.rawname, -1, -1);
                             fDeferredDocumentImpl.appendChild(0, fDocumentTypeIndex);
                         }
 
@@ -1012,12 +1013,13 @@ public class DOMParser
             try { nsEnabled = getNamespaces(); }
             catch (SAXException s) {}
 
-            String elementName = fStringPool.toString(elementTypeIndex);
+            String elementName = fStringPool.toString(elementQName.rawname);
             Element e;
             if (nsEnabled) {
                 e = fDocument.createElementNS(
-                        fStringPool.toString(fStringPool.getURIForQName(elementTypeIndex)),
-                        fStringPool.toString(elementTypeIndex)
+                        // REVISIT: Make sure uri is filled in by caller.
+                        fStringPool.toString(elementQName.uri),
+                        fStringPool.toString(elementQName.localpart)
                     );
             } else {
                 e = fDocument.createElement(elementName);
@@ -1033,7 +1035,8 @@ public class DOMParser
 		    // to be bound to "http://www.w3.org/2000/xmlns/"
 		    // So as long as the XML parser doesn't do it, it needs to
 		    // done here.
-		    int prefixIndex = fStringPool.getPrefixForQName(attName);
+		    //int prefixIndex = fStringPool.getPrefixForQName(attName);
+            int prefixIndex = elementQName.prefix;
 		    String prefix = fStringPool.toString(prefixIndex);
 		    if (namespaceURI == null) {
 			if (prefix != null) {
@@ -1096,10 +1099,10 @@ public class DOMParser
             }
         }
 
-    } // startElement(int,XMLAttrList,int)
+    } // startElement(QName,XMLAttrList,int)
 
     /** End element. */
-    public void endElement(int elementTypeIndex)
+    public void endElement(QName elementQName)
         throws Exception {
 
         // deferred node expansion
@@ -1114,7 +1117,7 @@ public class DOMParser
             fWithinElement = false;
         }
 
-    } // endElement(int)
+    } // endElement(QName)
 
     /** Characters. */
     public void characters(int dataIndex)
@@ -1357,28 +1360,28 @@ public class DOMParser
             // should never be true - we should not return here.
             if (fDeferredDocumentImpl.getNodeType(erChild, false) != Node.ENTITY_REFERENCE_NODE)  return;
 
-            erChild = fDeferredDocumentImpl.getLastChild(erChild, false); // first Child of EntityReference
+            erChild = fDeferredDocumentImpl.getFirstChild(erChild, false); // first Child of EntityReference
 
             if (fDocumentTypeIndex != -1) {
                 // find Entity decl for this EntityReference.
-                int entityDecl = fDeferredDocumentImpl.getLastChild(fDocumentTypeIndex, false);
+                int entityDecl = fDeferredDocumentImpl.getFirstChild(fDocumentTypeIndex, false);
                 while (entityDecl != -1) {
                     if (fDeferredDocumentImpl.getNodeType(entityDecl, false) == Node.ENTITY_NODE
                     && fDeferredDocumentImpl.getNodeNameString(entityDecl, false).equals(name)) // string compare...
                     {
                         break;
                     }
-                    entityDecl = fDeferredDocumentImpl.getPrevSibling(entityDecl, false);
+                    entityDecl = fDeferredDocumentImpl.getNextSibling(entityDecl, false);
                 }
 
                 if (entityDecl != -1
-                    && fDeferredDocumentImpl.getLastChild(entityDecl, false) == -1) {
+                    && fDeferredDocumentImpl.getFirstChild(entityDecl, false) == -1) {
                     // found entityDecl with same name as this reference
                     // AND it doesn't have any children.
 
                     // we don't need to iterate, because the whole structure
                     // should already be connected to the 1st child.
-                    fDeferredDocumentImpl.setAsLastChild(entityDecl, erChild);
+                    fDeferredDocumentImpl.setAsFirstChild(entityDecl, erChild);
                 }
             }
 
@@ -1424,12 +1427,12 @@ public class DOMParser
      *  This function will be called when a &lt;!DOCTYPE...&gt; declaration is
      *  encountered.
      */
-    public void startDTD(int rootElementType, int publicId, int systemId)
+    public void startDTD(QName rootElement, int publicId, int systemId)
         throws Exception {
 
         // full expansion
         if (fDocumentImpl != null) {
-            String rootElementName = fStringPool.toString(rootElementType);
+            String rootElementName = fStringPool.toString(rootElement.rawname);
             String publicString = fStringPool.toString(publicId);
             String systemString = fStringPool.toString(systemId);
             fDocumentType = fDocumentImpl.
@@ -1453,7 +1456,7 @@ public class DOMParser
         else if (fDeferredDocumentImpl != null) {
             fDocumentTypeIndex =
                 fDeferredDocumentImpl.
-                    createDocumentType(rootElementType, publicId, systemId);
+                    createDocumentType(rootElement.rawname, publicId, systemId);
             fDeferredDocumentImpl.appendChild(fDocumentIndex, fDocumentTypeIndex);
 
             if (fGrammarAccess) {
@@ -1514,12 +1517,12 @@ public class DOMParser
     /**
      * &lt;!ELEMENT Name contentspec&gt;
      */
-    public void elementDecl(int elementTypeIndex, XMLContentSpec contentSpec)
+    public void elementDecl(QName elementDecl, XMLContentSpec contentSpec)
         throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
             String contentModel = contentSpec.toString();
-            System.out.println("elementDecl(" + fStringPool.toString(elementTypeIndex) + ", " +
+            System.out.println("elementDecl(" + fStringPool.toString(elementDecl.rawname) + ", " +
                                                 contentModel + ")");
         }
 
@@ -1536,9 +1539,9 @@ public class DOMParser
                 //
 
                 // get element declaration; create if necessary
-                int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
-                int elementIndex = getLastChildElement(schemaIndex, "element", "name", elementName);
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
+                String elementName = fStringPool.toString(elementDecl.rawname);
+                int elementIndex = getFirstChildElement(schemaIndex, "element", "name", elementName);
                 if (elementIndex == -1) {
                     int handle = fAttrList.startAttrList();
                     fAttrList.addAttr(
@@ -1601,11 +1604,11 @@ public class DOMParser
                 // other content models
                 else {
                     // get type element; create if necessary
-                    int typeIndex = getLastChildElement(elementIndex, "type");
+                    int typeIndex = getFirstChildElement(elementIndex, "type");
                     if (typeIndex == -1) {
                         typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("type"), null, -1);
                         // REVISIT: Check for type redeclaration? -Ac
-                        fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getLastChildElement(elementIndex));
+                        fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
                     }
 
                     // <!ELEMENT name EMPTY>
@@ -1617,7 +1620,7 @@ public class DOMParser
                     // <!ELEMENT name ANY>
                     else if (contentTypeName.equals("ANY")) {
                         int anyIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("any"), null, -1);
-                        fDeferredDocumentImpl.insertBefore(typeIndex, anyIndex, getLastChildElement(typeIndex));
+                        fDeferredDocumentImpl.insertBefore(typeIndex, anyIndex, getFirstChildElement(typeIndex));
                     }
 
                     // <!ELEMENT name (a,b,...)> or <!ELEMENT name (a|b|...)>
@@ -1632,7 +1635,7 @@ public class DOMParser
                         Element model = createContentModel(contentSpec, node);
 
                         int modelIndex = createDeferredContentModel(model);
-                        int firstChildIndex = getLastChildElement(typeIndex);
+                        int firstChildIndex = getFirstChildElement(typeIndex);
                         fDeferredDocumentImpl.insertBefore(typeIndex, modelIndex, firstChildIndex);
                     }
 
@@ -1660,7 +1663,7 @@ public class DOMParser
                                 false); // search
                             fAttrList.endAttrList();
                             int elementRefIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("element"), fAttrList, handle);
-                            fDeferredDocumentImpl.insertBefore(typeIndex, elementRefIndex, getLastChildElement(typeIndex, "element"));
+                            fDeferredDocumentImpl.insertBefore(typeIndex, elementRefIndex, getFirstChildElement(typeIndex, "element"));
                             contentSpec.getNode(index, node);
                         } while (node.type != XMLContentSpec.CONTENTSPECNODE_LEAF);
                     }
@@ -1676,7 +1679,7 @@ public class DOMParser
 
                 // get element declaration; create if necessary
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
                 Element element = XUtil.getFirstChildElement(schema, "element", "name", elementName);
                 if (element == null) {
                     element = fDocument.createElement("element");
@@ -1779,15 +1782,14 @@ public class DOMParser
     /**
      * &lt;!ATTLIST Name AttDef&gt;
      */
-    public void attlistDecl(int elementTypeIndex,
-                            int attrNameIndex, int attType,
-                            String enumString,
+    public void attlistDecl(QName elementDecl, QName attributeDecl, 
+                            int attType, String enumString,
                             int attDefaultType, int attDefaultValue)
         throws Exception {
 
         if (DEBUG_ATTLIST_DECL) {
-            System.out.println("attlistDecl(" + fStringPool.toString(elementTypeIndex) + ", " +
-                                                fStringPool.toString(attrNameIndex) + ", " +
+            System.out.println("attlistDecl(" + fStringPool.toString(elementDecl.rawname) + ", " +
+                                                fStringPool.toString(attributeDecl.rawname) + ", " +
                                                 fStringPool.toString(attType) + ", " +
                                                 enumString + ", " +
                                                 fStringPool.toString(attDefaultType) + ", " +
@@ -1805,16 +1807,16 @@ public class DOMParser
                 }
 
                 // get element definition
-                int elementDefIndex  = fDeferredDocumentImpl.lookupElementDefinition(elementTypeIndex);
+                int elementDefIndex  = fDeferredDocumentImpl.lookupElementDefinition(elementDecl.rawname);
 
                 // create element definition if not already there
                 if (elementDefIndex == -1) {
-                    elementDefIndex = fDeferredDocumentImpl.createElementDefinition(elementTypeIndex);
+                    elementDefIndex = fDeferredDocumentImpl.createElementDefinition(elementDecl.rawname);
                     fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, elementDefIndex);
                 }
 
                 // add default attribute
-                int attrIndex = fDeferredDocumentImpl.createAttribute(attrNameIndex, attDefaultValue, false);
+                int attrIndex = fDeferredDocumentImpl.createAttribute(attributeDecl.rawname, attDefaultValue, false);
                 fDeferredDocumentImpl.appendChild(elementDefIndex, attrIndex);
 
             }
@@ -1826,9 +1828,9 @@ public class DOMParser
             if (fGrammarAccess) {
 
                 // get element declaration; create it if necessary
-                int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
-                int elementIndex = getLastChildElement(schemaIndex, "element", "name", elementName);
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
+                String elementName = fStringPool.toString(elementDecl.rawname);
+                int elementIndex = getFirstChildElement(schemaIndex, "element", "name", elementName);
                 if (elementIndex == -1) {
                     int handle = fAttrList.startAttrList();
                     fAttrList.addAttr(
@@ -1849,15 +1851,15 @@ public class DOMParser
                 }
 
                 // get type element; create it if necessary
-                int typeIndex = getLastChildElement(elementIndex, "type");
+                int typeIndex = getFirstChildElement(elementIndex, "type");
                 if (typeIndex == -1) {
                     typeIndex = fDeferredDocumentImpl.createElement(fStringPool.addSymbol("type"), null, -1);
-                    fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getLastChildElement(elementIndex));
+                    fDeferredDocumentImpl.insertBefore(elementIndex, typeIndex, getFirstChildElement(elementIndex));
                 }
 
                 // create attribute and set its attributes
-                String attributeName = fStringPool.toString(attrNameIndex);
-                int attributeIndex = getLastChildElement(elementIndex, "attribute", "name", attributeName);
+                String attributeName = fStringPool.toString(attributeDecl.rawname);
+                int attributeIndex = getFirstChildElement(elementIndex, "attribute", "name", attributeName);
                 if (attributeIndex == -1) {
                     int handle = fAttrList.startAttrList();
                     fAttrList.addAttr(
@@ -1966,7 +1968,7 @@ public class DOMParser
                 }
 
                 // get element name
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
 
                 // get element definition node
                 NamedNodeMap elements = ((DocumentTypeImpl)fDocumentType).getElements();
@@ -1979,7 +1981,7 @@ public class DOMParser
                 // REVISIT: Check for uniqueness of element name? -Ac
 
                 // get attribute name and value index
-                String attrName      = fStringPool.toString(attrNameIndex);
+                String attrName      = fStringPool.toString(attributeDecl.rawname);
                 String attrValue     = fStringPool.toString(attDefaultValue);
 
                 // create attribute and set properties
@@ -1999,7 +2001,7 @@ public class DOMParser
 
                 // get element declaration; create it if necessary
                 Element schema = XUtil.getFirstChildElement(fDocumentType, "schema");
-                String elementName = fStringPool.toString(elementTypeIndex);
+                String elementName = fStringPool.toString(elementDecl.rawname);
                 Element element = XUtil.getFirstChildElement(schema, "element", "name", elementName);
                 if (element == null) {
                     element = fDocument.createElement("element");
@@ -2018,7 +2020,7 @@ public class DOMParser
                 }
 
                 // create attribute and set its attributes
-                String attributeName = fStringPool.toString(attrNameIndex);
+                String attributeName = fStringPool.toString(attributeDecl.rawname);
                 Element attribute = XUtil.getFirstChildElement(element, "attribute", "name", attributeName);
                 if (attribute == null) {
                     attribute = fDocument.createElement("attribute");
@@ -2399,9 +2401,9 @@ public class DOMParser
 
             // create notation declaration
             if (fGrammarAccess) {
-                int schemaIndex = getLastChildElement(fDocumentTypeIndex, "schema");
+                int schemaIndex = getFirstChildElement(fDocumentTypeIndex, "schema");
                 String notationName = fStringPool.toString(notationNameIndex);
-                int notationIndex = getLastChildElement(schemaIndex, "notation", "name", notationName);
+                int notationIndex = getFirstChildElement(schemaIndex, "notation", "name", notationName);
                 if (notationIndex == -1) {
                     int handle = fAttrList.startAttrList();
                     fAttrList.addAttr(
@@ -2628,62 +2630,62 @@ public class DOMParser
     } // setOccurrenceCount(Element,int,int)
 
     /** Returns the first child element of the specified node. */
-    private int getLastChildElement(int nodeIndex) {
-        int childIndex = fDeferredDocumentImpl.getLastChild(nodeIndex, false);
+    private int getFirstChildElement(int nodeIndex) {
+        int childIndex = fDeferredDocumentImpl.getFirstChild(nodeIndex, false);
         while (childIndex != -1) {
             if (fDeferredDocumentImpl.getNodeType(childIndex, false) == Node.ELEMENT_NODE) {
                 return childIndex;
             }
-            childIndex = fDeferredDocumentImpl.getPrevSibling(childIndex, false);
+            childIndex = fDeferredDocumentImpl.getNextSibling(childIndex, false);
         }
         return -1;
     }
 
     /** Returns the next sibling element of the specified node. */
-    private int getPrevSiblingElement(int nodeIndex) {
-        int siblingIndex = fDeferredDocumentImpl.getPrevSibling(nodeIndex, false);
+    private int getNextSiblingElement(int nodeIndex) {
+        int siblingIndex = fDeferredDocumentImpl.getNextSibling(nodeIndex, false);
         while (siblingIndex != -1) {
             if (fDeferredDocumentImpl.getNodeType(siblingIndex, false) == Node.ELEMENT_NODE) {
                 return siblingIndex;
             }
-            siblingIndex = fDeferredDocumentImpl.getPrevSibling(siblingIndex, false);
+            siblingIndex = fDeferredDocumentImpl.getNextSibling(siblingIndex, false);
         }
         return -1;
     }
 
     /** Returns the first child element with the given name. */
-    private int getLastChildElement(int nodeIndex, String elementName) {
-        int childIndex = getLastChildElement(nodeIndex);
+    private int getFirstChildElement(int nodeIndex, String elementName) {
+        int childIndex = getFirstChildElement(nodeIndex);
         if (childIndex != -1) {
             while (childIndex != -1) {
                 String nodeName = fDeferredDocumentImpl.getNodeNameString(childIndex, false);
                 if (nodeName.equals(elementName)) {
                     return childIndex;
                 }
-                childIndex = getPrevSiblingElement(childIndex);
+                childIndex = getNextSiblingElement(childIndex);
             }
         }
         return -1;
     }
 
     /** Returns the next sibling element with the given name. */
-    private int getPrevSiblingElement(int nodeIndex, String elementName) {
-        int siblingIndex = getPrevSiblingElement(nodeIndex);
+    private int getNextSiblingElement(int nodeIndex, String elementName) {
+        int siblingIndex = getNextSiblingElement(nodeIndex);
         if (siblingIndex != -1) {
             while (siblingIndex != -1) {
                 String nodeName = fDeferredDocumentImpl.getNodeNameString(siblingIndex, false);
                 if (nodeName.equals(elementName)) {
                     return siblingIndex;
                 }
-                siblingIndex = getPrevSiblingElement(siblingIndex);
+                siblingIndex = getNextSiblingElement(siblingIndex);
             }
         }
         return -1;
     }
 
     /** Returns the first child element with the given name. */
-    private int getLastChildElement(int nodeIndex, String elemName, String attrName, String attrValue) {
-        int childIndex = getLastChildElement(nodeIndex, elemName);
+    private int getFirstChildElement(int nodeIndex, String elemName, String attrName, String attrValue) {
+        int childIndex = getFirstChildElement(nodeIndex, elemName);
         if (childIndex != -1) {
             while (childIndex != -1) {
                 int attrIndex = fDeferredDocumentImpl.getNodeValue(childIndex, false);
@@ -2691,23 +2693,23 @@ public class DOMParser
                     String nodeName = fDeferredDocumentImpl.getNodeNameString(attrIndex, false);
                     if (nodeName.equals(attrName)) {
                         // REVISIT: Do we need to normalize the text? -Ac
-                        int textIndex = fDeferredDocumentImpl.getLastChild(attrIndex, false);
+                        int textIndex = fDeferredDocumentImpl.getFirstChild(attrIndex, false);
                         String nodeValue = fDeferredDocumentImpl.getNodeValueString(textIndex, false);
                         if (nodeValue.equals(attrValue)) {
                             return childIndex;
                         }
                     }
-                    attrIndex = fDeferredDocumentImpl.getPrevSibling(attrIndex, false);
+                    attrIndex = fDeferredDocumentImpl.getNextSibling(attrIndex, false);
                 }
-                childIndex = getPrevSiblingElement(childIndex, elemName);
+                childIndex = getNextSiblingElement(childIndex, elemName);
             }
         }
         return -1;
     }
 
     /** Returns the next sibling element with the given name and attribute. */
-    private int getPrevSiblingElement(int nodeIndex, String elemName, String attrName, String attrValue) {
-        int siblingIndex = getPrevSiblingElement(nodeIndex, elemName);
+    private int getNextSiblingElement(int nodeIndex, String elemName, String attrName, String attrValue) {
+        int siblingIndex = getNextSiblingElement(nodeIndex, elemName);
         if (siblingIndex != -1) {
             int attributeNameIndex = fStringPool.addSymbol(attrName);
             while (siblingIndex != -1) {
@@ -2717,9 +2719,9 @@ public class DOMParser
                     if (attrValue.equals(fStringPool.toString(attrValueIndex))) {
                         return siblingIndex;
                     }
-                    attrIndex = fDeferredDocumentImpl.getPrevSibling(attrIndex, false);
+                    attrIndex = fDeferredDocumentImpl.getNextSibling(attrIndex, false);
                 }
-                siblingIndex = getPrevSiblingElement(siblingIndex, elemName);
+                siblingIndex = getNextSiblingElement(siblingIndex, elemName);
             }
         }
         return -1;

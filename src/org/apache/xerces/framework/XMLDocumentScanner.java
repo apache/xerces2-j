@@ -58,6 +58,7 @@
 package org.apache.xerces.framework;
 
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLMessages;
 
@@ -146,6 +147,9 @@ public final class XMLDocumentScanner {
     //
     // Instance Variables
     //
+    QName fElementQName = new QName();
+    QName fAttributeQName = new QName();
+    QName fCurrentElementQName = new QName();
     ScannerDispatcher fDispatcher = null;
     EventHandler fEventHandler = null;
     StringPool fStringPool = null;
@@ -184,11 +188,14 @@ public final class XMLDocumentScanner {
          *
          * @param entityReader The entity reader.
          * @param fastchar A likely non-name character that might terminate the element type.
+         * <!--
          * @return The handle in the string pool for the element type scanned, or -1 if
          *         we were not able to scan an element type at the current location.
+         * -->
          * @exception java.lang.Exception
          */
-        public int scanElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception;
+        public void scanElementType(XMLEntityHandler.EntityReader entityReader, 
+                                   char fastchar, QName element) throws Exception;
         /**
          * Scan the expected element type.
          *
@@ -203,7 +210,8 @@ public final class XMLDocumentScanner {
          *         find.
          * @exception java.lang.Exception
          */
-        public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, char fastchar) throws Exception;
+        public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
+                                               char fastchar, QName element) throws Exception;
         /**
          * Scan an attribute name.
          *
@@ -212,11 +220,14 @@ public final class XMLDocumentScanner {
          *
          * @param entityReader The entity reader.
          * @param elementType The element type for this attribute.
+         * <!--
          * @return The handle in the string pool for the attribute name scanned, or -1 if
          *         we were not able to scan an attribute name at the current location.
+         * -->
          * @exception java.lang.Exception
          */
-        public int scanAttributeName(XMLEntityHandler.EntityReader entityReader, int elementType) throws Exception;
+        public void scanAttributeName(XMLEntityHandler.EntityReader entityReader, 
+                                     QName element, QName attribute) throws Exception;
         /**
          * Signal the start of a document
          *
@@ -252,7 +263,7 @@ public final class XMLDocumentScanner {
          * @param elementType handle to the elementType being scanned
          * @exception java.lang.Exception
          */
-        public void callStartElement(int elementType) throws Exception;
+        public void callStartElement(QName element) throws Exception;
         /**
          * signal the scanning of an end element tag
          *
@@ -327,7 +338,7 @@ public final class XMLDocumentScanner {
          *         XMLDocumentScanner.RESULT_DUPLICATE_ATTR if the attribute is a duplicate.
          * @exception java.lang.Exception
          */
-        public int scanAttValue(int elementType, int attrName) throws Exception;
+        public int scanAttValue(QName element, QName attribute) throws Exception;
     }
 
     /**
@@ -452,13 +463,13 @@ public final class XMLDocumentScanner {
      * @return handle in the string pool of the scanned value
      * @exception java.lang.Exception
      */
-    public int scanAttValue(int elementType, int attrName, boolean asSymbol) throws Exception {
+    public int scanAttValue(QName element, QName attribute, boolean asSymbol) throws Exception {
         boolean single;
         if (!(single = fEntityReader.lookingAtChar('\'', true)) && !fEntityReader.lookingAtChar('\"', true)) {
             reportFatalXMLError(XMLMessages.MSG_QUOTE_REQUIRED_IN_ATTVALUE,
                                 XMLMessages.P10_QUOTE_REQUIRED,
-                                elementType,
-                                attrName);
+                                element.rawname,
+                                attribute.rawname);
             return -1;
         }
         char qchar = single ? '\'' : '\"';
@@ -468,8 +479,10 @@ public final class XMLDocumentScanner {
             return attValue;
         int previousState = setScannerState(SCANNER_STATE_ATTRIBUTE_VALUE);
         fAttValueReader = fReaderId;
-        fAttValueElementType = elementType;
-        fAttValueAttrName = attrName;
+        // REVISIT: What should this be?
+        fAttValueElementType = element.rawname;
+        // REVISIT: What should this be?
+        fAttValueAttrName = attribute.rawname;
         fAttValueOffset = fEntityReader.currentOffset();
         int dataOffset = fLiteralData.length();
         if (fAttValueOffset - fAttValueMark > 0)
@@ -539,8 +552,8 @@ public final class XMLDocumentScanner {
                 setMark = true;
                 reportFatalXMLError(XMLMessages.MSG_LESSTHAN_IN_ATTVALUE,
                                     XMLMessages.WFC_NO_LESSTHAN_IN_ATTVALUE,
-                                    elementType,
-                                    attrName);
+                                    element.rawname,
+                                    attribute.rawname);
             } else if (!fEntityReader.lookingAtValidChar(true)) {
                 if (fAttValueOffset - fAttValueMark > 0)
                     fEntityReader.append(fLiteralData, fAttValueMark, fAttValueOffset - fAttValueMark);
@@ -551,8 +564,8 @@ public final class XMLDocumentScanner {
                 if (invChar >= 0) {
                     reportFatalXMLError(XMLMessages.MSG_INVALID_CHAR_IN_ATTVALUE,
                                         XMLMessages.P10_INVALID_CHARACTER,
-                                        fStringPool.toString(elementType),
-                                        fStringPool.toString(attrName),
+                                        fStringPool.toString(element.rawname),
+                                        fStringPool.toString(attribute.rawname),
                                         Integer.toHexString(invChar));
                 }
             }
@@ -984,8 +997,8 @@ public final class XMLDocumentScanner {
                 switch (fScannerState) {
                 case SCANNER_STATE_ROOT_ELEMENT:
                 {
-                    int elementType = fEventHandler.scanElementType(fEntityReader, '>');
-                    if (elementType != -1) {
+                    fEventHandler.scanElementType(fEntityReader, '>', fElementQName);
+                    if (fElementQName.rawname != -1) {
                         //
                         // root element
                         //
@@ -998,18 +1011,18 @@ public final class XMLDocumentScanner {
                             //
                             // we have more content
                             //
-                            fEventHandler.callStartElement(elementType);
+                            fEventHandler.callStartElement(fElementQName);
                             fScannerMarkupDepth--;
                             if (fElementDepth == fElementTypeStack.length) {
                                 int[] newStack = new int[fElementDepth * 2];
                                 System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
                                 fElementTypeStack = newStack;
                             }
-                            fCurrentElementType = elementType;
-                            fElementTypeStack[fElementDepth] = elementType;
+                            fCurrentElementType = fElementQName.rawname;
+                            fElementTypeStack[fElementDepth] = fElementQName.rawname;
                             fElementDepth++;
                             restoreScannerState(SCANNER_STATE_CONTENT);
-                        } else if (scanElement(elementType)) {
+                        } else if (scanElement(fElementQName)) {
                             //
                             // we have more content
                             //
@@ -1018,8 +1031,8 @@ public final class XMLDocumentScanner {
                                 System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
                                 fElementTypeStack = newStack;
                             }
-                            fCurrentElementType = elementType;
-                            fElementTypeStack[fElementDepth] = elementType;
+                            fCurrentElementType = fElementQName.rawname;
+                            fElementTypeStack[fElementDepth] = fElementQName.rawname;
                             fElementDepth++;
                             restoreScannerState(SCANNER_STATE_CONTENT);
                         } else {
@@ -1081,7 +1094,7 @@ public final class XMLDocumentScanner {
                             //
                             // [42] ETag ::= '</' Name S? '>'
                             //
-                            if (!fEventHandler.scanExpectedElementType(fEntityReader, '>')) {
+                            if (!fEventHandler.scanExpectedElementType(fEntityReader, '>', fElementQName)) {
                                 abortMarkup(XMLMessages.MSG_ETAG_REQUIRED,
                                             XMLMessages.P39_UNTERMINATED,
                                             fCurrentElementType);
@@ -1109,31 +1122,31 @@ public final class XMLDocumentScanner {
                                 }
                             }
                         } else {
-                            int elementType = fEventHandler.scanElementType(fEntityReader, '>');
-                            if (elementType != -1) {
+                            fEventHandler.scanElementType(fEntityReader, '>', fElementQName);
+                            if (fElementQName.rawname != -1) {
                                 //
                                 // element
                                 //
                                 if (fEntityReader.lookingAtChar('>', true)) {
-                                    fEventHandler.callStartElement(elementType);
+                                    fEventHandler.callStartElement(fElementQName);
                                     fScannerMarkupDepth--;
                                     if (fElementDepth == fElementTypeStack.length) {
                                         int[] newStack = new int[fElementDepth * 2];
                                         System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
                                         fElementTypeStack = newStack;
                                     }
-                                    fCurrentElementType = elementType;
-                                    fElementTypeStack[fElementDepth] = elementType;
+                                    fCurrentElementType = fElementQName.rawname;
+                                    fElementTypeStack[fElementDepth] = fElementQName.rawname;
                                     fElementDepth++;
                                 } else {
-                                    if (scanElement(elementType)) {
+                                    if (scanElement(fElementQName)) {
                                         if (fElementDepth == fElementTypeStack.length) {
                                             int[] newStack = new int[fElementDepth * 2];
                                             System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
                                             fElementTypeStack = newStack;
                                         }
-                                        fCurrentElementType = elementType;
-                                        fElementTypeStack[fElementDepth] = elementType;
+                                        fCurrentElementType = fElementQName.rawname;
+                                        fElementTypeStack[fElementDepth] = fElementQName.rawname;
                                         fElementDepth++;
                                     }
                                 }
@@ -1151,7 +1164,10 @@ public final class XMLDocumentScanner {
                         setScannerState(SCANNER_STATE_START_OF_MARKUP);
                         continue;
                     }
-                    switch (fEntityReader.scanContent(fCurrentElementType)) {
+                    // REVISIT: Is this the right thing to do? Do we need to
+                    //          save more information on the stack?
+                    fCurrentElementQName.setValues(-1, -1, fCurrentElementType);
+                    switch (fEntityReader.scanContent(fCurrentElementQName)) {
                     case XMLEntityHandler.CONTENT_RESULT_START_OF_PI:
                         fScannerMarkupDepth++;
                         int piTarget = fEntityReader.scanName(' ');
@@ -1192,7 +1208,7 @@ public final class XMLDocumentScanner {
                         //
                         // [42] ETag ::= '</' Name S? '>'
                         //
-                        if (!fEventHandler.scanExpectedElementType(fEntityReader, '>')) {
+                        if (!fEventHandler.scanExpectedElementType(fEntityReader, '>', fElementQName)) {
                             abortMarkup(XMLMessages.MSG_ETAG_REQUIRED,
                                         XMLMessages.P39_UNTERMINATED,
                                         fCurrentElementType);
@@ -1225,28 +1241,28 @@ public final class XMLDocumentScanner {
                     {
                         fScannerMarkupDepth++;
                         fParseTextDecl = false;
-                        int elementType = fEventHandler.scanElementType(fEntityReader, '>');
-                        if (elementType != -1) {
+                        fEventHandler.scanElementType(fEntityReader, '>', fElementQName);
+                        if (fElementQName.rawname != -1) {
                             if (fEntityReader.lookingAtChar('>', true)) {
-                                fEventHandler.callStartElement(elementType);
+                                fEventHandler.callStartElement(fElementQName);
                                 fScannerMarkupDepth--;
                                 if (fElementDepth == fElementTypeStack.length) {
                                     int[] newStack = new int[fElementDepth * 2];
                                     System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
                                     fElementTypeStack = newStack;
                                 }
-                                fCurrentElementType = elementType;
-                                fElementTypeStack[fElementDepth] = elementType;
+                                fCurrentElementType = fElementQName.rawname;
+                                fElementTypeStack[fElementDepth] = fElementQName.rawname;
                                 fElementDepth++;
                             } else {
-                                if (scanElement(elementType)) {
+                                if (scanElement(fElementQName)) {
                                     if (fElementDepth == fElementTypeStack.length) {
                                         int[] newStack = new int[fElementDepth * 2];
                                         System.arraycopy(fElementTypeStack, 0, newStack, 0, fElementDepth);
                                         fElementTypeStack = newStack;
                                     }
-                                    fCurrentElementType = elementType;
-                                    fElementTypeStack[fElementDepth] = elementType;
+                                    fCurrentElementType = fElementQName.rawname;
+                                    fElementTypeStack[fElementDepth] = fElementQName.rawname;
                                     fElementDepth++;
                                 }
                             }
@@ -1777,7 +1793,7 @@ public final class XMLDocumentScanner {
     //
     // Note: We have already scanned Name.
     //
-    boolean scanElement(int elementType) throws Exception
+    boolean scanElement(QName element) throws Exception
     {
         //
         // Scan for attributes
@@ -1799,8 +1815,9 @@ public final class XMLDocumentScanner {
                 // Name
                 //
                 setScannerState(SCANNER_STATE_ATTRIBUTE_NAME);
-                int attrName = fEventHandler.scanAttributeName(fEntityReader, elementType);
-                if (attrName == -1) {
+                fEventHandler.scanAttributeName(fEntityReader, 
+                                                element, fAttributeQName);
+                if (fAttributeQName.rawname == -1) {
                     break;
                 }
                 //
@@ -1811,13 +1828,14 @@ public final class XMLDocumentScanner {
                     if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                         abortMarkup(XMLMessages.MSG_EQ_REQUIRED_IN_ATTRIBUTE,
                                     XMLMessages.P41_EQ_REQUIRED,
-                                    elementType, attrName);
+                                    element.rawname, fAttributeQName.rawname);
                         restoreScannerState(previousState);
                     }
                     return false;
                 }
                 fEntityReader.skipPastSpaces();
-                int result = fEventHandler.scanAttValue(elementType, attrName);
+                //int result = fEventHandler.scanAttValue(prefixIndex, elementType, 
+                int result = fEventHandler.scanAttValue(element,  fAttributeQName);
                 if (result == RESULT_FAILURE) {
                     if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                         skipPastEndOfCurrentMarkup();
@@ -1827,7 +1845,7 @@ public final class XMLDocumentScanner {
                 } else if (result == RESULT_DUPLICATE_ATTR) {
                     reportFatalXMLError(XMLMessages.MSG_ATTRIBUTE_NOT_UNIQUE,
                                         XMLMessages.WFC_UNIQUE_ATT_SPEC,
-                                        elementType, attrName);
+                                        element.rawname, fAttributeQName.rawname);
                 }
                 restoreScannerState(SCANNER_STATE_ATTRIBUTE_LIST);
                 if (!fEntityReader.lookingAtSpace(true)) {
@@ -1844,11 +1862,11 @@ public final class XMLDocumentScanner {
             if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                 abortMarkup(XMLMessages.MSG_ELEMENT_UNTERMINATED,
                             XMLMessages.P40_UNTERMINATED,
-                            elementType);
+                            element.rawname);
             }
             return false;
         }
-        fEventHandler.callStartElement(elementType);
+        fEventHandler.callStartElement(element);
         fScannerMarkupDepth--;
         if (slash) { // '/>'
             fEventHandler.callEndElement(fReaderId);

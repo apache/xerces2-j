@@ -57,6 +57,7 @@
 
 package org.apache.xerces.framework;
 
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 
 import org.xml.sax.AttributeList;
@@ -95,31 +96,47 @@ import org.xml.sax.SAXParseException;
  *
  * @version $Id$
  */
-public final class XMLAttrList implements AttributeList {
+public final class XMLAttrList 
+    implements AttributeList {
+
     //
+    // Constants
+    //
+
     // Chunk size constants
-    //
+
     private static final int CHUNK_SHIFT = 5;           // 2^5 = 32
     private static final int CHUNK_SIZE = (1 << CHUNK_SHIFT);
     private static final int CHUNK_MASK = CHUNK_SIZE - 1;
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT));   // 2^10 = 1k
-    //
+
     // Flags (bits)
-    //
+
     private static final int ATTFLAG_SPECIFIED = 1;
     private static final int ATTFLAG_LASTATTR  = 2;
+
     //
+    // Data
+    //
+
     // Instance variables
-    //
+
     private StringPool fStringPool = null;
     private int fCurrentHandle = -1;
     private int fAttributeListHandle = -1;
     private int fAttributeListLength = 0;
     private int fAttrCount = 0;
+    private int[][] fAttPrefix = new int[INITIAL_CHUNK_COUNT][];
+    private int[][] fAttLocalpart = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fAttName = new int[INITIAL_CHUNK_COUNT][];
+    private int[][] fAttURI = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fAttValue = new int[INITIAL_CHUNK_COUNT][];
     private int[][] fAttType = new int[INITIAL_CHUNK_COUNT][];
     private byte[][] fAttFlags = new byte[INITIAL_CHUNK_COUNT][];
+
+    // utility
+
+    private QName fAttributeQName = new QName();
 
     /**
      * Constructor
@@ -143,6 +160,12 @@ public final class XMLAttrList implements AttributeList {
         fAttrCount = 0;
     }
 
+    public int addAttr(int attrName, int attValue, 
+                       int attType, boolean specified, boolean search) throws Exception
+    {
+        fAttributeQName.setValues(-1, attrName, attrName);
+        return addAttr(fAttributeQName, attValue, attType, specified, search);
+    }
     /**
      * Add an attribute to the current set.
      *
@@ -155,15 +178,18 @@ public final class XMLAttrList implements AttributeList {
      * @return The index of this attribute; or -1 is <code>search</code> was <code>true</code>
      *         and <code>attrName</code> was already present.
      */
-    public int addAttr(int attrName, int attValue, int attType, boolean specified, boolean search) throws Exception
-    {
+    public int addAttr(QName attribute, 
+                       int attValue, int attType, 
+                       boolean specified, boolean search) throws Exception {
+
         int chunk;
         int index;
         if (search) {
             chunk = fCurrentHandle >> CHUNK_SHIFT;
             index = fCurrentHandle & CHUNK_MASK;
             for (int attrIndex = fCurrentHandle; attrIndex < fAttrCount; attrIndex++) {
-                if (fStringPool.equalNames(fAttName[chunk][index], attrName)) {
+                // REVISIT: Should this be localpart?
+                if (fStringPool.equalNames(fAttName[chunk][index], attribute.rawname)) {
                     return -1;
                 }
                 if (++index == CHUNK_SIZE) {
@@ -176,12 +202,16 @@ public final class XMLAttrList implements AttributeList {
             index = fAttrCount & CHUNK_MASK;
         }
         ensureCapacity(chunk, index);
-        fAttName[chunk][index] = attrName;
+        fAttPrefix[chunk][index] = attribute.prefix;
+        fAttLocalpart[chunk][index] = attribute.localpart;
+        fAttName[chunk][index] = attribute.rawname;
+        fAttURI[chunk][index] = attribute.uri;
         fAttValue[chunk][index] = attValue;
         fAttType[chunk][index] = attType;
         fAttFlags[chunk][index] = (byte)(specified ? ATTFLAG_SPECIFIED : 0);
         return fAttrCount++;
-    }
+
+    } // addAttr(QName,int,int,boolean,boolean):int
 
     /**
      * Start a new set of attributes.
@@ -205,6 +235,29 @@ public final class XMLAttrList implements AttributeList {
     }
 
     /**
+     * Get the prefix of the attribute.
+     */
+    public int getAttrPrefix(int attrIndex) {
+        if (attrIndex < 0 || attrIndex >= fAttrCount)
+            return -1;
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        return fAttPrefix[chunk][index];
+    }
+
+    /**
+     * Return the localpart of the attribute.
+     */
+    public int getAttrLocalpart(int attrIndex) {
+        if (attrIndex < 0 || attrIndex >= fAttrCount)
+            return -1;
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        return fAttLocalpart[chunk][index];
+    }
+
+    // REVISIT: Should this be renamed "getAttrRawname" to match?
+    /**
      * Get the name of the attribute
      *
      * @param attrIndex The index of the attribute.
@@ -216,6 +269,24 @@ public final class XMLAttrList implements AttributeList {
         int chunk = attrIndex >> CHUNK_SHIFT;
         int index = attrIndex & CHUNK_MASK;
         return fAttName[chunk][index];
+    }
+    
+    /** Sets the uri of the attribute. */
+    public void setAttrURI(int attrIndex, int uri) {
+        if (attrIndex < 0 || attrIndex >= fAttrCount)
+            return;
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        fAttURI[chunk][index] = uri;
+    }
+
+    /** Return the uri of the attribute. */
+    public int getAttrURI(int attrIndex) {
+        if (attrIndex < 0 || attrIndex >= fAttrCount)
+            return -1;
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        return fAttURI[chunk][index];
     }
 
     /**
@@ -273,7 +344,10 @@ public final class XMLAttrList implements AttributeList {
         int index = attrListHandle & CHUNK_MASK;
         while (true) {
             boolean last = (fAttFlags[chunk][index] & ATTFLAG_LASTATTR) != 0;
+            fAttPrefix[chunk][index] = -1;
+            fAttLocalpart[chunk][index] = -1;
             fAttName[chunk][index] = -1;
+            fAttURI[chunk][index] = -1;
             if ((fAttFlags[chunk][index] & ATTFLAG_SPECIFIED) != 0)
                 fStringPool.releaseString(fAttValue[chunk][index]);
             fAttValue[chunk][index] = -1;
@@ -368,6 +442,30 @@ public final class XMLAttrList implements AttributeList {
     }
 
     /**
+     * Return the prefix of an attribute in this list (by position).
+     */
+    public String getPrefix(int i) {
+        if (i < 0 || i >= fAttributeListLength) {
+            return null;
+        }
+        int chunk = (fAttributeListHandle + i) >> CHUNK_SHIFT;
+        int index = (fAttributeListHandle + i) & CHUNK_MASK;
+        return fStringPool.toString(fAttPrefix[chunk][index]);
+    }
+
+    /**
+     * Return the local part of an attribute in this list (by position).
+     */
+    public String getLocalpart(int i) {
+        if (i < 0 || i >= fAttributeListLength) {
+            return null;
+        }
+        int chunk = (fAttributeListHandle + i) >> CHUNK_SHIFT;
+        int index = (fAttributeListHandle + i) & CHUNK_MASK;
+        return fStringPool.toString(fAttLocalpart[chunk][index]);
+    }
+
+    /**
      * Return the name of an attribute in this list (by position).
      *
      * <p>The names must be unique: the SAX parser shall not include the
@@ -389,6 +487,15 @@ public final class XMLAttrList implements AttributeList {
         int chunk = (fAttributeListHandle + i) >> CHUNK_SHIFT;
         int index = (fAttributeListHandle + i) & CHUNK_MASK;
         return fStringPool.toString(fAttName[chunk][index]);
+    }
+
+    /** Returns the URI of an attribute in this list (by position). */
+    public String getURI(int i) {
+        if (i < 0 || i >= fAttributeListLength)
+            return null;
+        int chunk = (fAttributeListHandle + i) >> CHUNK_SHIFT;
+        int index = (fAttributeListHandle + i) & CHUNK_MASK;
+        return fStringPool.toString(fAttURI[chunk][index]);
     }
 
     /**
@@ -510,14 +617,28 @@ public final class XMLAttrList implements AttributeList {
         return null;
     }
 
+    //
+    // Private methods
+    //
+
     /* Expand our internal data structures as needed. */
     private boolean ensureCapacity(int chunk, int index) {
+
         try {
             return fAttName[chunk][index] != 0;
         } catch (ArrayIndexOutOfBoundsException ex) {
             int[][] newIntArray = new int[chunk * 2][];
+            System.arraycopy(fAttPrefix, 0, newIntArray, 0, chunk);
+            fAttPrefix = newIntArray;
+            newIntArray = new int[chunk * 2][];
+            System.arraycopy(fAttLocalpart, 0, newIntArray, 0, chunk);
+            fAttLocalpart = newIntArray;
+            newIntArray = new int[chunk * 2][];
             System.arraycopy(fAttName, 0, newIntArray, 0, chunk);
             fAttName = newIntArray;
+            newIntArray = new int[chunk * 2][];
+            System.arraycopy(fAttURI, 0, newIntArray, 0, chunk);
+            fAttURI = newIntArray;
             newIntArray = new int[chunk * 2][];
             System.arraycopy(fAttValue, 0, newIntArray, 0, chunk);
             fAttValue = newIntArray;
@@ -529,10 +650,15 @@ public final class XMLAttrList implements AttributeList {
             fAttFlags = newByteArray;
         } catch (NullPointerException ex) {
         }
+        fAttPrefix[chunk] = new int[CHUNK_SIZE];
+        fAttLocalpart[chunk] = new int[CHUNK_SIZE];
         fAttName[chunk] = new int[CHUNK_SIZE];
+        fAttURI[chunk] = new int[CHUNK_SIZE];
         fAttValue[chunk] = new int[CHUNK_SIZE];
         fAttType[chunk] = new int[CHUNK_SIZE];
         fAttFlags[chunk] = new byte[CHUNK_SIZE];
         return true;
-    }
-}
+
+    } // ensureCapacity(int,int):boolean
+
+} // class XMLAttrList
