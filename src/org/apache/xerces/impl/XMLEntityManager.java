@@ -369,6 +369,33 @@ public class XMLEntityManager
     } // addUnparsedEntity(String,String,String,String)
 
     /**
+     * Checks whether an entity given by name is unparsed.
+     *
+     * @param entityName The name of the entity to check.
+     * @returns True if the entity is unparsed.
+     */
+    public boolean isUnparsedEntity(String entityName) throws SAXException {
+
+        Entity entity = (Entity)fEntities.get(entityName);
+        if (entity == null) {
+            if (fStandalone && entityName.startsWith("%")) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EntityNotDeclared",
+                                           new Object[] { entityName },
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            else if (fValidation) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EntityNotDeclared",
+                                           new Object[] { entityName },
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+            return false;
+        }
+        return entity.isUnparsed();
+    }
+
+    /**
      * Resolves the specified public and system identifiers. This
      * method first attempts to resolve the entity based on the
      * EntityResolver registered by the application. If no entity
@@ -464,8 +491,31 @@ public class XMLEntityManager
             return;
         }
 
-        // is entity recursive?
+        // should we skip external entities?
         boolean external = entity.isExternal();
+        if (external) {
+            boolean unparsed = entity.isUnparsed();
+            boolean parameter = entityName.startsWith("%");
+            boolean general = !parameter;
+            if (unparsed || (general && !fExternalGeneralEntities) ||
+                (parameter && !fExternalParameterEntities)) {
+                if (fEntityHandler != null) {
+                    String publicId = null;
+                    String systemId = null;
+                    final String encoding = null;
+                    if (external) {
+                        ExternalEntity externalEntity = (ExternalEntity)entity;
+                        publicId = externalEntity.publicId;
+                        systemId = externalEntity.systemId;
+                    }
+                    fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                    fEntityHandler.endEntity(entityName);
+                }
+                return;
+            }
+        }
+
+        // is entity recursive?
         int size = fEntityStack.size();
         for (int i = size; i >= 0; i--) {
             Entity activeEntity = i == size
@@ -496,30 +546,6 @@ public class XMLEntityManager
                     fEntityHandler.endEntity(entityName);
                 }
                 return;
-            }
-        }
-
-        // does the application want to skip external entities?
-        if (external) {
-            boolean unparsed = external
-                             ? ((ExternalEntity)entity).notation != null 
-                             : false;
-            boolean parameter = entityName.startsWith("%");
-            boolean general = !parameter;
-            if (unparsed || (general && !fExternalGeneralEntities) ||
-                (parameter && !fExternalParameterEntities)) {
-                if (fEntityHandler != null) {
-                    String publicId = null;
-                    String systemId = null;
-                    final String encoding = null;
-                    if (external) {
-                        ExternalEntity externalEntity = (ExternalEntity)entity;
-                        publicId = externalEntity.publicId;
-                        systemId = externalEntity.systemId;
-                    }
-                    fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
-                    fEntityHandler.endEntity(entityName);
-                }
             }
         }
 
@@ -1216,6 +1242,9 @@ public class XMLEntityManager
         /** Returns true if this is an external entity. */
         public abstract boolean isExternal();
 
+        /** Returns true if this is an unparsed entity. */
+        public abstract boolean isUnparsed();
+
         /** Clears the entity. */
         public void clear() {
             name = null;
@@ -1266,6 +1295,11 @@ public class XMLEntityManager
         public final boolean isExternal() {
             return false;
         } // isExternal():boolean
+
+        /** Returns true if this is an unparsed entity. */
+        public final boolean isUnparsed() {
+            return false;
+        } // isUnparsed():boolean
 
         /** Clears the entity. */
         public void clear() {
@@ -1338,6 +1372,11 @@ public class XMLEntityManager
         public final boolean isExternal() {
             return true;
         } // isExternal():boolean
+
+        /** Returns true if this is an unparsed entity. */
+        public final boolean isUnparsed() {
+            return notation != null;
+        } // isUnparsed():boolean
 
         /** Clears the entity. */
         public void clear() {
@@ -1448,6 +1487,11 @@ public class XMLEntityManager
         public final boolean isExternal() {
             return systemId != null;
         } // isExternal():boolean
+
+        /** Returns true if this is an unparsed entity. */
+        public final boolean isUnparsed() {
+            return false;
+        } // isUnparsed():boolean
 
         //
         // Object methods
