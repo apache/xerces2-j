@@ -90,15 +90,6 @@ public class XMLErrorReporter
     /** SEVERITY_FATAL_ERROR */
     public static final short SEVERITY_FATAL_ERROR = -1;
     
-    
-    /** Xerces features prefix. */
-    protected static final String XERCES_FEATURES_PREFIX =
-        "http://apache.org/xml/features/";
-
-    /** Xerces properties prefix. */
-    protected static final String XERCES_PROPERTIES_PREFIX =
-        "http://apache.org/xml/properties/";
-
     //
     // Data
     //
@@ -231,7 +222,8 @@ public class XMLErrorReporter
      */
     public void reset(XMLComponentManager componentManager)
         throws SAXException {
-        fErrorHandler = (ErrorHandler)componentManager.getProperty(XERCES_PROPERTIES_PREFIX + "internal/error-handler");
+        final String ERROR_HANDLER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
+        fErrorHandler = (ErrorHandler)componentManager.getProperty(ERROR_HANDLER);
     } // reset
 
     /**
@@ -242,15 +234,15 @@ public class XMLErrorReporter
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (featureId.startsWith(XERCES_FEATURES_PREFIX)) {
+        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
             String feature =
-                featureId.substring(XERCES_FEATURES_PREFIX.length());
+                featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
             //
             // http://apache.org/xml/features/continue-after-fatal-error
             //   Allows the parser to continue after a fatal error.
             //   Normally, a fatal error would stop the parse.
             //
-            if (feature.equals("continue-after-fatal-error")) {
+            if (feature.equals(Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE)) {
                 fContinueAfterFatalError = state;
             }
         }
@@ -265,11 +257,11 @@ public class XMLErrorReporter
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
-        if (propertyId.startsWith(XERCES_PROPERTIES_PREFIX)) {
+        if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property =
-                propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
+                propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
 
-            if (property.equals("internal/error-handler")) {
+            if (property.equals(Constants.ERROR_HANDLER_PROPERTY)) {
                 fErrorHandler = (ErrorHandler) value;
             }
         }

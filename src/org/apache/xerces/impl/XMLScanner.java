@@ -65,6 +65,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLString;
 
 import org.xml.sax.SAXException;
@@ -81,7 +82,8 @@ import org.xml.sax.SAXException;
  *
  * @version $Id$
  */
-public abstract class XMLScanner {
+public abstract class XMLScanner 
+    implements XMLComponent {
 
     //
     // Data

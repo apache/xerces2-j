@@ -117,26 +117,7 @@ public class XMLEntityManager
     /** Default buffer size (2048). */
     public static final int DEFAULT_BUFFER_SIZE = 2048;
 
-    // xerces features
-
-    /** Xerces feature prefix. */
-    //protected static final String XERCES_FEATURE_PREFIX = "http://apache.org/xml/features/";
-
-    // xerces properties
-
-    /** Xerces property prefix. */
-    protected static final String XERCES_PROPERTY_PREFIX = "http://apache.org/xml/properties/";
-
-    /** Entity resolver property id. */
-    protected static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
-
-    /** Symbol table property id. */
-    protected static final String SYMBOL_TABLE_PROPERTY = "internal/symbol-table";
-
     // debugging
-
-    /** Debugging. */
-    private static final boolean DEBUG = false;
 
     /** 
      * Debug printing of buffer. This debugging flag works best when you
@@ -144,6 +125,9 @@ public class XMLEntityManager
      * 64 bytes.
      */
     private static final boolean DEBUG_PRINT = false;
+
+    /** Debugging. */
+    private static final boolean DEBUG = false;
 
     //
     // Data
@@ -353,9 +337,9 @@ public class XMLEntityManager
         throws SAXException {
 
         // Xerces properties
-        final String ENTITY_RESOLVER = XERCES_PROPERTY_PREFIX + ENTITY_RESOLVER_PROPERTY;
+        final String ENTITY_RESOLVER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
         fEntityResolver = (EntityResolver)componentManager.getProperty(ENTITY_RESOLVER);
-        final String SYMBOL_TABLE = XERCES_PROPERTY_PREFIX + SYMBOL_TABLE_PROPERTY;
+        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
 
         // initialize state
@@ -384,13 +368,13 @@ public class XMLEntityManager
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         // Xerces properties
-        if (propertyId.startsWith(XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(ENTITY_RESOLVER_PROPERTY)) {
+        if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
+            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            if (property.equals(Constants.ENTITY_RESOLVER_PROPERTY)) {
                 fEntityResolver = (EntityResolver)value;
                 return;
             }
-            if (property.equals(SYMBOL_TABLE_PROPERTY)) {
+            if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
                 fSymbolTable = (SymbolTable)value;
                 return;
             }

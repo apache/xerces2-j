@@ -110,28 +110,6 @@ public class XMLDocumentScanner
     // Constants
     //
 
-    // sax features
-
-    /** SAX feature prefix. */
-    protected static final String SAX_FEATURE_PREFIX = "http://xml.org/sax/features/";
-
-    /** Namespaces feature. */
-    protected static final String NAMESPACES_FEATURE = "namespaces";
-
-    // xerces properties
-
-    /** Xerces property prefix. */
-    protected static final String XERCES_PROPERTY_PREFIX = "http://apache.org/xml/properties/";
-
-    /** Symbol table property. */
-    protected static final String SYMBOL_TABLE_PROPERTY = "internal/symbol-table";
-    
-    /** Error reporter property. */
-    protected static final String ERROR_REPORTER_PROPERTY = "internal/error-reporter";
-
-    /** Entity manager property. */
-    protected static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
-
     // scanner states
 
     /** Scanner state: XML declaration. */
@@ -370,15 +348,20 @@ public class XMLDocumentScanner
         throws SAXException {
 
         // SAX features
-        fNamespaces = componentManager.getFeature(SAX_FEATURE_PREFIX + NAMESPACES_FEATURE);
+        final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
+        fNamespaces = componentManager.getFeature(NAMESPACES);
         fAttributes.setNamespaces(fNamespaces);
 
         // Xerces properties
-        fSymbolTable = (SymbolTable)componentManager.getProperty(XERCES_PROPERTY_PREFIX + SYMBOL_TABLE_PROPERTY);
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(XERCES_PROPERTY_PREFIX + ERROR_REPORTER_PROPERTY);
-        fEntityManager = (XMLEntityManager)componentManager.getProperty(XERCES_PROPERTY_PREFIX + ENTITY_MANAGER_PROPERTY);
+        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
+        fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
+        final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
+        final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+        fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
         /*** REVISIT: Add DTD support. ***
-        fDTDScanner = (XMLDTDScanner)componentManager.getProperty(XERCES_PROPERTY_PREFIX + DTD_SCANNER_PROPERTY);
+        final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
+        fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
         /***/
 
         // initialize scanner

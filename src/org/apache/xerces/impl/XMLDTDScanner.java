@@ -82,8 +82,8 @@ import org.xml.sax.SAXNotSupportedException;
  * @version $Id$
  */
 public class XMLDTDScanner
-    implements XMLComponent, XMLDTDSource, XMLDTDContentModelSource,
-               XMLEntityHandler {
+    implements XMLComponent, 
+               XMLDTDSource, XMLDTDContentModelSource, XMLEntityHandler {
 
     //
     // Data
