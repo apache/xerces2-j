@@ -976,6 +976,10 @@ public class XSAttributeChecker {
     // temprory vector, used to hold the namespace list
     protected Vector fNamespaceList = new Vector();
 
+    // whether this attribute appeared in the current element
+    protected boolean[] fSeen = new boolean[ATTIDX_COUNT];
+    private static boolean[] fSeenTemp = new boolean[ATTIDX_COUNT];
+
     // constructor. Sets fErrorReproter and get datatype validators
     public XSAttributeChecker(XSDHandler schemaHandler) {
         fSchemaHandler = schemaHandler;
@@ -1072,7 +1076,7 @@ public class XSAttributeChecker {
         Container attrList = oneEle.attrList;
         
         // clear the "seen" flag.
-        attrList.start();
+        System.arraycopy(fSeenTemp, 0, fSeen, 0, ATTIDX_COUNT);
 
         // traverse all attributes
         int length = attrs.length;
@@ -1133,6 +1137,9 @@ public class XSAttributeChecker {
                 continue;
             }
 
+            // we've seen this attribute
+            fSeen[oneAttr.valueIndex] = true;
+
             // check the value against the datatype
             try {
                 // no checking on string needs to be done here.
@@ -1181,7 +1188,7 @@ public class XSAttributeChecker {
 
             // if the attribute didn't apprear, and
             // if the attribute is optional with default value, apply it
-            if (oneAttr.dfltValue != null && !oneAttr.seen) {
+            if (oneAttr.dfltValue != null && !fSeen[oneAttr.valueIndex]) {
                 //attrValues.put(oneAttr.name, oneAttr.dfltValue);
                 attrValues[oneAttr.valueIndex] = oneAttr.dfltValue;
                 fromDefault |= (1<<oneAttr.valueIndex);
@@ -1701,8 +1708,6 @@ class OneAttr {
     public int valueIndex;
     // the default value of this attribute
     public Object dfltValue;
-    // whether this attribute appeared in the current element
-    public boolean seen;
 
     public OneAttr(String name, int dvIndex, int valueIndex, Object dfltValue) {
         this.name = name;
@@ -1741,10 +1746,6 @@ abstract class Container {
 
     OneAttr[] values;
     int pos = 0;
-    void start() {
-        for (int i = 0; i < pos; i++)
-            values[i].seen = false;
-    }
 }
 
 class SmallContainer extends Container {
@@ -1760,7 +1761,6 @@ class SmallContainer extends Container {
     OneAttr get(String key) {
         for (int i = 0; i < pos; i++) {
             if (keys[i].equals(key)) {
-                values[i].seen = true;
                 return values[i];
             }
         }
@@ -1780,8 +1780,6 @@ class LargeContainer extends Container {
     }
     OneAttr get(String key) {
         OneAttr ret = (OneAttr)items.get(key);
-        if (ret != null)
-            ret.seen = true;
         return ret;
     }
 }
