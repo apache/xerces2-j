@@ -59,7 +59,7 @@
 package dom.registry;
 
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.DOMImplementationRegistry;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 
 import org.apache.xerces.dom.CoreDOMImplementationImpl;
 import org.apache.xerces.dom.DOMImplementationImpl;

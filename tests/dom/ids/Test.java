@@ -184,13 +184,13 @@ public class Test {
         elem = doc.getElementById("eb0009");
         Assertion.assert(elem !=null, "elem by id 'eb0009'");
         AttrImpl attr = (AttrImpl)person.getAttributeNode("idAttr");
-        Assertion.assert(attr.getIsId(), "attribute is id");
+        Assertion.assert(attr.isId(), "attribute is id");
 
         person.setIdAttribute("idAttr", false);
         elem = doc.getElementById("eb0009");
         Assertion.assert(elem ==null, "element with id 'eb0009 removed'");
         
-        Assertion.assert(!attr.getIsId(), "attribute is not id");        
+        Assertion.assert(!attr.isId(), "attribute is not id");        
 
         System.out.println("done.");
 

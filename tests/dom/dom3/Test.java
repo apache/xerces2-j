@@ -67,7 +67,7 @@ import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.dom3.DOMImplementationRegistry;
+import org.apache.xerces.dom3.bootstrap.DOMImplementationRegistry;
 import org.apache.xerces.dom3.DOMLocator;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 import org.w3c.dom.Attr;
@@ -116,11 +116,11 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
             config.setParameter("validate",Boolean.FALSE);
             
             //----------------------------
-            // TEST: lookupNamespacePrefix
+            // TEST: lookupPrefix
             //       isDefaultNamespace
             //       lookupNamespaceURI
             //----------------------------
-            //System.out.println("TEST #1: lookupNamespacePrefix, isDefaultNamespace, lookupNamespaceURI, input: tests/dom/dom3/input.xml");
+            //System.out.println("TEST #1: lookupPrefix, isDefaultNamespace, lookupNamespaceURI, input: tests/dom/dom3/input.xml");
             {
 
                 Document doc = builder.parseURI("tests/dom/dom3/input.xml");
@@ -128,10 +128,9 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
 
                 NodeImpl elem = (NodeImpl)ls.item(0);
                 if (namespaces) {
-                    //System.out.println("[a:elem_a].lookupNamespacePrefix('http://www.example.com', true) == null");
-                    Assertion.assert(elem.lookupNamespacePrefix(
-                                                               "http://www.example.com", true) == null, 
-                                     "[a:elem_a].lookupNamespacePrefix(http://www.example.com)==null");
+                    //System.out.println("[a:elem_a].lookupPrefix('http://www.example.com', true) == null");
+                    Assertion.assert(elem.lookupPrefix("http://www.example.com").equals("ns1"), 
+                                     "[a:elem_a].lookupPrefix(http://www.example.com)==null");
 
 
                     //System.out.println("[a:elem_a].isDefaultNamespace('http://www.example.com') == true");
@@ -139,25 +138,23 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                                      "[a:elem_a].isDefaultNamespace(http://www.example.com)==true");
 
 
-                    //System.out.println("[a:elem_a].lookupNamespacePrefix('http://www.example.com', false) == ns1");
-                    Assertion.assert(elem.lookupNamespacePrefix(
-                                                               "http://www.example.com", false).equals("ns1"), 
-                                     "[a:elem_a].lookupNamespacePrefix(http://www.example.com)==ns1");
+                    //System.out.println("[a:elem_a].lookupPrefix('http://www.example.com', false) == ns1");
+                    Assertion.assert(elem.lookupPrefix("http://www.example.com").equals("ns1"), 
+                                     "[a:elem_a].lookupPrefix(http://www.example.com)==ns1");
 
 
                     Assertion.assert(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
                                      "[a:elem_a].lookupNamespaceURI('xsi') == 'http://www.w3.org/2001/XMLSchema-instance'" );
 
                 } else {
-                    Assertion.assert( elem.lookupNamespacePrefix(
-                                                                "http://www.example.com", false) == null,"lookupNamespacePrefix(http://www.example.com)==null"); 
+                    Assertion.assert( elem.lookupPrefix("http://www.example.com") == null,"lookupPrefix(http://www.example.com)==null"); 
                 }
 
                 ls = doc.getElementsByTagName("bar:leaf");
                 elem = (NodeImpl)ls.item(0);
-                Assertion.assert(elem.lookupNamespacePrefix("url1:",false).equals("foo"), 
-                                 "[bar:leaf].lookupNamespacePrefix('url1:', false) == foo");
-                //System.out.println("[bar:leaf].lookupNamespacePrefix('url1:', false) == "+ );
+                Assertion.assert(elem.lookupPrefix("url1:").equals("foo"), 
+                                 "[bar:leaf].lookupPrefix('url1:', false) == foo");
+                //System.out.println("[bar:leaf].lookupPrefix('url1:', false) == "+ );
 
                 //System.out.println("==>Create b:baz with namespace 'b:' and xmlns:x='b:'");
                 ls = doc.getElementsByTagName("baz");
@@ -169,12 +166,12 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 elem.appendChild(e1);
 
 
-                Assertion.assert(((NodeImpl)e1).lookupNamespacePrefix("b:",false).equals("p"), 
-                                 "[p:baz].lookupNamespacePrefix('b:', false) == p");
+                Assertion.assert(((NodeImpl)e1).lookupPrefix("b:").equals("p"), 
+                                 "[p:baz].lookupPrefix('b:', false) == p");
 
 
 
-                //System.out.println("[p:baz].lookupNamespacePrefix('b:', false) == "+ ((NodeImpl)e1).lookupNamespacePrefix("b:",false));
+                //System.out.println("[p:baz].lookupPrefix('b:', false) == "+ ((NodeImpl)e1).lookupPrefix("b:",false));
 
                 Assertion.assert(elem.lookupNamespaceURI("xsi").equals("http://www.w3.org/2001/XMLSchema-instance"), 
                                  "[bar:leaf].lookupNamespaceURI('xsi') == 'http://www.w3.org/2001/XMLSchema-instance'" );
@@ -650,11 +647,11 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
             fError.append(locator.getColumnNumber());
             fError.append(":");
             fError.append(locator.getOffset());
-            Node node = locator.getErrorNode();
+            Node node = locator.getRelatedNode();
             if (node != null) {
 
                 fError.append("[");
-                fError.append(locator.getErrorNode().getNodeName());
+                fError.append(locator.getRelatedNode().getNodeName());
                 fError.append("]");
             }
             String systemId = locator.getUri();
