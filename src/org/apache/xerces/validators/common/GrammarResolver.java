@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,21 +56,19 @@
  */
 
 package org.apache.xerces.validators.common;
-
-
 import java.util.*;
 import org.apache.xerces.validators.common.Grammar;
 
 /**
  * This class embodies the representation of a Grammar
- * pool.
+ * pool Resolver.
  * This class is called from the validator.
- * Grammar pool maps to a set of Grammar Proxy classes.
+ * 
  * 
  * @author Jeffrey Rodriguez
  */
-public class GrammarResolver {
-    private static  GrammarResolver  _instance = new GrammarResolver();
+
+public interface GrammarResolver {
     /**
      *           Hashtable structure that represents a mapping
      *           between Namespace and a Grammar
@@ -84,6 +82,14 @@ public class GrammarResolver {
     private GrammarResolver() { // Part of the GrammarResolver singleton pattern
     }
 
+     /**
+     * 
+     * @return           Only instance of Grammar pool ( Singleton
+     *         pattern).
+     */
+    static public GrammarResolver instanceGrammarResolver();
+
+
 
     /**
      * 
@@ -92,23 +98,14 @@ public class GrammarResolver {
      * @return                           Grammar abstraction associated
      *         with NameSpace key.
      */
-    public Grammar getGrammar( String nameSpaceKey ) {
-        return(Grammar) ( fGrammarRegistry.get( nameSpaceKey ) ); 
-    }
+    public Grammar getGrammar( String nameSpaceKey );
 
     /**
      * 
-     * @return             Array of String key name spaces in Grammar pool
+     * @return             Enumeration of String key name spaces in Grammar pool
      */
-    public String[] getNSKeysInPool() {
-        int numberOfNSKeysInPool = fGrammarRegistry.size();
-        String[] NSArray         = new String[numberOfNSKeysInPool];
-        Enumeration  enumOfKeys  = fGrammarRegistry.keys();
-        for (int i = 0; i<numberOfNSKeysInPool; i ++ ) {
-            NSArray[i] = (String )( enumOfKeys.nextElement() );
-        }
-        return NSArray;
-    }
+
+    public Enumeration nameSpaceKeys();
 
     /**
      * 
@@ -118,13 +115,7 @@ public class GrammarResolver {
      * @param grammar Grammar abstraction
      *                used by validator.
      */
-    public void addGrammar( String nameSpaceKey, Grammar grammar ){
-        try {
-            fGrammarRegistry.put( nameSpaceKey, grammar ); 
-        } catch ( NullPointerException ex ) {
-            ex.printStackTrace(); //
-        }
-    }
+    public void putGrammar( String nameSpaceKey, Grammar grammar )
 
     /**
      * Removes association of Namespace key and Grammar from                         
@@ -133,10 +124,9 @@ public class GrammarResolver {
      * @param nameSpaceKey
      *               Name space key
      */
-    public void deleteGrammarForNS( String nameSpaceKey ) {
-        if ( isNSInPool( nameSpaceKey ) == true )
-            fGrammarRegistry.remove( nameSpaceKey );
-    }
+    public Grammar removeGrammar( String nameSpaceKey ) 
+
+
 
     /**
      *         Is Grammar abstraction in Grammar pool?
@@ -145,9 +135,7 @@ public class GrammarResolver {
      * @return true  - Yes there is at least one instance
      *         false - No
      */
-    public boolean isGrammarInPool( Grammar grammar ) {
-        return fGrammarRegistry.contains( grammar );
-    }
+    public boolean contains( Grammar grammar );
 
     /**
      *                Is Namespace key in Grammar pool
@@ -157,117 +145,19 @@ public class GrammarResolver {
      * @return                Boolean- true - Namespace key association
      *         is in grammar pool.
      */
-    public boolean isNSInPool( String nameSpaceKey ) { 
-        return fGrammarRegistry.containsKey( nameSpaceKey );
-    }
+    public boolean containsNamesSpace( String nameSpaceKey ); 
+
     /**
      *         Reset internal Namespace/Grammar registry.
      */
-    public void resetGrammarResolver() {
-        fGrammarRegistry.clear( );
-    }
-    /**
-     * 
-     * @return           Only instance of Grammar pool ( Singleton
-     *         pattern).
-     */
-    static public GrammarResolver instanceGrammarResolver() {  // return a reference to the only instance of this class
-        return _instance;
-    }
+    public void clearGrammarResolver();
 
     /**
      * 
      * @return         Length of grammar pool. Number of associations.
      */
-    public int length() {
-        return fGrammarRegistry.size();
-    }
+    public int size(); 
 
-
-    /* Unit Test
-
-    static final int NGRAMMARS  = 10;
-
-
-    public static void main( String args[] ) 
-    {
-        //static final int NGRAMMARS  = 10;
-        GrammarResolver grammarPool     = GrammarResolver.instanceGrammarResolver();
-        Grammar     testGrammars[]  = new Grammar[NGRAMMARS]; 
-        String      testNameSpace[] = {
-        "http://www.foo1.org/",
-        "http://www.foo2.org/", 
-        "http://www.foo3.org/", 
-        "http://www.foo4.org/", 
-        "http://www.foo5.org/", 
-        "http://www.foo6.org/", 
-        "http://www.foo7.org/", 
-        "http://www.foo8.org/", 
-        "http://www.foo9.org/", 
-        "http://www.foox.org/" }; 
-
-        for( int  i = 0; i< NGRAMMARS ; i++ ) {
-        testGrammars[i] = new Grammar( testNameSpace[i] );
-        }
-
-
-        for( int i = 0; i<testGrammars.length; i++ ) {
-            grammarPool.addGrammar( testNameSpace[i], testGrammars[i] );
-        }
-        String [] localNames = grammarPool.getNSKeysInPool();
-        for( int i = 0; i<localNames.length; i++ ){
-            System.out.println( "Key[" + i + "] =" + localNames[i] );
-        }
-        // Get a couple of Grammars.
-
-        Grammar gramm1 = grammarPool.getGrammar( "http://www.foo2.org/" ); 
-        Grammar gramm2 = grammarPool.getGrammar( "http://www.foox.org/" );
-
-        System.out.println( "Grammar1 id = " + gramm1.whatGrammarAmI() + " It should be http://www.foo2.org/" );
-        System.out.println( "Grammar1 id = " + gramm2.whatGrammarAmI() + " It should be http://www.foox.org/" );
-         
-        Grammar myTestGrammar = new Grammar( "testgrammar" );
-        
-        boolean isInPool = grammarPool.isGrammarInPool( myTestGrammar);
-        System.out.println( "Grammar " + myTestGrammar.whatGrammarAmI()  + "Is in pool = " +  isInPool );
-        
-        grammarPool.addGrammar("myNSTest", myTestGrammar );
-        isInPool = grammarPool.isGrammarInPool( myTestGrammar);
-        System.out.println( "Just added Grammar " + myTestGrammar.whatGrammarAmI()  + "Is in pool = " +  isInPool );
-                    
-        String myNSTest = "http://www.foo.com/";
-        isInPool = grammarPool.isNSInPool(myNSTest);
-
-        System.out.println( "NS: " + myNSTest  + "Is in pool = " +  isInPool ); 
-        grammarPool.addGrammar(myNSTest, new Grammar( myNSTest ));
-        
-        isInPool = grammarPool.isNSInPool(myNSTest);
-
-        System.out.println( "NS: " + myNSTest  + "Is in pool = " +  isInPool ); 
-
-        System.out.println( "Length of Grammar pool = " + grammarPool.length() );
-               
-        grammarPool.resetGrammarPool();
-        System.out.println( "Length of Grammar pool now = " + grammarPool.length() );
-
-        grammarPool.addGrammar("myNSTest", myTestGrammar ); // The same key
-        grammarPool.addGrammar("myNSTest", myTestGrammar );
-        grammarPool.addGrammar("myNSTest", myTestGrammar );
-        grammarPool.addGrammar("myNSTest", myTestGrammar );
-        grammarPool.addGrammar("myNSTest", myTestGrammar );
-
-        System.out.println( "Length of Grammar pool now better not be 5 = " + grammarPool.length() );
-        for( int i = 0; i<testGrammars.length; i++ ) {
-        grammarPool.addGrammar( testNameSpace[i], testGrammars[i] );
-        }
-        grammarPool.deleteGrammarForNS( "myNSTest" );
-        System.out.println( "Length of Grammar pool now better not be 5 = " + grammarPool.length() );
-        localNames = grammarPool.getNSKeysInPool();
-        for( int i = 0; i<localNames.length; i++ ){
-                   System.out.println( "Key[" + i + "] =" + localNames[i] );
-           }
-    }
-    */
 }
 
 
