@@ -135,6 +135,7 @@ public class XSAttributeChecker {
     public static final int ATTIDX_MIXED           = ATTIDX_COUNT++;
     public static final int ATTIDX_NAME            = ATTIDX_COUNT++;
     public static final int ATTIDX_NAMESPACE       = ATTIDX_COUNT++;
+    public static final int ATTIDX_NAMESPACE_LIST  = ATTIDX_COUNT++;
     public static final int ATTIDX_NILLABLE        = ATTIDX_COUNT++;
     public static final int ATTIDX_PROCESSCONTENTS = ATTIDX_COUNT++;
     public static final int ATTIDX_PUBLIC          = ATTIDX_COUNT++;
@@ -163,6 +164,9 @@ public class XSAttributeChecker {
     private static final XInt INT_ANY_STRICT     = fXIntPool.getXInt(XSWildcardDecl.PC_STRICT);
     private static final XInt INT_ANY_LAX        = fXIntPool.getXInt(XSWildcardDecl.PC_LAX);
     private static final XInt INT_ANY_SKIP       = fXIntPool.getXInt(XSWildcardDecl.PC_SKIP);
+    private static final XInt INT_ANY_ANY        = fXIntPool.getXInt(XSWildcardDecl.NSCONSTRAINT_ANY);
+    private static final XInt INT_ANY_LIST       = fXIntPool.getXInt(XSWildcardDecl.NSCONSTRAINT_LIST);
+    private static final XInt INT_ANY_NOT        = fXIntPool.getXInt(XSWildcardDecl.NSCONSTRAINT_NOT);
     private static final XInt INT_USE_OPTIONAL   = fXIntPool.getXInt(SchemaSymbols.USE_OPTIONAL);
     private static final XInt INT_USE_REQUIRED   = fXIntPool.getXInt(SchemaSymbols.USE_REQUIRED);
     private static final XInt INT_USE_PROHIBITED = fXIntPool.getXInt(SchemaSymbols.USE_PROHIBITED);
@@ -387,7 +391,7 @@ public class XSAttributeChecker {
         allAttrs[ATT_NAMESPACE_D]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_NAMESPACE,
                                                         ATTIDX_NAMESPACE,
-                                                        new XSWildcardDecl());
+                                                        INT_ANY_ANY);
         allAttrs[ATT_NAMESPACE_N]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_ANYURI,
                                                         ATTIDX_NAMESPACE,
@@ -1163,7 +1167,7 @@ public class XSAttributeChecker {
                     }
                 }
                 else {
-                    attrValues[oneAttr.valueIndex] = validate(attrName, attrVal, oneAttr.dvIndex, schemaDoc);
+                    attrValues[oneAttr.valueIndex] = validate(attrValues, attrName, attrVal, oneAttr.dvIndex, schemaDoc);
                 }
             } catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("s4s-att-invalid-value",
@@ -1216,7 +1220,7 @@ public class XSAttributeChecker {
         return attrValues;
     }
 
-    private Object validate(String attr, String ivalue, int dvIndex,
+    private Object validate(Object[] attrValues, String attr, String ivalue, int dvIndex,
                             XSDocumentInfo schemaDoc) throws InvalidDatatypeValueException {
         if (ivalue == null)
             return null;
@@ -1371,7 +1375,7 @@ public class XSAttributeChecker {
                 retValue = INT_UNBOUNDED;
             } else {
                 try {
-                    retValue = validate(attr, value, DT_NONNEGINT, schemaDoc);
+                    retValue = validate(attrValues, attr, value, DT_NONNEGINT, schemaDoc);
                 } catch (NumberFormatException e) {
                     throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(nonNegativeInteger | unbounded)"});
                 }
@@ -1417,18 +1421,19 @@ public class XSAttributeChecker {
             break;
         case DT_NAMESPACE:
             // namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )
-            XSWildcardDecl wildcard = new XSWildcardDecl();
             if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY)) {
                 // ##any
+                retValue = INT_ANY_ANY;
             } else if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
                 // ##other
-                wildcard.fType = XSWildcardDecl.NSCONSTRAINT_NOT;
-                wildcard.fNamespaceList = new String[2];
-                wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
-                wildcard.fNamespaceList[1] = null;
+                retValue = INT_ANY_NOT;
+                String[] list = new String[2];
+                list[0] = schemaDoc.fTargetNamespace;
+                list[1] = null;
+                attrValues[ATTIDX_NAMESPACE_LIST] = list;
             } else {
                 // list
-                wildcard.fType = XSWildcardDecl.NSCONSTRAINT_LIST;
+                retValue = INT_ANY_LIST;
 
                 fNamespaceList.removeAllElements();
                 
@@ -1463,10 +1468,9 @@ public class XSAttributeChecker {
                 // convert the vector to an array
                 int num = fNamespaceList.size();
                 String[] list = new String[num];
-                wildcard.fNamespaceList = list;
                 fNamespaceList.copyInto(list);
+                attrValues[ATTIDX_NAMESPACE_LIST] = list;
             }
-            retValue = wildcard;
             break;
         case DT_PROCESSCONTENTS:
             // processContents = (lax | skip | strict)
