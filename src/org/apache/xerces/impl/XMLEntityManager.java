@@ -327,17 +327,11 @@ public class XMLEntityManager
 
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fStandalone && !entityName.startsWith("%")) {
+            if (fValidation || !entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
-            else if (fValidation) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EntityNotDeclared",
-                                           new Object[] { entityName },
-                                           XMLErrorReporter.SEVERITY_ERROR);
             }
             return false;
         }
@@ -379,17 +373,11 @@ public class XMLEntityManager
 
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fStandalone && !entityName.startsWith("%")) {
+            if (fValidation || !entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
-            else if (fValidation) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EntityNotDeclared",
-                                           new Object[] { entityName },
-                                           XMLErrorReporter.SEVERITY_ERROR);
             }
             return false;
         }
@@ -470,17 +458,11 @@ public class XMLEntityManager
         // was entity declared?
         Entity entity = (Entity)fEntities.get(entityName);
         if (entity == null) {
-            if (fStandalone && !entityName.startsWith("%")) {
+            if (fValidation || !entityName.startsWith("%")) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
                                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
-            else if (fValidation) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "EntityNotDeclared",
-                                           new Object[] { entityName },
-                                           XMLErrorReporter.SEVERITY_ERROR);
             }
             if (fEntityHandler != null) {
                 final String publicId = null;
@@ -1708,7 +1690,18 @@ public class XMLEntityManager
             while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
                 if (++fCurrentEntity.position == fCurrentEntity.count) {
                     int length = fCurrentEntity.position - offset;
-                    System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
+                    if (length == fBufferSize) {
+                        // bad luck we have to resize our buffer
+                        char[] tmp = new char[fBufferSize * 2];
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         tmp, 0, length);
+                        fCurrentEntity.ch = tmp;
+                        fBufferSize *= 2;
+                    }
+                    else {
+                        System.arraycopy(fCurrentEntity.ch, offset,
+                                         fCurrentEntity.ch, 0, length);
+                    }
                     offset = 0;
                     if (load(length, false)) {
                         break;
@@ -1782,7 +1775,18 @@ public class XMLEntityManager
                 while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
                     if (++fCurrentEntity.position == fCurrentEntity.count) {
                         int length = fCurrentEntity.position - offset;
-                        System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
+                        if (length == fBufferSize) {
+                            // bad luck we have to resize our buffer
+                            char[] tmp = new char[fBufferSize * 2];
+                            System.arraycopy(fCurrentEntity.ch, offset,
+                                             tmp, 0, length);
+                            fCurrentEntity.ch = tmp;
+                            fBufferSize *= 2;
+                        }
+                        else {
+                            System.arraycopy(fCurrentEntity.ch, offset,
+                                             fCurrentEntity.ch, 0, length);
+                        }
                         offset = 0;
                         if (load(length, false)) {
                             break;
@@ -1873,8 +1877,18 @@ public class XMLEntityManager
                     }
                     if (++fCurrentEntity.position == fCurrentEntity.count) {
                         int length = fCurrentEntity.position - offset;
-                        System.arraycopy(fCurrentEntity.ch, offset,
-                                         fCurrentEntity.ch, 0, length);
+                        if (length == fBufferSize) {
+                            // bad luck we have to resize our buffer
+                            char[] tmp = new char[fBufferSize * 2];
+                            System.arraycopy(fCurrentEntity.ch, offset,
+                                             tmp, 0, length);
+                            fCurrentEntity.ch = tmp;
+                            fBufferSize *= 2;
+                        }
+                        else {
+                            System.arraycopy(fCurrentEntity.ch, offset,
+                                             fCurrentEntity.ch, 0, length);
+                        }
                         offset = 0;
                         if (load(length, false)) {
                             break;
