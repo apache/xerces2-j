@@ -121,6 +121,9 @@ public abstract class AbstractDOMParser
     protected static final String NAMESPACES =
         Constants.SAX_FEATURE_PREFIX+Constants.NAMESPACES_FEATURE;
 
+    /** Feature id: include comments. */
+    protected static final String INCLUDE_COMMENTS_FEATURE = Constants.INCLUDE_COMMENTS_FEATURE;
+
     /** Feature id: include ignorable whitespace. */
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
         "http://apache.org/xml/features/dom/include-ignorable-whitespace";
@@ -160,6 +163,9 @@ public abstract class AbstractDOMParser
 
     /** Include ignorable whitespace. */
     protected boolean fIncludeIgnorableWhitespace;
+
+    /** Include Comments. */
+    protected boolean fIncludeComments;
 
     // dom information
 
@@ -218,7 +224,8 @@ public abstract class AbstractDOMParser
         final String[] recognizedFeatures = {
             CREATE_ENTITY_REF_NODES,
             INCLUDE_IGNORABLE_WHITESPACE,
-            DEFER_NODE_EXPANSION
+            DEFER_NODE_EXPANSION,
+            INCLUDE_COMMENTS_FEATURE
         };
         fConfiguration.addRecognizedFeatures(recognizedFeatures);
 
@@ -226,6 +233,7 @@ public abstract class AbstractDOMParser
         fConfiguration.setFeature(CREATE_ENTITY_REF_NODES, true);
         fConfiguration.setFeature(INCLUDE_IGNORABLE_WHITESPACE, true);
         fConfiguration.setFeature(DEFER_NODE_EXPANSION, true);
+        fConfiguration.setFeature(INCLUDE_COMMENTS_FEATURE, true);
 
         // add recognized properties
         final String[] recognizedProperties = {
@@ -322,6 +330,8 @@ public abstract class AbstractDOMParser
 
         fNamespaceAware = fConfiguration.getFeature(NAMESPACES);
 
+        fIncludeComments = fConfiguration.getFeature(INCLUDE_COMMENTS_FEATURE);
+
         // get property
         setDocumentClassName((String)
                              fConfiguration.getProperty(DOCUMENT_CLASS_NAME));
@@ -399,7 +409,10 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by application to signal an error.
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
-
+        
+        if (!fIncludeComments) {
+              return;
+        }
         if (!fDeferNodeExpansion) {
             Comment comment = fDocument.createComment(text.toString());
             fCurrentNode.appendChild(comment);

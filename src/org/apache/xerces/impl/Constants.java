@@ -113,6 +113,13 @@ public final class Constants {
     /** XML string property ("xml-string"). */
     public static final String XML_STRING_PROPERTY = "xml-string";
 
+    //
+    // DOM features
+    //
+
+    /** Comments feature ("include-comments"). */
+    public static final String INCLUDE_COMMENTS_FEATURE = "include-comments";
+
     // xerces features
 
     /** Xerces features prefix ("http://apache.org/xml/features/"). */
