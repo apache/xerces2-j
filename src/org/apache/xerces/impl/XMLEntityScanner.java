@@ -894,12 +894,12 @@ public class XMLEntityScanner implements XMLLocator {
         //          The change would avoid the array copies and increase
         //          performance. -Ac
         //
-        //          Currently, this method is only called for scanning 
-        //          CDATA sections and processing instruction data. So 
-        //          if this code is updated to NOT buffer, the scanning
-        //          code for processing instructions will need to be
-        //          updated to do its own buffering. The code for CDATA
-        //          sections is safe as-is. -Ac
+        //          Currently, this method is called for scanning CDATA
+        //          sections, comments,  and processing instruction data. 
+        //          So if this code is updated to NOT buffer, the scanning
+        //          code for comments and processing instructions will 
+        //          need to be updated to do its own buffering. The code 
+        //          for CDATA sections is safe as-is. -Ac
 
         boolean found = false;
         int delimLen = delimiter.length();
