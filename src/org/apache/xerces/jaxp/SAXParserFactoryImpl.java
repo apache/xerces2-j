@@ -136,7 +136,15 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         features.put(name, new Boolean(value));
 
         // Test the feature by possibly throwing SAX exceptions
-        newSAXParserImpl();
+        try {
+            newSAXParserImpl();
+        } catch (SAXNotSupportedException e) {
+            features.remove(name);
+            throw e;
+        } catch (SAXNotRecognizedException e) {
+            features.remove(name);
+            throw e;
+        }
     }
 
     /**
