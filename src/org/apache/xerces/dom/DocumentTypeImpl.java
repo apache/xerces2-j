@@ -132,13 +132,11 @@ public class DocumentTypeImpl
     } // <init>(DocumentImpl,String)
   
     /** Factory method for creating a document type node. */
-    public DocumentTypeImpl(DocumentImpl ownerDocument, String name, 
-                            String publicID, String systemID, String internalSubset) {
-        this(ownerDocument, name);
+    public DocumentTypeImpl(DocumentImpl ownerDocument, String qualifiedName, 
+                            String publicID, String systemID) {
+        this(ownerDocument, qualifiedName);
         this.publicID = publicID;
         this.systemID = systemID;
-        this.internalSubset = internalSubset;
-
 
     } // <init>(DocumentImpl,String)
     
@@ -184,20 +182,6 @@ public class DocumentTypeImpl
         return internalSubset;
     }
     
-    /**
-     * Introduced in DOM Level 2. <p>
-     * 
-     * Return the internalSubset given as a string.
-     * @since WD-DOM-Level-2-19990923
-     */
-    public void setInternalSubset(String internalSubset) {
-        if (syncData) {
-            synchronizeData();
-        }
-        this.internalSubset = internalSubset;
-    }
-    
-   
     //
     // Node methods
     //

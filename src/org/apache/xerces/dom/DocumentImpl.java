@@ -159,7 +159,8 @@ public class DocumentImpl
         allowGrammarAccess = grammarAccess;
     }
 
-    // For DOM2: support. The createDocument factory method is in DOMImplementation.
+    // For DOM2: support.
+    // The createDocument factory method is in DOMImplementation.
     public DocumentImpl(DocumentType doctype)
     {
         this(doctype, false);
@@ -200,9 +201,8 @@ public class DocumentImpl
     /**
      * Deep-clone a document, including fixing ownerDoc for the cloned
      * children. Note that this requires bypassing the WRONG_DOCUMENT_ERR
-     * protection. I've chosen to implement it by calling importNode --
-     * which is NON-DOM in Level 1, but which anticipates one likely
-     * direction the Level 2 DOM might take in solving this.
+     * protection. I've chosen to implement it by calling importNode
+     * which is DOM Level 2.
      *
      * @return org.w3c.dom.Node
      * @param deep boolean, iff true replicate children
@@ -539,18 +539,14 @@ public class DocumentImpl
      */
     public DocumentType createDocumentType(String qualifiedName,
                                            String publicID,
-                                           String systemID,
-                                           String internalSubset)
+                                           String systemID)
         throws DOMException {
 
     	if (errorChecking && !isXMLName(qualifiedName)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     		                           "DOM002 Illegal character");
         }
-
-        // REVISIT: What is the right thing to do here? Set the owner doc
-        //          as "this"? Provide a setOwnerDocument() method? -Ac
-    	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID, internalSubset);
+    	return new DocumentTypeImpl(this, qualifiedName, publicID, systemID);
 
     } // createDocumentType(String):DocumentType
 
@@ -630,7 +626,7 @@ public class DocumentImpl
     // other non-DOM methods
 
     /**
-     * NON-DOM: Copies data from the source node. Unlike cloneNode, this
+     * Copies data from the source node. Unlike cloneNode, this
      * _can_ copy data from another document. If the source document is also
      * based on org.apache.xerces.dom, we will attempt to preserve the domimpl-
      * internal data by doing a clone-and-reparent. If not, we will use
@@ -731,8 +727,7 @@ public class DocumentImpl
     			    (DocumentTypeImpl)createDocumentType(
     			        doctype.getNodeName(),
     			        doctype.getPublicId(), 
-    			        doctype.getSystemId(),
-    			        doctype.getInternalSubset()
+    			        doctype.getSystemId()
     			        );
     			// Values are on NamedNodeMaps
     			NamedNodeMap smap = ((DocumentType)source).getEntities();
@@ -794,6 +789,7 @@ public class DocumentImpl
     	return newnode;
 
     } // importNode(Node,boolean):Node
+
 
     // identifier maintenence
     /**
