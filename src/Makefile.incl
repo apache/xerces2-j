@@ -50,19 +50,19 @@ PACKAGES = org.apache.xerces.parsers \
            org.apache.xerces.dom \
            org.apache.xerces.dom.events \
            org.apache.xml.serialize \
-           org.apache.html.dom \
-           org.apache.wml \
-           org.apache.wml.dom \
            org.w3c.dom \
            org.w3c.dom.events \
            org.w3c.dom.range \
            org.w3c.dom.traversal \
-           org.w3c.dom.html \
            org.xml.sax \
            org.xml.sax.ext \
            org.xml.sax.helpers \
            javax.xml.parsers
 
+#           org.apache.html.dom \
+#           org.apache.wml \
+#           org.apache.wml.dom \
+#           org.w3c.dom.html \
 
 BINZIPFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.zip
 SRCZIPFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.zip
