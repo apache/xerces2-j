@@ -139,21 +139,21 @@ public class DeferredTextImpl
             (parent = ownerDocument.getParentNode(fNodeIndex)) != -1 &&
             ownerDocument.getNodeType(parent) == Node.ELEMENT_NODE) {
 
-            int realNext = ownerDocument.getRealNextSibling(fNodeIndex);
-            int type     = ownerDocument.getNodeType(realNext);
-            if (realNext != -1 && type == Node.TEXT_NODE) {
+            int realPrev = ownerDocument.getRealPrevSibling(fNodeIndex);
+            int type     = ownerDocument.getNodeType(realPrev);
+            if (realPrev != -1 && type == Node.TEXT_NODE) {
                 StringBuffer sb = new StringBuffer(data);
-                while (realNext != -1 && type == Node.TEXT_NODE) {
-                    sb.append(ownerDocument.getNodeValueString(realNext));
-                    realNext = ownerDocument.getRealNextSibling(realNext);
-                    type = ownerDocument.getNodeType(realNext);
+                while (realPrev != -1 && type == Node.TEXT_NODE) {
+                    sb.insert(0, ownerDocument.getNodeValueString(realPrev));
+                    realPrev = ownerDocument.getRealPrevSibling(realPrev);
+                    type = ownerDocument.getNodeType(realPrev);
                 }
                 data = sb.toString();
             }
         }
 
         // ignorable whitespace
-        ignorableWhitespace(ownerDocument.getFirstChild(fNodeIndex) == 1);
+        ignorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);
 
     } // synchronizeData()
 

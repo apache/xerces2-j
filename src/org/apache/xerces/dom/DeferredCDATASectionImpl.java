@@ -141,7 +141,7 @@ public class DeferredCDATASectionImpl
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl) this.ownerDocument();
         data = ownerDocument.getNodeValueString(fNodeIndex);
-        ignorableWhitespace(ownerDocument.getFirstChild(fNodeIndex) == 1);
+        ignorableWhitespace(ownerDocument.getLastChild(fNodeIndex) == 1);
 
     } // synchronizeData()
 

@@ -162,7 +162,7 @@ public class DeferredEntityImpl
         ownerDocument.getNodeType(extraDataIndex);
         publicId     = pool.toString(ownerDocument.getNodeName(extraDataIndex));
         systemId     = pool.toString(ownerDocument.getNodeValue(extraDataIndex));
-        notationName = pool.toString(ownerDocument.getFirstChild(extraDataIndex));
+        notationName = pool.toString(ownerDocument.getLastChild(extraDataIndex));
 
     } // synchronizeData()
 
@@ -173,12 +173,15 @@ public class DeferredEntityImpl
         syncChildren(false);
 
         // get children
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
-        int index = ownerDocument.getFirstChild(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument;
+        int index = ownerDocument.getLastChild(fNodeIndex);
+        Node last = null;
         while (index != -1) {
             Node child = ownerDocument.getNodeObject(index);
-            appendChild(child);
-            index = ownerDocument.getNextSibling(index);
+            insertBefore(child, last);
+            last = child;
+            index = ownerDocument.getPrevSibling(index);
         }
 
     } // synchronizeChildren()

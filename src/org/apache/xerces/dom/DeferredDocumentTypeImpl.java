@@ -146,7 +146,7 @@ public class DeferredDocumentTypeImpl
         publicID = pool.toString(ownerDocument.getNodeName(extraDataIndex));
         systemID = pool.toString(ownerDocument.getNodeValue(extraDataIndex));
         internalSubset =
-            pool.toString(ownerDocument.getFirstChild(extraDataIndex));
+            pool.toString(ownerDocument.getLastChild(extraDataIndex));
     } // synchronizeData()
 
     /** Synchronizes the entities, notations, and elements. */
@@ -164,9 +164,10 @@ public class DeferredDocumentTypeImpl
         elements  = new NamedNodeMapImpl(this, null);
 
         // fill node maps
-        for (int index = ownerDocument.getFirstChild(fNodeIndex);
+        DeferredNode last = null;
+        for (int index = ownerDocument.getLastChild(fNodeIndex);
             index != -1;
-            index = ownerDocument.getNextSibling(index)) {
+            index = ownerDocument.getPrevSibling(index)) {
 
             DeferredNode node = ownerDocument.getNodeObject(index);
             int type = node.getNodeType();
@@ -192,9 +193,9 @@ public class DeferredDocumentTypeImpl
 
                     // add attributes to element definition
                     NamedNodeMap attrs = node.getAttributes();
-                    for (int attrIndex = ownerDocument.getFirstChild(node.getNodeIndex());
+                    for (int attrIndex = ownerDocument.getLastChild(node.getNodeIndex());
                          attrIndex != -1;
-                         attrIndex = ownerDocument.getNextSibling(attrIndex)) {
+                         attrIndex = ownerDocument.getPrevSibling(attrIndex)) {
                         DeferredNode attr = ownerDocument.getNodeObject(attrIndex);
                         attrs.setNamedItem(attr);
                     }
@@ -204,7 +205,8 @@ public class DeferredDocumentTypeImpl
                 // elements
                 case Node.ELEMENT_NODE: {
                     if (((DocumentImpl)getOwnerDocument()).allowGrammarAccess) {
-                        appendChild(node);
+                        insertBefore(node, last);
+                        last = node;
                         break;
                     }
                 }

@@ -123,7 +123,8 @@ public class DeferredElementDefinitionImpl
         syncData(false);
 
         // fluff data
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument;
         name = ownerDocument.getNodeNameString(fNodeIndex);
 
     } // synchronizeData()
@@ -135,14 +136,15 @@ public class DeferredElementDefinitionImpl
         syncChildren(false);
 
         // create attributes node map
-        DeferredDocumentImpl ownerDocument = (DeferredDocumentImpl)this.ownerDocument;
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl)this.ownerDocument;
         attributes = new NamedNodeMapImpl(ownerDocument, null);
 
         // Default attributes dangle as children of the element
         // definition "node" in the internal fast table.
-        for (int nodeIndex = ownerDocument.getFirstChild(fNodeIndex);
+        for (int nodeIndex = ownerDocument.getLastChild(fNodeIndex);
              nodeIndex != -1;
-             nodeIndex = ownerDocument.getNextSibling(nodeIndex)) {
+             nodeIndex = ownerDocument.getPrevSibling(nodeIndex)) {
             Node attr = ownerDocument.getNodeObject(nodeIndex);
             attributes.setNamedItem(attr);
         }
