@@ -23,6 +23,7 @@
 	                <li><jump href="http://www.mozilla.org/bugs/">
                 		http://www.mozilla.org/bugs/</jump></li>
                 	</ul>
+		<anchor name="bugzilla"/>
         	 </a>
 	</faq>
 

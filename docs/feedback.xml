@@ -3,7 +3,8 @@
 
 <s1 title="Feedback Procedures">
 	<s2 title="Questions or Comments">
-		<p>For all questions or comments, write to the &javaparsername; mailing list.</p>
+		<p>For general questions or comments, write to the &javaparsername;-user mailing list.
+		If you wish to discuss more technical issues or join the Xerces developer community, please subscribe to the &javaparsername;-dev list.</p>
 		<p>If you are submitting a bug (and bug reports are definitely appreciated!), 
 			please provide the following information:</p>
 		<ul>
@@ -13,5 +14,6 @@
 			<li>Sample Schema file (if required to recreate the bug)</li>
 			<li>Sample DTD file (if required to recreate the bug)</li>			
 		</ul>
+		<p>Please also see the <jump href="faq-general.html#bugzilla">faq entry</jump> that covers bug submissions.</p>
 	</s2>
 </s1>
