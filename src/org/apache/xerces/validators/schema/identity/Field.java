@@ -154,7 +154,10 @@ public class Field {
             //       order to handle selectors such as "@attr" that 
             //       select the attribute because the fields could be
             //       relative to the selector element. -Ac
-            super("./"+xpath, stringPool, context);
+			//       Unless xpath starts with a descendant node -Achille Fokoue
+			super(((xpath.trim().startsWith("//") ||xpath.trim().startsWith(".//"))?
+				xpath:"./"+xpath), stringPool, context);
+			
         } // <init>(String,StringPool,NamespacesScope)
 
     } // class XPath

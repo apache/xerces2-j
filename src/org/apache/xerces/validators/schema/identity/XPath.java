@@ -86,8 +86,7 @@ public class XPath {
     /** Expression. */
     protected String fExpression;
 
-    /** Location path. */
-    protected LocationPath fLocationPath;
+
 
     // Xerces 1.x framework
 
@@ -111,9 +110,9 @@ public class XPath {
     // Public methods
     //
 
-    /** Returns a representation of the location path for this XPath. */
+	/** Returns a representation of the first location path for this XPath. */
     public LocationPath getLocationPath() {
-        return (LocationPath)fLocationPath.clone();
+		return (LocationPath)fLocationPaths[0].clone();
     } // getLocationPath(LocationPath)
 
     //
@@ -122,7 +121,14 @@ public class XPath {
 
     /** Returns a string representation of this object. */
     public String toString() {
-        return fLocationPath.toString();
+		StringBuffer buf=new StringBuffer();
+		for (int  i=0;i<fLocationPaths.length;i++){
+			if (i>0){
+				buf.append("|");
+			}
+			buf.append(fLocationPaths[i].toString());
+		}
+		return buf.toString();
     } // toString():String
 
     //
@@ -153,7 +159,13 @@ public class XPath {
                     token == XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME ||
                     //token == XPath.Tokens.EXPRTOKEN_NODETYPE_NODE ||
                     token == XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH ||
-                    token == XPath.Tokens.EXPRTOKEN_PERIOD
+					token == XPath.Tokens.EXPRTOKEN_PERIOD ||
+					//added to conform to PR Spec
+					token == XPath.Tokens.EXPRTOKEN_NAMETEST_ANY ||
+					token == XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE ||
+					token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH ||
+					token == XPath.Tokens.EXPRTOKEN_OPERATOR_UNION
+					//
                     ) {
                     super.addToken(tokens, token);
                     return;
@@ -182,10 +194,34 @@ public class XPath {
                                            xtokens, fExpression, 0, length);
         //fTokens.dumpTokens();
         java.util.Vector stepsVector = new java.util.Vector();
+		java.util.Vector locationPathsVector= new java.util.Vector();
         int tokenCount = xtokens.getTokenCount();
+		boolean firstTokenOfLocationPath=true;
+		
         for (int i = 0; i < tokenCount; i++) {
             int token = xtokens.getToken(i);
+			boolean isNamespace=false;
+			
             switch (token) {
+				case  XPath.Tokens.EXPRTOKEN_OPERATOR_UNION :{
+					if (i == 0) {
+						throw new XPathException("not allowed to have '|' here");
+					}
+					
+					int size = stepsVector.size();
+					if (size == 0) {
+						throw new XPathException("not allowed to have '||'");
+					}
+					Step[] steps = new Step[size];
+					stepsVector.copyInto(steps);
+					// add location path
+					locationPathsVector.add(new LocationPath(steps));
+					//reset stepsVector
+					stepsVector.clear();
+					firstTokenOfLocationPath=true;
+					break;
+				}
+
                 case XPath.Tokens.EXPRTOKEN_AXISNAME_ATTRIBUTE: {
                     // consume "::" token and drop through
                     i++;
@@ -196,10 +232,30 @@ public class XPath {
                         throw new XPathException("missing attribute name");
                     }
                     token = xtokens.getToken(++i);
-                    if (token != XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME) {
-                        throw new XPathException("expected "+xtokens.getTokenName(XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME)+
-                                                 ", found "+xtokens.getTokenName(token));
+				
+					if (token != XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME
+						&& token!= XPath.Tokens.EXPRTOKEN_NAMETEST_ANY
+						&& token!=  XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE) {
+						throw new XPathException("expected \""+xtokens.getTokenName(XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME)+
+												 "\" or \""+xtokens.getTokenName( XPath.Tokens.EXPRTOKEN_NAMETEST_ANY)+
+												 "\" or \""+xtokens.getTokenName( XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE)+
+												 "\", found "+xtokens.getTokenName(token));
+					}
+					boolean isNamespaceAtt=false;
+					switch (token)
+					{
+					    case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:{
+						    Axis axis = new Axis(Axis.ATTRIBUTE);
+						    NodeTest nodeTest = new NodeTest(NodeTest.WILDCARD);
+						    Step step = new Step(axis, nodeTest);
+						    stepsVector.addElement(step);
+						    break;
+						}
+						case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:{
+							isNamespaceAtt=true;
                     }
+					    case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME:{
+							
                     token = xtokens.getToken(++i);
                     int prefix = xtokens.getTokenString(token);
                     int uri = StringPool.EMPTY_STRING;
@@ -209,6 +265,17 @@ public class XPath {
                     if (prefix != -1 && context != null && uri == StringPool.EMPTY_STRING) {
                         throw new XPathException("prefix "+fStringPool.toString(prefix)+" not bound to namespace URI");
                     }
+							
+							if (isNamespaceAtt)
+							{
+								// build step
+								Axis axis = new Axis(Axis.ATTRIBUTE);
+								NodeTest nodeTest=new NodeTest(fStringPool,prefix,uri);
+								Step step = new Step(axis, nodeTest);
+								stepsVector.addElement(step);
+								break;
+							}
+								
                     token = xtokens.getToken(++i);
                     int localpart = xtokens.getTokenString(token);
                     int rawname = prefix != -1
@@ -222,6 +289,10 @@ public class XPath {
                     stepsVector.addElement(step);
                     break;
                 }
+					}
+					firstTokenOfLocationPath=false;
+					break;
+				}
                 /***
                 case XPath.Tokens.EXPRTOKEN_AXISNAME_SELF: {
                     break;
@@ -237,8 +308,27 @@ public class XPath {
                 }
                 /***/
                 case XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD: {
+					
                     // consume "::" token and drop through
                     i++;
+					if (i == tokenCount - 1) {
+						throw new XPathException("expected step following '"
+							+xtokens.getTokenName(XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD)+"::'");
+					}
+					firstTokenOfLocationPath=false;
+					break;
+				}
+				case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:{
+					Axis axis = new Axis(Axis.CHILD);
+					NodeTest nodeTest = new NodeTest(NodeTest.WILDCARD);
+					Step step = new Step(axis, nodeTest);
+					stepsVector.addElement(step);
+					firstTokenOfLocationPath=false;
+					break;
+				}
+				
+				case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:{
+					isNamespace=true;
                 }
                 case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME: {
                     // consume QName token
@@ -252,6 +342,17 @@ public class XPath {
                         uri == StringPool.EMPTY_STRING) {
                         throw new XPathException("prefix "+fStringPool.toString(prefix)+" not bound to namespace URI");
                     }
+
+					if (isNamespace)
+					{
+						// build step
+						Axis axis = new Axis(Axis.CHILD);
+						NodeTest nodeTest=new NodeTest(fStringPool,prefix,uri);
+						Step step = new Step(axis, nodeTest);
+						stepsVector.addElement(step);
+						break;
+					}
+						
                     token = xtokens.getToken(++i);
                     int localpart = xtokens.getTokenString(token);
                     int rawname = prefix != -1
@@ -263,6 +364,7 @@ public class XPath {
                     NodeTest nodeTest = new NodeTest(fStringPool, new QName(prefix, localpart, rawname, uri));
                     Step step = new Step(axis, nodeTest);
                     stepsVector.addElement(step);
+					firstTokenOfLocationPath=false;
                     break;
                 }
                 /***
@@ -270,38 +372,75 @@ public class XPath {
                     break;
                 }
                 /***/
+				
+				
                 case XPath.Tokens.EXPRTOKEN_PERIOD: {
                     // build step
                     Axis axis = new Axis(Axis.SELF);
                     NodeTest nodeTest = new NodeTest(NodeTest.NODE);
                     Step step = new Step(axis, nodeTest);
                     stepsVector.addElement(step);
+					
+					if (firstTokenOfLocationPath && i+1<tokenCount){
+						token=xtokens.getToken(i+1);
+						if (token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
+							i++;
+							if (i == tokenCount - 1) {
+								throw new XPathException("expected step following '//'");
+							}
+							if (i+1<tokenCount)	{
+								token=xtokens.getToken(i+1);
+								if (token==XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH)
+									throw new XPathException("'/' not allowed after '//'");
+							}	
+							// build step
+							axis = new Axis(Axis.DESCENDANT);
+							nodeTest = new NodeTest(NodeTest.NODE);
+							step = new Step(axis, nodeTest);
+							stepsVector.addElement(step);
+						}
+					}
+					firstTokenOfLocationPath=false;
                     break;
                 }
+				
+				case XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH:{
+					throw new XPathException("'//' only allowed after '.' at the beginning of an xpath");
+				}
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH: {
                     // keep on truckin'
-                    if (i == 0) {
+					if (firstTokenOfLocationPath) {
                         throw new XPathException("not allowed to select the root");
                     }
                     if (i == tokenCount - 1) {
                         throw new XPathException("expected step following '/'");
                     }
+					firstTokenOfLocationPath=false;
                     break;
                 }
+				default:
+					firstTokenOfLocationPath=false;
             }
         }
 
         int size = stepsVector.size();
         if (size == 0) {
+			if (locationPathsVector.size()==0)
             throw new XPathException("empty xpath expression");
+			else
+				throw new XPathException("xpath cannot end with '|'");
         }
         Step[] steps = new Step[size];
         stepsVector.copyInto(steps);
+		locationPathsVector.add(new LocationPath(steps));
 
         // save location path
-        fLocationPath = new LocationPath(steps);
+		fLocationPaths=new LocationPath[locationPathsVector.size()];
+		locationPathsVector.copyInto(fLocationPaths);
+		
+		
         if (DEBUG_XPATH_PARSE) {
-            System.out.println(">>> "+fLocationPath);
+			System.out.println(">>> "+fLocationPaths);
         }
 
     } // parseExpression(SymbolTable,NamespaceContext)
@@ -352,7 +491,8 @@ public class XPath {
         public String toString() {
             StringBuffer str = new StringBuffer();
             for (int i = 0; i < steps.length; i++) {
-                if (i > 0) {
+				if (i > 0	&& (steps[i-1].axis.type!=Axis.DESCENDANT
+					&& steps[i].axis.type!=Axis.DESCENDANT) ){
                     str.append('/');
                 }
                 str.append(steps[i].toString());
@@ -374,7 +514,7 @@ public class XPath {
             return new LocationPath(this);
         } // clone():Object
 
-    } // class LocationPath
+	} // class locationPath 
 
     /**
      * A location path step comprised of an axis and node test.
@@ -428,6 +568,9 @@ public class XPath {
             if (axis.type == Axis.CHILD) {
                 return nodeTest.toString();
             }
+			if (axis.type == Axis.DESCENDANT) {
+				return "//";
+			}
             return "??? ("+axis.type+')';
             /***/
         } // toString():String
@@ -460,6 +603,9 @@ public class XPath {
         /** Type: self. */
         public static final short SELF = 3;
 
+		
+		/** Type: descendant. */
+		public static final short DESCENDANT = 4;
         //
         // Data
         //
@@ -491,6 +637,7 @@ public class XPath {
                 case CHILD: return "child";
                 case ATTRIBUTE: return "attribute";
                 case SELF: return "self";
+				case DESCENDANT: return "descendant";
             }
             return "???";
         } // toString():String
@@ -523,6 +670,9 @@ public class XPath {
         /** Type: node. */
         public static final short NODE = 3;
 
+		/** Type: namespace */
+		public static final short NAMESPACE= 4;
+		
         //
         // Data
         //
@@ -551,6 +701,12 @@ public class XPath {
             this.type = QNAME;
             this.name.setValues(name);
         } // <init>(QName)
+		/** Constructs a node test of type Namespace. */
+		public NodeTest(StringPool stringPool, int prefix, int uri) {
+			fStringPool = stringPool;
+			this.type = NAMESPACE;
+			this.name.setValues(prefix,-1,-1,uri);
+		}
 
         /** Copy constructor. */
         public NodeTest(NodeTest nodeTest) {
@@ -576,6 +732,15 @@ public class XPath {
                     }
                     return fStringPool.toString(name.localpart);
                 }
+				case NAMESPACE: {
+					if (name.prefix!=-1) {
+						if (name.uri == StringPool.EMPTY_STRING) {
+							return fStringPool.toString(name.prefix) + ":*";
+						}
+						return "{" + fStringPool.toString(name.uri) + '}' + fStringPool.toString(name.prefix) + ":*";
+					} 
+					return "???:*";
+				}				
                 case WILDCARD: {
                     return "*";
                 }
@@ -3611,4 +3776,19 @@ public class XPath {
 
     } // main(String[])
 
+	/** Location paths. */
+	protected LocationPath[] fLocationPaths;	//
+	// Public methods
+	//
+	
+	/** Returns a representation of all location paths for this XPath. 
+		XPath = locationPath ( '|' locationPath)*
+	*/
+	public LocationPath[] getLocationPaths() {
+		LocationPath[] ret=new LocationPath[fLocationPaths.length];
+		for (int i=0;i<fLocationPaths.length;i++){
+			ret[i]=(LocationPath)fLocationPaths[i].clone();
+		}
+		return ret; 
+	} // getLocationPath(LocationPath)
 } // class XPath

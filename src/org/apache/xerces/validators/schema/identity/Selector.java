@@ -147,17 +147,22 @@ public class Selector {
             //       order to handle selectors such as "." that select
             //       the element container because the fields could be
             //       relative to that element. -Ac
-            super("./"+xpath, stringPool, context);
+			//       Unless xpath starts with a descendant node -Achille Fokoue
+			super(((xpath.trim().startsWith("//") ||xpath.trim().startsWith(".//"))?
+				xpath:"./"+xpath), stringPool, context);
     
             // verify that an attribute is not selected
-            XPath.Axis axis = fLocationPath.steps[fLocationPath.steps.length-1].axis;
+			for (int i=0;i<fLocationPaths.length;i++) {
+				org.apache.xerces.validators.schema.identity.XPath.Axis axis =
+					fLocationPaths[i].steps[fLocationPaths[i].steps.length-1].axis;
             if (axis.type == axis.ATTRIBUTE) {
                 throw new XPathException("selectors cannot select attributes");
             }
+			}
     
         } // <init>(String,StringPool,NamespacesScope)
     
-    } // class XPath
+	} // class Selector.XPath
 
     /**
      * Selector matcher.
