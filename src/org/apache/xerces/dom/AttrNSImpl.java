@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2004 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,6 @@
 package org.apache.xerces.dom;
 
 import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
-import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.w3c.dom.DOMException;
@@ -280,7 +279,7 @@ public class AttrNSImpl
             }
             if (prefix != null && prefix.length() != 0) {
 
-                if (!ownerDocument().isXMLName(prefix,ownerDocument().isXML11Version())) {
+                if (!CoreDocumentImpl.isXMLName(prefix,ownerDocument().isXML11Version())) {
                     String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_CHARACTER_ERR", null);
                     throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
                 }
