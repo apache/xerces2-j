@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
- <release version='NOT YET RELEASED'>
+ <release version='Xerces 2.0.0'>
   <desc>
   </desc>
   <changes>
@@ -115,7 +115,14 @@
         <submitter name="Arnaud Le Hors, Elena Litani"/>
     </fix> 
     
-     <fix>
+    
+    <fix>
+        <note>Fixed misc. SAX bugs.
+        </note>
+        <submitter name="Lisa Martin"/>
+    </fix>
+
+    <fix>
         <note>Fixed JAXP implemenation of schemaLanguage property.
         </note>
         <submitter name="Edwin Goei"/>
