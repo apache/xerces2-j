@@ -181,11 +181,6 @@ public class XMLDTDScanner
     public boolean scanDTD(boolean complete)
         throws IOException, SAXException {
 
-        // call handler
-        if (fDTDHandler != null && fStartDTDCalled == false) {
-            fDTDHandler.startDTD();
-        }
-
         fScanningExtSubset = true;
 
         // set starting state
@@ -253,8 +248,8 @@ public class XMLDTDScanner
 
         // call handler
         if (fDTDHandler != null) {
-            fStartDTDCalled = true;
             fDTDHandler.startDTD();
+            fStartDTDCalled = true;
         }
         fScanningExtSubset = false;
 
@@ -389,6 +384,14 @@ public class XMLDTDScanner
      */
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
+
+        if (name.equals("[dtd]")) {
+            // call handler
+            if (fDTDHandler != null && fStartDTDCalled == false) {
+                fDTDHandler.startDTD();
+            }
+        }
+
         // call handler
         if (fDTDHandler != null) {
             fDTDHandler.startEntity(name, publicId, systemId, encoding);
@@ -403,17 +406,17 @@ public class XMLDTDScanner
     public void endEntity(String name)
         throws SAXException {
 
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.endEntity(name);
+        }
+
         if (name.equals("[dtd]")) {
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
             if (fDTDHandler != null) {
                 fDTDHandler.endDTD();
             }
-        }
-
-        // call handler
-        if (fDTDHandler != null) {
-            fDTDHandler.endEntity(name);
         }
 
     } // endEntity(String)
