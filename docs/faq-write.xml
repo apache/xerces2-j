@@ -1,13 +1,34 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='Writing Application FAQs'>
+  <faq title="How do I access the DOM Level 3 functionality?">
+    <q>How do I access the DOM Level 3 functionality?</q>
+    <a> <p>
+      The DOM Level 3 Core functionality is not exposed in the regular 
+      Xerces distribution.
+      To get access to the DOM Level 3, extract source code from CVS and 
+      build Xerces with the target <strong>jars-dom3</strong>. The build will generate 
+      the <code>xmlParserAPIs.jar</code> that includes DOM Level 3 interfaces in 
+      <code>org.w3c.dom</code> and  <code>org.w3c.dom.ls</code> packages, 
+      <code>xercesImpl.jar</code> that includes partial DOM Level 3 implementation 
+      and <code>xercesSamples.jar</code> that includes sample code 
+      (see <code>samples.dom.DOM3</code>).
+      </p> 
+      <p>For more information, refer to the <link idref='dom3'>DOM Level 3 
+	  Implementation</link> page. 
+      </p>
+      <note>Always run <strong>build clean</strong> before build specialized Xerces.</note>
+    </a>
+  </faq>
  <faq title='Creating a DOM Parser'>
   <q>How do I create a DOM parser?</q>
   <a>
    <p>
-    You can create a DOM parser by using the Java APIs for
-    XML Processing (JAXP). The following source code shows
-    how:
+    You can create a DOM parser by using  the Java APIs for
+    XML Processing (JAXP) or using the DOM Level 3 Load and Save.
+   </p>
+   <p>  
+    The following source code shows how to create the parser with JAXP:
    </p>
    <source>import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
@@ -37,6 +58,31 @@ catch (SAXException e) {
 catch (IOException e) {
     // i/o error
 }</source>
+
+   <p>  
+   The following source code shows how to create the parser with DOM Level 3:
+   </p>
+   <source>
+import  org.w3c.dom.*;
+import  org.w3c.dom.ls.*;
+
+  ...
+try {
+  System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMImplementationSourceImpl");
+
+  DOMImplementationLS impl = (DOMImplementationLS)DOMImplementationRegistry.getDOMImplementation("LS-Load");
+
+  DOMBuilder builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+  
+  Document document = builder.parseURI("data/personal.xml");
+
+} catch ( Exception ex ) {
+}
+
+
+</source>
+<note>You can use DOM Level 3 Load/Save interfaces with the default Xerces distribution. To access the DOM Level 3 Core functionality you need to extract the code from CVS and build Xerces with the <strong>jars-dom3</strong> target.</note>
+
   </a>
  </faq>
  <faq title="Creating a SAX Parser">
@@ -87,6 +133,50 @@ catch (IOException e) {
   <a>TBD</a>
  </faq>
  -->
+
+<faq title="Revalidation of DOM document in Memory">
+<q>How can I make sure that my DOM document in memory conforms to a schema?</q>
+<a>
+      <p>
+	DOM revalidation is supported via W3C DOM Level 3 Core 
+	<code>Document.normalizeDocument()</code>.
+</p> 
+      <note>This release only supports revalidation against XML Schemas. 
+            Revalidation against DTDs or any other schema type is not implemented.</note>
+      
+      <p>To revalidate the document you need:</p>
+<ul>
+	<li>Build DOM Level 3 Xerces jars
+	  (see <em>How do I access the DOM Level 3 functionality</em>).</li>
+	<li>Create the DOMBuilder (see <em>Creating DOM parser</em>) 
+            or use DOM methods to create a tree in memory.</li>
+	<li>Set <em>validate</em> feature using <code>setNormalizationFeature</code>
+	  method.</li>
+	<li>Make sure your document has <em>xsi:schemaLocation</em> or 
+           <em>xsi:noSchemaLocation</em> 
+	  attributes at the document root that specify the location of schema(s) 
+	  against which validation should occur.</li>
+        <li>The <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-documentURI">documentURI</jump> must be set. Locations of the schema documents
+will be resolved relative to the <code>documentURI</code>.</li>
+</ul>
+ <source>
+import  org.w3c.dom.Document;
+import  org.w3c.dom.ls.DOMBuilder;
+
+  .....
+Document document = builder.parseURI("data/personal.xml");
+document.setErrorHandler(new MyErrorHandler());
+document.setNormalizationFeature("validate", true);
+document.normalizeDocument();
+
+  
+</source>
+
+      <p>For more information, please refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page.</p>
+</a>
+</faq>
+
+
  <faq title='Handling Errors'>
   <q>How do handle errors?</q>
   <a>
@@ -119,7 +209,13 @@ ErrorHandler handler = new ErrorHandler() {
 };
 
 DocumentBuilder builder = /* builder instance */;
-builder.setErrorHandler(handler);</source>
+builder.setErrorHandler(handler);
+
+</source>
+<p>If you are using <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump> 
+you can register an error handler with the <code>DOMBuilder</code> by supplying
+    a class which implements the <code>org.w3c.dom.DOMErrorHandler</code>
+    interface. </p>
    <p>
     You can also register an error handler on a SAXParser using JAXP
     like this:
@@ -152,7 +248,7 @@ parser.getXMLReader().setErrorHandler(handler);</source>
   </q>
   <a>
    <p>
-    The DOM Level 3 feature  <code>create-entity-ref-nodes</code> (or corresponding Xerces  <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code> feature) 
+    The DOM Level 3 feature  <code>entities</code> (or corresponding Xerces  <code>http://apache.org/xml/features/dom/create-entity-ref-nodes</code> feature) 
     control how entities appear in the DOM tree. When one of those features 
     is set to true (the default), an occurance of an entity reference
     in the XML document will be represented by a subtree with an 
@@ -255,6 +351,9 @@ parser.getXMLReader().setErrorHandler(handler);</source>
     or these nodes will not be garbage collected until the entire
     document is garbage collected.
    </p>
+    <p>If you are using Xerces with the DOM Level 3 support  
+       you can use <code>org.w3c.dom.Node.setUserData()</code> and register your own 
+       <code>UserDataHandler</code>. </p>
   </a>
  </faq>
  <faq title='Parsing Several Documents'>

@@ -23,10 +23,22 @@
       </update>
       <add>
 	<note>
-	  Add implementation for baseURI and documentURI (DOM Level 3).
+	   Add implementation for baseURI, documentURI, normalizeDocument 
+           and required normalize document features. Added support for DOM revalidation 
+           against XML Schemas. [DOM Level 3]
 	</note>
 	<submitter name='Elena Litani'/>
       </add>
+      <add>
+        <note>
+          Reorganized the code in Xerces DOM implementation to expose DOM Level 3
+          functionality via org.w3c.dom package.
+          Added several build targets for building customized xerces jar files that include
+          DOM Level 3 Core and Load/Save interfaces and 
+          implementation of those interfaces: jars-dom3, apijar-dom3, sampjar-dom3. 
+       </note>
+	<submitter name='Arnaud Le Hors, Elena Litani'/>
+     </add>
       <update>
 	<note>
 	  Updated xni.DocumentTracer sample to print augmentations for events.
@@ -133,7 +145,7 @@
       </update>
 
       <update>
-	<note>According to the namespace spec erreta, namespace declaration
+	<note>According to the namespace spec errata, namespace declaration
           attributes should be bound to a special namespace; and errors should
           be reported on illegal bindings of "xmlns" and "xml" prefixes and
           their namespaces.

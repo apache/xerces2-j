@@ -3,83 +3,94 @@
 <s1 title="Document Object Model Level 3 Implementation">
 <s2 title="Disclaimer">
 <p>
-The &ParserNameLong; &ParserVersion;  contains a partial implementation of the W3C Document Object Model 
-Level 3.  This implementation is experimental.  The DOM Level 3 specification is 
-still in working draft stage: you should not consider this implementation complete or correct.  
-The limitations of this implementation are detailed below. 
-Please, read this document before using <code>org.apache.xerces.dom3</code> package.  
+
+The &ParserNameLong; &ParserVersion;  contains a partial implementation of 
+the W3C Document Object Model Level 3. 
+</p>
+      <p>The <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump> 
+        specification is at the stage of <strong>Working Draft</strong>, which represents 
+        work in progress and thus may be updated, replaced, or obsoleted by 
+        other documents at any time.
+      
+ 
+This implementation is experimental: it should not be considered as complete or correct.
 </p>
 </s2> 
 <s2 title="Introduction">
 <p>
-The &ParserNameLong; &ParserVersion; contains an implementation of a subset of the W3C DOM Level 3 as 
-specified in <jump
-href="http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/">Core</jump>, <jump
-href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html">Abstract 
-Schemas</jump> and <jump
-href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>Load 
-and Save</jump>.  
+      The &ParserNameLong; &ParserVersion; contains an implementation of a subset of the 
+      W3C DOM Level 3 as specified in 
+      <jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/">Core</jump>, 
+      <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>
+	Load and Save</jump>, and  
+      <jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html">Abstract Schemas</jump> [<strong>deprecated</strong>]. 
+
+    </p>
+<p>
+    The DOM Level 3 methods for which implementation is not provide will throw <code>DOMException NOT_SUPPORTED_ERR</code> exception.  
 </p>
-<note>DOM Level 3 interfaces are located in org.apache.xerces.dom3 package</note>
+
+<note>To find out how to access <em>DOM Level 3 functionality</em>, please refer to the  <link idref='faq-write'>FAQ</link>.</note>
 </s2>
 
 <s2 title='Implementation of DOM Level 3 Core'>
-<note>
-To be able to use DOM Level 3 Core functionality, you will need to cast to Xerces implementation (e.i. DocumentImpl, NodeImpl).
-</note>
+<p>Most of the DOM Level 3 functionality is implemented, including:</p>
+
 <ul>
-    <li>
-        <code>DOMImplementationRegistry</code> (see <code>DOMImplementationSource</code>)
+    <li><strong>Document</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-normalizeDocument">normalizeDocument</jump> -- this method normalizes Text nodes, makes the document "namespace wellformed" by adding missing namespace declaration attributes and adding or changing namespace prefixes, updates the replacement tree of EntityReference nodes, normalizes attribute values, etc. The actual result depends on the features being set and governing what operations actually take place. The methods <code>setNormalizationFeature, getNormalizationFeature, canSetNormalizationFeature</code> are also supported.
     </li>
 
-     <li>
-        <code>Document</code>: set/getEncoding, set/getVersion, set/getStandalone, adoptNode.
-    </li>
-    <li>
-        <code>Node</code>: isSameNode
-    </li>
-    <li>
-        <code>Node</code>: getInterface
-    </li>
-    <li>
-        <code>Node</code>: set/getUserData
-    </li>
-    
-    <li>
-        <code>Node</code>: isEqualNode()
-    </li>
-    <li>
-        <code>DOMErrorHandler</code>, <code>DOMError</code>, <code>DOMLocator</code>
-    </li>
-     <li>
-        <code>Entity</code>: set/getEncoding, set/getVersion
-    </li>
+<li><strong>Node</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Node3-compareTreePosition">compareTreePosition</jump> -- compares a node with this node with regard to their position in the tree and according to the document order.
+</li>
+<li><strong>Node</strong> 
+<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Node3-lookupNamespaceURI">lookupNamespaceURI</jump>, 
+<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Node3-lookupNamespacePrefix">lookupNamespacePrefix</jump>, 
+<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Node3-isDefaultNamespace">isDefaultNamespace</jump>  -- performs different namespace URI/prefix lookups.
+</li>
+<li><em>DOMError</em>, <em>DOMErrorHandler</em>, <em>DOMLocator</em>, <em>UserDataHandler</em> -- users can register error and user data handlers.
+</li>
+
+</ul>
+
+<p>
+The <code>normalization features</code> supported are:</p>
+<ul>
+<li><strong>canonical-form</strong> [<em>false</em>]</li> 
+<li><strong>cdata-sections</strong> [<em>true/false</em>]</li> 
+<li><strong>comments</strong> [<em>true/false</em>]</li> 
+<li><strong>entities</strong> [<em>true/false</em>]</li>
+<li><strong>infoset</strong> [<em>false</em>]</li> 
+<li><strong>namespace-declarations</strong> [<em>true</em>]</li> 
+<li><strong>normalize-characters</strong> [<em>false</em>]</li> 
+<li><strong>split-cdata-sections</strong> [<em>true/false</em>]</li> 
+<li><strong>validate-if-schema</strong> [<em>false</em>]</li> 
+<li><strong>whitespace-in-element-content</strong> [<em>true</em>]</li>
+<li><strong>datatype-normalization</strong> [<em>true/false</em>] -- the XML Schema normalized values will not be exposed via the DOM even if the value of this feature is set to true (to be implemented). </li> 
+<li><strong>discard-default-content</strong> [<em>true/false</em>] -- the removal of default content depends on <code>isSpecified</code> flag. </li>
+<li><strong>validate</strong> [<em>true/false</em>] -- revalidation is supported only against XML Schemas. For more information, please refer to <link idref='faq-write'>How to revalidate DOM in memory?</link>.</li>
 </ul>
 </s2> 
 
 <s2 title='Implementation of DOM Level 3 Load and Save'>
+<p>Most of the functionality is implemented. Here is the list of limitations:</p>
 <ul>
-    <li>
-        <code>DOMBuilder</code>: does not provide implementation of parseWithContext() and <code>DOMBuilderFilter</code>.
-    </li>
-    <li>
-        <code>DOMWriter</code>: supports all required features and setting <code>format-pretty-print</code> feature to true.
-        <code>DOMWriter</code> fixes namespaces during serialization.
-    </li>
-    <li>
-        <code>DOMInputSource</code>
-    </li>
-    <li>
-        <code>DocumentLS</code>
-    </li>
-    <li>
-        <code>DOMImplementationLS</code>
+    <li><strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#ID-LS-DOMBuilder-parseWithContext">parserWithContext</jump>
+ -- no implementation is provided.</li>
+    <li><strong>DOMBuilder</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#ID-LS-DOMBuilder-filter">filter</jump> -- no implementation is provided
+</li>
+
+    <li><strong>DOMWriter</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#LS-Interfaces-DOMWriterFilter">filter</jump> --
+no implementation is provided.
+</li>
+
+    <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html#createDOMBuilder">createDOMBuilder</jump> -- if 
+<code>schemaType</code> has value of <em>"http://www.w3.org/2001/XMLSchema"</em> the parser created will attempt to validate against DTD if one is found. If DTD is not found the parser will validate against XML Schemas.
     </li>
 </ul>
 
 </s2> <s2 title='Implementation of DOM Level 3 Abstract Schemas'>
-<note>Xerces does not provide implementation for editing schemas (AS-EDIT) nor we provide implementation
-for "Document-editing"</note>
+<p> The implementation of Abstract Schemas is <strong>deprecated</strong>. 
+The funtionality will be removed in the future releases of Xerces.</p>
 
 <ul>
     <li>

@@ -23,10 +23,10 @@
   </p>
   <p>
    Xerces 2 also provides a partial implementation of Document Object Model Level 3  
-    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/'>Core</jump>, 
-    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>Abstract Schemas</jump> and 
-    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>Load and Save</jump> Working Drafts. For more information, refer to the 
-   <link idref='dom3'>DOM Level 3 Implementation</link> page. 
+    <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/'>Core</jump>, 
+    
+    <jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409/load-save.html'>Load and Save</jump> and <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>Abstract Schemas</jump> [<strong>deprecated</strong>] Working Drafts. 
+For more information, refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page. 
   </p>
 
   <p>
@@ -84,6 +84,14 @@
    
   </ul>
  </s2>
+ 
+  <s2 title='Backwards compatibility'>
+   <p> According to the DOM Level 3 specification and 
+<jump href="http://www.w3.org/2000/11/DOM-Level-2-errata#core-26">DOM Level 2 errata
+</jump> the createElementNS and createAttributeNS methods convert empty string 
+namespaceURI to null. 
+Please, let us know if this change affects your application.</p>
+  </s2>
  
  <s2 title='Changes from Previous Release'>
     
