@@ -88,6 +88,7 @@ public final  class SchemaSymbols {
     public static final String ELT_ELEMENT =  "element";
     public static final String ELT_ENCODING =  "encoding";
     public static final String ELT_ENUMERATION =  "enumeration";
+    public static final String ELT_FIELD = "field";
     public static final String ELT_WHITESPACE =  "whiteSpace";
     public static final String ELT_GROUP =  "group";
     public static final String ELT_IMPORT =  "import";
@@ -146,6 +147,7 @@ public final  class SchemaSymbols {
     public static final String ATT_USE =  "use";
     public static final String ATT_VALUE = "value";
     public static final String ATT_MIXED = "mixed";
+    public static final String ATT_XPATH = "xpath";
     public static final String ATTVAL_TWOPOUNDANY =  "##any";
     public static final String ATTVAL_TWOPOUNDLOCAL =  "##local";
     public static final String ATTVAL_TWOPOUNDOTHER =  "##other";

@@ -165,6 +165,11 @@ public class SAXParser
         initHandlers(true, this, this);
     }
 
+    protected SAXParser(StringPool stringPool) {
+        super(stringPool);
+        initHandlers(true, this, this);
+    }
+
     //
     // Public methods
     //

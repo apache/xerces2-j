@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,108 +55,31 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.common;
+package org.apache.xerces.validators.schema.identity;
 
-import java.util.Vector;
-
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.validators.datatype.DatatypeValidator;
+import org.xml.sax.SAXException;
 
 /**
+ * Interface for a field activator. The field activator is responsible
+ * for activating fields within a specific scope; the caller merely
+ * requests the fields to be activated.
+ *
+ * @author Andy Clark, IBM
+ *
  * @version $Id$
  */
-public class XMLElementDecl {
-
+public interface FieldActivator {
+    
     //
-    // Constants
-    //
-
-    public static final int TYPE_EMPTY = 0;
-    public static final int TYPE_ANY = 1;
-    public static final int TYPE_MIXED = 2;
-    public static final int TYPE_CHILDREN = 3;
-    public static final int TYPE_SIMPLE = 4;
-
-    //
-    // Data
+    // FieldActivator methods
     //
 
-    // basic information
+    /** 
+     * Request to activate the specified field. This method returns the
+     * matcher for the field.
+     *
+     * @param field The field to activate.
+     */
+    public XPathMatcher activateField(Field field) throws SAXException;
 
-    public final QName name = new QName();
-
-    public int type;
-
-    // simple types
-
-    public boolean list;
-
-    public DatatypeValidator datatypeValidator;
-
-    // complex types
-
-    public int contentSpecIndex;
-
-    // enclosingScope where this element is declared, should always be -1 with DTD Validation.
-    public int enclosingScope;
-
-    // identity constraints
-
-    public final Vector unique = new Vector();
-
-    public final Vector key = new Vector();
-
-    public final Vector keyRef = new Vector();
-
-    //
-    // Constructors
-    //
-
-    public XMLElementDecl() {
-        clear();
-    }
-
-    public XMLElementDecl(XMLElementDecl elementDecl) {
-        setValues(elementDecl);
-    }
-
-    //
-    // Public methods
-    //
-
-    public void clear() {
-        name.clear();
-        type = - 1;
-        list = false;
-        datatypeValidator = null;
-        contentSpecIndex = -1;
-        enclosingScope = -1;
-        unique.removeAllElements();
-        key.removeAllElements();
-        keyRef.removeAllElements();
-    }
-
-    public void setValues(XMLElementDecl elementDecl) {
-        name.setValues(elementDecl.name);
-        type = elementDecl.type;
-        list = elementDecl.list;
-        datatypeValidator = elementDecl.datatypeValidator;
-        contentSpecIndex = elementDecl.contentSpecIndex;
-        enclosingScope = elementDecl.enclosingScope;
-    }
-
-    //
-    // Object methods
-    //
-
-    public int hashCode() {
-        // TODO
-        return super.hashCode();
-    }
-
-    public boolean equals(Object object) {
-        // TODO
-        return super.equals(object);
-    }
-
-} // class XMLElementDecl
+} // interface FieldActivator

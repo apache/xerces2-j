@@ -55,108 +55,40 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.common;
-
-import java.util.Vector;
-
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.validators.datatype.DatatypeValidator;
+package org.apache.xerces.validators.schema.identity;
 
 /**
+ * Schema key identity constraint.
+ *
+ * @author Andy Clark, IBM
  * @version $Id$
  */
-public class XMLElementDecl {
-
-    //
-    // Constants
-    //
-
-    public static final int TYPE_EMPTY = 0;
-    public static final int TYPE_ANY = 1;
-    public static final int TYPE_MIXED = 2;
-    public static final int TYPE_CHILDREN = 3;
-    public static final int TYPE_SIMPLE = 4;
+public class Key 
+    extends IdentityConstraint {
 
     //
     // Data
     //
 
-    // basic information
-
-    public final QName name = new QName();
-
-    public int type;
-
-    // simple types
-
-    public boolean list;
-
-    public DatatypeValidator datatypeValidator;
-
-    // complex types
-
-    public int contentSpecIndex;
-
-    // enclosingScope where this element is declared, should always be -1 with DTD Validation.
-    public int enclosingScope;
-
-    // identity constraints
-
-    public final Vector unique = new Vector();
-
-    public final Vector key = new Vector();
-
-    public final Vector keyRef = new Vector();
+    /** Name. */
+    private String fName;
 
     //
     // Constructors
     //
 
-    public XMLElementDecl() {
-        clear();
-    }
-
-    public XMLElementDecl(XMLElementDecl elementDecl) {
-        setValues(elementDecl);
-    }
+    /** Constructs a key with the specified name. */
+    public Key(String name) {
+        fName = name;
+    } // <init>(String)
 
     //
     // Public methods
     //
 
-    public void clear() {
-        name.clear();
-        type = - 1;
-        list = false;
-        datatypeValidator = null;
-        contentSpecIndex = -1;
-        enclosingScope = -1;
-        unique.removeAllElements();
-        key.removeAllElements();
-        keyRef.removeAllElements();
-    }
+    /** Returns the name. */
+    public String getName() {
+        return fName;
+    } // getName():String
 
-    public void setValues(XMLElementDecl elementDecl) {
-        name.setValues(elementDecl.name);
-        type = elementDecl.type;
-        list = elementDecl.list;
-        datatypeValidator = elementDecl.datatypeValidator;
-        contentSpecIndex = elementDecl.contentSpecIndex;
-        enclosingScope = elementDecl.enclosingScope;
-    }
-
-    //
-    // Object methods
-    //
-
-    public int hashCode() {
-        // TODO
-        return super.hashCode();
-    }
-
-    public boolean equals(Object object) {
-        // TODO
-        return super.equals(object);
-    }
-
-} // class XMLElementDecl
+} // class Key

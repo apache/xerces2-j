@@ -197,7 +197,11 @@ public abstract class XMLParser
      * Constructor
      */
     protected XMLParser() {
-        fStringPool = new StringPool();
+        this(new StringPool());
+    }
+
+    protected XMLParser(StringPool stringPool) {
+        fStringPool = stringPool;
         fErrorReporter = this;
         fEntityHandler = new DefaultEntityHandler(fStringPool, fErrorReporter);
         fScanner = new XMLDocumentScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));

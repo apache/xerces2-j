@@ -427,4 +427,39 @@ public class XUtil {
 
     } // getNextSiblingElement(Node,String,String,String):Element
 
+    /**
+     * Returns the concatenated child text of the specified node.
+     * This method only looks at the immediate children of type
+     * <code>Node.TEXT_NODE</code> or the children of any child
+     * node that is of type <code>Node.CDATA_SECTION_NODE</code> 
+     * for the concatenation.
+     *
+     * @param node The node to look at.
+     */
+    public static String getChildText(Node node) {
+
+        // is there anything to do?
+        if (node == null) {
+            return null;
+        }
+
+        // concatenate children text
+        StringBuffer str = new StringBuffer();
+        Node child = node.getFirstChild();
+        while (child != null) {
+            short type = child.getNodeType();
+            if (type == Node.TEXT_NODE) {
+                str.append(child.getNodeValue());
+            }
+            else if (type == Node.CDATA_SECTION_NODE) {
+                str.append(getChildText(child));
+            }
+            child = child.getNextSibling();
+        }
+
+        // return text value
+        return str.toString();
+
+    } // getChildText(Node):String
+
 } // class XUtil

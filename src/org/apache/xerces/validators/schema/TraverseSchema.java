@@ -1,10 +1,9 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,6 +64,13 @@ import  org.apache.xerces.validators.common.XMLElementDecl;
 import  org.apache.xerces.validators.common.XMLAttributeDecl;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
+import  org.apache.xerces.validators.schema.identity.Field;
+import  org.apache.xerces.validators.schema.identity.IdentityConstraint;
+import  org.apache.xerces.validators.schema.identity.Key;
+import  org.apache.xerces.validators.schema.identity.KeyRef;
+import  org.apache.xerces.validators.schema.identity.Selector;
+import  org.apache.xerces.validators.schema.identity.Unique;
+import  org.apache.xerces.validators.schema.identity.XPathException;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
 import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;  //CR implementation
@@ -72,11 +78,13 @@ import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
 
-//REVISIT: for now, import everything in the DOM package
-import  org.w3c.dom.*;
+import java.io.IOException;
 import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
+
+//REVISIT: for now, import everything in the DOM package
+import  org.w3c.dom.*;
 
 //Unit Test 
 import  org.apache.xerces.parsers.DOMParser;
@@ -95,14 +103,10 @@ import  org.xml.sax.SAXParseException;
 import  org.xml.sax.EntityResolver;
 import  org.xml.sax.ErrorHandler;
 import  org.xml.sax.SAXException;
-import  java.io.IOException;
 import  org.w3c.dom.Document;
 import  org.apache.xml.serialize.OutputFormat;
 import  org.apache.xml.serialize.XMLSerializer;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
-
-
-
 
 /**
  * Instances of this class get delegated to Traverse the Schema and
@@ -401,9 +405,17 @@ public class TraverseSchema implements
     //CONSTANTS
     private static final int TOP_LEVEL_SCOPE = -1;
 
+    /** Identity constraint keywords. */
+    private static final String[] IDENTITY_CONSTRAINTS = {
+        SchemaSymbols.ELT_UNIQUE, 
+        SchemaSymbols.ELT_KEY, SchemaSymbols.ELT_KEYREF
+    };
+
     //debuggin
     private static boolean DEBUGGING = false;
 
+    /** Compile to true to debug identity constraints. */
+    private static boolean DEBUG_IDENTITY_CONSTRAINTS = false;
     
 	//CR Implementation
 	private static boolean DEBUG_UNION = false;
@@ -835,10 +847,7 @@ public class TraverseSchema implements
         }
         fIncludeLocations.addElement((Object)location);
 
-        DOMParser parser = new DOMParser() {
-            public void ignorableWhitespace(char ch[], int start, int length) {}
-            public void ignorableWhitespace(int dataIdx) {}
-        };
+        DOMParser parser = new IgnoreWhitespaceParser();
         parser.setEntityResolver( new Resolver() );
         parser.setErrorHandler(  new ErrorHandler() );
 
@@ -1009,10 +1018,7 @@ public class TraverseSchema implements
              importedGrammar = new SchemaGrammar();
          }
 
-         DOMParser parser = new DOMParser() {
-                public void ignorableWhitespace(char ch[], int start, int length) {}
-                public void ignorableWhitespace(int dataIdx) {}
-         };
+         DOMParser parser = new IgnoreWhitespaceParser();
          parser.setEntityResolver( new Resolver() );
          parser.setErrorHandler(  new ErrorHandler() );
 
@@ -4554,36 +4560,6 @@ public class TraverseSchema implements
         }
 
         //
-        // key/keyref/unique processing\
-        //
-
-        child = XUtil.getFirstChildElement(elementDecl);
-        Vector idConstraints = null;
-        
-        while (child != null){
-            String childName = child.getLocalName();
-           /**** 
-            if ( childName.equals(SchemaSymbols.ELT_KEY) ) { 
-                traverseKey(child, idCnstrt);
-            }
-            else if ( childName.equals(SchemaSymbols.ELT_KEYREF) ) {
-                traverseKeyRef(child, idCnstrt);
-            }
-            else if ( childName.equals(SchemaSymbols.ELT_UNIQUE) ) {
-                traverseUnique(child, idCnstrt);
-            }
-
-            if (idCnstrt!= null) {
-                if (idConstraints != null) {
-                    idConstraints = new Vector();
-                }
-                idConstraints.addElement(idCnstrt);
-            }
-            /****/
-            child = XUtil.getNextSiblingElement(child);
-        }
-        
-        //
         // Create element decl
         //
 
@@ -4663,10 +4639,145 @@ public class TraverseSchema implements
         // setEquivClassElementFullName
         fSchemaGrammar.setElementDeclEquivClassElementFullName(elementIndex, equivClassFullName);
 
+        //
+        // key/keyref/unique processing\
+        //
+
+        Element ic = XUtil.getFirstChildElement(elementDecl, IDENTITY_CONSTRAINTS);
+        Vector idConstraints = null;
+        
+        if (ic != null) {
+            // REVISIT: Use cached copy. -Ac
+            XMLElementDecl edecl = new XMLElementDecl();
+            fSchemaGrammar.getElementDecl(elementIndex, edecl);
+            while (ic != null){
+                String icName = ic.getLocalName();
+                if ( icName.equals(SchemaSymbols.ELT_KEY) ) { 
+                    traverseKey(ic, edecl);
+                }
+                else if ( icName.equals(SchemaSymbols.ELT_KEYREF) ) {
+                    traverseKeyRef(ic, edecl);
+                }
+                else if ( icName.equals(SchemaSymbols.ELT_UNIQUE) ) {
+                    traverseUnique(ic, edecl);
+                }
+                else {
+                    // should never get here
+                    throw new RuntimeException("identity constraint must be one of "+
+                                               "\""+SchemaSymbols.ELT_UNIQUE+"\", "+
+                                               "\""+SchemaSymbols.ELT_KEY+"\", or "+
+                                               "\""+SchemaSymbols.ELT_KEYREF+'"');
+                }
+                fSchemaGrammar.setElementDecl(elementIndex, edecl);
+                ic = XUtil.getNextSiblingElement(ic, IDENTITY_CONSTRAINTS);
+            }
+        }
+        
         return eltQName;
 
     }// end of method traverseElementDecl(Element)
 
+    private void traverseUnique(Element uelem, XMLElementDecl edecl) 
+        throws Exception {
+
+        // create identity constraint
+        if (DEBUG_IDENTITY_CONSTRAINTS) {
+            System.out.println("<IC>: traverseUnique(\""+uelem.getNodeName()+"\")");
+        }
+        Unique unique = new Unique();
+
+        // get selector and fields
+        traverseIdentityConstraint(unique, uelem);
+
+        // add to element decl
+        edecl.unique.addElement(unique);
+
+    } // traverseUnique(Element,XMLElementDecl)
+
+    private void traverseKey(Element kelem, XMLElementDecl edecl)
+        throws Exception {
+
+        // create identity constraint
+        String kname = kelem.getAttribute(SchemaSymbols.ATT_NAME);
+        if (DEBUG_IDENTITY_CONSTRAINTS) {
+            System.out.println("<IC>: traverseKey(\""+kelem.getNodeName()+"\") ["+kname+']');
+        }
+        Key key = new Key(kname);
+
+        // get selector and fields
+        traverseIdentityConstraint(key, kelem);
+
+        // add to element decl
+        edecl.key.addElement(key);
+
+    } // traverseKey(Element,XMLElementDecl)
+
+    private void traverseKeyRef(Element krelem, XMLElementDecl edecl) 
+        throws Exception {
+
+        // create identity constraint
+        String krname = krelem.getAttribute(SchemaSymbols.ATT_NAME);
+        if (DEBUG_IDENTITY_CONSTRAINTS) {
+            System.out.println("<IC>: traverseKeyRef(\""+krelem.getNodeName()+"\") ["+krname+']');
+        }
+        KeyRef keyRef = new KeyRef(krname);
+
+        // add to element decl
+        traverseIdentityConstraint(keyRef, krelem);
+
+        // add key reference to element decl
+        edecl.keyRef.addElement(keyRef);
+
+    } // traverseKeyRef(Element,XMLElementDecl)
+
+    private void traverseIdentityConstraint(IdentityConstraint ic, 
+                                            Element icelem) throws Exception {
+        
+        // get selector
+        Element selem = XUtil.getFirstChildElement(icelem, SchemaSymbols.ELT_SELECTOR);
+        String stext = CR_IMPL
+                     ? selem.getAttribute(SchemaSymbols.ATT_XPATH) 
+                     : XUtil.getChildText(selem);
+        stext = stext.trim();
+        try {
+            // REVISIT: Get namespace context! -Ac
+            Selector.XPath sxpath = new Selector.XPath(stext, fStringPool, null);
+            Selector selector = new Selector(sxpath, ic);
+            if (DEBUG_IDENTITY_CONSTRAINTS) {
+                System.out.println("<IC>:   selector: "+selector);
+            }
+            ic.setSelector(selector);
+        }
+        catch (XPathException e) {
+            // REVISIT: Add error message.
+            throw new SAXException(e.getMessage());
+        }
+
+        // get fields
+        Element felem = XUtil.getNextSiblingElement(selem, SchemaSymbols.ELT_FIELD);
+        while (felem != null) {
+            String ftext = CR_IMPL
+                         ? felem.getAttribute(SchemaSymbols.ATT_XPATH) 
+                         : XUtil.getChildText(felem);
+            ftext = ftext.trim();
+            try {
+                // REVISIT: Get namespace context! -Ac
+                Field.XPath fxpath = new Field.XPath(ftext, fStringPool, null);
+                // REVISIT: Get datatype validator. -Ac
+                Field field = new Field(fxpath, null, ic);
+                if (DEBUG_IDENTITY_CONSTRAINTS) {
+                    System.out.println("<IC>:   field:    "+field);
+                }
+                ic.addField(field);
+            }
+            catch (XPathException e) {
+                // REVISIT: Add error message.
+                throw new SAXException(e.getMessage());
+            }
+            felem = XUtil.getNextSiblingElement(felem, SchemaSymbols.ELT_FIELD);
+        }
+
+    } // traverseIdentityConstraint(IdentityConstraint,Element)
 
     int getLocalPartIndex(String fullName){
         int colonAt = fullName.indexOf(":"); 
@@ -5966,10 +6077,7 @@ public class TraverseSchema implements
             System.exit(0);
         }
 
-        DOMParser parser = new DOMParser() {
-            public void ignorableWhitespace(char ch[], int start, int length) {}
-            public void ignorableWhitespace(int dataIdx) {}
-        };
+        DOMParser parser = new IgnoreWhitespaceParser();
         parser.setEntityResolver( new Resolver() );
         parser.setErrorHandler(  new ErrorHandler() );
 
@@ -6092,6 +6200,11 @@ public class TraverseSchema implements
         } // getLocationString(SAXParseException):String
     }
 
+    static class IgnoreWhitespaceParser
+        extends DOMParser {
+        public void ignorableWhitespace(char ch[], int start, int length) {}
+        public void ignorableWhitespace(int dataIdx) {}
+    } // class IgnoreWhitespaceParser
 
 }
 

@@ -63,6 +63,7 @@ import org.apache.xerces.utils.QName;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.CMException;
+import org.apache.xerces.validators.schema.identity.IdentityConstraint;
 import org.apache.xerces.utils.ImplementationMessages;
 import org.w3c.dom.Document;
 import java.util.Vector;
@@ -106,6 +107,9 @@ implements XMLContentSpec.Provider {
     private XMLContentModel fElementDeclContentModelValidator[][] = new XMLContentModel[INITIAL_CHUNK_COUNT][];
     private int fElementDeclFirstAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
     private int fElementDeclLastAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
+    private Vector fElementDeclUnique[][] = new Vector[INITIAL_CHUNK_COUNT][];
+    private Vector fElementDeclKey[][] = new Vector[INITIAL_CHUNK_COUNT][];
+    private Vector fElementDeclKeyRef[][] = new Vector[INITIAL_CHUNK_COUNT][];
 
     // content spec tables
 
@@ -182,6 +186,26 @@ implements XMLContentSpec.Provider {
         }
         elementDecl.datatypeValidator       = fElementDeclDatatypeValidator[chunk][index];       
         elementDecl.contentSpecIndex        = fElementDeclContentSpecIndex[chunk][index];        
+
+        // copy identity constraints
+        elementDecl.unique.removeAllElements();
+        int ucount = fElementDeclUnique[chunk][index] != null
+                   ? fElementDeclUnique[chunk][index].size() : 0;
+        for (int i = 0; i < ucount; i++) {
+            elementDecl.unique.addElement(fElementDeclUnique[chunk][index].elementAt(i));
+        }
+        elementDecl.key.removeAllElements();
+        int kcount = fElementDeclKey[chunk][index] != null
+                   ? fElementDeclKey[chunk][index].size() : 0;
+        for (int i = 0; i < kcount; i++) {
+            elementDecl.key.addElement(fElementDeclKey[chunk][index].elementAt(i));
+        }
+        elementDecl.keyRef.removeAllElements();
+        int krcount = fElementDeclKeyRef[chunk][index] != null
+                    ? fElementDeclKeyRef[chunk][index].size() : 0;
+        for (int i = 0; i < krcount; i++) {
+            elementDecl.keyRef.addElement(fElementDeclKeyRef[chunk][index].elementAt(i));
+        }
 
         return true;
     }
@@ -352,6 +376,44 @@ implements XMLContentSpec.Provider {
         }
         fElementDeclDatatypeValidator[chunk][index]       = elementDecl.datatypeValidator;
         fElementDeclContentSpecIndex[chunk][index]        = elementDecl.contentSpecIndex;
+
+        // copy identity constraints
+        int ucount = elementDecl.unique.size();
+        if (ucount > 0) {
+            if (fElementDeclUnique[chunk][index] == null) {
+                fElementDeclUnique[chunk][index] = (Vector)elementDecl.unique.clone();
+            }
+            else {
+                fElementDeclUnique[chunk][index].removeAllElements();
+                for (int i = 0; i < ucount; i++) {
+                    fElementDeclUnique[chunk][index].addElement(elementDecl.unique.elementAt(i));
+                }
+            }
+        }
+        int kcount = elementDecl.key.size();
+        if (kcount > 0) {
+            if (fElementDeclKey[chunk][index] == null) {
+                fElementDeclKey[chunk][index] = (Vector)elementDecl.key.clone();
+            }
+            else {
+                fElementDeclKey[chunk][index].removeAllElements();
+                for (int i = 0; i < kcount; i++) {
+                    fElementDeclKey[chunk][index].addElement(elementDecl.key.elementAt(i));
+                }
+            }
+        }
+        int krcount = elementDecl.keyRef.size();
+        if (krcount > 0) {
+            if (fElementDeclKeyRef[chunk][index] == null) {
+                fElementDeclKeyRef[chunk][index] = (Vector)elementDecl.keyRef.clone();
+            }
+            else {
+                fElementDeclKeyRef[chunk][index].removeAllElements();
+                for (int i = 0; i < krcount; i++) {
+                    fElementDeclKeyRef[chunk][index].addElement(elementDecl.keyRef.elementAt(i));
+                }
+            }
+        }
 
         // add the mapping information to the 
         putElementNameMapping(elementDecl.name,
@@ -805,6 +867,9 @@ implements XMLContentSpec.Provider {
             fElementDeclContentModelValidator = resize(fElementDeclContentModelValidator, fElementDeclContentModelValidator.length * 2);
             fElementDeclFirstAttributeDeclIndex = resize(fElementDeclFirstAttributeDeclIndex, fElementDeclFirstAttributeDeclIndex.length * 2);
             fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclLastAttributeDeclIndex.length * 2);
+            fElementDeclUnique = resize(fElementDeclUnique, fElementDeclUnique.length * 2);
+            fElementDeclKey = resize(fElementDeclKey, fElementDeclKey.length * 2);
+            fElementDeclKeyRef = resize(fElementDeclKeyRef, fElementDeclKeyRef.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
@@ -815,6 +880,9 @@ implements XMLContentSpec.Provider {
         fElementDeclContentModelValidator[chunk] = new XMLContentModel[CHUNK_SIZE];
         fElementDeclFirstAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         fElementDeclLastAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
+        fElementDeclUnique[chunk] = new Vector[CHUNK_SIZE];
+        fElementDeclKey[chunk] = new Vector[CHUNK_SIZE];
+        fElementDeclKeyRef[chunk] = new Vector[CHUNK_SIZE];
         return true;
     }
 
@@ -886,6 +954,12 @@ implements XMLContentSpec.Provider {
 
     private String[][] resize(String array[][], int newsize) {
         String newarray[][] = new String[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
+
+    private Vector[][] resize(Vector array[][], int newsize) {
+        Vector newarray[][] = new Vector[newsize][];
         System.arraycopy(array, 0, newarray, 0, array.length);
         return newarray;
     }

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,108 +55,75 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.validators.common;
-
-import java.util.Vector;
-
-import org.apache.xerces.utils.QName;
-import org.apache.xerces.validators.datatype.DatatypeValidator;
+package org.apache.xerces.validators.schema.identity;
 
 /**
+ * Base class of Schema identity constraint.
+ *
+ * @author Andy Clark, IBM
  * @version $Id$
  */
-public class XMLElementDecl {
-
-    //
-    // Constants
-    //
-
-    public static final int TYPE_EMPTY = 0;
-    public static final int TYPE_ANY = 1;
-    public static final int TYPE_MIXED = 2;
-    public static final int TYPE_CHILDREN = 3;
-    public static final int TYPE_SIMPLE = 4;
+public abstract class IdentityConstraint {
 
     //
     // Data
     //
 
-    // basic information
+    /** Selector. */
+    private Selector fSelector;
 
-    public final QName name = new QName();
+    /** Field count. */
+    private int fFieldCount;
 
-    public int type;
-
-    // simple types
-
-    public boolean list;
-
-    public DatatypeValidator datatypeValidator;
-
-    // complex types
-
-    public int contentSpecIndex;
-
-    // enclosingScope where this element is declared, should always be -1 with DTD Validation.
-    public int enclosingScope;
-
-    // identity constraints
-
-    public final Vector unique = new Vector();
-
-    public final Vector key = new Vector();
-
-    public final Vector keyRef = new Vector();
+    /** Fields. */
+    private Field[] fFields;
 
     //
     // Constructors
     //
 
-    public XMLElementDecl() {
-        clear();
-    }
-
-    public XMLElementDecl(XMLElementDecl elementDecl) {
-        setValues(elementDecl);
-    }
+    /** Default constructor. */
+    protected IdentityConstraint() {
+    } // <init>()
 
     //
     // Public methods
     //
 
-    public void clear() {
-        name.clear();
-        type = - 1;
-        list = false;
-        datatypeValidator = null;
-        contentSpecIndex = -1;
-        enclosingScope = -1;
-        unique.removeAllElements();
-        key.removeAllElements();
-        keyRef.removeAllElements();
-    }
+    /** Sets the selector. */
+    public void setSelector(Selector selector) {
+        fSelector = selector;
+    } // setSelector(Selector)
 
-    public void setValues(XMLElementDecl elementDecl) {
-        name.setValues(elementDecl.name);
-        type = elementDecl.type;
-        list = elementDecl.list;
-        datatypeValidator = elementDecl.datatypeValidator;
-        contentSpecIndex = elementDecl.contentSpecIndex;
-        enclosingScope = elementDecl.enclosingScope;
-    }
+    /** Returns the selector. */
+    public Selector getSelector() {
+        return fSelector;
+    } // getSelector():Selector
 
-    //
-    // Object methods
-    //
+    /** Adds a field. */
+    public void addField(Field field) {
+        try {
+            fFields[fFieldCount] = null;
+        }
+        catch (NullPointerException e) {
+            fFields = new Field[4];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            Field[] newfields = new Field[fFields.length * 2];
+            System.arraycopy(fFields, 0, newfields, 0, fFields.length);
+            fFields = newfields;
+        }
+        fFields[fFieldCount++] = field;
+    } // addField(Field)
 
-    public int hashCode() {
-        // TODO
-        return super.hashCode();
-    }
+    /** Returns the field count. */
+    public int getFieldCount() {
+        return fFieldCount;
+    } // getFieldCount():int
 
-    public boolean equals(Object object) {
-        // TODO
-        return super.equals(object);
-    }
+    /** Returns the field at the specified index. */
+    public Field getFieldAt(int index) {
+        return fFields[index];
+    } // getFieldAt(int):Field
 
-} // class XMLElementDecl
+} // class IdentityConstraint
