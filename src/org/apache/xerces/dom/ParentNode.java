@@ -1017,7 +1017,7 @@ public abstract class ParentNode
      */
     class UserDataRecord implements Serializable {
         /** Serialization version. */
-        private static final long serialVersionUID = 3691044287424901171L;
+        private static final long serialVersionUID = 3258126977134310455L;
         
         Object fData;
         UserDataHandler fHandler;
