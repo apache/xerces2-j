@@ -144,6 +144,8 @@ public class SAXParser
 
     /** Lexical handler. */
     private LexicalHandler fLexicalHandler;
+    
+    private boolean fNamespacePrefixes = false;
 
     // temp
 
@@ -429,6 +431,43 @@ public class SAXParser
     public DTDHandler getDTDHandler() {
         return fDTDHandler;
     }
+    
+    /**
+     * Sets how the parser reports raw prefixed names,
+     * and whether xmlns attributes are reported.
+     * <p>
+     * This method is the equivalent to the feature:
+     * <pre>
+     * http://xml.org/sax/features/namespaces-prefixes
+     * <pre>
+     *
+     * @param process True to process namespaces; false to not process.
+     *
+     * @see #getNamespaces
+     * @see #setFeature
+     */
+    protected void setNamespacePrefixes(boolean process) 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (fParseInProgress) {
+            throw new SAXNotSupportedException("PAR004 Cannot setFeature(http://xml.org/sax/features/namespace-prefixes): parse is in progress.\n"+
+                                               "http://xml.org/sax/features/namespace-prefixes");
+        }
+        fNamespacePrefixes = process;
+        fDTDValidator.setNamespacePrefixes(process);
+        getSchemaValidator().setNamespacePrefixes(process);
+    }
+
+    /**
+     * Returns the http://xml.org/features/namespace-prefixes
+     * value.
+     *
+     * @see #setNamespacePrefixes
+     */
+    protected boolean getNamespacePrefixes() 
+        throws SAXNotRecognizedException, SAXNotSupportedException {
+        return fNamespacePrefixes;
+    }
+    
 
     //
     // XMLReader methods
@@ -457,6 +496,17 @@ public class SAXParser
 
         if (featureId.startsWith(SAX2_FEATURES_PREFIX)) {
             String feature = featureId.substring(SAX2_FEATURES_PREFIX.length());
+            // http://xml.org/sax/features/namespace-prefixes
+            //   controls the reporting of raw prefixed names and Namespace 
+            //   declarations (xmlns* attributes): when this feature is false 
+            //   (the default), raw prefixed names may optionally be reported, 
+            //   and xmlns* attributes must not be reported.
+            //
+            if (feature.equals("namespace-prefixes")) {
+                setNamespacePrefixes(state);
+                return;
+            }
+   
             /*
             //
             // http://xml.org/sax/features/normalize-text
@@ -1193,8 +1243,15 @@ public class SAXParser
                 String attrRaw = fStringPool.toString(attrNameIndex);
                 String attrType = fStringPool.toString(attrList.getAttType(attrIndex));
                 String attrValue = fStringPool.toString(attrList.getAttValue(attrIndex));
-                fAttributes.addAttribute(attrUri, attrLocal, attrRaw, 
-                                         attrType, attrValue);
+                int attrPrefix = fStringPool.getPrefixForQName(attrNameIndex);
+                if (getNamespacePrefixes() ||
+                    (!getNamespacePrefixes()
+                    && attrPrefix != fStringPool.addSymbol("xmlns")
+                    && attrLocalIndex != fStringPool.addSymbol("xmlns")
+                    )) 
+                    fAttributes.addAttribute(attrUri, attrLocal, attrRaw, 
+                                            attrType, attrValue);
+                    
             }
             fContentHandler.startElement(uri, local, raw, fAttributes);
         }

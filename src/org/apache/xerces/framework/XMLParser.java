@@ -153,8 +153,8 @@ public abstract class XMLParser
     /** Properties recognized by this parser. */
     private static final String RECOGNIZED_PROPERTIES[] = {
         // SAX2 core
-        "http://xml.org/sax/properties/namespace-sep",
-        "http://xml.org/sax/properties/xml-string",
+        //"http://xml.org/sax/properties/namespace-sep",
+        //"http://xml.org/sax/properties/xml-string",
         // Xerces
     };
 
@@ -1040,6 +1040,7 @@ public abstract class XMLParser
      * @see #getNamespaceSep
      * @see #setProperty
      */
+    /***
     protected void setNamespaceSep(String separator) 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         // REVISIT: Ask someone what it could possibly hurt to allow
@@ -1050,16 +1051,19 @@ public abstract class XMLParser
         }
         fNamespaceSep = separator;
     }
+    /***/
 
     /**
      * Returns the namespace separator.
      *
      * @see #setNamespaceSep
      */
+    /***
     protected String getNamespaceSep() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         return fNamespaceSep;
     }
+    /***/
 
     /**
      * <b>Note: This property is currently not supported because it is
@@ -1073,10 +1077,12 @@ public abstract class XMLParser
      *
      * @see #getProperty
      */
+    /***
     protected String getXMLString() 
         throws SAXNotRecognizedException, SAXNotSupportedException {
         throw new SAXNotSupportedException("http://xml.org/sax/properties/xml-string");
     }
+    /***/
 
     // resetting
 
@@ -1685,6 +1691,7 @@ public abstract class XMLParser
             //   default, the separator is a single space.  This property may not be
             //   set while a parse is in progress (throws a SAXNotSupportedException).
             //
+            /***
             if (property.equals("namespace-sep")) {
                 try {
                     setNamespaceSep((String)value);
@@ -1694,6 +1701,8 @@ public abstract class XMLParser
                 }
                 return;
             }
+            /***/
+            
             //
             // http://xml.org/sax/properties/xml-string
             // Value type: String
@@ -1780,9 +1789,11 @@ public abstract class XMLParser
             //   default, the separator is a single space.  This property may not be
             //   set while a parse is in progress (throws a SAXNotSupportedException).
             //
+            /***
             if (property.equals("namespace-sep")) {
                 return getNamespaceSep();
             }
+            /***/
             //
             // http://xml.org/sax/properties/xml-string
             // Value type: String
@@ -1792,9 +1803,11 @@ public abstract class XMLParser
             //   not currently parsing text, it should return null (this is a good
             //   way to check for availability before the parse begins).
             //
+            /***
             if (property.equals("xml-string")) {
                 return getXMLString();
             }
+            /***/
             //
             // Not recognized
             //
