@@ -192,13 +192,17 @@ public class DeferredEntityReferenceImpl
                     found = true;
 
                     // clone entity at this reference
+                    boolean ro = isReadOnly();
                     isReadOnly(false);
                     Node child = entity.getFirstChild();
                     while (child != null) {
                         appendChild(child.cloneNode(true));
                         child = child.getNextSibling();
                     }
-                    setReadOnly(true, true);
+                    // set it back to readonly if what it was
+                    if (ro) {
+                        setReadOnly(true, true);
+                    }
                 }
             }
         }
