@@ -177,7 +177,7 @@ public class AttrImpl
     /** Clone node. */
     public Node cloneNode(boolean deep) {
         AttrImpl newattr = (AttrImpl)super.cloneNode(deep);
-        newattr.owned = owned;
+        newattr.owned = false;
         newattr.specified = specified;
         return newattr;
     }
