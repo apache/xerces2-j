@@ -78,6 +78,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.io.StringWriter;
+import java.util.Hashtable;
 import java.util.Enumeration;
 
 import org.w3c.dom.*;
@@ -88,6 +90,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import org.apache.xerces.dom3.ls.DOMWriter;
+import org.apache.xerces.dom3.DOMErrorHandler;
 
 /**
  * Implements an XML serializer supporting both DOM and SAX pretty
@@ -116,11 +120,16 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+ * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
  * @see Serializer
  */
 public class XMLSerializer
     extends BaseMarkupSerializer
+    implements DOMWriter 
 {
+
+    private String fEncoding;
+    private String fLastEncoding;
 
 
     /**
@@ -131,6 +140,8 @@ public class XMLSerializer
     public XMLSerializer()
     {
         super( new OutputFormat( Method.XML, null, false ) );
+        fFeatures = new Hashtable();
+        initFeatures();
     }
 
 
@@ -143,6 +154,8 @@ public class XMLSerializer
     {
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
         _format.setMethod( Method.XML );
+        fFeatures = new Hashtable();
+        initFeatures();
     }
 
 
@@ -159,6 +172,8 @@ public class XMLSerializer
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
         _format.setMethod( Method.XML );
         setOutputCharStream( writer );
+        fFeatures = new Hashtable();
+        initFeatures();
     }
 
 
@@ -175,6 +190,8 @@ public class XMLSerializer
         super( format != null ? format : new OutputFormat( Method.XML, null, false ) );
         _format.setMethod( Method.XML );
         setOutputByteStream( output );
+        fFeatures = new Hashtable();
+        initFeatures();
     }
 
 
@@ -753,6 +770,144 @@ public class XMLSerializer
         }
         return attrsOnly;
     }
+    
+    // *****************************
+    
+    private void initFeatures() {
+        fFeatures.put("normalize-characters",new Boolean(false));
+        fFeatures.put("split-cdata-sections",new Boolean(true));
+        fFeatures.put("validation",new Boolean(false));
+        fFeatures.put("expand-entity-references",new Boolean(false));
+        fFeatures.put("whitespace-in-element-content",new Boolean(true));
+        fFeatures.put("discard-default-content",new Boolean(true));
+        fFeatures.put("format-canonical",new Boolean(false));
+        fFeatures.put("format-pretty-print",new Boolean(false));
+    }
+    
+    private void checkAllFeatures() {
+        if (getFeature("whitespace-in-element-content"))
+            _format.setPreserveSpace(true);
+        else
+            _format.setPreserveSpace(false);
+    }
+
+    public void setFeature(String name, 
+                           boolean state)
+                           throws DOMException {
+        if (name != null && fFeatures.containsKey(name))
+            if (canSetFeature(name,state))
+                fFeatures.put(name,new Boolean(state));
+            else
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"Feature "+name+" cannot be set as "+state);
+        else
+            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
+    }
+
+    public boolean canSetFeature(String name, boolean state) {
+        if (name.equals("normalize-characters") && state)
+                return false;
+        else if (name.equals("validation") && state)
+                return false;
+        else if (name.equals("whitespace-in-element-content") && !state)
+                return false;
+        else if (name.equals("format-canonical") && state)
+                return false;
+        else if (name.equals("format-pretty-print") && state)
+                return false;
+        else
+                return true;
+    }   
+    
+    public boolean getFeature(String name)
+                              throws DOMException {
+        Boolean state = (Boolean)fFeatures.get(name);
+        if (state == null)
+            throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
+        return state.booleanValue();
+    }
+
+    public String getEncoding() {
+        return fEncoding;
+    }
+    
+    public void setEncoding(String encoding) {
+        _format.setEncoding(encoding);
+        fEncoding = _format.getEncoding();
+    }
+
+    public String getLastEncoding() {
+        return fLastEncoding;
+    }
+
+    public String getNewLine() {
+        return _format.getLineSeparator();
+    }
+    
+    public void setNewLine(String newLine) {
+        _format.setLineSeparator(newLine);
+    }
+
+    public DOMErrorHandler getErrorHandler() {
+        return fDOMErrorHandler;
+    }
+    
+    public void setErrorHandler(DOMErrorHandler errorHandler) {
+        fDOMErrorHandler = errorHandler;
+    }
+
+    public boolean writeNode(java.io.OutputStream destination, 
+                             Node wnode)
+                             throws Exception {
+        checkAllFeatures();
+        try {
+            setOutputByteStream(destination);
+            //REVISIT: do we serialize complete Document when wnode is null??
+            if (wnode == null)
+                return false;
+            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
+                serialize((Document)wnode);
+            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+                serialize((DocumentFragment)wnode);
+            else if (wnode.getNodeType() == Node.ELEMENT_NODE)
+                serialize((Element)wnode);
+            else
+                return false;
+        }
+        catch(NullPointerException npe) {
+            throw npe;
+        }
+        catch(IOException ioe) {
+            throw ioe;
+        }
+        fLastEncoding = getEncoding();
+        return true;
+    }
+
+    public String writeToString(Node wnode)
+                                throws DOMException {
+        checkAllFeatures();
+        StringWriter destination = new StringWriter();
+        try {
+            setOutputCharStream(destination);
+            //REVISIT: do we serialize complete Document when wnode is null??
+            if (wnode == null)
+                return null;
+            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
+                serialize((Document)wnode);
+            else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
+                serialize((DocumentFragment)wnode);
+            else if (wnode.getNodeType() == Node.ELEMENT_NODE)
+                serialize((Element)wnode);
+            else
+                return null;
+        }
+        catch(IOException ioe) {
+            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR,"The resulting string is too long to fit in a DOMString: "+ioe.getMessage());
+        }
+        fLastEncoding = getEncoding();
+        return destination.toString();
+    }
+
 }
 
 

@@ -63,6 +63,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
+// DOM L3 LS
+import org.apache.xerces.dom3.ls.DOMImplementationLS;
+import org.apache.xerces.dom3.ls.DOMBuilder;
+import org.apache.xerces.dom3.ls.DOMWriter;
+import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.apache.xml.serialize.XMLSerializer;
+
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -76,7 +83,7 @@ import org.w3c.dom.Element;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DOMImplementationImpl  
-    implements DOMImplementation {
+    implements DOMImplementation, DOMImplementationLS {
 
     //
     // Data
@@ -201,6 +208,21 @@ public class DOMImplementationImpl
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
         doc.appendChild(e);
         return doc;
+    }
+    
+    // DOM L3 LS
+    
+    public DOMBuilder createDOMBuilder(short mode)
+                                       throws DOMException {
+        return null;
+    }
+                    
+    public DOMWriter createDOMWriter() {
+        return new XMLSerializer();
+    }
+    
+    public DOMInputSource createDOMInputSource() {
+        return null;
     }
 
 } // class DOMImplementationImpl

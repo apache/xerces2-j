@@ -88,6 +88,11 @@ import org.w3c.dom.traversal.TreeWalker;
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
 
+// DOM L3 LS
+import org.apache.xerces.dom3.ls.DOMWriter;
+import org.apache.xerces.dom3.ls.DocumentLS;
+import org.apache.xerces.dom3.ls.DOMImplementationLS;
+
 
 /**
  * The Document interface represents the entire HTML or XML document.
@@ -121,7 +126,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  */
 public class DocumentImpl
     extends CoreDocumentImpl
-    implements DocumentTraversal, DocumentEvent, DocumentRange {
+    implements DocumentTraversal, DocumentEvent, DocumentRange, DocumentLS {
 
     //
     // Constants
@@ -1274,6 +1279,37 @@ public class DocumentImpl
             // Attr's subtree has not been changed by this operation.
             dispatchAggregateEvents(oldOwner, null, null, (short) 0);
         }
+    }
+    
+    // DOM L3 LS
+    
+
+    public boolean getAsync() {
+        return false;
+    }
+    
+    public void setAsync(boolean async) {
+    }
+    
+    public void abort() {
+    }
+    
+    public boolean load(String uri) {
+        return false;
+    }
+    
+    public boolean loadXML(String source) {
+        return false;
+    }
+    
+    public String saveXML(Node snode)
+                          throws DOMException {
+        if ( snode != null &&
+             getOwnerDocument() != snode.getOwnerDocument() )
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"Node "+snode.getNodeName()+" does not belongs to this Document.");
+        DOMImplementationLS domImplLS = (DOMImplementationLS)DOMImplementationImpl.getDOMImplementation();
+        DOMWriter xmlWriter = domImplLS.createDOMWriter();
+        return xmlWriter.writeToString(snode);
     }
 
 } // class DocumentImpl

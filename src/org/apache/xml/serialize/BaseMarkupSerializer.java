@@ -94,6 +94,10 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import org.w3c.dom.*;
+
+import org.apache.xerces.dom3.DOMErrorHandler;
+
+
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.Locator;
@@ -121,7 +125,7 @@ import org.xml.sax.ext.DeclHandler;
  * as specified in the output format.
  * <p>
  * The serializer supports both DOM and SAX. DOM serializing is done
- * by calling {@link #serialize} and SAX serializing is done by firing
+ * by calling {@link #serialize(Document)} and SAX serializing is done by firing
  * SAX events and using the serializer as a document handler.
  * This also applies to derived class.
  * <p>
@@ -145,6 +149,7 @@ import org.xml.sax.ext.DeclHandler;
  *
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+ * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
  * @see Serializer
  * @see DOMSerializer
  */
@@ -153,6 +158,9 @@ public abstract class BaseMarkupSerializer
                DTDHandler, DeclHandler, DOMSerializer, Serializer
 {
 
+    // DOM L3 implementation
+    protected Hashtable fFeatures;
+    protected DOMErrorHandler fDOMErrorHandler;
 
     private EncodingInfo _encodingInfo;
 
@@ -1009,9 +1017,17 @@ public abstract class BaseMarkupSerializer
             endCDATA();
             content();
             child = node.getFirstChild();
+            if ( child == null || 
+                 !((Boolean)fFeatures.get("expand-entity-references")).booleanValue() ) {
+                _printer.printText("&");
+                _printer.printText(node.getNodeName());
+                _printer.printText(";");
+            }
+            else {
             while ( child != null ) {
                 serializeNode( child );
                 child = child.getNextSibling();
+                }
             }
             break;
         }
@@ -1179,6 +1195,9 @@ public abstract class BaseMarkupSerializer
                 state.inCData = true;
             }
             index = text.indexOf( "]]>" );
+            if (index >=0 && !((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
+               // REVISIT: issue fatal error
+            }
             while ( index >= 0 ) {
                 buffer.append( text.substring( 0, index + 2 ) ).append( "]]><![CDATA[" );
                 text = text.substring( index + 2 );
