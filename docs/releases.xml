@@ -2,6 +2,19 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+  <release version='&ParserName; 2.5.0'>
+   <desc>
+    TBD
+   </desc>
+   <changes>
+   <update>
+    <note>
+        Added annotation support to the XML Schema component model API implementation.
+    </note>
+    <submitter name="Neil Graham"/>
+   </update>
+   </changes>
+  </release>
   <release version='&ParserName; 2.4.0'>
    <desc>
         This release incorporates two minor changes to the Xerces Native Interface.  
