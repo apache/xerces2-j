@@ -192,6 +192,20 @@ NamespacesScope.NamespacesHandler {
         }
     };
 
+    /*
+    private  StateMessageDatatype fValidateNOTATIONMsg = new StateMessageDatatype() {
+        private  Object  packagedMessage = null;
+        public Object getDatatypeObject(){
+            return packagedMessage;
+        }
+        public int    getDatatypeState(){
+            return NOTATIONDatatypeValidator.ENTITY_INITIALIZE;//No state
+        }
+        public void setDatatypeObject( Object data ){
+            packagedMessage = data;// Set Entity Handler
+        }
+    };
+    */
 
 
 
@@ -212,9 +226,6 @@ NamespacesScope.NamespacesHandler {
 
     // attribute validators
 
-    private AttributeValidator fAttValidatorCDATA = null;
-    //private AttributeValidator fAttValidatorENTITY = new AttValidatorENTITY();
-    //private AttributeValidator fAttValidatorENTITIES = new AttValidatorENTITIES();
     private AttributeValidator fAttValidatorNOTATION = new AttValidatorNOTATION();
     private AttributeValidator fAttValidatorENUMERATION = new AttValidatorENUMERATION();
     private AttributeValidator fAttValidatorDATATYPE = null;
@@ -349,6 +360,7 @@ NamespacesScope.NamespacesHandler {
     private DatatypeValidator fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
     private DatatypeValidator fValNMTOKEN  = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
     private DatatypeValidator fValNMTOKENS = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
+    private DatatypeValidator fValNOTATION = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
 
 
     //
@@ -1472,7 +1484,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fXMLLang = fStringPool.addSymbol("xml:lang");
 
         try {//Initialize ENTITIES and ENTITY Validators
-
             Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
                 (Object) this.fStringPool};
             fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
@@ -2333,7 +2344,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     private int attributeTypeName(XMLAttributeDecl attrDecl) {
         switch (attrDecl.type) {
-        //case XMLAttributeDecl.TYPE_CDATA:
         case XMLAttributeDecl.TYPE_ENTITY: {
                 return attrDecl.list ? fENTITIESSymbol : fENTITYSymbol;
             }
@@ -2892,6 +2902,16 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 String  unTrimValue      = fStringPool.toString(attValue);
                 String  value            = unTrimValue.trim();
                 //System.out.println("value = " + value );
+                                                               //changes fTempAttDef
+                if (fValidationEnabled) {
+                    if (value != unTrimValue) {
+                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                        }
+                    }
+                }
 
                 try {
                     if ( isAlistAttribute ) {
@@ -2980,7 +3000,35 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             break;
         case XMLAttributeDecl.TYPE_NOTATION:
+            {
+                /* WIP
+                String  unTrimValue = fStringPool.toString(attValue);
+             String  value       = unTrimValue.trim();
+             if (fValidationEnabled) {
+                 if (value != unTrimValue) {
+                     if (invalidStandaloneAttDef(element, attributeDecl.name)) {
+                         reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                   XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                   fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                     }
+                 }
+             }
+             try {
+                 //this.fIdDefs = (Hashtable) fValID.validate( value, null );
+                 //System.out.println("this.fIdDefs = " + this.fIdDefs );
+
+                 this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+             } catch ( InvalidDatatypeValueException ex ) {
+                 reportRecoverableXMLError(ex.getMajorCode(),
+                                           ex.getMinorCode(),
+                                           fStringPool.toString( attributeDecl.name.rawname), value );
+             }
+          }
+            */
             av = fAttValidatorNOTATION;
+
+
+            }
             break;
         case XMLAttributeDecl.TYPE_NMTOKEN:
             {
@@ -3311,25 +3359,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     // Classes
     //
 
-    /**
-     * AttValidatorCDATA.
- */
-    final class AttValidatorCDATA 
-    implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            // Normalize attribute based upon attribute type...
-            return attValueHandle;
-        }
-
-    } // class AttValidatorCDATA
 
     /**
      * AttValidatorNOTATION.
