@@ -692,8 +692,8 @@ public class XMLEntityManager
                             XMLInputSource xmlInputSource, 
                             boolean literal) 
         throws IOException, XNIException {
-
         // get information
+
         final String publicId = xmlInputSource.getPublicId();
         final String systemId = xmlInputSource.getSystemId();
         String baseSystemId = xmlInputSource.getBaseSystemId();
@@ -1019,7 +1019,6 @@ public class XMLEntityManager
         catch (URI.MalformedURIException e) {
             // continue on...
         }
-
         // normalize id
         String id = fixURI(systemId);
 
@@ -1053,20 +1052,28 @@ public class XMLEntityManager
                     catch (SecurityException se) {
                         dir = "";
                     }
-                    if (!dir.endsWith("/")) {
-                        dir = dir + "/";
+                    if (baseSystemId.indexOf(':') != -1) {
+                        // for xml schemas we might have baseURI with
+                        // a specified drive
+                        base = new URI("file", "", fixURI(baseSystemId), null, null);
                     }
-                    dir = dir + fixURI(baseSystemId);
-                    base = new URI("file", "", dir, null, null);
+                    else {                    
+                        if (!dir.endsWith("/")) {
+                            dir = dir + "/";
+                        }
+                        dir = dir + fixURI(baseSystemId);
+                        base = new URI("file", "", dir, null, null);
+                    }
                 }
              }
-
              // expand id
              uri = new URI(base, id);
         }
         catch (Exception e) {
             // let it go through
+            
         }
+
         if (uri == null) {
             return systemId;
         }
