@@ -453,8 +453,8 @@ public class SAXParser
                                                "http://xml.org/sax/features/namespace-prefixes");
         }
         fNamespacePrefixes = process;
-        fDTDValidator.setNamespacePrefixes(process);
-        getSchemaValidator().setNamespacePrefixes(process);
+        //fDTDValidator.setNamespacePrefixes(process);
+        //getSchemaValidator().setNamespacePrefixes(process);
     }
 
     /**
