@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
+<!DOCTYPE s1 SYSTEM 'dtd/document.dtd'> 
 <s1 title='XNI Core Interfaces'>
  <s2 title='Core Interfaces'>
   <p>
@@ -65,7 +65,7 @@
       <code>
        public void startDocument(
            <link anchor='locator'>XMLLocator</link> locator, 
-           String encoding
+           String encoding, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -76,7 +76,7 @@
        public void xmlDecl(
            String version,
            String encoding,
-	   String standalone
+	   String standalone, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -87,7 +87,7 @@
        public void doctypeDecl(
            String rootElement,
 	   String publicId,
-           String systemId
+           String systemId, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -96,7 +96,7 @@
      <td>
       <code>
        public void comment(
-           <link anchor='string'>XMLString</link> text
+           <link anchor='string'>XMLString</link> text, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -106,7 +106,7 @@
       <code>
        public void processingInstruction(
            String target,
-           <link anchor='string'>XMLString</link> data
+           <link anchor='string'>XMLString</link> data, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -116,7 +116,7 @@
       <code>
        public void startPrefixMapping(
            String prefix,
-	   String uri
+	   String uri, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -125,7 +125,7 @@
      <td>
       <code>
        public void endPrefixMapping(
-           String prefix
+           String prefix, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -135,7 +135,8 @@
       <code>
        public void startElement(
            <link anchor='qname'>QName</link> element,
-	   <link anchor='attributes'>XMLAttributes</link> attributes
+	   <link anchor='attributes'>XMLAttributes</link> attributes,
+       Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -145,7 +146,8 @@
       <code>
        public void emptyElement(
            <link anchor='qname'>QName</link> element,
-	   <link anchor='attributes'>XMLAttributes</link> attributes
+	   <link anchor='attributes'>XMLAttributes</link> attributes,
+       Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -154,7 +156,8 @@
      <td>
       <code>
        public void endElement(
-           <link anchor='qname'>QName</link> element
+           <link anchor='qname'>QName</link> element,
+           Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -162,12 +165,10 @@
     <tr>
      <td>
       <code>
-       public void startEntity(
+       public void startGeneralEntity(
            String name,
-	   String publicId,
-	   String systemId,
-	   String baseSystemId,
-	   String encoding
+           XMLResourceIdentifier identifier,
+	   String encoding, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -177,7 +178,7 @@
       <code>
        public void textDecl(
            String version,
-	   String encoding
+	   String encoding, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -185,8 +186,8 @@
     <tr>
      <td>
       <code>
-       public void endEntity(
-           String name
+       public void endGeneralEntity(
+           String name, Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -195,7 +196,8 @@
      <td>
       <code>
        public void characters(
-           <link anchor='string'>XMLString</link> text
+           <link anchor='string'>XMLString</link> text,
+           Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -204,7 +206,8 @@
      <td>
       <code>
        public void ignorableWhitespace(
-           <link anchor='string'>XMLString</link> text
+           <link anchor='string'>XMLString</link> text,
+           Augmentations augs
 	   ) throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -212,7 +215,7 @@
     <tr>
      <td>
       <code>
-       public void startCDATA() 
+       public void startCDATA(Augmentations augs) 
            throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -220,7 +223,7 @@
     <tr>
      <td>
       <code>
-       public void endCDATA() 
+       public void endCDATA(Augmentations augs) 
            throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -228,7 +231,7 @@
     <tr>
      <td>
       <code>
-       public void endDocument() 
+       public void endDocument(Augmentations augs) 
            throws <link anchor='exception'>XNIException</link>;
       </code>
      </td>
@@ -442,13 +445,64 @@
 
 -->
   </s3>
+  <anchor name='augs'/>
+  <s3 title='Interface Augmentations'>
+    <p> This interface enables arbitrary information to be passed
+    through the pipeline on various calls from one component to
+    another.  XNI tries to model, as close as is feasible, the
+    information made available by the W3C&apos;s InfoSet
+    specification.  The <link anchor="augs">Augmentations</link>
+    interface is intended to permit components to augment the infoset
+    for some document at almost any given point.  Many other XNI
+    interfaces besides the DocumentHandler support Augmentations
+    parameters.</p>
+    <p> One kind of particularly useful Infoset augmentation is
+    provided through the Post-Schema validation Infoset.  For
+    information about Xerces2&apos;s support of the PSVI, and how
+    Augmentations are used in a well-defined way to permit this
+    support, see the <link idref="samples-xni">documentation</link> for the PSVI Writer and 
+    PSVI Configuration samples.</p>
+  </s3>
+  <anchor name='resource'/>
+  <s3 title='Interface XMLResourceIdentifier'>
+  <p>
+    This interface serves to gather together information relevant to 
+    any kind of XML resource (external entity, notation, schema 
+    grammar, etc.).  There are four fields in this interface:</p>
+    <ul>
+      <li>baseSystemId:  The URI against which the literal systemId 
+        in the entity (or the URI to be resolved in the 
+        <code>schemaLocation</code> attribute as the case may be) 
+        should be resolved relative to.  
+      </li>
+      <li> literalSystemId:  The &quot;real&quot; (unexpanded) value
+        of the systemId (or <code>schemaLocation</code>) of the entity
+        which this object relates to.  
+      </li>
+      <li> expandedSystemId:  The value of the systemId (or
+        <code>schemaLocation</code>) after being subjects to relative
+        URI expansion.  SAX programmers will be familiar with this
+        concept from the SAX Locator interface, for example; this
+        property maps to the <code>systemId</code> property of that
+        interface.
+      </li>
+      <li> publicId:  the publicId of the entity. 
+      </li>
+      </ul>
+      <p> As in the case of other XNI objects, XMLResourceIdentifiers
+      cannot be depended upon to retain their values between calls;
+      hence, callees should extract whatever information they need
+      from them (or clone the object) before returning control back to
+      the parser. </p>
+  </s3> 
   <anchor name='locator'/>
   <s3 title='Interface XMLLocator'>
    <p>
     This interface is used to communicate the document location to
     the various handler interfaces. The application can use the
-    methods on this interface to query the public, system, and
+    methods on this interface to query the public, literal system, and expanded system
     base system identifier as well as the line and column number.
+   This interface extends the <link anchor="resource">XMLResourceIdentifier</link> interface.
    </p>
    <p>
     A locator is passed as a parameter in the first method called
@@ -1185,7 +1239,9 @@ import org.apache.xerces.xni.<link anchor='attributes'>XMLAttributes</link>;
 import org.apache.xerces.xni.<link anchor='document-handler'>XMLDocumentHandler</link>;
 import org.apache.xerces.xni.<link anchor='locator'>XMLLocator</link>;
 import org.apache.xerces.xni.<link anchor='string'>XMLString</link>;
-import org.apache.xerces.xni.<link anchor='string'>XNIException</link>;
+import org.apache.xerces.xni.<link anchor='exception'>XNIException</link>;
+import org.apache.xerces.xni.<link anchor='resource'>XMLResourceIdentifier</link>;
+import org.apache.xerces.xni.<link anchor='augs'>Augmentations</link>;
 
 public class PassThroughFilter
     implements <link anchor='document-handler'>XMLDocumentHandler</link> {
@@ -1202,133 +1258,154 @@ public class PassThroughFilter
     
     // XMLDocumentHandler methods
     
-    public void startDocument(<link anchor='locator'>XMLLocator</link> locator, String encoding)
+    public void startDocument(<link anchor='locator'>XMLLocator</link>
+    locator, String encoding, <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding);
+            fDocumentHandler.startDocument(locator, encoding, augs);
         }
     }
     
     public void xmlDecl(String version, String encoding, 
-                        String standalone) throws <link anchor='exception'>XNIException</link> {
+                        String standalone, <link
+                        anchor="augs">Augmentations</link> augs) throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.xmlDecl(version, encoding, standalone);
+            fDocumentHandler.xmlDecl(version, encoding, standalone,
+                augs);
         }
     }
     
     public void doctypeDecl(String rootElement, String publicId, 
-                            String systemId) throws <link anchor='exception'>XNIException</link> {
+                            String systemId, <link
+                            anchor="augs">Augmentations</link> augs) throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.doctypeDecl(rootElement, publicId, systemId);
+            fDocumentHandler.doctypeDecl(rootElement, publicId,
+                    systemId, augs);
         }
     }
     
-    public void comment(<link anchor='string'>XMLString</link> text)
+    public void comment(<link anchor='string'>XMLString</link> text,
+        <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.comment(text);
+            fDocumentHandler.comment(text, augs);
         }
     }
     
-    public void processingInstruction(String target, <link anchor='string'>XMLString</link> data)
+    public void processingInstruction(String target, <link
+    anchor='string'>XMLString</link> data, <link
+        anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.processingInstruction(target, data);
+            fDocumentHandler.processingInstruction(target, data, augs);
         }
     }
     
-    public void startPrefixMapping(String prefix, String uri)
+    public void startPrefixMapping(String prefix, String uri, <link
+    anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startPrefixMapping(prefix, uri);
+            fDocumentHandler.startPrefixMapping(prefix, uri, augs);
         }
     }
     
-    public void endPrefixMapping(String prefix)
+    public void endPrefixMapping(String prefix, <link
+            anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endPrefixMapping(prefix);
+            fDocumentHandler.endPrefixMapping(prefix, augs);
         }
     }
     
-    public void startElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
+    public void startElement(<link anchor='qname'>QName</link>
+    element, <link anchor='attributes'>XMLAttributes</link>
+        attributes, <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startElement(element, attributes);
+            fDocumentHandler.startElement(element, attributes, augs);
         }
     }
     
-    public void emptyElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
+    public void emptyElement(<link anchor='qname'>QName</link>
+    element, <link anchor='attributes'>XMLAttributes</link>
+        attributes, <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.emptyElement(element, attributes);
+            fDocumentHandler.emptyElement(element, attributes, augs);
         }
     }
     
-    public void endElement(<link anchor='qname'>QName</link> element)
+    public void endElement(<link anchor='qname'>QName</link> element,
+        <link anchor="augs">augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(element);
+            fDocumentHandler.endElement(element, augs);
         }
     }
     
     public void startEntity(String name, 
-                            String publicId, String systemId, 
-                            String baseSystemId, String encoding) 
+            <link anchor="resource">XMLResourceIdentifier</link> resId,
+            String encoding, <link anchor="augs">Augmentations</link> augs) 
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
             fDocumentHandler.startEntity(name, 
-                                         publicId, systemId, 
-                                         baseSystemId, encoding);
+                                         resId, encoding, augs);
         }
     }
     
-    public void textDecl(String version, String encoding)
+    public void textDecl(String version, String encoding, <link
+        anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.textDecl(version, encoding);
+            fDocumentHandler.textDecl(version, encoding, augs);
         }
     }
     
-    public void endEntity(String name)
+    public void endEntity(String name, <link
+        anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name);
+            fDocumentHandler.endEntity(name, augs);
         }
     }
     
-    public void characters(<link anchor='string'>XMLString</link> text)
+    public void characters(<link anchor='string'>XMLString</link> text,
+        <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.characters(text);
+            fDocumentHandler.characters(text, augs);
         }
     }
     
-    public void ignorableWhitespace(<link anchor='string'>XMLString</link> text)
+    public void ignorableWhitespace(<link
+        anchor='string'>XMLString</link> text ,
+        <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.ignorableWhitespace(text);
+            fDocumentHandler.ignorableWhitespace(text, augs);
         }
     }
     
-    public void startCDATA()
+    public void startCDATA(<link anchor="augs">Augmentations</link>
+        augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.startCDATA();
+            fDocumentHandler.startCDATA(augs);
         }
     }
     
-    public void endCDATA()
+    public void endCDATA(<link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endCDATA();
+            fDocumentHandler.endCDATA(augs);
         }
     }
     
-    public void endDocument()
+    public void endDocument(<link anchor="augs">Augmentations</link>
+            augs)
         throws <link anchor='exception'>XNIException</link> {
         if (fDocumentHandler != null) {
-            fDocumentHandler.endDocument();
+            fDocumentHandler.endDocument(augs);
         }
     }
     
@@ -1343,7 +1420,7 @@ public class PassThroughFilter
    <source>import org.apache.xerces.xni.<link anchor='qname'>QName</link>;
 import org.apache.xerces.xni.<link anchor='attributes'>XMLAttributes</link>;
 import org.apache.xerces.xni.<link anchor='string'>XNIException</link>;
- 
+import org.apache.xerces.xni.<link anchor='augs'>Augmentations</link>; 
 public class UpperCaseFilter
     extends PassThroughFilter {
     
@@ -1353,19 +1430,23 @@ public class UpperCaseFilter
 
     // XMLDocumentHandler methods
     
-    public void startElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
+    public void startElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes,
+        <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
-        super.startElement(toUpperCase(element), attributes);
+        super.startElement(toUpperCase(element), attributes, augs);
     }
     
-    public void emptyElement(<link anchor='qname'>QName</link> element, <link anchor='attributes'>XMLAttributes</link> attributes)
+    public void emptyElement(<link anchor='qname'>QName</link>
+    element, <link anchor='attributes'>XMLAttributes</link>
+        attributes, <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
-        super.emptyElement(toUpperCase(element), attributes);
+        super.emptyElement(toUpperCase(element), attributes, augs);
     }
     
-    public void endElement(<link anchor='qname'>QName</link> element)
+    public void endElement(<link anchor='qname'>QName</link> element,
+        <link anchor="augs">Augmentations</link> augs)
         throws <link anchor='exception'>XNIException</link> {
-        super.endElement(toUpperCase(element));
+        super.endElement(toUpperCase(element), augs);
     }
     
     // Protected methods

@@ -1,6 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
 <faqs title='Xerces Native Interface FAQs'>
+  <faq title="Augmentations">
+    <q>What are all these strange &quot;Augmentations&quot; parameters I see in so many methods?</q>
+    <a>
+        <p> They&apos;re intended to provide a way to augment the
+        basic XML infoset available from the non-Augmentation
+        parameters in the callbacks.  They can be used by a component to add arbitrary
+        information to the streaming infoseet, which can then
+        be interpreted by some later component.</p>
+        <p> For instance, a component can be written to transmit the
+        post schema validation infoset through Augmentations
+        callbacks.  This can then be translated into an XML
+        representation.  This is exactly what is done in the PSVI
+        Writer and PSVI Configuration samples--see <link
+        idref="samples-xni">XNI sample documentation</link> for
+        details.</p>
+    </a>
+ </faq>
  <faq title='Overriding Default Parser Configuration'>
   <q>How do I change the default parser configuration?</q>
   <a>
