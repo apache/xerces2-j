@@ -268,6 +268,10 @@ implements  StatefullDatatypeValidator {
             }
             try {
                 if (this.fDerivedByList) {
+                    if( numberOfTokens == 0 ){
+                        InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );
+                        throw error;
+                    }
                     while (parsedList.hasMoreTokens()) {       //Check each token in list against base type
                         if (this.fBaseValidator != null) {//validate against parent type if any
                             this.fBaseValidator.validate( parsedList.nextToken(), state );

@@ -2027,7 +2027,10 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                     }
                 } catch (InvalidDatatypeValueException ex) {
                     String  key = ex.getKeyIntoReporter();
-
+                    
+                    if( key == null ){
+                        key = "IDREFSInvalid";
+                    }
                     fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
                                                 key,
                                                 new Object[]{ ex.getMessage()},
