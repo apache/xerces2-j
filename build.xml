@@ -247,9 +247,11 @@ Copyright:
   <!-- =================================================================== -->
   <target name="jar" depends="compile">
     <!-- take care of manifest file -->
-    <copy todir="${build.dir}" file="${src.dir}/manifest.xerces"/>
-    <replace file="${build.dir}/manifest.xerces"
-             token="@@VERSION@@" value="${parser.Version}"/>
+    <filter token="java.version" value="${java.version}"/>
+    <filter token="java.vendor" value="${java.vendor}"/>
+    <filter token="impl.name" value="${parser.Name} ${parser.Version}"/>
+    <filter token="impl.version" value="${parser.Version}"/>   
+    <copy todir="${build.dir}" file="${src.dir}/manifest.xerces" filtering="true"/>
     <jar jarfile="${build.dir}/${jar.parser}"
          basedir="${build.dest}"
          compress="true"
@@ -262,7 +264,11 @@ Copyright:
                    org/w3c/dom/DOMImplementationRegistry.class
                    org/w3c/dom/DOMLocator.class
                    org/w3c/dom/UserDataHandler.class"
-    manifest="${build.dir}/manifest.xerces"/>
+         manifest="${build.dir}/manifest.xerces">
+      <manifest>
+        <attribute name="Ant-Version" value="${ant.version}"/>
+      </manifest>
+    </jar>
   </target>
 
   <!-- =================================================================== -->
