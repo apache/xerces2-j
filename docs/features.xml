@@ -534,7 +534,7 @@ http://xml.org/sax/features/namespace-prefixes
     </tr>
     <tr>
         <th>Default:</th>
-        <td>true</td>
+        <td>false</td>
     </tr>
     <tr>
         <th>Access:</th>
