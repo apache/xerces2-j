@@ -580,7 +580,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                         prefix = (prefix == null || 
                                   prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
                         String localpart = fSymbolTable.addSymbol( attr.getLocalName());
-                        if (prefix == XMLSymbols.EMPTY_STRING) { //xmlns:prefix
+                        if (prefix == XMLSymbols.PREFIX_XMLNS) { //xmlns:prefix
 
                             value = fSymbolTable.addSymbol(value);
                             if (value.length() != 0) {
