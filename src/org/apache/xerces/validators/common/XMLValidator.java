@@ -2040,6 +2040,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         try {
             parser.setFeature("http://xml.org/sax/features/validation", false);
+            parser.setFeature("http://xml.org/sax/features/namespaces", true);
             parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
         }catch(  org.xml.sax.SAXNotRecognizedException e ) {
             e.printStackTrace();
