@@ -119,7 +119,7 @@ public final class XMLValidator
 
     private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
     private static final boolean DEBUG_PRINT_ATTRIBUTES = false;
-    private static final boolean DEBUG_PRINT_CONTENT = true;
+    private static final boolean DEBUG_PRINT_CONTENT = false;
 
     // Chunk size constants
 
@@ -891,7 +891,7 @@ public final class XMLValidator
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
                 int childCount = peekChildCount();
                 int result = checkContent(elementIndex, childCount, peekChildren());
-System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
+//System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
                 if (result != -1) {
                     int majorCode = result != childCount ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
                     reportRecoverableXMLError(majorCode,
@@ -2505,7 +2505,7 @@ System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent 
             fGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
             // TO DO: For ericye Debug only
-            /***/
+            /***
             if (fTempAttDecl != null) {
                 XMLElementDecl element = new XMLElementDecl();
                 fGrammar.getElementDecl(elementIndex, element);
