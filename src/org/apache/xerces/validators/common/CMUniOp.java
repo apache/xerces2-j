@@ -104,12 +104,10 @@ public class CMUniOp extends CMNode
         //  For debugging purposes, make sure we got rid of all non '*'
         //  repetitions. Otherwise, '*' style nodes are always nullable.
         //
-        if ((type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
-        ||  (type() == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE))
-        {
-            throw new CMException(ImplementationMessages.VAL_UST);
-        }
-        return true;
+        if (type() == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)
+	    return fChild.isNullable();
+	else
+	    return true;
     }
 
 

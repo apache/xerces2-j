@@ -708,21 +708,19 @@ implements XMLContentSpec.Provider {
 
                 nodeRet = new CMBinOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec)
                                        , buildSyntaxTree(rightNode, contentSpec));
-            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE) {
-                nodeRet = new CMUniOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
-            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
-                // Convert to (x|epsilon)
-                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_CHOICE,
-                                       buildSyntaxTree(leftNode, contentSpec)
-                                       , new CMLeaf( new QName(-1,-2,-2,-1), fEpsilonIndex));
-            } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
-                // Convert to (x,x*)
-                nodeRet = new CMBinOp( XMLContentSpec.CONTENTSPECNODE_SEQ, 
-                                       buildSyntaxTree(leftNode, contentSpec), 
-                                       new CMUniOp( XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE,
-                                                    buildSyntaxTree(leftNode, contentSpec) ));
-            } else {
-                throw new CMException(ImplementationMessages.VAL_CST);
+
+		/* MODIFIED (Jan, 2001) */
+
+	    } else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+		       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+		       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+		nodeRet = new CMUniOp(contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
+	    }
+
+		/* MODIFIED (Jan, 2001) */
+
+	    else {
+		throw new CMException(ImplementationMessages.VAL_CST);
             }
         }
         // And return our new node for this level

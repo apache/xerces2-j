@@ -294,8 +294,18 @@ public class DFAContentModel
         //  string handlers around, this guy and all of his helper classes
         //  just throw a simple exception and we then pass it along.
         //
+       
+	DFAContentModel.time -= System.currentTimeMillis();
+
         buildDFA(syntaxTree);
+
+	DFAContentModel.time += System.currentTimeMillis();
+
+	if (DEBUG_VALIDATE_CONTENT)
+	    System.out.println("DFA build: " + DFAContentModel.time + "ms");                
     }
+
+    private static long time = 0;
 
     //
     // XMLContentModel methods
@@ -776,6 +786,19 @@ public class DFAContentModel
         //  level of recursion, which would be piggy in Java (as is everything
         //  for that matter.)
         //
+
+	/* MODIFIED (Jan, 2001) 
+	 *
+	 * Use following rules.
+	 *   nullable(x+) := nullable(x), first(x+) := first(x),  last(x+) := last(x)
+	 *   nullable(x?) := true, first(x?) := first(x),  last(x?) := last(x)
+	 *
+	 * The same computation of follow as x* is applied to x+
+	 *
+	 * The modification drastically reduces computation time of
+	 * "(a, (b, a+, (c, (b, a+)+, a+, (d,  (c, (b, a+)+, a+)+, (b, a+)+, a+)+)+)+)+"
+	 */
+
         fQName.setValues(-1, fEOCIndex, fEOCIndex);
         CMLeaf nodeEOC = new CMLeaf(fQName);
         fHeadNode = new CMBinOp
@@ -883,6 +906,35 @@ public class DFAContentModel
             fLeafNameTypeVector.setValues(fElemMap, fElemMapType, fElemMapSize);
         }
 
+	/*** 
+	* Optimization(Jan, 2001); We sort fLeafList according to 
+	* elemIndex which is *uniquely* associated to each leaf.  
+	* We are *assuming* that each element appears in at least one leaf.
+	**/
+
+	int[] fLeafSorter = new int[fLeafCount + fElemMapSize];
+	int fSortCount = 0;
+
+	for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+	    for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
+		final QName leaf = fLeafList[leafIndex].getElement();
+		final QName element = fElemMap[elemIndex];
+		if (fDTD) {
+		    if (leaf.rawname == element.rawname) {
+			fLeafSorter[fSortCount++] = leafIndex;
+		    }
+		}
+		else {
+		    if (leaf.uri == element.uri &&
+			leaf.localpart == element.localpart)
+			fLeafSorter[fSortCount++] = leafIndex;
+		}
+	    }
+	    fLeafSorter[fSortCount++] = -1;
+	}
+
+	/* Optimization(Jan, 2001) */
+
         //
         //  Next lets create some arrays, some that that hold transient
         //  information during the DFA build and some that are permament.
@@ -927,6 +979,14 @@ public class DFAContentModel
         statesToDo[curState] = setT;
         curState++;
 
+	    /* Optimization(Jan, 2001); This is faster for
+	     * a large content model such as, "(t001+|t002+|.... |t500+)".
+	     */
+
+	java.util.Hashtable stateTable = new java.util.Hashtable();
+
+	    /* Optimization(Jan, 2001) */
+
         //
         //  Ok, almost done with the algorithm... We now enter the
         //  loop where we go until the states done counter catches up with
@@ -949,6 +1009,9 @@ public class DFAContentModel
 
             // Loop through each possible input symbol in the element map
             CMStateSet newSet = null;
+	    /* Optimization(Jan, 2001) */
+            int sorterIndex = 0;
+	    /* Optimization(Jan, 2001) */
             for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++)
             {
                 //
@@ -962,9 +1025,11 @@ public class DFAContentModel
                 else
                     newSet.zeroBits();
 
-                for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++)
-                {
-                    // If this leaf index (DFA position) is in the current set...
+	    /* Optimization(Jan, 2001) */
+                int leafIndex = fLeafSorter[sorterIndex++];
+
+                while (leafIndex != -1) {
+	        // If this leaf index (DFA position) is in the current set...
                     if (setT.getBit(leafIndex))
                     {
                         //
@@ -972,20 +1037,12 @@ public class DFAContentModel
                         //  want to add its follow list to the set of states to
                         //  transition to from the current state.
                         //
-                        final QName leaf = fLeafList[leafIndex].getElement();
-                        final QName element = fElemMap[elemIndex];
-                        if (fDTD) {
-                            if (leaf.rawname == element.rawname) {
-                                newSet.union(fFollowList[leafIndex]);
-                            }
-                        }
-                        else {
-                            if (leaf.uri == element.uri &&
-                                leaf.localpart == element.localpart)
-                                newSet.union(fFollowList[leafIndex]);
-                        }
+                            newSet.union(fFollowList[leafIndex]);
                     }
-                }
+
+                   leafIndex = fLeafSorter[sorterIndex++];
+	}
+	    /* Optimization(Jan, 2001) */
 
                 //
                 //  If this new set is not empty, then see if its in the list
@@ -997,12 +1054,11 @@ public class DFAContentModel
                     //  Search the 'states to do' list to see if this new
                     //  state set is already in there.
                     //
-                    int stateIndex = 0;
-                    for (; stateIndex < curState; stateIndex++)
-                    {
-                        if (statesToDo[stateIndex].isSameSet(newSet))
-                            break;
-                    }
+
+	    /* Optimization(Jan, 2001) */
+	    Integer stateObj = (Integer)stateTable.get(newSet);
+	    int stateIndex = (stateObj == null ? curState : stateObj.intValue());
+	    /* Optimization(Jan, 2001) */
 
                     // If we did not find it, then add it
                     if (stateIndex == curState)
@@ -1014,6 +1070,10 @@ public class DFAContentModel
                         //
                         statesToDo[curState] = newSet;
                         fTransTable[curState] = makeDefStateList();
+
+	    /* Optimization(Jan, 2001) */
+                        stateTable.put(newSet, new Integer(curState));
+	    /* Optimization(Jan, 2001) */
 
                         // We now have a new state to do so bump the count
                         curState++;
@@ -1121,7 +1181,8 @@ public class DFAContentModel
                     fFollowList[index].union(first);
             }
         }
-         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
+         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+	    || nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)
         {
             // Recurse first
             calcFollowList(((CMUniOp)nodeCur).getChild());
@@ -1144,11 +1205,12 @@ public class DFAContentModel
                     fFollowList[index].union(first);
             }
         }
-         else if ((nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE)
-              ||  (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE))
-        {
-            throw new CMException(ImplementationMessages.VAL_NIICM);
+       
+        else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE) {
+            // Recurse only
+            calcFollowList(((CMUniOp)nodeCur).getChild());
         }
+
     }
 
     /**
@@ -1189,6 +1251,8 @@ public class DFAContentModel
             break;
         }
         case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE:
+        case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE:
+        case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE:
         {
             System.out.print("Rep Node ");
 
@@ -1298,7 +1362,9 @@ public class DFAContentModel
             curIndex = postTreeBuildInit(((CMBinOp)nodeCur).getLeft(), curIndex);
             curIndex = postTreeBuildInit(((CMBinOp)nodeCur).getRight(), curIndex);
         }
-         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
+         else if (nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
+	     || nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE
+	     || nodeCur.type() == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
         {
             curIndex = postTreeBuildInit(((CMUniOp)nodeCur).getChild(), curIndex);
         }
