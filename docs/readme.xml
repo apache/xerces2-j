@@ -14,12 +14,13 @@
 		<jump href="http://www.megginson.com/SAX/SAX1/">SAX version 1</jump>
 		APIs.</p>
         <p>
-<!--
-		&javaparsername; &javaparserversion; is the first in a series of ongoing updates -
+
+		&javaparsername; &javaparserversion; is the first alpha release in a series of ongoing updates -
 		Watch <jump href="http://xml.apache.org">xml.apache.org</jump> 
-		for new updates.  -->
+		for new updates. Since it is an alpha release, defects are expected in the source code, documentation
+                and packaging. 
 		
-        Note that because some of the standards
+                Note that because some of the standards
 		are still not complete, the stable API will definitely be 
 		different from its current form in &javaparsername; &javaparserversion;. 
 		This is your chance to give us 
@@ -52,6 +53,7 @@
 		</ul>
 	</s2>
 	<s2 title="XML Schema (alpha) Support">
+                <strong> Not supported in this release </strong>
 		<p>This release includes preliminary support for the W3C XML Schema 
 		Language. The <link idref="schema">Schema</link> page contains a 
 		complete description of the 
