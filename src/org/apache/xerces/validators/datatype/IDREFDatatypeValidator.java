@@ -146,6 +146,7 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                     this.checkIdRefs();//Validate that all keyRef is a keyIds
                 } else if ( message.getDatatypeState() == IDREFDatatypeValidator.IDREF_STORE ) {
                     this.fTableOfId = (Hashtable) message.getDatatypeObject();
+                    //System.out.println("Conte Be Validated= >>" + content + "<<" );
                     if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
 
                         InvalidDatatypeValueException error = new InvalidDatatypeValueException( "IDREF is not valid" );//Need Message
@@ -154,7 +155,7 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                         error.setMajorCode(XMLMessages.VC_IDREF);
                         throw error;//Need Message
                     }
-                    //System.out.println("Content = " + content );
+                    //System.out.println("Content REF = " + content );
                     addIdRef( content, state);// We are storing IDs 
                 }
             }
@@ -180,7 +181,7 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
                     this.fTableOfId = (Hashtable) message.getDatatypeObject();
                     while ( tokenizer.hasMoreTokens() ) {
                         String idName = tokenizer.nextToken(); 
-                        //System.out.println("idName = " + idName );
+                        //System.out.println("idName here = " + idName );
                         if( this.fBaseValidator != null ){
                                this.fBaseValidator.validate( idName, state );
                         }
@@ -273,7 +274,7 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
 
         while (en.hasMoreElements()) {
             String key = (String)en.nextElement();
-
+            //System.out.println( "Key here = x>>" + key + "<<" );
             //System.out.println("Tab Ids = " + this.fTableOfId );
             if ( this.fTableOfId == null || ! this.fTableOfId.containsKey(key)) {
                 

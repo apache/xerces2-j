@@ -110,7 +110,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
         //System.out.println("Call to ID= " );
         if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
             InvalidDatatypeValueException error =  new
-                            InvalidDatatypeValueException( "ID is not valid: " );
+                            InvalidDatatypeValueException( "ID is not valid: " + content );
             error.setMajorCode(XMLMessages.MSG_ID_INVALID);
             error.setMinorCode(XMLMessages.VC_ID);
             throw error;
@@ -164,7 +164,8 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
     /** addId. */
     private boolean addId(String content, Object idTable) {
-
+     
+         //System.out.println( "content = >>" + content + "<<" );
         //System.out.println("state = " + state );
             if ( this.fTableOfId == null ) {
                this.fTableOfId = new Hashtable();//Gain reference to table
