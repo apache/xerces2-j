@@ -968,8 +968,17 @@ public class DocumentImpl
                     }
                 }
                 else {
-                    // Kids carry value
-                    deep = true;
+                    // According to the DOM spec the kids carry the value.
+                    // However, there are non compliant implementations out
+                    // there that fail to do so. To avoid ending up with no
+                    // value at all, in this case we simply copy the text value
+                    // directly.
+                    if (source.getFirstChild() == null) {
+                        newnode.setNodeValue(source.getNodeValue());
+                        deep = false;
+                    } else {
+                        deep = true;
+                    }
                 }
 		break;
             }
