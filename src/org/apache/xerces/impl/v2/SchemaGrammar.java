@@ -62,7 +62,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.v1.datatype.DatatypeValidator;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.validation.ContentModelValidator;
-
+import org.apache.xerces.impl.validation.*;
 
 import java.lang.Integer;
 import java.util.Hashtable;
@@ -112,20 +112,19 @@ public class SchemaGrammar {
      * Element declaration default type. This value is used when
      * the element is of simple type.
      */
+    //REVISIT do we need this array?
     private short   fElementDeclDefaultType[][] = new short[INITIAL_CHUNK_COUNT][];
 
     /** 
-     * Element declaration datatype validator. This value is used when
-     * the element is of simple type. 
+     * Element declaration type. This value is an index to types array 
+     * {both simpleType / complexType}  
      */
-
-    //REVISIT: should DatatypeValidator implement XSType
-    private DatatypeValidator fElementDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
+    private int fElementTypeDecl[][] = new int[INITIAL_CHUNK_COUNT][];
 
     /** 
-     * Element declaration content spec index. This index value is used
-     * to refer to the content spec information tables.
-     */
+    * Element declaration content spec index. This index value is used
+    * to refer to the content spec information tables.
+    */
     private int fElementDeclContentSpecIndex[][] = new int[INITIAL_CHUNK_COUNT][];
     private String fElementDeclSubGroupAffFullName[][] = new String[INITIAL_CHUNK_COUNT][];
     private Vector fElementDeclSubGroupQNames[][] = new Vector[INITIAL_CHUNK_COUNT][];
@@ -150,12 +149,14 @@ public class SchemaGrammar {
      * Attribute declaration type.
      * @see XSAttributeDecl
      */
-    private short fAttributeDeclType[][] = new short[INITIAL_CHUNK_COUNT][];
+
+    /** 
+     * Element declaration type. This value is an index to types array  
+     */
+    private int fAttributeDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
     private short fAttributeDeclDefaultType[][] = new short[INITIAL_CHUNK_COUNT][];
     private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
     private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
-    //REVISIT: should DatatypeValidator implement XSType
-    private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
 
     // content specs
 
@@ -181,14 +182,12 @@ public class SchemaGrammar {
     private String[][] fNotationSystemId = new String[INITIAL_CHUNK_COUNT][];
 
 
-    // REVISIT:
-    // complex type declarations
-    // add attributes to complex type decls
+    //REVISIT: as temporary solution store complexTypes/simpleTypes as objects
+    // Add XML Schema datatypes 
+    // 
+    private QName fXSTypeQName[][] = new QName[INITIAL_CHUNK_COUNT][];
+    private XSType fXSTypes[][]     = new XSType[INITIAL_CHUNK_COUNT][];
 
-    private Hashtable fComplexTypeRegistry = null;
-    // REVISIT:
-    // simple type declarations
-    //
 
     // other information
 
@@ -220,5 +219,152 @@ public class SchemaGrammar {
         fSymbolTable = symbolTable;
     } // <init>(SymbolTable)
 
+    /** Returns the symbol table. */
+    public SymbolTable getSymbolTable() {
+        return fSymbolTable;
+    } // getSymbolTable():SymbolTable
 
+    /** Returns this grammar's target namespace. */
+    public String getTargetNamespace() {
+        return fTargetNamespace;
+    } // getTargetNamespace():String
+
+
+    /**
+     * Returns the index of the first element declaration. This index
+     * is then used to query more information about the element declaration.
+     *
+     * @see #getNextElementDeclIndex
+     * @see #getElementDecl
+     */
+    public int getFirstElementDeclIndex() {
+        return fElementDeclCount > 0 ? fElementDeclCount : -1;
+    } // getFirstElementDeclIndex():int
+
+    /**
+     * Returns the next index of the element declaration following the
+     * specified element declaration.
+     * 
+     * @param elementDeclIndex The element declaration index.
+     */
+    public int getNextElementDeclIndex(int elementDeclIndex) {
+        return elementDeclIndex < fElementDeclCount - 1 
+        ? elementDeclIndex + 1 : -1;
+    } // getNextElementDeclIndex(int):int
+
+
+
+    /**
+     * getElementDecl
+     * 
+     * @param elementDeclIndex 
+     * @param elementDecl The values of this structure are set by this call.
+     * 
+     * @return REVISIT: previously if failed returned false 
+     */
+    public XSElementDecl getElementDecl(int elementDeclIndex, 
+                                        XSElementDecl elementDecl) {
+
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
+            return elementDecl;
+        }
+
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex &  CHUNK_MASK;
+
+        elementDecl.fQName.setValues(fElementDeclName[chunk][index]);
+
+        // REVISIT: 
+        // add code
+
+        return elementDecl;
+    } // getElementDecl(int,XSElementDecl):XSElementDecl
+
+
+    /**
+     * getAttributeDecl
+     * 
+     * @param attributeDeclIndex 
+     * @param attributeDecl The values of this structure are set by this call.
+     * 
+     * @return REVISIT: previously if failed returned false
+     */
+    public XSAttributeDecl getAttributeDecl(int attributeDeclIndex, XSAttributeDecl attributeDecl) {
+        if (attributeDeclIndex < 0 || attributeDeclIndex >= fAttributeDeclCount) {
+            return attributeDecl;
+        }
+        int chunk = attributeDeclIndex >> CHUNK_SHIFT;
+        int index = attributeDeclIndex & CHUNK_MASK;
+
+        attributeDecl.fQName.setValues(fAttributeDeclName[chunk][index]);
+        //REVISIT: add code
+
+        return attributeDecl;
+    } // getAttributeDecl
+
+       /**
+     * getNotationDecl
+     * 
+     * @param notationDeclIndex 
+     * @param notationDecl 
+     * 
+     * @return 
+     */
+    /*public XSNotationDecl getNotationDecl(int notationDeclIndex, XSNotationDecl notationDecl) {
+        if (notationDeclIndex < 0 || notationDeclIndex >= fNotationCount) {
+            return false;
+        }
+        int chunk = notationDeclIndex >> CHUNK_SHIFT;
+        int index = notationDeclIndex & CHUNK_MASK;
+
+        notationDecl.setValues(fNotationName[chunk][index], 
+                               fNotationPublicId[chunk][index],
+                               fNotationSystemId[chunk][index]);
+
+        return true;
+
+    } */
+    // getNotationDecl
+
+
+    /**
+     * getContentSpec
+     * 
+     * @param contentSpecIndex 
+     * @param contentSpec
+     * 
+     * @return REVISIT: previously if failed returned false
+     */
+    public XMLContentSpec getContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
+        if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount )
+            return contentSpec;
+
+        int chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int index = contentSpecIndex & CHUNK_MASK;
+
+        contentSpec.type       = fContentSpecType[chunk][index];
+        contentSpec.value      = fContentSpecValue[chunk][index];
+        contentSpec.otherValue = fContentSpecOtherValue[chunk][index];
+        return contentSpec;
+    }
+
+    protected int createAttributeDecl() {
+        return -1;
+    }
+
+    protected int createElementDecl() {
+        return -1;
+    }
+
+    protected int createContentSpec() {
+        return -1;
+    }
+
+    protected int createNotationDecl() {
+        return -1;
+    }
+
+    protected int createXSTypeDecl(){
+        return -1;
+    }
 } // class SchemaGrammar
