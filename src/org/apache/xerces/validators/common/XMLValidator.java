@@ -260,6 +260,7 @@ public final class XMLValidator
     private int fCurrentSchemaURI = -1;
     private int fEmptyURI = - 1; 
     private int fXsiPrefix = - 1;
+    private int fXsiURI = -1; 
 
     private Grammar fGrammar = null;
     private int fGrammarNameSpaceIndex = -1;
@@ -341,7 +342,7 @@ public final class XMLValidator
         fDocumentScanner = documentScanner;
 
         fEmptyURI = fStringPool.addSymbol("");
-
+        fXsiURI = fStringPool.addSymbol(SchemaSymbols.URI_XSI);
         // initialize
         fAttrList = new XMLAttrList(fStringPool);
         entityHandler.setEventHandler(this);
@@ -3468,11 +3469,25 @@ public final class XMLValidator
                 elementIndex = fGrammar.getElementDeclIndex(element.localpart, TOP_LEVEL_SCOPE);
             }
             if (elementIndex == -1) {
+                // if validating based on a Schema, try to resolve the element again by look it up in its ancestor types
+                if (fGrammar instanceof SchemaGrammar) {
+                    TraverseSchema.ComplexTypeInfo baseTypeInfo = null;
+                    baseTypeInfo = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(fCurrentElementIndex);
+                    while (baseTypeInfo != null) {
+                        elementIndex = fGrammar.getElementDeclIndex(element.localpart, baseTypeInfo.scopeDefined);
+                        if (elementIndex > -1 ) {
+                            break;
+                        }
+                        baseTypeInfo = baseTypeInfo.baseComplexTypeInfo;
+
+                    }
+                }
                 /****/
-                System.out.println("!!! can not find elementDecl in the grammar, " +
-                                   " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
-                                   " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
-                                   " and the current enclosing scope: " + fCurrentScope );
+                if (elementIndex == -1)
+                    System.out.println("!!! can not find elementDecl in the grammar, " +
+                                       " the element localpart: " + element.localpart+"["+fStringPool.toString(element.localpart) +"]" +
+                                       " the element uri: " + element.uri+"["+fStringPool.toString(element.uri) +"]" +
+                                       " and the current enclosing scope: " + fCurrentScope );
                 /****/
             }
             fGrammar.getElementDecl(elementIndex, fTempElementDecl);
@@ -3531,11 +3546,90 @@ public final class XMLValidator
         if (fAttrListHandle != -1) {
             int index = fAttrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
-                if (fStringPool.equalNames(attrList.getAttrName(index), fXMLLang)) {
+                int attrNameIndex = attrList.getAttrName(index);
+
+                if (fStringPool.equalNames(attrNameIndex, fXMLLang)) {
                     fDocumentScanner.checkXMLLangAttributeValue(attrList.getAttValue(index));
-                    break;
+                    // break;
+                }
+                // here, we validate every "user-defined" attributes
+                if (attrNameIndex != fNamespacesPrefix && attrList.getAttrPrefix(index) != fNamespacesPrefix) 
+                if (fValidating) {
+                    fTempQName.setValues(attrList.getAttrPrefix(index), 
+                                         attrList.getAttrLocalpart(index),
+                                         attrList.getAttrName(index),
+                                         attrList.getAttrURI(index) );
+                    int attDefIndex = getAttDef(element, fTempQName);
+                    if (fTempQName.uri != fXsiURI)
+                    if (attDefIndex == -1) {
+                        // REVISIT - cache the elem/attr tuple so that we only give
+                        //  this error once for each unique occurrence
+                        Object[] args = { fStringPool.toString(element.rawname),
+                                          fStringPool.toString(attrList.getAttrName(index)) };
+                        System.out.println("[Error] attribute " + fStringPool.toString(attrList.getAttrName(index))
+                                           + " not found in element type " + fStringPool.toString(element.rawname));
+
+                        //REVISIT : how attrNameLocator is initialized?
+                        /*****
+                        fErrorReporter.reportError(fAttrNameLocator,
+                                                   XMLMessages.XML_DOMAIN,
+                                                   XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                   XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                   args,
+                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                        ******/   
+
+                    }
+                    else  {
+
+                        fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
+                        if (fTempAttDecl.datatypeValidator == null) {
+                            Object[] args = { fStringPool.toString(element.rawname),
+                                              fStringPool.toString(attrList.getAttrName(index)) };
+                        //REVISIT : how attrNameLocator is initialized?
+                              /****
+                            fErrorReporter.reportError(fAttrNameLocator,    
+                                                   XMLMessages.XML_DOMAIN,
+                                                   XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                   XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                   args,
+                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                             ****/   
+                            System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
+                                              + " not found in element type " + fStringPool.toString(element.rawname));
+                        }
+                        else{
+                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)),
+                                                                    fTempAttDecl.list);
+                        }
+                    }
                 }
                 index = fAttrList.getNextAttr(index);
+            }
+        }
+        if (fAttrListHandle != -1) {
+            int index = attrList.getFirstAttr(fAttrListHandle);
+            while (index != -1) {
+                int attName = attrList.getAttrName(index);
+                if (!fStringPool.equalNames(attName, fNamespacesPrefix)) {
+                    int attPrefix = attrList.getAttrPrefix(index);
+                    if (attPrefix != fNamespacesPrefix) {
+                        if (attPrefix != -1) {
+                            int uri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
+                            if (uri == -1) {
+                                Object[] args = { fStringPool.toString(attPrefix) };
+                                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                           XMLMessages.XMLNS_DOMAIN,
+                                                           XMLMessages.MSG_PREFIX_DECLARED,
+                                                           XMLMessages.NC_PREFIX_DECLARED,
+                                                           args,
+                                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                            }
+                            attrList.setAttrURI(index, uri);
+                        }
+                    }
+                }
+                index = attrList.getNextAttr(index);
             }
         }
 
