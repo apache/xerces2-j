@@ -18,11 +18,11 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
-import org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
+import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xs.XSObject;
 import org.w3c.dom.Element;
 
@@ -34,12 +34,12 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
-
+    
     XSDAbstractParticleTraverser (XSDHandler handler,
-                                  XSAttributeChecker gAttrCheck) {
+            XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
     }
-
+    
     /**
      *
      * Traverse the "All" declaration
@@ -52,34 +52,37 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      * </all>
      **/
     XSParticleDecl traverseAll(Element allDecl,
-                               XSDocumentInfo schemaDoc,
-                               SchemaGrammar grammar,
-                               int allContextFlags,
-                               XSObject parent) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar,
+            int allContextFlags,
+            XSObject parent) {
+        
         // General Attribute Checking
-
+        
         Object[] attrValues = fAttrChecker.checkAttributes(allDecl, false, schemaDoc);
-
+        
         Element child = DOMUtil.getFirstChildElement(allDecl);
-
+        
         XSAnnotationImpl annotation = null;
-        if (child !=null) {
-            // traverse Annotation
-            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
-                child = DOMUtil.getNextSiblingElement(child);
+        if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+            annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            child = DOMUtil.getNextSiblingElement(child);
+        }
+        else {
+            String text = DOMUtil.getSyntheticAnnotation(allDecl);
+            if(text != null) {
+                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
             }
         }
         String childName = null;
         XSParticleDecl particle;
         fPArray.pushContext();
-
+        
         for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
-
+            
             particle = null;
             childName = DOMUtil.getLocalName(child);
-
+            
             // Only elements are allowed in <all>
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL, parent);
@@ -88,16 +91,16 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 Object[] args = {"all", "(annotation?, element*)", DOMUtil.getLocalName(child)};
                 reportSchemaError("s4s-elt-must-match.1", args, child);
             }
-
+            
             if (particle != null)
                 fPArray.addParticle(particle);
         }
-
+        
         particle = null;
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
         Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-            
+        
         XSModelGroupImpl group = new XSModelGroupImpl();
         group.fCompositor = XSModelGroupImpl.MODELGROUP_ALL;
         group.fParticleCount = fPArray.getParticleCount();
@@ -108,17 +111,17 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         particle.fMinOccurs = minAtt.intValue();
         particle.fMaxOccurs = maxAtt.intValue();
         particle.fValue = group;
-
+        
         particle = checkOccurrences(particle,
-                                    SchemaSymbols.ELT_ALL,
-                                    (Element)allDecl.getParentNode(),
-                                    allContextFlags,
-                                    defaultVals.longValue());
+                SchemaSymbols.ELT_ALL,
+                (Element)allDecl.getParentNode(),
+                allContextFlags,
+                defaultVals.longValue());
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return particle;
     }
-
+    
     /**
      * Traverse the Sequence declaration
      *
@@ -135,14 +138,14 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      * @return
      */
     XSParticleDecl traverseSequence(Element seqDecl,
-                                    XSDocumentInfo schemaDoc,
-                                    SchemaGrammar grammar,
-                                    int allContextFlags,
-                                    XSObject parent) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar,
+            int allContextFlags,
+            XSObject parent) {
+        
         return traverseSeqChoice(seqDecl, schemaDoc, grammar, allContextFlags, false, parent);
     }
-
+    
     /**
      * Traverse the Choice declaration
      *
@@ -159,14 +162,14 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      * @return
      */
     XSParticleDecl traverseChoice(Element choiceDecl,
-                                  XSDocumentInfo schemaDoc,
-                                  SchemaGrammar grammar,
-                                  int allContextFlags,
-                                  XSObject parent) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar,
+            int allContextFlags,
+            XSObject parent) {
+        
         return traverseSeqChoice (choiceDecl, schemaDoc, grammar, allContextFlags, true, parent);
     }
-
+    
     /**
      * Common traversal for <choice> and <sequence>
      *
@@ -177,40 +180,44 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      * @return
      */
     private XSParticleDecl traverseSeqChoice(Element decl,
-                                             XSDocumentInfo schemaDoc,
-                                             SchemaGrammar grammar,
-                                             int allContextFlags,
-                                             boolean choice,
-                                             XSObject parent) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar,
+            int allContextFlags,
+            boolean choice,
+            XSObject parent) {
+        
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc);
-
+        
         Element child = DOMUtil.getFirstChildElement(decl);
         XSAnnotationImpl annotation = null;
-        if (child !=null) {
-            // traverse Annotation
-            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
-                child = DOMUtil.getNextSiblingElement(child);
+        if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+            annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            child = DOMUtil.getNextSiblingElement(child);
+        }
+        else {
+            String text = DOMUtil.getSyntheticAnnotation(decl);
+            if(text != null) {
+                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
             }
         }
+        
         boolean hadContent = false;
         String childName = null;
         XSParticleDecl particle;
         fPArray.pushContext();
-
+        
         for (;child != null;child = DOMUtil.getNextSiblingElement(child)) {
-
+            
             particle = null;
-
+            
             childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT, parent);
             }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 particle = fSchemaHandler.fGroupTraverser.traverseLocal(child, schemaDoc, grammar);
-
+                
                 // A content type of all can only appear
                 // as the content type of a complex type definition.
                 if (hasAllContent(particle)) {
@@ -219,7 +226,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                     particle = null;
                     reportSchemaError("cos-all-limited.1.2", null, child);
                 }
-
+                
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 particle = traverseChoice(child, schemaDoc, grammar, NOT_ALL_CONTEXT, parent);
@@ -240,17 +247,17 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 }
                 reportSchemaError("s4s-elt-must-match.1", args, child);
             }
-
+            
             if (particle != null)
                 fPArray.addParticle(particle);
         }
-
+        
         particle = null;
         
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
         Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-
+        
         XSModelGroupImpl group = new XSModelGroupImpl();
         group.fCompositor = choice ? XSModelGroupImpl.MODELGROUP_CHOICE : XSModelGroupImpl.MODELGROUP_SEQUENCE;
         group.fParticleCount = fPArray.getParticleCount();
@@ -261,27 +268,27 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         particle.fMinOccurs = minAtt.intValue();
         particle.fMaxOccurs = maxAtt.intValue();
         particle.fValue = group;
-
+        
         particle = checkOccurrences(particle,
-                                    choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
-                                    (Element)decl.getParentNode(),
-                                    allContextFlags,
-                                    defaultVals.longValue());
+                choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
+                        (Element)decl.getParentNode(),
+                        allContextFlags,
+                        defaultVals.longValue());
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return particle;
     }
-
+    
     // Determines whether a content spec tree represents an "all" content model
     protected boolean hasAllContent(XSParticleDecl particle) {
         // If the content is not empty, is the top node ALL?
         if (particle != null && particle.fType == XSParticleDecl.PARTICLE_MODELGROUP) {
             return ((XSModelGroupImpl)particle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL;
         }
-
+        
         return false;
     }
-
+    
     // the inner class: used to store particles for model groups
     // to avoid creating a new Vector in each model group, or when traversing
     // each model group, we use this one big array to store all particles
@@ -351,7 +358,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         }
         
     }
-
+    
     // the big particle array to hold all particles in model groups
     ParticleArray fPArray = new ParticleArray();
 }

@@ -43,26 +43,26 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
-
+    
     XSDGroupTraverser (XSDHandler handler,
-                       XSAttributeChecker gAttrCheck) {
-
+            XSAttributeChecker gAttrCheck) {
+        
         super(handler, gAttrCheck);
     }
-
+    
     XSParticleDecl traverseLocal(Element elmNode,
-                                 XSDocumentInfo schemaDoc,
-                                 SchemaGrammar grammar) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar) {
+        
         // General Attribute Checking for elmNode declared locally
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false,
-                              schemaDoc);
+                schemaDoc);
         QName refAttr = (QName) attrValues[XSAttributeChecker.ATTIDX_REF];
         XInt  minAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt  maxAttr = (XInt)  attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
-
+        
         XSGroupDecl group = null;
-
+        
         // ref should be here.
         if (refAttr == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{"group (local)", "ref"}, elmNode);
@@ -71,7 +71,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             // index is a particle index.
             group = (XSGroupDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.GROUP_TYPE, refAttr, elmNode);
         }
-
+        
         // no children other than "annotation?" are allowed
         Element child = DOMUtil.getFirstChildElement(elmNode);
         if (child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -79,18 +79,19 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
         }
+        
         if (child != null) {
             reportSchemaError("s4s-elt-must-match.1", new Object[]{"group (local)", "(annotation?)", DOMUtil.getLocalName(elmNode)}, elmNode);
         }
-
+        
         int minOccurs = minAttr.intValue();
         int maxOccurs = maxAttr.intValue();
-
+        
         XSParticleDecl particle = null;
-
+        
         // not empty group, not empty particle
         if (group != null && group.fModelGroup != null &&
-            !(minOccurs == 0 && maxOccurs == 0)) {
+                !(minOccurs == 0 && maxOccurs == 0)) {
             // create a particle to contain this model group
             if (fSchemaHandler.fDeclPool != null) {
                 particle = fSchemaHandler.fDeclPool.getParticleDecl();
@@ -102,42 +103,42 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             particle.fMinOccurs = minOccurs;
             particle.fMaxOccurs = maxOccurs;
         }
-
+        
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return particle;
-
+        
     } // traverseLocal
-
+    
     XSGroupDecl traverseGlobal(Element elmNode,
-                               XSDocumentInfo schemaDoc,
-                               SchemaGrammar grammar) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar) {
+        
         // General Attribute Checking for elmNode declared globally
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true,
-                              schemaDoc);
+                schemaDoc);
         String  strNameAttr = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
-
+        
         // must have a name
         if (strNameAttr == null) {
             reportSchemaError("s4s-att-must-appear", new Object[]{"group (global)", "name"}, elmNode);
         }
-
+        
         XSGroupDecl group = null;
         XSParticleDecl particle = null;
-
+        
         // must have at least one child
         Element l_elmChild = DOMUtil.getFirstChildElement(elmNode);
         XSAnnotationImpl annotation = null;
         if (l_elmChild == null) {
             reportSchemaError("s4s-elt-must-match.2",
-                              new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
-                              elmNode);
+                    new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+                    elmNode);
         } else {
             // Create the group defi up-front, so it can be passed
             // to the traversal methods
             group = new XSGroupDecl();
-
+            
             String childName = l_elmChild.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANNOTATION)) {
                 annotation = traverseAnnotationDecl(l_elmChild, attrValues, true, schemaDoc);
@@ -145,11 +146,17 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 if (l_elmChild != null)
                     childName = l_elmChild.getLocalName();
             }
-
+            else {
+                String text = DOMUtil.getSyntheticAnnotation(elmNode);
+                if(text != null) {
+                    annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+                }
+            }
+            
             if (l_elmChild == null) {
                 reportSchemaError("s4s-elt-must-match.2",
-                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
-                                  elmNode);
+                        new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
+                        elmNode);
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, group);
             } else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
@@ -158,18 +165,18 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, group);
             } else {
                 reportSchemaError("s4s-elt-must-match.1",
-                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))", DOMUtil.getLocalName(l_elmChild)},
-                                  l_elmChild);
+                        new Object[]{"group (global)", "(annotation?, (all | choice | sequence))", DOMUtil.getLocalName(l_elmChild)},
+                        l_elmChild);
             }
-
+            
             if (l_elmChild != null &&
-                DOMUtil.getNextSiblingElement(l_elmChild) != null) {
+                    DOMUtil.getNextSiblingElement(l_elmChild) != null) {
                 reportSchemaError("s4s-elt-must-match.1",
-                                  new Object[]{"group (global)", "(annotation?, (all | choice | sequence))",
-                                               DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(l_elmChild))},
-                                  DOMUtil.getNextSiblingElement(l_elmChild));
+                        new Object[]{"group (global)", "(annotation?, (all | choice | sequence))",
+                        DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(l_elmChild))},
+                        DOMUtil.getNextSiblingElement(l_elmChild));
             }
-
+            
             // add global group declaration to the grammar
             if (strNameAttr != null) {
                 group.fName = strNameAttr;
@@ -188,18 +195,18 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             // store groups redefined by restriction in the grammar so
             // that we can get at them at full-schema-checking time.
             Object redefinedGrp = fSchemaHandler.getGrpOrAttrGrpRedefinedByRestriction(XSDHandler.GROUP_TYPE,
-                new QName(XMLSymbols.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
-                schemaDoc, elmNode);
+                    new QName(XMLSymbols.EMPTY_STRING, strNameAttr, strNameAttr, schemaDoc.fTargetNamespace),
+                    schemaDoc, elmNode);
             if(redefinedGrp != null) {
                 // store in grammar
                 grammar.addRedefinedGroupDecl(group, (XSGroupDecl)redefinedGrp,
-                                              fSchemaHandler.element2Locator(elmNode));
+                        fSchemaHandler.element2Locator(elmNode));
             }
         }
-
+        
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return group;
-
+        
     } // traverseGlobal
 }

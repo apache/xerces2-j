@@ -38,10 +38,10 @@ import java.util.Enumeration;
  * @version $Id$
  */
 public class SchemaDOM extends DefaultDocument {
-
+    
     static final int relationsRowResizeFactor = 15;
     static final int relationsColResizeFactor = 10;
-
+    
     NodeImpl[][] relations;
     // parent must be an element in this scheme
     ElementImpl parent;
@@ -49,17 +49,17 @@ public class SchemaDOM extends DefaultDocument {
     int nextFreeLoc;
     boolean hidden;
     boolean inCDATA;
-
+    
     // for annotation support:
     StringBuffer fAnnotationBuffer = null;
-
+    
     public SchemaDOM() {
         reset();
     }
     
-
+    
     public void startElement(QName element, XMLAttributes attributes,
-                             int line, int column, int offset) {
+            int line, int column, int offset) {
         ElementImpl node = new ElementImpl(line, column, offset);
         processElement(element, attributes, node);
         // now the current node added, becomes the parent
@@ -68,25 +68,25 @@ public class SchemaDOM extends DefaultDocument {
     
     
     public void emptyElement(QName element, XMLAttributes attributes,
-                             int line, int column, int offset) {
+            int line, int column, int offset) {
         ElementImpl node = new ElementImpl(line, column, offset);
         processElement(element, attributes, node);
     }
     
     public void startElement(QName element, XMLAttributes attributes,
-                             int line, int column) {
+            int line, int column) {
         startElement(element, attributes, line, column, -1);
     }
     
     
     public void emptyElement(QName element, XMLAttributes attributes,
-                             int line, int column) {
+            int line, int column) {
         emptyElement(element, attributes, line, column, -1);
     }
     
     
     private void processElement(QName element, XMLAttributes attributes, ElementImpl node) {
-
+        
         // populate node
         node.prefix = element.prefix;
         node.localpart = element.localpart;
@@ -98,11 +98,11 @@ public class SchemaDOM extends DefaultDocument {
         Attr[] attrs = new Attr[attributes.getLength()];
         for (int i=0; i<attributes.getLength(); i++) {
             attrs[i] = new AttrImpl(null, 
-                                    attributes.getPrefix(i), 
-                                    attributes.getLocalName(i), 
-                                    attributes.getQName(i), 
-                                    attributes.getURI(i), 
-                                    attributes.getValue(i));
+                    attributes.getPrefix(i), 
+                    attributes.getLocalName(i), 
+                    attributes.getQName(i), 
+                    attributes.getURI(i), 
+                    attributes.getValue(i));
         }
         node.attrs = attrs;
         
@@ -150,7 +150,7 @@ public class SchemaDOM extends DefaultDocument {
     void comment(XMLString text) {
         fAnnotationBuffer.append("<!--").append(text.toString()).append("-->");
     }
-
+    
     // note that this will only be called within appinfo/documentation
     void processingInstruction(String target, String data) {
         fAnnotationBuffer.append("<?").append(target).append(" ").append(data).append("?>");
@@ -190,7 +190,7 @@ public class SchemaDOM extends DefaultDocument {
             fAnnotationBuffer.append(text.ch, text.offset, text.length);
         }
     }
-
+    
     void endAnnotationElement(QName elemName, boolean complete) {
         if(complete) {
             fAnnotationBuffer.append("\n</").append(elemName.rawname).append(">");
@@ -199,13 +199,13 @@ public class SchemaDOM extends DefaultDocument {
             // hence, we must make this the child of the current
             // parent's only child.
             ElementImpl child = (ElementImpl)relations[currLoc][1];
-
+            
             // check if array needs to be resized
             if (nextFreeLoc == relations.length) {
                 resizeRelations();
             }
             int newRow = child.parentRow = nextFreeLoc++; 
-        
+            
             // now find the place to insert this node
             boolean foundPlace = false;
             int i = 1;
@@ -215,7 +215,7 @@ public class SchemaDOM extends DefaultDocument {
                     break;
                 }
             }
-        
+            
             if (!foundPlace) {
                 resizeRelations(newRow);
             }
@@ -226,7 +226,23 @@ public class SchemaDOM extends DefaultDocument {
         } else      //capturing character calls
             fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
     }
-
+    
+    void endSyntheticAnnotationElement(QName elemName, boolean complete) {
+        if(complete) {
+            fAnnotationBuffer.append("\n</").append(elemName.rawname).append(">");
+            // note that this is always called after endElement on <annotation>'s
+            // child and before endElement on annotation.
+            // hence, we must make this the child of the current
+            // parent's only child.
+            parent.fSyntheticAnnotation = fAnnotationBuffer.toString();
+            
+            // apparently, there is no sensible way of resetting
+            // these things
+            fAnnotationBuffer = null;
+        } else      //capturing character calls
+            fAnnotationBuffer.append("</").append(elemName.rawname).append(">");
+    }
+    
     void startAnnotationCDATA() {
         inCDATA = true;
         fAnnotationBuffer.append("<![CDATA[");
@@ -275,17 +291,17 @@ public class SchemaDOM extends DefaultDocument {
     
     public void printDOM() {
         /*
-        for (int i=0; i<relations.length; i++) {
-            if (relations[i][0] != null) {
-            for (int j=0; j<relations[i].length; j++) {
-                if (relations[i][j] != null) {
-                    System.out.print(relations[i][j].nodeType+"-"+relations[i][j].parentRow+"  ");
-                }
-            }
-            System.out.println("");
-            }
-        }
-        */
+         for (int i=0; i<relations.length; i++) {
+         if (relations[i][0] != null) {
+         for (int j=0; j<relations[i].length; j++) {
+         if (relations[i][j] != null) {
+         System.out.print(relations[i][j].nodeType+"-"+relations[i][j].parentRow+"  ");
+         }
+         }
+         System.out.println("");
+         }
+         }
+         */
         //traverse(getDocumentElement(), 0);
     }
     
@@ -332,10 +348,10 @@ public class SchemaDOM extends DefaultDocument {
     
     // commence the serialization of an annotation
     void startAnnotation(QName elemName, XMLAttributes attributes,
-                NamespaceContext namespaceContext) {
+            NamespaceContext namespaceContext) {
         if(fAnnotationBuffer == null) fAnnotationBuffer = new StringBuffer(256);
         fAnnotationBuffer.append("<").append(elemName.rawname).append(" ");
-
+        
         // attributes are a bit of a pain.  To get this right, we have to keep track
         // of the namespaces we've seen declared, then examine the namespace context
         // for other namespaces so that we can also include them.
@@ -349,7 +365,7 @@ public class SchemaDOM extends DefaultDocument {
             // if it's xmlns:* or xmlns, must be a namespace decl
             if (aPrefix == XMLSymbols.PREFIX_XMLNS || aQName == XMLSymbols.PREFIX_XMLNS) {
                 namespaces.addElement(aPrefix == XMLSymbols.PREFIX_XMLNS ? 
-                    attributes.getLocalName(i) : XMLSymbols.EMPTY_STRING);
+                        attributes.getLocalName(i) : XMLSymbols.EMPTY_STRING);
             }
             fAnnotationBuffer.append(aQName).append("=\"").append(processAttValue(aValue)).append("\" ");
         }
@@ -386,7 +402,7 @@ public class SchemaDOM extends DefaultDocument {
         for (int i = 0; i < length; ++i) {
             char currChar = original.charAt(i);
             if (currChar == '"' || currChar == '<' || currChar == '&' ||
-                currChar == 0x09 || currChar == 0x0A || currChar == 0x0D) {
+                    currChar == 0x09 || currChar == 0x0A || currChar == 0x0D) {
                 return escapeAttValue(original, i);
             }
         }

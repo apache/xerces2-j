@@ -42,21 +42,21 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 class  XSDNotationTraverser extends XSDAbstractTraverser {
-
+    
     XSDNotationTraverser (XSDHandler handler,
-                          XSAttributeChecker gAttrCheck) {
+            XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
     }
-
+    
     XSNotationDecl traverse(Element elmNode,
-                            XSDocumentInfo schemaDoc,
-                            SchemaGrammar grammar) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar) {
+        
         // General Attribute Checking for elmNode
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc);
         //get attributes
         String  nameAttr   = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
-
+        
         String  publicAttr = (String) attrValues[XSAttributeChecker.ATTIDX_PUBLIC];
         String  systemAttr = (String) attrValues[XSAttributeChecker.ATTIDX_SYSTEM];
         if (nameAttr == null) {
@@ -64,36 +64,39 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
             fAttrChecker.returnAttrArray(attrValues, schemaDoc);
             return null;
         }
-		
-		if (systemAttr == null && publicAttr == null)
-			reportSchemaError("PublicSystemOnNotation", null, elmNode);
-
+        
+        if (systemAttr == null && publicAttr == null)
+            reportSchemaError("PublicSystemOnNotation", null, elmNode);
+        
         XSNotationDecl notation = new XSNotationDecl();
         notation.fName = nameAttr;
         notation.fTargetNamespace = schemaDoc.fTargetNamespace;
         notation.fPublicId = publicAttr;
         notation.fSystemId = systemAttr;
-
+        
         //check content
         Element content = DOMUtil.getFirstChildElement(elmNode);
         XSAnnotationImpl annotation = null;
-
-        if (content != null) {
-            // traverse annotation if any
-            if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
-                annotation = traverseAnnotationDecl(content, attrValues, false, schemaDoc);
-                content = DOMUtil.getNextSiblingElement(content);
+        
+        if (content != null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
+            annotation = traverseAnnotationDecl(content, attrValues, false, schemaDoc);
+            content = DOMUtil.getNextSiblingElement(content);
+        }
+        else {
+            String text = DOMUtil.getSyntheticAnnotation(elmNode);
+            if(text != null) {
+                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
             }
         }
         notation.fAnnotation = annotation;
         if (content!=null){
-             Object[] args = new Object [] {SchemaSymbols.ELT_NOTATION, "(annotation?)", DOMUtil.getLocalName(content)};
-             reportSchemaError("s4s-elt-must-match.1", args, content);
-
+            Object[] args = new Object [] {SchemaSymbols.ELT_NOTATION, "(annotation?)", DOMUtil.getLocalName(content)};
+            reportSchemaError("s4s-elt-must-match.1", args, content);
+            
         }
         grammar.addGlobalNotationDecl(notation);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return notation;
     }
 }

@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 class XSDWildcardTraverser extends XSDAbstractTraverser {
-
+    
     /**
      * constructor
      *
@@ -63,11 +63,11 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
      * @param  gAttrCheck
      */
     XSDWildcardTraverser (XSDHandler handler,
-                          XSAttributeChecker gAttrCheck) {
+            XSAttributeChecker gAttrCheck) {
         super(handler, gAttrCheck);
     }
-
-
+    
+    
     /**
      * Traverse <any>
      *
@@ -77,13 +77,13 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
      * @return the wildcard node index
      */
     XSParticleDecl traverseAny(Element elmNode,
-                               XSDocumentInfo schemaDoc,
-                               SchemaGrammar grammar) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar) {
+        
         // General Attribute Checking for elmNode
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         XSWildcardDecl wildcard = traverseWildcardDecl(elmNode, attrValues, schemaDoc, grammar);
-
+        
         // for <any>, need to create a new particle to reflect the min/max values
         XSParticleDecl particle = null;
         if (wildcard != null) {
@@ -101,13 +101,13 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                 particle.fMaxOccurs = max;
             }
         }
-
+        
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return particle;
     }
-
-
+    
+    
     /**
      * Traverse <anyAttribute>
      *
@@ -117,18 +117,18 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
      * @return the wildcard node index
      */
     XSWildcardDecl traverseAnyAttribute(Element elmNode,
-                                        XSDocumentInfo schemaDoc,
-                                        SchemaGrammar grammar) {
-
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar) {
+        
         // General Attribute Checking for elmNode
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
         XSWildcardDecl wildcard = traverseWildcardDecl(elmNode, attrValues, schemaDoc, grammar);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
+        
         return wildcard;
     }
-
-
+    
+    
     /**
      *
      * @param  elmNode
@@ -137,11 +137,11 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
      * @param  grammar
      * @return the wildcard node index
      */
-     XSWildcardDecl traverseWildcardDecl(Element elmNode,
-                                         Object[] attrValues,
-                                         XSDocumentInfo schemaDoc,
-                                         SchemaGrammar grammar) {
-
+    XSWildcardDecl traverseWildcardDecl(Element elmNode,
+            Object[] attrValues,
+            XSDocumentInfo schemaDoc,
+            SchemaGrammar grammar) {
+        
         //get all attributes
         XSWildcardDecl wildcard = new XSWildcardDecl();
         // namespace type
@@ -152,7 +152,7 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
         // process contents
         XInt processContentsAttr = (XInt) attrValues[XSAttributeChecker.ATTIDX_PROCESSCONTENTS];
         wildcard.fProcessContents = processContentsAttr.shortValue();
-
+        
         //check content
         Element child = DOMUtil.getFirstChildElement(elmNode);
         XSAnnotationImpl annotation = null;
@@ -162,15 +162,27 @@ class XSDWildcardTraverser extends XSDAbstractTraverser {
                 annotation = traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
-
+            else {
+                String text = DOMUtil.getSyntheticAnnotation(elmNode);
+                if(text != null) {
+                    annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+                }
+            }
+            
             if (child != null) {
                 reportSchemaError("s4s-elt-must-match.1", new Object[]{"wildcard", "(annotation?)", DOMUtil.getLocalName(child)}, elmNode);
             }
         }
+        else {
+            String text = DOMUtil.getSyntheticAnnotation(elmNode);
+            if(text != null) {
+                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+            }
+        }
         wildcard.fAnnotation = annotation;
-
+        
         return wildcard;
-
+        
     } // traverseWildcardDecl
-
+    
 } // XSDWildcardTraverser
