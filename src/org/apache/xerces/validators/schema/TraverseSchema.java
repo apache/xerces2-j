@@ -639,8 +639,7 @@ public class TraverseSchema implements
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
-            String name = child.getNodeName();
-
+            String name = child.getLocalName();
             if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 traverseAnnotationDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_SIMPLETYPE )) {
@@ -677,7 +676,7 @@ public class TraverseSchema implements
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
-            String name = child.getNodeName();
+            String name = child.getLocalName();
             String compName = child.getAttribute(SchemaSymbols.ATT_NAME);
             if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 fSchemaGrammar.topLevelAttrGrpDecls.put(compName, child);
@@ -924,7 +923,7 @@ public class TraverseSchema implements
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
-            String name = child.getNodeName();
+            String name = child.getLocalName();
 
             if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 traverseAnnotationDecl(child);
@@ -1128,13 +1127,13 @@ public class TraverseSchema implements
             //Content follows: ( annotation? , facets* )
 
             //annotation ? ( 0 or 1 )
-            if( content.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+            if( content.getLocalName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                 traverseAnnotationDecl( content );   
                 content                    = XUtil.getNextSiblingElement(content);
             } 
 
             //TODO: If content is annotation again should raise validation error
-            // if( content.getNodeName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
+            // if( content.getLocalName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
             //   throw ValidationException(); }
             //
 
@@ -1149,22 +1148,22 @@ public class TraverseSchema implements
                 if (content.getNodeType() == Node.ELEMENT_NODE) {
                     Element facetElt = (Element) content;
                     numFacets++;
-                    if (facetElt.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    if (facetElt.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
                         numEnumerationLiterals++;
                         String enumVal = facetElt.getAttribute(SchemaSymbols.ATT_VALUE);
                         enumData.addElement(enumVal);
                         //Enumerations can have annotations ? ( 0 | 1 )
                         Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent != null && enumContent != null && enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                        if( enumContent != null && enumContent != null && enumContent.getLocalName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                             traverseAnnotationDecl( content );   
                          } 
                         //TODO: If enumContent is encounter  again should raise validation error
                         //  enumContent.getNextSibling();
-                        // if( enumContent.getNodeName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
+                        // if( enumContent.getLocalName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
                         //   throw ValidationException(); }
                         //
                     } else {
-                    facetData.put(facetElt.getNodeName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
+                    facetData.put(facetElt.getLocalName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
                     }
                 }
                 //content = (Element) content.getNextSibling();
@@ -1707,37 +1706,37 @@ public class TraverseSchema implements
 
             //REVISIT: there is a better way to do this, 
             for (child = XUtil.getFirstChildElement(complexTypeDecl);
-                 child != null && (child.getNodeName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_PRECISION) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_SCALE) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_LENGTH) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_MINLENGTH) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_ENCODING) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_PERIOD) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_DURATION) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_PATTERN) ||
-                                   child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION));
+                 child != null && (child.getLocalName().equals(SchemaSymbols.ELT_MINEXCLUSIVE) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_MININCLUSIVE) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_MAXINCLUSIVE) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_PRECISION) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_SCALE) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_LENGTH) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_MINLENGTH) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_ENCODING) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_PERIOD) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_DURATION) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_PATTERN) ||
+                                   child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION));
                  child = XUtil.getNextSiblingElement(child)) 
             {
                 if ( child.getNodeType() == Node.ELEMENT_NODE ) {
                     Element facetElt = (Element) child;
                     numFacets++;
-                    if (facetElt.getNodeName().equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    if (facetElt.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
                         numEnumerationLiterals++;
                         enumData.addElement(facetElt.getAttribute(SchemaSymbols.ATT_VALUE));
                         //Enumerations can have annotations ? ( 0 | 1 )
                         Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent != null && enumContent.getNodeName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
+                        if( enumContent != null && enumContent.getLocalName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
                             traverseAnnotationDecl( child );   
                         }
                         // TO DO: if Jeff check in new changes to TraverseSimpleType, copy them over
                     } else {
-                        facetData.put(facetElt.getNodeName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
+                        facetData.put(facetElt.getLocalName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
                     }
                 }
             }
@@ -1756,7 +1755,7 @@ public class TraverseSchema implements
 
             if (child != null) {
                 // REVISIT: Localize
-                reportGenericSchemaError("Invalid child '"+child.getNodeName()+"' in complexType : '" + typeName 
+                reportGenericSchemaError("Invalid child '"+child.getLocalName()+"' in complexType : '" + typeName 
                                          + "', because it restricts another complexSimpleType");
             }
         }
@@ -1833,7 +1832,7 @@ public class TraverseSchema implements
 
                 seeParticle = false;
 
-                String childName = child.getNodeName();
+                String childName = child.getLocalName();
 
                 if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                     if (mixedContent || elementContent) {
@@ -2034,7 +2033,7 @@ public class TraverseSchema implements
              child != null;
              child = XUtil.getNextSiblingElement(child)) {
 
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
 
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 if ((baseIsComplexSimple||baseIsSimpleSimple) && derivedByRestriction) {
@@ -2442,11 +2441,11 @@ public class TraverseSchema implements
             Element child = XUtil.getFirstChildElement(attrDecl);
 
             while (child != null && 
-                             !child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE))
+                             !child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE))
                 child = XUtil.getNextSiblingElement(child);
 
 
-            if (child != null && child.getNodeName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
+            if (child != null && child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 attType        = XMLAttributeDecl.TYPE_SIMPLE;
                 dataTypeSymbol = traverseSimpleTypeDecl(child);
                 localpart = fStringPool.toString(dataTypeSymbol);
@@ -2721,17 +2720,17 @@ public class TraverseSchema implements
         for ( Element child = XUtil.getFirstChildElement(attrGrpDecl); 
              child != null ; child = XUtil.getNextSiblingElement(child)) {
        
-            if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
+            if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
                 traverseAttributeDecl(child, typeInfo);
             }
-            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
+            else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
                 traverseAttributeGroupDecl(child, typeInfo,anyAttDecls);
             }
-            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
+            else if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
                 anyAttDecls.addElement(traverseAnyAttribute(child));
                 break;
             }
-            else if (child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
+            else if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 // REVISIT: what about appInfo
             }
         }
@@ -2771,7 +2770,7 @@ public class TraverseSchema implements
              child != null ; child = XUtil.getNextSiblingElement(child)) {
 
             //child attribute couldn't be a top-level attribute DEFINITION, 
-            if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
+            if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTE) ){
                 String childAttName = child.getAttribute(SchemaSymbols.ATT_NAME);
                 if ( childAttName.length() > 0 ) {
                     Hashtable attDeclRegistry = aGrammar.getAttirubteDeclRegistry();
@@ -2785,14 +2784,14 @@ public class TraverseSchema implements
                 else 
                     traverseAttributeDecl(child, typeInfo);
             }
-            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
+            else if ( child.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ) {
                 traverseAttributeGroupDecl(child, typeInfo, anyAttDecls);
             }
-            else if ( child.getNodeName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
+            else if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
                 anyAttDecls.addElement(traverseAnyAttribute(child));
                 break;
             }
-            else if (child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
+            else if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
                 // REVISIT: what about appInfo
             }
         }
@@ -3039,7 +3038,7 @@ public class TraverseSchema implements
         // element has a single child element, either a datatype or a type, null if primitive
         Element child = XUtil.getFirstChildElement(elementDecl);
         
-        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             child = XUtil.getNextSiblingElement(child);
         
         boolean haveAnonType = false;
@@ -3047,7 +3046,7 @@ public class TraverseSchema implements
         // Handle Anonymous type if there is one
         if (child != null) {
             
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
             
             if (childName.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).length() > 0) {
@@ -3240,7 +3239,7 @@ public class TraverseSchema implements
         Vector idConstraints = null;
         
         while (child != null){
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
            /**** 
             if ( childName.equals(SchemaSymbols.ELT_KEY) ) { 
                 traverseKey(child, idCnstrt);
@@ -3410,7 +3409,7 @@ public class TraverseSchema implements
         }
 
         while (child != null ){
-            if ( child.getNodeName().equals(componentCategory)) {
+            if ( child.getLocalName().equals(componentCategory)) {
                 if (child.getAttribute(SchemaSymbols.ATT_NAME).equals(name)) {
                     return child;
                 }
@@ -3428,7 +3427,7 @@ public class TraverseSchema implements
             return true;
         }
         /****/
-        if (component.getParentNode().getNodeName().endsWith(SchemaSymbols.ELT_SCHEMA) ) {
+        if (component.getParentNode().getLocalName().endsWith(SchemaSymbols.ELT_SCHEMA) ) {
             return true;
         }
         return false;
@@ -3599,7 +3598,7 @@ public class TraverseSchema implements
         }
 
         Element child = XUtil.getFirstChildElement(groupDecl);
-        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             child = XUtil.getNextSiblingElement(child);
 
         int contentSpecType = 0;
@@ -3624,7 +3623,7 @@ public class TraverseSchema implements
 
             boolean illegalChild = false;
 
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 QName eltQName = traverseElementDecl(child);
                 index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
@@ -3722,7 +3721,7 @@ public class TraverseSchema implements
         }
 
         Element child = XUtil.getFirstChildElement(groupDecl);
-        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             child = XUtil.getNextSiblingElement(child);
 
         int contentSpecType = 0;
@@ -3744,7 +3743,7 @@ public class TraverseSchema implements
             hadContent = true;
 
             boolean seeParticle = false;
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
             int childNameIndex = fStringPool.addSymbol(childName);
             String formAttrVal = child.getAttribute(SchemaSymbols.ATT_FORM);
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
@@ -3824,7 +3823,7 @@ public class TraverseSchema implements
     int traverseSequence (Element sequenceDecl) throws Exception {
             
         Element child = XUtil.getFirstChildElement(sequenceDecl);
-        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             child = XUtil.getNextSiblingElement(child);
 
         int contentSpecType = 0;
@@ -3844,7 +3843,7 @@ public class TraverseSchema implements
             hadContent = true;
 
             boolean seeParticle = false;
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 QName eltQName = traverseElementDecl(child);
                 index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
@@ -3915,7 +3914,7 @@ public class TraverseSchema implements
             
         // REVISIT: traverseChoice, traverseSequence can be combined
         Element child = XUtil.getFirstChildElement(choiceDecl);
-        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             child = XUtil.getNextSiblingElement(child);
 
         int contentSpecType = 0;
@@ -3935,7 +3934,7 @@ public class TraverseSchema implements
             hadContent = true;
 
             boolean seeParticle = false;
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 QName eltQName = traverseElementDecl(child);
                 index = fSchemaGrammar.addContentSpecNode( XMLContentSpec.CONTENTSPECNODE_LEAF,
@@ -4008,7 +4007,7 @@ public class TraverseSchema implements
 
         Element child = XUtil.getFirstChildElement(allDecl);
 
-        while (child != null && child.getNodeName().equals(SchemaSymbols.ELT_ANNOTATION))
+        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
             child = XUtil.getNextSiblingElement(child);
 
         int allChildren[] = null;
@@ -4023,7 +4022,7 @@ public class TraverseSchema implements
             int index = -2;
             boolean seeParticle = false;
 
-            String childName = child.getNodeName();
+            String childName = child.getLocalName();
 
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 QName eltQName = traverseElementDecl(child);
