@@ -2757,7 +2757,7 @@ public class XMLSchemaValidator
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSConstants.VC_NONE) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
-                String normalized = (defaultValue!=null)?defaultValue.toString():"";
+                String normalized = (defaultValue!=null)?defaultValue.stringValue():"";
                 int attrIndex = attributes.addAttribute(attName, "CDATA", normalized);
                 if (attributes instanceof XMLAttributesImpl) {
                     XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
