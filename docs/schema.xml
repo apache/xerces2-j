@@ -49,15 +49,11 @@
             <li>Wildcards: any</li>
             <li>Wildcards: anyAttribute</li>
             <li>import and include</li>
+            <li>Notation declaration</li>
+            <li>Annotation</li>
+            <li>Redefine</li>
             <li>Identity constraints: unique, key, keyref
 			(experimental)</li>
-        </ul>
-    </s2>
-    <s2 title='Components NOT Supported'>
-        <ul>
-            <li>Notation declaration</li>
-            <li>Annotation (ignored)</li>
-            <li>Redefine</li>
         </ul>
     </s2>
     <s2 title='Features Supported'>
@@ -81,9 +77,7 @@
 			specifications</li>
             <li>Nullable</li>
             <li>Block and final</li>
-            <li>Abstract for both types and elements</li>
 			<li>Fixed and default values of elements</li>
-			<li>Attribute normalization</li>
         </ul>
     </s2>
     <s2 title='Datatypes Supported'>
@@ -92,7 +86,7 @@
             <li>Simple type derivation (restriction, list, union)</li>
             <li>Regular expressions</li>
             <li>Binary (base64, hex)</li>
-            <li>Constraining facets (except for whiteSpace)</li>
+            <li>Constraining facets</li>
         </ul>
     </s2>
     <s2 title='Datatypes NOT Supported'>
@@ -107,6 +101,14 @@
 		Schema document instance namespace, as specified by the
 		candidate recommendation specification. See the sample provided in the
 		Usage section.</p>
+		<p>When a schemaLocation attribute appears in an instance
+			document, only the first targetNamespace URI/schema
+			location pair will be considered (the remaining pairs will
+			be ignored).  Subsequent schemaLocation attributes will
+			also be ignored.  To validate an instance document against
+			multiple schemas, it is necessary to use &lt;include&gt;,
+			&lt;import&gt; or &lt;redefine&gt; element information items
+			within one of the schema documents.</p> 
 		<p>We also emphasize that support for schema ID constraints is
 		highly experimental.  Some of the limitations of this support
 		are:

@@ -2,8 +2,17 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
-  <s2 title='TBD'>
+  <s2 title='March 15, 2001 (version 1.3.1)'>
 	<ul>
+		<li>Added support for schema &lt;redefine&gt; element [neilg]</li>
+		<li>Added support for schema notations [elena]</li>
+		<li>Implemented validation constraints for the &quot;abstract&quot; attribute
+				on elements [lmartin]</li>
+		<li>Added support for the whitespace facet [elena]</li>
+		<li>Fixed validation constraints surrounding the schema &lt;annotation&gt; element info item [neilg]</li>
+		<li>Implemented support for JAXP 1.1 [edwingo]</li>
+		<li>Miscelaneous bugfixes [lehors, neilg, elena, andyc]</li>
+		<li>Partially fixed inability to make (or build) Xerces under Unix [neilg]</li>
 	  <li>Removed final from XMLSerializer per request [andyc]</li>
 	  <li>Fixed identity constraint bugs (support still limited) [andyc]</li>
 	  <li>Changed parse method to close streams opened by parser even in
