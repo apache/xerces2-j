@@ -212,7 +212,7 @@ public final class SchemaSymbols {
     public static final String ATTVAL_LAX               = "lax";
     public static final String ATTVAL_LIST              = "list";
     public static final String ATTVAL_LONG              = "long";
-    public static final String ATTVAL_NAME              = "name";
+    public static final String ATTVAL_NAME              = "Name";
     public static final String ATTVAL_NEGATIVEINTEGER   = "negativeInteger";
     public static final String ATTVAL_MONTH             = "gMonth";
     public static final String ATTVAL_MONTHDAY          = "gMonthDay";
