@@ -93,6 +93,7 @@ import  java.io.IOException;
 import  org.w3c.dom.Document;
 import  org.apache.xml.serialize.OutputFormat;
 import  org.apache.xml.serialize.XMLSerializer;
+import  org.apache.xerces.validators.schema.SchemaSymbols;
 
 
 
@@ -2604,10 +2605,10 @@ public class TraverseSchema {
         Hashtable fRegistry = new Hashtable();
 
         String integerSubtypeTable[][] = {
-            { "non-negative-integer", DatatypeValidator.MININCLUSIVE , "0"},
-            { "positive-integer", DatatypeValidator.MININCLUSIVE, "1"},
-            { "non-positive-integer", DatatypeValidator.MAXINCLUSIVE, "0"},
-            { "negative-integer", DatatypeValidator.MAXINCLUSIVE, "-1"}
+            { "non-negative-integer", SchemaSymbols.ELT_MININCLUSIVE , "0"},
+            { "positive-integer", SchemaSymbols.ELT_MININCLUSIVE, "1"},
+            { "non-positive-integer", SchemaSymbols.ELT_MAXINCLUSIVE, "0"},
+            { "negative-integer", SchemaSymbols.ELT_MAXINCLUSIVE, "-1"}
         };
 
         void initializeRegistry() {
