@@ -68,22 +68,13 @@ import java.io.PrintWriter;
 
 public class Assertion {
 
-    public void assert(boolean result) {
+    public static void assert(boolean result) {
 	if (!result) {
-	    RuntimeException ex = new RuntimeException("assertion failed");
-	    StringWriter writer = new StringWriter();
-	    PrintWriter printer = new PrintWriter(writer);
-	    ex.printStackTrace(printer);
-	    String buf = writer.toString();
-	    // extract the last line
-	    int index = buf.lastIndexOf('\n');
-	    index = buf.lastIndexOf('\n', index - 1);
-	    System.err.println("Assertion failed "
-			       + buf.substring(index + 1).trim());
+	    System.err.println("Assertion failed:\n" + getSourceLocation());
 	}
     }
 
-    public void equals(String s1, String s2) {
+    public static void equals(String s1, String s2) {
         boolean result = ((s1 != null && s1.equals(s2))
 			  || (s1 == null && s2 == null));
 	if (!result) {
@@ -92,6 +83,15 @@ public class Assertion {
 	}
     }
 
-    public Assertion() {
+    public static String getSourceLocation() {
+	RuntimeException ex = new RuntimeException("assertion failed");
+	StringWriter writer = new StringWriter();
+	PrintWriter printer = new PrintWriter(writer);
+	ex.printStackTrace(printer);
+	String buf = writer.toString();
+	// skip the first line as well as every line related to this class
+	int index = buf.lastIndexOf("dom.DOMMemTest.Assertion.");
+	index = buf.indexOf('\n', index);
+	return buf.substring(index + 1);
     }
 }
