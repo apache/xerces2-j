@@ -17,10 +17,10 @@ package org.apache.xerces.xinclude;
 
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -300,8 +300,8 @@ public class XIncludeHandler
     private int[] fState = new int[INITIAL_SIZE];
 
     // buffering the necessary DTD events
-    private Vector fNotations;
-    private Vector fUnparsedEntities;
+    private ArrayList fNotations;
+    private ArrayList fUnparsedEntities;
 
     // for SAX compatibility.
     // Has the value of the ALLOW_UE_AND_NOTATION_EVENTS feature
@@ -324,8 +324,8 @@ public class XIncludeHandler
         fSawFallback[fDepth] = false;
         fSawInclude[fDepth] = false;
         fState[fDepth] = STATE_NORMAL_PROCESSING;
-        fNotations = new Vector();
-        fUnparsedEntities = new Vector();
+        fNotations = new ArrayList();
+        fUnparsedEntities = new ArrayList();
 
         fBaseURIScope = new IntStack();
         fBaseURI = new Stack();
@@ -345,8 +345,8 @@ public class XIncludeHandler
         fNamespaceContext = null;
         fDepth = 0;
         fResultDepth = 0;
-        fNotations = new Vector();
-        fUnparsedEntities = new Vector();
+        fNotations.clear();
+        fUnparsedEntities.clear();
         fParentRelativeURI = null;
         fIsXML11 = false;
         fInDTD = false;
@@ -356,6 +356,8 @@ public class XIncludeHandler
         fBaseURI.clear();
         fLiteralSystemID.clear();
         fExpandedSystemID.clear();
+        fLanguageScope.clear();
+        fLanguageStack.clear();
 
         // REVISIT: Find a better method for maintaining
         // the state of the XInclude processor. These arrays
