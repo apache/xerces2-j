@@ -276,11 +276,12 @@ public class DFAContentModel
      * zero, since some elements have the EMPTY content model and that must be 
      * confirmed.
      *
-     * @param childCount The number of entries in the <code>children</code> array.
      * @param children The children of this element.  Each integer is an index within
      *                 the <code>StringPool</code> of the child element name.  An index
      *                 of -1 is used to indicate an occurrence of non-whitespace character
      *                 data.
+     * @param offset Offset into the array where the children starts.
+     * @param length The number of entries in the <code>children</code> array.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
      *         that first failed. If the value returned is equal to the number
@@ -289,8 +290,7 @@ public class DFAContentModel
      *
      * @exception CMException Thrown on error.
      */
-    public int validateContent(int childCount, 
-                               QName children[]) throws CMException {
+    public int validateContent(QName children[], int offset, int length) throws CMException {
 
         if (DEBUG_VALIDATE_CONTENT) 
             System.out.println("DFAContentModel#validateContent");
@@ -308,7 +308,7 @@ public class DFAContentModel
         // Therefore, if there are no children, we must check to
         // see if the CMNODE_EOC marker is a valid start state! -Ac
         //
-        if (childCount == 0) {
+        if (length == 0) {
             if (DEBUG_VALIDATE_CONTENT) {
                 System.out.println("!!! no children");
                 System.out.println("elemMap="+fElemMap);
@@ -336,10 +336,10 @@ public class DFAContentModel
         //  an element index to a state index.
         //
         int curState = 0;
-        for (int childIndex = 0; childIndex < childCount; childIndex++)
+        for (int childIndex = 0; childIndex < length; childIndex++)
         {
             // Get the current element index out
-            final QName curElem = children[childIndex];
+            final QName curElem = children[offset + childIndex];
 
             // Look up this child in our element map
             int elemIndex = 0;
@@ -383,9 +383,9 @@ public class DFAContentModel
         //  our ending state is a final state.
         //
         if (DEBUG_VALIDATE_CONTENT) 
-            System.out.println("curState="+curState+", childCount="+childCount);
+            System.out.println("curState="+curState+", childCount="+length);
         if (!fFinalStateFlags[curState])
-            return childCount;
+            return length;
 
         // success!
         return -1;
@@ -535,7 +535,7 @@ public class DFAContentModel
                 info.curChildren[info.insertAt] = info.possibleChildren[index];
 
                 // And validate it. If it fails, then this one loses
-                if (validateContent(info.childCount, info.curChildren) != -1)
+                if (validateContent(info.curChildren, 0, info.childCount) != -1)
                     info.results[index] = false;
             }
         }

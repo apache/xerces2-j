@@ -656,7 +656,7 @@ public final class XMLValidator
         
         // if fAttrList.addAttr returns -1, indicates duplicate att in start tag of an element.
         // specified: true, search : true
-        return fAttrList.addAttr(attrName, attrValue, -1, true, true) == -1;
+        return fAttrList.addAttr(attrName, attrValue, fCDATASymbol, true, true) == -1;
     }
 
     /** Call start element. */
@@ -2107,24 +2107,24 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Initialize. */
     private void init() {
 
-        fEMPTYSymbol = XMLElementDecl.TYPE_EMPTY;
-        fANYSymbol = XMLElementDecl.TYPE_ANY;
-        fMIXEDSymbol = XMLElementDecl.TYPE_MIXED;
-        fCHILDRENSymbol = XMLElementDecl.TYPE_CHILDREN;
+        fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
+        fANYSymbol = fStringPool.addSymbol("ANY");
+        fMIXEDSymbol = fStringPool.addSymbol("MIXED");
+        fCHILDRENSymbol = fStringPool.addSymbol("CHILDREN");
 
-        fCDATASymbol = XMLAttributeDecl.TYPE_CDATA;
-        fIDSymbol = XMLAttributeDecl.TYPE_ID;
-        fIDREFSymbol = XMLAttributeDecl.TYPE_IDREF;
-        fIDREFSSymbol = XMLAttributeDecl.TYPE_IDREF;
-        fENTITYSymbol = XMLAttributeDecl.TYPE_ENTITY;
-        fENTITIESSymbol = XMLAttributeDecl.TYPE_ENTITY;
-        fNMTOKENSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
-        fNMTOKENSSymbol = XMLAttributeDecl.TYPE_NMTOKEN;
-        fNOTATIONSymbol = XMLAttributeDecl.TYPE_NOTATION;
-        fENUMERATIONSymbol = XMLAttributeDecl.TYPE_ENUMERATION;
-        fREQUIREDSymbol = XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-        fFIXEDSymbol = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
-        fDATATYPESymbol = XMLElementDecl.TYPE_SIMPLE;
+        fCDATASymbol = fStringPool.addSymbol("CDATA");
+        fIDSymbol = fStringPool.addSymbol("ID");
+        fIDREFSymbol = fStringPool.addSymbol("IDREF");
+        fIDREFSSymbol = fStringPool.addSymbol("IDREFS");
+        fENTITYSymbol = fStringPool.addSymbol("ENTITY");
+        fENTITIESSymbol = fStringPool.addSymbol("ENTITIES");
+        fNMTOKENSymbol = fStringPool.addSymbol("NMTOKEN");
+        fNMTOKENSSymbol = fStringPool.addSymbol("NMTOKENS");
+        fNOTATIONSymbol = fStringPool.addSymbol("NOTATION");
+        fENUMERATIONSymbol = fStringPool.addSymbol("ENUMERATION");
+        fREQUIREDSymbol = fStringPool.addSymbol("#REQUIRED");
+        fFIXEDSymbol = fStringPool.addSymbol("#FIXED");
+        fDATATYPESymbol = fStringPool.addSymbol("<<datatype>>");
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
 
@@ -2238,7 +2238,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             int attPrefix = fTempAttDecl.name.prefix;
             int attName = fTempAttDecl.name.localpart;
-            int attType = fTempAttDecl.type;
+            int attType = attributeTypeName(fTempAttDecl);
             int attDefType =fTempAttDecl.defaultType;
             int attValue = -1 ;
             if (fTempAttDecl.defaultValue != null ) {
@@ -3033,6 +3033,34 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     } // getLocationString(SAXParseException):String
     }
 
+    private int attributeTypeName(XMLAttributeDecl attrDecl) {
+        switch (attrDecl.type) {
+            case XMLAttributeDecl.TYPE_ENTITY: {
+                return attrDecl.list ? fENTITIESSymbol : fENTITYSymbol;
+            }
+            case XMLAttributeDecl.TYPE_ENUMERATION: {
+                // REVISIT: Do this.
+                break;
+            }
+            case XMLAttributeDecl.TYPE_ID: {
+                return fIDSymbol;
+            }
+            case XMLAttributeDecl.TYPE_IDREF: {
+                return attrDecl.list ? fIDREFSSymbol : fIDREFSymbol;
+            }
+            case XMLAttributeDecl.TYPE_NMTOKEN: {
+                return attrDecl.list ? fNMTOKENSSymbol : fNMTOKENSSymbol;
+            }
+            case XMLAttributeDecl.TYPE_NOTATION: {
+                return fNOTATIONSymbol;
+            }
+            //case XMLAttributeDecl.TYPE_CDATA: {
+            default: {
+                return fCDATASymbol;
+            }
+        }
+        return -1;
+    }
 
         /** Validates element and attributes. */
     private void validateElementAndAttributes(QName element, 
@@ -3203,6 +3231,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
 
                         //TO DO: special handling needed here for IDs IDrefs, ENTITIES, ?NOTations
+
+                        int attributeType = attributeTypeName(fTempAttDecl);
+                        attrList.setAttType(index, attributeType);
 
                         if (fGrammar instanceof DTDGrammar && 
                             (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||

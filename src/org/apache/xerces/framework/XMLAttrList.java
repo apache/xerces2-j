@@ -303,6 +303,15 @@ public final class XMLAttrList
         return fAttValue[chunk][index];
     }
 
+    /** Sets the type of the attribute. */
+    public void setAttType(int attrIndex, int attTypeIndex) {
+        if (attrIndex < 0 || attrIndex >= fAttrCount)
+            return;
+        int chunk = attrIndex >> CHUNK_SHIFT;
+        int index = attrIndex & CHUNK_MASK;
+        fAttType[chunk][index] = attTypeIndex;
+    }
+
     /**
      * Get the type of the attribute
      *

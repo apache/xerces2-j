@@ -158,11 +158,12 @@ public class SimpleContentModel
      * zero, since some elements have the EMPTY content model and that must be 
      * confirmed.
      *
-     * @param childCount The number of entries in the <code>children</code> array.
      * @param children The children of this element.  Each integer is an index within
      *                 the <code>StringPool</code> of the child element name.  An index
      *                 of -1 is used to indicate an occurrence of non-whitespace character
      *                 data.
+     * @param offset Offset into the array where the children starts.
+     * @param length The number of entries in the <code>children</code> array.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
      *         that first failed. If the value returned is equal to the number
@@ -171,8 +172,7 @@ public class SimpleContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, 
-                               QName children[]) throws Exception {
+    public int validateContent(QName children[], int offset, int length) throws Exception {
 
         //
         //  According to the type of operation, we do the correct type of
@@ -182,15 +182,16 @@ public class SimpleContentModel
         {
             case XMLContentSpec.CONTENTSPECNODE_LEAF :
                 // If there is not a child, then report an error at index 0
-                if (childCount == 0)
+                if (length == 0)
                     return 0;
 
                 // If the 0th child is not the right kind, report an error at 0
-                if (children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart)
+                if (children[offset].uri != fFirstChild.uri && 
+                    children[offset].localpart != fFirstChild.localpart)
                     return 0;
 
                 // If more than one child, report an error at index 1
-                if (childCount > 1)
+                if (length > 1)
                     return 1;
                 break;
 
@@ -199,15 +200,16 @@ public class SimpleContentModel
                 //  If there is one child, make sure its the right type. If not,
                 //  then its an error at index 0.
                 //
-                if (childCount == 1 && 
-                    (children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart))
+                if (length == 1 && 
+                    (children[offset].uri != fFirstChild.uri && 
+                     children[offset].localpart != fFirstChild.localpart))
                     return 0;
 
                 //
                 //  If the child count is greater than one, then obviously
                 //  bad, so report an error at index 1.
                 //
-                if (childCount > 1)
+                if (length > 1)
                     return 1;
                 break;
 
@@ -218,11 +220,12 @@ public class SimpleContentModel
                 //  type that we stored. If not, report the index of the first
                 //  failed one.
                 //
-                if (childCount > 0)
+                if (length > 0)
                 {
-                    for (int index = 0; index < childCount; index++)
+                    for (int index = 0; index < length; index++)
                     {
-                        if (children[index].uri != fFirstChild.uri && children[index].localpart != fFirstChild.localpart)
+                        if (children[offset + index].uri != fFirstChild.uri && 
+                            children[offset + index].localpart != fFirstChild.localpart)
                             return index;
                     }
                 }
@@ -233,7 +236,7 @@ public class SimpleContentModel
                 //  If the child count is zero, that's an error so report
                 //  an error at index 0.
                 //
-                if (childCount == 0)
+                if (length == 0)
                     return 0;
 
                 //
@@ -241,9 +244,10 @@ public class SimpleContentModel
                 //  are of the correct child type. If not, then report the index
                 //  of the first one that is not.
                 //
-                for (int index = 0; index < childCount; index++)
+                for (int index = 0; index < length; index++)
                 {
-                    if (children[index].uri != fFirstChild.uri && children[index].localpart != fFirstChild.localpart)
+                    if (children[offset + index].uri != fFirstChild.uri && 
+                        children[offset + index].localpart != fFirstChild.localpart)
                         return index;
                 }
                 break;
@@ -253,16 +257,16 @@ public class SimpleContentModel
                 //  There must be one and only one child, so if the element count
                 //  is zero, return an error at index 0.
                 //
-                if (childCount == 0)
+                if (length == 0)
                     return 0;
 
                 // If the zeroth element isn't one of our choices, error at 0
-                if ((children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart) &&
-                    (children[0].uri != fSecondChild.uri && children[0].localpart != fSecondChild.localpart))
+                if ((children[offset].uri != fFirstChild.uri && children[offset].localpart != fFirstChild.localpart) &&
+                    (children[offset].uri != fSecondChild.uri && children[offset].localpart != fSecondChild.localpart))
                     return 0;
 
                 // If there is more than one element, then an error at 1
-                if (childCount > 1)
+                if (length > 1)
                     return 1;
                 break;
 
@@ -271,19 +275,19 @@ public class SimpleContentModel
                 //  There must be two children and they must be the two values
                 //  we stored, in the stored order.
                 //
-                if (childCount == 2) {
-                    if (children[0].uri != fFirstChild.uri && children[0].localpart != fFirstChild.localpart)
+                if (length == 2) {
+                    if (children[offset].uri != fFirstChild.uri && children[offset].localpart != fFirstChild.localpart)
                         return 0;
 
-                    if (children[1].uri != fSecondChild.uri && children[1].localpart != fSecondChild.localpart)
+                    if (children[offset + 1].uri != fSecondChild.uri && children[offset + 1].localpart != fSecondChild.localpart)
                         return 1;
                 }
                 else {
-                    if (childCount > 2) {
+                    if (length > 2) {
                         return 2;
                     }
 
-                    return childCount;
+                    return length;
                 }
 
                 break;
@@ -341,7 +345,7 @@ public class SimpleContentModel
         //  Check the validity of the existing contents. If this is less than
         //  the insert at point, then return failure index right now
         //
-        final int failedIndex = validateContent(info.childCount, info.curChildren);
+        final int failedIndex = validateContent(info.curChildren, 0, info.childCount);
         if ((failedIndex != -1) && (failedIndex < info.insertAt))
             return failedIndex;
 

@@ -145,11 +145,12 @@ public class MixedContentModel
      * zero, since some elements have the EMPTY content model and that must be 
      * confirmed.
      *
-     * @param childCount The number of entries in the <code>children</code> array.
      * @param children The children of this element.  Each integer is an index within
      *                 the <code>StringPool</code> of the child element name.  An index
      *                 of -1 is used to indicate an occurrence of non-whitespace character
      *                 data.
+     * @param offset Offset into the array where the children starts.
+     * @param length The number of entries in the <code>children</code> array.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
      *         that first failed. If the value returned is equal to the number
@@ -158,23 +159,23 @@ public class MixedContentModel
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, QName children[]) 
+    public int validateContent(QName children[], int offset, int length) 
         throws Exception {
         
         // must match order
         if (fOrdered) {
             int inIndex = 0;
-            for (int outIndex = 0; outIndex < childCount; outIndex++) {
+            for (int outIndex = 0; outIndex < length; outIndex++) {
 
                 // ignore mixed text
-                final QName curChild = children[outIndex];
+                final QName curChild = children[offset + outIndex];
                 if (curChild.localpart == -1) {
                     continue;
                 }
 
                 // element must match
-                if (fChildren[inIndex].uri != children[outIndex].uri &&
-                    fChildren[inIndex].localpart != children[outIndex].localpart) {
+                if (fChildren[inIndex].uri != children[offset + outIndex].uri &&
+                    fChildren[inIndex].localpart != children[offset + outIndex].localpart) {
                     return outIndex;
                 }
                 
@@ -185,10 +186,10 @@ public class MixedContentModel
 
         // can appear in any order
         else {
-            for (int outIndex = 0; outIndex < childCount; outIndex++)
+            for (int outIndex = 0; outIndex < length; outIndex++)
             {
                 // Get the current child out of the source index
-                final QName curChild = children[outIndex];
+                final QName curChild = children[offset + outIndex];
     
                 // If its PCDATA, then we just accept that
                 if (curChild.localpart == -1)
@@ -258,7 +259,7 @@ public class MixedContentModel
         //  Check the validity of the existing contents. If this is less than
         //  the insert at point, then return failure index right now
         //
-        final int failedIndex = validateContent(info.childCount, info.curChildren);
+        final int failedIndex = validateContent(info.curChildren, 0, info.childCount);
         if ((failedIndex != -1) && (failedIndex < info.insertAt))
             return failedIndex;
 

@@ -91,11 +91,12 @@ public interface XMLContentModel {
      * zero, since some elements have the EMPTY content model and that must be 
      * confirmed.
      *
-     * @param childCount The number of entries in the <code>children</code> array.
      * @param children The children of this element.  Each integer is an index within
      *                 the <code>StringPool</code> of the child element name.  An index
      *                 of -1 is used to indicate an occurrence of non-whitespace character
      *                 data.
+     * @param offset Offset into the array where the children starts.
+     * @param length The number of entries in the <code>children</code> array.
      *
      * @return The value -1 if fully valid, else the 0 based index of the child
      *         that first failed. If the value returned is equal to the number
@@ -104,8 +105,7 @@ public interface XMLContentModel {
      *
      * @exception Exception Thrown on error.
      */
-    public int validateContent(int childCount, 
-                               QName children[]) throws Exception;
+    public int validateContent(QName children[], int offset, int length) throws Exception;
 
     /**
      * Returns information about which elements can be placed at a particular point
