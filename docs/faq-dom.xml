@@ -33,9 +33,11 @@
       
     </a>
   </faq>
+
   <faq title="Accessing the DOM Level 3 API">
     <q>How do I access the DOM Level 3 functionality?</q>
-    <a> <p>
+    <a>    <anchor name="dom3"/>
+    <p>
 	The DOM Level 3 functionality is not exposed in the regular 
 	Xerces distribution.
 	To get access to the DOM Level 3, extract source code from CVS and 
@@ -65,7 +67,8 @@
       <p>  
 	The following source code shows how to create the parser with JAXP:
       </p>
-      <source>import java.io.IOException;
+      <source>
+    import java.io.IOException;
 	import javax.xml.parsers.DocumentBuilder;
 	import javax.xml.parsers.DocumentBuilderFactory;
 	import javax.xml.parsers.FactoryConfigurationError;
@@ -93,7 +96,7 @@
 	catch (IOException e) {
 	// i/o error
 	}</source>
-
+    <anchor name="domparser"/>
       <p>  
 	The following source code shows how to create the parser using <jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>:
       </p>
@@ -146,8 +149,6 @@
 	new FileWriter("output.xml"), format);
 	serializer.asDOMSerializer();
 	serializer.serialize(document);
-
-
       </source>
       <p>You can also serialize a DOM tree by using the DOM Level 3 Load and Save. 
 	<code>DOMWriter</code> performs automatic namespace fixup to make your document namespace
@@ -178,45 +179,75 @@
 
 
   <faq title="Revalidation of DOM document in Memory">
-    <q>How can I make sure that my DOM document in memory conforms to a schema?</q>
-    <a>
-      <p>
-	DOM revalidation is supported via W3C DOM Level 3 Core 
-	<code>Document.normalizeDocument()</code>.
-      </p> 
-      <note>This release only supports revalidation against XML Schemas. 
-	Revalidation against DTDs or any other schema type is not implemented.</note>
-      
-      <p>To revalidate the document you need:</p>
-      <ul>
-	<li>Build DOM Level 3 Xerces jars
-	  (see <em>How do I access the DOM Level 3 functionality</em>).</li>
-	<li>Create the DOMBuilder (see <em>Creating DOM parser</em>) 
-	  or use DOM methods to create a tree in memory.</li>
-	<li>Set <em>validate</em> feature using <code>setNormalizationFeature</code>
-	  method.</li>
-	<li>Make sure your document has <em>xsi:schemaLocation</em> or 
-	  <em>xsi:noSchemaLocation</em> 
-	  attributes at the document root that specify the location of schema(s) 
-	  against which validation should occur.</li>
-        <li>The <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-documentURI">documentURI</jump> must be set. Locations of the schema documents
-	  will be resolved relative to the <code>documentURI</code>.</li>
-      </ul>
-      <source>
-	import  org.w3c.dom.Document;
-	import  org.w3c.dom.ls.DOMBuilder;
+  	<q>How can I make sure that my DOM document in memory conforms to a schema?</q>
+  	<a>
+  		<p>
+  			DOM revalidation is supported via W3C DOM Level 3 Core
+  			<em>Document.normalizeDocument()</em>.
+  			.
+  		</p>
+  		<note>This release only supports revalidation against XML Schemas. Revalidation against DTDs or any other schema type is not implemented.</note>
 
-	.....
-	Document document = builder.parseURI("data/personal.xml");
-	document.setErrorHandler(new MyErrorHandler());
-	document.setNormalizationFeature("validate", true);
-	document.normalizeDocument();
+  		<p>To revalidate the document you need:</p>
+  		<ul>
+  			<li>
+  				<jump href="#dom3">Build</jump> DOM Level 3 Xerces jars.  			
+  		    </li>
+  			<li>
+  				<jump href="#domparser">Create</jump> the DOMBuilder.
+  			</li>
+  			<li>
+  				Set <em>validate</em> feature using <code>setNormalizationFeature</code>
+  				method.
+  			</li>
+  			<li>
+  				Make sure your document has <em>xsi:schemaLocation</em>
+  				or
+  				<em>xsi:noSchemaLocation</em> attributes at the document root that 
+  				specify the location of schema(s) against which validation should occur.
+  			</li>
+  			<li>
+  				The
+  				<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-documentURI">documentURI</jump>
+  				must be set. Locations of the schema documents will be resolved relative to the
+  				<code>documentURI</code>
+  				.
+  			</li>
+  		</ul>
+  		<p>
+  			<strong>Note:</strong> if a document contains any DOM Level 1 nodes (the nodes created using createElement, 
+  			createAttribute, etc.) the fatal error will occur as described in the 
+  			<jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/namespaces-algorithms.html'>Namespace Normalization</jump>
+  			algorithm.
+  			In general, the
+  			<jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#Namespaces-Considerations'>DOM specification</jump>
+  			discourages using DOM Level 1 nodes in the namespace aware application:
+  		</p>
+  		<p><em>DOM Level 1 methods are namespace ignorant. Therefore, while it is safe to use these methods when not 
+  		dealing with namespaces, using them and the new ones at the same time should be avoided. DOM Level 1 methods 
+  		solely identify attribute nodes by their nodeName. On the contrary, the DOM Level 2 methods related to namespaces, 
+  		identify attribute nodes by their namespaceURI and localName. Because of this fundamental difference, mixing both 
+  		sets of methods can lead to unpredictable results.</em></p>
+ 
+  		<source>
+import org.w3c.dom.Document; 
+import org.w3c.dom.ls.DOMBuilder;
 
-	
-      </source>
+..... 
 
-      <p>For more information, please refer to the <link idref='dom3'>DOM Level 3 Implementation</link> page.</p>
-    </a>
+Document document =
+builder.parseURI("data/personal.xml");
+document.setErrorHandler(new MyErrorHandler());
+document.setNormalizationFeature("validate", true);
+document.normalizeDocument();
+  		</source>
+
+  		<p>
+  			For more information, please refer to the
+  			<link idref='dom3'>DOM Level 3 Implementation</link>
+  			page.
+  		</p>
+  	</a>
   </faq>
 
   <faq title='Handling Errors in DOM'>
@@ -232,7 +263,8 @@
 	You can register an error handler on a <code>DocumentBuilder</code>
 	created using JAXP like this:
       </p>
-      <source>import javax.xml.parsers.DocumentBuilder;
+      <source>
+    import javax.xml.parsers.DocumentBuilder;
 	import org.xml.sax.ErrorHandler;
 	import org.xml.sax.SAXException;
 	import org.xml.sax.SAXParseException;
