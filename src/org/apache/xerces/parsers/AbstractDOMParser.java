@@ -78,6 +78,7 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 
@@ -373,8 +374,11 @@ public abstract class AbstractDOMParser
 
         fCreateCDATANodes = fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE);
 
-        fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
-        
+        try {
+            fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
+        } catch (XMLConfigurationException x) {
+            fNormalizeData = false;
+        }
 
         // get property
         setDocumentClassName((String)
