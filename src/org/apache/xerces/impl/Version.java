@@ -79,7 +79,7 @@ public class Version {
     /* Print out the version information.
      * @return the version of the parser.
      */
-    public String getVersion() {
+    public static String getVersion() {
         return fImmutableVersion;
     } // getVersion():  String
 
