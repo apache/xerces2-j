@@ -154,6 +154,7 @@ public class WrappedOutputStream
         fBuffer[fPosition++] = (byte)b;
         if (fPosition == fBuffer.length) {
             fPosition = 0;
+            fDataOutputStream.writeShort(fBuffer.length);
             write(fBuffer, 0, fBuffer.length);
         }
     } // write(int)
@@ -161,6 +162,11 @@ public class WrappedOutputStream
     /** Writes an array of bytes to the output. */
     public void write(byte[] b, int offset, int length) 
         throws IOException {
+
+        // flush existing buffer
+        if (fPosition > 0) {
+            flush0();
+        }
 
         // write header followed by actual bytes
         fDataOutputStream.writeShort(length);
@@ -205,6 +211,7 @@ public class WrappedOutputStream
         int length = fPosition;
         fPosition = 0;
         if (length > 0) {
+            fDataOutputStream.writeShort(length);
             super.out.write(fBuffer, 0, length);
         }
     } // flush0()
