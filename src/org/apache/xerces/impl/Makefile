@@ -13,7 +13,7 @@ TARGETS=\
         XMLScanner.class\
         XMLValidator.class
 
-DIRS = msg validation
+DIRS = msg validation io
 
 TOP = ../../../../..
 include $(TOP)/src/Makefile.incl
