@@ -51,7 +51,7 @@ catch (IOException e) {
 
 
  <faq title='Handling Errors'>
-  <q>How do handle errors?</q>
+  <q>How do I handle errors?</q>
   <a>
    <p>
     You should register an error handler with the parser by supplying
@@ -198,7 +198,9 @@ parser.getXMLReader().setErrorHandler(handler);</source>
     process of reading DTD's more efficient:
    </p>
    <ul>
-    <li>First, have a look at the grammar caching/preparsing FAQ:</li>
+    <li>First, have a look at 
+        <link idref="faq-grammars">the grammar caching/preparsing FAQ</link>
+    </li>
     <li>keep your DTD and DTD references local</li>
     <li>use internal DTD subsets, if possible</li>
     <li>load files from server to local client before parsing</li>
@@ -256,6 +258,39 @@ void pullParse(XMLInputSource input) throws Exception {
      parsing the document. The application can stop the parsing by
      setting this flag to false.
     </p>
+  </a>
+ </faq>
+ <faq title='Getting More Information for Your Entity Resolver'>
+  <q>
+    I would like to know more about the kind of entity my XMLEntityResolver's
+    been asked to resolve.  How can I go about convincing Xerces to tell me more?
+  </q>
+  <a>
+    <p>
+        XNI only guarantees that you'll receive an XMLResourceIdentifier object 
+        during an XMLEntityResolver#resolveEntity callback.
+        Nonetheless, the xni.grammars package has a number of
+        interfaces which extend XMLResourceIdentifier that can
+        provide considerably more information.
+    </p>
+    <p>
+        To take advantage of this, you'll first need to see
+        whether the object you've been passed is an instance of
+        the
+        <code>org.apache.xerces.xni.grammars.XMLGrammarDescription</code>
+        interface.  This interface contains a method called
+        <code>getGrammarType</code> which can tell you what kind
+        of grammar is involved (for the moment, XML Schema and
+        DTD's are all that's supported).  Once you know the type
+        of grammar, you can cast once again to either
+        <code>org.apache.xerces.xni.grammars.XMLDTDDescription</code>
+        or
+        <code>org.apache.xerces.xni.grammars.XMLSchemaDescription</code>
+        which contain a wealth of information specific to these
+        types of grammars.  The javadocs for these interfaces
+        should provide sufficient information for you to know
+        what their various methods return.
+    </p> 
   </a>
  </faq>
  <!--
