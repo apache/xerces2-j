@@ -61,11 +61,11 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.impl.validation.DatatypeValidator;
 
-//import org.apache.xerces.validators.datatype.StateMessageDatatype;
+import org.apache.xerces.impl.validation.XMLEntityDecl;
+import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
 import org.apache.xerces.impl.validation.datatypes.regex.RegularExpression;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
@@ -73,7 +73,7 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 
 
 /**
- * ENTITYDatatypeValidator implements the
+ * <P>ENTITYDatatypeValidator implements the
  * DatattypeValidator interface.
  * This validator embodies the ENTITY attribute type
  * from XML1.0 recommendation.
@@ -84,146 +84,113 @@ import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
  * The Lexical space of Entity is the set of all
  * strings that match the NCName production.
  * The value space of ENTITY is scoped to a specific
- * instance document.
- * 
- * Some caveats:
- * 
- * Because of the Xerces Architecture, where all
- * symbols are stored in a SymbolTable and Strings
- * are referenced by int then this datatype needs
- * to know about SymbolTable.
- * The first time that this datatype is invoked
- * we pass a message containing 2 references needed
- * by this validator:
- * - a reference to the DefaultEntityHandler  used
- * by the XMLValidator.
- * - a reference to the SymbolTable.
- * 
- * 
- * This validator extends also the XML1.0 validation
- * provided in DTD by providing "only on Schemas"
- * facet validation.
- * This validator also embodies the Derived datatype
- * ENTITIES which is an ENTITY derived by list.
- * 
- * These validators can be supplied by the application writer and may be useful as
- * standalone code as well as plugins to the validator architecture.
+ * instance document.</P>
+ * <P>This is a statefull datatype validator and it
+ * needs access to a valid Grammar structure to being 
+ * able to validate entities.</P>
  * 
  * @author Jeffrey Rodriguez-
  * @version $Id$
- * @see org.apache.xerces.validators.datatype.DatatypeValidator
- * @see org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl
- * @see org.apache.xerces.validators.datatype.DatatypeValidatorFactory
- * @see org.apache.xerces.validators.common.XMLValidator
+ * @see org.apache.xerces.impl.validation.Grammar
+ * @see org.apache.xerces.impl.validation.grammars.DTDGrammar
+ * @see org.apache.xerces.impl.validation.grammars.SchemaGrammar
  */
 public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator        fBaseValidator    = null;
-    //private DefaultEntityHandler     fEntityHandler    = null;
-    private SymbolTable              fSymbolTable       = null;
+   private DatatypeValidator        fBaseValidator    = null;
+   private Grammar                  fGrammar          = null;
+   private XMLEntityDecl            fEntityDecl       = new XMLEntityDecl();
 
-    public  static final int         ENTITY_INITIALIZE = 0;
+   public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
+      this( null, null, false ); // Native, No Facets defined, Restriction
+   }
 
-
-    public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
-    }
-
-    public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-                                     boolean derivedByList  ) throws InvalidDatatypeFacetException {
-
-        setBasetype( base ); // Set base type
-    }
+   public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
+                                    boolean derivedByList  ) throws InvalidDatatypeFacetException {
+      setBasetype( base ); // Set base type
+   }
 
 
-    /**
-     * Checks that "content" string is valid 
-     * datatype.
-     * If invalid a Datatype validation exception is thrown.
-     * 
-     * @param content A string containing the content to be validated
-     * @param derivedBylist
-     *                Flag which is true when type
-     *                is derived by list otherwise it
-     *                it is derived by extension.
-     *                
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
-     */
-    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
-        /*
+   /**
+    * Checks that "content" string is valid 
+    * datatype.
+    * If invalid a Datatype validation exception is thrown.
+    * 
+    * @param content A string containing the content to be validated
+    *                
+    * @exception throws InvalidDatatypeException if the content is
+    *                   invalid according to the rules for the validators
+    * @exception InvalidDatatypeValueException
+    * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+    */
+   public void validate(String content, Object state ) throws InvalidDatatypeValueException{
+      int entityDeclIndex = -1;
+      if ( fGrammar == null ) {
+         InvalidDatatypeValueException error = 
+         new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Need to call initialize method with a valid Grammar reference" );//Need Message
+         throw error;
+      }
 
-        StateMessageDatatype message = (StateMessageDatatype) state;
-        int                  attValueHandle;
+      fEntityDecl.clear();//Reset Entity Decl struct
 
+      entityDeclIndex = fGrammar.getEntityDeclIndex( content );
 
-        if ( message!= null && message.getDatatypeState() == ENTITYDatatypeValidator.ENTITY_INITIALIZE ){
-            Object[]   unpackMessage = (Object[] ) message.getDatatypeObject();
+      if ( entityDeclIndex == -1 ) {
+         fGrammar.getEntityDecl( entityDeclIndex, fEntityDecl );
+         if ( fEntityDecl.notation != null ) {// not unparsed entity
+            InvalidDatatypeValueException error = 
+            new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not unparsed" );
+            throw error;
+         }
+      } else {
+         InvalidDatatypeValueException error = 
+         new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );
+         throw error;
+      }
+   }
 
+   /**
+    * <P>Initializes internal Grammar reference
+    * This method is unique to ENTITYDatatypeValidator.</P>
+    * <P>This method should  be called before calling the
+    * validate method</P>
+    * 
+    * @param grammar
+    */
+   public void initialize( Grammar grammar ){
+      fGrammar = grammar;
+   }
 
-            this.fEntityHandler      = (DefaultEntityHandler) unpackMessage[0];
-            this.SymbolTable        = (SymbolTable) unpackMessage[1];
-        } else {
+   /**
+    * REVISIT
+    * Compares two Datatype for order
+    * 
+    * @return 
+    */
+   public int compare( String  content1, String content2){
+      return -1;
+   }
 
+   public Hashtable getFacets(){
+      return null;
+   }
 
-            if ( this.fEntityHandler == null ) {
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization DefaultEntityHandler is null" );//Need Message
-                throw error;
-            }
-            if ( this.fStringPool == null ) {
-                InvalidDatatypeValueException error = 
-                new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization StrinPool is null" );//Need Message
-                throw error;
-            }
+   // Private methods start here
 
-
-
-                attValueHandle = this.SymbolTable.addSymbol( content );
-                if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
-                    InvalidDatatypeValueException error = 
-                    new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
-                    error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
-                    error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
-                    throw error;
-                }
-           
-        }
-        */
-    }
-
-    /**
-     * REVISIT
-     * Compares two Datatype for order
-     * 
-     * @return 
-     */
-    public int compare( String  content1, String content2){
-        return -1;
-    }
-
-    public Hashtable getFacets(){
-        return null;
-    }
-
-    // Private methods start here
-
-    /**
-       * Returns a copy of this object.
-       */
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
-    }
+   /**
+      * Returns a copy of this object.
+      */
+   public Object clone() throws CloneNotSupportedException {
+      throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
+   }
 
 
-    /**
-     * 
-     * @param base   the validator for this type's base type
-     */
-    private void setBasetype(DatatypeValidator base){
-        fBaseValidator = base;
-    }
+   /**
+    * 
+    * @param base   the validator for this type's base type
+    */
+   private void setBasetype(DatatypeValidator base){
+      fBaseValidator = base;
+   }
 
 
 

@@ -65,6 +65,7 @@ import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 import org.apache.xerces.impl.validation.grammars.SchemaSymbols;
+import org.apache.xerces.impl.validation.Grammar;
 
 
 
@@ -464,9 +465,17 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
             ex.printStackTrace();
          }
       }
-
-
-
+     Grammar grammar             = new Grammar();
+     if( grammar != null ){
+        ENTITYDatatypeValidator entityValidator
+                 = (ENTITYDatatypeValidator) tstRegistry.getDatatypeValidator("ENTITY");
+        entityValidator.initialize( grammar );
+        try {
+           entityValidator.validate( "a1", null );//Should throw exception
+        } catch( Exception ex ){
+           ex.printStackTrace();
+        }
+     }
 
    }
 
