@@ -79,61 +79,41 @@ public abstract class SchemaDVFactory {
 
     private static final String DEFAULT_FACTORY_CLASS = "org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl";
 
-    private static String          fFactoryClass    = null;
-    private static SchemaDVFactory fFactoryInstance = null;
-
     /**
-     * Set the class name of the schema dv factory implementation. This method
-     * can only be called before the first time the method <code>getInstance</code>
-     * successfully returns, otherwise a DVFactoryException will be thrown.
-     *
-     * @param className  the class name of the SchemaDVFactory implementation
-     * @exception DVFactoryException  the method cannot be called at this time
-     */
-    public static synchronized final void setFactoryClass(String factoryClass) throws DVFactoryException {
-        // if the factory instance has been created, it's an error.
-        if (fFactoryInstance != null)
-            throw new DVFactoryException("Cannot set the class name now. The class name '"+fFactoryClass+"' is already used.");
-
-        fFactoryClass = factoryClass;
-    }
-
-    /**
-     * Get an instance of SchemaDVFactory implementation.
-     *
-     * If <code>setFactoryClass</code> is called before this method,
-     * the passed-in class name will be used to create the factory instance.
-     * Otherwise, a default implementation is used.
-     *
-     * After the first time this method successfully returns, any subsequent
-     * invocation to this method returns the same instance.
+     * Get a default instance of SchemaDVFactory implementation.
      *
      * @return  an instance of SchemaDVFactory implementation
      * @exception DVFactoryException  cannot create an instance of the specified
      *                                class name or the default class name
      */
     public static synchronized final SchemaDVFactory getInstance() throws DVFactoryException {
-        // if the factory instance has been created, just return it.
-        if (fFactoryInstance != null)
-            return fFactoryInstance;
+        return getInstance(DEFAULT_FACTORY_CLASS);
+    } //getInstance():  SchemaDVFactory
+
+
+    /**
+     * Get an instance of SchemaDVFactory implementation.
+     *
+     * @param factoryClass   name of the schema factory implementation to instantiate.
+     * @return  an instance of SchemaDVFactory implementation
+     * @exception DVFactoryException  cannot create an instance of the specified
+     *                                class name or the default class name
+     */
+    public static synchronized final SchemaDVFactory getInstance(String factoryClass) throws DVFactoryException {
 
         try {
             // if the class name is not specified, use the default one
-            if (fFactoryClass == null)
-                fFactoryClass = DEFAULT_FACTORY_CLASS;
-            fFactoryInstance = (SchemaDVFactory)(Class.forName(fFactoryClass).newInstance());
+            return (SchemaDVFactory)(Class.forName( factoryClass).newInstance());
         } catch (ClassNotFoundException e1) {
-            throw new DVFactoryException("Schema factory class " + fFactoryClass + " not found.");
+            throw new DVFactoryException("Schema factory class " + factoryClass + " not found.");
         } catch (IllegalAccessException e2) {
-            throw new DVFactoryException("Schema factory class " + fFactoryClass + " found but cannot be loaded.");
+            throw new DVFactoryException("Schema factory class " + factoryClass + " found but cannot be loaded.");
         } catch (InstantiationException e3) {
-            throw new DVFactoryException("Schema factory class " + fFactoryClass + " loaded but cannot be instantiated (no empty public constructor?).");
+            throw new DVFactoryException("Schema factory class " + factoryClass + " loaded but cannot be instantiated (no empty public constructor?).");
         } catch (ClassCastException e4) {
-            throw new DVFactoryException("Schema factory class " + fFactoryClass + " does not extend from SchemaDVFactory.");
+            throw new DVFactoryException("Schema factory class " + factoryClass + " does not extend from SchemaDVFactory.");
         }
 
-        // return the newly created dv factory instance
-        return fFactoryInstance;
     }
 
     // can't create a new object of this class

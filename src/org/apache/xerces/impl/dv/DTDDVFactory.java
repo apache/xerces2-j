@@ -72,61 +72,39 @@ public abstract class DTDDVFactory {
 
     private static final String DEFAULT_FACTORY_CLASS = "org.apache.xerces.impl.dv.dtd.DTDDVFactoryImpl";
 
-    private static String       fFactoryClass    = null;
-    private static DTDDVFactory fFactoryInstance = null;
-
     /**
-     * Set the class name of the dtd factory implementation. This method
-     * can only be called before the first time the method <code>getInstance</code>
-     * successfully returns, otherwise a DVFactoryException will be thrown.
-     *
-     * @param className  the class name of the DTDDVFactory implementation
-     * @exception DVFactoryException  the method cannot be called at this time
-     */
-    public static synchronized final void setFactoryClass(String factoryClass) throws DVFactoryException {
-        // if the factory instance has been created, it's an error.
-        if (fFactoryInstance != null)
-            throw new DVFactoryException("Cannot set the class name now. The class name '"+fFactoryClass+"' is already used.");
-
-        fFactoryClass = factoryClass;
-    }
-
-    /**
-     * Get an instance of DTDDVFactory implementation.
-     *
-     * If <code>setFactoryClass</code> is called before this method,
-     * the passed-in class name will be used to create the factory instance.
-     * Otherwise, a default implementation is used.
-     *
-     * After the first time this method successfully returns, any subsequent
-     * invocation to this method returns the same instance.
+     * Get an instance of the default DTDDVFactory implementation.
      *
      * @return  an instance of DTDDVFactory implementation
      * @exception DVFactoryException  cannot create an instance of the specified
      *                                class name or the default class name
      */
     public static synchronized final DTDDVFactory getInstance() throws DVFactoryException {
-        // if the factory instance has been created, just return it.
-        if (fFactoryInstance != null)
-            return fFactoryInstance;
+        return getInstance(DEFAULT_FACTORY_CLASS);
+    }
+
+    /**
+     * Get an instance of DTDDVFactory implementation.
+     *
+     * @param factoryClass  name of the implementation to load.
+     * @return  an instance of DTDDVFactory implementation
+     * @exception DVFactoryException  cannot create an instance of the specified
+     *                                class name or the default class name
+     */
+    public static synchronized final DTDDVFactory getInstance(String factoryClass) throws DVFactoryException {
 
         try {
             // if the class name is not specified, use the default one
-            if (fFactoryClass == null)
-                fFactoryClass = DEFAULT_FACTORY_CLASS;
-            fFactoryInstance = (DTDDVFactory)(Class.forName(fFactoryClass).newInstance());
+            return (DTDDVFactory)(Class.forName(factoryClass).newInstance());
         } catch (ClassNotFoundException e1) {
-            throw new DVFactoryException("DTD factory class " + fFactoryClass + " not found.");
+            throw new DVFactoryException("DTD factory class " + factoryClass + " not found.");
         } catch (IllegalAccessException e2) {
-            throw new DVFactoryException("DTD factory class " + fFactoryClass + " found but cannot be loaded.");
+            throw new DVFactoryException("DTD factory class " + factoryClass + " found but cannot be loaded.");
         } catch (InstantiationException e3) {
-            throw new DVFactoryException("DTD factory class " + fFactoryClass + " loaded but cannot be instantiated (no empty public constructor?).");
+            throw new DVFactoryException("DTD factory class " + factoryClass + " loaded but cannot be instantiated (no empty public constructor?).");
         } catch (ClassCastException e4) {
-            throw new DVFactoryException("DTD factory class " + fFactoryClass + " does not extend from DTDDVFactory.");
+            throw new DVFactoryException("DTD factory class " + factoryClass + " does not extend from DTDDVFactory.");
         }
-
-        // return the newly created dv factory instance
-        return fFactoryInstance;
     }
 
     // can't create a new object of this class
