@@ -719,6 +719,10 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 	}
 	
 	protected void append(StringBuffer message, int value, int nch) {
+        if (value == Integer.MIN_VALUE) {
+            message.append(value);
+            return;
+        }
 		if (value < 0) {
 			message.append('-');
 			value = -value;
