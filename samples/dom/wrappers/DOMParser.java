@@ -57,6 +57,7 @@
 
 package dom.wrappers;
 
+import dom.Features;
 import dom.DOMParserWrapper;
 
 import org.w3c.dom.Document;
@@ -70,7 +71,20 @@ import org.xml.sax.SAXParseException;
  *
  * @version
  */
-public class DOMParser extends NonValidatingDOMParser {
+public class DOMParser 
+    implements DOMParserWrapper, ErrorHandler {
+
+    //
+    // Data
+    //
+
+    Features feature = null;
+
+
+    /** Parser. */
+    org.apache.xerces.parsers.DOMParser parser = 
+        new org.apache.xerces.parsers.DOMParser();
+
     //
     // Constructors
     //
@@ -87,5 +101,84 @@ public class DOMParser extends NonValidatingDOMParser {
         parser.setErrorHandler(this);
 
     }
+
+    //
+    // DOMParserWrapper methods
+    //
+
+    /** Parses the specified URI and returns the document. */
+    public Document parse(String uri) throws Exception {
+
+        try {
+            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+                             feature.isDeferredDOMSet() );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                             feature.isValidationSet());
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                             feature.isNamespaceSet() );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                             feature.isSchemasupportSet() );
+        } catch (SAXException e) {
+            System.out.println("error in setting up parser feature");
+        }
+
+        parser.parse(uri);
+        return parser.getDocument();
+
+    } // parse(String):Document
+
+    public void setFeatures(Features fea ) {
+        feature = fea;
+    }
+
+    //
+    // ErrorHandler methods
+    //
+
+    /** Warning. */
+    public void warning(SAXParseException ex) {
+        System.err.println("[Warning] "+
+                           getLocationString(ex)+": "+
+                           ex.getMessage());
+    }
+
+    /** Error. */
+    public void error(SAXParseException ex) {
+        System.err.println("[Error] "+
+                           getLocationString(ex)+": "+
+                           ex.getMessage());
+    }
+
+    /** Fatal error. */
+    public void fatalError(SAXParseException ex) throws SAXException {
+        System.err.println("[Fatal Error] "+
+                           getLocationString(ex)+": "+
+                           ex.getMessage());
+        throw ex;
+    }
+
+    //
+    // Private methods
+    //
+
+    /** Returns a string of the location. */
+    private String getLocationString(SAXParseException ex) {
+        StringBuffer str = new StringBuffer();
+
+        String systemId = ex.getSystemId();
+        if (systemId != null) {
+            int index = systemId.lastIndexOf('/');
+            if (index != -1) 
+                systemId = systemId.substring(index + 1);
+            str.append(systemId);
+        }
+        str.append(':');
+        str.append(ex.getLineNumber());
+        str.append(':');
+        str.append(ex.getColumnNumber());
+
+        return str.toString();
+
+    } // getLocationString(SAXParseException):String
 
 } // class DOMParser

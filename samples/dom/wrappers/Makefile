@@ -1,8 +1,7 @@
 # Makefile for directory ./dom/wrappers
 
 TARGETS=\
-	DOMParser.class\
-	NonValidatingDOMParser.class
+	DOMParser.class
 
 DIRS = 
 
