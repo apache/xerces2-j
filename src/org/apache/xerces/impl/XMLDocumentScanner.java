@@ -193,8 +193,8 @@ public class XMLDocumentScanner
     /** Entity stack. */
     protected int[] fEntityStack = new int[4];
 
-    /** True if we started some markup. */
-    protected boolean fInMarkup;
+    /** Markup depth. */
+    protected int fMarkupDepth;
 
     /** Scanner state. */
     protected int fScannerState;
@@ -209,9 +209,6 @@ public class XMLDocumentScanner
     protected boolean fScanningDTD;
 
     // element information
-
-    /** Element depth. */
-    protected int fElementDepth;
 
     /** Current element. */
     protected QName fCurrentElement;
@@ -332,8 +329,7 @@ public class XMLDocumentScanner
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
 
         // initialize vars
-        fInMarkup = false;
-        fElementDepth = 0;
+        fMarkupDepth = 0;
         fCurrentElement = null;
         fElementStack.clear();
         fSeenDoctypeDecl = false;
@@ -429,7 +425,7 @@ public class XMLDocumentScanner
             System.arraycopy(fEntityStack, 0, entityarray, 0, fEntityStack.length);
             fEntityStack = entityarray;
         }
-        fEntityStack[fEntityDepth] = fElementDepth;
+        fEntityStack[fEntityDepth] = fMarkupDepth;
 
         super.startEntity(name, publicId, systemId, encoding);
 
@@ -464,17 +460,9 @@ public class XMLDocumentScanner
 
         super.endEntity(name);
 
-        // make sure elements are balanced
         // make sure markup is properly balanced
-        if (fElementDepth != fEntityStack[fEntityDepth]) {
-            if (fInMarkup) {
-                fInMarkup = false;
-                reportFatalError("MarkupEntityMismatch", null);
-            }         
-            else  {
-                reportFatalError("ElementEntityMismatch",
-                                 new Object[]{fCurrentElement.rawname});
-            }
+        if (fMarkupDepth != fEntityStack[fEntityDepth]) {
+            reportFatalError("MarkupEntityMismatch", null);
         }
 
         // call handler
@@ -518,7 +506,7 @@ public class XMLDocumentScanner
 
         // scan decl
         super.scanXMLDeclOrTextDecl(scanningTextDecl, fStrings);
-        fInMarkup = false;
+        fMarkupDepth--;
 
         // pseudo-attribute values
         String version = fStrings[0];
@@ -558,7 +546,7 @@ public class XMLDocumentScanner
         throws IOException, SAXException {
 
         super.scanPIData(target, data);
-        fInMarkup = false;
+        fMarkupDepth--;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -579,7 +567,7 @@ public class XMLDocumentScanner
     protected void scanComment() throws IOException, SAXException {
 
         scanComment(fStringBuffer);
-        fInMarkup = false;
+        fMarkupDepth--;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -637,7 +625,7 @@ public class XMLDocumentScanner
         if (!fEntityScanner.skipChar('>')) {
             reportFatalError("DoctypedeclUnterminated", new Object[]{name});
         }
-        fInMarkup = false;
+        fMarkupDepth--;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -685,9 +673,6 @@ public class XMLDocumentScanner
         throws IOException, SAXException {
         if (DEBUG_CONTENT_SCANNING) System.out.println(">>> scanStartElement()");
 
-        // increase depth
-        fElementDepth++;
-
         // name
         if (fNamespaces) {
             fEntityScanner.scanQName(fElementQName);
@@ -720,7 +705,6 @@ public class XMLDocumentScanner
                     reportFatalError("ElementUnterminated",
                                      new Object[]{rawname});
                 }
-                fElementDepth--;
                 empty = true;
                 break;
             }
@@ -732,7 +716,6 @@ public class XMLDocumentScanner
             scanAttribute(fAttributes);
 
         } while (true);
-        fInMarkup = false;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -899,7 +882,7 @@ public class XMLDocumentScanner
                 }
             }
         }
-        fInMarkup = false;
+        fMarkupDepth--;
 
         // call handler
         if (fDocumentHandler != null) {
@@ -944,13 +927,7 @@ public class XMLDocumentScanner
             reportFatalError("ETagUnterminated",
                              new Object[]{fElementQName.rawname});
         }
-        fInMarkup = false;
-        fElementDepth--;
-        // check that this element was opened in the same entity
-        if (fElementDepth < fEntityStack[fEntityDepth - 1]) {
-            reportFatalError("ElementEntityMismatch",
-                             new Object[]{fCurrentElement.rawname});
-        }
+        fMarkupDepth--;
 
         // handle end element
         int depth = handleEndElement(fElementQName);
@@ -971,6 +948,7 @@ public class XMLDocumentScanner
 
         fStringBuffer2.clear();
         int ch = scanCharReferenceValue(fStringBuffer2);
+        fMarkupDepth--;
         if (ch != -1) {
             // call handler
             if (fDocumentHandler != null) {
@@ -999,7 +977,7 @@ public class XMLDocumentScanner
         if (!fEntityScanner.skipChar(';')) {
             reportFatalError("SemicolonRequiredInReference", null);
         }
-        fInMarkup = false;
+        fMarkupDepth--;
 
         // handle built-in entities
         if (name == fAmpSymbol) {
@@ -1061,6 +1039,12 @@ public class XMLDocumentScanner
      */
     protected int handleEndElement(QName element) throws SAXException {
 
+        fMarkupDepth--;
+        // check that this element was opened in the same entity
+        if (fMarkupDepth < fEntityStack[fEntityDepth - 1]) {
+            reportFatalError("ElementEntityMismatch",
+                             new Object[]{fCurrentElement.rawname});
+        }
         // make sure the elements match
         QName startElement = fQName;
         fElementStack.popElement(startElement);
@@ -1079,7 +1063,7 @@ public class XMLDocumentScanner
             fDocumentHandler.endElement(element);
         }
 
-        return fElementDepth;
+        return fMarkupDepth;
 
     } // callEndElement(QName):int
 
@@ -1318,7 +1302,7 @@ public class XMLDocumentScanner
             // scan XMLDecl
             try {
                 if (fEntityScanner.skipString("<?xml")) {
-                    fInMarkup = true;
+                    fMarkupDepth++;
                     // NOTE: special case where document starts with a PI
                     //       whose name starts with "xml" (e.g. "xmlfoo")
                     if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -1401,7 +1385,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
-                            fInMarkup = true;
+                            fMarkupDepth++;
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;
@@ -1529,13 +1513,11 @@ public class XMLDocumentScanner
                                 do {
                                     int c = scanContent();
                                     if (c == '<') {
-                                        fInMarkup = true;
                                         fEntityScanner.scanChar();
                                         setScannerState(SCANNER_STATE_START_OF_MARKUP);
                                         break;
                                     }
                                     else if (c == '&') {
-                                        fInMarkup = true;
                                         fEntityScanner.scanChar();
                                         setScannerState(SCANNER_STATE_REFERENCE);
                                         break;
@@ -1561,7 +1543,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
-                            fInMarkup = true;
+                            fMarkupDepth++;
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;
@@ -1621,7 +1603,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_REFERENCE: {
-                            fInMarkup = true;
+                            fMarkupDepth++;
                             // NOTE: We need to set the state beforehand
                             //       because the XMLEntityHandler#startEntity
                             //       callback could set the state to
@@ -1639,7 +1621,7 @@ public class XMLDocumentScanner
                         case SCANNER_STATE_TEXT_DECL: {
                             // scan text decl
                             if (fEntityScanner.skipString("<?xml")) {
-                                fInMarkup = true;
+                                fMarkupDepth++;
                                 // NOTE: special case where entity starts with a PI
                                 //       whose name starts with "xml" (e.g. "xmlfoo")
                                 if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -1735,7 +1717,7 @@ public class XMLDocumentScanner
                             break;
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
-                            fInMarkup = true;
+                            fMarkupDepth++;
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;
@@ -1796,7 +1778,7 @@ public class XMLDocumentScanner
                 // NOTE: This is the only place we're allowed to reach
                 //       the real end of the document stream. Unless the
                 //       end of file was reached prematurely.
-                if (fInMarkup) {
+                if (fMarkupDepth != 0) {
                     reportFatalError("PrematureEOF", null);
                     throw e;
                 }
