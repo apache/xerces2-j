@@ -234,16 +234,22 @@ public void docBuilder(org.w3c.dom.Document document, String name)
 	OK &= Assertion.assert(tests.DOMExceptionsTest(doc, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docEntity, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
 	OK &= Assertion.assert(tests.DOMExceptionsTest(doc, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docCDATASection, docFirstElement}, DOMException.HIERARCHY_REQUEST_ERR )); 
 
-	OK &= Assertion.assert(tests.DOMExceptionsTest(docFirstElement, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));	
-	OK &= Assertion.assert(tests.DOMExceptionsTest(docReferenceEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.assert(tests.DOMExceptionsTest(docEntity, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.assert(tests.DOMExceptionsTest(doc, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.assert(tests.DOMExceptionsTest(docDocType, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.assert(tests.DOMExceptionsTest(docDocFragment, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-	OK &= Assertion.assert(tests.DOMExceptionsTest(docNotation, "setNodeValue", new Class[]{String.class}, new Object[]{"This shouldn't work!" }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
+        docFirstElement.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(docFirstElement.getNodeValue() == null);
+        docReferenceEntity.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(docReferenceEntity.getNodeValue() == null);
+        docEntity.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(docEntity.getNodeValue() == null);
+        doc.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(doc.getNodeValue() == null);
+        docType.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(docType.getNodeValue() == null);
+        docDocFragment.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(docDocFragment.getNodeValue() == null);
+        docNotation.setNodeValue("This shouldn't do anything!");
+	OK &= Assertion.assert(docNotation.getNodeValue() == null);
+
 	OK &= Assertion.assert(tests.DOMExceptionsTest(docReferenceEntity, "appendChild", new Class[]{Node.class}, new Object[]{entityReferenceText2 }, DOMException.NO_MODIFICATION_ALLOWED_ERR ));
-
-
 	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "insertBefore", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docBody }, DOMException.NOT_FOUND_ERR ));
 	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "removeChild", new Class[]{Node.class}, new Object[]{docFirstElement}, DOMException.NOT_FOUND_ERR ));
 	OK &= Assertion.assert(tests.DOMExceptionsTest(docBodyLevel32, "replaceChild", new Class[]{Node.class, Node.class}, new Object[]{docTextNode11,docFirstElement }, DOMException.NOT_FOUND_ERR ));
@@ -478,7 +484,9 @@ public static void main(String args[]) {
 
 	Entity docEntity = test.createEntity( d, "ourEntityNode");
 	Text entityChildText = d.createTextNode("entityChildText information"); // Build a branch for entityReference tests
+        ((org.apache.xerces.dom.NodeImpl)docEntity).setReadOnly(false, true);
 	docEntity.appendChild(entityChildText);					  // & for READONLY_ERR tests
+        ((org.apache.xerces.dom.NodeImpl)docEntity).setReadOnly(true, true);
 	docDocType.getEntities().setNamedItem(docEntity);
 	
 	test.docBuilder(d, "d");
