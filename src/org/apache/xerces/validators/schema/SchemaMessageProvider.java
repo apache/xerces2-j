@@ -149,7 +149,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         DatatypeQualUnsupported = 13,
         GroupContentRestricted = 14,
         UnknownBaseDatatype = 15,
-        OneOfTypeRefArchRef = 16,
+        BadAttWithRef = 16,
         NoContentForRef = 17,
         IncorrectDefaultType = 18,
         IllegalAttContent = 19,
@@ -187,7 +187,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
         "GroupContentRestricted",       //  14, "Error: {0} content must be one of element, group, modelGroupRef.  Saw {1}"
         "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." },
-        "OneOfTypeRefArchRef",          //  16, "Can only have one of type, ref, and archRef attributes."},
+        "BadAttWithRef",          //  16, "ref cannot appear with any of type, abstract, block, final, nullable, default or fixed"},
         "NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"
         "IncorrectDefaultType",         //  18, "Incorrect type for {0}'s default value: {1}"
         "IllegalAttContent",            //  19, "Illegal content {0} in attribute group"

@@ -4310,8 +4310,10 @@ public class TraverseSchema implements
 	   		return null;
 		if (child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE))
 			return child;
-		if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
-			child = XUtil.getNextSiblingElement(child);
+			if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+   	 			traverseAnnotationDecl(child);
+				child = XUtil.getNextSiblingElement(child);
+			}
 	    	if (child == null)
 	   		return null;
 		if (child.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE) &&
@@ -4405,6 +4407,12 @@ public class TraverseSchema implements
         String fromAnotherSchema = null;
 
         if (isTopLevel(elementDecl)) {
+			if(name.equals(""))
+				// REVISIT:  localize
+                reportGenericSchemaError("globally-declared element must have a name");
+			else if (!ref.equals(""))
+				// REVISIT:  localize
+                reportGenericSchemaError("globally-declared element " + name + " cannot have a ref attribute");
         
             int nameIndex = fStringPool.addSymbol(name);
             int eltKey = fSchemaGrammar.getElementDeclIndex(fTargetNSURI, nameIndex,TOP_LEVEL_SCOPE);
@@ -4429,15 +4437,21 @@ public class TraverseSchema implements
         }
 
         //if this is a reference to a global element
-        int attrCount = 0;
-        if (!ref.equals("")) attrCount++;
-        if (!type.equals("")) attrCount++;
-                //REVISIT top level check for ref & archref
-        if (attrCount > 1)
-            reportSchemaError(SchemaMessageProvider.OneOfTypeRefArchRef, null);
-
         if (!ref.equals("")) {
-            if (XUtil.getFirstChildElement(elementDecl) != null)
+            //REVISIT top level check for ref 
+        	if (!type.equals("") || (elementMiscFlags > 0) 
+					|| (finalSet > 0) || (blockSet > 0)
+					|| !dflt.equals("") || !fixed.equals(""))
+            	reportSchemaError(SchemaMessageProvider.BadAttWithRef, null);
+
+            Element child = XUtil.getFirstChildElement(elementDecl);
+        	if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+            	if (XUtil.getNextSiblingElement(child) != null) 
+                	reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
+				else
+					traverseAnnotationDecl(child);
+			}
+			else if (child != null) 
                 reportSchemaError(SchemaMessageProvider.NoContentForRef, null);
             String prefix = "";
             String localpart = ref;
@@ -4558,8 +4572,13 @@ public class TraverseSchema implements
         // element has a single child element, either a datatype or a type, null if primitive
         Element child = XUtil.getFirstChildElement(elementDecl);
         
-        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
+        if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+			traverseAnnotationDecl(child);
             child = XUtil.getNextSiblingElement(child);
+		}
+        if(child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) 
+            // REVISIT: Localize
+            reportGenericSchemaError("element declarations can contain at most one annotation Element Information Item");
         
         boolean haveAnonType = false;
 
@@ -4586,6 +4605,7 @@ public class TraverseSchema implements
                     reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
                 }
                 haveAnonType = true;
+            	child = XUtil.getNextSiblingElement(child);
             } 
             else if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //   TO DO:  the Default and fixed attribute handling should be here.                
@@ -4606,15 +4626,28 @@ public class TraverseSchema implements
                 }
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE; 
                 haveAnonType = true;
+            	child = XUtil.getNextSiblingElement(child);
             } else if (type.equals("")) { // "ur-typed" leaf
                 contentSpecType = XMLElementDecl.TYPE_ANY;
                     //REVISIT: is this right?
                 //contentSpecType = fStringPool.addSymbol("UR_TYPE");
                 // set occurrence count
                 contentSpecNodeIndex = -1;
-            } else {
-                System.out.println("unhandled case in TraverseElementDecl");
-            }
+            } 
+			// see if there's something here; it had better be key, keyref or unique.
+			if (child != null) 
+            	childName = child.getLocalName();
+			while ((child != null) && ((childName.equals(SchemaSymbols.ELT_KEY))
+					|| (childName.equals(SchemaSymbols.ELT_KEYREF)) 
+					|| (childName.equals(SchemaSymbols.ELT_UNIQUE)))) {
+            	child = XUtil.getNextSiblingElement(child);
+            	childName = child.getLocalName();
+			}
+			if (child != null) {
+               	// REVISIT: Localize
+            	noErrorSoFar = false;
+                reportGenericSchemaError("only annotation, simpleType, complexType, key, keyref and unique Element Information Items are allowed in element declarations");
+			}
         } 
 
         // handle type="" here
@@ -4811,14 +4844,8 @@ public class TraverseSchema implements
              /***/
         }
 
-        if (typeInfo != null) {
-            fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
-        }
-        else {
-            fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
-
-            // REVISIT: should we report error from here?
-        }
+        fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo); 
+        // REVISIT: should we report error if typeInfo was null?
 
         // mark element if its type belongs to different Schema.
         fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
