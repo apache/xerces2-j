@@ -5,22 +5,24 @@
 	<s2 title="Disclaimer">
 		<p>This package contains an implementation of the W3C XML 
 		Schema language. This implementation is experimental. The 
-		XML Schema language is still in working draft stage: you 
+		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump> 
+		language is still in working draft stage: you 
 		should not consider this implementation complete or correct. 
-		The limitations of this implementation are detailed below -- 
-		please read this document before using this package.</p>
+		The limitations of this implementation are detailed below. 
+		Please read this document before using this package.</p>
 	</s2>
 	<s2 title="Introduction">
-		<p>This package contains an implementation of a subset 
-		of the W3C XML Schema Language as specified in the 24 
-		September 1999 Working Draft. The parsers contained in this 
+		<p>This package contains an implementation of a subset of the 
+		<jump href="http://www.w3.org/XML/Group/Schemas.html">
+		W3C XML Schema Language</jump> as specified in the 17 
+		December 1999 Working Draft. The parsers contained in this 
 		package are able to read and validate XML documents with the 
 		grammar specified in either DTD or XML Schema format.  There
 		is no functionality for accessing typed data.</p>
 		<p>We are making this package available in order to get 
 		feedback on the features in the XML Schema language 
-		design and on representing an XML document's grammar 
-		as part of the document's DOM tree. We intend to update 
+		design and on representing an XML document&apos;s grammar 
+		as part of the document&apos;s DOM tree. We intend to update 
 		this package until it implements all of the functionality 
 		of the then current XML Schema Working Draft. If you are 
 		interested in a particular unimplemented feature, we welcome 
@@ -28,7 +30,7 @@
 	</s2>
 	<s2 title="Limitations">
 		<p>The XML Schema implementation in this package is a 
-		subset of the features defined in the 24 September 1999 
+		subset of the features defined in the 17 December 1999 
 		XML Schema Working Drafts.</p>
 	</s2>
 	<s2 title="Structure Limitations">
@@ -79,7 +81,7 @@
 		<p>Documents that use XML Schema grammars specify the location of the
 		grammar using an xmlns attribute attached to the root / top-level element 
 		in the document. Here is an example: </p>
-<source>&lt;document xmlns=&amp;document.xsd&gt;
+<source>&lt;document xmlns="document.xsd"&gt;
 ...
 &lt;/document&gt;</source>
 		<p>Another requirement is that the XML Schema document's grammar must 

@@ -6,14 +6,18 @@
 		<p>There are two new samples to test and demonstrate the new DOM2 
 		Traversal implementation: </p>
 		<ul>
+			<li><link idref="domcount">DOMCount</link></li>
+			<li><link idref="domcount">SAXCount</link></li>
+			<li><link idref="domwriter">DOMWriter</link></li>
+			<li><link idref="domwriter">SAXWriter</link></li>
+			<li><link idref="domfilter">DOMFilter</link></li>
 			<li><link idref="iterator">IteratorView</link></li>
 			<li><link idref="tree">TreeWalker</link></li>
+			<li><link idref="treeview">TreeViewer</link></li>
 		</ul>
 	</s2>
 	<s2 title="Caveats">
-		<note>Make sure that &javaparsername; and a JDK are loaded on 
-		your computer before running any of the sample applications.</note>
-		<note>&javaparsername;: Running the sample applications 
+				<note>&javaparsername;: Running the sample applications 
 		requires that you have already loaded the &javaparsername; software on 
 		your computer.</note>
 		<note>Java: Running the sample applications require that your computer has a 
@@ -32,26 +36,80 @@
 		and replace Windows directory separator &apos;\&apos; (backslash) 
 		with &apos;/&apos; (forward slash).</note>
 	</s2>
+	
+	<s2 title="DOMCount Sample">
+		<p><link idref="domcount">DOMCount</link> parses your input file, 
+		and outputs the total parse time, 
+		along with counts of elements, attributes, text characters, and ignorable 
+		whitespace characters. DOMCount displays errors and 
+		warnings that occur during parsing.</p>
+		<p>DOMCount uses either the validating or non-validating DOM parser.</p>
+	</s2>
+	
+	<s2 title="SAXCount Sample">
+		<p><link idref="domcount">SAXCount</link> parses your input file, 
+		and outputs the total parse time, 
+		along with counts of elements, attributes, text characters, and 
+		ignorable whitespace characters. SAXCount displays errors and 
+		warnings that occur during parsing.</p>
+		<p>SAXCount uses either the validating or non-validating SAX parser.</p>
+	</s2>
+	
+	<s2 title="DOMWriter Sample">
+		<p><link idref="domwriter">DOMWriter</link> parses a file, and 
+		prints it out in XML format. 
+		The command line option, -c, is used to print files  in 
+		"canonical" XML format, so that two XML documents can be compared. 
+		They also display any errors or warnings that occurred during the 
+		parse. DOMWriter uses either the validating or non-validating DOM parser. 
+		DOMWriter also provides a feature to set the output Java encoding 
+		through the -e switch.</p>
+	</s2>
+	
+	<s2 title="SAXWriter Sample">
+		<p><link idref="domwriter">SAXWriter</link> parses a file, and 
+		prints it out in XML format. The command 
+		line option, -c, is used to print files  in "canonical" XML format, 
+		so that two XML documents can be compared. They also display any 
+		errors or warnings that occurred during the parse. SAXWriter uses 
+		either the validating or non-validating SAX parser.</p>
+	</s2>
+	
+	<s2 title="DOMFilter Sample">
+		<p><link idref="domfilter">DOMFilter</link> shows you how to 
+		search for specific elements in 
+		your XML document.  It uses <code>getElementsByTagName()</code> 
+		to traverse the DOM tree, looking for elements or attributes that 
+		match your specification.</p>
+	</s2>
+		
 	<s2 title="IteratorView Sample">
-		<p>The <code>IteratorView</code> is an interactive UI sample that displays the DOM tree. It
+		<p><link idref="iterator">IteratorView</link> is an interactive 
+		UI sample that displays the DOM tree. It
 		shows the progress of the iteration by moving the selection within the DOM tree.
 		Buttons act as a control panel, allowing the user to interactively iterate through
 		the tree,  remove nodes, add nodes, and view the results immediately in the tree.</p>
-		<p>The <code>IteratorView</code> uses an example filter, <code>NameNodeFilter</code>, that can be controlled
+		<p>The <code>IteratorView</code> uses an example filter, 
+		<code>NameNodeFilter</code>, that can be controlled
 		from the UI and a <code>DOMTreeFull</code> class that displays the full DOM tree with all
 		the nodes.</p>
-		<p><link idref="iterator">IteratorView page</link></p>
 	</s2>
+	
 	<s2 title="TreeWalker Sample">
-		<p>The <code>TreeWalkerviewView</code> is an interactive UI sample that displays the DOM
+		<p><link idref="tree">TreeWalkerviewView</link> is an interactive UI sample that displays the DOM
 		tree. It show the progress of the tree traversal by moving the selection within the
 		DOM tree. Buttons act as a control panel, allowing the user to interactively
 		traverse the tree,  remove nodes, add nodes, and view the results immediately in
 		the tree.</p>
 
-		<p>The <code>TreeWalkerviewView</code> uses an example filter, <code>NameNodeFilter</code>, that can be
-		controlled from the UI and a <code>DOMTreeFull</code> class that displays the full DOM tree
-		with all the nodes.</p>
-		<p><link idref="tree">TreeWalkerView page</link></p>
+		<p>The <code>TreeWalkerviewView</code> uses an example filter, 
+		<code>NameNodeFilter</code>, that can be
+		controlled from the UI and a <code>DOMTreeFull</code> class that 
+		displays the full DOM tree with all the nodes.</p>
+	</s2>
+	
+	<s2 title="Treeviewer Sample">
+		<p><link idref="tree">TreeViewer</link> displays the input XML file in a graphical tree-style 
+		interface.  It will also highlight lines have well-formedness or validation errors.</p>
 	</s2>
 </s1>

@@ -1,7 +1,7 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
 
-<faqs title="Migrating to Xerces-Java">
+<faqs title="Migrating to &javaparsernamelong;">
 	<faq title="What should I be aware of when using various DOM parsers?">
 		<q>What should I be aware of when using various DOM parsers?</q>
 		<a><p>There are a couple of points to note when using the various 
@@ -9,7 +9,7 @@
 			Xerces, Oracle and Sun XML parsers:</p>
 			<ol>
 				<li><em>Parsing methods:</em>
-					<br/>The Xerces and Oracle parsers have a parser object that parses 
+					<br/>The &javaparsername; and Oracle parsers have a parser object that parses 
 					XML files and constructs a DOM tree which is queried 
 					<ref>after</ref> parsing. 
 					<br/>The Sun parser calls a static method on the 
@@ -21,7 +21,7 @@
 					as well as parsing from <code>java.io.InputStream</code> 
 					and <code>java.io.Reader</code> object.</li>
 				<li><em>Error handling:</em>
-					<br/>The Xerces parser uses the SAX <code>ErrorHandler</code> mechanism 
+					<br/>The &javaparsername; parser uses the SAX <code>ErrorHandler</code> mechanism 
 					on all parser types, including DOM. 
 					<br/>The Oracle parser only allows you to specify which 
 					output stream or writer you want the error to be written. 
@@ -30,14 +30,14 @@
 					An exceptions will be thrown if an error occurs during 
 					parsing.</li>
 				<li><em>Validation:</em>
-					<br/>The Xerces and Oracle DOM parsers use a method to 
+					<br/>The &javaparsername; and Oracle DOM parsers use a method to 
 					set validation. 
 					<br/>Because of the way that DOM documents are constructed from XML files 
 					in the Sun parser, validation is set via a parameter to the static 
 					<code>createXmlDocument</code> method.</li>
 				<li><em>Standard versus proprietary features:</em>
 					<br/>If the user has written their programs using the W3C DOM API, 
-					then migrating to Xerces is easy. If however, the user takes 
+					then migrating to &javaparsername; is easy. If however, the user takes 
 					advantage of non-standard, proprietary features of the Oracle and Sun 
 					parsers and DOM implementations, migration will be harder. 
 					This document does not 
@@ -206,4 +206,22 @@ else {
 
 		</a>
 	</faq>
+	
+	<faq title="Migrating from XML4J Version 2.0.x">
+		<q>How do I migrate my code from XML4J Version 2.0.x?</q>
+		<a>
+	     <p>Migrating from the version 2.0.x native SAX and DOM parser
+	      classes should be straight forward.</p>
+		<table>
+			<tr><th>change this XML4J class</th><th>to this &javaparsername; class</th></tr>
+			<tr><td>com.ibm.xml.parsers.SAXParser</td> <td>org.apache.xerces.parsers.SAXParser</td></tr>
+			<tr><td>com.ibm.xml.parsers.ValidatingSAXParser</td>  <td>org.apache.xerces.parsers.SAXParser + switch</td></tr>
+			<tr><td>com.ibm.xml.parsers.NonValidatingDOMParser</td>  <td>org.apache.xerces.parsers.DOMParser</td></tr>
+			<tr><td>com.ibm.xml.parsers.DOMParser</td>  <td>org.apache.xerces.parsers.DOMParser + switch</td></tr>
+		</table>
+		<p>Table entries that say " + switch" mean that you should use the
+		Configurable API to turn validation on.  See the answer in <link idref="faq-general" anchor="valid">Validation</link>.</p>
+		</a>
+	</faq>
+	
 </faqs>

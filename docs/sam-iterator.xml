@@ -3,12 +3,12 @@
 
 <s1 title="IteratorView Sample">
 	<s2 title="IteratorView">
-		<p>The <code>IteratorView></code> is an interactive UI sample that displays the DOM tree. It
+		<p>The <code>IteratorView</code> is an interactive UI sample that displays the DOM tree. It
 		shows the progress of the iteration by moving the selection within the DOM tree.
 		Buttons act as a control panel, allowing the user to interactively iterate through
 		the tree,  remove nodes, add nodes, and view the results immediately in the tree.</p>
-		<p>The <code>IteratorView></code> uses an example filter, <code>NameNodeFilter</code>, that can be controlled
-		from the UI and a DOMTreeFull class that displays the full DOM tree with all
+		<p>The <code>IteratorView</code> uses an example filter, <code>NameNodeFilter</code>, that can be controlled
+		from the UI and a <code>DOMTreeFull</code> class that displays the full DOM tree with all
 		the nodes.</p>
 
 		<p>The controls are called through to to the corresponding iterator function. If you
@@ -18,7 +18,7 @@
 		<s3 title="Iterator Group">
 		<ul>
 			<li>Next - calls the <code>next()</code> functions and selects the next node in the tree.</li>
-			<li>Previous - calls the <code>previous()</code> function a and selects the previous node in
+			<li>Previous - calls the <code>previous()</code> function and selects the previous node in
      		the tree.</li>
 		</ul>
 		</s3>

@@ -3,7 +3,7 @@
 
 <s1 title="API Documentation">
     <s2 title="Javadoc Generated Documentation">
-        <p>&javaparsername; comes packaged with API documentation for SAX and DOM, 
+        <p>&javaparsernamelong; comes packaged with API documentation for SAX and DOM, 
         the two most common interfaces for programming XML.  In addition, 
         we provide documentation for classes that are not part of the SAX 
         and DOM API's, but are useful for writing &javaparsername; programs. </p>

@@ -3,13 +3,8 @@
 
 <faqs title="Writing Application FAQs">
 	<faq title="Creating a DOM Parser">
-		<q>How do I create a parser that produces a DOM tree?</q>
-        <a><p>To work with a parser that produces a DOM tree, you need to
-        use the <code>DOMParser</code> class from
-        <code>org.apache.xerces.parsers</code>.  The code sample below
-        shows you how to create a <code>DOMParser</code> instance and
-        use it to parse an XML document.</p> 
-
+		<q>How do I create a DOM parser?</q>
+        <a>
 <source>import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -28,52 +23,35 @@ try {
     se.printStackTrace();
 } catch (IOException ioe) {
     ioe.printStackTrace();
-}
-
-Document doc = parser.getDocument();
-
-  ...</source>
-
-	<p>Once you have the <code>Document</code> object, you can call any method on it as defined by the DOM specification.</p>
-     </a>
+}</source>
+		</a>
 	</faq>
 	
 	<faq title="Creating a SAX Parser">
-		<q>How do I create a parser that uses the SAX API?</q>
-		<a><p>To work with a parser that uses the SAX API, you need to
-		use the <code>SAXParser</code> class from
-		<code>org.apache.xerces.parsers</code>.  You need to be sure
-		that you provide classes that implement the SAX
-		<code>DocumentHandler</code> and <code>ErrorHandler</code>
-		interfaces.  The code sample below shows how to create a
-		<code>SAXParser</code> instance and use that instance to
-		parse an XML document.</p>
-<source>import org.apache.xerces.parsers.SAXParser;
+		<q>How do I create a SAX parser?</q>
+		<a>
+<source>import org.xml.sax.Parser;
+import org.xml.sax.helpers.ParserFactory; 
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import org.xml.sax.DocumentHandler;
-import java.io.IOException;
+import java.io.IOException; 
 
   ...
 
+String parserClass = &quot;org.apache.xerces.parsers.DOMParser&quot;;
+
 String xmlFile = &quot;file:///Xerces-J/data/personal.xml&quot;; 
 
-SAXParser parser = new SAXParser();
-
-DocumentHandler documentHandler = ... // you supply a class that implements the DocumentHandler interface
-ErrorHandler errorHandler = ... // you supply a class that implements the ErrorHandler interface
+Parser parser = ParserFactory.makeParser(parserClass);
 
 try {
-    parser.setDocumentHandler(documentHandler);
-    parser.setErrorHandler(errorHandler)
     parser.parse(xmlFile);
-
 } catch (SAXException se) {
     se.printStackTrace();
 } catch (IOException ioe) {
-    ioe.printStackTrace();
-}
-
-  ...</source>
+	ioe.printStackTrace();
+}</source>
 		</a>
 	</faq>
 	
@@ -89,29 +67,25 @@ try {
 	</faq>
 	<faq title="Using lazy DOM">
 		<q>How do I use the lazy evaluating DOM implementation?</q>
-		<a><p>The DOM parser class
-		<code>org.apache.xerces.parsers.DOMParser</code> now uses a DOM
-		implementation that can take advantage of lazy evaluation to
-		improve performance.  The setNodeExpansion call on these
-		classes controls the use of lazy evaluation. There are two
-		values for the argument to setNodeExpansion: FULL and
-		DEFERRED(the default). </p> 
-	    <p>If node expansion is set to FULL, then the DOM classes
-	    behave as they always have, creating all nodes in the DOM tree
-	    by the end of parsing.</p> 
+		<a><p>The DOM parser class <code>org.apache.xerces.parsers.DOMParser</code> uses a 
+		DOM implementation that can take advantage of lazy evaluation to 
+		improve performance. There is also a mode where the parser creates 
+		all of the nodes as the document is parsed. By default, the parser 
+		uses the lazy evaluation DOM implementation.</p>
+		<p>Nodes in the DOM tree are only created when they are accessed. 
+		The initial call to <code>getDocument()</code> will return a DOM tree that 
+		consists only of the Document node. All of the immediate children 
+		of a Node are created when any of that Node's children are accessed. 
+		This shortens the time it takes to parse an XML file and create a DOM 
+		tree at the expense of requiring more memory during parsing and 
+		traversing the document.</p>
+		<p>The lazy evaluation feature is set using the SAX2 Configurable 
+		interface. To turn off this feature, use the following code:</p>
+<source>DOMParser parser = new DOMParser();
+parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);</source>
+		<p>To turn the lazy evaluation feature back on, use the following code:</p>
 
-	    <p>If node expansion is set to DEFERRED, nodes in the DOM tree
-	    are only created when they are accessed. This means that a
-	    call to getDocument will return a DOM tree that consists only
-	    of the Document node. When your program accesses a child of
-	    Document, the children of the Document node will be
-	    created. All the immediate children of a Node are created when
-	    any of that Node's children are accessed. This shortens the
-	    time it takes to parse an XML file and create a DOM tree. This
-	    also increases the time it takes to access a node that has not
-	    been created. After nodes have been created, they are cached,
-	    so this overhead only occurs on the first access to a
-	    Node. </p> 
+<source>parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", true);</source>
 		</a>
 	</faq>
 	
@@ -147,7 +121,7 @@ try {
 		</a>
 	</faq>
 	
-	<faq title="Why does &quot;non-validating&quot; not mean &quot;well-formedness checking only&quot;?">
+	<faq title="What does &quot;non-validating&quot; mean?">
 		<q>Why does &quot;non-validating&quot; not mean &quot;well-formedness checking only&quot;?</q>
 		<a><p>Using a &quot;non-validating&quot; parser does not mean that only well-formedness 
         checking is done! There are still many things that the XML specification 
@@ -194,16 +168,65 @@ try {
 					before accessing it over the network.</li>
           		<li>Do not reference an external DTD or internal DTD subset at all. 
 					In this case, no DTD will be read.</li>
+				<li>Use a custom <code>EntityResolver</code> and keep common 
+				DTDs in a memory buffer.</li>
         	</ul>
 		</a>
 	</faq>
 	
-    <faq title="How do access the DOM Level 2 functionality">
-        <q>How do I access the DOM Level 2 functionality</q>
-        <a><p>Because the DOM Level 2 spec is not frozen yet, the interfaces
-              for DOM Level 2 can be found in the package org.apache.xerces.domx
-              and its subpackages.</p></a>
-    </faq>
+	<faq title="How do I access the DOM Level 2 functionality?">
+		<q>How do I access the DOM Level 2 functionality?</q>
+		<a><p>The <jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2</jump> 
+			specification is at the stage of 
+			"Candidate Recommendation" (CR), which allows feedback from implementors 
+			before it becomes a "Recommedation". It is comprised of "core" 
+			functionality, which is mainly the DOM 
+			<jump href="http://www.w3.org/TR/REC-xml-names/">Namespaces</jump> implementation, 
+			and a number of optional modules (called Chapters in the spec).</p>
+			<p>Please refer to:</p>
+			<p><jump href="http://www.w3.org/TR/DOM-Level-2/">
+			http://www.w3.org/TR/DOM-Level-2/</jump> for the 
+			latest DOM Level 2 specification.</p>
+			<p>The following DOM Level 2 modules are fully implemented in &javaparsername;: </p>
+			<ul>
+				<li><jump href="http://www.w3.org/TR/DOM-Level-2/core.html">
+					Chapter 1: Core</jump> - most of these enhancements are for 
+					Namespaces, and can be acessed through additional functions which 
+					have been added directly to the <ref>org.w3c.dom.*</ref> classes.</li>
+
+				<li><jump href="http://www.w3.org/TR/DOM-Level-2/events.html">
+					Chapter 6: Events</jump> - The <ref>org.w3c.dom.events.EventTarget</ref> 
+					interface is implemented by all <code>Nodes</code> of the DOM. 
+					The &javaparsername; DOM implementation handles all of the event 
+					triggering, capture and flow.</li>
+
+				<li><jump href="http://www.w3.org/TR/DOM-Level-2/traversal.html">
+					Chapter 7: Traversal</jump> - The Traversal module interfaces 
+					are located in <ref>org.w3c.dom.traversal</ref>. 
+					The <code>NodeIterator</code> and <code>TreeWalker</code>, and 
+					<code>NodeFilter</code> interfaces have been supplied to allow 
+					traversal of the DOM at a higher-level. Our DOM Document 
+					implementation class, <code>DocumentImpl</code> class now 
+					implements <code>DocumentTraversal</code>, which supplies the 
+					factory methods to create the iterators and treewalkers.</li>
+
+				<li><jump href="http://www.w3.org/TR/DOM-Level-2/range.html">
+				Chapter 8. Range</jump> - The Range module interfaces are 
+					located in <ref>org.w3c.dom.range</ref>. The Range interface 
+					allows you to specify ranges or selections using boundary 
+					points in the DOM, along with functions (like delete, 
+					clone, extract..) that can be performed on these ranges. 
+					Our DOM Document implementation class, <code>DocumentImpl</code> 
+					class now implements <code>DocumentRange</code>, that supplies 
+					the factory method to create a <code>Range</code>.</li>
+			</ul>
+			<note>Since the DOM Level 2 is still in the CR phase, some changes 
+			to these specs are still possible. The purpose of this phase is to 
+			provide feedback to the W3C, so that the specs can be clarified and 
+			implementation concerns can be addressed.</note>		
+		</a>
+	</faq>
+	
 	<faq title="How do I read data from a stream as it arrives?">
 		<q>How do I read data from a stream as it arrives?</q>
 		<a><p>For performance reasons, all the standard Xerces processing
@@ -215,38 +238,36 @@ try {
 		and override <code>createCharReader</code> and
 		<code>createUTF8Reader</code> as shown below.
 		</p>
-		<source>
-public class StreamingCharFactory extends org.apache.xerces.readers.DefaultReaderFactory {
-    public XMLEntityHandler.EntityReader createCharReader(XMLEntityHandler entityHandler,
-                                                          XMLErrorReporter errorReporter,
-                                                          boolean sendCharDataAsCharArray,
-                                                          Reader reader,
-                                                          StringPool stringPool) throws Exception
-            {
-                return new org.apache.xerces.readers.StreamingCharReader(entityHandler, errorReporter, sendCharDataAsCharArray, reader, stringPool);
-            }
+<source>public class StreamingCharFactory extends org.apache.xerces.readers.DefaultReaderFactory {
+  public XMLEntityHandler.EntityReader createCharReader(XMLEntityHandler entityHandler,
+                                                        XMLErrorReporter errorReporter,
+                                                        boolean sendCharDataAsCharArray,
+                                                        Reader reader,
+                                                        StringPool stringPool) throws Exception
+    {
+      return new org.apache.xerces.readers.StreamingCharReader(entityHandler, 
+                 errorReporter, sendCharDataAsCharArray, reader, stringPool);
+    }
 
-    public XMLEntityHandler.EntityReader createUTF8Reader(XMLEntityHandler entityHandler,
-                                                          XMLErrorReporter errorReporter,
-                                                          boolean sendCharDataAsCharArray,
-                                                          InputStream data,
-                                                          StringPool stringPool) throws Exception
-            {
-                XMLEntityHandler.EntityReader reader;
-                reader = new org.apache.xerces.readers.StreamingCharReader(entityHandler, errorReporter, sendCharDataAsCharArray, new InputStreamReader(data, "UTF8"), stringPool);
-                return reader;
-            }
+  public XMLEntityHandler.EntityReader createUTF8Reader(XMLEntityHandler entityHandler,
+                                                        XMLErrorReporter errorReporter,
+                                                        boolean sendCharDataAsCharArray,
+                                                        InputStream data,
+                                                        StringPool stringPool) throws Exception
+    {
+      XMLEntityHandler.EntityReader reader;
+      reader = new org.apache.xerces.readers.StreamingCharReader(entityHandler,
+                   errorReporter, sendCharDataAsCharArray, 
+                   new InputStreamReader(data, "UTF8"), stringPool);
+      return reader;
+    }
 
-}
-		</source>
-		<p>
-	    In your program, after you instantiate a parser class, replace
+}</source>
+		<p>In your program, after you instantiate a parser class, replace
 	    the <code>DefaultReaderFactory</code> with <code>StreamingCharFactory</code>, and be
 	    sure to wrap the <code>InputStream</code> that you are reading
-	    from with an <code>InputStreamReader</code>.
-		</p>
-	    <source>
-InputStream in = ... ;
+	    from with an <code>InputStreamReader</code>.</p>
+<source>InputStream in = ... ;
 SAXParser p = new SAXParser();
 DocumentHandler h = ... ;
 // set the correct reader factory
@@ -254,8 +275,7 @@ p.setReaderFactory(((StreamingSAXClient)h).new StreamingCharFactory());
 p.setDocumentHandler(h);
 
 // be sure to wrap the input stream in an InputStreamReader.
-p.parse(new InputSource(new InputStreamReader(in)));
-		</source>
+p.parse(new InputSource(new InputStreamReader(in)));</source>
 		</a>
 	</faq>
 </faqs>

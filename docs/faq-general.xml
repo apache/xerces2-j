@@ -2,58 +2,41 @@
 <!DOCTYPE faqs SYSTEM "sbk:/style/dtd/faqs.dtd">
 
 <faqs title="General FAQs">
+
 	<faq title="New Features?">
 		<q>What are the new features?</q>
 		<a>
 			<p>Here are some of the new features in &javaparsername;:</p>
-     <ul>
-     <li>Support for SAX2 alpha</li>
-     <li>Support for DOM Level 2 Core, Events, and Traversal</li>
-     <li>Preliminary support for W3C XML Schema Language (validation
-     only)</li>
-     <li>Access to DTD information as a DOM Tree</li>
-     <li>Improved Conformance</li>
-     <li>Improved Performance</li>
-     <li>Parser option control based on SAX2</li>
-     <li>New "serialization" classes allow you output XML, HTML, and XHTML.</li>
-     <li>New classes implement the HTML portion of the DOM Level 1 specification.</li>
-     </ul>
+		     <ul>
+			     <li>Support for SAX2 alpha.</li>
+			     <li>Support for DOM Level 2 Core, Events, Traversal, and Ranges.</li>
+			     <li>Preliminary support for W3C XML Schema Language (validation only).</li>
+			     <li>Access to DTD information as a DOM Tree.</li>
+			     <li>Improved Conformance.</li>
+			     <li>Improved Performance.</li>
+			     <li>Parser option control based on SAX2.</li>
+			     <li>New "serialization" classes allow you output XML, HTML, and XHTML.</li>
+			     <li>New classes implement the HTML portion of the DOM Level 1 specification.</li>
+		     </ul>
+	<anchor name="valid"/>
 		</a>
 	</faq>
+	
 	<faq title="Validation">
-<!--   <anchor name="configure-validation"/> -->
 		<q>How do I turn on validation?</q>
 		<a>
 			<p>You can turn validation on and off via the SAX2
 			Configurable interface.  This works for both the <code>SAXParser</code>
 			and <code>DOMParser</code> classes.<br/>
-            The code snippet below shows how to turn validation on -- assume that <code>parser</code>
+            The code snippet below shows how to turn validation on -- assume that <ref>parser</ref>
             is an instance of either
             <code>org.apache.xerces.parsers.SAXParser</code> or
             <code>org.apache.xerces.parsers.DOMParser</code>. <br/><br/>
-     <code>((Configurable)parser).setFeature("http://xml.org/sax/features/validation", true);</code>
+     		<code>((Configurable)parser).setFeature("http://xml.org/sax/features/validation", true);</code>
 			</p>
 		</a>
 	</faq>
-	<faq title="Migrating from other XML parsers">
-		<q>How do I migrate my code from other XML parsers?</q>
-		<a>
-     <p>To migrate your code from XML4J Version 2.0.x</p>
-      Migrating from the version 2.0.x native SAX and DOM parser
-      classes should be straight forward.
-<table>
-<tr><th>change this XML4J class</th><th>to this &javaparsername; class</th></tr>
-<tr><td>com.ibm.xml.parsers.SAXParser</td> <td>org.apache.xerces.parsers.SAXParser</td></tr>
-<tr><td>com.ibm.xml.parsers.ValidatingSAXParser</td>  <td>org.apache.xerces.parsers.SAXParser + switch</td></tr>
-<tr><td>com.ibm.xml.parsers.NonValidatingDOMParser</td>  <td>org.apache.xerces.parsers.DOMParser</td></tr>
-<tr><td>com.ibm.xml.parsers.DOMParser</td>  <td>org.apache.xerces.parsers.DOMParser + switch</td></tr>
-</table>
-Table entries that say " + switch" mean that you should use the
-Configurable API to turn validation on.  See the answer on turning on
-validation, <!-- <link idref="configure-validation"> -->above <!--
-</link> -->.
-		</a>
-	</faq>
+	
 	<faq title="International Encodings">
 		<q>What international encodings are supported by &javaparsername;?</q>
 		<a>
@@ -108,4 +91,5 @@ validation, <!-- <link idref="configure-validation"> -->above <!--
         	</ul>
 		</a>
 	</faq>
+	
 </faqs>

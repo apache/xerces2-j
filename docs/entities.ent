@@ -1,5 +1,15 @@
 <?xml encoding="US-ASCII"?>
 
+<!ENTITY javaparsernamelong "Xerces Java Parser">
+<!ENTITY javaparsername "Xerces-J">
+<!ENTITY javaparserversion "1.0.2">
+<!ENTITY javaparserdirectory "xerces">
+<!ENTITY javaparserdistname "Xerces-J-bin"> <!-- name of binaries -->
+
+
+
+
+
 <!ENTITY XercesCFullName      "Xerces C++ Parser">          <!-- fullproductname -->
 <!ENTITY XercesCName          "Xerces-C">                   <!-- productname -->
 <!ENTITY XercesCVersion       "1.0">                        <!-- versionnumber -->
@@ -10,7 +20,3 @@
 <!ENTITY XercesCUnixLib       "libxerces-c1_0">             <!-- unixlibname -->
 <!ENTITY XercesCEmailAddress  "xerces-dev@xml.apache.org "> <!-- emailaddress -->
 
-<!ENTITY javaparsername "Xerces">
-<!ENTITY javaparserversion "1.0.1">
-<!ENTITY javaparserdirectory "xerces">
-<!ENTITY javaparserdistname "Xerces-J-bin"> <!-- name of binaries -->

@@ -11,8 +11,12 @@
   <separator/>
   <document id="api"         label="API Docs"     source="api.xml"         />
   <document id="samples"     label="Samples"      source="samples.xml"     />
-  <hidden   id="iterator"                         source="sam-iterator.xml"/>
-  <hidden   id="tree"                             source="sam-tree.xml"    />
+				   <hidden   id="domcount"        source="sam-domcount.xml"/>
+				   <hidden   id="domwriter"       source="sam-domwriter.xml"/>
+				   <hidden   id="domfilter"       source="sam-domfilter.xml"/>
+				   <hidden   id="iterator"        source="sam-iterator.xml"/>
+				   <hidden   id="tree"            source="sam-tree.xml"    />
+				   <hidden   id="treeview"        source="sam-treeview.xml"    />
   <document id="schema"      label="Schema"       source="schema.xml"      />
   
   <separator/>
@@ -22,9 +26,11 @@
     <entry  id="faq-general"                      source="faq-general.xml" />
     <entry  id="faq-build"                        source="faq-build.xml"   />
     <entry  id="faq-write"                        source="faq-write.xml"   />
+    <entry  id="faq-performance"                  source="faq-performance.xml"   />
     <entry  id="faq-migrate"                      source="faq-migrate.xml" />
     <entry  id="faq-common"                       source="faq-common.xml"  />
   </group>
+				   <hidden   id="jpc"       	  source="javapurecheck.xml"/>
   
   <separator/>
   <document id="releases"    label="Releases"     source="releases.xml"    />

@@ -1,40 +1,50 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
-<s1 title="&javaparsername;">
-	<s2 title="&javaparsername; &javaparserversion; Release">
-		<p>The &javaparsername; &javaparserversion; release contains advanced
-		parser functionality, such as XML Schema, DOM Level 2, and SAX version 2,
-		in addition to supporting the industry-standard DOM Level 1 and SAX version 1
+<s1 title="&javaparsernamelong; Readme">
+	<s2 title="&javaparsernamelong; &javaparserversion; Release">
+		<p>The &javaparsernamelong; &javaparserversion; supports 
+		<jump href="http://www.w3.org/TR/1998/REC-xml-19980210">XML 1.0</jump> 
+		recommendation and the contains advanced parser functionality, such as 
+		<jump href="http://www.w3.org/XML/Group/Schemas.html">XML Schema</jump>, 
+		<jump href="http://www.w3.org/TR/DOM-Level-2/">DOM Level 2 version 1.0</jump>, and 
+		<jump href="http://www.megginson.com/SAX/SAX2/">SAX Version 2</jump>, 
+		in addition to supporting the industry-standard 
+		<jump href="http://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-core.html">DOM Level 1</jump> and 
+		<jump href="http://www.megginson.com/SAX/index.html">SAX version 1</jump>
 		APIs.</p>
         <p>
 <!--
 		&javaparsername; &javaparserversion; is the first in a series of ongoing updates -
 		Watch <jump href="http://xml.apache.org">xml.apache.org</jump> 
 		for new updates.  -->
-        Note that because some of the standards, notably
-		XML Schema, are still not complete, the stable API will definitely be 
-		different from its current form in &javaparsername; &javaparserversion;. This is your chance to give us 
+		
+        Note that because some of the standards, 
+		are still not complete, the stable API will definitely be 
+		different from its current form in &javaparsername; &javaparserversion;. 
+		This is your chance to give us 
 		feedback on the features that are important to you, and let us know
 		whether the APIs that we are providing are the right ones. Please 
 		direct your feedback to the &javaparsername; mailing list.</p>
 
+        <p>The &javaparserversion; release benefits from the
+        <jump href="http:://xml.apache.org">xml.apache.org</jump> collaboration.  
+		It includes Assaf Arkin&apos;s serialization and HTML DOM contributions. 
+		See the <link idref="releases">release</link> information</p>
 	</s2>
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code
-			and precompiled binary (JAR files) form. &javaparsername;
-			&javaparserversion; is licensed under the terms of Version
-			1.1 of the  <jump href="http://xml.apache.org/dist/License.txt">Apache Software License</jump></p>
+			and precompiled binary (JAR files) form.</p>
 	</s2>
 	<s2 title="Applications of the &javaparsername; Parser">
 		<p>The rich generating and validating capabilities allow the &javaparsername; 
 		Parser to be used for: </p>
 		<ul>
-			<li>Building XML-savvy Web servers </li>
+			<li>Building XML-savvy Web servers. </li>
 			<li>The next generation of vertical applications which will use 
 				XML as their data format. </li>
-			<li>On-the-fly validation for creating XML editors </li>
-			<li>Ensuring the integrity of e-business data expressed in XML </li>
+			<li>On-the-fly validation for creating XML editors. </li>
+			<li>Ensuring the integrity of e-business data expressed in XML. </li>
 			<li>Building truly internationalized XML applications. </li>
 		</ul>
 	</s2>
@@ -48,15 +58,12 @@
 	<s2 title="DOM Level 2 (alpha) Support">
 		<p>This release include support for the 
 		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Core</jump> and 
-		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Traversal</jump> APIs. 
-		We will be expanding our DOM Level 2 support to include all of DOM Level 2. At the moment, the DOM 
-		Level 2 Traversal API's live in the org.apache.xerces.dom.domx.traversal 
-		package.</p>
+		<jump href="http://www.w3.org/TR/WD-DOM-Level-2">DOM Level 2 Traversal</jump> APIs.</p>
 	</s2>
 	<s2 title="SAX 2 (alpha) Support">
 		<p>This release includes support for the <jump href="http://www.megginson.com/SAX/SAX2/">
-		SAX Version 2</jump> API's which are being discussed on the 
-		<jump href="http://www.lists.ic.ac.uk/hypermail/xml-dev/">XML-DEV</jump> mailing list. 
+		SAX Version 2</jump> API&apos;s which are being discussed on the 
+		<jump href="http://www.lists.ic.ac.uk/hypermail/xml-dev/">xml-dev</jump> mailing list. 
 		These API's are still 
 		under development, so they are subject to change in the future.</p>
 	</s2>
@@ -64,8 +71,9 @@
 		<p>&javaparsername; &javaparserversion; uses a collection of methods to configure 
 		various settings in the parser. This release includes a new mechanism 
 		for setting parser switches. This mechanism uses the SAX2 Configurable 
-		interface. We have defined a series of properties and features for the 
-		options available in &javaparsername;. The list of features can be found 
-		<link idref="features">here</link>.</p>
+		interface. We have defined a series of 
+		<link idref="properties">properties</link> and 
+		<link idref="features">features</link> for the &javaparsername; 
+		options. </p>
 	</s2>
 </s1>

@@ -7,14 +7,15 @@
 		platforms and operating systems.  You need to run the Java
 		<ref>jar</ref> command to unpack the distribution.</p>
         <ul>
-			<li>jar &javaparserdistname;.jar</li>
+			<li>jar xf &javaparsername;-bin.&javaparserversion;.jar</li>
+			<li>jar xf &javaparsername;-src.&javaparserversion;.jar</li>
 			<li>This command creates a "&javaparserdirectory;" sub-directory in the current directory containing all the files.</li>
 		</ul>
 	</s2>
 	<s2 title="Files in this release">
 		<table>
-			<tr><td>bin/Xerces.jar</td><td>Jar file containing all the parser class files</td></tr>
-			<tr><td>bin/XercesSamples.jar</td><td>Jar file containing all sample class files</td></tr>
+			<tr><td>bin/xerces.jar</td><td>Jar file containing all the parser class files</td></tr>
+			<tr><td>bin/xercesSamples.jar</td><td>Jar file containing all sample class files</td></tr>
 			<tr><td>Readme.html</td><td>This file</td></tr>
 			<tr><td>license.html</td><td>license for &javaparsername;</td></tr>
 			<tr><td>w3c_copyright_software.html</td><td>W3C Copyright Notice for DOM</td></tr>
@@ -24,5 +25,9 @@
 			<tr><td>src/</td><td>Source files</td></tr>
 			<tr><td>samples/</td><td>Directory containing sample programs</td></tr>
 		</table>
+		<note>To use &javaparsername; you do not need the source files. 
+		However the source jar file contains the full documentation and you will 
+		want to have that available. so even if you do not plan on looking at the 
+		source files you still need to download the source jar file.</note>
 	</s2>
 </s1>
