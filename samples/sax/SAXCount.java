@@ -93,6 +93,7 @@ extends HandlerBase {
 
     private static boolean setValidation    = false; //defaults
     private static boolean setNameSpaces    = true;
+    private static boolean setLoadExternalDTD = true;
     private static boolean setSchemaSupport = true;
 
 
@@ -136,6 +137,8 @@ extends HandlerBase {
                                                     setNameSpaces );
                     ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
                                                     setSchemaSupport );
+                    ((XMLReader)parser).setFeature( "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+                                                    setLoadExternalDTD );
 
                 }
             } catch (Exception ex) {
@@ -309,6 +312,7 @@ extends HandlerBase {
                              "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
+                             "  -l | -L  Turn on/off external DTD loading [default=on]",
                              "  -w       Warmup the parser before timing.",
                              "  -h       This help screen."}  );
 
@@ -341,6 +345,12 @@ extends HandlerBase {
                     break;
                 case 'n':
                     setNameSpaces = true;
+                    break;
+                case 'L':
+                    setLoadExternalDTD = false;
+                    break;
+                case 'l':
+                    setLoadExternalDTD = true;
                     break;
                 case 'p':
                     parserName = argopt.getStringParameter();
