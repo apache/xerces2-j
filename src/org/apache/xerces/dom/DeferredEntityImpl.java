@@ -176,6 +176,7 @@ public class DeferredEntityImpl
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl)this.ownerDocument;
         int index = ownerDocument.getLastChild(fNodeIndex);
+        readOnly(false);
         Node last = null;
         while (index != -1) {
             Node child = ownerDocument.getNodeObject(index);
@@ -183,6 +184,7 @@ public class DeferredEntityImpl
             last = child;
             index = ownerDocument.getPrevSibling(index);
         }
+        setReadOnly(true, true);
 
     } // synchronizeChildren()
 

@@ -80,6 +80,8 @@ import org.apache.xerces.dom.ElementDefinitionImpl;
 import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.dom.ElementImpl;
+import org.apache.xerces.dom.EntityImpl;
+import org.apache.xerces.dom.EntityReferenceImpl;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -1315,10 +1317,17 @@ public class DOMParser
         // full node expansion
         else {
 
-            EntityReference er = fDocument.createEntityReference(fStringPool.toString(entityName));
+            EntityReference er =
+             fDocument.createEntityReference(fStringPool.toString(entityName));
 
             fCurrentElementNode.appendChild(er);
             fCurrentElementNode = er;
+            try {
+                EntityReferenceImpl xer = (EntityReferenceImpl) er;
+                xer.setReadOnly(false, false);
+            } catch (Exception e) {
+                // we aren't building against Xerces - do nothing
+            }
         }
 
     } // startEntityReference(int,int,int)
@@ -1390,27 +1399,35 @@ public class DOMParser
             Node erNode = fCurrentElementNode;//fCurrentElementNode.getParentNode();
             fCurrentElementNode = erNode.getParentNode();
 
-            if (fDocumentImpl != null) {
+            try {
+                EntityReferenceImpl xer = (EntityReferenceImpl) erNode;
+                xer.setReadOnly(false, false);
 
-                NamedNodeMap entities = fDocumentType.getEntities();
-                String name = fStringPool.toString(entityName);
-                Node entityNode = entities.getNamedItem(name);
+                // if necessary populate the related entity now
+                if (fDocumentImpl != null) {
 
-                // We could simply return here if there is no entity for the reference.
-                if (entityNode == null || entityNode.hasChildNodes()) {
-                    return;
-                }
+                    NamedNodeMap entities = fDocumentType.getEntities();
+                    String name = fStringPool.toString(entityName);
+                    Node entityNode = entities.getNamedItem(name);
 
-                Entity entity = (Entity)entityNode;
+                    // We could simply return here if there is no entity for
+                    // the reference or if the entity is already populated.
+                    if (entityNode == null || entityNode.hasChildNodes()) {
+                        return;
+                    }
 
-                if (erNode.hasChildNodes()) {
-                    NodeList list = erNode.getChildNodes();
-                    int len = list.getLength();
-                    for (int i = 0; i < len; i++) {
-                        Node childClone = list.item(i).cloneNode(true);
+                    EntityImpl entity = (EntityImpl) entityNode;
+                    entity.setReadOnly(false, false);
+                    for (Node child = erNode.getFirstChild();
+                         child != null;
+                         child = child.getNextSibling()) {
+                        Node childClone = child.cloneNode(true);
                         entity.appendChild(childClone);
                     }
+                    entity.setReadOnly(true, true);
                 }
+            } catch (Exception e) {
+                // we aren't building against Xerces - do nothing
             }
         }
 

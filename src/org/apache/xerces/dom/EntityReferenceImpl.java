@@ -142,11 +142,7 @@ public class EntityReferenceImpl
     public EntityReferenceImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
-        //fEnableSynchronize = false;
-
-    	// EntityReference behaves as a read-only node, since its contents
-    	// reflect the Entity it refers to -- but see setNodeName().
-    	//readOnly = true;
+        readOnly(true);
     }
     
     //
@@ -178,39 +174,30 @@ public class EntityReferenceImpl
      * 
      * @return org.w3c.dom.NodeList
      */
-    /***
-    // revisit: enable editing of Entity
     public NodeList getChildNodes() {
     	synchronize();
     	return super.getChildNodes();
     }
-    /***/
 
     /**
      * Perform synchronize() before accessing children.
      * 
      * @return org.w3c.dom.NodeList
      */
-    /***
-    // revisit: enable editing of Entity
     public Node getFirstChild() {
     	synchronize();
     	return super.getFirstChild();
     }
-    /***/
 
     /**
      * Perform synchronize() before accessing children.
      * 
      * @return org.w3c.dom.NodeList
      */
-    /***
-    // revisit: enable editing of Entity
     public Node getLastChild() {
     	synchronize();
     	return super.getLastChild();
     }
-    /***/
 
     /**
      * Query the number of children in the entity definition.
@@ -219,79 +206,61 @@ public class EntityReferenceImpl
      *
      * @return org.w3c.dom.NodeList
      */
-    /***
-    // revisit: enable editing of Entity
     public int getLength() {
-    	int length=0;
-    	
-    	DocumentType doctype;
-    	NamedNodeMap entities;
-    	Entity entDef;
-    	if (null != (doctype = getOwnerDocument().getDoctype()) && 
-    		null != (entities = doctype.getEntities()) &&
-    		null != (entDef = (Entity)entities.getNamedItem(getNodeName()))
-    		)
-    		length=entDef.getChildNodes().getLength();
-
-    	return length;
+        synchronize();
+    	return super.getLength();
     }
-    /***/
 
     /**
-     * Query the presence of children in the entity definition.
-     * (A bit more work than asking locally, but may be able to avoid
-     * or defer building the clone subtree.)
-     *
+     * Returns whether this node has any children.
      * @return boolean
      */
-    /***
-    // revisit: enable editing of Entity
     public boolean hasChildNodes() {
-    	boolean haskids=false;
-    	
-    	DocumentType doctype;
-    	NamedNodeMap entities;
-    	Entity entDef;
-    	if (null != (doctype = getOwnerDocument().getDoctype()) && 
-    		null != (entities = doctype.getEntities()) &&
-    		null != (entDef = (Entity)entities.getNamedItem(getNodeName()))
-    		)
-    		haskids=entDef.hasChildNodes();
-
-    	return haskids;
+    	synchronize();
+    	return super.hasChildNodes();
     }
-    /***/
 
     /** Returns the node at the given index. */
-    /***
-    // revisit: enable editing of Entity
     public Node item(int index) {
     	synchronize();
     	return super.item(index);
     }
-    /***/
 
-    //
-    // Public methods
-    //
 
     /**
-     * EntityRef is already, and must be, a read-only node. Attempts to change
-     * that will throw a NO_MODIFICATION_ALLOWED_ERR DOMException.
-     * <P>
-     * If you want to alter its contents, edit the Entity definition.
-     * 
-     * @param readOnly boolean
+     * EntityReference's children are a reflection of those defined in the
+     * named Entity. This method creates them if they haven't been created yet.
+     * This doesn't really support editing the Entity though.
      */
-    /***/
-    public void setReadOnly(boolean readOnly,boolean deep) {
-    	//if(readOnly==false)
-    	//	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-    	//                             "DOM001 Modification not allowed");
-    	super.setReadOnly(readOnly,deep);
+    protected void synchronize() {
+        if (firstChild != null) {
+            return;
+        }
+    	DocumentType doctype;
+    	NamedNodeMap entities;
+    	EntityImpl entDef;
+    	if (null != (doctype = getOwnerDocument().getDoctype()) && 
+            null != (entities = doctype.getEntities())) {
+            
+            entDef = (EntityImpl)entities.getNamedItem(getNodeName());
+
+            // No Entity by this name, stop here.
+            if (entDef == null)
+                return;
+
+            // If entity's definition exists, clone its kids
+            readOnly(false);
+            for (Node defkid = entDef.getFirstChild();
+                 defkid != null;
+                 defkid = defkid.getNextSibling()) {
+                Node newkid = defkid.cloneNode(true);
+                insertBefore(newkid,null);
+            }
+            setReadOnly(true, true);
+    	}
     }
-    /***/
-    
+
+
     /**
      * Enable the synchronize method which may do cloning. This method is enabled
      * when the parser is done with an EntityReference.

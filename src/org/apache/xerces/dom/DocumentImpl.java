@@ -746,6 +746,8 @@ public class DocumentImpl
 
     	    case ENTITY_REFERENCE_NODE: {
 		newnode = createEntityReference(source.getNodeName());
+                // allow deep import temporarily
+                ((EntityReferenceImpl)newnode).readOnly(false);
 		break;
             }
 
@@ -757,6 +759,7 @@ public class DocumentImpl
 		newentity.setSystemId(srcentity.getSystemId());
 		newentity.setNotationName(srcentity.getNotationName());
 		// Kids carry additional value
+                newentity.readOnly(false); // allow deep import temporarily
 		newnode = newentity;
 		break;
             }
@@ -835,7 +838,10 @@ public class DocumentImpl
 		newnode.appendChild(importNode(srckid, true));
 	    }
         }
-
+        if (newnode.getNodeType() == Node.ENTITY_REFERENCE_NODE
+            || newnode.getNodeType() == Node.ENTITY_NODE) {
+          ((NodeImpl)newnode).setReadOnly(true, true);
+        }
     	return newnode;
 
     } // importNode(Node,boolean):Node

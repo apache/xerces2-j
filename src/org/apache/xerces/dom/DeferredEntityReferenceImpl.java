@@ -198,7 +198,7 @@ public class DeferredEntityReferenceImpl
                         appendChild(child.cloneNode(true));
                         child = child.getNextSibling();
                     }
-                    readOnly(true);
+                    setReadOnly(true, true);
                 }
             }
         }
@@ -216,9 +216,13 @@ public class DeferredEntityReferenceImpl
                 last = child;
                 index = ownerDocument.getPrevSibling(index);
             }
-            readOnly(true);
+            setReadOnly(true, true);
         }
 
     } // synchronizeChildren()
+
+    // inhibit the synchronize inherited from EntityReferenceImpl
+    protected void synchronize() {
+    }
 
 } // class DeferredEntityReferenceImpl

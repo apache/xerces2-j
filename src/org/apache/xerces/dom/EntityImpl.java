@@ -128,6 +128,7 @@ public class EntityImpl
     public EntityImpl(DocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
+        readOnly(true);
     }
     
     //
