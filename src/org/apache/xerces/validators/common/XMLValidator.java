@@ -114,10 +114,10 @@ import org.apache.xerces.validators.datatype.ENTITYDatatypeValidator;
  * @version $Id$
  */
 public final class XMLValidator
-    implements DefaultEntityHandler.EventHandler,
-               XMLEntityHandler.CharDataHandler,
-               XMLDocumentScanner.EventHandler,
-               NamespacesScope.NamespacesHandler {
+implements DefaultEntityHandler.EventHandler,
+XMLEntityHandler.CharDataHandler,
+XMLDocumentScanner.EventHandler,
+NamespacesScope.NamespacesHandler {
 
     //
     // Constants
@@ -139,7 +139,7 @@ public final class XMLValidator
     private static final int INITIAL_CHUNK_COUNT = (1 << (10 - CHUNK_SHIFT));   // 2^10 = 1k
 
     private Hashtable fIdDefs = null;
-   
+
 
     private  StateMessageDatatype fStoreIDRef = new StateMessageDatatype() {
         private Hashtable fIdDefs;
@@ -155,42 +155,42 @@ public final class XMLValidator
     };
 
     private StateMessageDatatype fResetIDRef = new StateMessageDatatype() {
-       public Object getDatatypeObject(){
-           Hashtable t = null;
-           return(Object) t;
-       }
-       public int    getDatatypeState(){
-           return IDREFDatatypeValidator.IDREF_CLEAR;
-       }
-       public void setDatatypeObject( Object data ){
-       }
-   };
+        public Object getDatatypeObject(){
+            Hashtable t = null;
+            return(Object) t;
+        }
+        public int    getDatatypeState(){
+            return IDREFDatatypeValidator.IDREF_CLEAR;
+        }
+        public void setDatatypeObject( Object data ){
+        }
+    };
 
-   private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
-          public Object getDatatypeObject(){
-              Hashtable t = null;
-              return(Object) t;
-          }
-          public int    getDatatypeState(){
-              return IDREFDatatypeValidator.IDREF_VALIDATE;
-          }
-          public void setDatatypeObject( Object data ){
-       }
-      };
+    private  StateMessageDatatype fValidateIDRef = new StateMessageDatatype() {
+        public Object getDatatypeObject(){
+            Hashtable t = null;
+            return(Object) t;
+        }
+        public int    getDatatypeState(){
+            return IDREFDatatypeValidator.IDREF_VALIDATE;
+        }
+        public void setDatatypeObject( Object data ){
+        }
+    };
 
 
-   private  StateMessageDatatype fValidateENTITYMsg = new StateMessageDatatype() {
-             private  Object  packagedMessage = null;
-             public Object getDatatypeObject(){
-                 return packagedMessage;
-             }
-             public int    getDatatypeState(){
-                 return ENTITYDatatypeValidator.ENTITY_INITIALIZE;//No state
-             }
-             public void setDatatypeObject( Object data ){
-                 packagedMessage = data;// Set Entity Handler
-          }
-         };
+    private  StateMessageDatatype fValidateENTITYMsg = new StateMessageDatatype() {
+        private  Object  packagedMessage = null;
+        public Object getDatatypeObject(){
+            return packagedMessage;
+        }
+        public int    getDatatypeState(){
+            return ENTITYDatatypeValidator.ENTITY_INITIALIZE;//No state
+        }
+        public void setDatatypeObject( Object data ){
+            packagedMessage = data;// Set Entity Handler
+        }
+    };
 
 
 
@@ -215,14 +215,12 @@ public final class XMLValidator
     private AttributeValidator fAttValidatorCDATA = null;
     //private AttributeValidator fAttValidatorENTITY = new AttValidatorENTITY();
     //private AttributeValidator fAttValidatorENTITIES = new AttValidatorENTITIES();
-    private AttributeValidator fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
-    private AttributeValidator fAttValidatorNMTOKENS = new AttValidatorNMTOKENS();
     private AttributeValidator fAttValidatorNOTATION = new AttValidatorNOTATION();
     private AttributeValidator fAttValidatorENUMERATION = new AttValidatorENUMERATION();
     private AttributeValidator fAttValidatorDATATYPE = null;
 
     // Package access for use by AttributeValidator classes.
-    
+
     StringPool fStringPool = null;
     boolean fValidating = false;
     boolean fInElementContent = false;
@@ -311,7 +309,7 @@ public final class XMLValidator
     private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
-    
+
     private boolean fGrammarIsDTDGrammar = false;
     private boolean fGrammarIsSchemaGrammar = false;
 
@@ -342,20 +340,22 @@ public final class XMLValidator
     //Datatype Registry
 
     private DatatypeValidatorFactoryImpl fDataTypeReg = 
-                                         DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+    DatatypeValidatorFactoryImpl.getDatatypeRegistry();
 
     private DatatypeValidator     fValID   = this.fDataTypeReg.getDatatypeValidator("ID" );
     private DatatypeValidator fValIDRef    = this.fDataTypeReg.getDatatypeValidator("IDREF" );
     private DatatypeValidator fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
     private DatatypeValidator fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
     private DatatypeValidator fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
+    private DatatypeValidator fValNMTOKEN  = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
+    private DatatypeValidator fValNMTOKENS = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
 
 
     //
     // Constructors
     //
 
-   /** Constructs an XML validator. */
+    /** Constructs an XML validator. */
     public XMLValidator(StringPool stringPool,
                         XMLErrorReporter errorReporter,
                         DefaultEntityHandler entityHandler,
@@ -376,7 +376,7 @@ public final class XMLValidator
         fDocumentScanner.setEventHandler(this);
 
         for (int i = 0; i < sizeQNameParts; i++) {
-             fElementQNamePartsStack[i] = new QName();
+            fElementQNamePartsStack[i] = new QName();
         }
         init();
 
@@ -416,7 +416,7 @@ public final class XMLValidator
         resetCommon(stringPool);
     }
 
-    
+
     // settings
 
     /**
@@ -484,8 +484,7 @@ public final class XMLValidator
     public void setLoadDTDGrammar(boolean loadDG){
         if (fValidating) {
             fLoadDTDGrammar = true;
-        }
-        else{
+        } else {
             fLoadDTDGrammar = loadDG;
         }
     }
@@ -561,7 +560,7 @@ public final class XMLValidator
 
     /** External entity standalone check. */
     public boolean externalEntityStandaloneCheck() {
-        return (fStandaloneReader != -1 && fValidating);
+        return(fStandaloneReader != -1 && fValidating);
     }
 
     /** Return true if validating. */
@@ -601,7 +600,7 @@ public final class XMLValidator
 
     /** Process whitespace. */
     public void processWhitespace(char[] chars, int offset, int length) 
-        throws Exception {
+    throws Exception {
 
         if (fInElementContent) {
             if (fStandaloneReader != -1 && fValidating && getElementDeclIsExternal(fCurrentElementIndex)) {
@@ -609,8 +608,7 @@ public final class XMLValidator
                                           XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION);
             }
             fDocumentHandler.ignorableWhitespace(chars, offset, length);
-        } 
-        else {
+        } else {
             if (fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
                 charDataInContent();
             }
@@ -649,26 +647,25 @@ public final class XMLValidator
             element.clear();
             element.localpart = entityReader.scanName(fastchar);
             element.rawname = element.localpart;
-        } 
-        else {
+        } else {
             entityReader.scanQName(fastchar, element);
-                        if (entityReader.lookingAtChar(':', false)) {
-                                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                                                   XMLMessages.XML_DOMAIN,
-                                                                                   XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                                                                   XMLMessages.P5_INVALID_CHARACTER,
-                                                                                   null,
-                                                                                   XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-                                entityReader.skipPastNmtoken(' ');
-                        }
-                }
+            if (entityReader.lookingAtChar(':', false)) {
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                           XMLMessages.P5_INVALID_CHARACTER,
+                                           null,
+                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                entityReader.skipPastNmtoken(' ');
+            }
+        }
 
     } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
 
     /** Scans expected element type. */
     public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
                                            char fastchar, QName element) 
-        throws Exception {
+    throws Exception {
 
         if (fCurrentElementCharArrayRange == null) {
             fCurrentElementCharArrayRange = fStringPool.createCharArrayRange();
@@ -681,7 +678,7 @@ public final class XMLValidator
     /** Scans attribute name. */
     public void scanAttributeName(XMLEntityHandler.EntityReader entityReader, 
                                   QName element, QName attribute) 
-        throws Exception {
+    throws Exception {
 
         if (!fSeenRootElement) {
             fSeenRootElement = true;
@@ -693,19 +690,18 @@ public final class XMLValidator
             attribute.clear();
             attribute.localpart = entityReader.scanName('=');
             attribute.rawname = attribute.localpart;
-        } 
-        else {
+        } else {
             entityReader.scanQName('=', attribute);
-                        if (entityReader.lookingAtChar(':', false)) {
-                                fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                                                   XMLMessages.XML_DOMAIN,
-                                                                                   XMLMessages.MSG_TWO_COLONS_IN_QNAME,
-                                                                                   XMLMessages.P5_INVALID_CHARACTER,
-                                                                                   null,
-                                                                                   XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
-                                entityReader.skipPastNmtoken(' ');
-                        }
-                }
+            if (entityReader.lookingAtChar(':', false)) {
+                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                           XMLMessages.XML_DOMAIN,
+                                           XMLMessages.MSG_TWO_COLONS_IN_QNAME,
+                                           XMLMessages.P5_INVALID_CHARACTER,
+                                           null,
+                                           XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
+                entityReader.skipPastNmtoken(' ');
+            }
+        }
 
     } // scanAttributeName(XMLEntityHandler.EntityReader,QName,QName)
 
@@ -733,9 +729,9 @@ public final class XMLValidator
     public void callStandaloneIsYes() throws Exception {
         // standalone = "yes". said XMLDocumentScanner.
         fStandaloneReader = fEntityHandler.getReaderId() ;
-        
+
     }
-    
+
 
 
     /** Call text declaration. */
@@ -763,7 +759,7 @@ public final class XMLValidator
         if (fAttrListHandle == -1) {
             fAttrListHandle = fAttrList.startAttrList();
         }
-        
+
         // if fAttrList.addAttr returns -1, indicates duplicate att in start tag of an element.
         // specified: true, search : true
         return fAttrList.addAttr(attrName, attrValue, fCDATASymbol, true, true) == -1;
@@ -787,7 +783,7 @@ public final class XMLValidator
             rootElementSpecified(element);
             fStringPool.resetShuffleCount();
         }
-        
+
         if (fGrammar != null && fGrammarIsDTDGrammar) {
             fAttrListHandle = addDTDDefaultAttributes(element, fAttrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
         }
@@ -832,20 +828,20 @@ public final class XMLValidator
             }
             qname.setValues(element);
             fElementChildrenLength++;
-            
+
             if (DEBUG_ELEMENT_CHILDREN) {
                 printChildren();
                 printStack();
             }
         }
-        
+
         // One more level of depth
         //fElementDepth++;
-        
+
         ensureStackCapacity(fElementDepth);
         fCurrentElement.setValues(element);
         fCurrentElementEntity = fEntityHandler.getReaderId();
-       
+
         fElementQNamePartsStack[fElementDepth].setValues(fCurrentElement); 
 
         fElementEntityStack[fElementDepth] = fCurrentElementEntity;
@@ -880,7 +876,7 @@ public final class XMLValidator
     }
 
     private void ensureStackCapacity ( int newElementDepth) {
-  
+
         if (newElementDepth == fElementQNamePartsStack.length ) {
             int[] newStack = new int[newElementDepth * 2];
             System.arraycopy(fScopeStack, 0, newStack, 0, newElementDepth);
@@ -893,12 +889,12 @@ public final class XMLValidator
             QName[] newStackOfQueue = new QName[newElementDepth * 2];
             System.arraycopy(this.fElementQNamePartsStack, 0, newStackOfQueue, 0, newElementDepth );
             fElementQNamePartsStack      = newStackOfQueue;
-            
+
             QName qname = fElementQNamePartsStack[newElementDepth];
             if (qname == null) {
-               for (int i = newElementDepth; i < fElementQNamePartsStack.length; i++) {
-                  fElementQNamePartsStack[i] = new QName();
-               }
+                for (int i = newElementDepth; i < fElementQNamePartsStack.length; i++) {
+                    fElementQNamePartsStack[i] = new QName();
+                }
             }
 
             newStack = new int[newElementDepth * 2];
@@ -936,7 +932,7 @@ public final class XMLValidator
                                        XMLMessages.XML_DOMAIN,
                                        XMLMessages.MSG_ELEMENT_ENTITY_MISMATCH,
                                        XMLMessages.P78_NOT_WELLFORMED,
-                                       new Object[] { fStringPool.toString(elementType) },
+                                       new Object[] { fStringPool.toString(elementType)},
                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
         }
 
@@ -971,8 +967,7 @@ public final class XMLValidator
                                                   0,
                                                   fStringPool.toString(elementType),
                                                   "EMPTY");
-                    }
-                    else
+                    } else
                         reportRecoverableXMLError(majorCode,
                                                   0,
                                                   fStringPool.toString(elementType),
@@ -1003,10 +998,10 @@ public final class XMLValidator
             //   IDREF and IDREFS attr (V_IDREF0)
             //
             if (fValidating ) {
-                try{
+                try {
                     this.fValIDRef.validate( null, this.fValidateIDRef );   
                     this.fValIDRefs.validate( null, this.fValidateIDRef );
-                }catch( InvalidDatatypeValueException ex ){
+                } catch ( InvalidDatatypeValueException ex ) {
                     reportRecoverableXMLError( ex.getMajorCode(), ex.getMinorCode(), 
                                                ex.getMessage() ); 
 
@@ -1022,9 +1017,9 @@ public final class XMLValidator
 
 
         if (fNamespacesEnabled) { //If Namespace enable then localName != rawName
-           fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
+            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].localpart;
         } else {//REVISIT - jeffreyr - This is so we still do old behavior when namespace is off 
-           fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
+            fCurrentElement.localpart = fElementQNamePartsStack[fElementDepth].rawname;
         }
         fCurrentElement.rawname      = fElementQNamePartsStack[fElementDepth].rawname;
         fCurrentElement.uri          = fElementQNamePartsStack[fElementDepth].uri;
@@ -1037,28 +1032,28 @@ public final class XMLValidator
 
         fValidating = fValidationFlagStack[fElementDepth] == 0 ? true : false;
 
-        fCurrentScope = fScopeStack[fElementDepth];
+        fCurrentScope = fScopeStack[fElementDepth];  
 
         //if ( DEBUG_SCHEMA_VALIDATION ) {
-        
+
 /****
 System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)+
                    "\n fCurrentElementIndex : " + fCurrentElementIndex +
                    "\n fCurrentScope : " + fCurrentScope +
                    "\n fCurrentContentSpecType : " + fCurrentContentSpecType +
                    "\n++++++++++++++++++++++++++++++++++++++++++++++++" );
-/****/  
+/****/
         //}
 
         // if enclosing element's Schema is different, need to switch "context"
         if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
             fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
             if ( fValidating && fGrammarIsSchemaGrammar )
-               if ( !switchGrammar(fGrammarNameSpaceIndex) ){
-                   reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                             "Grammar with uri : " + fStringPool.toString(fGrammarNameSpaceIndex) 
-                                             + " , can not found");
-               }
+                if ( !switchGrammar(fGrammarNameSpaceIndex) ) {
+                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                              "Grammar with uri : " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                                              + " , can not found");
+                }
         }
 
         if (fValidating) {
@@ -1087,8 +1082,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         int count = (ch < 0x10000) ? 1 : 2;
         if (count == 1) {
             fCharRefData[0] = (char)ch;
-        }
-        else {
+        } else {
             fCharRefData[0] = (char)(((ch-0x00010000)>>10)+0xd800);
             fCharRefData[1] = (char)(((ch-0x00010000)&0x3ff)+0xdc00);
         }
@@ -1097,8 +1091,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
         if (fSendCharDataAsCharArray) {
             fDocumentHandler.characters(fCharRefData, 0, count);
-        } 
-        else {
+        } else {
             int index = fStringPool.addString(new String(fCharRefData, 0, count));
             fDocumentHandler.characters(index);
         }
@@ -1138,7 +1131,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     public void setRootElementType(QName rootElement) {
         fRootElement.setValues(rootElement);
     }
-    
+
     /** 
      * Returns true if the element declaration is external. 
      * <p>
@@ -1155,7 +1148,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         */
 
         if (fGrammarIsDTDGrammar ) {
-            return ((DTDGrammar) fGrammar).getElementDeclIsExternal(elementIndex);
+            return((DTDGrammar) fGrammar).getElementDeclIsExternal(elementIndex);
         }
         return false;
     }
@@ -1188,10 +1181,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     //
 
     // error reporting
-    
+
     /** Report a recoverable xml error. */
     protected void reportRecoverableXMLError(int majorCode, int minorCode) 
-        throws Exception {
+    throws Exception {
 
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
@@ -1205,9 +1198,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Report a recoverable xml error. */
     protected void reportRecoverableXMLError(int majorCode, int minorCode, 
                                              int stringIndex1) 
-        throws Exception {
+    throws Exception {
 
-        Object[] args = { fStringPool.toString(stringIndex1) };
+        Object[] args = { fStringPool.toString(stringIndex1)};
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
                                    majorCode,
@@ -1221,7 +1214,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     protected void reportRecoverableXMLError(int majorCode, int minorCode, 
                                              String string1) throws Exception {
 
-        Object[] args = { string1 };
+        Object[] args = { string1};
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
                                    majorCode,
@@ -1234,9 +1227,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Report a recoverable xml error. */
     protected void reportRecoverableXMLError(int majorCode, int minorCode, 
                                              int stringIndex1, int stringIndex2) 
-        throws Exception {
+    throws Exception {
 
-        Object[] args = { fStringPool.toString(stringIndex1), fStringPool.toString(stringIndex2) };
+        Object[] args = { fStringPool.toString(stringIndex1), fStringPool.toString(stringIndex2)};
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
                                    majorCode,
@@ -1249,9 +1242,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Report a recoverable xml error. */
     protected void reportRecoverableXMLError(int majorCode, int minorCode, 
                                              String string1, String string2) 
-        throws Exception {
+    throws Exception {
 
-        Object[] args = { string1, string2 };
+        Object[] args = { string1, string2};
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
                                    majorCode,
@@ -1266,7 +1259,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                              String string1, String string2, 
                                              String string3) throws Exception {
 
-        Object[] args = { string1, string2, string3 };
+        Object[] args = { string1, string2, string3};
         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                    XMLMessages.XML_DOMAIN,
                                    majorCode,
@@ -1344,8 +1337,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             // And delegate this call to it
             retVal = cmElem.whatCanGoHere(fullyValid, info);
-        }
-        catch (CMException excToCatch) {
+        } catch (CMException excToCatch) {
             // REVISIT - Translate caught error to the protected error handler interface
             int majorCode = excToCatch.getErrorCode();
             fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -1366,7 +1358,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     protected boolean getAttDefIsExternal(QName element, QName attribute) {
         int attDefIndex = getAttDef(element, attribute);
         if (fGrammarIsDTDGrammar ) {
-            return ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attDefIndex);
+            return((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attDefIndex);
         }
         return false;
     }
@@ -1398,15 +1390,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // getLocatorImpl(LocatorImpl):LocatorImpl
 
-  
+
     // initialization
 
     /** Reset pool. */
     private void poolReset() {
-        try{
+        try {
             this.fValIDRef.validate(null, this.fResetIDRef );
             this.fValIDRefs.validate(null, this.fResetIDRef );
-        } catch( InvalidDatatypeValueException ex ){
+        } catch ( InvalidDatatypeValueException ex ) {
             System.err.println("Error re-Initializing: ID,IDRef,IDRefs pools" );
         }
     } // poolReset()
@@ -1479,25 +1471,25 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
 
-        try{//Initialize ENTITIES and ENTITY Validators
+        try {//Initialize ENTITIES and ENTITY Validators
 
             Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
-                                                     (Object) this.fStringPool };
+                (Object) this.fStringPool};
             fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
             fValENTITIES.validate( null, fValidateENTITYMsg );
             fValENTITY.validate( null, fValidateENTITYMsg );
-        } catch ( InvalidDatatypeValueException ex ){
+        } catch ( InvalidDatatypeValueException ex ) {
             System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
         }
 
-        
+
     } // init()
 
     // other
 
     // default attribute
 
-        /** addDefaultAttributes. */
+    /** addDefaultAttributes. */
     private int addDefaultAttributes(int elementIndex, XMLAttrList attrList, int attrIndex, boolean validationEnabled, boolean standalone) throws Exception {
 
         //System.out.println("XMLValidator#addDefaultAttributes");
@@ -1545,7 +1537,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             if (fTempAttDecl.defaultValue != null ) {
                 attValue = fStringPool.addSymbol(fTempAttDecl.defaultValue);
             }
-            
+
             boolean specified = false;
             boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
 
@@ -1564,15 +1556,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 if (alistValue != attValue &&
                                     !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {
                                     Object[] args = { fStringPool.toString(elementNameIndex),
-                                                    fStringPool.toString(attName),
-                                                    fStringPool.toString(alistValue),
-                                                    fStringPool.toString(attValue) };
+                                        fStringPool.toString(attName),
+                                        fStringPool.toString(alistValue),
+                                        fStringPool.toString(attValue)};
                                     fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                            XMLMessages.XML_DOMAIN,
-                                                            XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
-                                                            XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
-                                                            args,
-                                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                                               XMLMessages.XML_DOMAIN,
+                                                               XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
+                                                               XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
+                                                               args,
+                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                 }
                             }
                             specified = true;
@@ -1587,7 +1579,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (required) {
                     if (validationEnabled) {
                         Object[] args = { fStringPool.toString(elementNameIndex),
-                                          fStringPool.toString(attName) };
+                            fStringPool.toString(attName)};
                         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                    XMLMessages.XML_DOMAIN,
                                                    XMLMessages.MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED,
@@ -1595,26 +1587,24 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                    args,
                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                     }
-                } 
-                else if (attValue != -1) {
+                } else if (attValue != -1) {
                     if (validationEnabled && standalone )
                         if ( fGrammarIsDTDGrammar 
                              && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
-                        
-                        Object[] args = { fStringPool.toString(elementNameIndex),
-                                          fStringPool.toString(attName) };
-                        fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                   XMLMessages.XML_DOMAIN,
-                                                   XMLMessages.MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED,
-                                                   XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                   args,
-                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                    }
+
+                            Object[] args = { fStringPool.toString(elementNameIndex),
+                                fStringPool.toString(attName)};
+                            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                       XMLMessages.XML_DOMAIN,
+                                                       XMLMessages.MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED,
+                                                       XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                       args,
+                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                        }
                     if (attType == fIDREFSymbol) {
-                         this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
-                    } 
-                    else if (attType == fIDREFSSymbol) {
-                         this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                        this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
+                    } else if (attType == fIDREFSSymbol) {
+                        this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     }
                     if (attrIndex == -1) {
                         attrIndex = attrList.startAttrList();
@@ -1635,7 +1625,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // addDefaultAttributes(int,XMLAttrList,int,boolean,boolean):int
 
-        /** addDTDDefaultAttributes. */
+    /** addDTDDefaultAttributes. */
     private int addDTDDefaultAttributes(QName element, XMLAttrList attrList, int attrIndex, boolean validationEnabled, boolean standalone) throws Exception {
 
 
@@ -1660,7 +1650,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         int firstCheck = attrIndex;
         int lastCheck = -1;
         while (attlistIndex != -1) {
-            
+
             fGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
             // TO DO: For ericye Debug only
@@ -1690,7 +1680,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             boolean specified = false;
             boolean required = attDefType == XMLAttributeDecl.DEFAULT_TYPE_REQUIRED;
-            
+
 
             /****
             if (fValidating && fGrammar != null && fGrammarIsDTDGrammar && attValue != -1) {
@@ -1706,22 +1696,22 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     int i = attrList.getFirstAttr(firstCheck);
                     while (i != -1 && (lastCheck == -1 || i <= lastCheck)) {
 
-                        if ( attrList.getAttrName(i) == fTempAttDecl.name.rawname )  {
+                        if ( attrList.getAttrName(i) == fTempAttDecl.name.rawname ) {
 
                             if (validationEnabled && attDefType == XMLAttributeDecl.DEFAULT_TYPE_FIXED) {
                                 int alistValue = attrList.getAttValue(i);
                                 if (alistValue != attValue &&
                                     !fStringPool.toString(alistValue).equals(fStringPool.toString(attValue))) {
                                     Object[] args = { fStringPool.toString(elementNameIndex),
-                                                    fStringPool.toString(attName),
-                                                    fStringPool.toString(alistValue),
-                                                    fStringPool.toString(attValue) };
+                                        fStringPool.toString(attName),
+                                        fStringPool.toString(alistValue),
+                                        fStringPool.toString(attValue)};
                                     fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                            XMLMessages.XML_DOMAIN,
-                                                            XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
-                                                            XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
-                                                            args,
-                                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                                                               XMLMessages.XML_DOMAIN,
+                                                               XMLMessages.MSG_FIXED_ATTVALUE_INVALID,
+                                                               XMLMessages.VC_FIXED_ATTRIBUTE_DEFAULT,
+                                                               args,
+                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                 }
                             }
                             specified = true;
@@ -1736,7 +1726,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (required) {
                     if (validationEnabled) {
                         Object[] args = { fStringPool.toString(elementNameIndex),
-                                          fStringPool.toString(attName) };
+                            fStringPool.toString(attName)};
                         fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                    XMLMessages.XML_DOMAIN,
                                                    XMLMessages.MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED,
@@ -1744,25 +1734,23 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                    args,
                                                    XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                     }
-                } 
-                else if (attValue != -1) {
+                } else if (attValue != -1) {
                     if (validationEnabled && standalone )
                         if ( fGrammarIsDTDGrammar 
                              && ((DTDGrammar) fGrammar).getAttributeDeclIsExternal(attlistIndex) ) {
-                        
-                        Object[] args = { fStringPool.toString(elementNameIndex),
-                                          fStringPool.toString(attName) };
-                        fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                   XMLMessages.XML_DOMAIN,
-                                                   XMLMessages.MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED,
-                                                   XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                   args,
-                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                    }
+
+                            Object[] args = { fStringPool.toString(elementNameIndex),
+                                fStringPool.toString(attName)};
+                            fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                       XMLMessages.XML_DOMAIN,
+                                                       XMLMessages.MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED,
+                                                       XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                       args,
+                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
+                        }
                     if (attType == fIDREFSymbol) {
                         this.fValIDRef.validate( fStringPool.toString(attValue), this.fStoreIDRef );
-                    } 
-                    else if (attType == fIDREFSSymbol) {
+                    } else if (attType == fIDREFSSymbol) {
                         this.fValIDRefs.validate( fStringPool.toString(attValue), this.fStoreIDRef );
                     }
                     if (attrIndex == -1) {
@@ -1783,7 +1771,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         return attrIndex;
 
     } // addDTDDefaultAttributes(int,XMLAttrList,int,boolean,boolean):int
-    
+
     // content models
 
     /** Queries the content model for the specified element index. */
@@ -1797,12 +1785,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //return fGrammar.getElementContentModel(elementIndex);
         return contentModel;
     }
-    
+
 
 
     // query attribute information
-    
-      /** Returns an attribute definition for an element type. */
+
+    /** Returns an attribute definition for an element type. */
     // this is only used by DTD validation.
     private int getAttDef(QName element, QName attribute) {
         if (fGrammar != null) {
@@ -1837,32 +1825,28 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             int attDefIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
             while (attDefIndex != -1) {
                 fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl);
-                    
+
                 if (fGrammarIsDTDGrammar) {
-                    if (fTempAttDecl.name.rawname == attribute.rawname ) 
+                    if (fTempAttDecl.name.rawname == attribute.rawname )
                         return attDefIndex;
-                }
-                else 
+                } else
                     if (fTempAttDecl.name.localpart == attribute.localpart &&
-                    fTempAttDecl.name.uri == attribute.uri ) {
+                        fTempAttDecl.name.uri == attribute.uri ) {
                     return attDefIndex;
                 }
 
-                if (fGrammarIsSchemaGrammar){
-                    if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY){ 
+                if (fGrammarIsSchemaGrammar) {
+                    if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY) {
                         return attDefIndex;
-                    }
-                    else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
+                    } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL) {
                         if (attribute.uri == -1) {
                             return attDefIndex;
                         }
-                    }
-                    else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
+                    } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) {
                         if (attribute.uri != fTempAttDecl.name.uri) {
                             return attDefIndex;
                         }
-                    }
-                    else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST) {
+                    } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST) {
                         if (fStringPool.stringInList(fTempAttDecl.enumeration, attribute.uri)) {
                             return attDefIndex;
                         }
@@ -1883,32 +1867,31 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         // this is what it used to be
         //if  (fDynamicValidation && !fSeenDoctypeDecl) {
-          //fValidating = false;
+        //fValidating = false;
         //}
 
 
-        if ( fLoadDTDGrammar ) 
+        if ( fLoadDTDGrammar )
             // initialize the grammar to be the default one, 
             // it definitely should be a DTD Grammar at this case;
             if (fGrammar == null) {
 
                 fGrammar = fGrammarResolver.getGrammar("");
-                
+
                 //TO DO, for ericye debug only
                 if (fGrammar == null && DEBUG_SCHEMA_VALIDATION) {
                     System.out.println("Oops! no grammar is found for validation");
                 }
-                
-                if  (fDynamicValidation && fGrammar==null) {
-                  fValidating = false;
+
+                if (fDynamicValidation && fGrammar==null) {
+                    fValidating = false;
                 }
-                
+
                 if (fGrammar != null) {
                     if (fGrammar instanceof DTDGrammar) {
                         fGrammarIsDTDGrammar = true;
                         fGrammarIsSchemaGrammar = false;
-                    }
-                    else if ( fGrammar instanceof SchemaGrammar ) {
+                    } else if ( fGrammar instanceof SchemaGrammar ) {
                         fGrammarIsSchemaGrammar = true;
                         fGrammarIsDTDGrammar = false;
                     }
@@ -1919,7 +1902,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         if (fValidating) {
             if ( fGrammarIsDTDGrammar && 
-                ((DTDGrammar) fGrammar).getRootElementQName(fRootElement) ) {
+                 ((DTDGrammar) fGrammar).getRootElementQName(fRootElement) ) {
 
                 String root1 = fStringPool.toString(fRootElement.rawname);
                 String root2 = fStringPool.toString(rootElement.rawname);
@@ -1946,7 +1929,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     } // rootElementSpecified(QName)
 
     /** Switchs to correct validating symbol tables when Schema changes.*/
-    
+
     private boolean switchGrammar(int newGrammarNameSpaceIndex) throws Exception {
         Grammar tempGrammar = fGrammarResolver.getGrammar(fStringPool.toString(newGrammarNameSpaceIndex));
         if (tempGrammar == null) {
@@ -1955,14 +1938,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
         if (tempGrammar == null) {
             return false;
-        }
-        else {
+        } else {
             fGrammar = tempGrammar;
             if (fGrammar instanceof DTDGrammar) {
                 fGrammarIsDTDGrammar = true;
                 fGrammarIsSchemaGrammar = false;
-            }
-            else if ( fGrammar instanceof SchemaGrammar ) {
+            } else if ( fGrammar instanceof SchemaGrammar ) {
                 fGrammarIsSchemaGrammar = true;
                 fGrammarIsDTDGrammar = false;
             }
@@ -1974,13 +1955,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Binds namespaces to the element and attributes. */
     private void bindNamespacesToElementAndAttributes(QName element, 
                                                       XMLAttrList attrList)
-        throws Exception {
+    throws Exception {
 
         fNamespacesScope.increaseDepth();
 
         //Vector schemaCandidateURIs = null;
         Hashtable locationUriPairs = null;
-        
+
         if (fAttrListHandle != -1) {
             int index = attrList.getFirstAttr(fAttrListHandle);
             while (index != -1) {
@@ -1992,12 +1973,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     //       method.
                     fDocumentScanner.checkXMLLangAttributeValue(attrList.getAttValue(index));
                     /***/
-                } 
-                else if (fStringPool.equalNames(attName, fNamespacesPrefix)) {
+                } else if (fStringPool.equalNames(attName, fNamespacesPrefix)) {
                     int uri = fStringPool.addSymbol(attrList.getAttValue(index));
                     fNamespacesScope.setNamespaceForPrefix(StringPool.EMPTY_STRING, uri);
-                } 
-                else {
+                } else {
                     if (attPrefix == fNamespacesPrefix) {
                         int nsPrefix = attrList.getAttrLocalpart(index);
                         int uri = fStringPool.addSymbol(attrList.getAttValue(index));
@@ -2030,14 +2009,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 fXsiTypeAttValue = -1;
                 index = attrList.getFirstAttr(fAttrListHandle);
                 while (index != -1) {
-                    
+
                     int attName = attrList.getAttrName(index);
                     int attPrefix = attrList.getAttrPrefix(index);
-                    
+
                     if (fStringPool.equalNames(attName, fNamespacesPrefix)) {
                         // REVISIT
-                    } 
-                    else {
+                    } else {
                         if ( DEBUG_SCHEMA_VALIDATION ) {
                             System.out.println("deal with XSI");
                             System.out.println("before find XSI: "+fStringPool.toString(attPrefix)
@@ -2057,8 +2035,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     locationUriPairs = new Hashtable();
                                 }
                                 parseSchemaLocation(fStringPool.toString(attrList.getAttValue(index)), locationUriPairs);
-                            }
-                            else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION))  {
+                            } else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION)) {
                                 if (locationUriPairs == null) {
                                     locationUriPairs = new Hashtable();
                                 }
@@ -2068,8 +2045,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""), 
                                                                             fStringPool.addSymbol(""));
                                 }
-                            }
-                            else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_TYPE)) {
+                            } else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_TYPE)) {
                                 fXsiTypeAttValue = attrList.getAttValue(index);
                             }
                             // REVISIT: should we break here? 
@@ -2110,7 +2086,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         if (element.prefix != -1 || uri != -1) {
             element.uri = uri;
             if (element.uri == -1) {
-                Object[] args = { fStringPool.toString(element.prefix) };
+                Object[] args = { fStringPool.toString(element.prefix)};
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                            XMLMessages.XMLNS_DOMAIN,
                                            XMLMessages.MSG_PREFIX_DECLARED,
@@ -2131,7 +2107,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         if (attPrefix != -1 ) {
                             int attrUri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
                             if (attrUri == -1) {
-                                Object[] args = { fStringPool.toString(attPrefix) };
+                                Object[] args = { fStringPool.toString(attPrefix)};
                                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                            XMLMessages.XMLNS_DOMAIN,
                                                            XMLMessages.MSG_PREFIX_DECLARED,
@@ -2148,15 +2124,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
 
     } // bindNamespacesToElementAndAttributes(QName,XMLAttrList)
-    
+
     void parseSchemaLocation(String schemaLocationStr, Hashtable locationUriPairs){
         if (locationUriPairs != null) {
             StringTokenizer tokenizer = new StringTokenizer(schemaLocationStr, " \n\t\r", false);
             int tokenTotal = tokenizer.countTokens();
             if (tokenTotal % 2 != 0 ) {
                 // TO DO: report warning - malformed schemaLocation string
-            }
-            else {
+            } else {
                 while (tokenizer.hasMoreTokens()) {
                     String uri = tokenizer.nextToken();
                     String location = tokenizer.nextToken();
@@ -2164,8 +2139,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     locationUriPairs.put(location, uri);
                 }
             }
-        }
-        else {
+        } else {
             // TO DO: should report internal error here
         }
 
@@ -2183,9 +2157,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 parser.setFeature("http://xml.org/sax/features/validation", false);
                 parser.setFeature("http://xml.org/sax/features/namespaces", true);
                 parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
-            }catch(  org.xml.sax.SAXNotRecognizedException e ) {
+            } catch (  org.xml.sax.SAXNotRecognizedException e ) {
                 e.printStackTrace();
-            }catch( org.xml.sax.SAXNotSupportedException e ) {
+            } catch ( org.xml.sax.SAXNotSupportedException e ) {
                 e.printStackTrace();
             }
 
@@ -2201,9 +2175,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             try {
                 parser.parse( source );
-            }catch( IOException e ) {
+            } catch ( IOException e ) {
                 e.printStackTrace();
-            }catch( SAXException e ) {
+            } catch ( SAXException e ) {
                 //System.out.println("loc = "+loc);
                 //e.printStackTrace();
                 reportRecoverableXMLError( XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
@@ -2221,19 +2195,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
                 if (root == null) {
                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Can't get back Schema document's root element :" + loc); 
-                }
-                else {
+                } else {
                     if (uri == null || !uri.equals(root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE)) ) {
                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Schema in " + loc + " has a different target namespace " + 
-                                           "from the one specified in the instance document :" + uri); 
+                                                  "from the one specified in the instance document :" + uri); 
                     }
                     grammar = new SchemaGrammar();
                     grammar.setGrammarDocument(document);
                     tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId());
                     fGrammarResolver.putGrammar(document.getDocumentElement().getAttribute("targetNamespace"), grammar);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace(System.err);
             }
         }
@@ -2282,7 +2254,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //
 
         public InputSource resolveEntity(String publicId, String systemId)
-            throws IOException, SAXException {
+        throws IOException, SAXException {
 
             // looking for the schema DTDs?
             for (int i = 0; i < SYSTEM.length; i++) {
@@ -2293,7 +2265,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     return source;
                 }
             }
-    
+
             // first try to resolve using user's entity resolver
             EntityResolver resolver = fEntityHandler.getEntityResolver();
             if (resolver != null) {
@@ -2305,91 +2277,91 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
             // use default resolution
             return new InputSource(fEntityHandler.expandSystemId(systemId));
-    
+
         } // resolveEntity(String,String):InputSource
 
     } // class Resolver
 
     static class ErrorHandler implements org.xml.sax.ErrorHandler {
 
-    /** Warning. */
-    public void warning(SAXParseException ex) {
-        System.err.println("[Warning] "+
-                           getLocationString(ex)+": "+
-                           ex.getMessage());
-    }
-
-    /** Error. */
-    public void error(SAXParseException ex) {
-        System.err.println("[Error] "+
-                           getLocationString(ex)+": "+
-                           ex.getMessage());
-    }
-
-    /** Fatal error. */
-    public void fatalError(SAXParseException ex)  {
-        System.err.println("[Fatal Error] "+
-                           getLocationString(ex)+": "+
-                           ex.getMessage());
-        //throw ex;
-    }
-
-    //
-    // Private methods
-    //
-
-    /** Returns a string of the location. */
-    private String getLocationString(SAXParseException ex) {
-        StringBuffer str = new StringBuffer();
-
-        String systemId_ = ex.getSystemId();
-        if (systemId_ != null) {
-            int index = systemId_.lastIndexOf('/');
-            if (index != -1)
-                systemId_ = systemId_.substring(index + 1);
-            str.append(systemId_);
+        /** Warning. */
+        public void warning(SAXParseException ex) {
+            System.err.println("[Warning] "+
+                               getLocationString(ex)+": "+
+                               ex.getMessage());
         }
-        str.append(':');
-        str.append(ex.getLineNumber());
-        str.append(':');
-        str.append(ex.getColumnNumber());
 
-        return str.toString();
+        /** Error. */
+        public void error(SAXParseException ex) {
+            System.err.println("[Error] "+
+                               getLocationString(ex)+": "+
+                               ex.getMessage());
+        }
 
-    } // getLocationString(SAXParseException):String
+        /** Fatal error. */
+        public void fatalError(SAXParseException ex)  {
+            System.err.println("[Fatal Error] "+
+                               getLocationString(ex)+": "+
+                               ex.getMessage());
+            //throw ex;
+        }
+
+        //
+        // Private methods
+        //
+
+        /** Returns a string of the location. */
+        private String getLocationString(SAXParseException ex) {
+            StringBuffer str = new StringBuffer();
+
+            String systemId_ = ex.getSystemId();
+            if (systemId_ != null) {
+                int index = systemId_.lastIndexOf('/');
+                if (index != -1)
+                    systemId_ = systemId_.substring(index + 1);
+                str.append(systemId_);
+            }
+            str.append(':');
+            str.append(ex.getLineNumber());
+            str.append(':');
+            str.append(ex.getColumnNumber());
+
+            return str.toString();
+
+        } // getLocationString(SAXParseException):String
     }
 
     private int attributeTypeName(XMLAttributeDecl attrDecl) {
         switch (attrDecl.type) {
-            //case XMLAttributeDecl.TYPE_CDATA:
-            case XMLAttributeDecl.TYPE_ENTITY: {
+        //case XMLAttributeDecl.TYPE_CDATA:
+        case XMLAttributeDecl.TYPE_ENTITY: {
                 return attrDecl.list ? fENTITIESSymbol : fENTITYSymbol;
             }
-            case XMLAttributeDecl.TYPE_ENUMERATION: {
+        case XMLAttributeDecl.TYPE_ENUMERATION: {
                 String enumeration = fStringPool.stringListAsString(attrDecl.enumeration);
                 return fStringPool.addString(enumeration);
             }
-            case XMLAttributeDecl.TYPE_ID: {
+        case XMLAttributeDecl.TYPE_ID: {
                 return fIDSymbol;
             }
-            case XMLAttributeDecl.TYPE_IDREF: {
+        case XMLAttributeDecl.TYPE_IDREF: {
                 return attrDecl.list ? fIDREFSSymbol : fIDREFSymbol;
             }
-            case XMLAttributeDecl.TYPE_NMTOKEN: {
+        case XMLAttributeDecl.TYPE_NMTOKEN: {
                 return attrDecl.list ? fNMTOKENSSymbol : fNMTOKENSSymbol;
             }
-            case XMLAttributeDecl.TYPE_NOTATION: {
+        case XMLAttributeDecl.TYPE_NOTATION: {
                 return fNOTATIONSymbol;
             }
         }
         return fCDATASymbol;
     }
 
-        /** Validates element and attributes. */
+    /** Validates element and attributes. */
     private void validateElementAndAttributes(QName element, 
                                               XMLAttrList attrList) 
-        throws Exception {
-        
+    throws Exception {
+
         if ((fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
             (fGrammar == null && !fValidating && !fNamespacesEnabled) ) {
             fCurrentElementIndex = -1;
@@ -2408,7 +2380,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             return;
         }
-        
+
         int elementIndex = -1;
         int contentSpecType = -1;
 
@@ -2422,61 +2394,52 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             for (int i=0; i<cv.leafCount; i++) {
                 int type = cv.leafTypes[i]  ;
                 //System.out.println("******* see a ANY_OTHER_SKIP, "+type+","+element+","+fElemMap[i]+"\n*******");
-                
+
                 if (type == XMLContentSpec.CONTENTSPECNODE_LEAF) {
                     if (fElemMap[i].uri==element.uri
                         && fElemMap[i].localpart == element.localpart)
                         break;
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY) {
                     int uri = fElemMap[i].uri;
                     if (uri == -1 || uri == element.uri) {
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
                     if (element.uri == -1) {
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER) {
                     if (fElemMap[i].uri != element.uri) {
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_SKIP) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_SKIP) {
                     int uri = fElemMap[i].uri;
                     if (uri == -1 || uri == element.uri) {
                         skipThisOne = true;
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_SKIP) {
                     if (element.uri == -1) {
                         skipThisOne = true;
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_SKIP) {
                     if (fElemMap[i].uri != element.uri) {
                         skipThisOne = true;
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LAX) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LAX) {
                     int uri = fElemMap[i].uri;
                     if (uri == -1 || uri == element.uri) {
                         laxThisOne = true;
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL_LAX) {
                     if (element.uri == -1) {
                         laxThisOne = true;
                         break;
                     }
-                }
-                else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX) {
+                } else if (type == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER_LAX) {
                     if (fElemMap[i].uri != element.uri) {
                         laxThisOne = true;
                         break;
@@ -2486,12 +2449,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
 
         }
-        
+
         if (skipThisOne) {
             fNeedValidationOff = true;
-        }
-        else {
-       
+        } else {
+
             //REVISIT: is this the right place to check on if the Schema has changed?
 
             if ( fNamespacesEnabled && fValidating && element.uri != fGrammarNameSpaceIndex && element.uri != -1  ) {
@@ -2507,7 +2469,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
 
 
-            if ( fGrammar != null ){
+            if ( fGrammar != null ) {
                 if (DEBUG_SCHEMA_VALIDATION) {
                     System.out.println("*******Lookup element: uri: " + fStringPool.toString(element.uri)+
                                        "localpart: '" + fStringPool.toString(element.localpart)
@@ -2552,15 +2514,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     if (elementIndex == -1) {
                         if (laxThisOne) {
                             fNeedValidationOff = true;
-                        }
-                        else
+                        } else
                             if (DEBUG_SCHEMA_VALIDATION)
-                                System.out.println("!!! can not find elementDecl in the grammar, " +
-                                                   " the element localpart: " + element.localpart +
-                                                   "["+fStringPool.toString(element.localpart) +"]" +
-                                                   " the element uri: " + element.uri + 
-                                                   "["+fStringPool.toString(element.uri) +"]" +
-                                                   " and the current enclosing scope: " + fCurrentScope );
+                            System.out.println("!!! can not find elementDecl in the grammar, " +
+                                               " the element localpart: " + element.localpart +
+                                               "["+fStringPool.toString(element.localpart) +"]" +
+                                               " the element uri: " + element.uri + 
+                                               "["+fStringPool.toString(element.uri) +"]" +
+                                               " and the current enclosing scope: " + fCurrentScope );
                     }
                     /****/
                 }
@@ -2619,10 +2580,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                   fErrorReporter.getLocator().getSystemId()
                                                   +" line"+fErrorReporter.getLocator().getLineNumber()
                                                   +", canot resolve xsi:type = " + xsiType+"  ---2");
-                    }
-                    else {
+                    } else {
                         TraverseSchema.ComplexTypeInfo typeInfo = 
-                            (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
+                        (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
                         //TO DO:
                         //      here need to check if this substitution is legal based on the current active grammar,
                         //      this should be easy, cause we already saved final, block and base type information in 
@@ -2631,16 +2591,14 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         if (typeInfo==null) {
                             if (uri.length() == 0 || uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) ) {
                                 fXsiTypeValidator = dataTypeReg.getDatatypeValidator(localpart);
-                            }
-                            else 
+                            } else
                                 fXsiTypeValidator = dataTypeReg.getDatatypeValidator(uri+","+localpart);
-                            if( fXsiTypeValidator == null ) 
+                            if ( fXsiTypeValidator == null )
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, 
                                                           XMLMessages.SCHEMA_GENERIC_ERROR, 
                                                           "unresolved type : "+uri+","+localpart 
                                                           +" found  in xsi:type handling");
-                        }
-                        else 
+                        } else
                             elementIndex = typeInfo.templateElementIndex;
                     }
 
@@ -2667,7 +2625,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             contentSpecType =  getContentSpecType(elementIndex);
             if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
                 reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
-                                      XMLMessages.VC_ELEMENT_VALID,
+                                          XMLMessages.VC_ELEMENT_VALID,
                                           element.rawname);
             }
             if (fGrammar != null && fGrammarIsSchemaGrammar && elementIndex != -1) {
@@ -2708,135 +2666,126 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     // here, we validate every "user-defined" attributes
                     int _xmlns = fStringPool.addSymbol("xmlns");
 
-                    if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns) 
-                    if (fGrammar != null) {
-                        fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
-                        fTempQName.setValues(attrList.getAttrPrefix(index), 
-                                             attrList.getAttrLocalpart(index),
-                                             attrList.getAttrName(index),
+                    if (attrNameIndex != _xmlns && attrList.getAttrPrefix(index) != _xmlns)
+                        if (fGrammar != null) {
+                            fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
+                            fTempQName.setValues(attrList.getAttrPrefix(index), 
+                                                 attrList.getAttrLocalpart(index),
+                                                 attrList.getAttrName(index),
                                                  attrList.getAttrURI(index) );
-                        int attDefIndex = getAttDefByElementIndex(elementIndex, fTempQName);
+                            int attDefIndex = getAttDefByElementIndex(elementIndex, fTempQName);
 
-                        if (fTempQName.uri != fXsiURI)
-                            if (attDefIndex == -1 ) {
-                                if (fValidating) {
-                                    // REVISIT - cache the elem/attr tuple so that we only give
-                                    //  this error once for each unique occurrence
+                            if (fTempQName.uri != fXsiURI)
+                                if (attDefIndex == -1 ) {
+                                    if (fValidating) {
+                                        // REVISIT - cache the elem/attr tuple so that we only give
+                                        //  this error once for each unique occurrence
                                         Object[] args = { fStringPool.toString(element.rawname),
-                                            fStringPool.toString(attrList.getAttrName(index)) };
+                                            fStringPool.toString(attrList.getAttrName(index))};
 
-                                            /*****/
-                                            fErrorReporter.reportError(fAttrNameLocator,
-                                                                       XMLMessages.XML_DOMAIN,
-                                                                       XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
-                                                                       XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
-                                                                       args,
-                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                            /******/   
-                                }
-                            }
-                            else  {
-
-                                fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
-
-                                int attributeType = attributeTypeName(fTempAttDecl);
-                                attrList.setAttType(index, attributeType);
-
-                                if (fValidating) {
-
-                                    if (fGrammarIsDTDGrammar && 
-                                        (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
-                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
-                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
-                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ||
-                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
-                                         fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
-                                        ) {
-                                        validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
+                                        /*****/
+                                        fErrorReporter.reportError(fAttrNameLocator,
+                                                                   XMLMessages.XML_DOMAIN,
+                                                                   XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
+                                                                   XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
+                                                                   args,
+                                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);   
+                                        /******/
                                     }
-                                    
-                                    // check to see if this attribute matched an attribute wildcard
-                                    else if ( fGrammarIsSchemaGrammar && 
-                                         (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
-                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
-                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
-                                          ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
+                                } else {
 
-                                        if (fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_SKIP) {
-                                            // attribute should just be bypassed, 
+                                    fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
+
+                                    int attributeType = attributeTypeName(fTempAttDecl);
+                                    attrList.setAttType(index, attributeType);
+
+                                    if (fValidating) {
+
+                                        if (fGrammarIsDTDGrammar && 
+                                            (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
+                                             fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
+                                             fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
+                                             fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ||
+                                             fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
+                                             fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
+                                           ) {
+                                            validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                         }
-                                        else if ( fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT
-                                                  || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX)  {
 
-                                            boolean reportError = false;
-                                            boolean processContentStrict = 
+                                        // check to see if this attribute matched an attribute wildcard
+                                        else if ( fGrammarIsSchemaGrammar && 
+                                                  (fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_ANY 
+                                                   ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LIST
+                                                   ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_LOCAL 
+                                                   ||fTempAttDecl.type == XMLAttributeDecl.TYPE_ANY_OTHER) ) {
+
+                                            if (fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_SKIP) {
+                                                // attribute should just be bypassed, 
+                                            } else if ( fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT
+                                                        || fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_LAX) {
+
+                                                boolean reportError = false;
+                                                boolean processContentStrict = 
                                                 fTempAttDecl.defaultType == XMLAttributeDecl.PROCESSCONTENTS_STRICT;
 
-                                            if (fTempQName.uri == -1) {
-                                                if (processContentStrict) {
-                                                    reportError = true;
-                                                }
-                                            }
-                                            else {
-                                                Grammar aGrammar = 
-                                                    fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
-
-                                                if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
+                                                if (fTempQName.uri == -1) {
                                                     if (processContentStrict) {
                                                         reportError = true;
                                                     }
-                                                }
-                                                else {
-                                                    SchemaGrammar sGrammar = (SchemaGrammar) aGrammar;
-                                                    Hashtable attRegistry = sGrammar.getAttirubteDeclRegistry();
-                                                    if (attRegistry == null) {
+                                                } else {
+                                                    Grammar aGrammar = 
+                                                    fGrammarResolver.getGrammar(fStringPool.toString(fTempQName.uri));
+
+                                                    if (aGrammar == null || !(aGrammar instanceof SchemaGrammar) ) {
                                                         if (processContentStrict) {
                                                             reportError = true;
                                                         }
-                                                    }
-                                                    else {
-                                                        XMLAttributeDecl attDecl = (XMLAttributeDecl) attRegistry.get(fStringPool.toString(fTempQName.localpart));
-                                                        if (attDecl == null) {
+                                                    } else {
+                                                        SchemaGrammar sGrammar = (SchemaGrammar) aGrammar;
+                                                        Hashtable attRegistry = sGrammar.getAttirubteDeclRegistry();
+                                                        if (attRegistry == null) {
                                                             if (processContentStrict) {
                                                                 reportError = true;
                                                             }
-                                                        }
-                                                        else {
-                                                            DatatypeValidator attDV = attDecl.datatypeValidator;
-                                                            if (attDV == null) {
+                                                        } else {
+                                                            XMLAttributeDecl attDecl = (XMLAttributeDecl) attRegistry.get(fStringPool.toString(fTempQName.localpart));
+                                                            if (attDecl == null) {
                                                                 if (processContentStrict) {
                                                                     reportError = true;
                                                                 }
-                                                            }
-                                                            else {
-                                                                try {
-                                                                    String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                                                    String  value       = unTrimValue.trim();
-                                                                    if(attDecl.type == XMLAttributeDecl.TYPE_ID ){
-                                                                        this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                                            } else {
+                                                                DatatypeValidator attDV = attDecl.datatypeValidator;
+                                                                if (attDV == null) {
+                                                                    if (processContentStrict) {
+                                                                        reportError = true;
                                                                     }
-                                                                    if(attDecl.type == XMLAttributeDecl.TYPE_IDREF ){
-                                                                        attDV.validate(value, this.fStoreIDRef );
+                                                                } else {
+                                                                    try {
+                                                                        String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
+                                                                        String  value       = unTrimValue.trim();
+                                                                        if (attDecl.type == XMLAttributeDecl.TYPE_ID ) {
+                                                                            this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                                                        }
+                                                                        if (attDecl.type == XMLAttributeDecl.TYPE_IDREF ) {
+                                                                            attDV.validate(value, this.fStoreIDRef );
+                                                                        } else
+                                                                            attDV.validate(unTrimValue, null );
+                                                                    } catch (InvalidDatatypeValueException idve) {
+                                                                        fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                                                   SchemaMessageProvider.SCHEMA_DOMAIN,
+                                                                                                   SchemaMessageProvider.DatatypeError,
+                                                                                                   SchemaMessageProvider.MSG_NONE,
+                                                                                                   new Object [] { idve.getMessage()},
+                                                                                                   XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                                                     }
-                                                                    else
-                                                                        attDV.validate(unTrimValue, null );
-                                                                }
-                                                                catch (InvalidDatatypeValueException idve) {
-                                                                    fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                                                               SchemaMessageProvider.SCHEMA_DOMAIN,
-                                                                                               SchemaMessageProvider.DatatypeError,
-                                                                                               SchemaMessageProvider.MSG_NONE,
-                                                                                               new Object [] { idve.getMessage() },
-                                                                                               XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
-                                            }
-                                            if (reportError) {
-                                                Object[] args = { fStringPool.toString(element.rawname),
-                                                    "ANY---"+fStringPool.toString(attrList.getAttrName(index)) };
+                                                if (reportError) {
+                                                    Object[] args = { fStringPool.toString(element.rawname),
+                                                        "ANY---"+fStringPool.toString(attrList.getAttrName(index))};
 
                                                     fErrorReporter.reportError(fAttrNameLocator,    
                                                                                XMLMessages.XML_DOMAIN,
@@ -2845,12 +2794,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                                                args,
                                                                                XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
 
+                                                }
                                             }
-                                        }
-                                    }
-                                    else if (fTempAttDecl.datatypeValidator == null) {
-                                        Object[] args = { fStringPool.toString(element.rawname),
-                                            fStringPool.toString(attrList.getAttrName(index)) };
+                                        } else if (fTempAttDecl.datatypeValidator == null) {
+                                            Object[] args = { fStringPool.toString(element.rawname),
+                                                fStringPool.toString(attrList.getAttrName(index))};
 
                                             System.out.println("[Error] Datatypevalidator for attribute " + fStringPool.toString(attrList.getAttrName(index))
                                                                + " not found in element type " + fStringPool.toString(element.rawname));
@@ -2861,38 +2809,35 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                                        XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
                                                                        XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
                                                                        args,
-                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                            /****/   
-                                    }
-                                    else{
-                                        try {
-                                            String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
-                                            String  value       = unTrimValue.trim();
-                                            if(fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ){
-                                                this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);   
+                                            /****/
+                                        } else {
+                                            try {
+                                                String  unTrimValue = fStringPool.toString(attrList.getAttValue(index));
+                                                String  value       = unTrimValue.trim();
+                                                if (fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ) {
+                                                    this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
+                                                } else if (fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ) {
+                                                    fTempAttDecl.datatypeValidator.validate(value, this.fStoreIDRef );
+                                                } else {
+                                                    fTempAttDecl.datatypeValidator.validate(unTrimValue, null );
+                                                }
+
+                                            } catch (InvalidDatatypeValueException idve) {
+                                                fErrorReporter.reportError(fErrorReporter.getLocator(),
+                                                                           SchemaMessageProvider.SCHEMA_DOMAIN,
+                                                                           SchemaMessageProvider.DatatypeError,
+                                                                           SchemaMessageProvider.MSG_NONE,
+                                                                           new Object [] { idve.getMessage()},
+                                                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                                             }
-                                            else if(fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ){
-                                                fTempAttDecl.datatypeValidator.validate(value, this.fStoreIDRef );
-                                            } else{
-                                                fTempAttDecl.datatypeValidator.validate(unTrimValue, null );
-                                            }
-
                                         }
-                                        catch (InvalidDatatypeValueException idve) {
-                                            fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                                                       SchemaMessageProvider.SCHEMA_DOMAIN,
-                                                                       SchemaMessageProvider.DatatypeError,
-                                                                       SchemaMessageProvider.MSG_NONE,
-                                                                       new Object [] { idve.getMessage() },
-                                                                       XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-                                        }
-                                    }
-                                } // end of if (fValidating)
+                                    } // end of if (fValidating)
 
 
-                            } // end of if (attDefIndex == -1) else
+                                } // end of if (attDefIndex == -1) else
 
-                    }// end of if (fGrammar != null)
+                        }// end of if (fGrammar != null)
                     index = fAttrList.getNextAttr(index);
                 }
             }
@@ -2907,7 +2852,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         if (attPrefix != -1) {
                             int uri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
                             if (uri == -1) {
-                                Object[] args = { fStringPool.toString(attPrefix) };
+                                Object[] args = { fStringPool.toString(attPrefix)};
                                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                            XMLMessages.XMLNS_DOMAIN,
                                                            XMLMessages.MSG_PREFIX_DECLARED,
@@ -2936,51 +2881,51 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     } // validateElementAndAttributes(QName,XMLAttrList)
 
 
-            //validate attributes in DTD fashion
+    //validate attributes in DTD fashion
     private void validateDTDattribute(QName element, int attValue, 
                                       XMLAttributeDecl attributeDecl) throws Exception{
         AttributeValidator av = null;
         switch (attributeDecl.type) {
         case XMLAttributeDecl.TYPE_ENTITY:
             {
-            boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
-            String  unTrimValue      = fStringPool.toString(attValue);
-            String  value            = unTrimValue.trim();
-            //System.out.println("value = " + value );
+                boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
+                String  unTrimValue      = fStringPool.toString(attValue);
+                String  value            = unTrimValue.trim();
+                //System.out.println("value = " + value );
 
-            try{
-                if ( isAlistAttribute ){
-                    fValENTITIES.validate( value, null );
-                } else {                                           
-                    fValENTITY.validate( value, null );
+                try {
+                    if ( isAlistAttribute ) {
+                        fValENTITIES.validate( value, null );
+                    } else {
+                        fValENTITY.validate( value, null );
+                    }
+                } catch ( InvalidDatatypeValueException ex ) {
+                    if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
+                        reportRecoverableXMLError(ex.getMajorCode(),
+                                                  ex.getMinorCode(),
+                                                  fStringPool.toString( attributeDecl.name.rawname), value );
+                    } else {
+                        System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+                    }
                 }
-            } catch ( InvalidDatatypeValueException ex ){
-                if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
-                    reportRecoverableXMLError(ex.getMajorCode(),
-                                              ex.getMinorCode(),
-                                              fStringPool.toString( attributeDecl.name.rawname), value );
-                } else {
-                    System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
-                }
-            }
 
-            /*if (attributeDecl.list) {
-                av = fAttValidatorENTITIES;
-            }
-            else {
-                av = fAttValidatorENTITY;
-            }*/
+                /*if (attributeDecl.list) {
+                    av = fAttValidatorENTITIES;
+                }
+                else {
+                    av = fAttValidatorENTITY;
+                }*/
 
             }
             break;
         case XMLAttributeDecl.TYPE_ENUMERATION:
-                av = fAttValidatorENUMERATION;
-                break;
+            av = fAttValidatorENUMERATION;
+            break;
         case XMLAttributeDecl.TYPE_ID:
             {
                 String  unTrimValue = fStringPool.toString(attValue);
                 String  value       = unTrimValue.trim();
-                if (fValidationEnabled){
+                if (fValidationEnabled) {
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
                             reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
@@ -2989,12 +2934,12 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         }
                     }
                 }
-                try{
+                try {
                     //this.fIdDefs = (Hashtable) fValID.validate( value, null );
                     //System.out.println("this.fIdDefs = " + this.fIdDefs );
 
                     this.fStoreIDRef.setDatatypeObject( fValID.validate( value, null ) );
-                } catch ( InvalidDatatypeValueException ex ){
+                } catch ( InvalidDatatypeValueException ex ) {
                     reportRecoverableXMLError(ex.getMajorCode(),
                                               ex.getMinorCode(),
                                               fStringPool.toString( attributeDecl.name.rawname), value );
@@ -3007,7 +2952,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 String  value       = unTrimValue.trim();
                 boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
                                                               //changes fTempAttDef
-                if (fValidationEnabled){
+                if (fValidationEnabled) {
                     if (value != unTrimValue) {
                         if (invalidStandaloneAttDef(element, attributeDecl.name)) {
                             reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
@@ -3016,13 +2961,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         }
                     }
                 }
-                try{
-                    if ( isAlistAttribute ){
+                try {
+                    if ( isAlistAttribute ) {
                         fValIDRefs.validate( value, this.fStoreIDRef );
                     } else {
                         fValIDRef.validate( value, this.fStoreIDRef );
                     }
-                } catch ( InvalidDatatypeValueException ex ){
+                } catch ( InvalidDatatypeValueException ex ) {
                     if ( ex.getMajorCode() != 1 && ex.getMinorCode() != -1 ) {
                         reportRecoverableXMLError(ex.getMajorCode(),
                                                   ex.getMinorCode(),
@@ -3038,17 +2983,38 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             av = fAttValidatorNOTATION;
             break;
         case XMLAttributeDecl.TYPE_NMTOKEN:
-            if (attributeDecl.list) {
-                av = fAttValidatorNMTOKENS;
-            }
-            else {
-                av = fAttValidatorNMTOKEN;
+            {
+                String  unTrimValue = fStringPool.toString(attValue);
+                String  value       = unTrimValue.trim();
+                boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
+                //changes fTempAttDef
+                if (fValidationEnabled) {
+                    if (value != unTrimValue) {
+                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
+                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
+                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
+                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
+                        }
+                    }
+                }
+                try {
+                    if ( isAlistAttribute ) {
+                        fValNMTOKENS.validate( value, null );
+                    } else {
+                        fValNMTOKEN.validate( value, null );
+                    }
+                } catch ( InvalidDatatypeValueException ex ) {
+                    reportRecoverableXMLError(XMLMessages.MSG_NMTOKEN_INVALID,
+                                              XMLMessages.VC_NAME_TOKEN,
+                                              fStringPool.toString(attributeDecl.name.rawname), value);//TODO NMTOKENS messge
+                }
+
             }
             break;
         }
         if ( av != null )
-        av.normalize(element, attributeDecl.name, attValue, 
-                     attributeDecl.type, attributeDecl.enumeration);
+            av.normalize(element, attributeDecl.name, attValue, 
+                         attributeDecl.type, attributeDecl.enumeration);
     }
 
     /** Character data in content. */
@@ -3131,11 +3097,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 String childName = (children[index].localpart == -1) ? "#PCDATA" : fStringPool.toString(children[index].localpart);
                 if (index + 1 == childCount) {
                     System.out.println(childName + ")");
-                }
-                else if (index + 1 == 10) {
+                } else if (index + 1 == 10) {
                     System.out.println(childName + ",...)");
-                }
-                else {
+                } else {
                     System.out.print(childName + ",");
                 }
             }
@@ -3160,15 +3124,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             if (childCount != 0) {
                 return 0;
             }
-        }
-        else if (contentType == XMLElementDecl.TYPE_ANY) {
+        } else if (contentType == XMLElementDecl.TYPE_ANY) {
             //
             //  This one is open game so we don't pass any judgement on it
             //  at all. Its assumed to fine since it can hold anything.
             //
-        }
-        else if (contentType == XMLElementDecl.TYPE_MIXED ||  
-                 contentType == XMLElementDecl.TYPE_CHILDREN) {
+        } else if (contentType == XMLElementDecl.TYPE_MIXED ||  
+                   contentType == XMLElementDecl.TYPE_CHILDREN) {
             // Get the content model for this element, faulting it in if needed
             XMLContentModel cmElem = null;
             try {
@@ -3181,8 +3143,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     result = cmElem.validateContentSpecial(children, childOffset, childCount);
                 }
                 return result;
-            }
-            catch(CMException excToCatch) {
+            } catch (CMException excToCatch) {
                 // REVISIT - Translate the caught exception to the protected error API
                 int majorCode = excToCatch.getErrorCode();
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
@@ -3192,13 +3153,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                            null,
                                            XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
             }
-        }
-        else if (contentType == -1) {
+        } else if (contentType == -1) {
             reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
                                       XMLMessages.VC_ELEMENT_VALID,
                                       elementType);
-        }
-        else if (contentType == XMLElementDecl.TYPE_SIMPLE ) {
+        } else if (contentType == XMLElementDecl.TYPE_SIMPLE ) {
 
             XMLContentModel cmElem = null;
             if (childCount > 0) {
@@ -3206,10 +3165,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                            SchemaMessageProvider.SCHEMA_DOMAIN,
                                            SchemaMessageProvider.DatatypeError,
                                            SchemaMessageProvider.MSG_NONE,
-                                           new Object [] { "Can not have element children within a simple type content" },
+                                           new Object [] { "Can not have element children within a simple type content"},
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-            }
-            else {
+            } else {
                 try {
 
                     fGrammar.getElementDecl(elementIndex, fTempElementDecl);
@@ -3226,23 +3184,20 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                         System.out.println("Internal Error: this element have a simpletype "+
                                            "but no datatypevalidator was found, element "+fTempElementDecl.name
                                            +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
-                    }
-                    else {
+                    } else {
                         dv.validate(fDatatypeBuffer.toString(), null);
                     }
 
-                } 
-                catch (InvalidDatatypeValueException idve) {
+                } catch (InvalidDatatypeValueException idve) {
                     fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                SchemaMessageProvider.SCHEMA_DOMAIN,
                                                SchemaMessageProvider.DatatypeError,
                                                SchemaMessageProvider.MSG_NONE,
-                                               new Object [] { idve.getMessage() },
+                                               new Object [] { idve.getMessage()},
                                                XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                 }
             }
-        }
-        else {
+        } else {
             fErrorReporter.reportError(fErrorReporter.getLocator(),
                                        ImplementationMessages.XERCES_IMPLEMENTATION_DOMAIN,
                                        ImplementationMessages.VAL_CST,
@@ -3288,8 +3243,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 QName qname = fElementChildren[i];
                 if (qname != null) {
                     System.out.print(fStringPool.toString(qname.rawname));
-                }
-                else {
+                } else {
                     System.out.print("null");
                 }
                 if (i < fElementChildrenLength - 1) {
@@ -3301,7 +3255,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             System.out.println();
         }
     }
-    
+
     private void printStack() {
         if (DEBUG_ELEMENT_CHILDREN) {
             System.out.print('{');
@@ -3317,7 +3271,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             System.out.println();
         }
     }
-    
+
 
     //
     // Interfaces
@@ -3340,28 +3294,28 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     } // interface AttributeValidator
 
 
-     /** Returns true if invalid standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
+    /** Returns true if invalid standalone attribute definition. */
+    boolean invalidStandaloneAttDef(QName element, QName attribute) {
+        if (fStandaloneReader == -1) {
+            return false;
         }
+        // we are normalizing a default att value...  this ok?
+        if (element.rawname == -1) {
+            return false;
+        }
+        return getAttDefIsExternal(element, attribute);
+    }
 
 
     //
     // Classes
     //
 
-        /**
-         * AttValidatorCDATA.
-     */
+    /**
+     * AttValidatorCDATA.
+ */
     final class AttValidatorCDATA 
-        implements AttributeValidator {
+    implements AttributeValidator {
 
         //
         // AttributeValidator methods
@@ -3377,146 +3331,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // class AttValidatorCDATA
 
-
-    /**
-     * AttValidatorNMTOKEN.
-     */
-    final class AttValidatorNMTOKEN 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            String newAttValue = attValue.trim();
-            if (fValidating) {
-                // REVISIT - can we release the old string?
-                if (newAttValue != attValue) {
-                    if (invalidStandaloneAttDef(element, attribute)) {
-                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                  fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                    }
-                    attValueHandle = fStringPool.addSymbol(newAttValue);
-                } 
-                else {
-                    attValueHandle = fStringPool.addSymbol(attValueHandle);
-                }
-                if (!XMLCharacterProperties.validNmtoken(newAttValue)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_NMTOKEN_INVALID,
-                                              XMLMessages.VC_NAME_TOKEN,
-                                              fStringPool.toString(attribute.rawname), newAttValue);
-                }
-            } 
-            else if (newAttValue != attValue) {
-                // REVISIT - can we release the old string?
-                attValueHandle = fStringPool.addSymbol(newAttValue);
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if invalid standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorNMTOKEN
-
-    /**
-     * AttValidatorNMTOKENS.
-     */
-    final class AttValidatorNMTOKENS 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            StringTokenizer tokenizer = new StringTokenizer(attValue);
-            StringBuffer sb = new StringBuffer(attValue.length());
-            boolean ok = true;
-            if (tokenizer.hasMoreTokens()) {
-                while (true) {
-                    String nmtoken = tokenizer.nextToken();
-                    if (fValidating && !XMLCharacterProperties.validNmtoken(nmtoken)) {
-                        ok = false;
-                    }
-                    sb.append(nmtoken);
-                    if (!tokenizer.hasMoreTokens()) {
-                        break;
-                    }
-                    sb.append(' ');
-                }
-            }
-            String newAttValue = sb.toString();
-            if (fValidating && (!ok || newAttValue.length() == 0)) {
-                reportRecoverableXMLError(XMLMessages.MSG_NMTOKENS_INVALID,
-                                          XMLMessages.VC_NAME_TOKEN,
-                                          fStringPool.toString(attribute.rawname), newAttValue);
-            }
-            if (!newAttValue.equals(attValue)) {
-                attValueHandle = fStringPool.addString(newAttValue);
-                if (fValidating && invalidStandaloneAttDef(element, attribute)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                              XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                              fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                }
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorNMTOKENS
-
     /**
      * AttValidatorNOTATION.
      */
     final class AttValidatorNOTATION 
-        implements AttributeValidator {
+    implements AttributeValidator {
 
         //
         // AttributeValidator methods
@@ -3540,8 +3359,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                   fStringPool.toString(attribute.rawname), attValue, newAttValue);
                     }
                     attValueHandle = fStringPool.addSymbol(newAttValue);
-                } 
-                else {
+                } else {
                     attValueHandle = fStringPool.addSymbol(attValueHandle);
                 }
                 //
@@ -3553,8 +3371,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                               fStringPool.toString(attribute.rawname),
                                               newAttValue, fStringPool.stringListAsString(enumHandle));
                 }
-            } 
-            else if (newAttValue != attValue) {
+            } else if (newAttValue != attValue) {
                 // REVISIT - can we release the old string?
                 attValueHandle = fStringPool.addSymbol(newAttValue);
             }
@@ -3584,7 +3401,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
      * AttValidatorENUMERATION.
      */
     final class AttValidatorENUMERATION 
-        implements AttributeValidator {
+    implements AttributeValidator {
 
         //
         // AttributeValidator methods
@@ -3608,8 +3425,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                   fStringPool.toString(attribute.rawname), attValue, newAttValue);
                     }
                     attValueHandle = fStringPool.addSymbol(newAttValue);
-                } 
-                else {
+                } else {
                     attValueHandle = fStringPool.addSymbol(attValueHandle);
                 }
                 //
@@ -3621,8 +3437,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                               fStringPool.toString(attribute.rawname),
                                               newAttValue, fStringPool.stringListAsString(enumHandle));
                 }
-            } 
-            else if (newAttValue != attValue) {
+            } else if (newAttValue != attValue) {
                 // REVISIT - can we release the old string?
                 attValueHandle = fStringPool.addSymbol(newAttValue);
             }
