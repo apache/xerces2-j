@@ -1143,61 +1143,53 @@ public abstract class NodeImpl
          * @param change Type of modification to the attr. See
          * MutationEvent.attrChange
 	 */
-	void dispatchAggregateEvents(AttrImpl enclosingAttr,
-                                     String oldvalue,
-                                     short change)
-	{
-      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
-      {
-	    // We have to send DOMAttrModified.
-	    NodeImpl owner=null;
-	    if(enclosingAttr!=null)
-	    {
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-	        if(lc.captures+lc.bubbles+lc.defaults>0)
-	        {
-                owner=((NodeImpl)(enclosingAttr.getOwnerElement()));
-                if(owner!=null)
-                {
-                    MutationEventImpl me= new MutationEventImpl();
-                    me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
-                                         true,false, null,oldvalue,
-                                         enclosingAttr.getNodeValue(),
-                                         enclosingAttr.getNodeName(),(short)0);
-                    // REVISIT: The DOM Level 2 PR has a bug: the init method
-                    // should let this attribute be specified. Since it doesn't
-                    // we have to set it directly.
-                    me.attrChange = change;
-                    owner.dispatchEvent(me);
+    void dispatchAggregateEvents(AttrImpl enclosingAttr,
+                                 String oldvalue, short change)
+    {
+        if(MUTATIONEVENTS && ownerDocument().mutationEvents) {
+            // We have to send DOMAttrModified.
+	    NodeImpl owner = null;
+	    if (enclosingAttr != null) {
+                LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
+                if(lc.captures+lc.bubbles+lc.defaults>0) {
+                    owner=((NodeImpl)(enclosingAttr.getOwnerElement()));
+                    if(owner!=null) {
+                        MutationEventImpl me= new MutationEventImpl();
+                        me.initMutationEvent(
+                                           MutationEventImpl.DOM_ATTR_MODIFIED,
+                                             true, false, enclosingAttr,
+                                             oldvalue,
+                                             enclosingAttr.getNodeValue(),
+                                             enclosingAttr.getNodeName(),
+                                             change);
+                        owner.dispatchEvent(me);
+                    }
                 }
             }
-        }
     
-        // DOMSubtreeModified gets sent to the lowest common root of a
-        // set of changes. 
-        // "This event is dispatched after all other events caused by the
-        // mutation have been fired."
-        LCount lc=LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
-        if(lc.captures+lc.bubbles+lc.defaults>0)
-        {
-            MutationEvent me= new MutationEventImpl();
-            me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
-                                 true,false,null,null,null,null,(short)0);
-            
-            // If we're within an Attr, DStM gets sent to the Attr
-            // and to its owningElement. Otherwise we dispatch it
-            // locally.
-    	    if(enclosingAttr!=null)
-    	    {
-    	        enclosingAttr.dispatchEvent(me);
-    	        if(owner!=null)
-    	            owner.dispatchEvent(me);
-    	    }
-            else
-                dispatchEvent(me);
+            // DOMSubtreeModified gets sent to the lowest common root of a
+            // set of changes. 
+            // "This event is dispatched after all other events caused by the
+            // mutation have been fired."
+            LCount lc=LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
+            if(lc.captures+lc.bubbles+lc.defaults>0) {
+                MutationEvent me= new MutationEventImpl();
+                me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
+                                     true,false,null,null,null,null,(short)0);
+
+                // If we're within an Attr, DStM gets sent to the Attr
+                // and to its owningElement. Otherwise we dispatch it
+                // locally.
+                if(enclosingAttr!=null) {
+                    enclosingAttr.dispatchEvent(me);
+                    if(owner!=null)
+                        owner.dispatchEvent(me);
+                }
+                else
+                    dispatchEvent(me);
+            }
         }
-      }
-	} //dispatchAggregateEvents(AttrImpl,String) :void
+    } //dispatchAggregateEvents(AttrImpl,String) :void
 
 
     //
