@@ -69,11 +69,11 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
- *
  * StringValidator validates that XML content is a W3C string type.
- *
+ * @author Ted Leung
+ * @author Kito D. Mann, Virtua Communications Corp.
+ * @author Jeffrey Rodriguez
  */
-
 public class StringValidator implements DatatypeValidator {
     private Locale    fLocale          = null;
     private String    fBaseValidator   = "native";
