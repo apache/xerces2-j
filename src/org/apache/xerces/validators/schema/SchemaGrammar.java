@@ -111,12 +111,20 @@ public class SchemaGrammar extends Grammar{
 
     //ComplexType and SimpleTypeRegistries
     private Hashtable fComplexTypeRegistry = null;
+    private Hashtable fAttributeDeclRegistry = null;
     private DatatypeValidatorRegistry fDatatypeRegistry = null;
 
+    Hashtable topLevelGroupDecls = new Hashtable();
+    Hashtable topLevelAttrDecls  = new Hashtable();
+    Hashtable topLevelAttrGrpDecls = new Hashtable();
 
     //
     // Public methods
     //
+    public Hashtable getAttirubteDeclRegistry() {
+        return fAttributeDeclRegistry;
+    }
+
     public Hashtable getComplexTypeRegistry(){
         return fComplexTypeRegistry;
     }
@@ -182,9 +190,14 @@ public class SchemaGrammar extends Grammar{
     //
     // Protected methods
     //
+    protected void  setAttributeDeclRegistry(Hashtable attrReg){
+        fAttributeDeclRegistry = attrReg;
+    }
+
     protected void  setComplexTypeRegistry(Hashtable cTypeReg){
         fComplexTypeRegistry = cTypeReg;
     }
+
     protected void setDatatypeRegistry(DatatypeValidatorRegistry dTypeReg){
         fDatatypeRegistry = dTypeReg;
     }

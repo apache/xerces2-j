@@ -401,6 +401,7 @@ public class TraverseSchema implements
     private DatatypeValidatorRegistry fDatatypeRegistry =
                                              DatatypeValidatorRegistry.getDatatypeRegistry();
     private Hashtable fComplexTypeRegistry = new Hashtable();
+    private Hashtable fAttributeDeclRegistry = new Hashtable();
 
     private int fAnonTypeCount =0;
     private int fScopeCount=0;
@@ -501,6 +502,7 @@ public class TraverseSchema implements
         else{
             fSchemaGrammar.setComplexTypeRegistry(fComplexTypeRegistry);
             fSchemaGrammar.setDatatypeRegistry(fDatatypeRegistry);
+            fSchemaGrammar.setAttributeDeclRegistry(fAttributeDeclRegistry);
             fGrammarResolver.putGrammar(fTargetNSURIString, fSchemaGrammar);
         }
         
@@ -541,11 +543,11 @@ public class TraverseSchema implements
         //fScopeCount++;
         fCurrentScope = -1;
 
-        //fGlobalGroups = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_GROUP);
-        //fGlobalAttrs  = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTE);
-        //fGlobalAttrGrps = XUtil.getChildElementsByTagNameNS(root,SchemaForSchemaURI,SchemaSymbols.ELT_ATTRIBUTEGROUP);
 
         checkTopLevelDuplicateNames(root);
+
+        //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
+        extractTopLevel3Components(root);
 
         for (Element child = XUtil.getFirstChildElement(root); child != null;
             child = XUtil.getNextSiblingElement(child)) {
@@ -585,6 +587,24 @@ public class TraverseSchema implements
         //TO DO : !!!
     }
 
+    private void extractTopLevel3Components(Element root){
+        
+        for (Element child = XUtil.getFirstChildElement(root); child != null;
+            child = XUtil.getNextSiblingElement(child)) {
+
+            String name = child.getNodeName();
+
+            if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                fSchemaGrammar.topLevelAttrGrpDecls.put(name, child);
+            } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
+                fSchemaGrammar.topLevelAttrDecls.put(name, child);
+            } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
+                fSchemaGrammar.topLevelGroupDecls.put(name, child);
+            } 
+        } // for each child node
+    }
+
+
     /**
      * No-op - Traverse Annotation Declaration
      * 
@@ -612,6 +632,9 @@ public class TraverseSchema implements
     private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
         
         String varietyProperty       =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
+        if (varietyProperty.length() == 0) {
+            varietyProperty = SchemaSymbols.ATTVAL_RESTRICTION;
+        }
         String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
         String baseTypeQNameProperty =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE );
         String abstractProperty      =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
@@ -1365,8 +1388,9 @@ public class TraverseSchema implements
         int attributeValue =  fStringPool.addSymbol(
                                                    attrDecl.getAttribute( SchemaSymbols.ATT_VALUE ));
 
+        String attNameStr = attrDecl.getAttribute(SchemaSymbols.ATT_NAME);
         // attribute name
-        int attName = fStringPool.addSymbol(attrDecl.getAttribute(SchemaSymbols.ATT_NAME));
+        int attName = fStringPool.addSymbol(attNameStr);
         // form attribute
         String isQName = attrDecl.getAttribute(SchemaSymbols.ATT_EQUIVCLASS);
 
@@ -1389,11 +1413,17 @@ public class TraverseSchema implements
                 prefix = ref.substring(0,colonptr);
                 localpart = ref.substring(colonptr+1);
             }
-            if (!resolvePrefixToURI(prefix).equals(fTargetNSURIString)) {
+            String uriStr = resolvePrefixToURI(prefix);
+
+            if (!uriStr.equals(fTargetNSURIString)) {
+                addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
+
+                return -1;
                 // TO DO
                 // REVISIT: different NS, not supported yet.
-                reportGenericSchemaError("Feature not supported: see an attribute from different NS");
+                //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
+
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
             if (referredAttribute != null) {
                 traverseAttributeDecl(referredAttribute, typeInfo);
@@ -1514,6 +1544,17 @@ public class TraverseSchema implements
         if ( DEBUGGING )
             System.out.println(" the dataType Validator for " + fStringPool.toString(attName) + " is " + dv);
 
+        //put the in the attribute decl registry.
+        fTempAttributeDecl.datatypeValidator = dv;
+        fTempAttributeDecl.name.setValues(attQName);
+        fTempAttributeDecl.type = attType;
+        fTempAttributeDecl.defaultType = attDefaultType;
+        if (attDefaultValue != -1 ) {
+            fTempAttributeDecl.defaultValue = new String(fStringPool.toString(attDefaultValue));
+        }
+
+        fAttributeDeclRegistry.put(attNameStr, new XMLAttributeDecl(fTempAttributeDecl));
+
         // add attribute to attr decl pool in fSchemaGrammar, 
         fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
                                   attQName, attType, 
@@ -1522,6 +1563,37 @@ public class TraverseSchema implements
         return -1;
     } // end of method traverseAttribute
 
+    private int addAttributeDeclFromAnotherSchema( String name, String uriStr, ComplexTypeInfo typeInfo) throws Exception {
+        SchemaGrammar aGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(uriStr);
+        if (uriStr == null || ! (aGrammar instanceof SchemaGrammar) ) {
+            reportGenericSchemaError("!!Schema not found : " + uriStr);
+            return -1;
+        }
+
+        Hashtable attrRegistry = aGrammar.getAttirubteDeclRegistry();
+        if (attrRegistry == null) {
+            reportGenericSchemaError("no attribute was defined in schema : " + uriStr);
+            return -1;
+        }
+
+        XMLAttributeDecl tempAttrDecl = (XMLAttributeDecl) attrRegistry.get(name);
+
+        if (tempAttrDecl == null) {
+            reportGenericSchemaError( "no attribute named \"" + name 
+                                      + "\" was defined in schema : " + uriStr);
+            return -1;
+        }
+
+
+        fSchemaGrammar.addAttDef( typeInfo.templateElementIndex, 
+                                  tempAttrDecl.name, tempAttrDecl.type,
+                                  -1, tempAttrDecl.defaultType,
+                                  tempAttrDecl.defaultValue, 
+                                  tempAttrDecl.datatypeValidator);
+
+
+        return -1;
+    }
     /*
     * 
     * <attributeGroup 
