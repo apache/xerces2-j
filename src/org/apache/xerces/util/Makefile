@@ -1,6 +1,7 @@
 # Makefile for directory ./org/apache/xerces/util
 
 TARGETS=\
+	DefaultErrorHandler.class\
 	EncodingMap.class\
         MessageFormatter.class\
         SymbolTable.class\
