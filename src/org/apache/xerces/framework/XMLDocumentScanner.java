@@ -1454,10 +1454,15 @@ public final class XMLDocumentScanner {
                 throw new RuntimeException("FWK001 5] ScannerState="+fScannerState+"\n" + "5\t"+fScannerState);
             }
             if (!moreToFollow) {
-                if (fElementDepth > 0)
+                if (fElementDepth > 0) {
                     reportFatalXMLError(XMLMessages.MSG_ETAG_REQUIRED,
                                         XMLMessages.P39_UNTERMINATED,
                                         fCurrentElementType);
+                } else {
+                    reportFatalXMLError(XMLMessages.MSG_ROOT_ELEMENT_REQUIRED,
+                                        XMLMessages.P1_ELEMENT_REQUIRED,
+                                        null);
+                }
                 fDispatcher = new EndOfInputDispatcher();
                 setScannerState(SCANNER_STATE_END_OF_INPUT);
             }
