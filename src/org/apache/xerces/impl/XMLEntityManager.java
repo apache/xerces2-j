@@ -2775,8 +2775,8 @@ public class XMLEntityManager
             boolean done = false;
             int delimLen = delimiter.length();
             char charAt0 = delimiter.charAt(0);
-            int offset = fCurrentEntity.position;
-            int c = fCurrentEntity.ch[offset];
+            int offset = 0;
+            int c = -1;
             int newlines = 0;
             boolean external = fCurrentEntity.isExternal();
             do {
