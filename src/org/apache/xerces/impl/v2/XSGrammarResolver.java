@@ -66,6 +66,11 @@ import java.util.Hashtable;
  */
 class XSGrammarResolver {
 
+    // Constants
+    private static String EMPTY_STRING = "";
+
+    // Data
+
     /**
      * Hashtable that maps between Namespace and a Grammar
      */
@@ -78,6 +83,8 @@ class XSGrammarResolver {
      * @return SchemaGrammar associated with the namespace
      */
     public SchemaGrammar getGrammar(String namespace) {
+        if(namespace == null)
+            return(SchemaGrammar)fGrammarRegistry.get(EMPTY_STRING);
         return (SchemaGrammar)fGrammarRegistry.get(namespace);
     }
 
@@ -87,7 +94,10 @@ class XSGrammarResolver {
      * @param grammar   the grammar to put in the registry
      */
     public void putGrammar(SchemaGrammar grammar) {
-        fGrammarRegistry.put(grammar.getTargetNamespace(), grammar);
+        if(grammar.getTargetNamespace() == null)
+            fGrammarRegistry.put(EMPTY_STRING, grammar);
+        else
+            fGrammarRegistry.put(grammar.getTargetNamespace(), grammar);
     }
 
     /**

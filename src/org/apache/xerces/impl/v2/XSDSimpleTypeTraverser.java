@@ -166,18 +166,16 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // set qualified name
         //---------------------------------------------------
         if (nameProperty == null) { // anonymous simpleType
-            qualifiedName =  fSchemaDoc.fTargetNamespace+","+"#S#"+(fSimpleTypeAnonCount++);
+            qualifiedName = fSchemaDoc.fTargetNamespace == null?
+                ",#s#"+(fSimpleTypeAnonCount++):
+                fSchemaDoc.fTargetNamespace+",#S#"+(fSimpleTypeAnonCount++);
             //REVISIT:
             // add to symbol table?
         }
         else {
-            // this behaviour has been changed so that we neither
-            // process unqualified names as if they came from the schemaforschema namespace nor
-            // fail to pick up unqualified names from schemas with no
-            // targetnamespace.  - NG
-            //if (fTargetNSURIString.length () != 0) {
-            qualifiedName = fSchemaDoc.fTargetNamespace+","+qualifiedName;
-            //}
+            qualifiedName = fSchemaDoc.fTargetNamespace == null?
+                ","+nameProperty:
+                fSchemaDoc.fTargetNamespace+","+nameProperty;
             //REVISIT:
             // add to symbol table?
 
@@ -390,7 +388,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             // reset fListName, meaning that we are done with
             // traversing <list> and its itemType resolves to atomic value
             if (fListName.equals(qualifiedName)) {
-                fListName = "";
+                fListName = fSchemaHandler.EMPTY_STRING;
             }
         }
 
@@ -413,7 +411,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     String localName;
                     if (baseValidator instanceof NOTATIONDatatypeValidator) {
                         fAttrChecker.checkAttributes(content, false, schemaDoc);
-                        String prefix = "";
+                        String prefix = fSchemaHandler.EMPTY_STRING;
                         String localpart = enumVal;
                         int colonptr = enumVal.indexOf(":");
                         if (colonptr > 0) {
@@ -605,7 +603,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
     private void reportCosListOfAtomic () {
         reportGenericSchemaError("cos-list-of-atomic: The itemType must have a {variety} of atomic or union (in which case all the {member type definitions} must be atomic)");
-        fListName="";
+        fListName=fSchemaHandler.EMPTY_STRING;
     }
 
     //@param: elm - top element

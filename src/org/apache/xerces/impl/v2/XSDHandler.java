@@ -334,7 +334,7 @@ class XSDHandler {
                 Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
-                newSchemaRoot = getSchema(EMPTY_STRING, schemaHint);
+                newSchemaRoot = getSchema(null, schemaHint);
             }
             else {
                 // no more possibility of schema references in well-formed
@@ -411,7 +411,9 @@ class XSDHandler {
                         String lName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                         if(lName.length() == 0) // an error we'll catch later
                             continue;
-                        String qName = currSchemaDoc.fTargetNamespace +","+lName;
+                        String qName = currSchemaDoc.fTargetNamespace == null ?
+                            ","+lName:
+                            currSchemaDoc.fTargetNamespace +","+lName;
                         String componentType = DOMUtil.getLocalName(redefineComp);
                         if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                             checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, globalComp, currSchemaDoc);
@@ -451,7 +453,9 @@ class XSDHandler {
                     String lName = DOMUtil.getAttrValue(globalComp, SchemaSymbols.ATT_NAME);
                     if(lName.length() == 0) // an error we'll catch later
                         continue;
-                    String qName = currSchemaDoc.fTargetNamespace +","+lName;
+                    String qName = currSchemaDoc.fTargetNamespace == null?
+                        ","+lName:
+                        currSchemaDoc.fTargetNamespace +","+lName;
                     String componentType = DOMUtil.getLocalName(globalComp);
                     if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                         checkForDuplicateNames(qName, fUnparsedAttributeRegistry, globalComp, currSchemaDoc);
@@ -604,12 +608,8 @@ class XSDHandler {
             declToTraverse.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             sGrammar = SchemaGrammar.SG_SchemaNS;
         } else {
-            String declKey = null;
-            if (declToTraverse.uri != null) {
-                declKey = declToTraverse.uri+","+declToTraverse.localpart;
-            } else {
-                declKey = ","+declToTraverse.localpart;
-            }
+            String declKey = declToTraverse.uri == null? ","+declToTraverse.localpart:
+                    declToTraverse.uri+","+declToTraverse.localpart;
             switch (declType) {
             case ATTRIBUTE_TYPE :
                 decl = (Element)fUnparsedAttributeRegistry.get(declKey);
@@ -889,7 +889,10 @@ class XSDHandler {
                 String newName = qName.substring(qName.lastIndexOf(','));
                 currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
                 // and take care of nested redefines by calling recursively:
-                checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
+                if(currSchema.fTargetNamespace == null) 
+                    checkForDuplicateNames(","+newName, registry, currComp, currSchema);
+                else 
+                    checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
             } else if (redefinedSchema != null) { // we're apparently redefining the wrong schema
                 // REVISIT:  error that redefined element in wrong schema
             } else { // we've just got a flat-out collision
@@ -926,7 +929,8 @@ class XSDHandler {
 
         SchemaNamespaceSupport currNSMap = currSchema.fNamespaceSupport;
         if (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-            String processedTypeName = currSchema.fTargetNamespace+","+oldName;
+            String processedTypeName = currSchema.fTargetNamespace == null?
+                ","+oldName:currSchema.fTargetNamespace+","+oldName;
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
                 // fRedefineSucceeded = false;
@@ -966,7 +970,8 @@ class XSDHandler {
                 }
             }
         } else if (componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-            String processedTypeName = currSchema.fTargetNamespace+","+oldName;
+            String processedTypeName = currSchema.fTargetNamespace == null?
+                ","+oldName:currSchema.fTargetNamespace+","+oldName;
             Element grandKid = DOMUtil.getFirstChildElement(child);
             if (grandKid == null) {
                 // fRedefineSucceeded = false;
@@ -1025,7 +1030,8 @@ class XSDHandler {
                 }
             }
         } else if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-            String processedBaseName = currSchema.fTargetNamespace+","+oldName;
+            String processedBaseName = (currSchema.fTargetNamespace == null)?
+                ","+oldName:currSchema.fTargetNamespace+","+oldName;
             int attGroupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
             if(attGroupRefsCount > 1) {
                 // fRedefineSucceeded = false;
@@ -1034,9 +1040,13 @@ class XSDHandler {
             } else if (attGroupRefsCount == 1) {
 //                return true;
             }  else
-                fRedefinedRestrictedAttributeGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
+                if(currSchema.fTargetNamespace == null)
+                    fRedefinedRestrictedAttributeGroupRegistry.put(processedBaseName, ","+newName);
+                else
+                    fRedefinedRestrictedAttributeGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
         } else if (componentType.equals(SchemaSymbols.ELT_GROUP)) {
-            String processedBaseName = currSchema.fTargetNamespace+","+oldName;
+            String processedBaseName = (currSchema.fTargetNamespace == null)?
+                ","+oldName:currSchema.fTargetNamespace+","+oldName;
             int groupRefsCount = changeRedefineGroup(processedBaseName, componentType, newName, child, currSchema.fNamespaceSupport);
             if(groupRefsCount > 1) {
                 // fRedefineSucceeded = false;
@@ -1045,7 +1055,10 @@ class XSDHandler {
             } else if (groupRefsCount == 1) {
 //                return true;
             }  else {
-                fRedefinedRestrictedGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
+                if(currSchema.fTargetNamespace == null) 
+                    fRedefinedRestrictedGroupRegistry.put(processedBaseName, ","+newName);
+                else
+                    fRedefinedRestrictedGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
             }
         } else {
             // fRedefineSucceeded = false;
@@ -1062,11 +1075,13 @@ class XSDHandler {
     // decl Hashtables.
     private String findQName(String name, SchemaNamespaceSupport currNSMap) {
         int colonPtr = name.indexOf(':');
-        String prefix = "";
+        String prefix = EMPTY_STRING;
         if (colonPtr > 0)
             prefix = name.substring(0, colonPtr);
         String uri = currNSMap.getURI(prefix);
         String localpart = (colonPtr == 0)?name:name.substring(colonPtr);
+        if(uri == null)
+            return ","+localpart;
         return uri+","+localpart;
     } // findQName(String, SchemaNamespaceSupport):  String
 
@@ -1090,7 +1105,7 @@ class XSDHandler {
                 if (ref.length() != 0) {
                     String processedRef = findQName(ref, currNSMap);
                     if(originalQName.equals(processedRef)) {
-                        String prefix = "";
+                        String prefix = EMPTY_STRING;
                         String localpart = ref;
                         int colonptr = ref.indexOf(":");
                         if ( colonptr > 0) {

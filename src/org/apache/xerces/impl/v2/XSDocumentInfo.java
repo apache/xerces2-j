@@ -120,9 +120,8 @@ class XSDocumentInfo {
                 ((XInt)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).shortValue();
             fTargetNamespace =
                 (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
-            if (fTargetNamespace == null)
-                fTargetNamespace = EMPTY_STRING;
-            fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
+            if (fTargetNamespace != null)
+                fTargetNamespace = symbolTable.addSymbol(fTargetNamespace);
 
             fNamespaceSupportRoot = new SchemaNamespaceSupport(fNamespaceSupport);
 

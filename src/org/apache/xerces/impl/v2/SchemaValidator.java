@@ -783,7 +783,7 @@ public class SchemaValidator
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
             XMLNS = symbolTable.addSymbol(SchemaSymbols.O_XMLNS);
-            URI_XSI = symbolTable.addSymbol(SchemaSymbols.OURI_XSI);
+            URI_XSI = symbolTable.addSymbol(SchemaSymbols.URI_XSI);
             XSI_SCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_SCHEMALOCACTION);
             XSI_NONAMESPACESCHEMALOCACTION = symbolTable.addSymbol(SchemaSymbols.OXSI_NONAMESPACESCHEMALOCACTION);
             XSI_TYPE = symbolTable.addSymbol(SchemaSymbols.OXSI_TYPE);
@@ -966,8 +966,7 @@ public class SchemaValidator
 
         // try again to get the element decl
         if (fCurrentElemDecl == null) {
-            // REVISIT: null or ""
-            SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri == null ? "" : element.uri);
+            SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri);
             if (sGrammar != null)
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
         }

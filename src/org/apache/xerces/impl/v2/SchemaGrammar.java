@@ -325,6 +325,14 @@ public class SchemaGrammar {
      * register one global type
      */
     public final void addGlobalTypeDecl(XSTypeDecl decl) {
+        if(decl == null) {
+            System.err.println("decl");
+            System.exit(0);
+        } else if (decl.getXSTypeName() == null) {
+            System.err.println("decl.whatever");
+            System.exit(0);
+            }
+
         fGlobalTypeDecls.put(decl.getXSTypeName(), decl);
     }
 

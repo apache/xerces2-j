@@ -1620,7 +1620,6 @@ public class XSAttributeChecker {
                 if (prefix != null) {
                     uri = fSymbolTable.addSymbol(DOMUtil.getValue(sattr));
                     // REVISIT: copied from namespce binder
-                    //          why null instead of ""?
                     nsSupport.declarePrefix(prefix, uri.length()!=0 ? uri : null);
                 }
             }

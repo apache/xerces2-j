@@ -77,7 +77,7 @@ public final class SchemaSymbols {
     // xmlns attributes
     public static final String O_XMLNS                         = "xmlns";
     // xsi attributes: in validator
-    public static final String OURI_XSI                        = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String URI_XSI                        = "http://www.w3.org/2001/XMLSchema-instance";
     public static final String OXSI_SCHEMALOCACTION            = "schemaLocation";
     public static final String OXSI_NONAMESPACESCHEMALOCACTION = "noNamespaceSchemaLocation";
     public static final String OXSI_TYPE                       = "type";

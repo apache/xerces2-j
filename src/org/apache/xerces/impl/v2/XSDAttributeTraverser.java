@@ -358,8 +358,8 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // no-xsi
 
         // The {target namespace} of an attribute declaration, whether local or top-level, must not match http://www.w3.org/2001/XMLSchema-instance (unless it is one of the four built-in declarations given in the next section).
-        if (attribute.fTargetNamespace.equals(SchemaSymbols.OURI_XSI)) {
-            reportSchemaError("no-xsi", new Object[]{SchemaSymbols.OURI_XSI});
+        if (attribute.fTargetNamespace != null && attribute.fTargetNamespace.equals(SchemaSymbols.URI_XSI)) {
+            reportSchemaError("no-xsi", new Object[]{SchemaSymbols.URI_XSI});
         }
 
         return attribute;
