@@ -46,7 +46,7 @@ public class XJavac extends Javac {
      * @exception BuildException if the compilation has problems.
      */
     public void execute() throws BuildException {
-        if(JavaEnvUtils.getJavaVersion().equals(JavaEnvUtils.JAVA_1_4)) {
+        if(isJDK14OrHigher()) {
             // maybe the right one; check vendor:
             // by checking system properties:
             Properties props = null;
@@ -112,5 +112,23 @@ public class XJavac extends Javac {
         }
         // now just do the normal thing:
         super.execute();
+    }
+    
+    /**
+     * Checks whether the JDK version is 1.4 or higher. If it's not
+     * JDK 1.4 we check whether we're on a future JDK by checking
+     * that we're not on JDKs 1.0, 1.1, 1.2 or 1.3. This check by 
+     * exclusion should future proof this task from new versions of 
+     * Ant which are aware of higher JDK versions.
+     * 
+     * @return true if the JDK version is 1.4 or higher.
+     */
+    private boolean isJDK14OrHigher() {
+        final String version = JavaEnvUtils.getJavaVersion();
+        return version.equals(JavaEnvUtils.JAVA_1_4) ||
+            (!version.equals(JavaEnvUtils.JAVA_1_3) &&
+            !version.equals(JavaEnvUtils.JAVA_1_2) &&
+            !version.equals(JavaEnvUtils.JAVA_1_1) &&
+            !version.equals(JavaEnvUtils.JAVA_1_0));
     }
 }
