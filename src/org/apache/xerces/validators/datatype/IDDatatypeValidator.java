@@ -77,6 +77,7 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     private Hashtable                     fTableOfId;
     private Locale                 fLocale           = null;
     public static final  int          IDREF_STORE    = 0;
+    public static final  int          ID_CLEAR       = 1;
 
 
 
@@ -106,21 +107,37 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
      * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
-        //Pass content as a String
-        //System.out.println("Call to ID= " );
-        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-            InvalidDatatypeValueException error =  new
-                            InvalidDatatypeValueException( "ID is not valid: " + content );
-            error.setMinorCode(XMLMessages.MSG_ID_INVALID);
-            error.setMajorCode(XMLMessages.VC_ID);
-            throw error;
-        }
-        if(!addId( content, IDStorage) ){
-            InvalidDatatypeValueException error = 
-                   new InvalidDatatypeValueException( "ID" + content +" has to be unique" );
-            error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
-            error.setMajorCode(XMLMessages.VC_ID);
-            throw error;
+
+        StateMessageDatatype message;
+        if ( this.fDerivedByList == false ){
+            if (IDStorage != null ){
+                //System.out.println("We received reset" );
+                message = (StateMessageDatatype) IDStorage;    
+                if (message.getDatatypeState() == IDDatatypeValidator.ID_CLEAR ){
+                    if ( this.fTableOfId  != null ){
+                        this.fTableOfId.clear(); //Clean the ID Hash Table see the XMLValidator pool reset method
+                        this.fTableOfId = null;
+                    }
+                    return null;
+                }
+            }
+            if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+                InvalidDatatypeValueException error =  new
+                                                       InvalidDatatypeValueException( "ID is not valid: " + content );
+                error.setMinorCode(XMLMessages.MSG_ID_INVALID);
+                error.setMajorCode(XMLMessages.VC_ID);
+                throw error;
+            }
+
+            if (!addId( content, IDStorage) ){ //It is OK to pass a null here
+                InvalidDatatypeValueException error = 
+                new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
+                error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
+                error.setMajorCode(XMLMessages.VC_ID);
+                throw error;
+            }
+        } else{ //Need to revisit case when derived by list
+
         }
         //System.out.println("IDStorage = " + IDStorage );
         return fTableOfId;//Return the table of Id
@@ -163,25 +180,23 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
     /** addId. */
     private boolean addId(String content, Object idTable) {
-     
-         //System.out.println( "content = >>" + content + "<<" );
-        //System.out.println("state = " + state );
-            if ( this.fTableOfId == null ) {
-               this.fTableOfId = new Hashtable();//Gain reference to table
-            } else if ( this.fTableOfId.containsKey( content ) ){ 
-               //System.out.println("ID - it already has this key =" + content );
 
-                return false;
-            }
-            if ( this.fNullValue == null ){
-                fNullValue = new Object();
-            }
-            //System.out.println("Before putting content" + content );
-            try {
+        if ( this.fTableOfId == null ) {
+            //System.out.println("Create table");
+            this.fTableOfId = new Hashtable();//Gain reference to table
+        } else if ( this.fTableOfId.containsKey( content ) ){ 
+            //System.out.println("ID - it already has this key =" + content +"table = " + this.fTableOfId  );
+            return false;
+        }
+        if ( this.fNullValue == null ){
+            fNullValue = new Object();
+        }
+        //System.out.println("Before putting content" + content );
+        try {
             this.fTableOfId.put( content, fNullValue ); 
-            } catch( Exception ex ){
-                ex.printStackTrace();
-            }
+        } catch ( Exception ex ){
+            ex.printStackTrace();
+        }
         return true;
     } // addId(int):boolean
 
