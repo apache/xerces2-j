@@ -5,6 +5,42 @@
   <release version='&ParserName; TBD'>
    <desc>TBD</desc>
    <changes>
+    <update>
+     <note>
+      Implemented <jump href="http://www.w3.org/XML/xml-V10-2e-errata">errata</jump>
+      from the XML 1.0 Second Edition Specification.
+     </note>
+     <submitter name='Neil Delima, Michael Glavassevich, Glenn Marcy, Peter McCracken'/>
+    </update>
+    <fix>
+     <note>
+      Fixed bugs related to the preparsing of DTDs, including one 
+      that prevented external parameter entities from being read.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <add>
+     <note>
+      Added support for printing XML 1.1 documents to the sax.Writer
+      and dom.Writer samples.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <fix>
+     <note>
+      Fixed a bug that caused incorrect locator information to be provided 
+      for errors reported in external entities of XML 1.1 documents.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed bugs in the XML 1.1 entity scanner that in some cases treated 
+      NEL (0x85) and LSEP (0x2028) as white space characters in internal 
+      entities, and not as end of line characters in external entities.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
     <fix>
      <note>
       Fixed bug in HTML DOM implementation that would cause a hierarchy
