@@ -153,9 +153,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
     /** error handler */
     protected DOMErrorHandler fErrorHandler;
 
-    // counter for new prefix names
-    protected int fNamespaceCounter = 1;
-
     // Validation against namespace aware grammar
     protected boolean fNamespaceValidation = false;
 
@@ -207,7 +204,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
 		// reset namespace context
 		fNamespaceContext.reset();
 		fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-		fNamespaceCounter = 1;
 
 		if ((fConfiguration.features & DOMConfigurationImpl.VALIDATE) != 0) {
 			// REVISIT: currently we only support revalidation against XML Schemas
@@ -309,6 +305,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 }
                 // push namespace context
                 fNamespaceContext.pushContext();
+                fLocalNSBinder.reset();
 
                 ElementImpl elem = (ElementImpl)node;
                 if (elem.needsSyncChildren()) {
@@ -606,8 +603,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             value = fSymbolTable.addSymbol(value);
                             if (value.length() != 0) {
                                 fNamespaceContext.declarePrefix(localpart, value);
-                                fLocalNSBinder.declarePrefix(localpart, value);
-
                             } else {
                                 // REVISIT: issue error on invalid declarations
                                 //          xmlns:foo = ""
@@ -618,9 +613,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         } else { // (localpart == fXmlnsSymbol && prefix == fEmptySymbol)  -- xmlns
                             // empty prefix is always bound ("" or some string)
                             value = fSymbolTable.addSymbol(value);
-                            fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
                             fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value);
-
                             //removeDefault (attr, attributes);
                             continue;
                         }
@@ -665,23 +658,21 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 fNamespaceContext.declarePrefix(prefix, uri);
             }
         } else { // Element has no namespace
-            String tagName = element.getNodeName();
-            int colon = tagName.indexOf(':');
-            if (colon > -1) {
-                //  Error situation: DOM Level 1 node!
+            if (element.getLocalName() == null) {
+                //  Error: DOM Level 1 node!
                 boolean continueProcess = true;
                 if (fErrorHandler != null) {
                     if (fNamespaceValidation) {
-                        modifyDOMError("DOM Level 1 node: "+tagName, DOMError.SEVERITY_FATAL_ERROR, element);
+                        modifyDOMError("DOM Level 1 node: "+element.getNodeName(), DOMError.SEVERITY_FATAL_ERROR, element);
                         fErrorHandler.handleError(fDOMError);
                     } else {
-                        modifyDOMError("DOM Level 1 node: "+tagName, DOMError.SEVERITY_ERROR, element);
+                        modifyDOMError("DOM Level 1 node: "+element.getNodeName(), DOMError.SEVERITY_ERROR, element);
                         continueProcess = fErrorHandler.handleError(fDOMError);
                     }
                 }
                 if (fNamespaceValidation || !continueProcess) {
                     // stop the namespace fixup and validation
-                    throw new RuntimeException("DOM Level 1 node: "+tagName);
+                    throw new RuntimeException("DOM Level 1 node: "+element.getNodeName());
                 }
             } else { // uri=null and no colon (DOM L2 node)
                 uri = fNamespaceContext.getURI(XMLSymbols.EMPTY_STRING);
@@ -780,9 +771,10 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
                                 // find a prefix following the pattern "NS" +index (starting at 1)
                                 // make sure this prefix is not declared in the current scope.
-                                prefix = fSymbolTable.addSymbol(PREFIX +fNamespaceCounter++);
+                                int counter = 1;
+                                prefix = fSymbolTable.addSymbol(PREFIX +counter++);
                                 while (fLocalNSBinder.getURI(prefix)!=null) {
-                                    prefix = fSymbolTable.addSymbol(PREFIX +fNamespaceCounter++);
+                                    prefix = fSymbolTable.addSymbol(PREFIX +counter++);
                                 }
 
                             }
@@ -798,14 +790,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     }
                 } else { // attribute uri == null
 
-                    // data
-                    int colon = name.indexOf(':');
                     // XML 1.0 Attribute value normalization
                     //value = normalizeAttributeValue(value, attr);
+                    
                     // reset id-attributes
                     ((AttrImpl)attr).setIdAttribute(false);
 
-                    if (colon > -1) {
+                    if (attr.getLocalName() == null) {
                         // It is an error if document has DOM L1 nodes.
                         boolean continueProcess = true;
                         if (fErrorHandler != null) {
