@@ -387,7 +387,11 @@ public class CoreDocumentImpl
                                            "DOM006 Hierarchy request error");
             }
         }
-
+        // Adopt orphan doctypes
+        if (newChild.getOwnerDocument() == null &&
+            newChild instanceof DocumentTypeImpl) {
+            ((DocumentTypeImpl) newChild).ownerDocument = this;
+        }
         super.insertBefore(newChild,refChild);
 
         // If insert succeeded, cache the kid appropriately
@@ -395,7 +399,7 @@ public class CoreDocumentImpl
             docElement = (ElementImpl)newChild;
         }
         else if (type == Node.DOCUMENT_TYPE_NODE) {
-            docType=(DocumentTypeImpl)newChild;
+            docType = (DocumentTypeImpl)newChild;
         }
 
         return newChild;
@@ -409,8 +413,8 @@ public class CoreDocumentImpl
      * REVISIT: According to the spec it is not allowed to alter neither the
      * document element nor the document type in any way
      */
-    public Node removeChild(Node oldChild)
-        throws DOMException {
+    public Node removeChild(Node oldChild) throws DOMException {
+
         super.removeChild(oldChild);
 
         // If remove succeeded, un-cache the kid appropriately
@@ -419,7 +423,7 @@ public class CoreDocumentImpl
             docElement = null;
         }
         else if (type == Node.DOCUMENT_TYPE_NODE) {
-            docType=null;
+            docType = null;
         }
 
         return oldChild;
@@ -436,6 +440,11 @@ public class CoreDocumentImpl
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
 
+        // Adopt orphan doctypes
+        if (newChild.getOwnerDocument() == null &&
+            newChild instanceof DocumentTypeImpl) {
+            ((DocumentTypeImpl) newChild).ownerDocument = this;
+        }
         super.replaceChild(newChild, oldChild);
 
         int type = oldChild.getNodeType();
