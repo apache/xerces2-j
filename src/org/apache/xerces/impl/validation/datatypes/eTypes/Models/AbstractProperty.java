@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.validation.datatypes.eTypes.Models;
 
 import org.apache.xerces.impl.validation.datatypes.eTypes.Interfaces.Property;
+import org.apache.xerces.impl.validation.datatypes.eTypes.Interfaces.Property.ValidationSummary;
 import org.apache.xerces.impl.validation.datatypes.eTypes.Interfaces.StringProperty;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
