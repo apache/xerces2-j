@@ -478,6 +478,10 @@ public class DTDGrammar
 
         //Get Grammar index to grammar array
         int elementIndex       = getElementDeclIndex( elementName, -1 );
+        if (getAttributeDeclIndex(elementIndex, attributeName) != -1) {
+            // REVISIT: BUG - need warn-on-duplicate-attdef feature support
+            return;
+        }
 
         fCurrentAttributeIndex = createAttributeDecl();// Create current Attribute Decl
 
