@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.
+ * Copyright (c) 2001-2004 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -371,14 +371,14 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             if (!Document.class.isAssignableFrom (_class)) {
                 throw new IllegalArgumentException (
                     DOMMessageFormatter.formatMessage(
-                    DOMMessageFormatter.SERIALIZER_DOMAIN,
+                    DOMMessageFormatter.DOM_DOMAIN,
                     "InvalidDocumentClassName", new Object [] {documentClassName}));
             }
         }
         catch (ClassNotFoundException e) {
             throw new IllegalArgumentException (
                 DOMMessageFormatter.formatMessage(
-                DOMMessageFormatter.SERIALIZER_DOMAIN,
+                DOMMessageFormatter.DOM_DOMAIN,
                 "MissingDocumentClassName", new Object [] {documentClassName}));
         }
         
@@ -811,10 +811,11 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                     // won't happen we already checked that earlier
                 }
                 catch (Exception e) {
-                    // REVISIT: Localize this message.
                     throw new RuntimeException (
-                    "Failed to create document object of class: "
-                    + fDocumentClassName);
+                        DOMMessageFormatter.formatMessage(
+                        DOMMessageFormatter.DOM_DOMAIN,
+                        "CannotCreateDocumentClass", 
+                        new Object [] {fDocumentClassName}));
                 }
             }
             fCurrentNode = fDocument;
