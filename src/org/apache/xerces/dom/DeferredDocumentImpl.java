@@ -569,35 +569,13 @@ public class DeferredDocumentImpl
             return newChildIndex;
         }
 
-        int pchunk = parentIndex >> CHUNK_SHIFT;
-        int pindex = parentIndex & CHUNK_MASK;
         int nchunk = newChildIndex >> CHUNK_SHIFT;
         int nindex = newChildIndex & CHUNK_MASK;
         int rchunk = refChildIndex >> CHUNK_SHIFT;
         int rindex = refChildIndex & CHUNK_MASK;
-
-        // 1) if ref.prev != null then
-        //      begin
-        //        new.prev := ref.prev;
-        //      end;
-        int nextIndex = -1;
-        int index = -1;
-        for (index = getChunkIndex(fNodeLastChild, pchunk, pindex);
-             index != -1;
-             index = getChunkIndex(fNodePrevSib, index >> CHUNK_SHIFT, index & CHUNK_MASK)) {
-
-            if (nextIndex == refChildIndex) {
-                break;
-            }
-            nextIndex = index;
-        }
-        if (index != -1) {
-            int ochunk = index >> CHUNK_SHIFT;
-            int oindex = index & CHUNK_MASK;
-            setChunkIndex(fNodePrevSib, newChildIndex, ochunk, oindex);
-        }
-        // 2) ref.prev := new;
-        setChunkIndex(fNodePrevSib, refChildIndex, nchunk, nindex);
+        int previousIndex = getChunkIndex(fNodePrevSib, rchunk, rindex);
+        setChunkIndex(fNodePrevSib, newChildIndex, rchunk, rindex);
+        setChunkIndex(fNodePrevSib, previousIndex, nchunk, nindex);
 
         return newChildIndex;
 
@@ -1058,6 +1036,25 @@ public class DeferredDocumentImpl
         return (short)getChunkIndex(fNodeType, chunk, index);
 
     } // getNodeType(int):int
+
+    /** Returns the attribute value of the given name. */
+    public int getAttribute(int elemIndex, int nameIndex) {
+        if (elemIndex == -1 || nameIndex == -1) {
+            return -1;
+        }
+        int echunk = elemIndex >> CHUNK_SHIFT;
+        int eindex = elemIndex & CHUNK_MASK;
+        int attrIndex = getChunkIndex(fNodeValue, echunk, eindex);
+        while (attrIndex != -1) {
+            int achunk = attrIndex >> CHUNK_SHIFT;
+            int aindex = attrIndex & CHUNK_MASK;
+            if (getChunkIndex(fNodeName, achunk, aindex) == nameIndex) {
+                return getChunkIndex(fNodeValue, achunk, aindex);
+            }
+            attrIndex = getChunkIndex(fNodePrevSib, achunk, aindex);
+        }
+        return -1;
+    }
 
     /** Returns the URI of the given node. */
     public short getNodeURI(int nodeIndex) {
