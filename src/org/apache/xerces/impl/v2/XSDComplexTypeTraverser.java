@@ -56,13 +56,9 @@
  */
 package org.apache.xerces.impl.v2;
 
-
-import  org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.xni.QName;
-import  org.w3c.dom.Element;
-import java.util.Hashtable;
-import java.util.Stack;
-
+import org.w3c.dom.Element;
 
 /**
  * A complex type definition schema component traverser.
@@ -82,53 +78,42 @@ import java.util.Stack;
 class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
 
-    private Stack fCurrentGroupNameStack;
-
-
-
     XSDComplexTypeTraverser (XSDHandler handler,
                              XMLErrorReporter errorReporter,
                              XSAttributeChecker gAttrCheck) {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    int traverseLocal(Element elmNode,
-                      XSDocumentInfo schemaDoc,
-                      SchemaGrammar grammar) {
+    XSComplexTypeDecl traverseLocal(Element elmNode,
+                                    XSDocumentInfo schemaDoc,
+                                    SchemaGrammar grammar) {
 
-        return SchemaGrammar.I_EMPTY_DECL;
+        return null;
     }
 
-    int traverseGlobal (Element elmNode,
-                        XSDocumentInfo schemaDoc,
-                        SchemaGrammar grammar){
+    XSComplexTypeDecl traverseGlobal (Element elmNode,
+                                      XSDocumentInfo schemaDoc,
+                                      SchemaGrammar grammar){
 
-        return SchemaGrammar.I_EMPTY_DECL;
+        return null;
     }
 
-
-    private int traverseComplexTypeDecl( Element complexTypeDecl, boolean forwardRef) {
-
-        return SchemaGrammar.I_EMPTY_DECL;
-    }
-
-    private void processComplexContent(int typeNameIndex,
-                                       Element complexContentChild,
+    private void processComplexContent(Element complexContentChild,
                                        XSComplexTypeDecl typeInfo,
                                        QName baseName,
                                        boolean isMixed) throws Exception {
 
     }
-    private void traverseSimpleContentDecl(int typeNameIndex,
-                                           Element simpleContentDecl,
+
+    private void traverseSimpleContentDecl(Element simpleContentDecl,
                                            XSComplexTypeDecl typeInfo) {
     }
 
-    private void traverseComplexContentDecl(int typeNameIndex,
-                                            Element complexContentDecl,
+    private void traverseComplexContentDecl(Element complexContentDecl,
                                             XSComplexTypeDecl typeInfo,
                                             boolean mixedOnComplexTypeDecl){
     }
+
     // HELP FUNCTIONS:
     //
     // 1. processAttributes
@@ -142,7 +127,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 /*
     REVISIT: something done in AttriubteTraverser in Xerces1. Should be done
              here in complexTypeTraverser.
-             
+
         // add attribute to attr decl pool in fSchemaGrammar,
         if (typeInfo != null) {
 

@@ -56,13 +56,8 @@
  */
 package org.apache.xerces.impl.v2;
 
-
-import  org.apache.xerces.impl.XMLErrorReporter;
-import org.apache.xerces.xni.QName;
-import  org.w3c.dom.Element;
-import java.util.Hashtable;
-import java.util.Stack;
-
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.w3c.dom.Element;
 
 /**
  * The wildcard schema component traverser.
@@ -85,11 +80,12 @@ import java.util.Stack;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?)
  * </anyAttribute>
+ *
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
 class  XSDWildcardTraverser extends XSDAbstractTraverser {
-
-
 
     XSDWildcardTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
@@ -97,19 +93,18 @@ class  XSDWildcardTraverser extends XSDAbstractTraverser {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    int traverseAny(Element elmNode,
-                    XSDocumentInfo schemaDoc,
-                    SchemaGrammar grammar) {
+    XSParticleDecl traverseAny(Element elmNode,
+                               XSDocumentInfo schemaDoc,
+                               SchemaGrammar grammar) {
 
-        return SchemaGrammar.I_EMPTY_DECL;
+        return null;
     }
 
-    int traverseAnyAttribute(Element elmNode,
-                             XSDocumentInfo schemaDoc,
-                             SchemaGrammar grammar) {
+    XSWildcardDecl traverseAnyAttribute(Element elmNode,
+                                        XSDocumentInfo schemaDoc,
+                                        SchemaGrammar grammar) {
 
-        return SchemaGrammar.I_EMPTY_DECL;
+        return null;
     }
-
 
 }

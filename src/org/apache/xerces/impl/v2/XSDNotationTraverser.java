@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -55,15 +54,16 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
+
 package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.w3c.dom.Element;
 import org.apache.xerces.util.DOMUtil;
-import  org.w3c.dom.Element;
 
 /**
  * The notation declaration schema component traverser.
- * 
+ *
  * <notation
  *   id = ID
  *   name = NCName
@@ -72,13 +72,12 @@ import  org.w3c.dom.Element;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?)
  * </notation>
- * 
+ *
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @author Elena Litani, IBM
  * @version $Id$
  */
 class  XSDNotationTraverser extends XSDAbstractTraverser {
-
 
     XSDNotationTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
@@ -86,13 +85,12 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    int traverse(Element elmNode,
-                 XSDocumentInfo schemaDoc,
-                 SchemaGrammar grammar) {
+    XSNotationDecl traverse(Element elmNode,
+                            XSDocumentInfo schemaDoc,
+                            SchemaGrammar grammar) {
 
         // General Attribute Checking for elmNode
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc.fNamespaceSupport);
-
 
         //get attributes
         String  nameAttr   = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
@@ -102,14 +100,19 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
         if (nameAttr.length() == 0) {
             //REVISIT: update error message
             reportGenericSchemaError("<notation> must have a name");
-            return SchemaGrammar.I_EMPTY_DECL;
+            fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
+            return null;
         }
 
         if (publicAttr.length() == 0 && systemAttr.length() == 0) {
             reportGenericSchemaError("Invalid <notation> declaration");
         }
 
-        int index = grammar.addNotationDecl(nameAttr, systemAttr, publicAttr);
+        XSNotationDecl notation = new XSNotationDecl();
+        notation.fName = nameAttr;
+        notation.fTargetNamespace = schemaDoc.fTargetNamespace;
+        notation.fPublicId = publicAttr;
+        notation.fSystemId = systemAttr;
 
         //check content
         Element child = DOMUtil.getFirstChildElement(elmNode);
@@ -129,9 +132,7 @@ class  XSDNotationTraverser extends XSDAbstractTraverser {
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
-        return index;
 
+        return notation;
     }
-
-
 }

@@ -57,15 +57,15 @@
 
 package org.apache.xerces.impl.v2;
 
-import  org.apache.xerces.impl.XMLErrorReporter;
-import  org.apache.xerces.util.DOMUtil;
+import org.apache.xerces.impl.XMLErrorReporter;
+import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.xni.QName;
-import  org.w3c.dom.Element;
+import org.w3c.dom.Element;
 import org.apache.xerces.impl.v2.identity.*;
 import org.apache.xerces.impl.v2.xpath.*;
 
 /**
- * This class contains code that is used to traverse <keyref>s.  
+ * This class contains code that is used to traverse <keyref>s.
  *
  * @author Neil Graham, IBM
  * @version $Id$
@@ -78,7 +78,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    void traverse(Element krElem, int elemIndex, 
+    void traverse(Element krElem, XSElementDecl element,
             XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
 
         // General Attribute Checking
@@ -87,24 +87,25 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         // create identity constraint
         QName krName = (QName)attrValues[XSAttributeChecker.ATTIDX_NAME];
         String kName = (String)attrValues[XSAttributeChecker.ATTIDX_REF];
-        int keyIndex = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, krName);
+        IdentityConstraint key = (IdentityConstraint)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, krName);
         // REVISIT:  make sure we come from the right grammar...
 
-        if(keyIndex == SchemaGrammar.I_NOT_FOUND) {
+        if(key == null) {
             // reportSchemaError(SchemaMessageProvider.KeyRefReferNotFound,
                               // new Object[]{krName,kName});
             fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
             return;
         }
 
-        KeyRef keyRef = new KeyRef(krName.localpart, keyIndex, grammar.getTargetNamespace());
+        KeyRef keyRef = new KeyRef(krName.localpart, key, grammar.getTargetNamespace());
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem, schemaDoc);
 
-        // add key reference to element decl 
+        // add key reference to element decl
         // and stuff this in the grammar
-        grammar.addIDConstraint(elemIndex, keyRef);
+        // REVISIT: should we add IDC to element here?
+        grammar.addIDConstraintDecl(element, keyRef);
         // and put back attributes
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
     } // traverse(Element,int,XSDocumentInfo, SchemaGrammar)

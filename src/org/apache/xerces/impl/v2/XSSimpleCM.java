@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -79,7 +79,7 @@ import org.apache.xerces.xni.QName;
  * in a simple way without a DFA and without the overhead of setting up a
  * DFA for such a simple check.
  * This model validated on the way in.
- * 
+ *
  * @author Elena Litani, IBM
  * @version $Id$
  */
@@ -125,7 +125,7 @@ implements XSCMValidator {
      * The operation that this object represents. Since this class only
      * does simple contents, there is only ever a single operation
      * involved (i.e. the children of the operation are always one or
-     * two leafs.) 
+     * two leafs.)
      */
     private int fOperator;
 
@@ -143,7 +143,7 @@ implements XSCMValidator {
      * @param dtd if it is for a DTDGrammar.
      *
      */
-    public XSSimpleCM(short operator, QName firstChild, int index1, 
+    public XSSimpleCM(short operator, QName firstChild, int index1,
                       QName secondChild, int index2) {
         //
         //  Store away the children and operation. This is all we need to
@@ -170,7 +170,7 @@ implements XSCMValidator {
     /**
      * This methods to be called on entering a first element whose type
      * has this content model. It will return the initial state of the content model
-     * 
+     *
      * @return Start state of the content model
      */
     public Object startContentModel(){
@@ -180,16 +180,16 @@ implements XSCMValidator {
 
     /**
      * The method corresponds to one transaction in the content model.
-     * 
+     *
      * @param elementName
      * @param state  Current state
      * @return element index corresponding to the element from the Schema grammar
      */
     public int oneTransition (QName elementName, Object currentState){
-        
+
         short state = ((short[])((short[])currentState))[0];
         if (state == STATE_ERROR) {
-            return SchemaGrammar.I_EMPTY_DECL;
+            return null;
         }
         switch (fOperator) {
         case XSParticleDecl.PARTICLE_ELEMENT :
@@ -250,7 +250,7 @@ implements XSCMValidator {
                     ((short[])currentState)[0] = STATE_VALID;
                     return fSecondIndex;
                 }
-                //error                
+                //error
             }
 
             break;
@@ -259,13 +259,13 @@ implements XSCMValidator {
         }
         //if we reach here there was an error
         ((short[])currentState)[0] = STATE_ERROR;
-        return SchemaGrammar.I_EMPTY_DECL;
+        return null;
     }
 
 
     /**
      * The method indicates the end of list of children
-     * 
+     *
      * @param state  Current state of the content model
      * @return true if the last state was a valid final state
      */
@@ -287,10 +287,10 @@ implements XSCMValidator {
         default :
             throw new RuntimeException("ImplementationMessages.VAL_CST");
         }
-        
+
         // restore content model state:
         fState[0] = STATE_START;
-        
+
         return isFinal;
     }
 

@@ -69,8 +69,6 @@ import org.w3c.dom.Element;
  */
 abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
-    private XSParticleDecl fParticle = new XSParticleDecl();
-
     XSDAbstractParticleTraverser (XSDHandler handler,
                                   XMLErrorReporter errorReporter,
                                   XSAttributeChecker gAttrCheck) {
@@ -89,10 +87,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
      *   Content: (annotation? , element*)
      * </all>
      **/
-    int traverseAll(Element allDecl,
-                    XSDocumentInfo schemaDoc,
-                    SchemaGrammar grammar,
-                    int allContextFlags) {
+    XSParticleDecl traverseAll(Element allDecl,
+                               XSDocumentInfo schemaDoc,
+                               SchemaGrammar grammar,
+                               int allContextFlags) {
 
         // General Attribute Checking
 
@@ -101,18 +99,18 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Element content = DOMUtil.getFirstChildElement(allDecl);
         Element child = checkContent(allDecl, content, true);
 
-        int left = SchemaGrammar.I_EMPTY_DECL;
-        int right = SchemaGrammar.I_EMPTY_DECL;
+        XSParticleDecl left = null;
+        XSParticleDecl right = null;
         String childName = null;
-        int particleIndex;
+        XSParticleDecl particle, temp;
         for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
 
-            particleIndex = SchemaGrammar.I_EMPTY_DECL;
+            particle = null;
             childName = child.getLocalName();
 
             // Only elements are allowed in <all>
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                particleIndex = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL);
+                particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL);
             }
             else {
                 Object[] args = { childName};
@@ -122,99 +120,107 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
 
-            if (left == SchemaGrammar.I_EMPTY_DECL) {
-                left = particleIndex;
+            if (left == null) {
+                left = particle;
             }
-            else if (right == SchemaGrammar.I_EMPTY_DECL) {
-                right = particleIndex;
+            else if (right == null) {
+                right = particle;
             }
             else {
-                left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ALL, left, right);
-                right = particleIndex;
+                temp = new XSParticleDecl();
+                temp.fType = XSParticleDecl.PARTICLE_ALL;
+                temp.fValue = left;
+                temp.fOtherValue = right;
+                left = temp;
+                right = particle;
             }
         }
 
-        if (right != SchemaGrammar.I_EMPTY_DECL)
-            left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ALL, left, right);
+        if (right != null) {
+            temp = new XSParticleDecl();
+            temp.fType = XSParticleDecl.PARTICLE_ALL;
+            temp.fValue = left;
+            temp.fOtherValue = right;
+            left = temp;
+        }
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
         XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-        grammar.setParticleMinMax(left, minAtt.intValue(), maxAtt.intValue());
+        left.fMinOccurs = minAtt.intValue();
+        left.fMaxOccurs = maxAtt.intValue();
 
-        fParticle = checkOccurrences(fParticle,
-                                     SchemaSymbols.ELT_ALL,
-                                     (Element)allDecl.getParentNode(),
-                                     allContextFlags,
-                                     defaultVals.intValue());
+        left = checkOccurrences(left,
+                                SchemaSymbols.ELT_ALL,
+                                (Element)allDecl.getParentNode(),
+                                allContextFlags,
+                                defaultVals.intValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         return left;
     }
 
-
-
     /**
      * Traverse the Sequence declaration
-     * 
+     *
      * <sequence
      *   id = ID
      *   maxOccurs = string
      *   minOccurs = nonNegativeInteger>
      *   Content: (annotation? , (element | group | choice | sequence | any)*)
      * </sequence>
-     * 
+     *
      * @param seqDecl
      * @param schemaDoc
      * @param grammar
-     * @return 
+     * @return
      */
-    int traverseSequence (Element seqDecl,
-                          XSDocumentInfo schemaDoc,
-                          SchemaGrammar grammar,
-                          int allContextFlags) {
+    XSParticleDecl traverseSequence(Element seqDecl,
+                                    XSDocumentInfo schemaDoc,
+                                    SchemaGrammar grammar,
+                                    int allContextFlags) {
 
-        return traverseSeqChoice (seqDecl, schemaDoc, grammar, allContextFlags, false);
+        return traverseSeqChoice(seqDecl, schemaDoc, grammar, allContextFlags, false);
     }
 
     /**
      * Traverse the Choice declaration
-     * 
+     *
      * <choice
      *   id = ID
      *   maxOccurs = string
      *   minOccurs = nonNegativeInteger>
      *   Content: (annotation? , (element | group | choice | sequence | any)*)
      * </choice>
-     * 
+     *
      * @param choiceDecl
      * @param schemaDoc
      * @param grammar
-     * @return 
+     * @return
      */
-    int traverseChoice (Element choiceDecl,
-                        XSDocumentInfo schemaDoc,
-                        SchemaGrammar grammar,
-                        int allContextFlags) {
+    XSParticleDecl traverseChoice(Element choiceDecl,
+                                  XSDocumentInfo schemaDoc,
+                                  SchemaGrammar grammar,
+                                  int allContextFlags) {
 
         return traverseSeqChoice (choiceDecl, schemaDoc, grammar, allContextFlags, true);
     }
 
     /**
      * Common traversal for <choice> and <sequence>
-     * 
+     *
      * @param decl
      * @param schemaDoc
      * @param grammar
      * @param choice    If traversing <choice> this parameter is true.
-     * @return 
+     * @return
      */
-    private int traverseSeqChoice (Element decl, 
-                                   XSDocumentInfo schemaDoc, 
-                                   SchemaGrammar grammar,
-                                   int allContextFlags,
-                                   boolean choice) {
+    private XSParticleDecl traverseSeqChoice(Element decl,
+                                             XSDocumentInfo schemaDoc,
+                                             SchemaGrammar grammar,
+                                             int allContextFlags,
+                                             boolean choice) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc.fNamespaceSupport);
@@ -222,34 +228,31 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Element content = DOMUtil.getFirstChildElement(decl);
         Element child = checkContent(decl,content, true);
 
-
-        int left = SchemaGrammar.I_EMPTY_DECL;
-        int right = SchemaGrammar.I_EMPTY_DECL;
+        XSParticleDecl left = null;
+        XSParticleDecl right = null;
         boolean hadContent = false;
         String childName = null;
-        int particleIndex;
+        XSParticleDecl particle, temp;
         for (;child != null;child = DOMUtil.getNextSiblingElement(child)) {
 
-            particleIndex = SchemaGrammar.I_EMPTY_DECL;
+            particle = null;
 
             childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                particleIndex = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
-
+                particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
-
-                particleIndex = fSchemaHandler.fGroupTraverser.traverseLocal(child, schemaDoc, grammar);
+                particle = fSchemaHandler.fGroupTraverser.traverseLocal(child, schemaDoc, grammar);
 
                 // A content type of all can only appear
                 // as the content type of a complex type definition.
-                if (hasAllContent(particleIndex, grammar)) {
+                if (hasAllContent(particle)) {
                     Object [] args;
                     if (choice) {
-                        args = new Object[]{"choice"};
+                        args = new Object[]{SchemaSymbols.ELT_CHOICE};
                     }
                     else {
-                        args = new Object[]{"sequence"};
+                        args = new Object[]{SchemaSymbols.ELT_SEQUENCE};
                     }
                     fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                                "AllContentLimited",
@@ -259,76 +262,79 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                particleIndex = traverseChoice( child,schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = traverseChoice( child,schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                particleIndex = traverseSequence(child,schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = traverseSequence(child,schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_ANY)) {
-                particleIndex = fSchemaHandler.fWildCardTraverser.traverseAny(child, schemaDoc, grammar);
+                particle = fSchemaHandler.fWildCardTraverser.traverseAny(child, schemaDoc, grammar);
             }
             else {
                 Object [] args;
                 if (choice) {
-                    args = new Object[]{"choice"};
+                    args = new Object[]{SchemaSymbols.ELT_CHOICE};
                 }
                 else {
-                    args = new Object[]{"sequence"};
+                    args = new Object[]{SchemaSymbols.ELT_SEQUENCE};
                 }
                 fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                                            "SeqChoiceContentRestricted",
                                            args,
-                                           XMLErrorReporter.SEVERITY_ERROR);                
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
 
 
-            if (left == SchemaGrammar.I_EMPTY_DECL) {
-                left = particleIndex;
+            if (left == null) {
+                left = particle;
             }
-            else if (right == SchemaGrammar.I_EMPTY_DECL) {
-                right = particleIndex;
+            else if (right == null) {
+                right = particle;
             }
             else {
-                if (choice) {
-                    left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_CHOICE ,left,right);
-                }
-                else {
-                    left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE ,left,right);
-                }
-                right = particleIndex;
+                temp = new XSParticleDecl();
+                if (choice)
+                    temp.fType = XSParticleDecl.PARTICLE_CHOICE;
+                else
+                    temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
+                temp.fValue = left;
+                temp.fOtherValue = right;
+                left = temp;
+                right = particle;
             }
         }
 
-        if (right != SchemaGrammar.I_EMPTY_DECL) //|| fSchemaGrammar.getDeferContentSpecExpansion())
-            if (choice) {
-                left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_CHOICE, left, right);
-            }
-            else {
-                left = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE, left, right);
-            }
+        if (right != null) {
+            temp = new XSParticleDecl();
+            if (choice)
+                temp.fType = XSParticleDecl.PARTICLE_CHOICE;
+            else
+                temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
+            temp.fValue = left;
+            temp.fOtherValue = right;
+            left = temp;
+        }
 
         XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
         XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
         XInt defaultVals = (XInt)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-        grammar.setParticleMinMax(left, minAtt.intValue(), maxAtt.intValue());
-
-        fParticle = checkOccurrences(fParticle,
-                                     choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
-                                     (Element)decl.getParentNode(),
-                                     allContextFlags,
-                                     defaultVals.intValue());
+        left.fMinOccurs = minAtt.intValue();
+        left.fMaxOccurs = maxAtt.intValue();
+        left = checkOccurrences(left,
+                                choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
+                                (Element)decl.getParentNode(),
+                                allContextFlags,
+                                defaultVals.intValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
-        return left;    
+        return left;
     }
 
     // Determines whether a content spec tree represents an "all" content model
-    protected boolean hasAllContent(int particleIndex, SchemaGrammar grammar) {
+    protected boolean hasAllContent(XSParticleDecl particle) {
         // If the content is not empty, is the top node ALL?
-        if (particleIndex != SchemaGrammar.I_EMPTY_DECL) {
-
-            fParticle = grammar.getParticleDecl(particleIndex, fParticle);
+        if (particle != null) {
 
             // REVISIT: defered?
             // An ALL node could be optional, so we have to be prepared
@@ -337,7 +343,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             //    fSchemaGrammar.getContentSpec(content.value, content);
             //}
 
-            return(fParticle.type == XSParticleDecl.PARTICLE_ALL);
+            return (particle.fType == XSParticleDecl.PARTICLE_ALL);
         }
 
         return false;

@@ -71,12 +71,22 @@ import org.apache.xerces.util.DOMUtil;
  * Class <code>XSDAbstractTraverser</code> serves as the base class for all
  * other <code>XSD???Traverser</code>s. It holds the common data and provide
  * a unified way to initialize these data.
- * 
+ *
  * @author Elena Litani, IBM
  *
  * @version $Id$
  */
 abstract class XSDAbstractTraverser {
+
+    protected static final QName ANY_TYPE = new QName(null,
+                                                      SchemaSymbols.ATTVAL_ANYTYPE,
+                                                      SchemaSymbols.ATTVAL_ANYTYPE,
+                                                      SchemaSymbols.URI_SCHEMAFORSCHEMA);
+
+    protected static final QName ANY_SIMPLE_TYPE = new QName(null,
+                                                             SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
+                                                             SchemaSymbols.ATTVAL_ANYTYPE,
+                                                             SchemaSymbols.URI_SCHEMAFORSCHEMA);
 
     // Flags for checkOccurrences to indicate any special
     // restrictions on minOccurs and maxOccurs relating to "all".
@@ -102,7 +112,7 @@ abstract class XSDAbstractTraverser {
 
     XSDAbstractTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
-                          XSAttributeChecker attrChecker) {        
+                          XSAttributeChecker attrChecker) {
         fSchemaHandler = handler;
         fErrorReporter = errorReporter;
         fAttrChecker = attrChecker;
@@ -122,8 +132,9 @@ abstract class XSDAbstractTraverser {
     // REVISIT: store annotation information for PSVI
     // REVISIT: how to pass the parentAttrs? as DOM attributes?
     //          as name/value pairs (string)? in parsed form?
-    int traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs,
-                               boolean isGlobal, XSDocumentInfo schemaDoc) {
+    // REVISIT: what to return
+    void traverseAnnotationDecl(Element annotationDecl, Object[] parentAttrs,
+                                boolean isGlobal, XSDocumentInfo schemaDoc) {
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(annotationDecl, isGlobal, schemaDoc.fNamespaceSupport);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
@@ -147,8 +158,7 @@ abstract class XSDAbstractTraverser {
             fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
         }
 
-        // REVISIT: an annotation index should be returned when we support PSVI
-        return SchemaGrammar.I_EMPTY_DECL;
+        // REVISIT: an annotation decl should be returned when we support PSVI
     }
 
     // REVISIT: is it how we want to handle error reporting?
@@ -176,12 +186,12 @@ abstract class XSDAbstractTraverser {
     Element checkContent( Element elm, Element content, boolean isEmpty ) {
         return content;
     }
-    
+
     /**
      * Element/Attribute traversers call this method to check whether
      * the type is NOTATION without enumeration facet
      */
-    void checkNotationType(String refName, XSType typeDecl) {
+    void checkNotationType(String refName, XSTypeDecl typeDecl) {
         if (typeDecl instanceof NOTATIONDatatypeValidator) {
             //REVISIT: to check whether there is an enumeration facet
             //if (((DatatypeValidator)typeDecl).hasEnumFacet) {
@@ -199,11 +209,11 @@ abstract class XSDAbstractTraverser {
                                               int allContextFlags,
                                               int defaultVals) {
 
-        int min = particle.minOccurs;
-        int max = particle.maxOccurs;
+        int min = particle.fMinOccurs;
+        int max = particle.fMaxOccurs;
         boolean defaultMin = (defaultVals & (1 << XSAttributeChecker.ATTIDX_MINOCCURS)) != 0;
         boolean defaultMax = (defaultVals & (1 << XSAttributeChecker.ATTIDX_MAXOCCURS)) != 0;
-        
+
         boolean processingAllEl = ((allContextFlags & PROCESSING_ALL_EL) != 0);
         boolean processingAllGP = ((allContextFlags & PROCESSING_ALL_GP) != 0);
         boolean groupRefWithAll = ((allContextFlags & GROUP_REF_WITH_ALL) != 0);
@@ -223,7 +233,7 @@ abstract class XSDAbstractTraverser {
 
         // If minOccurs=maxOccurs=0, no component is specified
         if (min == 0 && max== 0) {
-            particle.type = XSParticleDecl.PARTICLE_EMPTY;
+            particle.fType = XSParticleDecl.PARTICLE_EMPTY;
             return null;
         }
 
@@ -273,9 +283,9 @@ abstract class XSDAbstractTraverser {
             }
         }
 
-        particle.maxOccurs = min;
-        particle.maxOccurs = max;
-        
+        particle.fMaxOccurs = min;
+        particle.fMaxOccurs = max;
+
         return particle;
     }
 }

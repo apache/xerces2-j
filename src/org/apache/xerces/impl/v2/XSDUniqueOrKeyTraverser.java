@@ -65,7 +65,7 @@ import org.apache.xerces.impl.v2.xpath.*;
 
 /**
  * This class contains code that is used to traverse both <key>s and
- * <unique>s.  
+ * <unique>s.
  *
  * @author Neil Graham, IBM
  * @version $Id$
@@ -79,7 +79,7 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
     }
 
 
-    void traverse(Element uElem, int elemIndex, 
+    void traverse(Element uElem, XSElementDecl element,
             XSDocumentInfo schemaDoc, SchemaGrammar grammar) {
 
         // General Attribute Checking
@@ -93,7 +93,7 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         } else {
             uniqueOrKey = new UniqueOrKey(uName, IdentityConstraint.KEY);
         }
-        // it's XSDElementTraverser's job to ensure that there's no 
+        // it's XSDElementTraverser's job to ensure that there's no
         // duplication (or if there is that restriction is involved
         // and there's identity).
 
@@ -101,7 +101,7 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
         traverseIdentityConstraint(uniqueOrKey, uElem, schemaDoc);
 
         // and stuff this in the grammar
-        grammar.addIDConstraint(elemIndex, uniqueOrKey);
+        grammar.addIDConstraintDecl(element, uniqueOrKey);
 
         // and fix up attributeChecker
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);

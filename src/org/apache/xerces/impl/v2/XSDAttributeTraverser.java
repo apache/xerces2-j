@@ -62,10 +62,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.XInt;
-import org.apache.xerces.util.XIntPool;
 import org.w3c.dom.Element;
-import java.util.Hashtable;
-
 
 /**
  * The attribute declaration schema component traverser.
@@ -82,20 +79,12 @@ import java.util.Hashtable;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, (simpleType?))
  * </attribute>
- * 
+ *
  * @author Sandy Gao, IBM
- * 
+ *
  * @version $Id$
  */
-class  XSDAttributeTraverser extends XSDAbstractTraverser {
-
-    protected static final QName ANY_SIMPLE_TYPE = new QName(null,
-                                                             SchemaSymbols.ATTVAL_ANYSIMPLETYPE,
-                                                             SchemaSymbols.ATTVAL_ANYTYPE,
-                                                             SchemaSymbols.URI_SCHEMAFORSCHEMA);
-
-    protected XSAttributeDecl fTempAttributeDecl = new XSAttributeDecl();
-    protected XSAttributeUse  fTempAttributeUse  = new XSAttributeUse();
+class XSDAttributeTraverser extends XSDAbstractTraverser {
 
     public XSDAttributeTraverser (XSDHandler handler,
                                   XMLErrorReporter errorReporter,
@@ -103,9 +92,9 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         super(handler, errorReporter, gAttrCheck);
     }
 
-    protected int traverseLocal(Element attrDecl,
-                                XSDocumentInfo schemaDoc,
-                                SchemaGrammar grammar) {
+    protected XSAttributeUse traverseLocal(Element attrDecl,
+                                           XSDocumentInfo schemaDoc,
+                                           SchemaGrammar grammar) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc.fNamespaceSupport);
@@ -117,27 +106,22 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
         XInt   useAtt     = (XInt)   attrValues[XSAttributeChecker.ATTIDX_USE];
 
         // get 'attribute declaration'
-        int attrIdx = SchemaGrammar.I_EMPTY_DECL;
+        XSAttributeDecl attribute = null;
         if (refAtt != null) {
-            attrIdx = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt);
-            if (attrIdx == SchemaGrammar.I_NOT_FOUND) {
-                reportGenericSchemaError("attribute not found: "+refAtt.uri+","+refAtt.localpart);
-                attrIdx = SchemaGrammar.I_EMPTY_DECL;
-            }
+            attribute = (XSAttributeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.ATTRIBUTE_TYPE, refAtt);
 
             Element child = DOMUtil.getFirstChildElement(attrDecl);
             if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
-    
+
             if (child != null) {
                 reportGenericSchemaError("src-attribute.0: the content of an attribute information item with 'ref' must match (annotation?)");
             }
-            
+
         } else {
-            attrIdx = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false);
-            fTempAttributeDecl = fSchemaHandler.getAttributeDecl(schemaDoc.fTargetNamespace, attrIdx, fTempAttributeDecl);
+            attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false);
         }
 
         // get 'value constraint'
@@ -149,71 +133,59 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
             defaultAtt = fixedAtt;
             fixedAtt = null;
         }
-        
-        int attrUseIdx = SchemaGrammar.I_EMPTY_DECL;
-        if (attrIdx != SchemaGrammar.I_EMPTY_DECL) {
-            fTempAttributeUse.clear();
-            fTempAttributeUse.fAttrIdx = attrIdx;
-            fTempAttributeUse.fAttrName = refAtt == null ? fTempAttributeDecl.fName : refAtt.localpart;
-            fTempAttributeUse.fAttrNS = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
-            fTempAttributeUse.fUse = useAtt.shortValue();
-            fTempAttributeUse.fConstraintType = consType;
-            fTempAttributeUse.fDefaultValue = defaultAtt;
-            attrUseIdx = grammar.addAttributeUse(fTempAttributeUse);
+
+        XSAttributeUse attrUse = null;
+        if (attribute != null) {
+            attrUse = new XSAttributeUse();
+            attrUse.fAttrDecl = attribute;
+            attrUse.fUse = useAtt.shortValue();
+            attrUse.fConstraintType = consType;
+            attrUse.fDefault = defaultAtt;
         }
-        
+
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
         //src-attribute
-        
-        // 1 default and fixed must not both be present. 
-		if (defaultAtt != null && fixedAtt != null) {
-			// REVISIT:  localize
-			reportGenericSchemaError("src-attribute.1: 'default' and 'fixed' must not both be present in attribute declaration '" + nameAtt + "'");
+
+        // 1 default and fixed must not both be present.
+        if (defaultAtt != null && fixedAtt != null) {
+            // REVISIT:  localize
+            reportGenericSchemaError("src-attribute.1: 'default' and 'fixed' must not both be present in attribute declaration '" + nameAtt + "'");
         }
 
-        // 2 If default and use are both present, use must have the ·actual value· optional. 
+        // 2 If default and use are both present, use must have the ·actual value· optional.
         if (consType == XSAttributeDecl.DEFAULT_VALUE &&
             useAtt != null && useAtt.intValue() != SchemaSymbols.USE_OPTIONAL) {
-			reportGenericSchemaError("src-attribute.2: 'default' is present in attribute '"+nameAtt+"', so 'use' must be 'optional'");
+            reportGenericSchemaError("src-attribute.2: 'default' is present in attribute '"+nameAtt+"', so 'use' must be 'optional'");
         }
-        
+
         // a-props-correct
 
-        if (defaultAtt != null) {
-            String namespace = refAtt == null ? schemaDoc.fTargetNamespace : refAtt.uri;
-            XSAttributeDecl attr = fSchemaHandler.getAttributeDecl(namespace, attrIdx, fTempAttributeDecl);
-            DatatypeValidator type = (DatatypeValidator)fSchemaHandler.getXSTypeDecl(attr.fTypeNS, attr.fTypeIdx);
-
-            // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4). 
-            if (!checkDefaultValid(defaultAtt, type, nameAtt)) {
+        if (defaultAtt != null && attrUse != null) {
+            // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
+            if (!checkDefaultValid(attrUse)) {
                 reportGenericSchemaError ("a-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in attribute " + nameAtt);
             }
 
-            // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}. 
-            if (type instanceof IDDatatypeValidator) {
+            // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
+            if (attribute.fType instanceof IDDatatypeValidator) {
                 reportGenericSchemaError ("a-props-correct.3: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- attribute " + nameAtt);
             }
         }
 
-        // create new attributeUse object
-        // put in attribute decl, use, value constraint
-        // register
-        // return
-        
-        return SchemaGrammar.I_EMPTY_DECL;
+        return attrUse;
     }
 
-    protected int traverseGlobal(Element attrDecl,
-                                 XSDocumentInfo schemaDoc,
-                                 SchemaGrammar grammar) {
+    protected XSAttributeDecl traverseGlobal(Element attrDecl,
+                                             XSDocumentInfo schemaDoc,
+                                             SchemaGrammar grammar) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true, schemaDoc.fNamespaceSupport);
-        int attrIdx = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true);
+        XSAttributeDecl attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
 
-        return attrIdx;
+        return attribute;
     }
 
     /**
@@ -226,55 +198,63 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
      * @param  isGlobal
      * @return the attribute declaration index
      */
-    int traverseNamedAttr(Element attrDecl,
-                          Object[] attrValues,
-                          XSDocumentInfo schemaDoc,
-                          SchemaGrammar grammar,
-                          boolean isGlobal) {
+    XSAttributeDecl traverseNamedAttr(Element attrDecl,
+                                      Object[] attrValues,
+                                      XSDocumentInfo schemaDoc,
+                                      SchemaGrammar grammar,
+                                      boolean isGlobal) {
 
-        String  defaultAtt   = (String)  attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
-        String  fixedAtt     = (String)  attrValues[XSAttributeChecker.ATTIDX_FIXED];
-        XInt formAtt      = (XInt) attrValues[XSAttributeChecker.ATTIDX_FORM];
-        String  nameAtt      = (String)  attrValues[XSAttributeChecker.ATTIDX_NAME];
-        QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
+        String  defaultAtt = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
+        String  fixedAtt   = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
+        XInt    formAtt    = (XInt)   attrValues[XSAttributeChecker.ATTIDX_FORM];
+        String  nameAtt    = (String) attrValues[XSAttributeChecker.ATTIDX_NAME];
+        QName   typeAtt    = (QName)  attrValues[XSAttributeChecker.ATTIDX_TYPE];
 
         // Step 1: get declaration information
-        
+        XSAttributeDecl attribute = new XSAttributeDecl();
+
+        // get 'name'
+        if (nameAtt != null)
+            attribute.fName = fSymbolTable.addSymbol(nameAtt);
+
         // get 'target namespace'
-        String namespace = XSDHandler.EMPTY_STRING;
         if (isGlobal) {
-            namespace = schemaDoc.fTargetNamespace;
+            attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
         }
         else if (formAtt != null) {
             if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
-                namespace = schemaDoc.fTargetNamespace;
+                attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
+            else
+                attribute.fTargetNamespace = fSchemaHandler.EMPTY_STRING;
         } else if (schemaDoc.fAreLocalElementsQualified) {
-            namespace = schemaDoc.fTargetNamespace;
+            attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
+        } else {
+            attribute.fTargetNamespace = fSchemaHandler.EMPTY_STRING;
         }
 
         // get 'value constraint'
         // for local named attribute, value constraint is absent
-        if (!isGlobal) {
-            fixedAtt = defaultAtt = null;
-        }
-        short consType = XSAttributeDecl.NO_CONSTRAINT;
-        if (fixedAtt != null) {
-            consType = XSAttributeDecl.FIXED_VALUET;
-            defaultAtt = fixedAtt;
-        } else if (defaultAtt != null) {
-            consType = XSAttributeDecl.DEFAULT_VALUE;
+        if (isGlobal) {
+            if (fixedAtt != null) {
+                attribute.fDefault = fixedAtt;
+                attribute.fConstraintType = XSElementDecl.FIXED_VALUET;
+            } else if (defaultAtt != null) {
+                attribute.fDefault = defaultAtt;
+                attribute.fConstraintType = XSElementDecl.DEFAULT_VALUE;
+            } else {
+                attribute.fConstraintType = XSElementDecl.NO_CONSTRAINT;
+            }
         }
 
         // get 'annotation'
         Element child = DOMUtil.getFirstChildElement(attrDecl);
         if(child != null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
-			traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+            traverseAnnotationDecl(child, attrValues, false, schemaDoc);
             child = DOMUtil.getNextSiblingElement(child);
-		}
+        }
 
         // get 'type definition'
-        String typeNS = null;
-        int attrType = SchemaGrammar.I_EMPTY_DECL;
+        DatatypeValidator attrType = null;
         boolean haveAnonType = false;
 
         // Handle Anonymous type if there is one
@@ -283,42 +263,32 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
 
             if (childName.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 attrType = fSchemaHandler.fSimpleTypeTraverser.traverseLocal(child, schemaDoc, grammar);
-                if (attrType != SchemaGrammar.I_EMPTY_DECL)
-                    typeNS = schemaDoc.fTargetNamespace;
                 haveAnonType = true;
-            	child = DOMUtil.getNextSiblingElement(child);
+                child = DOMUtil.getNextSiblingElement(child);
             }
         }
 
         // Handler type attribute
-        if (attrType == SchemaGrammar.I_EMPTY_DECL && typeAtt != null) {
-            attrType = fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
-            if (attrType != SchemaGrammar.I_NOT_FOUND) {
-                reportGenericSchemaError("type not found: "+typeAtt.uri+","+typeAtt.localpart+" for element '"+nameAtt+"'");
-                attrType = SchemaGrammar.I_EMPTY_DECL;
-            } else {
-                typeNS = typeAtt.uri;
-            }
-        }
-        
-        if (attrType == SchemaGrammar.I_EMPTY_DECL) {
-            attrType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_SIMPLE_TYPE);
-            typeNS = SchemaSymbols.URI_SCHEMAFORSCHEMA;
+        if (attrType == null && typeAtt != null) {
+            XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt);
+            if (type instanceof DatatypeValidator)
+                attrType = (DatatypeValidator)type;
+            else
+                reportGenericSchemaError("the type for attribute '"+nameAtt+"' must be a simpleType");
         }
 
-        // Step 2: create the declaration, and register it to the grammar
-        fTempAttributeDecl.clear();
-        fTempAttributeDecl.fName = nameAtt;
-        fTempAttributeDecl.fTargetNamespace = namespace;
-        fTempAttributeDecl.fTypeNS = typeNS;
-        fTempAttributeDecl.fTypeIdx = attrType;
-        fTempAttributeDecl.fConstraintType = consType;
-        fTempAttributeDecl.fDefaultValue = defaultAtt;
-        // REVISIT: to implement
-        //int attributeIndex = grammar.addAttributeDecl(fTempAttributeDecl);
+        if (attrType == null) {
+            attrType = (DatatypeValidator)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, ANY_SIMPLE_TYPE);
+        }
+
+        attribute.fType = attrType;
+
+        // Step 2: register attribute decl to the grammar
+        if (nameAtt != null)
+            grammar.addGlobalAttributeDecl(attribute);
 
         // Step 3: check against schema for schemas
-        
+
         // required attributes
         if (nameAtt == null) {
             if (isGlobal)
@@ -326,87 +296,100 @@ class  XSDAttributeTraverser extends XSDAbstractTraverser {
             else
                 reportGenericSchemaError("src-attribute.3.1: One of 'ref' or 'name' must be present in a local attribute declaration");
         }
-        
+
         // element
         if (child != null) {
             reportGenericSchemaError("src-attribute.0: the content of an attribute information item must match (annotation?, (simpleType?))");
         }
 
         // Step 4: check 3.2.3 constraints
-        
+
         // src-attribute
 
-        // 1 default and fixed must not both be present. 
-		if (defaultAtt != null && fixedAtt != null) {
-			// REVISIT:  localize
-			reportGenericSchemaError("src-attribute.1: 'default' and 'fixed' must not both be present in attribute declaration '" + nameAtt + "'");
+        // 1 default and fixed must not both be present.
+        if (defaultAtt != null && fixedAtt != null) {
+            // REVISIT:  localize
+            reportGenericSchemaError("src-attribute.1: 'default' and 'fixed' must not both be present in attribute declaration '" + nameAtt + "'");
         }
 
         // 2 If default and use are both present, use must have the ·actual value· optional.
         // This is checked in "traverse" method
-        
+
         // 3 If the item's parent is not <schema>, then all of the following must be true:
-        // 3.1 One of ref or name must be present, but not both. 
+        // 3.1 One of ref or name must be present, but not both.
         // This is checked in XSAttributeChecker
 
-        // 3.2 If ref is present, then all of <simpleType>, form and type must be absent. 
+        // 3.2 If ref is present, then all of <simpleType>, form and type must be absent.
         // Attributes are checked in XSAttributeChecker, elements are checked in "traverse" method
 
-        // 4 type and <simpleType> must not both be present. 
+        // 4 type and <simpleType> must not both be present.
         if (haveAnonType && (typeAtt != null)) {
             reportGenericSchemaError( "src-attribute.3: Attribute '"+ nameAtt +
                                       "' have both a type attribute and a simpleType child" );
         }
 
         // Step 5: check 3.2.6 constraints
-        DatatypeValidator type = (DatatypeValidator)fSchemaHandler.getXSTypeDecl(typeNS, attrType);
-        // check for NOTATION type        
-        checkNotationType(nameAtt, type);
+        // check for NOTATION type
+        checkNotationType(nameAtt, attrType);
 
         // a-props-correct
 
-        // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4). 
-        if (defaultAtt != null) {
-            if (!checkDefaultValid(defaultAtt, type, nameAtt)) {
+        // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
+        if (attribute.fDefault != null) {
+            if (!checkDefaultValid(attribute)) {
                 reportGenericSchemaError ("a-props-correct.2: invalid fixed or default value '" + defaultAtt + "' in attribute " + nameAtt);
             }
         }
 
-        // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}. 
-        if (defaultAtt != null) {
-            if (type instanceof IDDatatypeValidator) {
+        // 3 If the {type definition} is or is derived from ID then there must not be a {value constraint}.
+        if (attribute.fDefault != null) {
+            if (attrType instanceof IDDatatypeValidator) {
                 reportGenericSchemaError ("a-props-correct.3: If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint} -- attribute " + nameAtt);
             }
         }
-        
+
         // no-xmlns
 
-        // The {name} of an attribute declaration must not match xmlns. 
-        if (nameAtt.equals(SchemaSymbols.XMLNS)) {
+        // The {name} of an attribute declaration must not match xmlns.
+        if (nameAtt != null && nameAtt.equals(SchemaSymbols.XMLNS)) {
             reportGenericSchemaError("no-xmlns: The {name} of an attribute declaration must not match 'xmlns'");
         }
 
         // no-xsi
 
-        // The {target namespace} of an attribute declaration, whether local or top-level, must not match http://www.w3.org/2001/XMLSchema-instance (unless it is one of the four built-in declarations given in the next section). 
-        if (namespace.equals(SchemaSymbols.URI_XSI)) {
+        // The {target namespace} of an attribute declaration, whether local or top-level, must not match http://www.w3.org/2001/XMLSchema-instance (unless it is one of the four built-in declarations given in the next section).
+        if (attribute.fTargetNamespace.equals(SchemaSymbols.URI_XSI)) {
             reportGenericSchemaError("no-xsi: The {target namespace} of an attribute declaration must not match " + SchemaSymbols.URI_XSI);
         }
 
-        return 0;
+        return attribute;
     }
 
     // return whether the constraint value is valid for the given type
-    boolean checkDefaultValid(String defaultStr, DatatypeValidator dv, String referName) {
+    boolean checkDefaultValid(XSAttributeDecl attribute) {
 
         boolean ret = true;
 
         try {
-            dv.validate(defaultStr, null);
+            attribute.fDefault = attribute.fType.validate((String)attribute.fDefault, null);
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }
-        
+
+        return ret;
+    }
+
+    // return whether the constraint value is valid for the given type
+    boolean checkDefaultValid(XSAttributeUse attrUse) {
+
+        boolean ret = true;
+
+        try {
+            attrUse.fDefault = attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
+        } catch (InvalidDatatypeValueException ide) {
+            ret = false;
+        }
+
         return ret;
     }
 
