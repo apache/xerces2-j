@@ -729,7 +729,7 @@ public class XMLNamespaceBinder
                 if (uri == fEmptySymbol && localpart != fXmlnsSymbol) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "EmptyPrefixedAttName",
-                                               new Object[]{element.rawname},
+                                               new Object[]{attributes.getQName(i)},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     continue;
                 }
