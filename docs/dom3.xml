@@ -11,8 +11,7 @@
 			The
 			<jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>
 			specification is at the stage of
-			<strong>Working Draft</strong>
-			, which represents work in progress and thus may be
+			<strong>Working Draft</strong>, which represents work in progress and thus may be
 			updated, replaced, or obsoleted by other documents at any
 			time.
 
@@ -23,24 +22,18 @@
 	</s2>
 	<s2 title="Introduction">
 		<p>
-			The &ParserNameLong; &ParserVersion; contains an implementation of a subset of the W3C DOM Level 3 as specified in
-			<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/">Core</jump>,
-			<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725/">Load and Save</jump>
-			, and
-			<jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html">Abstract Schemas</jump>
-			[<strong>deprecated</strong>].
-
+			The &ParserNameLong; &ParserVersion; contains an implementation of 
+			the Document Object Model Level 3 Core and Document Object Model Level 3 Load and Save Working drafts.
+			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
 		<p>
-			The DOM Level 3 methods for which implementation is not provide throw
-			<code>DOMException NOT_SUPPORTED_ERR</code>
-			exception.
+			The DOM Level 3 methods for which implementation is not provided throw
+			<code>DOMException NOT_SUPPORTED_ERR</code> exception.
 		</p>
 
 		<note>
 			To find out how to access
-			<em>DOM Level 3 functionality</em>
-			, please refer to the
+			<em>DOM Level 3 functionality</em>, please refer to the
 			<link idref='faq-dom'>FAQ</link>
 			.
 		</note>
@@ -57,8 +50,7 @@
 			</li>
 
 			<li>
-				<strong>Document</strong>
-				<jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#DOMConfiguration">configuration</jump>
+				<strong>DOMConfiguration</strong> 
 				-- using configuration users can set different parameters for the Document.
 			</li>
 			<li>
@@ -224,6 +216,7 @@
 		</ul>
 
 	</s2>
+	<!--
 	<s2 title='Implementation of DOM Level 3 Abstract Schemas'>
 		<p>
 			The implementation of Abstract Schemas is
@@ -251,4 +244,5 @@
 			sample.
 		</note>
 	</s2>
+	-->
 </s1>

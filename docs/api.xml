@@ -75,7 +75,7 @@
      Configuration</jump>
     </li>
     <li>
-     <jump href='javadocs/xni/org/apache/xerces/xni/psvi/package-summary.html'>PSVI interfaces</jump>
+     <jump href='javadocs/xni/org/apache/xerces/xni/psvi/package-summary.html'>PSVI interfaces</jump> [<strong>deprecated</strong>]
     </li>
    </ul>
   </ul>
@@ -83,9 +83,9 @@
 <s2 title='DOM Level 3 API'>
   <p>Includes DOM Level 3 Working Draft APIs:</p>
   <ul>
-    <li><jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/">Abstract Schema and Load and Save</jump>
+    <li><jump href="http://www.w3.org/DOM/DOMTR#dom3">Document Object Model Level 3 Core</jump>
     </li>
-    <li><jump href="http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/">DOM Level 3 Core</jump>
+    <li><jump href="http://www.w3.org/DOM/DOMTR#dom3">Document Object Model Level 3 Load and Save</jump>
     </li>
    </ul>
   <p>
