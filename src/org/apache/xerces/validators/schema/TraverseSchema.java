@@ -3704,10 +3704,9 @@ public class TraverseSchema implements
                            child.getLocalName().equals(SchemaSymbols.ELT_LENGTH) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MINLENGTH) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_MAXLENGTH) ||
-                           child.getLocalName().equals(SchemaSymbols.ELT_PERIOD) ||
-                           child.getLocalName().equals(SchemaSymbols.ELT_DURATION) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_PATTERN) ||
+                           child.getLocalName().equals(SchemaSymbols.ELT_WHITESPACE) ||
                            child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION));
                  child = XUtil.getNextSiblingElement(child))
             {
