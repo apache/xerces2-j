@@ -131,8 +131,8 @@ public class XSParticleDecl {
                     fBuffer.append('|');
                 else
                     fBuffer.append(',');
+                fBuffer.append(fOtherValue.toString());
             }
-            fBuffer.append(fOtherValue.toString());
             fBuffer.append(')');
             break;
         case PARTICLE_ZERO_OR_ONE:
