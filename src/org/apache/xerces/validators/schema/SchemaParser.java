@@ -427,6 +427,18 @@ public class SchemaParser
 		}
 	}
 
+
+	// TODO: Need to make this more conformant with Schema int type parsing
+
+	private int parseInt (String intString) throws Exception
+	{
+		if ( intString.equals("*") ) {
+			return Schema.INFINITY;
+		} else {
+			return Integer.parseInt (intString);
+		}
+	}
+
 	private int parseSimpleDerivedBy (String derivedByString) throws Exception
 	{
 		if ( derivedByString.equals (Schema.VAL_LIST) ) {
@@ -944,9 +956,7 @@ public class SchemaParser
 			} else if ( attrList.getAttrName(i) == fStringPool.addSymbol(Schema.ATT_MAXOCCURS) ) {
 				maxOccurs = value;
 			} else {
-				reportGenericSchemaError (		"Invalid attribute (" +
-												fStringPool.toString (attrList.getAttrName(i)) +
-												")" );
+				reportGenericSchemaError ("Invalid attribute for 'group'");
 			}
 		}
 
@@ -955,61 +965,25 @@ public class SchemaParser
 		//
 
 		if ( fComponentStack.size() == 0 ) {
-			if ( name == null ) {
-				//reportSchemaError (	SchemaMessageProvider.GlobalGroupMustHaveName, null );
+			if ( name != null && ref == null && minOccurs == null && maxOccurs == null ) {
+				Schema.GroupDef group = fSchemaDocument.createGroupDef ();
+				group.setName (name);
+				fComponentStack.push (group);
+			} else {
+				reportGenericSchemaError ("Invalid 'group' decl");
 			}
+		} else {
+			Schema.GroupParticle particle = fSchemaDocument.createGroupParticle ();
 			if ( ref != null ) {
-				//reportSchemaError (	SchemaMessageProvider.GlobalGroupCannotHaveRef, null );
+				particle.setGroupRef (ref, null);
 			}
 			if ( minOccurs != null ) {
-				//reportSchemaError (	SchemaMessageProvider.InvalidMinOccurs, null );
-			}		
+				particle.setMinOccurs (parseInt(minOccurs));
+			}
 			if ( maxOccurs != null ) {
-				//reportSchemaError (	SchemaMessageProvider.InvalidMaxOccurs, null );
+				particle.setMaxOccurs (parseInt(maxOccurs));
 			}
-
-			Schema.GroupDef group = fSchemaDocument.createGroupDef ();
-			group.setName (name);
-			fComponentStack.push (group);
-		} 
-		
-		//
-		// Embedded group particle case
-		//
-		
-		else {
-
-			Schema.GroupDef group = null;
-			Schema.GroupParticle particle = fSchemaDocument.createGroupParticle ();
-
-			if ( name != null ) {
-				//reportSchemaError (	SchemaMessageProvider.OnlyGlobalGroupCanHaveName, null );
-			}
-
-			if ( ref == null ) {
-				group = fSchemaDocument.createGroupDef ();
-			}
-
-			//
-			// Set particle minOccurs and maxOccurs
-			//
-
-			if ( minOccurs == null ) {
-				particle.setMinOccurs (1);
-			} else {
-				particle.setMinOccurs (Integer.parseInt(minOccurs));
-			}
-
-			if ( maxOccurs == null ) {
-				particle.setMaxOccurs (1);
-			} else if ( maxOccurs.equals (Schema.VAL_INFINITY) ) {
-				particle.setMaxOccurs (Schema.INFINITY);
-			} else {
-				particle.setMaxOccurs (Integer.parseInt(maxOccurs));
-			}
-
 			fComponentStack.push (particle);
-			fComponentStack.push (group);
 		}
 	}
 
@@ -1019,16 +993,14 @@ public class SchemaParser
 
 	private void endGroupDef () throws Exception
 	{
-		/*
-		Schema.GroupDef group = (Schema.GroupDef)fComponentStack.pop ();
-
-		if ( group.isNamed() ) {
-			fSchemaDocument.register (group);
+		if ( fComponentStack.size() == 1 ) {
+			Schema.GroupDef group = (Schema.GroupDef)fComponentStack.pop ();
+			fSchemaDocument.registerGroupDef (group.getName(), group);
 		} else {
-			Schema.ComplexTypeDef type = (Schema.ComplexTypeDef)fComponentStack.peek ();
-			type.appendParticle (group);
+			Schema.GroupParticle particle = (Schema.GroupParticle)fComponentStack.pop ();
+			Schema.EParticleHolder holder = (Schema.EParticleHolder)fComponentStack.peek ();
+			holder.add (particle);
 		}
-		*/
 	}
 
 	//
@@ -1037,8 +1009,8 @@ public class SchemaParser
 
 	private void startChoice (XMLAttrList attrList, int attrListIndex)
 	{
-		Schema.GroupDef groupDef = (Schema.GroupDef)fComponentStack.peek();
-		groupDef.setOrder (Schema.CHOICE);
+		Schema.EParticleHolder holder = (Schema.EParticleHolder)fComponentStack.peek();
+		holder.setOrder (Schema.CHOICE);
 	}
 
 	//
@@ -1053,8 +1025,8 @@ public class SchemaParser
 
 	private void startSeq (XMLAttrList attrList, int attrListIndex)
 	{
-		Schema.GroupDef groupDef = (Schema.GroupDef)fComponentStack.peek();
-		groupDef.setOrder (Schema.SEQUENCE);
+		Schema.EParticleHolder holder = (Schema.EParticleHolder)fComponentStack.peek();
+		holder.setOrder (Schema.SEQUENCE);
 	}
 
 	//
@@ -1069,8 +1041,8 @@ public class SchemaParser
 
 	private void startAll (XMLAttrList attrList, int attrListIndex)
 	{
-		Schema.GroupDef groupDef = (Schema.GroupDef)fComponentStack.peek();
-		groupDef.setOrder (Schema.ALL);
+		Schema.EParticleHolder holder = (Schema.EParticleHolder)fComponentStack.peek();
+		holder.setOrder (Schema.ALL);
 	}
 
 	//
@@ -1201,7 +1173,10 @@ public class SchemaParser
 		}
 
 		if ( fComponentStack.size() == 0 ) {
-			if ( name != null && ref == null && minOccurs == null && maxOccurs == null ) {
+
+			// ISSUE: Default value for minOccurs (and maybe maxOccurs) gets in the way!
+
+			if ( name != null && ref == null /* && minOccurs == null */ && maxOccurs == null ) {
 				Schema.ElementDecl element = fSchemaDocument.createElementDecl ();
 				element.setName (name);
 				if ( type != null ) element.setType (type, null);
@@ -1219,19 +1194,23 @@ public class SchemaParser
 		} else {
 			Schema.ElementParticle particle = fSchemaDocument.createElementParticle ();
 
-			if (equivClass == null && finalSet == null ) {
+			// ISSUE: finalSet has a default value!
+
+			if (equivClass == null /* && finalSet == null */ ) {
 				if ( ref != null ) {
 					if ( name == null && type == null ) {
-
+						particle.setElementRef (ref, null);
 					} else {
-						reportGenericSchemaError ("Invalid 'element' particle");
+						reportGenericSchemaError ("Invalid 'element' particle #1");
 					}
-
 				} else {
 					if ( name != null ) {
 						particle.setName (name);
+						if ( type != null ) {
+							particle.setType (type, null);
+						}
 					} else {
-						reportGenericSchemaError ("Invalid 'element' particle");
+						reportGenericSchemaError ("Invalid 'element' particle #2");
 					}
 				}
 
@@ -1239,9 +1218,8 @@ public class SchemaParser
 				if ( isAbstract != null ) particle.setAbstract (parseBoolean(isAbstract));
 				if ( defaultValue != null ) particle.setDefaultValue (defaultValue);
 				if ( fixedValue != null ) particle.setFixedValue (fixedValue);
-
 			} else {
-				reportGenericSchemaError ("Invalid 'element' particle");
+				reportGenericSchemaError ("Invalid 'element' particle #3");
 			}
 
 			fComponentStack.push (particle);
@@ -1335,7 +1313,7 @@ public class SchemaParser
 			} else if ( attrList.getAttrName(i) == fStringPool.addSymbol(Schema.ATT_VALUE) ) {
 				value = attValue;	
 			} else {
-				reportGenericSchemaError ("Invalid attribute for 'attribute'");
+				reportGenericSchemaError ("Invalid attribute (" + fStringPool.toString(attrList.getAttrName(i)) + ") for 'attribute'");
 			}
 		}
 
@@ -1447,13 +1425,39 @@ public class SchemaParser
 	// **** NOTATIONS ****
 	// *******************
 
-	private void startNotationDecl (XMLAttrList attrList, int attrListIndex)
+	private void startNotationDecl (XMLAttrList attrList, int attrListIndex) throws Exception
 	{
+		if ( fComponentStack.size() == 0 ) {
+
+			Schema.NotationDecl notation = fSchemaDocument.createNotationDecl ();
+
+			for (int i=attrList.getFirstAttr(attrListIndex); i != -1; i = attrList.getNextAttr(i) ) {
+
+				String attValue = fStringPool.toString (attrList.getAttValue(i));
+
+				if ( attrList.getAttrName(i) == fStringPool.addSymbol(Schema.ATT_NAME) ) {
+					notation.setName (attValue);
+				} else if ( attrList.getAttrName(i) == fStringPool.addSymbol(Schema.ATT_SYSTEM) ) {
+					notation.setSystemId (attValue);
+				} else if ( attrList.getAttrName(i) == fStringPool.addSymbol(Schema.ATT_PUBLIC) ) {
+					notation.setPublicId (attValue);
+				} else {
+					reportGenericSchemaError ("Invalid attribute for 'notation'");
+				}
+			}
+
+			fComponentStack.push (notation);
+
+		} else {
+			reportGenericSchemaError ("Notations must be global");
+		}
+
 	}
 
 	private void endNotationDecl ()
 	{
-		//System.out.println ("</notation>\n");
+		Schema.NotationDecl notation = (Schema.NotationDecl)fComponentStack.pop ();
+		fSchemaDocument.registerNotationDecl (notation.getName(), notation);
 	}
 
 

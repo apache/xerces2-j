@@ -982,6 +982,7 @@ class Schema
 	public interface EParticleHolder
 	{
 		public void add (EParticle particle);
+		public void setOrder (int order);
 	}
 
 
@@ -1021,6 +1022,10 @@ class Schema
 		public void add (EParticle particle) {
 			if ( fGroupDef == null ) fGroupDef = new GroupDef (getDocument());
 			fGroupDef.add (particle);
+		}
+
+		public void setOrder (int order) {
+			fGroupDef.setOrder (order);
 		}
 
 		public void add (AParticle particle) {
@@ -1786,7 +1791,8 @@ class Schema
 	//**** Schema.AttributeGroupParticle ****
 	//***************************************
 
-	public class AttributeGroupParticle extends AParticle 
+	public class AttributeGroupParticle		extends AParticle 
+											implements AParticleHolder
 	{
 		//
 		// Constructors
@@ -1808,12 +1814,21 @@ class Schema
 			setComponentRef (new NamedRef(name, namespace));
 		}
 
+		public void add (AParticle particle) {
+			getAttributeGroupDef().add (particle);
+		}
+
 		//
 		// Getters
 		//
 
 		public AttributeGroupDef getAttributeGroupDef () {
-			return getComponentRef().resolveAttributeGroupDef ();
+			Ref ref = getComponentRef ();
+			if ( ref == null ) {
+				setAttributeGroupDef (new AttributeGroupDef(getDocument()));
+				ref = getComponentRef ();
+			}
+			return ref.resolveAttributeGroupDef ();
 		}
 
 		//
@@ -2035,7 +2050,8 @@ class Schema
 	//**** Schema.GroupParticle ****
 	//******************************
 
-	public class GroupParticle extends EParticle
+	public class GroupParticle	extends EParticle
+								implements EParticleHolder
 	{
 		//
 		// Constructors
@@ -2057,12 +2073,25 @@ class Schema
 			setComponentRef (new NamedRef(name, namespace));
 		}
 
+		public void add (EParticle particle) {
+			getGroupDef().add (particle);
+		}
+
+		public void setOrder (int order) {
+			getGroupDef().setOrder (order);
+		}
+
 		//
 		// Getters
 		//
 
 		public GroupDef getGroupDef () {
-			return getComponentRef().resolveGroupDef ();
+			Ref ref = getComponentRef ();
+			if ( ref == null ) {
+				setGroupDef (new GroupDef(getDocument()));
+				ref = getComponentRef ();
+			}
+			return ref.resolveGroupDef ();
 		}
 
 		//
