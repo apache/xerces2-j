@@ -64,6 +64,7 @@ import java.util.Vector;
 
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
+import org.apache.xerces.dom.DOMStringListImpl;
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
@@ -125,7 +126,11 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     /** Feature identifier: expose schema normalized value */
     protected static final String NORMALIZE_DATA =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
-    
+
+    /** Feature identifier: disallow docType Decls. */
+    protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+            
     // internal properties
     protected static final String SYMBOL_TABLE =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -149,6 +154,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
     
     private Vector fSchemaLocations = new Vector ();
     private String fSchemaLocation = null;
+	private DOMStringList fRecognizedParameters;
     
     //
     // Constructors
@@ -198,6 +204,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             Constants.DOM_SUPPORTED_MEDIATYPES_ONLY,
             Constants.DOM_CERTIFIED,
             Constants.DOM_WELLFORMED,
+            Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS,
         };
         
         fConfiguration.addRecognizedFeatures (domRecognizedFeatures);
@@ -213,6 +220,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         fConfiguration.setFeature (Constants.DOM_NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
         fConfiguration.setFeature (Constants.DOM_WELLFORMED, true);
+        fConfiguration.setFeature (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS, true);
         
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec
@@ -327,6 +335,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 else if (name.equals (Constants.DOM_ENTITIES)) {
                     fConfiguration.setFeature (CREATE_ENTITY_REF_NODES, state);
                 }
+                else if (name.equals (Constants.DOM_DISALLOW_DOCTYPE)) {
+                    fConfiguration.setFeature (DISALLOW_DOCTYPE_DECL_FEATURE, state);
+                }
                 else if (name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
                 || name.equals (Constants.DOM_CANONICAL_FORM)) {
                     if (state) { // true is not supported
@@ -345,6 +356,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                 else if (name.equals (Constants.DOM_CDATA_SECTIONS)
                 || name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
                 || name.equals (Constants.DOM_WELLFORMED)
+                || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
                 || name.equals (Constants.DOM_INFOSET)) {
                     if (!state) { // false is not supported
                         String msg =
@@ -373,7 +385,7 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                         fConfiguration.setFeature (VALIDATION_FEATURE, false);
                     }
                 }
-                else if (name.equals (Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+                else if (name.equals (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
                     fConfiguration.setFeature (INCLUDE_IGNORABLE_WHITESPACE, state);
                 }
                 else if (name.equals (Constants.DOM_PSVI)){
@@ -572,15 +584,21 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
-        else if (name.equals (Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+        else if (name.equals (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
             return (fConfiguration.getFeature (INCLUDE_IGNORABLE_WHITESPACE))
             ? Boolean.TRUE
             : Boolean.FALSE;
         }
+        else if (name.equals (Constants.DOM_DISALLOW_DOCTYPE)) {
+            return (fConfiguration.getFeature (DISALLOW_DOCTYPE_DECL_FEATURE))
+            ? Boolean.TRUE
+            : Boolean.FALSE;        	
+        }        
         else if (
         name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
         || name.equals (Constants.DOM_CDATA_SECTIONS)
         || name.equals (Constants.DOM_WELLFORMED)
+        || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
         || name.equals (Constants.DOM_CANONICAL_FORM)
         || name.equals (Constants.DOM_SUPPORTED_MEDIATYPES_ONLY)
         || name.equals (Constants.DOM_INFOSET)
@@ -643,7 +661,9 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             name.equals (Constants.DOM_CDATA_SECTIONS)
             || name.equals (Constants.DOM_NAMESPACE_DECLARATIONS)
             || name.equals (Constants.DOM_WELLFORMED)
-            || name.equals (Constants.DOM_INFOSET) ) {
+            || name.equals (Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
+            || name.equals (Constants.DOM_INFOSET)
+            || name.equals (Constants.DOM_DISALLOW_DOCTYPE) ) {
                 // false is not supported
                 return (state) ? true : false;
             }
@@ -655,7 +675,8 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
             || name.equals (Constants.DOM_NAMESPACES)
             || name.equals (Constants.DOM_VALIDATE)
             || name.equals (Constants.DOM_VALIDATE_IF_SCHEMA)
-            || name.equals (Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+            || name.equals (Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+            || name.equals (Constants.DOM_XMLDECL)) {
                 return true;
             }
             
@@ -710,8 +731,45 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      * parameter names defined outside this specification.
      */
     public DOMStringList getParameterNames () {
-        //REVISIT
-        return null;
+		if (fRecognizedParameters == null){
+			Vector parameters = new Vector();
+
+			// REVISIT: add Xerces recognized properties/features
+			parameters.add(Constants.DOM_NAMESPACES);
+			parameters.add(Constants.DOM_CDATA_SECTIONS);
+			parameters.add(Constants.DOM_CANONICAL_FORM);
+			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS);
+
+			parameters.add(Constants.DOM_ENTITIES);
+			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA);
+			parameters.add(Constants.DOM_VALIDATE);			
+			parameters.add(Constants.DOM_DATATYPE_NORMALIZATION);
+			
+			parameters.add(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING);
+			parameters.add(Constants.DOM_CHECK_CHAR_NORMALIZATION);
+			parameters.add(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY);
+			parameters.add(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS);
+			
+			parameters.add(Constants.DOM_NORMALIZE_CHARACTERS);
+			parameters.add(Constants.DOM_WELLFORMED);
+			parameters.add(Constants.DOM_INFOSET);
+			parameters.add(Constants.DOM_DISALLOW_DOCTYPE);
+			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE);
+
+			parameters.add(Constants.DOM_ENTITIES);
+			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE);
+			parameters.add(Constants.DOM_COMMENTS);
+
+			parameters.add(Constants.DOM_ERROR_HANDLER);
+			parameters.add(Constants.DOM_RESOURCE_RESOLVER);
+			parameters.add(Constants.DOM_SCHEMA_LOCATION);
+			parameters.add(Constants.DOM_SCHEMA_TYPE);
+			
+			fRecognizedParameters = new DOMStringListImpl(parameters);		
+    		
+		}
+
+		return fRecognizedParameters; 		
     }
     
     /**

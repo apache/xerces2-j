@@ -69,6 +69,7 @@ import org.w3c.dom.ls.LSInput;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 
 /**
@@ -141,9 +142,19 @@ public class DOMEntityResolverWrapper
                 // For entity resolution the type of the resource would be  XML TYPE
                 // DOM L3 LS spec mention only the XML 1.0 recommendation right now
                 LSInput inputSource =
-		    resourceIdentifier == null ?
-                    fEntityResolver.resolveResource(null, null, null, null, null) :
-                    fEntityResolver.resolveResource( XML_TYPE, resourceIdentifier.getNamespace(), resourceIdentifier.getPublicId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getBaseSystemId());
+                    resourceIdentifier == null
+                        ? fEntityResolver.resolveResource(
+                            null,
+                            null,
+                            null,
+                            null,
+                            null)
+                        : fEntityResolver.resolveResource(
+                            XML_TYPE,
+                            resourceIdentifier.getNamespace(),
+                            resourceIdentifier.getPublicId(),
+                            resourceIdentifier.getLiteralSystemId(),
+                            resourceIdentifier.getBaseSystemId());
                 if (inputSource != null) {
                     String publicId = inputSource.getPublicId();
                     String systemId = inputSource.getSystemId();
@@ -151,10 +162,20 @@ public class DOMEntityResolverWrapper
                     InputStream byteStream = inputSource.getByteStream();
                     Reader charStream = inputSource.getCharacterStream();
                     String encoding = inputSource.getEncoding();
+                    String data = inputSource.getStringData();
                     XMLInputSource xmlInputSource =
                         new XMLInputSource(publicId, systemId, baseSystemId);
-                    xmlInputSource.setByteStream((InputStream)byteStream);
-                    xmlInputSource.setCharacterStream(charStream);
+
+                    if (charStream != null) {
+                        xmlInputSource.setCharacterStream(charStream);
+                    }
+                    if (byteStream != null) {
+                        xmlInputSource.setByteStream((InputStream) byteStream);
+                    }
+                    if (data != null && data.length() != 0) {
+                        xmlInputSource.setCharacterStream(
+                            new StringReader(data));
+                    }
                     xmlInputSource.setEncoding(encoding);
                     return xmlInputSource;
                 }

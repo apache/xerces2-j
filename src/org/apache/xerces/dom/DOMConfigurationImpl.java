@@ -829,7 +829,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         }
 		else if (
 			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
+				|| name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)) {
 			return Boolean.TRUE;
 		}
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
@@ -914,7 +914,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                     return (value.equals(Boolean.TRUE)) ? false : true;
             }//features whose parameter value can not be set to 'false'
             else if( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-                    || name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
+                    || name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
                     || name.equals(SEND_PSVI)
                     ) {
                     return (value.equals(Boolean.TRUE)) ? true : false;
@@ -982,7 +982,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			parameters.add(Constants.DOM_WELLFORMED); 
     	
 			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS); 
-			parameters.add(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT); 
+			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE); 
 
 			parameters.add(Constants.DOM_ERROR_HANDLER);
 			parameters.add(Constants.DOM_SCHEMA_TYPE);

@@ -121,46 +121,25 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
      */
     public boolean hasFeature(String feature, String version) {
 
-        // Currently, we support only XML Level 1 version 1.0
-        boolean anyVersion = version == null || version.length() == 0;
-		// check if Xalan implementation is around and if yes report true for supporting
-		// XPath API
-		if ((feature.equalsIgnoreCase("XPath") || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
-			try{
-				Class xpathClass = ObjectFactory.findProviderClass(
-					"org.apache.xpath.domapi.XPathEvaluatorImpl",
-					ObjectFactory.findClassLoader(), true);
-			}
-			catch (Exception e){
-				return false;
-			}
-			return true;
-		}
-        return
-            (feature.equalsIgnoreCase("Core")
-            && (anyVersion
-		|| version.equals("1.0")
-		|| version.equals("2.0")
-                || version.equals("3.0")))
-         || (feature.equalsIgnoreCase("XML") 
-            && (anyVersion
-		|| version.equals("1.0")
-		|| version.equals("2.0")
-                || version.equals("3.0")))
-         || (feature.equalsIgnoreCase("Events") 
-	     && (anyVersion
-		 || version.equals("2.0")))
-         || (feature.equalsIgnoreCase("MutationEvents")
-	     && (anyVersion
-		 || version.equals("2.0")))
-         || (feature.equalsIgnoreCase("Traversal")
-	     && (anyVersion
-		 || version.equals("2.0")))
-         || (feature.equalsIgnoreCase("Range")
-	     && (anyVersion
-		 || version.equals("2.0")))
-            ;
-
+        boolean result = super.hasFeature(feature, version);
+        if (!result) {
+            boolean anyVersion = version == null || version.length() == 0;
+            if (feature.startsWith("+")) {
+                feature = feature.substring(1);
+            }
+            return (
+                (feature.equalsIgnoreCase("Events")
+                    && (anyVersion || version.equals("2.0")))
+                    || (feature.equalsIgnoreCase("MutationEvents")
+                        && (anyVersion || version.equals("2.0")))
+                    || (feature.equalsIgnoreCase("Traversal")
+                        && (anyVersion || version.equals("2.0")))
+                    || (feature.equalsIgnoreCase("Range")
+                        && (anyVersion || version.equals("2.0")))
+                    || (feature.equalsIgnoreCase("MutationEvents")
+                        && (anyVersion || version.equals("2.0"))));
+        }
+        return result;
     } // hasFeature(String,String):boolean
 
 

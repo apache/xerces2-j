@@ -171,8 +171,8 @@ public final class Constants {
 
     public static final String DOM_VALIDATE_IF_SCHEMA = "validate-if-schema";
     public static final String DOM_VALIDATE = "validate";
-    public static final String DOM_WHITESPACE_IN_ELEMENT_CONTENT =
-    "whitespace-in-element-content";
+    public static final String DOM_ELEMENT_CONTENT_WHITESPACE =
+    "element-content-whitespace";
 
     // DOM Level 3 features defined in Core:
     public static final String DOM_DISCARD_DEFAULT_CONTENT = "discard-default-content";
@@ -180,13 +180,14 @@ public final class Constants {
     public static final String DOM_CHECK_CHAR_NORMALIZATION  = "check-character-normalization";
 	public static final String DOM_WELLFORMED  = "well-formed";
     public static final String DOM_SPLIT_CDATA = "split-cdata-sections";
-    public static final String DOM_IGNORE_CHAR_DENORMALIZATION = "ignore-unknown-character-denomalizations";
 
     // Load and Save
     public static final String DOM_FORMAT_PRETTY_PRINT = "format-pretty-print";
     public static final String DOM_XMLDECL = "xml-declaration";
     public static final String DOM_UNKNOWNCHARS = "unknown-characters";
     public static final String DOM_CERTIFIED =  "certified";
+    public static final String DOM_DISALLOW_DOCTYPE =  "disallow-doctype";
+    public static final String DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS =  "ignore-unknown-character-denormalizations";
    
     // DOM Properties
     public static final String DOM_RESOURCE_RESOLVER = "resource-resolver";

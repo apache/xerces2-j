@@ -131,30 +131,42 @@ public class CoreDOMImplementationImpl
 	 * @return    true iff this implementation is compatable with the specified
 	 * feature and version.
 	 */
-	public boolean hasFeature(String feature, String version) {
-		// Currently, we support only XML Level 1 version 1.0
-		boolean anyVersion = version == null || version.length() == 0;
-		// check if Xalan implementation is around and if yes report true for supporting 
-		// XPath API
-		if ((feature.equalsIgnoreCase("XPath") || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
-			try{
-				Class xpathClass = ObjectFactory.findProviderClass(
-					"org.apache.xpath.domapi.XPathEvaluatorImpl",
-					ObjectFactory.findClassLoader(), true);
-			}
-			catch (Exception e){
-				return false;
-			}
-			return true;
+    public boolean hasFeature(String feature, String version) {
+
+        boolean anyVersion = version == null || version.length() == 0;
+		if (feature.startsWith("+")) {
+			feature = feature.substring(1);
 		}
-		return (
-			feature.equalsIgnoreCase("Core")
-				&& (anyVersion || version.equals("1.0") || version.equals("2.0")))
-			|| (feature.equalsIgnoreCase("XML")
-				&& (anyVersion || version.equals("1.0") || version.equals("2.0")))
-			|| (feature.equalsIgnoreCase("LS")
-				&& (anyVersion || version.equals("3.0")));
-	} // hasFeature(String,String):boolean
+        // check if Xalan implementation is around and if yes report true for supporting 
+        // XPath API
+        if ((feature.equalsIgnoreCase("XPath")
+            || feature.equalsIgnoreCase("+XPath"))
+            && (anyVersion || version.equals("3.0"))) {
+            try {
+                Class xpathClass =
+                    ObjectFactory.findProviderClass(
+                        "org.apache.xpath.domapi.XPathEvaluatorImpl",
+                        ObjectFactory.findClassLoader(),
+                        true);
+            } catch (Exception e) {
+                return false;
+            }
+            return true;
+        }
+        return (
+            feature.equalsIgnoreCase("Core")
+                && (anyVersion
+                    || version.equals("1.0")
+                    || version.equals("2.0")
+                    || version.equals("3.0")))
+            || (feature.equalsIgnoreCase("XML")
+                && (anyVersion
+                    || version.equals("1.0")
+                    || version.equals("2.0")
+                    || version.equals("3.0")))
+            || (feature.equalsIgnoreCase("LS")
+                && (anyVersion || version.equals("3.0")));
+    } // hasFeature(String,String):boolean
     
     
 	/**
@@ -337,7 +349,9 @@ public class CoreDOMImplementationImpl
 	 */
         public LSParser createLSParser(short mode, String schemaType)
 		throws DOMException {
-		if (mode == DOMImplementationLS.MODE_ASYNCHRONOUS) {
+		if (mode != DOMImplementationLS.MODE_SYNCHRONOUS || (schemaType !=null &&
+		   !"http://www.w3.org/2001/XMLSchema".equals(schemaType) &&
+			!"http://www.w3.org/TR/REC-xml".equals(schemaType))) {
 			String msg =
 				DOMMessageFormatter.formatMessage(
 					DOMMessageFormatter.DOM_DOMAIN,
@@ -358,6 +372,7 @@ public class CoreDOMImplementationImpl
 				schemaType);
 		}
 	}
+	
 	/**
 	 * DOM Level 3 LS CR - Experimental.
          * Create a new <code>LSSerializer</code> object.

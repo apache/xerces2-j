@@ -69,8 +69,10 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import org.apache.xerces.dom.DOMErrorImpl;
+import org.apache.xerces.dom.DOMStringListImpl;
 import org.apache.xerces.dom.DOMMessageFormatter;
 import org.apache.xerces.dom3.DOMConfiguration;
 import org.apache.xerces.dom3.DOMError;
@@ -111,6 +113,9 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
     // XML 1.1 serializer
     private XML11Serializer xml11Serializer;
+    
+    //Recognized parameters
+    private DOMStringList fRecognizedParameters;
 
     /**
      * Constructs a new LSSerializer.
@@ -162,7 +167,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 					|| name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
 					|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 					// REVISIT: these must be supported
-					|| name.equals(Constants.DOM_WELLFORMED)) {
+				    || name.equals(Constants.DOM_INFOSET)
+					|| name.equals(Constants.DOM_WELLFORMED)){
 					// true is not supported
 					if (state){
 						String msg = DOMMessageFormatter.formatMessage(
@@ -172,14 +178,14 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 						throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
 					}
 				}
-				else if (name.equals(Constants.DOM_INFOSET)
-						|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-						|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
-						|| name.equals(Constants.DOM_IGNORE_CHAR_DENORMALIZATION)
+				else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+						|| name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+						|| name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
 						// REVISIT: these must be supported
 						|| name.equals(Constants.DOM_ENTITIES)
 						|| name.equals(Constants.DOM_CDATA_SECTIONS)
-						|| name.equals(Constants.DOM_COMMENTS)) {
+						|| name.equals(Constants.DOM_COMMENTS) 
+					    || name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
 					// false is not supported
 					if (!state){
 						String msg = DOMMessageFormatter.formatMessage(
@@ -208,7 +214,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 		}
 	}
 	else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
-			if (value instanceof DOMErrorHandler) {
+
+			if (value == null || value instanceof DOMErrorHandler) {
 				serializer.fDOMErrorHandler = (DOMErrorHandler) value;
 			}
 			else {
@@ -222,7 +229,8 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 		}
 		else if (name.equals(Constants.DOM_RESOURCE_RESOLVER)
 				|| name.equals(Constants.DOM_SCHEMA_LOCATION)
-				|| name.equals(Constants.DOM_SCHEMA_TYPE)) {
+				|| name.equals(Constants.DOM_SCHEMA_TYPE) &&
+				value != null) {
                 String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
                             "FEATURE_NOT_SUPPORTED",
@@ -259,23 +267,25 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 			    || name.equals(Constants.DOM_FORMAT_PRETTY_PRINT)
 			    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
 			    // REVISIT: these must be supported
-			    || name.equals(Constants.DOM_WELLFORMED)) {
+			    || name.equals(Constants.DOM_WELLFORMED)
+			    || name.equals(Constants.DOM_INFOSET)) {
 				// true is not supported
 				return !value;
 			}
-			else if (name.equals(Constants.DOM_INFOSET)
-					|| name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-			        || name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
-			        || name.equals(Constants.DOM_IGNORE_CHAR_DENORMALIZATION)
+			else if (name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+			        || name.equals(Constants.DOM_ELEMENT_CONTENT_WHITESPACE)
+			        || name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)
 			        // REVISIT: these must be supported
 			        || name.equals(Constants.DOM_ENTITIES)
 					|| name.equals(Constants.DOM_CDATA_SECTIONS)
-					|| name.equals(Constants.DOM_COMMENTS)) {
+					|| name.equals(Constants.DOM_COMMENTS)
+			        || name.equals(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS)) {
 				// false is not supported
 				return value;
 			        }
 		}
-		else if (name.equals(Constants.DOM_ERROR_HANDLER)){
+		else if (name.equals(Constants.DOM_ERROR_HANDLER) &&
+				state == null || state instanceof DOMErrorHandler){
 			return true;
 		}
 	    return false;
@@ -290,8 +300,44 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
      * parameter names defined outside this specification. 
      */
     public DOMStringList getParameterNames() {
-    	//REVISIT
-    	return null;
+    	
+     	if (fRecognizedParameters == null){
+			Vector parameters = new Vector();
+
+			//Add DOM recognized parameters
+			//REVISIT: Would have been nice to have a list of 
+			//recognized parameters.
+			parameters.add(Constants.DOM_NAMESPACES);
+
+			parameters.add(Constants.DOM_SPLIT_CDATA);
+			parameters.add(Constants.DOM_DISCARD_DEFAULT_CONTENT);
+			parameters.add(Constants.DOM_XMLDECL);
+			parameters.add(Constants.DOM_CANONICAL_FORM);
+			parameters.add(Constants.DOM_VALIDATE_IF_SCHEMA);
+			parameters.add(Constants.DOM_VALIDATE);
+			parameters.add(Constants.DOM_CHECK_CHAR_NORMALIZATION);
+			parameters.add(Constants.DOM_DATATYPE_NORMALIZATION);
+			parameters.add(Constants.DOM_FORMAT_PRETTY_PRINT);
+			parameters.add(Constants.DOM_NORMALIZE_CHARACTERS);
+			parameters.add(Constants.DOM_WELLFORMED);
+			parameters.add(Constants.DOM_INFOSET);
+			parameters.add(Constants.DOM_NAMESPACE_DECLARATIONS);
+			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE);
+			parameters.add(Constants.DOM_ENTITIES);
+			parameters.add(Constants.DOM_CDATA_SECTIONS);
+			parameters.add(Constants.DOM_COMMENTS);
+			parameters.add(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS);
+			parameters.add(Constants.DOM_ERROR_HANDLER);
+			//parameters.add(Constants.DOM_SCHEMA_LOCATION);
+			//parameters.add(Constants.DOM_SCHEMA_TYPE);
+			
+			//Add recognized xerces features and properties
+			
+			fRecognizedParameters = new DOMStringListImpl(parameters);		
+    		
+    	}
+
+    	return fRecognizedParameters; 	
     }	
     
     /** DOM L3-EXPERIMENTAL:
@@ -473,7 +519,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 
 
     private void checkAllFeatures(XMLSerializer ser) {
-        if (getParameter(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT) == Boolean.TRUE)
+        if (getParameter(Constants.DOM_ELEMENT_CONTENT_WHITESPACE) == Boolean.TRUE)
             ser._format.setPreserveSpace(true);
         else
             ser._format.setPreserveSpace(false);
@@ -487,6 +533,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         ser.fSymbolTable = new SymbolTable();
         ser.fFeatures = new Hashtable();
         ser.fFeatures.put(Constants.DOM_NAMESPACES, Boolean.TRUE);
+		ser.fFeatures.put(Constants.DOM_NAMESPACE_DECLARATIONS, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
 		ser.fFeatures.put(Constants.DOM_VALIDATE_IF_SCHEMA, Boolean.FALSE);
         ser.fFeatures.put(Constants.DOM_VALIDATE, Boolean.FALSE);
@@ -494,7 +541,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 		ser.fFeatures.put(Constants.DOM_SPLIT_CDATA, Boolean.TRUE);
 		ser.fFeatures.put(Constants.DOM_CDATA_SECTIONS, Boolean.TRUE);
 		ser.fFeatures.put(Constants.DOM_COMMENTS, Boolean.TRUE);
-        ser.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_ELEMENT_CONTENT_WHITESPACE, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, Boolean.TRUE);
         ser.fFeatures.put(Constants.DOM_CANONICAL_FORM, Boolean.FALSE);
         ser.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.FALSE);
@@ -503,10 +550,10 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
 		ser.fFeatures.put(Constants.DOM_DATATYPE_NORMALIZATION, Boolean.FALSE);
 		ser.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
 		ser.fFeatures.put(Constants.DOM_WELLFORMED, Boolean.FALSE);
+		ser.fFeatures.put(Constants.DOM_IGNORE_UNKNOWN_CHARACTER_DENORMALIZATIONS, Boolean.TRUE);
 		ser.fFeatures.put(Constants.DOM_INFOSET, Boolean.FALSE);
 		ser.fFeatures.put(Constants.DOM_NAMESPACE_DECLARATIONS, Boolean.TRUE);
-		ser.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
-		ser.fFeatures.put(Constants.DOM_IGNORE_CHAR_DENORMALIZATION, Boolean.TRUE);
+		
     }
 
     // copies all settings that could have been modified
@@ -672,6 +719,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 ser.fDOMErrorHandler.handleError(error);
 
             }
+            e.printStackTrace();
             return false;
         }
         return true;
