@@ -58,7 +58,6 @@
 package org.apache.xerces.xni;
 
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.impl.XMLEntityHandler;
 
 import org.xml.sax.SAXException;
 
