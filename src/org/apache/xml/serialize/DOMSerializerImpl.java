@@ -751,7 +751,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                             // REVISIT: We have to decode %nn sequences. For
                             // now files containing spaces and other characters
                             // which were escaped in the URI will fail. -- mrglavas
-                            out = new FileOutputStream(new File(url.getPath()));
+                            out = new FileOutputStream(new File(url.getFile()));
                         }
                         // Try to write to some other kind of URI. Some protocols
                         // won't support this, though HTTP should work.
@@ -926,7 +926,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             // Use FileOutputStream if this URI is for a local file.
             if (protocol.equals("file") 
                 && (host == null || host.length() == 0 || host.equals("localhost"))) {
-                out = new FileOutputStream(getPathWithoutEscapes(url.getPath()));              
+                out = new FileOutputStream(getPathWithoutEscapes(url.getFile()));            
             }
             // Try to write to some other kind of URI. Some protocols
             // won't support this, though HTTP should work.
