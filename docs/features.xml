@@ -201,6 +201,16 @@ catch (SAXException e) {
    </false>
    <default value='false'/>
   </feature>
+  
+  <feature name='http://apache.org/xml/features/warn-on-duplicate-entitydef'
+           id='warn-on-duplicate-entitydef'>
+   <true>Report a warning for duplicate entity declaration.</true>
+   <false>
+    Do not report warning for duplicate entity declaration.
+   </false>
+   <default value='false'/>
+  </feature>
+  
   <feature name='http://apache.org/xml/features/allow-java-encodings'
            id='allow-java-encodings'>
    <true>Allow Java encoding names in XMLDecl and TextDecl line.</true>
