@@ -348,7 +348,8 @@ DocumentBuilder builder = // JAXP factory invocation
         Yes, for grammar types for which such an API is defined.
         No such API exists at the current moment for DTD's.  For
         XML Schemas, there is a Xerces-specific schema component
-        model API.  For details, it's best to look at the javadocs for
+        model <link idref="api" anchor="xml-schema-api-documentation">API</link>.
+        For details, it's best to look at the javadocs for
         the <code>org.apache.xerces.xs</code>
         package.  Assuming you have produced a Grammar object from an XML Schema
         document by some means, to turn that object
@@ -368,6 +369,43 @@ DocumentBuilder builder = // JAXP factory invocation
             all aspects of the schema.
         </li>
     </ol>
+  </a>
+ </faq>
+ <faq title="Using XSLoader to get an XSModel">
+  <q>Is there an alternative method for getting an XSModel?</q>
+  <a>
+   <p>
+       Yes, the <link idref="api" anchor="xml-schema-api-documentation">XML Schema API</link>
+       defines an interface called <code>XSLoader</code> which provides methods for loading
+       XML Schema documents into an <code>XSModel</code>. The <code>XSImplementation</code>
+       interface provides a method to create an <code>XSLoader</code> using the 
+       <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Bootstrap">
+       DOM Level 3 Bootstraping mechanism</jump>. An application can get a reference to 
+       an <code>XSImplementation</code> using the <code>getDOMImplementation</code> method 
+       on the <code>DOMImplementationRegistry</code> object with the feature string "XS-Loader".
+       To create an <code>XSLoader</code> you need to do something like this:
+   </p>
+   <source>import org.w3c.dom.DOMImplementationRegistry;
+import org.apache.xerces.xs.XSImplementation;
+import org.apache.xerces.xs.XSLoader; 
+
+...
+   
+// Get DOM Implementation using DOM Registry
+System.setProperty(DOMImplementationRegistry.PROPERTY,
+    "org.apache.xerces.dom.DOMImplementationSourceImpl");
+DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+
+XSImplementation impl = 
+    (XSImplementation) registry.getDOMImplementation("XS-Loader");
+
+XSLoader schemaLoader = impl.createXSLoader(null);
+
+...</source>
+   <p>
+       In order to get access to DOM Level 3 functionality in Xerces, see this 
+       <link idref="faq-dom" anchor="dom3">FAQ</link>.
+   </p>
   </a>
  </faq>
 </faqs>
