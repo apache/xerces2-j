@@ -2786,7 +2786,7 @@ public final class XMLValidator
            } else if (fGrammarNameSpaceIndex!=-1){
                // REVISIT: try binding to current namespace
                // trying to solve the case:
-               //  <v01:root xmlns:xsi ="http://www.w3.org/2000/10/XMLSchema-instance"
+               //  <v01:root xmlns:xsi ="http://www.w3.org/2001/XMLSchema-instance"
                //           xmlns:my         ="http://www.schemaTest.org/my"
                // might not work in all cases (need clarification from schema?)
                return  fStringPool.toString( fGrammarNameSpaceIndex)+":"+localpart;
@@ -2804,7 +2804,7 @@ public final class XMLValidator
       //
 
       private static final String SYSTEM[] = {
-         "http://www.w3.org/2000/10/XMLSchema.dtd",
+         "http://www.w3.org/2001/XMLSchema.dtd",
          "http://www.w3.org/XMLSchema/datatypes.dtd",
          "http://www.w3.org/XMLSchema/versionInfo.ent",
       };
