@@ -2,6 +2,11 @@
 <!DOCTYPE s1 SYSTEM "sbk:/style/dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title='NEXT RELEASE DATE'>
+        <ul>
+           <li>62: Cloned attributes return wrong owner element. [awiner@us.oracle.com]</li>
+        </ul>
+    </s2>
     <s2 title="March 8, 2000">
         <ul>
             <li>26: Schema lookup disabled when validation is off. [lehors]</li>
@@ -13,8 +18,6 @@
             <li>35: Fixed getLength() to always return the right value[lehors]</li>
             <li>36: Fixed setPrefix() to update nodeName[lehors]</li>
         </ul>
-        
-        
     </s2>
     <s2 title="February 8, 2000">
         <ul>
