@@ -9,17 +9,17 @@ Implementation-Vendor: Apache Software Foundation
 Implementation-URL: http://xml.apache.org/xerces2-j/
 
 Name: org/xml/sax/
-Comment: based on jaxp-tck-1_2_0 branch of xml-commons
+Comment: based on xml-commons external 1.2.01
 Specification-Title: Simple API for XML
 Specification-Vendor: David Megginson
-Specification-Version: 2.0 
+Specification-Version: 2.0.1
 Implementation-Title: org.xml.sax
-Implementation-Version: 2.0 + small bugfixes
+Implementation-Version: 2.0.1
 Implementation-Vendor: David Megginson
-Implementation-URL: http://www.saxproject.org
+Implementation-URL: http://www.saxproject.org/
 
 Name: org/w3c/dom/
-Comment: based on jaxp-tck-1_2_0 branch of xml-commons
+Comment: based on xml-commons external 1.2.01
 Specification-Title: Document Object Model, Level 2 Core
 Specification-Vendor: World Wide Web Consortium
 Specification-Version: 1.0
@@ -29,22 +29,22 @@ Implementation-Vendor: World Wide Web Consortium
 Implementation-URL: http://www.w3c.org/DOM/
 
 Name: javax/xml/parsers/
-Comment: based on jaxp-tck-1_2_0 branch of xml-commons
+Comment: based on xml-commons external 1.2.01
 Specification-Title: Java API for XML Processing
 Specification-Version: 1.2
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.parsers
-Implementation-Version: 1.2
+Implementation-Version: 1.2.01
 Implementation-Vendor: Sun Microsystems Inc.
 Implementation-URL: http://java.sun.com/xml/jaxp.html
 
 Name: javax/xml/transform/
-Comment: based on jaxp-tck-1_2_0 branch of xml-commons
+Comment: based on xml-commons external 1.2.01
 Specification-Title: Java API for XML Processing
 Specification-Version: 1.2
 Specification-Vendor: Sun Microsystems Inc.
 Implementation-Title: javax.xml.transform
-Implementation-Version: 1.2
+Implementation-Version: 1.2.01
 Implementation-Vendor: Sun Microsystems Inc.
 Implementation-URL: http://java.sun.com/xml/jaxp.html
 
