@@ -2,6 +2,13 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title='August 28, 2000'>
+        <ul>
+           <li>Added "<any processContents='lax|skip'/>" support for Schema. [ericye]</li>           
+           <li>Added feature "load-dtd-grammar" [ericye]</li>
+           <li>Fixed a bug in reset() method of XMLValidator. [ericye]</li>
+        </ul>
+    </s2>
     <s2 title='July 26, 2000'>
         <ul>
            <li>Added "anyAttribute" support for Schema. [ericye]</li>           
