@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,12 +109,18 @@ event.
   <faq title="Namespace of xmlns attributes">
     <q>Why does the SAX parser report that xmlns attributes have no namespace?</q>
     <a>
-       <p>An erratum for the Namespaces in XML recommendation put namespace declaration 
-          attributes in the namespace "http://www.w3.org/2000/xmlns/". SAX2 (SAX 2.0.1)
-          does not agree with this change so conforming parsers must report that these 
-          attributes have no namespace. Xerces behaves according to SAX2. Your code
-          must handle this discrepancy when interacting with APIs such as DOM and
-          applications which expect a namespace for xmlns attributes.</p>
+       <p>An erratum for the Namespaces in XML Recommendation put namespace declaration 
+          attributes in the namespace "http://www.w3.org/2000/xmlns/". By default, 
+          SAX2 (SAX 2.0.2) follows the original Namespaces in XML Recommendation, so 
+          conforming parsers must report that these attributes have no namespace. To
+          configure the parser to report a namespace for such attributes, turn on
+          the <link idref='features' anchor='xmlns-uris'>xmlns-uris</link> feature.
+       </p>
+       <p>When using previous versions of the parser or other parser implementations
+          that do not support this feature, your code must handle this discrepancy
+          when interacting with APIs such as DOM and applications which expect a namespace 
+          for xmlns attributes.
+       </p>
     </a>
   </faq>
 
@@ -123,42 +129,13 @@ event.
     written in, or what XML version the document conformed to, if I'm
     using SAX?</q>
     <a>
-        <p>The answer to this question is that, yes there is a way, but it's
-        not particularly beautiful.  There is no way in SAX 2.0.0 or
-        2.0.1 to get hold of these pieces of information; the SAX
-        Locator2 interface from the 1.1 extensions--still in Beta at
-        the time of writing--does provide methods to accomplish this,
-        but since Xerces is required to support precisely SAX 2.0.1 by
-        Sun TCK rules, we cannot ship this interface.  However, we can
-        still support the appropriate methods on the objects we
-        provide to implement the SAX Locator interface.  Therefore,
-        assuming <code>Locator</code> is an instance of the SAX
-        Locator interface that Xerces has passed back in a
-        <code>setDocumentLocator</code> call, 
-        you can use a method like this to determine the encoding of
-        the entity currently being parsed:
-        </p>
-        <source>import java.lang.reflect.Method;
-private String getEncoding(Locator locator) {
-    String encoding = null;
-    Method getEncoding = null;
-    try {
-        getEncoding = 
-            locator.getClass().getMethod("getEncoding", new Class[]{});
-        if(getEncoding != null) {
-            encoding = (String)getEncoding.invoke(locator, null);
-        }
-    } catch (Exception e) {
-        // either this locator object doesn't have this
-        // method, or we're on an old JDK
-    }
-    return encoding;
-}</source>
-        <p>This code has the advantage that it will compile on JDK
-        1.1.8, though it will only produce non-null results on 1.2.x
-        JDK's and later.  Substituting <code>getXMLVersion</code> for
-        <code>getEncoding</code> will enable you to determine the
-        version of XML to which the instance document conforms.
+        <p>Yes. As of SAX 2.0.2 encoding and version information is made
+        available through the <code>org.xml.sax.ext.Locator2</code>
+        interface. In Xerces, instances of the SAX <code>Locator</code> interface
+        passed to a <code>setDocumentLocator</code> call will also implement
+        the <code>Locator2</code> interface. You can determine the encoding
+        and XML version of the entity currently being parsed by calling the
+        <code>getEncoding()</code> and <code>getXMLVersion()</code> methods.
         </p>
     </a>
   </faq>
