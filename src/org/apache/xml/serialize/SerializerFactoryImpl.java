@@ -65,83 +65,88 @@ import java.io.UnsupportedEncodingException;
 
 
 /**
- * Implements an XHTML serializer supporting both DOM and SAX
- * pretty serializing. For usage instructions see either {@link
- * Serializer} or {@link BaseMarkupSerializer}.
+ * Default serializer factory can construct serializers for the three
+ * markup serializers (XML, HTML, XHTML ).
  *
  *
  * @version
+ * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
- * @see Serializer
  */
-public final class XHTMLSerializer
-    extends HTMLSerializer
+final class SerializerFactoryImpl
+    extends SerializerFactory
 {
 
 
-    /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
-     */
-    public XHTMLSerializer()
+    private String _method;
+
+
+    SerializerFactoryImpl( String method )
     {
-	super( true, null );
+	_method = method;
+	if ( ! _method.equals( Method.XML ) &&
+	     ! _method.equals( Method.HTML ) &&
+	     ! _method.equals( Method.XHTML ) &&
+	     ! _method.equals( Method.TEXT ) )
+	    throw new IllegalArgumentException( "The method '" + method + "' is not supported by this factory" );
     }
 
 
-    /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
-     */
-    public XHTMLSerializer( OutputFormat format )
+    public Serializer makeSerializer( OutputFormat format )
     {
-	super( true, format );
+	Serializer serializer;
+
+	serializer = getSerializer( format );
+	serializer.setOutputFormat( format );
+	return serializer;
     }
 
 
-    /**
-     * Constructs a new serializer that writes to the specified writer
-     * using the specified output format. If <tt>format</tt> is null,
-     * will use a default output format.
-     *
-     * @param writer The writer to use
-     * @param format The output format to use, null for the default
-     */
-    public XHTMLSerializer( Writer writer, OutputFormat format )
+
+    public Serializer makeSerializer( Writer writer,
+				      OutputFormat format )
     {
-	super( true, format );
-	setOutputCharStream( writer );
+	Serializer serializer;
+
+	serializer = getSerializer( format );
+	serializer.setOutputCharStream( writer );
+	return serializer;
     }
 
 
-    /**
-     * Constructs a new serializer that writes to the specified output
-     * stream using the specified output format. If <tt>format</tt>
-     * is null, will use a default output format.
-     *
-     * @param output The output stream to use
-     * @param format The output format to use, null for the default
-     */
-    public XHTMLSerializer( OutputStream output, OutputFormat format )
+    public Serializer makeSerializer( OutputStream output,
+				      OutputFormat format )
+	throws UnsupportedEncodingException
     {
-	super( true, format );
-	try {
-	    setOutputByteStream( output );
-	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend
+	Serializer serializer;
+
+	serializer = getSerializer( format );
+	serializer.setOutputByteStream( output );
+	return serializer;
+    }
+
+    
+    private Serializer getSerializer( OutputFormat format )
+    {
+	if ( _method.equals( Method.XML ) ) {
+	    return new XMLSerializer( format );
+	} else if ( _method.equals( Method.HTML ) ) {
+	    return new HTMLSerializer( format );
+	}  else if ( _method.equals( Method.XHTML ) ) {
+	    return new XHTMLSerializer( format );
+	}  else if ( _method.equals( Method.TEXT ) ) {
+	    return new TextSerializer( format );
+	} else {
+	    throw new IllegalStateException( "The method '" + _method + "' is not supported by this factory" );
 	}
     }
 
 
-    public void setOutputFormat( OutputFormat format )
+    protected String getSupportedMethod()
     {
-	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( Method.XHTML, null, false ) );
-	else
-	    super.setOutputFormat( format );
+	return _method;
     }
 
 
 }
+

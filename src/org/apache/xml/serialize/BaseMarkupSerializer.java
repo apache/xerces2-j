@@ -115,11 +115,11 @@ import org.xml.sax.misc.DeclHandler;
  * @version
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
- * @see XMLSerializer
+ * @see DOMSerializer
  */
-public abstract class BaseSerializer
-    extends Serializer
-    implements DocumentHandler, LexicalHandler, DTDHandler, DeclHandler
+public abstract class BaseMarkupSerializer
+    implements DocumentHandler, LexicalHandler, DTDHandler, DeclHandler,
+	       DOMSerializer, Serializer
 {
 
 
@@ -251,7 +251,7 @@ public abstract class BaseSerializer
      * Must initialize the serializer before serializing any document,
      * see {@link #init}.
      */
-    protected BaseSerializer()
+    protected BaseMarkupSerializer()
     {
 	int i;
 
@@ -260,25 +260,52 @@ public abstract class BaseSerializer
     }
 
 
-    /**
-     * Initialize the serializer with the specified writer and output format.
-     * Must be called before calling any of the serialize methods.
-     *
-     * @param writer The writer to use
-     * @param format The output format
-     */
-    public synchronized void init( Writer writer, OutputFormat format )
+    public  DocumentHandler asDocumentHandler()
+    {
+	return this;
+    }
+
+
+    public DOMSerializer asDOMSerializer()
+    {
+	return this;
+    }
+
+
+    public void setOutputByteStream( OutputStream output )
+      throws UnsupportedEncodingException
+    {
+	String encoding;
+
+	if ( _format.getEncoding() == null ) 
+	    setOutputCharStream( new OutputStreamWriter( output ) );
+	else
+	    setOutputCharStream( new OutputStreamWriter( output, _format.getEncoding() ) );
+    }
+
+
+    public void setOutputCharStream( Writer output )
+    {
+	if ( output == null )
+	    throw new NullPointerException( "Argument 'output' is null." );
+	_writer = output;
+	reset();
+    }
+
+
+    public void setOutputFormat( OutputFormat format )
     {
 	if ( format == null )
 	    throw new NullPointerException( "Argument 'format' is null." );
 	_format = format;
-	if ( writer == null )
-	    throw new NullPointerException( "Argument 'format' is null." );
-	_writer = writer;
-
 	// Determine the last printable character based on the output format
 	_lastPrintable = _format.getLastPrintable();
+	reset();
+    }
 
+
+    protected void reset()
+    {
 	// Initialize everything for a first/second run.
 	_line = new StringBuffer( 80 );
 	_text = new StringBuffer( 20 );
@@ -288,25 +315,6 @@ public abstract class BaseSerializer
 	_elementStateCount = 0;
 	_started = false;
 	_dtdWriter = null;
-    }
-
-
-    /**
-     * Initialize the serializer with the specified output stream and output format.
-     * Must be called before calling any of the serialize methods.
-     *
-     * @param output The output stream to use
-     * @param format The output format
-     * @throws UnsupportedEncodingException The encoding specified
-     *   in the output format is not supported
-     */
-    public synchronized void init( OutputStream output, OutputFormat format )
-        throws UnsupportedEncodingException
-    {
-	String encoding;
-
-	encoding = ( format.getEncoding() == null ? "ASCII" : format.getEncoding() );
-	init( new OutputStreamWriter( output, encoding ), format );
     }
 
 
@@ -331,6 +339,28 @@ public abstract class BaseSerializer
 	    startDocument();
 	} catch ( SAXException except ) { }
 	serializeNode( elem );
+	flush();
+	if ( _exception != null )
+	    throw _exception;
+    }
+
+
+    /**
+     * Serializes the DOM document fragmnt using the previously specified
+     * writer and output format. Throws an exception only if
+     * an I/O exception occured while serializing.
+     *
+     * @param elem The element to serialize
+     * @throws IOException An I/O exception occured while
+     *   serializing
+     */
+    public void serialize( DocumentFragment frag )
+        throws IOException
+    {
+	try {
+	    startDocument();
+	} catch ( SAXException except ) { }
+	serializeNode( frag );
 	flush();
 	if ( _exception != null )
 	    throw _exception;
@@ -1179,7 +1209,8 @@ public abstract class BaseSerializer
      */
     public void flush()
     {
-	breakLine();
+	if ( _line.length() > 0 || _text.length() > 0 )
+	    breakLine();
 	try {
 	    _writer.flush();
 	} catch ( IOException except ) {

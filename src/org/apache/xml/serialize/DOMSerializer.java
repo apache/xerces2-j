@@ -59,89 +59,62 @@
 package org.apache.xml.serialize;
 
 
-import java.io.OutputStream;
-import java.io.Writer;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+
 
 
 /**
- * Implements an XHTML serializer supporting both DOM and SAX
- * pretty serializing. For usage instructions see either {@link
- * Serializer} or {@link BaseMarkupSerializer}.
- *
+ * Interface for a DOM serializer implementation.
+ * 
  *
  * @version
+ * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
- * @see Serializer
  */
-public final class XHTMLSerializer
-    extends HTMLSerializer
+public interface DOMSerializer
 {
 
 
     /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
-     */
-    public XHTMLSerializer()
-    {
-	super( true, null );
-    }
-
-
-    /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
-     */
-    public XHTMLSerializer( OutputFormat format )
-    {
-	super( true, format );
-    }
-
-
-    /**
-     * Constructs a new serializer that writes to the specified writer
-     * using the specified output format. If <tt>format</tt> is null,
-     * will use a default output format.
+     * Serialized the DOM element. Throws an exception only if
+     * an I/O exception occured while serializing.
      *
-     * @param writer The writer to use
-     * @param format The output format to use, null for the default
+     * @param elem The element to serialize
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
-    public XHTMLSerializer( Writer writer, OutputFormat format )
-    {
-	super( true, format );
-	setOutputCharStream( writer );
-    }
+    public void serialize( Element elem )
+        throws IOException;
 
 
     /**
-     * Constructs a new serializer that writes to the specified output
-     * stream using the specified output format. If <tt>format</tt>
-     * is null, will use a default output format.
+     * Serializes the DOM document. Throws an exception only if
+     * an I/O exception occured while serializing.
      *
-     * @param output The output stream to use
-     * @param format The output format to use, null for the default
+     * @param doc The document to serialize
+     * @throws IOException An I/O exception occured while
+     *   serializing
      */
-    public XHTMLSerializer( OutputStream output, OutputFormat format )
-    {
-	super( true, format );
-	try {
-	    setOutputByteStream( output );
-	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend
-	}
-    }
+    public void serialize( Document doc )
+        throws IOException;
 
 
-    public void setOutputFormat( OutputFormat format )
-    {
-	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( Method.XHTML, null, false ) );
-	else
-	    super.setOutputFormat( format );
-    }
+    /**
+     * Serializes the DOM document fragment. Throws an exception
+     * only if an I/O exception occured while serializing.
+     *
+     * @param frag The document fragment to serialize
+     * @throws IOException An I/O exception occured while
+     *   serializing
+     */
+    public void serialize( DocumentFragment frag )
+        throws IOException;
 
 
 }
+
+
+

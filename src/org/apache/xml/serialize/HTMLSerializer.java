@@ -111,7 +111,7 @@ import org.xml.sax.AttributeList;
  * @see Serializer
  */
 public class HTMLSerializer
-    extends BaseSerializer
+    extends BaseMarkupSerializer
 {
 
 
@@ -130,21 +130,34 @@ public class HTMLSerializer
      *
      * @param xhtml True if XHTML serializing
      */
-    protected HTMLSerializer( boolean xhtml )
+    protected HTMLSerializer( boolean xhtml, OutputFormat format )
     {
-	super();
+	this( format );
 	_xhtml = xhtml;
     }
 
 
     /**
      * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #init} first.
+     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
+     * first.
      */
     public HTMLSerializer()
     {
-	this( false );
+	setOutputFormat( null );
     }
+
+
+    /**
+     * Constructs a new serializer. The serializer cannot be used without
+     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
+     * first.
+     */
+    public HTMLSerializer( OutputFormat format )
+    {
+	setOutputFormat( format );
+    }
+
 
 
     /**
@@ -157,10 +170,8 @@ public class HTMLSerializer
      */
     public HTMLSerializer( Writer writer, OutputFormat format )
     {
-	this( false );
-	if ( format == null )
-	    format = new OutputFormat( OutputFormat.METHOD_HTML, null, false );
-	init( writer, format );
+	setOutputFormat( format );
+	setOutputCharStream( writer );
     }
 
 
@@ -174,14 +185,21 @@ public class HTMLSerializer
      */
     public HTMLSerializer( OutputStream output, OutputFormat format )
     {
-	this( false );
-	if ( format == null )
-	    format = new OutputFormat( OutputFormat.METHOD_HTML, null, false );
+	setOutputFormat( format );
 	try {
-	    init( output, format );
+	    setOutputByteStream( output );
 	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend, we use UTF-8 by default
+	    // Should never happend
 	}
+    }
+
+
+    public void setOutputFormat( OutputFormat format )
+    {
+	if ( format == null )
+	    super.setOutputFormat( new OutputFormat( Method.HTML, null, false ) );
+	else
+	    super.setOutputFormat( format );
     }
 
 
@@ -296,21 +314,21 @@ public class HTMLSerializer
 	// element's state and the parent element's state.
 	unindent();
 	state = getElementState();
-	if ( state.empty ) {
-	    if ( _xhtml )
+	if ( _xhtml) {
+	    if ( state.empty )
 		printText( " />" );
 	    else
-		printText( ">" );
+		// XHTML: element names are lower case, DOM will be different
+		printText( "</" + tagName.toLowerCase() + ">" );
 	} else {
+	    if ( state.empty )
+		printText( ">" );
 	    // This element is not empty and that last content was
 	    // another element, so print a line break before that
 	    // last element and this element's closing tag.
 	    // [keith] Provided this is not an anchor.
-	    // XHTML: element names are lower case, DOM will be different
 	    // HTML: some elements do not print closing tag (e.g. LI)
-	    if ( _xhtml )
-		printText( "</" + tagName.toLowerCase() + ">" );
-	    else if ( ! HTMLdtd.isOnlyOpening( tagName ) ) {
+	    if ( ! HTMLdtd.isOnlyOpening( tagName ) ) {
 		if ( ! tagName.equalsIgnoreCase( "A" )  && _format.getIndenting() &&
 		     ! state.preserveSpace && state.afterElement )
 		    breakLine();
@@ -365,11 +383,11 @@ public class HTMLSerializer
 	    systemId = _format.getDoctypeSystem();
 	    if ( publicId == null && systemId == null ) {
 		if ( _xhtml ) {
-		    publicId = OutputFormat.DOCTYPE_XHTML_PUBLIC;
-		    systemId = OutputFormat.DOCTYPE_XHTML_SYSTEM;
+		    publicId = OutputFormat.DTD.XHTMLPublicId;
+		    systemId = OutputFormat.DTD.XHTMLSystemId;
 		} else {
-		    publicId = OutputFormat.DOCTYPE_HTML_PUBLIC;
-		    systemId = OutputFormat.DOCTYPE_HTML_SYSTEM;
+		    publicId = OutputFormat.DTD.HTMLPublicId;
+		    systemId = OutputFormat.DTD.HTMLSystemId;
 		}
 	    }
 
@@ -384,6 +402,8 @@ public class HTMLSerializer
 		    if ( _format.getIndenting() ) {
 			breakLine();
 			printText( "                      " );
+		    } else {
+			printText( " " );
 		    }
 		    printDoctypeURL( systemId );
 		}

@@ -99,194 +99,58 @@ import org.xml.sax.DocumentHandler;
  *
  * @version
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+ * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
  * @see DocumentHandler
  * @see OutputFormat
+ * @see DOMSerializer
  */
-public abstract class Serializer
+public interface Serializer
 {
 
 
     /**
-     * Serialized the DOM element. Throws an exception only if
-     * an I/O exception occured while serializing.
-     *
-     * @param elem The element to serialize
-     * @throws IOException An I/O exception occured while
-     *   serializing
+     * Specifies an output stream to which the document should be
+     * serialized. This method should not be called while the
+     * serializer is in the process of serializing a document.
      */
-    public abstract void serialize( Element elem )
-        throws IOException;
+    public void setOutputByteStream(OutputStream output)
+      throws UnsupportedEncodingException;
 
 
     /**
-     * Serializes the DOM document. Throws an exception only if
-     * an I/O exception occured while serializing.
-     *
-     * @param doc The document to serialize
-     * @throws IOException An I/O exception occured while
-     *   serializing
+     * Specifies a writer to which the document should be serialized.
+     * This method should not be called while the serializer is in
+     * the process of serializing a document.
      */
-    public abstract void serialize( Document doc )
-        throws IOException;
+    public void setOutputCharStream( Writer output );
 
 
     /**
-     * Creates a compatible serialized for the specified writer
-     * and output format. If the output format is missing,
-     * the default is an XML format with UTF-8 encoding.
+     * Specifies an output format for this serializer. It the
+     * serializer has already been associated with an output format,
+     * it will switch to the new format. This method should not be
+     * called while the serializer is in the process of serializing
+     * a document.
      *
-     * @param writer The writer
-     * @param format The output format
-     * @return A compatible serializer
+     * @param format The output format to use
      */
-    public static Serializer makeSerializer( Writer writer, OutputFormat format )
-    {
-	BaseSerializer serializer;
-
-	serializer = makeBaseSerializer( format );
-	serializer.init( writer, format );
-	return serializer;
-    }
+    public void setOutputFormat( OutputFormat format );
 
 
     /**
-     * Creates a compatible serializer for the specified output stream
-     * and output format. If the output format is missing, the default
-     * is an XML format with UTF-8 encoding.
-     *
-     * @param output The output stream
-     * @param format The output format
-     * @return A compatible serializer
-     * @throws UnsupportedEncodingException Encoding specified
-     *   in the output format is not supported
+     * Return a {@link DocumentHandler} interface into this serializer.
+     * If the serializer does not support the {@link DocumentHandler}
+     * interface, it should return null.
      */
-    public static Serializer makeSerializer( OutputStream output, OutputFormat format )
-        throws UnsupportedEncodingException
-    {
-	BaseSerializer serializer;
-
-	serializer = makeBaseSerializer( format );
-	serializer.init( output, format );
-	return serializer;
-    }
+    public DocumentHandler asDocumentHandler();
 
 
     /**
-     * Creates a compatible SAX serializer for the specified writer
-     * and output format. If the output format is missing, the default
-     * is an XML format with UTF-8 encoding.
-     *
-     * @param writer The writer
-     * @param format The output format
-     * @return A compatible SAX serializer
+     * Return a {@link DOMSerializer} interface into this serializer.
+     * If the serializer does not support the {@link DOMSerializer}
+     * interface, it should return null.
      */
-    public static DocumentHandler makeSAXSerializer( Writer writer, OutputFormat format )
-    {
-	BaseSerializer serializer;
-
-	serializer = makeBaseSerializer( format );
-	serializer.init( writer, format );
-	return serializer;
-    }
-
-
-    /**
-     * Creates a compatible SAX serializer for the specified output stream
-     * and output format. If the output format is missing, the default
-     * is an XML format with UTF-8 encoding.
-     *
-     * @param output The output stream
-     * @param format The output format
-     * @return A compatible SAX serializer
-     * @throws UnsupportedEncodingException Encoding specified
-     *   in the output format is not supported
-     */
-    public static DocumentHandler makeSAXSerializer( OutputStream output, OutputFormat format )
-        throws UnsupportedEncodingException
-    {
-	BaseSerializer serializer;
-
-	serializer = makeBaseSerializer( format );
-	serializer.init( output, format );
-	return serializer;
-    }
-
-
-    /**
-     * Convenience method serializes the specified document to
-     * the writer using the specified output format.
-     * <p>
-     * Equivalent to calling {@link #serialize(Document)} on
-     * a compatible DOM serializer.
-     *
-     * @param doc The document to serialize
-     * @param writer The writer
-     * @param format The output format
-     * @throws IOException An I/O exception occured while serializing
-     * @throws UnsupportedEncodingException Encoding specified
-     *   in the output format is not supported
-     */
-    public static void serialize( Document doc, Writer writer, OutputFormat format )
-        throws IOException
-    {
-	BaseSerializer serializer;
-
-	if ( format == null )
-	    format = new OutputFormat( doc );
-	serializer = makeBaseSerializer( format );
-	serializer.init( writer, format );
-	serializer.serialize( doc );
-    }
-
-
-    /**
-     * Convenience method serializes the specified document to
-     * the output stream using the specified output format.
-     * <p>
-     * Equivalent to calling {@link #serialize(Document)} on
-     * a compatible DOM serializer.
-     *
-     * @param doc The document to serialize
-     * @param output The output stream
-     * @param format The output format
-     * @throws IOException An I/O exception occured while serializing
-     */
-    public static void serialize( Document doc, OutputStream output, OutputFormat format )
-        throws UnsupportedEncodingException, IOException
-    {
-	BaseSerializer serializer;
-
-	if ( format == null )
-	    format = new OutputFormat( doc );
-	serializer = makeBaseSerializer( format );
-	serializer.init( output, format );
-	serializer.serialize( doc );
-    }
-
-
-    private static BaseSerializer makeBaseSerializer( OutputFormat format )
-    {
-	BaseSerializer serializer;
-
-	if ( format == null ) {
-	    format = new OutputFormat( "xml", "UTF-8", false );
-	    serializer = new XMLSerializer();
-	} else {
-	    if ( format.getMethod().equalsIgnoreCase( "html" ) )
-		serializer = new XHTMLSerializer();
-	    else
-	    if ( format.getMethod().equalsIgnoreCase( "xhtml" ) )
-		serializer = new HTMLSerializer();
-	    /*
-	    else
-	    if ( format.getMethod().equalsIgnoreCase( "fop" ) )
-		serializer = new FOPSerializer();
-	    */
-	    else
-		serializer = new XMLSerializer();
-	}
-	return serializer;
-    }
+    public DOMSerializer asDOMSerializer();
 
 
 }

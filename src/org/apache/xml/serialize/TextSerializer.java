@@ -70,7 +70,7 @@ import org.xml.sax.AttributeList;
 
 
 /**
- * Implements an XML serializer supporting both DOM and SAX pretty
+ * Implements a text serializer supporting both DOM and SAX
  * serializing. For usage instructions see {@link Serializer}.
  * <p>
  * If an output stream is used, the encoding is taken from the
@@ -98,7 +98,7 @@ import org.xml.sax.AttributeList;
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see Serializer
  */
-public final class XMLSerializer
+public final class TextSerializer
     extends BaseMarkupSerializer
 {
 
@@ -108,7 +108,7 @@ public final class XMLSerializer
      * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
      * first.
      */
-    public XMLSerializer()
+    public TextSerializer()
     {
 	setOutputFormat( null );
     }
@@ -119,7 +119,7 @@ public final class XMLSerializer
      * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
      * first.
      */
-    public XMLSerializer( OutputFormat format )
+    public TextSerializer( OutputFormat format )
     {
 	setOutputFormat( format );
     }
@@ -133,7 +133,7 @@ public final class XMLSerializer
      * @param writer The writer to use
      * @param format The output format to use, null for the default
      */
-    public XMLSerializer( Writer writer, OutputFormat format )
+    public TextSerializer( Writer writer, OutputFormat format )
     {
 	setOutputFormat( format );
 	setOutputCharStream( writer );
@@ -148,7 +148,7 @@ public final class XMLSerializer
      * @param output The output stream to use
      * @param format The output format to use, null for the default
      */
-    public XMLSerializer( OutputStream output, OutputFormat format )
+    public TextSerializer( OutputStream output, OutputFormat format )
     {
 	setOutputFormat( format );
 	try {
@@ -162,7 +162,7 @@ public final class XMLSerializer
     public void setOutputFormat( OutputFormat format )
     {
 	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( Method.XML, null, false ) );
+	    super.setOutputFormat( new OutputFormat( OutputFormat.Method.TEXT, null, false ) );
 	else
 	    super.setOutputFormat( format );
     }
@@ -182,11 +182,8 @@ public final class XMLSerializer
 
     public void startElement( String tagName, AttributeList attrs )
     {
-	int          i;
 	boolean      preserveSpace;
 	ElementState state;
-	String       name;
-	String       value;
 
 	state = getElementState();
 	if ( state == null ) {
@@ -199,53 +196,21 @@ public final class XMLSerializer
 	    preserveSpace = _format.getPreserveSpace();
 	} else {
 	    // For any other element, if first in parent, then
-	    // close parent's opening tag and use the parnet's
-	    // space preserving.
-	    if ( state.empty )
-		printText( ">" );
+	    // use the parnet's space preserving.
 	    preserveSpace = state.preserveSpace;
-	    // Indent this element on a new line if the first
-	    // content of the parent element or immediately
-	    // following an element.
-	    if ( _format.getIndenting() && ! state.preserveSpace &&
-		 ( state.empty || state.afterElement ) )
-		breakLine();
 	}
 	// Do not change the current element state yet.
 	// This only happens in endElement().
 
-	printText( '<' + tagName );
 	indent();
 
-	// For each attribute print it's name and value as one part,
-	// separated with a space so the element can be broken on
-	// multiple lines.
-	if ( attrs != null ) {
-	    for ( i = 0 ; i < attrs.getLength() ; ++i ) {
-		printSpace();
-		name = attrs.getName( i );
-		value = attrs.getValue( i );
-		if ( value == null )
-		    value = "";
-		printText( name + "=\"" + escape( value ) + '"' );
-		
-		// If the attribute xml:space exists, determine whether
-		// to preserve spaces in this and child nodes based on
-		// its value.
-		if ( name.equals( "xml:space" ) ) {
-		    if ( value.equals( "preserve" ) )
-			preserveSpace = true;
-		    else
-			preserveSpace = _format.getPreserveSpace();
-		}
-	    }
-	}
+	// Ignore all other attributes of the element, only printing
+	// its contents.
+
 	// Now it's time to enter a new element state
 	// with the tag name and space preserving.
 	// We still do not change the curent element state.
 	state = enterElementState( tagName, preserveSpace );
-	state.cdata = _format.isCDataElement( tagName );
-	state.unescaped = _format.isNonEscapingElement( tagName );
     }
 
 
@@ -258,16 +223,6 @@ public final class XMLSerializer
 	// element's state and the parent element's state.
 	unindent();
 	state = getElementState();
-	if ( state.empty ) {
-	    printText( "/>" );
-	} else {
-	    // This element is not empty and that last content was
-	    // another element, so print a line break before that
-	    // last element and this element's closing tag.
-	    if ( _format.getIndenting() && ! state.preserveSpace &&  state.afterElement )
-		breakLine();
-	    printText( "</" + tagName + ">" );
-	}
 	// Leave the element state and update that of the parent
 	// (if we're not root) to not empty and after element.
 	state = leaveElementState();
@@ -282,6 +237,26 @@ public final class XMLSerializer
     }
 
 
+    public void processingInstruction( String target, String code )
+    {
+    }
+
+
+    public void comment( String text )
+    {
+    }
+
+
+    public void comment( char[] chars, int start, int length )
+    {
+    }
+
+
+    protected void characters( String text, boolean cdata, boolean unescaped )
+    {
+	super.characters( text, false, true );
+    }
+
 
     //------------------------------------------//
     // Generic node serializing methods methods //
@@ -290,9 +265,6 @@ public final class XMLSerializer
 
     /**
      * Called to serialize the document's DOCTYPE by the root element.
-     * The document type declaration must name the root element,
-     * but the root element is only known when that element is serialized,
-     * and not at the start of the document.
      * <p>
      * This method will check if it has not been called before ({@link #_started}),
      * will serialize the document type declaration, and will serialize all
@@ -302,73 +274,10 @@ public final class XMLSerializer
      */
     protected void startDocument( String rootTagName )
     {
-	int    i;
-	String dtd;
+	// Required to stop processing the DTD, even though the DTD
+	// is not printed.
+	leaveDTD();
 
-	dtd = leaveDTD();
-	if ( ! _started ) {
-
-	    if ( ! _format.getOmitXMLDeclaration() ) {
-		StringBuffer    buffer;
-		
-		// Serialize the document declaration appreaing at the head
-		// of very XML document (unless asked not to).
-		buffer = new StringBuffer( "<?xml version=\"" );
-		if ( _format.getVersion() != null )
-		    buffer.append( _format.getVersion() );
-		else
-		    buffer.append( "1.0" );
-		buffer.append( '"' );
-		if ( _format.getEncoding() != null ) {
-		    buffer.append( " encoding=\"" );
-		    buffer.append( _format.getEncoding() );
-		    buffer.append( '"' );
-		}
-		if ( _format.getStandalone() && _format.getDoctypeSystem() == null &&
-		     _format.getDoctypePublic() == null )
-		    buffer.append( " standalone=\"yes\"" );
-		buffer.append( "?>" );
-		printText( buffer.toString() );
-		breakLine();
-	    }
-
-	    if ( _format.getDoctypeSystem() != null ) {
-		// System identifier must be specified to print DOCTYPE.
-		// If public identifier is specified print 'PUBLIC
-		// <public> <system>', if not, print 'SYSTEM <system>'.
-		printText( "<!DOCTYPE " );
-		printText( rootTagName );
-		if ( _format.getDoctypePublic() != null ) {
-		    printText( " PUBLIC " );
-		    printDoctypeURL( _format.getDoctypePublic() );
-		    if ( _format.getIndenting() ) {
-			breakLine();
-			for ( i = 0 ; i < 18 + rootTagName.length() ; ++i )
-			    printText( " " );
-		    }
-		    printDoctypeURL( _format.getDoctypeSystem() );
-		}
-		else {
-		    printText( " SYSTEM " );
-		    printDoctypeURL( _format.getDoctypeSystem() );
-		}
-
-		// If we accumulated any DTD contents while printing.
-		// this would be the place to print it.
-		if ( dtd != null && dtd.length() > 0 ) {
-		    printText( " [" );
-		    indent();
-		    if ( _format.getIndenting() )
-			breakLine();
-		    printText( dtd, true );
-		    unindent();
-		    printText( "]" );
-		}
-
-		printText( ">" );
-		breakLine();
-	    }
-	}
 	_started = true;
 	// Always serialize these, even if not te first root element.
 	serializePreRoot();
@@ -382,14 +291,9 @@ public final class XMLSerializer
      */
     protected void serializeElement( Element elem )
     {
-	Attr         attr;
-	NamedNodeMap attrMap;
-	int          i;
 	Node         child;
 	ElementState state;
 	boolean      preserveSpace;
-	String       name;
-	String       value;
 	String       tagName;
 
 	tagName = elem.getTagName();
@@ -404,52 +308,16 @@ public final class XMLSerializer
 	    preserveSpace = _format.getPreserveSpace();
 	} else {
 	    // For any other element, if first in parent, then
-	    // close parent's opening tag and use the parnet's
-	    // space preserving.
-	    if ( state.empty )
-		printText( ">" );
+	    // use the parnet's space preserving.
 	    preserveSpace = state.preserveSpace;
-	    // Indent this element on a new line if the first
-	    // content of the parent element or immediately
-	    // following an element.
-	    if ( _format.getIndenting() && ! state.preserveSpace &&
-		 ( state.empty || state.afterElement ) )
-		breakLine();
 	}
 	// Do not change the current element state yet.
 	// This only happens in endElement().
 
-	printText( '<' + tagName );
 	indent();
 
-	// Lookup the element's attribute, but only print specified
-	// attributes. (Unspecified attributes are derived from the DTD.
-	// For each attribute print it's name and value as one part,
-	// separated with a space so the element can be broken on
-	// multiple lines.
-	attrMap = elem.getAttributes();
-	if ( attrMap != null ) {
-	    for ( i = 0 ; i < attrMap.getLength() ; ++i ) {
-		attr = (Attr) attrMap.item( i );
-		name = attr.getName();
-		value = attr.getValue();
-		if ( value == null )
-		    value = "";
-		if ( attr.getSpecified() ) {
-		    printSpace();
-		    printText( name + "=\"" + escape( value ) + '"' );
-		}
-		// If the attribute xml:space exists, determine whether
-		// to preserve spaces in this and child nodes based on
-		// its value.
-		if ( name.equals( "xml:space" ) ) {
-		    if ( value.equals( "preserve" ) )
-			preserveSpace = true;
-		    else
-			preserveSpace = _format.getPreserveSpace();		    
-		}
-	    }
-	}
+	// Ignore all other attributes of the element, only printing
+	// its contents.
 
 	// If element has children, then serialize them, otherwise
 	// serialize en empty tag.
@@ -457,8 +325,6 @@ public final class XMLSerializer
 	    // Enter an element state, and serialize the children
 	    // one by one. Finally, end the element.
 	    state = enterElementState( tagName, preserveSpace );
-	    state.cdata = _format.isCDataElement( tagName );
-	    state.unescaped = _format.isNonEscapingElement( tagName );
 	    child = elem.getFirstChild();
 	    while ( child != null ) {
 		serializeNode( child );
@@ -467,7 +333,6 @@ public final class XMLSerializer
 	    endElement( tagName );
 	} else {
 	    unindent();
-	    printText( "/>" );
 	    if ( state != null ) {
 		// After element but parent element is no longer empty.
 		state.afterElement = true;
@@ -477,22 +342,111 @@ public final class XMLSerializer
     }
 
 
+    /**
+     * Serialize the DOM node. This method is unique to the Text serializer.
+     *
+     * @param node The node to serialize
+     */
+    protected void serializeNode( Node node )
+    {
+	// Based on the node type call the suitable SAX handler.
+	// Only comments entities and documents which are not
+	// handled by SAX are serialized directly.
+        switch ( node.getNodeType() ) {
+	case Node.TEXT_NODE :
+	    characters( node.getNodeValue(), false, true );
+	    break;
+
+	case Node.CDATA_SECTION_NODE :
+	    characters( node.getNodeValue(), false, true );
+	    break;
+
+	case Node.COMMENT_NODE :
+	    break;
+
+	case Node.ENTITY_REFERENCE_NODE :
+	    // Ignore.
+	    break;
+
+	case Node.PROCESSING_INSTRUCTION_NODE :
+	    break;
+
+	case Node.ELEMENT_NODE :
+	    serializeElement( (Element) node );
+	    break;
+
+	case Node.DOCUMENT_NODE :
+	    DocumentType docType;
+	    NamedNodeMap map;
+	    Entity       entity;
+	    Notation     notation;
+	    int          i;
+	 
+	    // If there is a document type, use the SAX events to
+	    // serialize it.
+	    docType = ( (Document) node ).getDoctype();
+	    if ( docType != null ) {
+		startDTD( docType.getName(), null, null );
+		map = docType.getEntities();
+		if ( map != null ) {
+		    for ( i = 0 ; i < map.getLength() ; ++i ) {
+			entity = (Entity) map.item( i );
+			unparsedEntityDecl( entity.getNodeName(), entity.getPublicId(),
+				    entity.getSystemId(), entity.getNotationName() );
+		    }
+		}
+		map = docType.getNotations();
+		if ( map != null ) {
+		    for ( i = 0 ; i < map.getLength() ; ++i ) {
+			notation = (Notation) map.item( i );
+			notationDecl( notation.getNodeName(), notation.getPublicId(), notation.getSystemId() );
+		    }
+		}
+		endDTD();
+	    }
+	    // !! Fall through
+	case Node.DOCUMENT_FRAGMENT_NODE : {
+	    Node         child;
+	    
+	    // By definition this will happen if the node is a document,
+	    // document fragment, etc. Just serialize its contents. It will
+	    // work well for other nodes that we do not know how to serialize.
+	    child = node.getFirstChild();
+	    while ( child != null ) {
+		serializeNode( child );
+		child = child.getNextSibling();
+	    }
+	    break;
+	}
+
+	default:
+	    break;
+	}
+    }
+
+
+    protected ElementState content()
+    {
+	ElementState state;
+
+	state = getElementState();
+	if ( state != null ) {
+	    // If this is the first content in the element,
+	    // change the state to not-empty.
+	    if ( state.empty ) {
+		state.empty = false;
+	    }
+	    // Except for one content type, all of them
+	    // are not last element. That one content
+	    // type will take care of itself.
+	    state.afterElement = false;
+	}
+	return state;
+    }
+
+
     protected String getEntityRef( char ch )
     {
-	// Encode special XML characters into the equivalent character references.
-	// These five are defined by default for all XML documents.
-        switch ( ch ) {
-	case '<':
-	    return "lt";
-	case '>':
-	    return "gt";
-	case '"':
-	    return "quot";
-	case '\'':
-	    return "apos";
-	case '&':
-	    return "amp";
-        }
         return null;
     }
 

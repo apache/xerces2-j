@@ -59,89 +59,45 @@
 package org.apache.xml.serialize;
 
 
-import java.io.OutputStream;
-import java.io.Writer;
-import java.io.UnsupportedEncodingException;
-
-
 /**
- * Implements an XHTML serializer supporting both DOM and SAX
- * pretty serializing. For usage instructions see either {@link
- * Serializer} or {@link BaseMarkupSerializer}.
- *
- *
  * @version
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
- * @see Serializer
+ * @see OutputFormat
  */
-public final class XHTMLSerializer
-    extends HTMLSerializer
+public final class Method
 {
-
-
+    
+    
     /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
+     * The output method for XML documents.
      */
-    public XHTMLSerializer()
-    {
-	super( true, null );
-    }
-
-
+    public static final String XML = "xml";
+    
+    
     /**
-     * Constructs a new serializer. The serializer cannot be used without
-     * calling {@link #setOutputCharStream} or {@link #setOutputByteStream}
-     * first.
+     * The output method for HTML documents.
      */
-    public XHTMLSerializer( OutputFormat format )
-    {
-	super( true, format );
-    }
-
-
+    public static final String HTML = "html";
+    
+    
     /**
-     * Constructs a new serializer that writes to the specified writer
-     * using the specified output format. If <tt>format</tt> is null,
-     * will use a default output format.
-     *
-     * @param writer The writer to use
-     * @param format The output format to use, null for the default
+     * The output method for HTML documents as XHTML.
      */
-    public XHTMLSerializer( Writer writer, OutputFormat format )
-    {
-	super( true, format );
-	setOutputCharStream( writer );
-    }
-
-
+    public static final String XHTML = "xhtml";
+    
+    
     /**
-     * Constructs a new serializer that writes to the specified output
-     * stream using the specified output format. If <tt>format</tt>
-     * is null, will use a default output format.
-     *
-     * @param output The output stream to use
-     * @param format The output format to use, null for the default
+     * The output method for text documents.
      */
-    public XHTMLSerializer( OutputStream output, OutputFormat format )
-    {
-	super( true, format );
-	try {
-	    setOutputByteStream( output );
-	} catch ( UnsupportedEncodingException except ) {
-	    // Should never happend
-	}
-    }
-
-
-    public void setOutputFormat( OutputFormat format )
-    {
-	if ( format == null )
-	    super.setOutputFormat( new OutputFormat( Method.XHTML, null, false ) );
-	else
-	    super.setOutputFormat( format );
-    }
-
-
+    public static final String TEXT = "text";
+    
+    
+    /**
+     * The output method for FO documents as PDF.
+     */
+    public static final String FOP = "fop";
+    
+    
 }
+
+

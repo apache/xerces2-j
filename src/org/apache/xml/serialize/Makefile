@@ -12,13 +12,20 @@ include ../../../../../src/Makefile.incl
 
 TARGETS=\
 	OutputFormat.class\
+	Method.class\
+	LineSeparator.class\
 	Serializer.class\
-	BaseSerializer.class\
+	DOMSerializer.class\
+	BaseMarkupSerializer.class\
 	XMLSerializer.class\
 	HTMLSerializer.class\
 	XHTMLSerializer.class\
+	TextSerializer.class\
 	ElementState.class\
-	HTMLdtd.class
+	HTMLdtd.class\
+	SerializerFactory.class\
+	SerializerFactoryImpl.class
+
 
 all: dirs compile
 

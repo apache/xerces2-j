@@ -64,8 +64,7 @@ import java.util.Hashtable;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
-// XXX  Delayed until the HTML DOM is introduced into the code base
-// import org.w3c.dom.html.HTMLDocument;
+import org.w3c.dom.html.HTMLDocument;
 
 
 /**
@@ -77,9 +76,10 @@ import org.w3c.dom.Node;
  * The two interesting constructors are:
  * <ul>
  * <li>{@link #OutputFormat(String,String,boolean)} creates a format
- *  for the specified method (XML, HTML, etc), encoding and indentation
+ *  for the specified method (XML, HTML, Text, etc), encoding and indentation
  * <li>{@link #OutputFormat(Document,String,boolean)} creates a format
- *  compatible with the document type (XML, HTML), encoding and indentation
+ *  compatible with the document type (XML, HTML, Text, etc), encoding and
+ *  indentation
  * </ul>
  * 
  *
@@ -87,9 +87,67 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  *         <a href="mailto:visco@exoffice.com">Keith Visco</a>
  * @see Serializer
+ * @see Method
+ * @see LineSeparator
  */
 public class OutputFormat
 {
+
+
+    public static class DTD
+    {
+
+	/**
+	 * Public identifier for HTML document type.
+	 */
+	public static final String HTMLPublicId = "-//W3C//DTD HTML 4.0//EN";
+
+	/**
+	 * System identifier for HTML document type.
+	 */
+	public static final String HTMLSystemId =
+	    "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+
+	/**
+	 * Public identifier for XHTML document type.
+	 */
+	public static final String XHTMLPublicId =
+	    "-//W3C//DTD XHTML 1.0 Strict//EN";
+
+	/**
+	 * System identifier for XHTML document type.
+	 */
+	public static final String XHTMLSystemId =
+	    "http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
+
+    }
+
+
+    public static class Defaults
+    {
+
+	/**
+	 * If indentation is turned on, the default identation
+	 * level is 4.
+	 *
+	 * @see #setIndenting(boolean)
+	 */
+	public static final int Indent = 4;
+	
+	/**
+	 * The default encoding for Web documents it UTF-8.
+	 *
+	 * @see #getEncoding()
+	 */
+	public static final String Encoding = "UTF-8";
+	
+	/**
+	 * The default line width at which to break long lines
+	 * when identing. This is set to 72.
+	 */
+	public static final int LineWidth = 72;
+
+    }
 
 
     /**
@@ -116,7 +174,7 @@ public class OutputFormat
      * The encoding to use, if an input stream is used.
      * The default is always UTF-8.
      */
-    private String _encoding = DEFAULT_ENCODING;
+    private String _encoding = Defaults.Encoding;
 
 
     /**
@@ -166,13 +224,13 @@ public class OutputFormat
     /**
      * The selected line separator.
      */
-    private String _lineSeparator = LINE_SEPARATOR_WEB;
+    private String _lineSeparator = LineSeparator.Web;
 
 
     /**
      * The line width at which to wrap long lines when indenting.
      */
-    private int _lineWidth = DEFAULT_LINE_WIDTH;
+    private int _lineWidth = Defaults.LineWidth;
 
 
     /**
@@ -180,111 +238,6 @@ public class OutputFormat
      * specify otherwise, or specify the default behavior.
      */
     private boolean _preserve = false;
-
-
-    /**
-     * If indentation is turned on, the default identation
-     * level is 4.
-     *
-     * @see #setIndenting(boolean)
-     */
-    public static final int DEFAULT_INDENT = 4;
-
-
-    /**
-     * The default encoding for Web documents it UTF-8.
-     *
-     * @see #getEncoding()
-     */
-    public static final String DEFAULT_ENCODING = "UTF-8";
-
-
-    /**
-     * The default line width at which to break long lines
-     * when identing. This is set to 72.
-     */
-    public static final int DEFAULT_LINE_WIDTH = 72;
-
-
-    /**
-     * The output method for XML documents.
-     */
-    public static final String METHOD_XML = "xml";
-
-
-    /**
-     * The output method for HTML documents.
-     */
-    public static final String METHOD_HTML = "html";
-
-
-    /**
-     * The output method for HTML documents as XHTML.
-     */
-    public static final String METHOD_XHTML = "xhtml";
-
-
-    /**
-     * The output method for text documents.
-     */
-    public static final String METHOD_TEXT = "text";
-
-
-    /**
-     * The output method for FO documents as PDF.
-     */
-    public static final String METHOD_FOP = "fop";
-
-
-    /**
-     * Line separator for Unix systems (<tt>\n</tt>).
-     */
-    public static final String LINE_SEPARATOR_UNIX = "\n";
-
-
-    /**
-     * Line separator for Windows systems (<tt>\r\n</tt>).
-     */
-    public static final String LINE_SEPARATOR_WIN = "\r\n";
-
-
-    /**
-     * Line separator for Macintosh systems (<tt>\r</tt>).
-     */
-    public static final String LINE_SEPARATOR_MAC = "\r";
-
-
-    /**
-     * Line separator for the Web (<tt>\n</tt>).
-     */
-    public static final String LINE_SEPARATOR_WEB = "\n";
-
-
-    /**
-     * Public identifier for HTML document type.
-     */
-    public static final String DOCTYPE_HTML_PUBLIC = "-//W3C//DTD HTML 4.0//EN";
-
-
-    /**
-     * System identifier for HTML document type.
-     */
-    public static final String DOCTYPE_HTML_SYSTEM =
-	"http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
-
-
-    /**
-     * Public identifier for XHTML document type.
-     */
-    public static final String DOCTYPE_XHTML_PUBLIC = "-//W3C//DTD XHTML 1.0 Strict//EN";
-
-
-    /**
-     * System identifier for XHTML document type.
-     */
-    public static final String DOCTYPE_XHTML_SYSTEM =
-	"http://www.w3.org/TR/WD-html-in-xml/DTD/xhtml1-strict.dtd";
-
 
 
 
@@ -464,8 +417,8 @@ public class OutputFormat
     public void setIndenting( boolean on )
     {
 	if ( on ) {
-	    _indent = DEFAULT_INDENT;
-	    _lineWidth = DEFAULT_LINE_WIDTH;
+	    _indent = Defaults.Indent;
+	    _lineWidth = Defaults.LineWidth;
 	} else {
 	    _indent = 0;
 	    _lineWidth = 0;
@@ -717,7 +670,7 @@ public class OutputFormat
     public void setLineSeparator( String lineSeparator )
     {
 	if ( lineSeparator == null )
-	    _lineSeparator =  LINE_SEPARATOR_WEB;
+	    _lineSeparator =  LineSeparator.Web;
 	else
 	    _lineSeparator = lineSeparator;
     }
@@ -813,10 +766,8 @@ public class OutputFormat
 
 	// If document is derived from HTMLDocument then the default
 	// method is html.
-        /* XXX  Delayed until the HTML DOM is introduced into the code base
         if ( doc instanceof HTMLDocument )
-            return METHOD_HTML;
-        */
+            return Method.HTML;
         
 	// Lookup the root element and the text nodes preceding it.
 	// If root element is html and all text nodes contain whitespace
@@ -826,29 +777,29 @@ public class OutputFormat
 	
         node = doc.getFirstChild();
         while (node != null) {
-		// If the root element is html, the method is html.
-		if ( node.getNodeType() == Node.ELEMENT_NODE ) {
-			if ( node.getNodeName().equalsIgnoreCase( "html" ) ) {
-				return METHOD_HTML;
-			} else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {		         
-				return METHOD_FOP;
-			} else {
-				return METHOD_XML;
-			}
-		} else if ( node.getNodeType() == Node.TEXT_NODE ) {
-			// If a text node preceding the root element contains
-			// only whitespace, this might be html, otherwise it's
-			// definitely xml.
-			value = node.getNodeValue();
-			for ( i = 0 ; i < value.length() ; ++i )
-				if ( value.charAt( i ) != 0x20 && value.charAt( i ) != 0x0A &&
-				     value.charAt( i ) != 0x09 && value.charAt( i ) != 0x0D )
-				return METHOD_XML;
+	    // If the root element is html, the method is html.
+	    if ( node.getNodeType() == Node.ELEMENT_NODE ) {
+		if ( node.getNodeName().equalsIgnoreCase( "html" ) ) {
+		    return Method.HTML;
+		} else if ( node.getNodeName().equalsIgnoreCase( "root" ) ) {		         
+		    return Method.FOP;
+		} else {
+		    return Method.XML;
 		}
-		node = node.getNextSibling();
+	    } else if ( node.getNodeType() == Node.TEXT_NODE ) {
+		// If a text node preceding the root element contains
+		// only whitespace, this might be html, otherwise it's
+		// definitely xml.
+		value = node.getNodeValue();
+		for ( i = 0 ; i < value.length() ; ++i )
+		    if ( value.charAt( i ) != 0x20 && value.charAt( i ) != 0x0A &&
+			 value.charAt( i ) != 0x09 && value.charAt( i ) != 0x0D )
+			return Method.XML;
+	    }
+	    node = node.getNextSibling();
 	}
 	// Anything else, the method is xml.
-	return METHOD_XML;
+	return Method.XML;
     }
 
 
@@ -870,10 +821,8 @@ public class OutputFormat
 	    } catch ( Error except ) {  }
 	}
 	*/
-        /* XXX  Delayed until the HTML DOM is introduced into the code base
 	if ( doc instanceof HTMLDocument )
-	    return DOCTYPE_XHTML_PUBLIC;
-         */
+	    return DTD.XHTMLPublicId;
 	return null;
     }
 
@@ -896,10 +845,8 @@ public class OutputFormat
 	    } catch ( Error except ) { }
 	}
 	*/
-        /* XXX  Delayed until the HTML DOM is introduced into the code base
 	if ( doc instanceof HTMLDocument )
-	    return DOCTYPE_XHTML_SYSTEM;
-         */
+	    return DTD.XHTMLSystemId;
 	return null;
     }
 
@@ -910,13 +857,19 @@ public class OutputFormat
      */
     public static String whichMediaType( String method )
     {
-	if ( method.equalsIgnoreCase( METHOD_XML ) )
+	if ( method.equalsIgnoreCase( Method.XML ) )
 	    return "text/xml";
-	if ( method.equalsIgnoreCase( METHOD_HTML ) )
+	if ( method.equalsIgnoreCase( Method.HTML ) )
 	    return "text/html";
-	if ( method.equalsIgnoreCase( METHOD_TEXT ) )
+	if ( method.equalsIgnoreCase( Method.XHTML ) )
+	    return "text/html";
+	if ( method.equalsIgnoreCase( Method.TEXT ) )
 	    return "text/plain";
+	if ( method.equalsIgnoreCase( Method.FOP ) )
+	    return "application/pdf";
 	return null;
     }
+
+
 }
 
