@@ -3070,7 +3070,7 @@ public final class XMLValidator
                   while (baseTypeInfo != null) {
                      elementIndex = fGrammar.getElementDeclIndex(element, baseTypeInfo.scopeDefined);
                      if (elementIndex > -1 ) {
-                        System.out.println("found element index for " + fStringPool.toString(element.localpart));
+                        //System.out.println("found element index for " + fStringPool.toString(element.localpart));
                         // update the current Grammar NS index if resolving element succeed.
                         fGrammarNameSpaceIndex = aGrammarNSIndex;
                         break;
@@ -4003,7 +4003,18 @@ public final class XMLValidator
       } else if (contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ||
                  contentType == XMLElementDecl.TYPE_MIXED_COMPLEX ||
                  contentType == XMLElementDecl.TYPE_CHILDREN) {
-         // Get the content model for this element, faulting it in if needed
+         
+          // XML Schema REC: Validation Rule: Element Locally Valid (Element) 
+          // 3.2.1 The element information item must have no 
+          // character or element information item [children].  
+          //
+          if (childCount == 0 && fNil) {
+              fNil = false;
+              //return success
+              return -1;
+          }
+          
+          // Get the content model for this element, faulting it in if needed
          XMLContentModel cmElem = null;
          try {
             cmElem = getElementContentModel(elementIndex);
