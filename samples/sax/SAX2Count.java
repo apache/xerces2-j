@@ -130,17 +130,14 @@ extends DefaultHandler {
             //if (validate)
             //   parser.setFeature("http://xml.org/sax/features/validation", true);
 
-            if ( parser instanceof XMLReader ){
-                ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
-                                                setValidation);
-                ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
-                                                setNameSpaces );
-                ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
-                                                setSchemaSupport );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                                               validate);
 
-            }
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                                               setNameSpaces );
 
-
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                                               setSchemaSupport );
 
             if (warmup) {
                 parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
@@ -305,7 +302,7 @@ extends DefaultHandler {
                              "options:",
                              "  -p name  Specify SAX parser by name.",
                              "  -n | -N  Turn on/off namespace [default=on]",
-                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -w       Warmup the parser before timing.",
@@ -327,7 +324,9 @@ extends DefaultHandler {
         String arg = null; 
         while ( ( arg =  argopt.getlistFiles() ) != null ) {
             outer:
+          
             while ( (c =  argopt.getArguments()) != -1 ){
+                System.out.println( "c =" + c );
                 switch (c) {
                 case 'v':
                     setValidation = true;

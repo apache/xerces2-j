@@ -131,7 +131,7 @@ extends HandlerBase {
                 //if (validate && parser instanceof XMLReader)
                 if ( parser instanceof XMLReader ){
                     ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
-                                                    setValidation);
+                                                    validate);
                     ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
                                                     setNameSpaces );
                     ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
@@ -306,7 +306,7 @@ extends HandlerBase {
                              "options:",
                              "  -p name  Specify SAX parser by name.",
                              "  -n | -N  Turn on/off namespace [default=on]",
-                             "  -v | -V  Turn on/off validation [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
                              "  -s | -S  Turn on/off Schema support [default=on]",
                              "  -d | -D  Turn on/off deferred DOM [default=on]",
                              "  -w       Warmup the parser before timing.",
