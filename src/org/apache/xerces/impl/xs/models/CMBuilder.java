@@ -203,6 +203,17 @@ public class CMBuilder {
             // (task 1,3) convert model groups to binary trees
             XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
             CMNode temp = null;
+            // when the model group is a choice of more than one particles, but
+            // only one of the particle is not empty, (for example
+            // <choice>
+            //   <sequence/>
+            //   <element name="e"/>
+            // </choice>
+            // ) we can't not return that one particle ("e"). instead, we should
+            // treat such particle as optional ("e?").
+            // the following boolean variable is true when there are at least
+            // 2 non-empty children.
+            boolean twoChildren = false;
             for (int i = 0; i < group.fParticleCount; i++) {
                 // first convert each child to a CM tree
                 temp = buildSyntaxTree(group.fParticles[i]);
@@ -213,12 +224,23 @@ public class CMBuilder {
                     }
                     else {
                         nodeRet = new XSCMBinOp(group.fCompositor, nodeRet, temp);
+                        // record the fact that there are at least 2 children
+                        twoChildren = true;
                     }
                 }
             }
             // (task 2) expand occurrence values
-            if (nodeRet != null)
+            if (nodeRet != null) {
+                // when the group is "choice", there is only one non-empty
+                // child, and the group had more than one children, we need
+                // to create a zero-or-one (optional) node for the non-empty
+                // particle.
+                if (group.fCompositor == XSModelGroupImpl.MODELGROUP_CHOICE &&
+                    !twoChildren && group.fParticleCount > 1) {
+                    nodeRet = new XSCMUniOp(XSParticleDecl.PARTICLE_ZERO_OR_ONE, nodeRet);
+                }
                 nodeRet = expandContentModel(nodeRet, minOccurs, maxOccurs);
+            }
         }
 
         return nodeRet;

@@ -291,34 +291,25 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         particle = null;
         
-        // REVISIT: model group
-        // Quick fix for the case that particles <choice> | <sequence> do not have any children.
-        // For now we return null. In the future we might want to return model group decl.
-        if (fPArray.getParticleCount() != 0) {
+        XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
+        XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
+        Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
 
-            XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
-            XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
-            Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+        XSModelGroupImpl group = new XSModelGroupImpl();
+        group.fCompositor = choice ? XSModelGroupImpl.MODELGROUP_CHOICE : XSModelGroupImpl.MODELGROUP_SEQUENCE;
+        group.fParticleCount = fPArray.getParticleCount();
+        group.fParticles = fPArray.popContext();
+        particle = new XSParticleDecl();
+        particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+        particle.fMinOccurs = minAtt.intValue();
+        particle.fMaxOccurs = maxAtt.intValue();
+        particle.fValue = group;
 
-            XSModelGroupImpl group = new XSModelGroupImpl();
-            group.fCompositor = choice ? XSModelGroupImpl.MODELGROUP_CHOICE : XSModelGroupImpl.MODELGROUP_SEQUENCE;
-            group.fParticleCount = fPArray.getParticleCount();
-            group.fParticles = fPArray.popContext();
-            particle = new XSParticleDecl();
-            particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
-            particle.fMinOccurs = minAtt.intValue();
-            particle.fMaxOccurs = maxAtt.intValue();
-            particle.fValue = group;
-
-            particle = checkOccurrences(particle,
-                                        choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
-                                        (Element)decl.getParentNode(),
-                                        allContextFlags,
-                                        defaultVals.longValue());
-        }
-        else {
-            fPArray.discardContext();
-        }
+        particle = checkOccurrences(particle,
+                                    choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
+                                    (Element)decl.getParentNode(),
+                                    allContextFlags,
+                                    defaultVals.longValue());
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return particle;
