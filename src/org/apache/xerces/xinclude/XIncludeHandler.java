@@ -159,6 +159,18 @@ public class XIncludeHandler
     private final static int STATE_EXPECT_FALLBACK = 3;
 
     // recognized features and properties
+    
+    /** Feature identifier: validation. */
+    protected static final String VALIDATION =
+        Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
+    
+    /** Feature identifier: schema validation. */
+    protected static final String SCHEMA_VALIDATION =
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
+    
+    /** Feature identifier: dynamic validation. */
+    protected static final String DYNAMIC_VALIDATION = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
     /** Feature identifier: allow notation and unparsed entity events to be sent out of order. */
     protected static final String ALLOW_UE_AND_NOTATION_EVENTS =
@@ -415,6 +427,19 @@ public class XIncludeHandler
 
         fSettings = new ParserConfigurationSettings();
         copyFeatures(componentManager, fSettings);
+        
+        // we don't want a schema validator on the new pipeline,
+        // so if it was enabled, we set the feature to false as 
+        // well as other validation features.
+        try {
+            if (componentManager.getFeature(SCHEMA_VALIDATION)) {
+                fSettings.setFeature(SCHEMA_VALIDATION, false);
+                fSettings.setFeature(DYNAMIC_VALIDATION, false);
+                fSettings.setFeature(VALIDATION, false);
+            }
+        }
+        catch (XMLConfigurationException e) {}
+        
         // Don't reset fChildConfig -- we don't want it to share the same components.
         // It will be reset when it is actually used to parse something.
     } // reset(XMLComponentManager)
@@ -1260,13 +1285,6 @@ public class XIncludeHandler
 
             // set all features on parserConfig to match this parser configuration
             copyFeatures(fSettings, fChildConfig);
-
-            // we don't want a schema validator on the new pipeline,
-            // so we set it to false, regardless of what was copied above
-            fChildConfig.setFeature(
-                Constants.XERCES_FEATURE_PREFIX
-                    + Constants.SCHEMA_VALIDATION_FEATURE,
-                false);
 
             try {
                 // REVISIT: If we're going to support content negotation for
