@@ -58,19 +58,28 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Enumeration;
 import java.util.Locale;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  * NOTATIONValidator defines the interface that data type validators must obey.
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
  * 
+ * @author Elena Litani
  * @author Jeffrey Rodriguez-
  * @author Mark Swinkles - List Validation refactoring
  * @version $Id$
  */
 public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
+    // REVISIT: add facets allowed for NOTATION.
+    // wait for schema to clarify why we need so many facets on NOTATION..
     private DatatypeValidator fBaseValidator = null;
+    private Vector     fEnumeration      = new Vector();
+    private int        fFacetsDefined    = 0;
+    private int        fLength           = 0;
 
     public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -79,6 +88,30 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
     public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
          boolean derivedByList ) throws InvalidDatatypeFacetException {
          setBasetype( base ); // Set base type 
+         if ( facets != null  ){
+             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                 String key = (String) e.nextElement();
+                 if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fEnumeration    = (Vector)facets.get(key);
+                 } else if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    String lengthValue = (String)facets.get(key);
+                    try {
+                        fLength     = Integer.parseInt( lengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
+                    }
+                    if ( fLength < 0 )
+                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
+                 }
+             }
+         }
+         if (fBaseValidator!=null && (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION)==0) { 
+             //REVISIT: clarify with Schema - if it is a fatal error (need to throw an exception)
+             System.err.println("[Internal parser error] Enumeration facet is required for NOTATION decl!");
+         }
+         
     }
 
 
@@ -99,10 +132,19 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
-        return null;
-    }
-
-    public Hashtable getFacets(){
+         if (fBaseValidator!=null) { 
+            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+              if ( fEnumeration.contains( content ) == false )
+                  throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
+          }
+          if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+            if ( content.length() != fLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' is not equal to length facet '"+fLength+"'.");
+            }
+          }
+        }
         return null;
     }
 
@@ -114,17 +156,6 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
     public void setLocale(Locale locale){
     }
 
-    /**
-     * REVISIT
-     * Compares two Datatype for order
-     * 
-     * @param o1
-     * @param o2
-     * @return 
-     */
-    public int compare( String content1, String content2){
-        return -1;
-    }
   /**
      * Returns a copy of this object.
      */

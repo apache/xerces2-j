@@ -62,7 +62,6 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.text.Collator;
-import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
