@@ -639,11 +639,11 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
             }
             else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_LOCATION)) {
-                if (value instanceof String) {
+                if (value instanceof String || value == null) {
                     try {
                         String schemaType = (String) getProperty(
                         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE);
-                        if (schemaType == Constants.NS_XMLSCHEMA) {
+                        if (schemaType == Constants.NS_XMLSCHEMA || value == null) {
                             // map DOM schema-location to JAXP schemaSource property
                             setProperty(
                                 Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
@@ -675,15 +675,19 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
             }
             else if (name.equalsIgnoreCase(Constants.DOM_SCHEMA_TYPE)) {
-                // REVISIT: should null value be supported?
-                if (value instanceof String) {
+                if (value instanceof String || value == null) {
                     try {
-                        if (value.equals(Constants.NS_XMLSCHEMA)) {
+                        if (value == null) {
+                            setProperty(
+                                Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE,
+                                null);                  		
+                        }
+                        else if (value.equals(Constants.NS_XMLSCHEMA)) {
                             // REVISIT: when add support to DTD validation
                             setProperty(
                                 Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE,
                                 Constants.NS_XMLSCHEMA);
-                        }
+                        }	                        
                         else if (value.equals(Constants.NS_DTD)) {
                             // REVISIT: revalidation against DTDs is not supported
                              String msg = DOMMessageFormatter.formatMessage(

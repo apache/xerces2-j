@@ -447,9 +447,14 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
             }
             else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_LOCATION)) {
-                if (value instanceof String) {
+                if (value instanceof String || value == null) {
                     try {
-                        if (fSchemaType == Constants.NS_XMLSCHEMA) {
+                        if (value == null) {
+                            fConfiguration.setProperty (
+                                Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_SOURCE,
+                                null);
+                        }
+                        else if (fSchemaType == Constants.NS_XMLSCHEMA) {
                             fSchemaLocation = (String)value;
                             // map DOM schema-location to JAXP schemaSource property
                             // tokenize location string
@@ -495,10 +500,21 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 
             }
             else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_TYPE)) {
-                // REVISIT: should null value be supported?
-                if (value instanceof String) {
+                if (value instanceof String || value == null) {
                     try {
-                        if (value.equals (Constants.NS_XMLSCHEMA)) {
+                        if (value == null) {
+                            // turn off schema feature
+                            fConfiguration.setFeature (
+                            Constants.XERCES_FEATURE_PREFIX
+                            + Constants.SCHEMA_VALIDATION_FEATURE,
+                            false);
+                            // map to JAXP schemaLanguage
+                            fConfiguration.setProperty ( Constants.JAXP_PROPERTY_PREFIX
+                            + Constants.SCHEMA_LANGUAGE,
+                            null);
+                            fSchemaType = null;
+                        }
+                        else if (value.equals (Constants.NS_XMLSCHEMA)) {
                             // turn on schema feature
                             fConfiguration.setFeature (Constants.XERCES_FEATURE_PREFIX
                             + Constants.SCHEMA_VALIDATION_FEATURE,
@@ -510,10 +526,12 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
                             fSchemaType = Constants.NS_XMLSCHEMA;
                         }
                         else if (value.equals (Constants.NS_DTD)) {
+                            // turn off schema feature
                             fConfiguration.setFeature (
                             Constants.XERCES_FEATURE_PREFIX
                             + Constants.SCHEMA_VALIDATION_FEATURE,
                             false);
+                            // map to JAXP schemaLanguage
                             fConfiguration.setProperty ( Constants.JAXP_PROPERTY_PREFIX
                             + Constants.SCHEMA_LANGUAGE,
                             Constants.NS_DTD);
@@ -709,27 +727,27 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         }
         else { // check properties
             if (name.equalsIgnoreCase (Constants.DOM_ERROR_HANDLER)) {
-                if (value instanceof DOMErrorHandler) {
+                if (value instanceof DOMErrorHandler || value == null) {
                     return true;
                 }
                 return false;
             }
             else if (name.equalsIgnoreCase (Constants.DOM_RESOURCE_RESOLVER)) {
-                if (value instanceof LSResourceResolver) {
+                if (value instanceof LSResourceResolver || value == null) {
                     return true;
                 }
                 return false;
             }
             else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_TYPE)) {
-                if (value instanceof String
+                if ((value instanceof String
                 && (value.equals (Constants.NS_XMLSCHEMA)
-                || value.equals (Constants.NS_DTD))) {
+                || value.equals (Constants.NS_DTD))) || value == null) {
                     return true;
                 }
                 return false;
             }
             else if (name.equalsIgnoreCase (Constants.DOM_SCHEMA_LOCATION)) {
-                if (value instanceof String)
+                if (value instanceof String || value == null)
                     return true;
                 return false;
             }
@@ -772,9 +790,6 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 			parameters.add(Constants.DOM_WELLFORMED);
 			parameters.add(Constants.DOM_INFOSET);
 			parameters.add(Constants.DOM_DISALLOW_DOCTYPE);
-			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE);
-
-			parameters.add(Constants.DOM_ENTITIES);
 			parameters.add(Constants.DOM_ELEMENT_CONTENT_WHITESPACE);
 			parameters.add(Constants.DOM_COMMENTS);
 
