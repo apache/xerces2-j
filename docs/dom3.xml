@@ -5,7 +5,9 @@
 <p>
 The &ParserNameLong; &ParserVersion;  contains a partial implementation of the W3C Document Object Model 
 Level 3.  This implementation is experimental.  The DOM Level 3 specification is 
-still in working draft stage: you should not consider this implementation complete or correct.  The limitations of this implementation are detailed below. Please read this document before using this package.  
+still in working draft stage: you should not consider this implementation complete or correct.  
+The limitations of this implementation are detailed below. 
+Please, read this document before using dom3 package.  
 </p>
 </s2> 
 <s2 title="Introduction">
@@ -38,6 +40,10 @@ and Save</jump>.
     <li>
         Node.set/getUserData()
     </li>
+    
+    <li>
+        Node.isEqualNode()
+    </li>
     <li>
         DOMErrorHandler, DOMError, DOMLocator
     </li>
@@ -46,12 +52,17 @@ and Save</jump>.
 <ul>
     <li>
         DOMBuilder - supports all required features. Does not provide implementation to 
-        parseWithContext() and DOMBuilderFilter
+        parseWithContext() and DOMBuilderFilter.
     </li>
     <li>
-        DOMWriter - supports all required features. Provides support for "format-pretty-print 
-         " (true)
-    </li>
+        DOMWriter - supports all required features. Provides support for "format-pretty-print" (true).
+        DOMWriter also fixes namespaces during serialization as required by Load and Save module:
+
+        "Namespaces are fixed up during serialization, the serialization process will verify that namespace declarations, namespace prefixes and the namespace URIs associated with Elements and Attributes are consistent. 
+        If inconsistencies are found, the serialized form of the document will be altered to 
+        remove them"    
+        
+        </li>
     <li>
         DOMInputSource
     </li>
@@ -63,6 +74,8 @@ and Save</jump>.
     </li>
 </ul>
 </s2> <s2 title='Implementation of DOM Level 3 Abstract Schemas'>
+<note>Xerces does not provide implementation for editing schemas (AS-EDIT) nor we provide implementation
+for "Document-editing"</note>
 <ul>
     <li>
         DOMImplementationAS

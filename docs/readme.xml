@@ -18,8 +18,19 @@
    <link idref='xni'>XNI Manual</link>.
   </p>
   <p>
-   <strong>Note:</strong> Since this is a beta release, bugs are
-   to be expected. Please use 
+   Xerces 2 is a fully conforming XML Schema processor. 
+   For more information, refer to the <link idref='limitations-schema'>XML Schema Implementation</link> page. 
+  </p>
+  <p>
+   Xerces 2 also provides a partial implementation of Document Object Model Level 3  
+    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/'>Core</jump>, 
+    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>Abstract Schemas</jump> and 
+    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>Load and Save</jump> Working Drafts. For more information, refer to the 
+   <link idref='dom3'>DOM Level 3 Implementation</link> page. 
+  </p>
+
+  <p>
+   Please use 
    <jump href='http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J'>BugZilla</jump>
    to report any bugs that you find.
   </p>
@@ -70,18 +81,9 @@
    
   </ul>
  </s2>
+ 
  <s2 title='Changes from Previous Release'>
-  <p>
-   Xerces2 release includes full XML Schema support with completely redesigned and rewritten XML Schema validation engine. For more information, refer to the 
-   <link idref='limitations-schema'>XML Schema Implementation</link> page. 
-  </p>
-  <p>
-   This release also provides a partial implementation of Document Object Model Level 3  
-    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/'>Core</jump>, 
-    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>Abstract Schemas</jump> and 
-    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>Load and Save</jump> Working Drafts. For more information, refer to the 
-   <link idref='dom3'>DOM Level 3 Implementation</link> page. 
-  </p>
+    
   <p>
    The &ParserNameLong; &ParserVersion; introduced some changes to the Xerces Native
    Interface. The following list enumerates the important changes:
@@ -106,8 +108,10 @@
   <p>
    Xerces2 is a nearly complete rewrite of the Xerces 1.x codebase
    in order to make the code cleaner, more modular, and easier to
-   maintain. Applications using only the standard interfaces such as
-   JAXP, DOM, and SAX should not see any differences.
+   maintain. It includes a completely redesigned and rewritten XML Schema validation engine. 
+
+   Applications using only the standard interfaces such as
+   JAXP, DOM, and SAX should not see any differences. 
   </p>
  </s2>
  <s2 title='License Information'>
