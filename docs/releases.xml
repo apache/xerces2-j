@@ -7,6 +7,10 @@
   </desc>
   <changes>
    <add>
+    <note>Implemented support for UCS-4 and UCS-2 encodings.</note>
+    <submitter name='Neil Graham'/>
+   </add>
+   <add>
     <note>Added internal subset string to DOM.</note>
     <submitter name='Andy Clark'/>
    </add>

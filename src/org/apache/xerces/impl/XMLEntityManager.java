@@ -71,6 +71,7 @@ import java.util.Stack;
 
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.io.ASCIIReader;
+import org.apache.xerces.impl.io.UCSReader;
 import org.apache.xerces.impl.io.UTF8Reader;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
@@ -703,6 +704,7 @@ public class XMLEntityManager
         final String systemId = xmlInputSource.getSystemId();
         String baseSystemId = xmlInputSource.getBaseSystemId();
         String encoding = xmlInputSource.getEncoding();
+        Boolean isBigEndian = null;
 
         // create reader
         InputStream stream = null;
@@ -728,7 +730,9 @@ public class XMLEntityManager
                     b4[count] = (byte)stream.read();
                 }
                 if (count == 4) {
-                    encoding = getEncodingName(b4, count);
+                    Object [] encodingDesc = getEncodingName(b4, count);
+                    encoding = (String)(encodingDesc[0]);
+                    isBigEndian = (Boolean)(encodingDesc[1]);
 
                     // removed use of pushback inputstream--neilg
                     /*****
@@ -765,18 +769,18 @@ public class XMLEntityManager
                     //          indirection to get at the underlying bytes. -Ac
 
                     // create reader from input stream
-                    reader = createReader(new RewindableInputStream(pbstream), encoding);
+                    reader = createReader(new RewindableInputStream(pbstream), encoding, isBigEndian);
                     ******/
-                    reader = createReader(stream, encoding);
+                    reader = createReader(stream, encoding, isBigEndian);
                 }
                 else {
-                    reader = createReader(stream, encoding);
+                    reader = createReader(stream, encoding, isBigEndian);
                 }
             }
 
             // use specified encoding
             else {
-                reader = createReader(stream, encoding);
+                reader = createReader(stream, encoding, isBigEndian);
             }
 
             // read one character at a time so we don't jump too far
@@ -1136,15 +1140,18 @@ public class XMLEntityManager
 
     /**
      * Returns the IANA encoding name that is auto-detected from
-     * the bytes specified.
+     * the bytes specified, with the endian-ness of that encoding where appropriate.
      *
      * @param b4    The first four bytes of the input.
      * @param count The number of bytes actually read.
+     * @return a 2-element array:  the first element, an IANA-encoding string, 
+     *  the second element a Boolean which is true iff the document is big endian, false
+     *  if it's little-endian, and null if the distinction isn't relevant.
      */
-    protected String getEncodingName(byte[] b4, int count) {
+    protected Object[] getEncodingName(byte[] b4, int count) {
 
         if (count < 2) {
-            return "UTF-8";
+            return new Object[]{"UTF-8", null};
         }
 
         // UTF-16, with BOM
@@ -1152,72 +1159,72 @@ public class XMLEntityManager
         int b1 = b4[1] & 0xFF;
         if (b0 == 0xFE && b1 == 0xFF) {
             // UTF-16, big-endian
-            return "UTF-16";
+            return new Object [] {"UTF-16BE", new Boolean(true)};
         }
         if (b0 == 0xFF && b1 == 0xFE) {
             // UTF-16, little-endian
-            return "UTF-16";
+            return new Object [] {"UTF-16LE", new Boolean(false)};
         }
 
         // default to UTF-8 if we don't have enough bytes to make a
         // good determination of the encoding
         if (count < 3) {
-            return "UTF-8";
+            return new Object [] {"UTF-8", null};
         }
 
         // UTF-8 with a BOM
         int b2 = b4[2] & 0xFF;
         if (b0 == 0xEF && b1 == 0xBB && b2 == 0xBF) {
-            return "UTF-8";
+            return new Object [] {"UTF-8", null};
         }
 
         // default to UTF-8 if we don't have enough bytes to make a
         // good determination of the encoding
         if (count < 4) {
-            return "UTF-8";
+            return new Object [] {"UTF-8", null};
         }
 
         // other encodings
         int b3 = b4[3] & 0xFF;
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x00 && b3 == 0x3C) {
             // UCS-4, big endian (1234)
-            // REVISIT: What should this be?
-            return "UnicodeBig";
+            return new Object [] {"ISO-10646-UCS-4", new Boolean(true)};
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, little endian (4321)
-            // REVISIT: What should this be?
-            return "UnicodeLittleUnmarked";
+            return new Object [] {"ISO-10646-UCS-4", new Boolean(false)};
         }
         if (b0 == 0x00 && b1 == 0x00 && b2 == 0x3C && b3 == 0x00) {
             // UCS-4, unusual octet order (2143)
             // REVISIT: What should this be?
-            return "UnicodeBigUnmarked";
+            return new Object [] {"ISO-10646-UCS-4", null};
         }
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x00) {
             // UCS-4, unusual octect order (3412)
             // REVISIT: What should this be?
-            return "UnicodeLittleUnmarked";
+            return new Object [] {"ISO-10646-UCS-4", null};
         }
         if (b0 == 0x00 && b1 == 0x3C && b2 == 0x00 && b3 == 0x3F) {
             // UTF-16, big-endian, no BOM
+            // (or could turn out to be UCS-2...
             // REVISIT: What should this be?
-            return "UnicodeBig";
+            return new Object [] {"UTF-16BE", new Boolean(true)};
         }
         if (b0 == 0x3C && b1 == 0x00 && b2 == 0x3F && b3 == 0x00) {
             // UTF-16, little-endian, no BOM
-            return "UnicodeLittle";
+            // (or could turn out to be UCS-2...
+            return new Object [] {"UTF-16LE", new Boolean(false)};
         }
         if (b0 == 0x4C && b1 == 0x6F && b2 == 0xA7 && b3 == 0x94) {
             // EBCDIC
             // a la xerces1, return CP037 instead of EBCDIC here
-            return "CP037";
+            return new Object [] {"CP037", null};
         }
 
         // default encoding
-        return "UTF-8";
+        return new Object [] {"UTF-8", null};
 
-    } // getEncodingName(byte[],int):String
+    } // getEncodingName(byte[],int):Object[]
 
     /**
      * Creates a reader capable of reading the given input stream in
@@ -1229,10 +1236,13 @@ public class XMLEntityManager
      *                     Java encoding names are allowed, then the
      *                     encoding name may be a Java encoding name;
      *                     otherwise, it is an ianaEncoding name.
+     * @param isBigEndian   For encodings (like uCS-4), whose names cannot
+     *                      specify a byte order, this tells whether the order is bigEndian.  null menas 
+     *                      unknown or not relevant.
      *
      * @return Returns a reader.
      */
-    protected Reader createReader(InputStream inputStream, String encoding)
+    protected Reader createReader(InputStream inputStream, String encoding, Boolean isBigEndian)
         throws IOException {
 
         // normalize encoding name
@@ -1253,6 +1263,36 @@ public class XMLEntityManager
                 System.out.println("$$$ creating ASCIIReader");
             }
             return new ASCIIReader(inputStream, fBufferSize);
+        }
+        if(ENCODING.equals("ISO-10646-UCS-4")) {
+            if(isBigEndian != null) {
+                boolean isBE = isBigEndian.booleanValue();
+                if(isBE) {
+                    return new UCSReader(inputStream, UCSReader.UCS4BE);
+                } else {
+                    return new UCSReader(inputStream, UCSReader.UCS4LE);
+                }
+            } else {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "EncodingByteOrderUnsupported",
+                                       new Object[] { encoding },
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+        }
+        if(ENCODING.equals("ISO-10646-UCS-2")) {
+            if(isBigEndian != null) { // sould never happen with this encoding...
+                boolean isBE = isBigEndian.booleanValue();
+                if(isBE) {
+                    return new UCSReader(inputStream, UCSReader.UCS2BE);
+                } else {
+                    return new UCSReader(inputStream, UCSReader.UCS2LE);
+                }
+            } else {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "EncodingByteOrderUnsupported",
+                                       new Object[] { encoding },
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
         }
 
         // check for valid name
@@ -1297,7 +1337,7 @@ public class XMLEntityManager
         }
         return new InputStreamReader(inputStream, javaEncoding);
 
-    } // createReader(InputStream,String):
+    } // createReader(InputStream,String, Boolean): Reader
 
     //
     // Protected static methods
@@ -1781,14 +1821,38 @@ public class XMLEntityManager
                 //       a single char! -Ac
                 if (fCurrentEntity.encoding == null ||
                     !fCurrentEntity.encoding.equals(encoding)) {
+                    // UTF-16 is a bit of a special case.  If the encoding is UTF-16,
+                    // and we know the endian-ness, we shouldn't change readers.
+                    // If it's ISO-10646-UCS-(2|4), then we'll have to deduce
+                    // the endian-ness from the encoding we presently have.
+                    if(fCurrentEntity.encoding != null && fCurrentEntity.encoding.startsWith("UTF-16")) {
+                        String ENCODING = encoding.toUpperCase();
+                        if(ENCODING.equals("UTF-16")) return;
+                        if(ENCODING.equals("ISO-10646-UCS-4")) {
+                            if(fCurrentEntity.encoding.equals("UTF-16BE")) {
+                                fCurrentEntity.reader = new UCSReader(fCurrentEntity.stream, UCSReader.UCS4BE);
+                            } else {
+                                fCurrentEntity.reader = new UCSReader(fCurrentEntity.stream, UCSReader.UCS4LE);
+                            }
+                            return;
+                        }
+                        if(ENCODING.equals("ISO-10646-UCS-2")) {
+                            if(fCurrentEntity.encoding.equals("UTF-16BE")) {
+                                fCurrentEntity.reader = new UCSReader(fCurrentEntity.stream, UCSReader.UCS2BE);
+                            } else {
+                                fCurrentEntity.reader = new UCSReader(fCurrentEntity.stream, UCSReader.UCS2LE);
+                            }
+                            return;
+                        }
+                    }
                     // wrap a new reader around the input stream, changing
                     // the encoding
                     if (DEBUG_ENCODINGS) {
                         System.out.println("$$$ creating new reader from stream: "+
-                                           fCurrentEntity.stream);
+                                        fCurrentEntity.stream);
                     }
                     //fCurrentEntity.stream.reset();
-                    fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding);
+                    fCurrentEntity.reader = createReader(fCurrentEntity.stream, encoding, null);
                 } else {
                     if (DEBUG_ENCODINGS) 
                         System.out.println("$$$ reusing old reader on stream");
@@ -3155,10 +3219,9 @@ public class XMLEntityManager
         }
     
         public int read() throws IOException {
-            int b;
+            int b = 0;
             if (fOffset < fLength) {
-                System.err.println("REturned buffered:  " + (char)(fData[fOffset++] & 0xFF));
-                return fData[fOffset++] & 0xFF;
+                return fData[fOffset++] & 0xff;
             }
             if (fOffset == fEndOffset) {
                 return -1;
@@ -3175,7 +3238,7 @@ public class XMLEntityManager
             }
             fData[fLength++] = (byte)b;
             fOffset++;
-            return b;
+            return b & 0xff;
         }
 
         public int read(byte[] b, int off, int len) throws IOException {
@@ -3188,13 +3251,12 @@ public class XMLEntityManager
                 if(fCurrentEntity.mayReadChunks) {
                     return fInputStream.read(b, off, len);
                 }
-                b[off] = (byte)read();
-                if(b[off] == -1) {
+                int returnedVal = read();
+                if(returnedVal == -1) {
                     fEndOffset = fOffset;
                     return -1;
                 }
-                byte [] c = new byte[off];
-                System.arraycopy(b,0,c,0,off);
+                b[off] = (byte)returnedVal;
                 return 1;
             }
             if (len < bytesLeft) {

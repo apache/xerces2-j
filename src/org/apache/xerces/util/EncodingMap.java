@@ -647,6 +647,8 @@ public class EncodingMap {
         fIANA2JavaMap.put("CP367",        "ASCII");
         fIANA2JavaMap.put("UTF-8",           "UTF8");
         fIANA2JavaMap.put("UTF-16",           "Unicode");
+        fIANA2JavaMap.put("UTF-16BE",           "UnicodeBig");
+        fIANA2JavaMap.put("UTF-16LE",           "UnicodeLittle");
 
         // REVISIT:
         //   j:CNS11643 -> EUC-TW?
@@ -686,6 +688,8 @@ public class EncodingMap {
         fJava2IANAMap.put("SJIS",      "SHIFT_JIS");
         fJava2IANAMap.put("UTF8",      "UTF-8");
         fJava2IANAMap.put("Unicode",   "UTF-16");
+        fJava2IANAMap.put("UnicodeBig",   "UTF-16BE");
+        fJava2IANAMap.put("UnicodeLittle",   "UTF-16LE");
         fJava2IANAMap.put("JIS0201",  "X0201");
         fJava2IANAMap.put("JIS0208",  "X0208");
         fJava2IANAMap.put("JIS0212",  "ISO-IR-159");
