@@ -94,7 +94,7 @@
   
   <ul>
    <li>Added an interface, <code>XMLResourceIdentifier</code>, for describing the physical location of XML resources to the core XNI interfaces.
-   This interface is used in grammar caching and entity resulution.
+   This interface is used in grammar caching and entity resolution.
    </li>
    <li>
     Updated <code>XMLEntityResolver</code>, <code>XMLLocator</code>, <code>XMLDocumentHandler</code>, <code>XMLDocumentFragmentHandler</code>, and <code>XMLDTDHandler</code> to use <code>XMLResourceIdentifier</code> interface.
