@@ -25,12 +25,14 @@ SAMPLESJARFILE = xercesSamples.jar
 PACKAGES = org.apache.xerces.parsers \
            org.apache.xerces.framework \
            org.apache.xerces.dom \
-           org.apache.xerces.domx.events \
+           org.apache.xerces.dom.events \
            org.apache.xerces.dom.traversal \
-           org.apache.xerces.domx.traversal \
+           org.apache.xerces.domx \
            org.apache.xml.serialize \
            org.apache.html.dom \
            org.w3c.dom \
+           org.w3c.dom.events \
+           org.w3c.dom.traversal \
            org.w3c.dom.html \
            org.xml.sax \
            org.xml.sax.helpers
