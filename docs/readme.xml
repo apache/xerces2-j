@@ -77,11 +77,11 @@
  </s2>
  <s2 title='Changes from Previous Release'>
   <p>
-   This release is primarily a bug fix release. However, a new
-   XNI parser configuration interface has been added to allow the
-   creation of "pull" parser configurations. In addition, more
-   XNI documentation has been written that explains how to re-use
-   the standard Xerces2 parser components.
+   The deferred DOM implementation has been been re-added
+   in this release and is the default DOM in the DOMParser.
+   Check the documentation on this
+   <link idref='features' anchor='dom.defer-node-expansion'>feature</link>
+   for more information.
   </p>
   <p>
    For a more complete list of changes, refer to the 
@@ -98,7 +98,6 @@
    Xerces 1.x and Xerces2:
   </p>
   <ul>
-   <li>Deferred DOM implementation removed</li>
    <li>XML Schema support not yet implemented</li>
   </ul>
  </s2>

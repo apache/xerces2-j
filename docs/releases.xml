@@ -1,8 +1,25 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
+ <release version='NOT YET RELEASED'>
+  <desc>
+   <strong>TODO</strong>
+  </desc>
+  <changes>
+   <add>
+    <note>
+     Ported the deferred DOM implementation from the Xerces 1.x
+     codebase.
+    </note>
+    <submitter name='Arnaud  Le Hors'/>
+   </add>
+  </changes>
+ </release>
  <release version='&ParserName; 2.0.0 (beta2)'>
-  <desc/>
+  <desc>
+   This is primarily a bug fix release. However, a new XNI
+   interface and additional documentation have been added.
+  </desc>
   <changes>
    <fix>
     <note>
