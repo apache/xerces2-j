@@ -350,6 +350,17 @@ public abstract class NodeImpl
     }
 
     /**
+     *  Returns whether this node (if it is an element) has any attributes.
+     * @return <code>true</code> if this node has any attributes, 
+     *   <code>false</code> otherwise.
+     * @since DOM Level 2
+     * @see ElementImpl
+     */
+    public boolean hasAttributes() {
+        return false;           // overridden in ElementImpl
+    }
+
+    /**
      * Test whether this node has any children. Convenience shorthand
      * for (Node.getFirstChild()!=null)
      * <P>
@@ -657,7 +668,7 @@ public abstract class NodeImpl
 	    the DOM Level 2 Events module, perhaps allowing it
 	    to be optimized out to save bytecodes.
 	*/
-	protected final static boolean MUTATIONEVENTS=true;
+	protected final static boolean MUTATIONEVENTS=false;
 	
 	/** The MUTATION_ values are parameters to the NON-DOM 
 	    internalInsertBefore() and internalRemoveChild() operations,

@@ -277,14 +277,6 @@ public interface Element extends Node {
                                            String localName);
 
     /**
-     *  Returns whether this element has any attributes.
-     * @return <code>true</code> if this element has any attributes, 
-     *   <code>false</code> otherwise.
-     * @since DOM Level 2
-     */
-    public boolean hasAttributes();
-
-    /**
      *  Returns <code>true</code> when an attribute with a given name is 
      * specified on this element or has a default value, <code>false</code> 
      * otherwise.

@@ -341,5 +341,12 @@ public interface Node {
      */
     public String getLocalName();
 
+    /**
+     *  Returns whether this node (if it is an element) has any attributes.
+     * @return <code>true</code> if this node has any attributes, 
+     *   <code>false</code> otherwise.
+     * @since DOM Level 2
+     */
+    public boolean hasAttributes();
 }
 
