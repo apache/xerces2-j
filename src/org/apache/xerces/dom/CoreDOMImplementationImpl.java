@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -70,7 +70,6 @@ import org.apache.xerces.util.XMLChar;
 import org.apache.xml.serialize.DOMWriterImpl;
 // DOM Revalidation
 import org.apache.xerces.impl.RevalidationHandler;
-import org.apache.xerces.util.ObjectFactory;
 /**
  * The DOMImplementation class is description of a particular
  * implementation of the Document Object Model. As such its data is
@@ -81,7 +80,7 @@ import org.apache.xerces.util.ObjectFactory;
  * so that's how I've implemented it.
  * <P>
  * This particular class, along with CoreDocumentImpl, supports the DOM
- * Core and Load/Save (Experimental). Optional modules are supported by 
+ * Core and Load/Save (Experimental). Optional modules are supported by
  * the more complete DOMImplementation class along with DocumentImpl.
  * @version $Id$
  * @since PR-DOM-Level-1-19980818.
@@ -91,7 +90,7 @@ public class CoreDOMImplementationImpl
 	//
 	// Data
 	//
-    
+
     // validators pool
     private static final int SIZE = 2;
     private RevalidationHandler validators[] = new RevalidationHandler[SIZE];
@@ -112,10 +111,10 @@ public class CoreDOMImplementationImpl
 	//
 	// DOMImplementation methods
 	//
-	/** 
+	/**
 	 * Test if the DOM implementation supports a specific "feature" --
 	 * currently meaning language and level thereof.
-	 * 
+	 *
 	 * @param feature      The package name of the feature to test.
 	 * In Level 1, supported values are "HTML" and "XML" (case-insensitive).
 	 * At this writing, org.apache.xerces.dom supports only XML.
@@ -138,19 +137,19 @@ public class CoreDOMImplementationImpl
 			|| (feature.equalsIgnoreCase("LS-Load")
 				&& (anyVersion || version.equals("3.0")));
 	} // hasFeature(String,String):boolean
-    
-    
+
+
 	/**
 	 * Introduced in DOM Level 2. <p>
-	 * 
+	 *
 	 * Creates an empty DocumentType node.
 	 *
-	 * @param qualifiedName The qualified name of the document type to be created. 
+	 * @param qualifiedName The qualified name of the document type to be created.
 	 * @param publicID The document type public identifier.
 	 * @param systemID The document type system identifier.
 	 * @since WD-DOM-Level-2-19990923
 	 */
-	public DocumentType createDocumentType( String qualifiedName, 
+	public DocumentType createDocumentType( String qualifiedName,
                                     String publicID, String systemID) {
 		// REVISIT: this might allow creation of invalid name for DOCTYPE
 		//          xmlns prefix.
@@ -158,7 +157,7 @@ public class CoreDOMImplementationImpl
 		checkQName(qualifiedName);
 		return new DocumentTypeImpl(null, qualifiedName, publicID, systemID);
 	}
-    
+
     final void checkQName(String qname){
         int index = qname.indexOf(':');
         int lastIndex = qname.lastIndexOf(':');
@@ -201,7 +200,7 @@ public class CoreDOMImplementationImpl
             start = index + 1;
         }
 
-        // check local part 
+        // check local part
         if (!XMLChar.isNCNameStart(qname.charAt(start))) {
             // REVISIT: add qname parameter to the message
             String msg =
@@ -220,20 +219,20 @@ public class CoreDOMImplementationImpl
                         null);
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
             }
-        }           
+        }
     }
 
 
 	/**
 	 * Introduced in DOM Level 2. <p>
-	 * 
+	 *
 	 * Creates an XML Document object of the specified type with its document
 	 * element.
 	 *
 	 * @param namespaceURI     The namespace URI of the document
-	 *                         element to create, or null. 
+	 *                         element to create, or null.
 	 * @param qualifiedName    The qualified name of the document
-	 *                         element to create. 
+	 *                         element to create.
 	 * @param doctype          The type of document to be created or null.<p>
 	 *
 	 *                         When doctype is not null, its
@@ -264,17 +263,17 @@ public class CoreDOMImplementationImpl
 	}
 	/**
 	 * DOM Level 3 WD - Experimental.
-	 * This method makes available a <code>DOMImplementation</code>'s 
+	 * This method makes available a <code>DOMImplementation</code>'s
 	 * specialized interface (see ).
 	 * @param feature The name of the feature requested (case-insensitive).
-	 * @return Returns an alternate <code>DOMImplementation</code> which 
-	 *   implements the specialized APIs of the specified feature, if any, 
-	 *   or <code>null</code> if there is no alternate 
-	 *   <code>DOMImplementation</code> object which implements interfaces 
-	 *   associated with that feature. Any alternate 
-	 *   <code>DOMImplementation</code> returned by this method must 
-	 *   delegate to the primary core <code>DOMImplementation</code> and not 
-	 *   return results inconsistent with the primary 
+	 * @return Returns an alternate <code>DOMImplementation</code> which
+	 *   implements the specialized APIs of the specified feature, if any,
+	 *   or <code>null</code> if there is no alternate
+	 *   <code>DOMImplementation</code> object which implements interfaces
+	 *   associated with that feature. Any alternate
+	 *   <code>DOMImplementation</code> returned by this method must
+	 *   delegate to the primary core <code>DOMImplementation</code> and not
+	 *   return results inconsistent with the primary
 	 *   <code>DOMImplementation</code>
 	 */
 	public DOMImplementation getInterface(String feature) {
@@ -329,10 +328,10 @@ public class CoreDOMImplementationImpl
 	//
 	/** NON-DOM: retrieve validator. */
 	synchronized RevalidationHandler getValidator(String schemaType) {
-		// REVISIT: implement retrieving DTD validator 
+		// REVISIT: implement retrieving DTD validator
         if (freeValidatorIndex < 0) {
             // create new validator - we should not attempt
-            // to restrict the number of validation handlers being 
+            // to restrict the number of validation handlers being
             // requested
             return (RevalidationHandler) (ObjectFactory
                         .newInstance(
@@ -341,14 +340,14 @@ public class CoreDOMImplementationImpl
                             true));
 
         }
-        // return first available validator            
+        // return first available validator
         RevalidationHandler val = validators[freeValidatorIndex];
         validators[freeValidatorIndex--] = null;
         return val;
 	}
-    
+
 	/** NON-DOM: release validator */
-	synchronized void releaseValidator(String schemaType, 
+	synchronized void releaseValidator(String schemaType,
                                          RevalidationHandler validator) {
        // REVISIT: implement support for DTD validators as well
        ++freeValidatorIndex;
@@ -361,5 +360,5 @@ public class CoreDOMImplementationImpl
        }
        validators[freeValidatorIndex]=validator;
 	}
-    
+
 } // class DOMImplementationImpl

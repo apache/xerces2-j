@@ -64,7 +64,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.util.XMLAttributesImpl;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;

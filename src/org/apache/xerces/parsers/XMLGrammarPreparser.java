@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -72,7 +72,6 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
@@ -83,13 +82,13 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * DTD's and schemas; it provides an easy way for user applications to
  * register classes that know how to parse additional grammar types.
  * By default, it does no grammar caching; but it provides ways for
- * user applications to do so.  
+ * user applications to do so.
  *
  * @author Neil Graham, IBM
  *
  * @version $Id$
  */
-public class XMLGrammarPreparser { 
+public class XMLGrammarPreparser {
 
     //
     // Constants
@@ -100,7 +99,7 @@ public class XMLGrammarPreparser {
         Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
 
     /** Property identifier: symbol table. */
-    protected static final String SYMBOL_TABLE = 
+    protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     /** Property identifier: error reporter. */
@@ -123,19 +122,19 @@ public class XMLGrammarPreparser {
     private static final Hashtable KNOWN_LOADERS = new Hashtable();
 
     static {
-        KNOWN_LOADERS.put(XMLGrammarDescription.XML_SCHEMA, 
+        KNOWN_LOADERS.put(XMLGrammarDescription.XML_SCHEMA,
             "org.apache.xerces.impl.xs.XMLSchemaLoader");
-        KNOWN_LOADERS.put(XMLGrammarDescription.XML_DTD, 
+        KNOWN_LOADERS.put(XMLGrammarDescription.XML_DTD,
             "org.apache.xerces.impl.dtd.XMLDTDLoader");
     }
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
-        SYMBOL_TABLE,       
+        SYMBOL_TABLE,
         ERROR_REPORTER,
         ERROR_HANDLER,
         ENTITY_RESOLVER,
-        GRAMMAR_POOL,       
+        GRAMMAR_POOL,
     };
 
     // Data
@@ -158,8 +157,8 @@ public class XMLGrammarPreparser {
         this(new SymbolTable());
     } // <init>()
 
-    /** 
-     * Constructs a preparser using the specified symbol table. 
+    /**
+     * Constructs a preparser using the specified symbol table.
      *
      * @param symbolTable The symbol table to use.
      */
@@ -169,7 +168,7 @@ public class XMLGrammarPreparser {
         fLoaders = new Hashtable();
         setLocale(Locale.getDefault());
         fErrorReporter = new XMLErrorReporter();
-        fErrorReporter.setLocale(fLocale); 
+        fErrorReporter.setLocale(fLocale);
         fEntityResolver = new XMLEntityManager();
         // those are all the basic properties...
     } // <init>(SymbolTable)
@@ -178,10 +177,10 @@ public class XMLGrammarPreparser {
     // Public methods
     //
 
-    /* 
+    /*
     * Register a type of grammar to make it preparsable.   If
     * the second parameter is null, the parser will use its  built-in
-    * facilities for that grammar type.  
+    * facilities for that grammar type.
     * This should be called by the application immediately
     * after creating this object and before initializing any properties/features.
     * @param type   URI identifying the type of the grammar
@@ -189,7 +188,7 @@ public class XMLGrammarPreparser {
     * @return true if successful; false if no built-in knowledge of
     *       the type or if unable to instantiate the string we know about
     */
-    public boolean registerPreparser(String grammarType, XMLGrammarLoader loader) { 
+    public boolean registerPreparser(String grammarType, XMLGrammarLoader loader) {
         if(loader == null) { // none specified!
             if(KNOWN_LOADERS.containsKey(grammarType)) {
                 // got one; just instantiate it...
@@ -212,7 +211,7 @@ public class XMLGrammarPreparser {
 
     /**
      * Parse a grammar from a location identified by an
-     * XMLInputSource.  
+     * XMLInputSource.
      * This method also adds this grammar to the XMLGrammarPool
      *
      * @param type The type of the grammar to be constructed
@@ -240,7 +239,7 @@ public class XMLGrammarPreparser {
                     gl.setProperty(GRAMMAR_POOL, fGrammarPool);
                 } catch(Exception e) {
                     // too bad...
-                } 
+                }
             }
             return gl.loadGrammar(is);
         }
@@ -353,7 +352,7 @@ public class XMLGrammarPreparser {
             }
         }
     } //setProperty(String, Object)
-    
+
     // get status of feature in a particular loader.  This
     // catches no exceptions--including NPE's--so the application had
     // better make sure the loader exists and knows about this feature.

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.
+ * Copyright (c) 2001-2003 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1172,6 +1172,10 @@ public abstract class AbstractSAXParser
      */
     public void setEntityResolver(EntityResolver resolver) {
 
+        // not per SAX 1, but per SAX 2.0 and JAXP 1.1 expectations
+        if(resolver == null) {
+            throw new NullPointerException();
+        }
         try {
             fConfiguration.setProperty(ENTITY_RESOLVER,
                                        new EntityResolverWrapper(resolver));
@@ -1227,6 +1231,10 @@ public abstract class AbstractSAXParser
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
 
+        // not per SAX 1, but per SAX 2.0 and JAXP 1.1 expectations
+        if(errorHandler == null) {
+            throw new NullPointerException();
+        }
         try {
             fConfiguration.setProperty(ERROR_HANDLER,
                                        new ErrorHandlerWrapper(errorHandler));
@@ -1301,6 +1309,8 @@ public abstract class AbstractSAXParser
         //          to be thrown but SAX2 does. [Q] How do we
         //          resolve this? Currently I'm erring on the side
         //          of SAX2. -Ac
+        // This is what the JCK requires; 2.0 is assumed to supersede the
+        // SAX 1 behaviour - neilg
         if (dtdHandler == null) {
             throw new NullPointerException();
         }
@@ -1352,6 +1362,10 @@ public abstract class AbstractSAXParser
      * @see #getContentHandler
      */
     public void setContentHandler(ContentHandler contentHandler) {
+        // not per SAX 1, but per SAX 2.0 and JAXP 1.1 expectations
+        if(contentHandler == null) {
+            throw new NullPointerException();
+        }
         fContentHandler = contentHandler;
     } // setContentHandler(ContentHandler)
 
