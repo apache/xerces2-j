@@ -1725,7 +1725,7 @@ public class RangeImpl  implements Range {
      *         If the traversal operation is
      *         <code>DELETE_CONTENTS</code> the return value is null.
      */
-    private Node traverseFullySelected( Node n, int how )
+    private Node traverseFullySelected( Node n, int how ) 
     {
         switch( how )
         {
@@ -1735,9 +1735,9 @@ public class RangeImpl  implements Range {
             if ( n.getNodeType()==Node.DOCUMENT_TYPE_NODE )
             {
                 // TBD: This should be a HIERARCHY_REQUEST_ERR
-                throw new RangeExceptionImpl(
-    		RangeException.INVALID_NODE_TYPE_ERR, 
-                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_NODE_TYPE_ERR", null));
+                throw new DOMException(
+                        DOMException.HIERARCHY_REQUEST_ERR, 
+                DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "HIERARCHY_REQUEST_ERR", null));
             }
             return n;
         case DELETE_CONTENTS:
