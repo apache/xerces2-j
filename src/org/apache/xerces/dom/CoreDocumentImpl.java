@@ -61,15 +61,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.io.Serializable;
 
-// REVISIT: This is a HACK! DO NOT MODIFY THIS import.
-//          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
-import org.w3c.dom.*;
-
 import org.w3c.dom.ls.DocumentLS;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.DOMWriter;
-
-/* REVISIT: include those imports when DOM L3 becomes recommendataion
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -88,7 +82,11 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Notation;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
-*/
+
+// DOM Level 3
+import org.w3c.dom.UserDataHandler;
+import org.w3c.dom.DOMErrorHandler;
+
 
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
@@ -172,7 +170,7 @@ public class CoreDocumentImpl
     protected String fDocumentURI;
 
     /**Experimental DOM Level 3 feature: errorHandler */
-    protected DOMErrorHandler fErrorHandler;
+    protected final DOMErrorHandlerWrapper fErrorHandlerWrapper = new DOMErrorHandlerWrapper();
 
     /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
@@ -864,7 +862,7 @@ public class CoreDocumentImpl
      * Retrieve error handler.      
      */
     public DOMErrorHandler getErrorHandler(){
-        return fErrorHandler;
+        return fErrorHandlerWrapper.getErrorHandler();
     }
     /**
      * DOM Level 3 WD - Experimental.
@@ -872,7 +870,7 @@ public class CoreDocumentImpl
      * is encountered while performing an operation on a document.
      */
     public void setErrorHandler(DOMErrorHandler errorHandler) {
-        fErrorHandler = errorHandler;
+        fErrorHandlerWrapper.setErrorHandler(errorHandler);
     }
 
 
@@ -912,9 +910,10 @@ public class CoreDocumentImpl
                 // it will be created by the configuration
                 fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
             }
-            if (fErrorHandler != null) {
-                fConfiguration.setErrorHandler(new DOMErrorHandlerWrapper(fErrorHandler));
+            if (fErrorHandlerWrapper.getErrorHandler() !=null) {           
+                fConfiguration.setErrorHandler(fErrorHandlerWrapper);
             }
+            // resets components.
             fConfiguration.reset();
             // REVISIT: validation is performed only against one type of grammar
             //          if doctype is available -- DTD validation

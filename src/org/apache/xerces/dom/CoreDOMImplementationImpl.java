@@ -153,9 +153,10 @@ implements DOMImplementation, DOMImplementationLS {
             && (anyVersion
                 || version.equals("1.0")
                 || version.equals("2.0")))
-        /* || (feature.equalsIgnoreCase("LS-Load")
-            && version.equals("3.0");
-            */
+        || (feature.equalsIgnoreCase("LS-Load")
+            && (anyVersion 
+                || version.equals("3.0")));
+            
         ;
 
     } // hasFeature(String,String):boolean
@@ -258,7 +259,7 @@ implements DOMImplementation, DOMImplementationLS {
             throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
                                    "Asynchronous mode is not supported");
         }
-        if (schemaType.equals("http://www.w3.org/TR/REC-xml")) {
+        if (schemaType !=null && schemaType.equals("http://www.w3.org/TR/REC-xml")) {
             return new DOMBuilderImpl("org.apache.xerces.parsers.DTDConfiguration", schemaType);
         } else {
             // create default parser configuration validating against XMLSchemas
