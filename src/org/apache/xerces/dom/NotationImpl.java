@@ -208,14 +208,5 @@ public class NotationImpl
 
     } // setSystemId(String)
     
-    /**
-     * Sets the node value.
-     * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
-     */
-    public void setNodeValue(String x) 
-                throws DOMException {
-        throw new DOMException( DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-                                  "Notation nodes are read only" );
-    }
 
 } // class NotationImpl
