@@ -58,6 +58,7 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.*;
+import java.util.Enumeration;
 
 /**
  * CharacterData is an abstract Node that can carry character data as its
@@ -200,9 +201,16 @@ public abstract class CharacterDataImpl
         int tailLength = Math.max(value.length() - count - offset, 0);
         try {
 		    // Handles mutation event generation, if any
-		    setNodeValue( value.substring(0, offset) + (tailLength > 0 
+		    setNodeValueInternal( value.substring(0, offset) + (tailLength > 0 
 		        ? value.substring(offset + count, offset + count + tailLength) 
 		        : "") );
+            Enumeration ranges = ownerDocument.getRanges();
+            if (ranges != null) {
+                while ( ranges.hasMoreElements()) {
+                    RangeImpl r = ((RangeImpl)ranges.nextElement());
+                    r.receiveDeletedText( this,  offset,  count);
+                }
+            }
         }
         catch (StringIndexOutOfBoundsException e) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
@@ -234,9 +242,16 @@ public abstract class CharacterDataImpl
         }
         try {
        		// Handles mutation event generation, if any
-            setNodeValue(
+            setNodeValueInternal(
                 new StringBuffer(value).insert(offset, data).toString()
                 );
+            Enumeration ranges = ownerDocument.getRanges();
+            if (ranges != null) {
+                while ( ranges.hasMoreElements()) {
+                    RangeImpl r = ((RangeImpl)ranges.nextElement());
+                    r.receiveInsertedText( this,  offset,  data.length());
+                }
+            }
         }
         catch (StringIndexOutOfBoundsException e) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 

@@ -49,6 +49,8 @@ TARGETS=\
 	NodeIteratorImpl.class\
 	NotationImpl.class\
 	ProcessingInstructionImpl.class\
+	RangeExceptionImpl.class\
+	RangeImpl.class\
 	TextImpl.class\
 	TreeWalkerImpl.class
 

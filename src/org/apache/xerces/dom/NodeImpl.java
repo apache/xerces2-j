@@ -64,7 +64,8 @@ import java.util.Vector;
 import org.w3c.dom.*;
 
 //import org.apache.xerces.domx.events.*;
-import org.apache.xerces.dom.events.*;
+import org.apache.xerces.dom.events.EventImpl;
+import org.apache.xerces.dom.events.MutationEventImpl;
 import org.w3c.dom.events.*;
 
 /**
@@ -144,10 +145,16 @@ public abstract class NodeImpl
 	/** NON-DOM FEATURE; see setUserData/getUserData. **/
 	protected Object userData;
 	
+    /** flag to indicate whether setNodeValue was called by the
+     *  client or from the DOM.
+     */
+    protected boolean fInternalSetNodeValue = false;
+    
     // lazy-evaluation nifo
 
     /** Synchronization of data needed. */
     protected transient boolean syncData;
+    
 
     // internal data
 
@@ -224,7 +231,20 @@ public abstract class NodeImpl
         return name;
 
     } // getNodeName():String
-
+    
+    /** This function added so that we can distinguish whether
+     *  setNodeValue has been called from some other DOM functions.
+     *  or by the client.<p>
+     *  This is important, because we do one type of Range fix-up, 
+     *  from the high-level functions in CharacterData, and another
+     *  type if the client simply calls setNodeValue(value).
+     */
+    void setNodeValueInternal(String value) {
+        fInternalSetNodeValue = true;
+        setNodeValue( value);
+        fInternalSetNodeValue = false;
+    }
+    
     /**
      * Any node which can have a nodeValue (@see getNodeValue) will
      * also accept requests to set it to a string.  The exact response to
@@ -265,6 +285,15 @@ public abstract class NodeImpl
         } // End mutation preprocessing
             
     	this.value = value;
+    	if (!fInternalSetNodeValue) {
+            // call out to any Ranges to set any boundary index to zero.
+            Enumeration ranges = ownerDocument.getRanges();
+            if (ranges != null) {
+                while ( ranges.hasMoreElements()) {
+                    ((RangeImpl)ranges.nextElement()).receiveReplacedText(this);
+                }
+            }
+        }
     	
         if(MUTATIONEVENTS)
         {

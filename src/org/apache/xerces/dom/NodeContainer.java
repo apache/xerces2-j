@@ -568,7 +568,16 @@ public abstract class NodeContainer
                 ((NodeIteratorImpl)iterators.nextElement()).removeNode(oldChild);
             }
         }
-
+        
+        // call out to any Ranges to remove the Node and fix-up the Range.
+        Enumeration ranges = ownerDocument.getRanges();
+        if (ranges != null) {
+            while ( ranges.hasMoreElements()) {
+                ((RangeImpl)ranges.nextElement()).removeNode(oldChild);
+            }
+        }
+    
+        
         NodeImpl oldInternal = (NodeImpl) oldChild;
 
 	    EnclosingAttr enclosingAttr=null;

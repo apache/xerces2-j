@@ -64,6 +64,7 @@ import java.util.Vector;
 import org.w3c.dom.*;
 
 import org.w3c.dom.traversal.*;
+import org.w3c.dom.range.*;
 import org.w3c.dom.events.*;
 import org.apache.xerces.dom.events.*;
 
@@ -127,6 +128,10 @@ public class DocumentImpl
     // REVISIT: Should this be transient? -Ac
     protected Vector treeWalkers;
 	
+     /** Ranges */
+    // REVISIT: Should this be transient? -Ac
+    protected Vector ranges;
+    
     // experimental
 
     /** Allow grammar access. */
@@ -1125,6 +1130,45 @@ public class DocumentImpl
 
         return treeWalkers.elements();
     }
+    
+    //
+    // DocumentRange methods
+    //
+    /**
+     */
+    public Range createRange() {
+        
+        if (ranges == null) {
+            ranges = new Vector();
+        }
+
+        Range range = new RangeImpl(this);
+        
+        ranges.addElement(range);
+
+        return range;
+        
+    }
+    
+    /** Return an Enumeration of all Ranges. */
+    public Enumeration getRanges() {
+        if (ranges == null) return null;
+
+        return ranges.elements();
+    }
+    
+    /** Not a client function. Called by Range.detach(),
+     *  so a Range can remove itself from the list of
+     *  Ranges.
+     */
+    void removeRange(Range range) {
+
+        if (range == null) return;
+        if (ranges == null) return;
+
+        ranges.removeElement(range);
+    }
+    
     
     //
     // DocumentEvent methods
