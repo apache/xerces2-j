@@ -106,6 +106,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private static final boolean DEBUG=false;
 
     private static XSParticleDecl fErrorContent=null;
+    private static XSWildcardDecl fErrorWildcard=null;
+    
     private SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
 
     private class ComplexTypeRecoverableError extends Exception {
@@ -937,6 +939,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         //
         typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
         typeInfo.fParticle = getErrorContent();
+        // REVISIT: do we need to remove all attribute uses already added into
+        // the attribute group? maybe it's ok to leave them there. -SG
+        typeInfo.fAttrGrp.fAttributeWC = fErrorWildcard;
 
         return;
 
@@ -947,10 +952,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             fErrorContent = new XSParticleDecl();
             fErrorContent.fType = XSParticleDecl.PARTICLE_SEQUENCE;
             XSParticleDecl particle = new XSParticleDecl();
-            XSWildcardDecl wildcard = new XSWildcardDecl();
-            wildcard.fProcessContents = XSWildcardDecl.WILDCARD_SKIP;
+            fErrorWildcard = new XSWildcardDecl();
+            fErrorWildcard.fProcessContents = XSWildcardDecl.WILDCARD_SKIP;
             particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
-            particle.fValue = wildcard;
+            particle.fValue = fErrorWildcard;
             particle.fMinOccurs = 0;
             particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
             fErrorContent.fValue = particle;
