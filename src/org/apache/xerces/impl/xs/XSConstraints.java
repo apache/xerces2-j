@@ -419,25 +419,37 @@ public class XSConstraints {
                 }
 
                 // 2. Particle Derivation
+                
                 if (types[j].fBaseType != null &&
                     types[j].fBaseType != SchemaGrammar.fAnyType &&
                     types[j].fDerivedBy == XSConstants.DERIVATION_RESTRICTION &&
-                    types[j].fParticle !=null &&
-                    (types[j].fBaseType instanceof XSComplexTypeDecl) &&
-                    ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle != null) {
-                  try {
+                    (types[j].fBaseType instanceof XSComplexTypeDecl)) {  
+
+                  XSParticleDecl derivedParticle=types[j].fParticle;  
+                  XSParticleDecl baseParticle=  
+                    ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle;
+                  if (derivedParticle==null && (!(baseParticle==null ||
+                                               baseParticle.emptiable()))) {
+                    reportSchemaError(errorReporter,ctLocators[j],
+                                      "derivation-ok-restriction.5.2",
+                                      new Object[]{types[j].fName});
+                  }
+                  else if (derivedParticle!=null &&
+                           baseParticle!=null) 
+
+                    try {
                       particleValidRestriction(types[j].fParticle,
                                                SGHandler,
                                                ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle,
                                                SGHandler);
-                  } catch (XMLSchemaException e) {
+                    } catch (XMLSchemaException e) {
                       reportSchemaError(errorReporter, ctLocators[j],
                                         e.getKey(),
                                         e.getArgs());
                       reportSchemaError(errorReporter, ctLocators[j],
                                         "derivation-ok-restriction.5.3",
                                         new Object[]{types[j].fName});
-                  }
+                    }
                 }
 
                 // 3. UPA

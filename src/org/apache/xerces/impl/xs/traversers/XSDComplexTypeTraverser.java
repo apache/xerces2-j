@@ -695,11 +695,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
             // This is an RESTRICTION
 
-            if (fParticle==null && (!(baseContent==null ||
-                                               baseContent.emptiable()))) {
-                throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.2",
-                                          new Object[]{fName}, complexContent);
-            }
+            // N.B. derivation-ok-restriction.5.2 is checked under schema 
+            // full checking.   That's because we need to wait until locals are 
+            // traversed so that occurrence information is correct.
+
+            
             if (fParticle!=null && baseContent==null) {
                 //REVISIT - need better error msg
                 throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.3",
