@@ -58,6 +58,8 @@ import org.apache.xerces.dom3.UserDataHandler;
  *
  * <p><b>WARNING</b>: Some of the code here is partially duplicated in
  * AttrImpl, be careful to keep these two classes in sync!
+ * 
+ * @xerces.internal
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM

@@ -25,6 +25,8 @@ import java.io.*;
  * API.
  *
  * Security related methods that only work on J2SE 1.2 and newer.
+ * 
+ * @xerces.internal
  */
 class SecuritySupport12 extends SecuritySupport {
 

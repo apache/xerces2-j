@@ -65,6 +65,8 @@ import org.w3c.dom.ls.LSSerializer;
  * <p>
  * <b>Note:</b> When any node in the document is serialized, the
  * entire document is serialized along with it.
+ * 
+ * @xerces.internal 
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM

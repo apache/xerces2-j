@@ -22,6 +22,8 @@ import org.w3c.dom.Node;
 
 /**
  * Represents an XML (or HTML) comment.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

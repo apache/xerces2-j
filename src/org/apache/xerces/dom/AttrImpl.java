@@ -99,10 +99,12 @@ import org.w3c.dom.Text;
  * ParentNode, be careful to keep these two classes in sync!
  *
  * @see AttrNSImpl
+ * 
+ * @xerces.internal 
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
- * @author Andy Clark, IBM
+ * @author Andy Clark, IBM 
  * @version $Id$
  * @since PR-DOM-Level-1-19980818.
  *

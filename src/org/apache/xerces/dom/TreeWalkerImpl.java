@@ -21,8 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.TreeWalker;
 
-/** This class implements the TreeWalker interface. */
-/**
+/** This class implements the TreeWalker interface. 
+ *
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 

@@ -33,6 +33,8 @@ import java.util.Vector;
  * objects. The Node objects created have a ownerDocument attribute
  * which associates them with the Document within whose context they
  * were created.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

@@ -64,6 +64,8 @@ package org.apache.xerces.dom;
  * structure-change-monitoring code I implemented to support
  * DeepNodeList.
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */

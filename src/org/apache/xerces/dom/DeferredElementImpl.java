@@ -41,6 +41,8 @@ import org.w3c.dom.NamedNodeMap;
  * Namespaces. DeferredElementNSImpl, which inherits from ElementNSImpl, does.
  * @see DeferredElementNSImpl
  *
+ * @xerces.internal
+ *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */

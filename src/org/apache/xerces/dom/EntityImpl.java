@@ -49,6 +49,8 @@ import org.w3c.dom.Node;
  * _any_ answer will involve a non-DOM operation, and this is the
  * simplest solution.
  * 
+ * @xerces.internal
+ * 
  * @author Elena Litani, IBM
  * @version $Id$
  * @since PR-DOM-Level-1-19980818.

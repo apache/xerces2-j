@@ -27,6 +27,8 @@ import org.apache.xerces.xs.*;
 /**
  * Element namespace implementation; stores PSVI element items.
  * 
+ * @xerces.internal
+ * 
  * @author Sandy Gao, IBM
  * 
  * @version $Id$

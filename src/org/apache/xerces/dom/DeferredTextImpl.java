@@ -28,6 +28,8 @@ package org.apache.xerces.dom;
  * Note that CDATASection is a subclass of Text. This is conceptually
  * valid, since they're really just two different ways of quoting
  * characters when they're written out as part of an XML stream.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

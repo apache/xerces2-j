@@ -25,6 +25,8 @@ import org.w3c.dom.ProcessingInstruction;
  * are most common in XML, but they are supported in HTML as well.
  *
  * This class inherits from CharacterDataImpl to reuse its setNodeValue method.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

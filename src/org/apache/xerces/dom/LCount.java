@@ -39,6 +39,8 @@ package org.apache.xerces.dom;
     resolve and might not save enough event traffic to be worth the investment.
 */
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 

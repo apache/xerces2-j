@@ -27,6 +27,8 @@ import org.apache.xerces.xs.*;
 /**
  * Attribute namespace implementation; stores PSVI attribute items.
  * 
+ * @xerces.internal
+ * 
  * @author Sandy Gao, IBM
  * 
  * @version $Id$

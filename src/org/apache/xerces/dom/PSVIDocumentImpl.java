@@ -31,6 +31,8 @@ import org.w3c.dom.*;
  * Our own document implementation, which knows how to create an element
  * with PSVI information.
  * 
+ * @xerces.internal
+ * 
  * @author Sandy Gao, IBM
  * 
  * @version $Id$

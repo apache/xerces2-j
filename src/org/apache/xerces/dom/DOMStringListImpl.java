@@ -21,11 +21,13 @@ import java.util.Vector;
 import org.apache.xerces.dom3.DOMStringList;
 
 /**
- * DOM Level 3 Experimental
+ * DOM Level 3
  * 
- * This class implemets the DOM Levl 3 Core interface DOMStringList.
+ * This class implements the DOM Level 3 Core interface DOMStringList.
  * 
- * @author nddelima
+ * @xerces.internal
+ * 
+ * @author Neil Delima, IBM
  */
 public class DOMStringListImpl implements DOMStringList {
 	

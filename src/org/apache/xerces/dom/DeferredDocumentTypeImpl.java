@@ -34,6 +34,8 @@ import org.w3c.dom.Node;
  * Most notably, absolutely no provision was made for storing
  * and using Element and Attribute information. Nor was the linkage
  * between Entities and Entity References nailed down solidly.
+ * 
+ * @xerces.internal 
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

@@ -45,6 +45,8 @@ import org.w3c.dom.Node;
  * contents, the indices associated with nodes may change.
  * <P>
  *
+ * @xerces.internal
+ *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */

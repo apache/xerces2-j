@@ -27,6 +27,9 @@ import org.w3c.dom.DOMException;
  * The qualified name is the node name, and we store localName which is also
  * used in all queries. On the other hand we recompute the prefix when
  * necessary.
+ * 
+ * @xerces.internal
+ * 
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM

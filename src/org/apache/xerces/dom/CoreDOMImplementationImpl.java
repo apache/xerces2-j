@@ -41,6 +41,9 @@ import org.w3c.dom.ls.LSSerializer;
  * This particular class, along with CoreDocumentImpl, supports the DOM
  * Core and Load/Save (Experimental). Optional modules are supported by
  * the more complete DOMImplementation class along with DocumentImpl.
+ * 
+ * @xerces.internal
+ * 
  * @version $Id$
  * @since PR-DOM-Level-1-19980818.
  */

@@ -23,6 +23,8 @@ import java.util.PropertyResourceBundle;
 
 /**
  * Used to format DOM error messages, using the system locale.
+ * 
+ * @xerces.internal
  *
  * @author Sandy Gao, IBM
  * @version $Id$

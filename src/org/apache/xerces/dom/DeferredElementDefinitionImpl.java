@@ -25,6 +25,8 @@ import org.w3c.dom.Node;
  * I've included this in Level 1 purely as an anchor point for default
  * attributes. In Level 2 it should enable the ChildRule support.
  *
+ * @xerces.internal
+ *
  * @version $Id$
  */
 public class DeferredElementDefinitionImpl 

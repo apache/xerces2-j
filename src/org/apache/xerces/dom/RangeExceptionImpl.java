@@ -18,6 +18,8 @@ package org.apache.xerces.dom;
 import org.w3c.dom.ranges.RangeException;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 

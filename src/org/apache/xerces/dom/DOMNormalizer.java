@@ -76,8 +76,7 @@ import org.w3c.dom.Comment;
  * present in the tree. The PSVI information is not exposed, normalized data (including element
  * default content is not available).
  *
- * NOTE: the implementation is experimental and methods, functionality
- *       can be modified or removed in the future.
+ * @xerces.experimental
  * 
  * @author Elena Litani, IBM
  * @author Neeraj Bajaj, Sun Microsystems, inc.

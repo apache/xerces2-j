@@ -32,6 +32,8 @@ import org.w3c.dom.Element;
  * The DOM API requires that it be a real object rather than static
  * methods. However, there's nothing that says it can't be a singleton,
  * so that's how I've implemented it.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  * @since  PR-DOM-Level-1-19980818.

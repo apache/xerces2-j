@@ -31,6 +31,8 @@ import org.apache.xerces.dom.DOMImplementationListImpl;
  * 
  * <p>See also the <a href='http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#DOMImplementationSource'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * 
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 public class DOMImplementationSourceImpl

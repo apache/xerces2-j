@@ -24,6 +24,8 @@ import org.w3c.dom.Node;
  * <code>DOMLocatorImpl</code> is an implementaion that describes a location (e.g. 
  * where an error occured).
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913'>Document Object Model (DOM) Level 3 Core Specification</a>.
+ * 
+ * @xerces.internal
  *
  * @author Gopal Sharma, SUN Microsystems Inc.
  * @version $Id$

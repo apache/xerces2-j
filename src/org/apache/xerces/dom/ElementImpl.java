@@ -43,6 +43,8 @@ import org.apache.xerces.util.URI;
  * ElementImpl does not support Namespaces. ElementNSImpl, which inherits from
  * it, does.
  * @see ElementNSImpl
+ * 
+ * @xerces.internal
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM

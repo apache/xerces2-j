@@ -30,6 +30,8 @@ import org.apache.xerces.xni.parser.XMLParseException;
  * 
  * <p>See also the <a href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913'>Document Object Model (DOM) Level 3 Core Specification</a>.
  * 
+ * @xerces.internal
+ * 
  * @author Gopal Sharma, SUN Microsystems Inc.
  * @author Elena Litani, IBM
  *

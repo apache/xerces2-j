@@ -54,6 +54,7 @@ package org.apache.xerces.dom;
  * Namespaces. DeferredAttrNSImpl, which inherits from AttrNSImpl, does.
  * @see DeferredAttrNSImpl
  *
+ * @xerces.internal 
  *
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM

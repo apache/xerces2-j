@@ -33,6 +33,8 @@ import org.w3c.dom.Node;
  * <p>
  * This class doesn't directly support mutation events, however, it notifies
  * the document when mutations are performed so that the document class do so.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

@@ -70,6 +70,8 @@ import org.w3c.dom.Node;
  * structure-change-monitoring code I implemented to support
  * DeepNodeList.
  * 
+ * @xerces.internal
+ * 
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
