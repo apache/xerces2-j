@@ -140,6 +140,8 @@ public class DTDGrammar
     /** Root element. */
     private Element fRootElement;
 
+    private QName fRootElementQName = new QName();
+
     /** Current element. */
     private Element fCurrentElement;
 
@@ -275,6 +277,7 @@ public class DTDGrammar
         doctypeDecl.setAttribute("systemId", fStringPool.toString(systemId));
         fCurrentElement.appendChild(doctypeDecl);
 
+        fRootElementQName.setValues(rootElement);
         // pass-through
         if (fDTDEventHandler != null) {
             fDTDEventHandler.doctypeDecl(rootElement, publicId, systemId);
@@ -447,6 +450,14 @@ public class DTDGrammar
         return (fAttributeDeclIsExternal[chunk][index] != 0);
     }
 
+    public boolean getRootElementQName(QName root) {
+        if (fRootElementQName.rawname == -1) {
+            return false;
+        }
+        root.setValues(fRootElementQName);
+        return true;
+    }
+
     /**
      * Add an attribute definition
      *
@@ -463,7 +474,13 @@ public class DTDGrammar
                          int attType, boolean attList, int enumeration, 
                          int attDefaultType, int attDefaultValue, boolean isExternal) 
         throws Exception {
-        
+        /****
+        System.out.println("---add attr--- "+attributeDecl.localpart
+                  +","+attType        
+                  +","+attDefaultType        
+                  +","+isExternal);
+         /****/
+
         // create attribute decl element
         Element attributeDeclElement = fGrammarDocument.createElement("attributeDecl");
         attributeDeclElement.setAttribute("element", fStringPool.toString(elementDecl.localpart));
@@ -511,6 +528,7 @@ public class DTDGrammar
         fAttributeDecl.datatypeValidator = 
             DatatypeValidatorRegistry.getDatatypeRegistry().getDatatypeValidator(attTypeString);
         // REVISIT: Don't forget the enumeration
+        fAttributeDecl.defaultType = attDefaultType;
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);
 
         int elementDeclIndex = getElementDeclIndex(elementDecl.localpart, -1);
@@ -874,7 +892,9 @@ public class DTDGrammar
         fCurrentElement = enumeration;
 
         // REVISIT: What is my responsibility for creating a handle?
-        int enumIndex = -1;
+        //int enumIndex = -1;    
+        int enumIndex = fStringPool.startStringList();
+
 
         // pass-through, saving mapping
         if (fDTDEventHandler != null) {
@@ -912,6 +932,9 @@ public class DTDGrammar
         literal.setAttribute("notation", isNotationType ? "true" : "false");
         fCurrentElement.appendChild(literal);
 
+        //add the name to the stringList 
+        fStringPool.addStringToList(enumIndex, nameIndex);
+
         // pass-through
         if (fDTDEventHandler != null) {
             // REVISIT: Retrieve mapping
@@ -933,6 +956,9 @@ public class DTDGrammar
 
         // get out of enumeration
         fCurrentElement = (Element)fCurrentElement.getParentNode();
+        
+        //finish the enumeration stringlist int the fStringPool
+        fStringPool.finishStringList(enumIndex);
 
         // pass-through
         if (fDTDEventHandler != null) {
