@@ -375,7 +375,7 @@ public abstract class AbstractDOMParser
                             String baseSystemId,
                             String encoding) throws XNIException {
 
-        if (fInDocument && !fInDTD && fCreateEntityRefNodes) {
+        if (fInDocument && !fInDTD && fCreateEntityRefNodes ) {
             if (!fDeferNodeExpansion) {
                 EntityReference er = fDocument.createEntityReference(name);
                 fCurrentNode.appendChild(er);
@@ -903,6 +903,9 @@ public abstract class AbstractDOMParser
         //       that functionality. -Ac
 
         // create full node
+        // don't add parameter entities!
+        if(name.startsWith("%"))
+            return;
         if (fDocumentType != null) {
             NamedNodeMap entities = fDocumentType.getEntities();
             EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
@@ -959,6 +962,9 @@ public abstract class AbstractDOMParser
         //       that functionality. -Ac
 
         // create full node
+        // don't add parameter entities!
+        if(name.startsWith("%"))
+            return;
         if (fDocumentType != null) {
             NamedNodeMap entities = fDocumentType.getEntities();
             EntityImpl entity = (EntityImpl)entities.getNamedItem(name);
