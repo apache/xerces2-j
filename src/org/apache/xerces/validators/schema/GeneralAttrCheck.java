@@ -903,16 +903,18 @@ public class GeneralAttrCheck {
             fExtraDVs[DT_NCNAME] = extraDV;
 
             // xpath = a subset of XPath expression
-            facets = new Hashtable();
-            facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)(/(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.))*(\\|(\\.//)?(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)(/(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.))*)*");
-            extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
-            fExtraDVs[DT_XPATH] = extraDV;
+            // facets = new Hashtable();
+            // facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)(/(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.))*(\\|(\\.//)?(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)(/(((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.))*)*");
+            // extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
+            // fExtraDVs[DT_XPATH] = extraDV;
+            fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
 
             // xpath = a subset of XPath expression
-            facets = new Hashtable();
-            facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*))))(\\|(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*)))))*");
-            extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
-            fExtraDVs[DT_XPATH1] = extraDV;
+            // facets = new Hashtable();
+            // facets.put(SchemaSymbols.ELT_PATTERN, "(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*))))(\\|(\\.//)?((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)/)*((((child::)?((\\i\\c*:)?(\\i\\c*|\\*)))|\\.)|((attribute::|@)((\\i\\c*:)?(\\i\\c*|\\*)))))*");
+            // extraDV = new StringDatatypeValidator(fExtraDVs[DT_TOKEN], facets, false);
+            // fExtraDVs[DT_XPATH1] = extraDV;
+            fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
         } catch (InvalidDatatypeFacetException ide) {
             // shouldn't be any problem
         }
