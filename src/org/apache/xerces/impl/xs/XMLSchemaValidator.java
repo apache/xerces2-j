@@ -1316,7 +1316,8 @@ public class XMLSchemaValidator
 
         // get information about xsi:nil
         String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
-        if (xsiNil != null)
+        // only deal with xsi:nil when there is an element declaration
+        if (xsiNil != null && fCurrentElemDecl != null)
             getXsiNil(element, xsiNil);
 
         // now validate everything related with the attributes
@@ -1471,6 +1472,9 @@ public class XMLSchemaValidator
     }
 
     void getAndCheckXsiType(QName element, String xsiType) {
+        // This method also deals with clause 1.2.1.2 of the constraint
+        // Validation Rule: Schema-Validity Assessment (Element)
+
         // Element Locally Valid (Element)
         // 4 If there is an attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is type, then all of the following must be true:
         // 4.1 The ·normalized value· of that attribute information item must be ·valid· with respect to the built-in QName simple type, as defined by String Valid (§3.14.4);
@@ -1522,18 +1526,26 @@ public class XMLSchemaValidator
         // Element Locally Valid (Element)
         // 3 The appropriate case among the following must be true:
         // 3.1 If {nillable} is false, then there must be no attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is nil.
-        if (fCurrentElemDecl != null && !fCurrentElemDecl.isNillable())
+        if (fCurrentElemDecl != null && !fCurrentElemDecl.isNillable()) {
             reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
-
+        }
         // 3.2 If {nillable} is true and there is such an attribute information item and its ·actual value· is true , then all of the following must be true:
         // 3.2.2 There must be no fixed {value constraint}.
-        if (xsiNil.equals(SchemaSymbols.ATTVAL_TRUE) ||
-            xsiNil.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
-            fNil = true;
-            if (fCurrentElemDecl != null &&
-                fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE) {
-                reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+        else {
+            String value = xsiNil.trim();
+            if (value.equals(SchemaSymbols.ATTVAL_TRUE) ||
+                value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
+                fNil = true;
+                if (fCurrentElemDecl != null &&
+                    fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE) {
+                    reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
+                }
             }
+            // REVISIT: report an error for invalid boolean value?
+            //else if (!value.equals(SchemaSymbols.ATTVAL_FALSE) &&
+            //         !value.equals(SchemaSymbols.ATTVAL_FALSE_0)) {
+            //    reportSchemaError("cvc-elt.3.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL, xsiNil});
+            //}
         }
     }
 
@@ -1811,6 +1823,9 @@ public class XMLSchemaValidator
                 elementLocallyValidType(element, fCurrentElemDecl.fDefault.toString());
             }
             else {
+                // The following method call also deal with clause 1.2.2 of the constraint
+                // Validation Rule: Schema-Validity Assessment (Element)
+
                 // 5.2 If the declaration has no {value constraint} or the item has either element or character [children] or clause 3.2 has applied, then all of the following must be true:
                 // 5.2.1 The element information item must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).
                 Object actualValue = elementLocallyValidType(element, content);
