@@ -464,7 +464,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     throws SAXException {
 
         fQName.clear();
-        fQName.setValues(null, elementName, null, null);
+        fQName.setValues(null, elementName, elementName, null);
 
         fElementDecl.clear();
         fElementDecl.type = type;
