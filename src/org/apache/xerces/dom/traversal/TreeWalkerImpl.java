@@ -58,7 +58,7 @@
 package org.apache.xerces.dom.traversal;
 
 import org.w3c.dom.*;
-import org.apache.xerces.domx.traversal.*;
+import org.w3c.dom.traversal.*;
 
 /** This class implements the TreeWalker interface. */
 public class TreeWalkerImpl implements TreeWalker {

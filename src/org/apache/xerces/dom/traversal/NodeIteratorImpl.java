@@ -58,7 +58,7 @@
 package org.apache.xerces.dom.traversal;
 
 import org.w3c.dom.*;
-import org.apache.xerces.domx.traversal.*;
+import org.w3c.dom.traversal.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DOMExceptionImpl;
 
