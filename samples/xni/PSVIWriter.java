@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2004 The Apache Software Foundation.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,7 +77,7 @@ import org.w3c.dom.Node;
 /**
  * This class is a intersepts XNI events and serialized
  * XML infoset and Post Schema Validation Infoset.
- * 
+ *
  * @author Arun  Yadav,Sun Miscrosystem.
  * @author Peter McCracken, IBM
  * @version $Id$
@@ -156,7 +156,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         System.out.println(
             "Generating Schema Information Set Contribution (PSVI) \n"
                 + "which follow as a consequence of validation and/or assessment.");
-        
+
         System.out.println("NOTE: Requires use of -s and -v");
         System.out.println("Output: generated in " + PSVI_OUTPUT);
         */
@@ -238,7 +238,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
 
     } // setProperty(String,Object)
 
-    /** 
+    /**
      * Returns the default state for a feature, or null if this
      * component does not want to report a default value for this
      * feature.
@@ -256,10 +256,10 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         return null;
     } // getFeatureDefault(String):Boolean
 
-    /** 
+    /**
      * Returns the default state for a property, or null if this
      * component does not want to report a default value for this
-     * property. 
+     * property.
      *
      * @param propertyId The property identifier.
      *
@@ -560,7 +560,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         throws XNIException {
         if (fDocumentHandler == null)
             return;
-        
+
         checkForChildren();
         sendIndentedElement("element");
         sendElementEvent("namespaceName", element.uri);
@@ -723,7 +723,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         boolean namespaceAttribute = false;
         boolean attrElement = false;
 
-        int attrCount = attributes == null ? 0 : attributes.getLength();
+         int attrCount = attributes == null ? 0 : attributes.getLength();
 
         if (attrCount == 0) {
             sendEmptyElementEvent("attributes");
@@ -914,7 +914,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 "psv:memberTypeDefinition",
                 elemPSVI.getMemberTypeDefinition());
             // A value for nil is not necessary, since we output declaration, instead.
-            // See http://www.w3.org/TR/xmlschema-1/#section-Element-Declaration-Validation-Rules.
+            // See http://www.w3.org/TR/xmlschema-1/#section-Element-Declaration-Information-Set-Contributions.
             sendElementEvent("psv:nil");
 
             sendIndentedElement("psv:declaration");
@@ -1135,7 +1135,13 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         sendElementEvent(
             "psv:variety",
             this.translateContentType(type.getContentType()));
-        processPSVISimpleTypeDefinition(type.getSimpleType());
+        XSSimpleTypeDefinition simpleType = type.getSimpleType();
+        if(simpleType == null || (!simpleType.getAnonymous() || fDefined.contains(this.getID(simpleType)))) {
+            processPSVIElementRef("psv:simpleTypeDefinition", simpleType);
+        }
+        else {
+            processPSVISimpleTypeDefinition(simpleType);
+        }
         processPSVIParticle(type.getParticle());
         sendUnIndentedElement("psv:contentType");
         sendElementEvent(
@@ -1249,12 +1255,12 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
      *     <psv:annotation xsi:nil="true"/>
      *     <psv:annotation>...</psv:annotation>
      * </psv:annotations>
-     * 
+     *
      * This is because of the way multi-value facet is implemented.  It represents
      * the annotation on each value of the facet, and if a value doesn't have one,
      * it's corresponding annotation is null.  Thus, it's possible for the first
      * annotation to be null, but the second one to be exist.
-     * 
+     *
      * An exception to this is if all of the annotations are null; then I output
      * <psv:annotations xsi:nil="true"/>
      */
@@ -1374,7 +1380,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 annot,
                 SchemaSymbols.ELT_DOCUMENTATION,
                 "psv:userInformation");
-            processDOMAttributes(annot, "attributes");
+            processDOMAttributes(annot);
             sendUnIndentedElement("psv:annotation");
         }
     }
@@ -1407,7 +1413,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 sendUnIndentedElement("children");
 
                 //Create XMLAttributes from DOM
-                Attr[] atts = (Element) node == null ? null : DOMUtil.getAttrs((Element) node);
+                Attr[] atts = (Element) child == null ? null : DOMUtil.getAttrs((Element) child);
                 XMLAttributes attrs = new XMLAttributesImpl();
                 for (int i=0; i<atts.length; i++) {
                     Attr att = (Attr)atts[i];
@@ -1416,7 +1422,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                             "CDATA" ,att.getValue()
                             );
                 }
-                
+
                 processAttributes(attrs);
                 sendUnIndentedElement("element");
             }
@@ -1429,29 +1435,84 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
         }
     }
 
-    private void processDOMAttributes(Element elem, String tagName) {
+    private void processDOMAttributes(Element elem) {
         Attr[] atts = elem == null ? null : DOMUtil.getAttrs(elem);
-        if (atts == null || atts.length == 0) {
-            sendEmptyElementEvent(tagName);
+
+        boolean namespaceAttribute = false;
+        boolean attrElement = false;
+
+        int attrCount = atts == null ? 0 : atts.length;
+
+        if (attrCount == 0) {
+            sendEmptyElementEvent("attributes");
+            sendEmptyElementEvent("namespaceAttributes");
+            return;
+        }
+
+        for (int i = 0; i < attrCount; i++) {
+            Attr att = (Attr)atts[i];
+            String localpart = DOMUtil.getLocalName(att);
+            String prefix = att.getPrefix();
+            if (localpart.equals(XMLSymbols.PREFIX_XMLNS)
+                || prefix.equals(XMLSymbols.PREFIX_XMLNS)) {
+                namespaceAttribute = true;
+                continue;
+            }
+            if (!attrElement)
+                sendIndentedElement("attributes");
+
+            sendIndentedElement("attribute");
+            sendElementEvent("namespaceName", DOMUtil.getNamespaceURI(att));
+            sendElementEvent("localName", DOMUtil.getLocalName(att));
+            sendElementEvent("prefix", att.getPrefix());
+            sendElementEvent("normalizedValue", att.getValue());
+            sendElementEvent(
+                "specified",
+                String.valueOf(att.getSpecified()));
+            sendElementEvent("attributeType");
+
+            // this property isn't relevent to PSVI
+            sendElementEvent("references");
+
+            sendUnIndentedElement("attribute");
+            attrElement = true;
+        }
+        if (attrElement) {
+            sendUnIndentedElement("attributes");
         }
         else {
-            sendIndentedElement(tagName);
-            for (int i = 0; i < atts.length; i++) {
+            sendEmptyElementEvent("attributes");
+        }
+
+        if (namespaceAttribute) {
+            sendIndentedElement("namespaceAttributes");
+            for (int i = 0; i < attrCount; i++) {
                 Attr att = (Attr)atts[i];
-                sendIndentedElement("attribute");
-                sendElementEvent("namespaceName", DOMUtil.getNamespaceURI(att));
-                sendElementEvent("localName", DOMUtil.getLocalName(att));
-                sendElementEvent("prefix", att.getPrefix());
-                sendElementEvent("normalizedValue", att.getValue());
-                sendElementEvent("specified", String.valueOf(att.getSpecified()));
-                sendElementEvent("attributeType");
+                String localpart = DOMUtil.getLocalName(att);
+                String prefix = att.getPrefix();
+                if (localpart.equals(XMLSymbols.PREFIX_XMLNS)
+                    || prefix.equals(XMLSymbols.PREFIX_XMLNS)) {
 
-                // this property isn't relevent to PSVI
-                sendElementEvent("references");
+                    sendIndentedElement("attribute");
+                    sendElementEvent("namespaceName", DOMUtil.getNamespaceURI(att));
+                    sendElementEvent("localName", DOMUtil.getLocalName(att));
+                    sendElementEvent("prefix", att.getPrefix());
+                    sendElementEvent("normalizedValue", att.getValue());
+                    sendElementEvent(
+                        "specified",
+                        String.valueOf(att.getSpecified()));
+                    sendElementEvent("attributeType");
 
-                sendUnIndentedElement("attribute");
+                    // this property isn't relevent to PSVI
+                    sendElementEvent("references");
+
+                    sendUnIndentedElement("attribute");
+                }
             }
-            sendUnIndentedElement(tagName);
+            sendUnIndentedElement("namespaceAttributes");
+        }
+        else {
+            sendEmptyElementEvent("namespaceAttributes");
         }
     }
 
@@ -1758,7 +1819,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             processPSVIElementDeclaration(elem);
         }
     }
-    
+
     private void processPSVIScope(
         String enclose,
         XSComplexTypeDefinition enclosingCTD,
@@ -1769,7 +1830,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             processPSVITypeDefinitionRef(enclose, enclosingCTD);
         }
     }
-    
+
     private void processPSVIValueConstraint(
         short constraintType,
         String constraintValue) {
@@ -1781,8 +1842,8 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
             sendElementEvent("psv:value", constraintValue);
             sendUnIndentedElement("psv:valueConstraint");
         }
-    }    
-    
+    }
+
     private void processPSVISubstitutionGroupAffiliation(XSElementDeclaration elem) {
         if (elem.getSubstitutionGroupAffiliation() == null) {
             sendElementEvent("psv:substitutionGroupAffiliation");
@@ -2102,7 +2163,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 return "unknown";
         }
     }
-    
+
     private String translateValueConstraintType(short type) {
         switch (type) {
             case XSConstants.VC_DEFAULT :
@@ -2113,7 +2174,7 @@ public class PSVIWriter implements XMLComponent, XMLDocumentFilter {
                 return "unknown";
         }
     }
-    
+
     private String translateBlockOrFinal(short val) {
         String ret = "";
         if ((val & XSConstants.DERIVATION_EXTENSION) != 0) {
