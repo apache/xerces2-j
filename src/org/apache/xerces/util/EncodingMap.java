@@ -620,6 +620,8 @@ public class EncodingMap {
         fIANA2JavaMap.put("SHIFT_JIS",       "SJIS");
         fIANA2JavaMap.put("CSSHIFT_JIS",       "SJIS");
         fIANA2JavaMap.put("MS_Kanji",       "SJIS");
+        fIANA2JavaMap.put("WINDOWS-31J",       "MS932");
+        fIANA2JavaMap.put("CSWINDOWS31J",       "MS932");
 
 	    // Add support for Cp1252 and its friends
         fIANA2JavaMap.put("WINDOWS-1250",   "Cp1250");
@@ -753,6 +755,7 @@ public class EncodingMap {
         fJava2IANAMap.put("KOI8_R",    "KOI8-R");
         fJava2IANAMap.put("KSC5601",   "EUC-KR");
         fJava2IANAMap.put("SJIS",      "SHIFT_JIS");
+        fJava2IANAMap.put("MS932",      "WINDOWS-31J");
         fJava2IANAMap.put("UTF8",      "UTF-8");
         fJava2IANAMap.put("Unicode",   "UTF-16");
         fJava2IANAMap.put("UnicodeBig",   "UTF-16BE");
