@@ -214,11 +214,6 @@ public class ElementImpl
     // Element methods
     //
 
-    /** Returns the element value. */
-    public String getValue() {
-        return null;
-    }
-
     /**
      * Look up a single Attribute by name. Returns the Attribute's
      * string value, or an empty string (NOT null!) to indicate that the
