@@ -181,7 +181,7 @@ public class XSModelGroupImpl implements XSModelGroup {
                 buffer.append("all(");
             else
                 buffer.append('(');
-            if (fParticles.length > 0)
+            if (fParticleCount > 0)
                 buffer.append(fParticles[0].toString());
             for (int i = 1; i < fParticleCount; i++) {
                 if (fCompositor == MODELGROUP_CHOICE)
