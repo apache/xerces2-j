@@ -666,6 +666,28 @@ public class XMLAttributesImpl
         fAttributes[attrIndex].name.uri = uri;
     } // getURI(int,QName)
 
+    // Implementation methods
+    public void setSchemaId(int attrIndex, boolean schemaId) {
+        fAttributes[attrIndex].schemaId = schemaId;
+    }
+    public boolean getSchemaId(int index) {
+        if (index < 0 || index >= fLength) {
+            return false;
+        }
+        return fAttributes[index].schemaId;
+    }
+    public boolean getSchemaId(String qname) {
+        int index = getIndex(qname);
+        return index != -1 ? fAttributes[index].schemaId : false;
+    } // getType(String):String
+    public boolean getSchemaId(String uri, String localName) {
+        if (!fNamespaces) {
+            return false;
+        }
+        int index = getIndex(uri, localName);
+        return index != -1 ? fAttributes[index].schemaId : false;
+    } // getType(String,String):String
+
     //
     // Classes
     //
@@ -698,6 +720,9 @@ public class XMLAttributesImpl
         /** Specified. */
         public boolean specified;
 
+        /** Schema ID type. */
+        public boolean schemaId;
+        
     } // class Attribute
 
 } // class XMLAttributesImpl
