@@ -253,7 +253,7 @@ public class ObjectFactory {
      * Figure out which ClassLoader to use.  For JDK 1.2 and later use
      * the context ClassLoader.
      */           
-    private static ClassLoader findClassLoader()
+    public static ClassLoader findClassLoader()
         throws ConfigurationError
     {
         Method m = null;
@@ -283,7 +283,7 @@ public class ObjectFactory {
     /**
      * Create an instance of a class using the specified ClassLoader
      */
-    private static Object newInstance(String className,
+    public static Object newInstance(String className,
                                       ClassLoader classLoader)
         throws ConfigurationError
     {
