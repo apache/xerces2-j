@@ -448,8 +448,6 @@ public class Counter {
         System.err.println("  Repetition: "+DEFAULT_REPETITION);
         System.err.print("  Namespaces: ");
         System.err.println(DEFAULT_NAMESPACES ? "on" : "off");
-        System.err.print("  Prefixes:   ");
-        System.err.println(DEFAULT_NAMESPACE_PREFIXES ? "on" : "off");
         System.err.print("  Validation: ");
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
