@@ -65,17 +65,16 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 
+import org.apache.xerces.dom.CoreDocumentImpl;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import org.apache.xerces.dom.CoreDocumentImpl;
 import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.ls.DOMBuilder;
 import org.w3c.dom.ls.DOMEntityResolver;
 import org.w3c.dom.ls.DOMBuilderFilter;
 import org.w3c.dom.ls.DOMInputSource;
-
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.DOMEntityResolverWrapper;
@@ -135,6 +134,7 @@ extends AbstractDOMParser implements DOMBuilder {
     // Data
     //
 
+
     // REVISIT: this value should be null by default and should be set during creation of
     //          DOMBuilder
     protected String fSchemaType = XML_SCHEMA_VALIDATION;
@@ -172,8 +172,10 @@ extends AbstractDOMParser implements DOMBuilder {
 
         fConfiguration.addRecognizedFeatures(domRecognizedFeatures);
 
+        // turn off deferred DOM
+        fConfiguration.setFeature(DEFER_NODE_EXPANSION, false);
+        
         // set default values
-
         fConfiguration.setFeature(Constants.DOM_CANONICAL_FORM, false);
         fConfiguration.setFeature(Constants.DOM_CDATA_SECTIONS, true);
         fConfiguration.setFeature(Constants.DOM_CHARSET_OVERRIDES_XML_ENCODING, true);
@@ -190,6 +192,7 @@ extends AbstractDOMParser implements DOMBuilder {
         //          DOCTYPE is present.
         //          This is similar to JAXP schemaLanguage property.         
 
+        
 
     } // <init>(XMLParserConfiguration)
 
@@ -225,6 +228,11 @@ extends AbstractDOMParser implements DOMBuilder {
      */
     public void reset() {
         super.reset();
+
+        // DOM Filter
+        fSkippedElemStack.clear();
+        fRejectedElement.clear();
+        fFilterReject = false;
 
 
     } // reset() 
@@ -326,7 +334,7 @@ extends AbstractDOMParser implements DOMBuilder {
      * happens before the filter is called. 
      */
     public DOMBuilderFilter getFilter() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        return fDOMFilter;
     }
 
     /**
@@ -339,7 +347,10 @@ extends AbstractDOMParser implements DOMBuilder {
      * happens before the filter is called. 
      */
     public void setFilter(DOMBuilderFilter filter) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
+        fDOMFilter = filter;
+        if (fSkippedElemStack == null) {
+            fSkippedElemStack = new Stack();
+        }
     }
 
     /**
@@ -487,7 +498,7 @@ extends AbstractDOMParser implements DOMBuilder {
         try {        
             parse(source);
         } catch (Exception e){
-            // do nothing since exceptions are reported via Error handler
+            // REVISIT: report exception via the error handler
             if (DEBUG) {            
                e.printStackTrace();
             }
@@ -511,7 +522,7 @@ extends AbstractDOMParser implements DOMBuilder {
         try {        
             parse(xmlInputSource);
         } catch (Exception e) {
-            // do nothing since exceptions are reported via Error handler
+            // REVISIT: report exception via the error handler
             if (DEBUG) {            
                e.printStackTrace();
             }
@@ -622,7 +633,6 @@ extends AbstractDOMParser implements DOMBuilder {
         }
 
     } // endDocument()
-
 
 
 } // class DOMBuilderImpl

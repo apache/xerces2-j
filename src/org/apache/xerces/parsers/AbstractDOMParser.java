@@ -105,6 +105,9 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 
+import org.w3c.dom.ls.DOMBuilderFilter;
+import org.w3c.dom.traversal.NodeFilter;
+
 import java.util.Stack;
 
 /**
@@ -277,13 +280,28 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
     protected boolean fFirstChunk = false;
 
 
-    /** Base uri stack*/
-    protected Stack fBaseURIStack = new Stack();
+    /** DOMBuilderFilter: specifies that element with given QNAME and all its children
+        must be rejected */
+    protected boolean fFilterReject = false;
 
     // data
 
+    /** Base uri stack*/
+    protected Stack fBaseURIStack = new Stack();
+
+
+    /** DOMBuilderFilter: the QNAME of rejected element*/    
+    protected final QName fRejectedElement = new QName();
+
+    /** DOMBuilderFilter: store qnames of skipped elements*/
+    protected Stack fSkippedElemStack = null;
+    
     /** Attribute QName. */
     private QName fAttrQName = new QName();
+
+    // handlers
+
+    protected DOMBuilderFilter fDOMFilter = null;
 
     //
     // Constructors
@@ -436,6 +454,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         fFirstChunk = false;
         fCurrentCDATASection = null;
         fCurrentCDATASectionIndex = -1;
+
+        fBaseURIStack.clear();
+
+
     } // reset()
 
     //
@@ -474,6 +496,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         // Always create entity reference nodes to be able to recreate
         // entity as a part of doctype
          if (!fDeferNodeExpansion) {
+             if (fFilterReject) {
+                 return;
+             }
             setCharacterData(true);
             EntityReference er = fDocument.createEntityReference(name);            
             
@@ -549,7 +574,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
      */
     public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
         if (!fDeferNodeExpansion) {
-            if (fCurrentEntityDecl != null) {
+            if (fCurrentEntityDecl != null && !fFilterReject) {
                 fCurrentEntityDecl.setEncoding(encoding);
                 fCurrentEntityDecl.setVersion(version);
             }
@@ -578,13 +603,42 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             }
             return;
         }
-        if (!fIncludeComments) {
+        if (!fIncludeComments || fFilterReject) {
               return;
         }
         if (!fDeferNodeExpansion) {
-            setCharacterData(false);
             Comment comment = fDocument.createComment(text.toString());
+
+            setCharacterData(false);
             fCurrentNode.appendChild(comment);
+            if (fDOMFilter !=null && 
+                (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_COMMENT)!= 0) {
+                short code = fDOMFilter.acceptNode(comment);
+                switch (code) {
+                    case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        throw new RuntimeException("The normal processing of the document was interrupted.");
+                    }   
+                    case NodeFilter.FILTER_REJECT:{
+                        // REVISIT: the constant FILTER_REJECT should be changed when new
+                        // DOM LS specs gets published
+
+                        // fall through to SKIP since comment has no children.
+                    }
+                    case NodeFilter.FILTER_SKIP: { 
+                        // REVISIT: the constant FILTER_SKIP should be changed when new
+                        // DOM LS specs gets published
+                        fCurrentNode.removeChild(comment);
+                        // make sure we don't loose chars if next event is characters()
+                        fFirstChunk = true;
+                        return;
+                    }
+
+                    default: {
+                        // accept node 
+                    }
+                }
+            }
+
         }
         else {
             int comment =
@@ -629,11 +683,38 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         if (DEBUG_EVENTS) {        
             System.out.println("==>processingInstruction ("+target+")");
         }
-        if (!fDeferNodeExpansion) {
-            setCharacterData(false);
+        if (!fDeferNodeExpansion) {            
+            if (fFilterReject) {
+                return;
+            }
             ProcessingInstruction pi =
                 fDocument.createProcessingInstruction(target, data.toString());
+
+
+            setCharacterData(false);
             fCurrentNode.appendChild(pi);
+            if (fDOMFilter !=null && 
+                (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_PROCESSING_INSTRUCTION)!= 0) {
+                short code = fDOMFilter.acceptNode(pi);
+                switch (code) {
+                    case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        throw new RuntimeException("The normal processing of the document was interrupted.");
+                    }   
+                    case NodeFilter.FILTER_REJECT:{
+                        // fall through to SKIP since PI has no children.
+                    }
+                    case NodeFilter.FILTER_SKIP: {
+                        fCurrentNode.removeChild(pi);
+                        // fFirstChunk must be set to true so that data
+                        // won't be lost in the case where the child before PI is
+                        // a text node and the next event is characters.
+                        fFirstChunk = true;
+                        return;
+                    }
+                    default: {
+                    }
+                }
+            }
         }
         else {
             int pi = fDeferredDocumentImpl.
@@ -832,6 +913,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             System.out.println("==>startElement ("+element.rawname+")");
         }
         if (!fDeferNodeExpansion) {
+            if (fFilterReject) {
+                return;
+            }
             Element el = createElementNode(element);
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
@@ -876,6 +960,27 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             }
 
             setCharacterData(false);
+            // filter nodes
+            if (fDOMFilter != null) {
+                short code = fDOMFilter.startContainer(el);
+                switch (code) {
+                    case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                        throw new RuntimeException("The normal processing of the document was interrupted.");
+                    }   
+                    case NodeFilter.FILTER_REJECT:{ 
+                        fFilterReject = true;
+                        fRejectedElement.setValues(element);
+                        return;
+                    }
+                    case NodeFilter.FILTER_SKIP: { 
+                        fSkippedElemStack.push(element);
+                        return;
+                    }
+                    default: {
+                    }
+                }
+            }
+
             fCurrentNode.appendChild(el);
             fCurrentNode = el;
         }
@@ -954,6 +1059,10 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         }
 
         if (!fDeferNodeExpansion) {
+
+            if (fFilterReject) {
+                return;
+            }
             if (fInCDATASection && fCreateCDATANodes) {
                 if (fCurrentCDATASection == null) {
                     fCurrentCDATASection =
@@ -1066,10 +1175,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
      */
     public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException {
 
-        if (!fIncludeIgnorableWhitespace) {
+        if (!fIncludeIgnorableWhitespace || fFilterReject) {
             return;
         }
-
         if (!fDeferNodeExpansion) {
             Node child = fCurrentNode.getLastChild();
             if (child != null && child.getNodeType() == Node.TEXT_NODE) {
@@ -1108,15 +1216,73 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             System.out.println("==>endElement ("+element.rawname+")");
         }
         if (!fDeferNodeExpansion) {
-            setCharacterData(false);
-            fCurrentNode = fCurrentNode.getParentNode();
+            
+            if (fDOMFilter != null) {            
+                if (fFilterReject) {
+                    if (element.equals(fRejectedElement)) {
+                     fFilterReject = false;
+                    }
+                    return;
+                }
+                if (!fSkippedElemStack.isEmpty()) {
+                    if (fSkippedElemStack.peek().equals(element)) {
+                        fSkippedElemStack.pop();
+                        return;
+                    }
+                }
+                setCharacterData(false);
+                if ((fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ELEMENT)!=0) {
+                    short code = fDOMFilter.acceptNode(fCurrentNode);
+                    switch (code) {
+                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                            throw new RuntimeException("The normal processing of the document was interrupted.");
+                        }   
+                        case NodeFilter.FILTER_REJECT:{
+                            Node parent = fCurrentNode.getParentNode();                    
+                            parent.removeChild(fCurrentNode);
+                            fCurrentNode = parent;
+                            return;
+                        }
+                        case NodeFilter.FILTER_SKIP: { 
+                            // make sure that if any char data is available 
+                            // the fFirstChunk is true, so that if the next event
+                            // is characters(), and the last node is text, we will copy
+                            // the value already in the text node to fStringBuffer 
+                            // (not to loose it).
+                            fFirstChunk = true;
+
+                            // replace children
+                            Node parent = fCurrentNode.getParentNode();
+                            NodeList ls = fCurrentNode.getChildNodes();
+                            int length = ls.getLength();
+
+                            for (int i=0;i<length;i++) {
+                                parent.appendChild(ls.item(0));
+                            }                               
+                            parent.removeChild(fCurrentNode);
+                            fCurrentNode = parent;
+                            
+                            return;
+                        }
+
+                        default: { }
+                    }
+                }
+                fCurrentNode = fCurrentNode.getParentNode();
+            
+            } // end-if DOMFilter
+            else {
+                setCharacterData(false);
+                fCurrentNode = fCurrentNode.getParentNode();
+            }
+            
         }
         else {
             fCurrentNodeIndex =
                 fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex, false);
         }
 
-
+        
     } // endElement(QName)
 
 
@@ -1127,8 +1293,14 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startCDATA(Augmentations augs) throws XNIException {
-        setCharacterData(false);
+
         fInCDATASection = true;
+        if (!fDeferNodeExpansion) {
+            if (fFilterReject) {
+                return;
+            }
+            setCharacterData(false);
+        }
     } // startCDATA()
 
     /**
@@ -1141,7 +1313,36 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
 
         fInCDATASection = false;
         if (!fDeferNodeExpansion) {
+
+            if (fFilterReject) {
+                return;
+            }
+
             if (fCurrentCDATASection !=null) {
+
+                if (fDOMFilter !=null && 
+                    (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_CDATA_SECTION)!= 0) {
+                    short code = fDOMFilter.acceptNode(fCurrentCDATASection);
+                    switch (code) {
+                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                            throw new RuntimeException("The normal processing of the document was interrupted.");
+                             }   
+                        case NodeFilter.FILTER_REJECT:{
+                            // fall through to SKIP since CDATA section has no children.
+                        }
+                        case NodeFilter.FILTER_SKIP: { 
+                            Node parent = fCurrentNode.getParentNode();                    
+                            parent.removeChild(fCurrentCDATASection);
+                            fCurrentNode = parent;
+                            return;
+                        }
+
+                        default: {
+                            // accept node 
+                        }
+                    }
+                }
+
                 fCurrentNode = fCurrentNode.getParentNode();
                 fCurrentCDATASection = null;
             }
@@ -1197,35 +1398,70 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             System.out.println("==>endGeneralEntity: ("+name+")");
         }
         if (!fDeferNodeExpansion) {
+
+            if (fFilterReject) {
+                return;
+            }
             setCharacterData(true); 
 
             if (fDocumentType != null) {
                 // get current entity declaration
                 NamedNodeMap entities = fDocumentType.getEntities();
                 fCurrentEntityDecl = (EntityImpl) entities.getNamedItem(name);
-            }
-            if (fCurrentEntityDecl != null) {            
-                if (fCurrentEntityDecl != null && fCurrentEntityDecl.getFirstChild() == null) {
-                    fCurrentEntityDecl.setReadOnly(false, true);
-                    Node child = fCurrentNode.getFirstChild();
-                    while (child != null) {
-                        Node copy = child.cloneNode(true);
-                        fCurrentEntityDecl.appendChild(copy);
-                        child = child.getNextSibling();
-                     }
-                    fCurrentEntityDecl.setReadOnly(true, true);
-                    
-                    //entities.setNamedItem(fCurrentEntityDecl);
+                if (fCurrentEntityDecl != null) {            
+                    if (fCurrentEntityDecl != null && fCurrentEntityDecl.getFirstChild() == null) {
+                        fCurrentEntityDecl.setReadOnly(false, true);
+                        Node child = fCurrentNode.getFirstChild();
+                        while (child != null) {
+                            Node copy = child.cloneNode(true);
+                            fCurrentEntityDecl.appendChild(copy);
+                            child = child.getNextSibling();
+                         }
+                        fCurrentEntityDecl.setReadOnly(true, true);
+
+                        //entities.setNamedItem(fCurrentEntityDecl);
+                    }
+                    fCurrentEntityDecl = null;
                 }
-                fCurrentEntityDecl = null;
+
             }
+
+            boolean removeEntityRef = false;
             if (fCreateEntityRefNodes) {
                 if (fDocumentImpl != null) {                
                     // Make entity ref node read only
                     ((NodeImpl)fCurrentNode).setReadOnly(true, true);
                 }
-                fCurrentNode = fCurrentNode.getParentNode();
-            } else {  
+
+                if (fDOMFilter !=null && 
+                    (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
+                    short code = fDOMFilter.acceptNode(fCurrentNode);
+                    switch (code) {
+                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                            throw new RuntimeException("The normal processing of the document was interrupted.");
+                        }   
+                        case NodeFilter.FILTER_REJECT:{ 
+                            Node parent = fCurrentNode.getParentNode();
+                            parent.removeChild(fCurrentNode);
+                            fCurrentNode = parent;
+                            return;
+                            
+                        }
+                        case NodeFilter.FILTER_SKIP: {
+                            // make sure we don't loose chars if next event is characters()
+                            fFirstChunk = true;
+                            removeEntityRef = true;
+                            break;
+                        }
+
+                        default: {
+                            fCurrentNode = fCurrentNode.getParentNode(); 
+                        }
+                    }
+                }
+            } 
+
+            if (!fCreateEntityRefNodes || removeEntityRef) {
                 // move entity reference children to the list of 
                 // siblings of its parent and remove entity reference
                 NodeList children = fCurrentNode.getChildNodes();
@@ -2171,29 +2407,66 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         return attr;
     }
 
-    // If data rececived in more than one chunk, the data
-    // is stored in StringBuffer.      
-    // This function is called then the state is changed and the 
-    // data needs to be appended to the current node
+    /*
+     * When the first characters() call is received, the data is stored in
+     * a new Text node. If right after the first characters() we receive another chunk of data, 
+     * the data from the Text node, following the new characters are appended
+     * to the fStringBuffer and the text node data is set to empty.
+     * 
+     * This function is called when the state is changed and the
+     * data must be appended to the current node.
+     * 
+     * Note: if DOMFilter is set, you must make sure that if Node is skipped, 
+     * or removed fFistChunk must be set to true, otherwise some data can be lost.     
+     * 
+     */
     protected void  setCharacterData(boolean sawChars){
+
         // handle character data
         fFirstChunk = sawChars;
-        if (fStringBuffer.length() > 0) {
-            // if we have data in the buffer we must have created
-            // a text node already.
-            Node child = fCurrentNode.getLastChild();
-            // REVISIT: should this check be performed?
-            if (child != null && child.getNodeType() == Node.TEXT_NODE) {
-                if (fDocumentImpl != null) {
-                    ((TextImpl)child).replaceData(fStringBuffer.toString());
+        
+
+        // if we have data in the buffer we must have created
+        // a text node already.
+       
+        Node child = fCurrentNode.getLastChild();
+        if (child != null) {        
+            if (fStringBuffer.length() > 0) {
+                // REVISIT: should this check be performed?
+                if (child.getNodeType() == Node.TEXT_NODE) {
+                    if (fDocumentImpl != null) {
+                        ((TextImpl)child).replaceData(fStringBuffer.toString());
+                    }
+                    else {
+                        ((Text)child).setData(fStringBuffer.toString());
+                    }
                 }
-                else {
-                    ((Text)child).setData(fStringBuffer.toString());
-                }
+                // reset string buffer
+                fStringBuffer.setLength(0);
             }
-            // reset string buffer
-            fStringBuffer.setLength(0);
-        }
+
+            if (fDOMFilter !=null) {
+                if ((fDOMFilter.getWhatToShow() & NodeFilter.SHOW_TEXT)!= 0) {
+                    short code = fDOMFilter.acceptNode(child);
+                    switch (code) {
+                        case DOMBuilderFilter.FILTER_INTERRUPT:{ 
+                            throw new RuntimeException("The normal processing of the document was interrupted.");
+                        }   
+                        case NodeFilter.FILTER_REJECT:{
+                            // fall through to SKIP since Comment has no children.
+                        }
+                        case NodeFilter.FILTER_SKIP: { 
+                            fCurrentNode.removeChild(child);
+                            return;
+                        }
+                        default: {
+                            // accept node -- do nothing
+                        }
+                    }
+                }
+            }   // end-if fDOMFilter !=null
+
+        } // end-if child !=null
     }
 
     
