@@ -37,7 +37,7 @@
   <p>Design and implementation information:</p>
   <ul>
    <li><link idref='xni-design'>Design Details</link></li>
-   <li><link idref='xni-api'>API Documentation</link></li>
+   <li><link idref='xni-core'>Core Interfaces</link></li>
    <li><link idref='xni-config'>Parser Configuration</link></li>
   </ul>
  </s2>
@@ -109,7 +109,7 @@
   </table>
   <p>
    For complete details of the Xerces Native Interface, refer to
-   the <link idref='xni-api'>API Documentation</link>.
+   the <link idref='xni-core'>Core Interfaces</link> documentation.
   </p>
  </s2>
  <anchor name='generic-parser-configurations'/>
@@ -159,7 +159,8 @@
    This is just a small sample of what is possible when using the
    XNI parser configuration framework. For complete details of the
    XNI parser configurations, refer to the 
-   <link idref='xni-config'>Parser Configuration</link> documentation.
+   <link idref='xni-config'>Parser Configuration</link> 
+   documentation.
   </p>
  </s2>
 </s1>

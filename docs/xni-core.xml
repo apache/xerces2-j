@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
-<s1 title='XNI API Documentation'>
- <s2 title='XNI API Documentation'>
+<s1 title='XNI Core Interfaces'>
+ <s2 title='Core Interfaces'>
   <p>
    The Xerces Native Interface core contains a series of
    interfaces and classes designed to communicate a document's
@@ -40,6 +40,12 @@
    be immediately comfortable programming to the Xerces Native
    Interface. However, XNI does not depend on the SAX interfaces
    and classes.
+  </p>
+  <p>
+   <strong>Note:</strong>
+   All of the interfaces and classes documented on this page
+   are contained within the <code>org.apache.xerces.xni</code>
+   package.
   </p>
   <anchor name='document-handler'/>
   <s3 title='Interface XMLDocumentHandler'>

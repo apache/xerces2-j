@@ -17,10 +17,23 @@
    constructing these pipelines and parser configurations. This
    document is designed to give you an overview of this framework
    and what a parser looks like that is written to conform to the
-   Xerces Native Interface.
+   Xerces Native Interface. An overview of these frameworks are
+   described below:
   </p>
+  <ul>
+   <li><link anchor='pipeline'>Pipeline</link></li>
+   <li><link anchor='configuration'>Configuration</link></li>
+  </ul>
+  <p>
+   For more detailed information, refer to the following documents:
+  </p>
+  <ul>
+   <li><link idref='xni-core'>Core Interfaces</link></li>
+   <li><link idref='xni-config'>Parser Configuration</link></li>
+  </ul>
  </s2>
- <s2 title='Parser Pipeline'>
+ <anchor name='pipeline'/>
+ <s2 title='Pipeline'>
   <p>
    The XNI parser pipeline is any combination of components that
    are either capable of producing XNI events, consuming XNI events,
@@ -75,14 +88,15 @@
   <p>
    XNI defines the document information using a number of core
    interfaces. (These interfaces are described in more detail in the
-   <link idref='xni-api'>XNI API Documentation</link>.) But XNI also
-   defines a set of interfaces to build parser configurations that
-   assemble the pipelines in order to parse documents. The next
+   <link idref='xni-api-core'>Core API</link> documentation.) But XNI 
+   also defines a set of interfaces to build parser configurations 
+   that assemble the pipelines in order to parse documents. The next
    section gives a general overview of the this parser configuration
    provided by XNI.
   </p>
  </s2>
- <s2 title='Parser Configuration'>
+ <anchor name='configuration'/>
+ <s2 title='Configuration'>
   <p>
    A parser implementation written using the Xerces Native Interface
    can be seen as a collection of components, some of which are
@@ -126,18 +140,5 @@
   <p>
    <img alt='Configuration and Parser Separation' src='xni-parser-configuration.gif'/>
   </p>
- </s2>
- <s2 title='More Detailed Information'>
-  <p>
-   Take full advantage of the framework, you should at least be familiar
-   with the Xerces Native Interface API. And if you want to create parser
-   configurations from the existing library of parser parts, then you
-   need to become familiar with the Xerces2 reference implementation. The
-   following documents provide more information about XNI:
-  </p>
-  <ul>
-   <li><link idref='xni-api'>API Documentation</link></li>
-   <li><link idref='xni-config'>Parser Configuration</link></li>
-  </ul>
  </s2>
 </s1>
