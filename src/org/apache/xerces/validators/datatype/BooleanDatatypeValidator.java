@@ -63,23 +63,53 @@ import java.util.Enumeration;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
 import org.apache.xerces.validators.schema.SchemaSymbols;
+import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 /**
  *
  * BooleanValidator validates that content satisfies the W3C XML Datatype for Boolean
  *
  * @author Ted Leung 
  * @author Jeffrey Rodriguez
- * @version
+ * @version  $Id$
  */
 
-public class BooleanValidator implements DatatypeValidator {
-    private Locale fLocale        = null;
-    private String fBaseValidator = "native";
-    private String _pattern       = null;
-    private int    _facetsDefined = 0;
+public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
+    private Locale                  fLocale          = null;
+    private DatatypeValidator       fBaseValidator   = null; //Basetype null means we are a native type
+    private String                  fPattern         = null;
+    private int                     fFacetsDefined   = 0;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-    private static  final String _valueSpace[]  = { "false", "true", "0", "1" };
-    private int       _derivedBy       = DatatypeValidator.DERIVED_BY_RESTRICTION;//default
+    private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
+    private boolean                 fDerivedByList   = false;
+
+    public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
+       this( null, null, false ); // Native, No Facets defined, Restriction
+    }
+
+    public BooleanDatatypeValidator ( DatatypeValidator base, Hashtable facets,
+                 boolean derivedByList ) throws InvalidDatatypeFacetException {
+        setBasetype( base ); // Set base type 
+
+        // Set Facets if any defined
+        if ( facets != null  ) { 
+            if ( derivedByList == false ) {
+                for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                    String key = (String) e.nextElement();
+
+                    if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                        fFacetsDefined += DatatypeValidator.FACET_PATTERN;
+                        fPattern = (String)facets.get(key);
+                    } else {
+                        throw new InvalidDatatypeFacetException();
+                    }
+                }
+            } else { // By List
+                fDerivedByList = true;
+
+            }
+        }// End of facet setting
+    }
+
 
     /**
      * validate that a string matches the boolean datatype
@@ -89,79 +119,52 @@ public class BooleanValidator implements DatatypeValidator {
      * is not valid.
      */
 
-    public void validate(String content) throws InvalidDatatypeValueException {
+    public Object validate(String content, Object state) throws InvalidDatatypeValueException {
 
-        if ( _facetsDefined == 0 )// No Facets to validate against
-            return;
-
-
-        if( _derivedBy == DatatypeValidator.DERIVED_BY_RESTRICTION  ){ 
-
+        if ( fDerivedByList == true ) {
             ;// What does it mean?
         } else {
             checkContent( content );
         }
+        return null;
     }
 
 
     /**
-     * Sets the allowable constraining facets
-     * for the datatype.
+     * Compare two boolean data types
      * 
-     * boolean has the following constraining facets:
-     * pattern
-     * 
-     * @param facets Hashtable containing constraining
-     *               information passed from the
-     *               DatatypeValidatorRegistry.
-     * @exception UnknownFacetException
-     * @exception IllegalFacetException
-     * @exception IllegalFacetValueException
-     * @exception ConstrainException
+     * @param content1
+     * @param content2
+     * @return 
      */
-    public void setFacets(Hashtable facets, String derivationBy) throws UnknownFacetException,
-    IllegalFacetException, IllegalFacetValueException, ConstrainException {
-        if( facets == null ) // No facets to set should not be here
-            return; 
-
-        if ( derivationBy.equals( SchemaSymbols.ATTVAL_RESTRICTION ) ) {
-           _derivedBy = DatatypeValidator.DERIVED_BY_RESTRICTION;
-
-            for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-                String key = (String) e.nextElement();
-
-                if (key.equals(SchemaSymbols.ELT_PATTERN)) {
-                    _facetsDefined += DatatypeValidator.FACET_PATTERN;
-                    _pattern = (String)facets.get(key);
-                } else {
-                    throw new IllegalFacetException();
-                }
-            }
-        }else { // By List
-
-        }
+    public int compare( String content1, String content2){
+        return 0;
     }
 
+    /**
+     * Return a Hashtable that contains facet information
+     * 
+     * @return Hashtable
+     */
+
+    public Hashtable getFacets(){
+        return null;
+    }
+
+
+    //Begin private method definitions
 
     /**
      * Sets the base datatype name.
      * 
      * @param base
      */
-    public void setBasetype(String base) {
+
+    private  void setBasetype(DatatypeValidator base) {
         fBaseValidator = base;
     }
 
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
 
-    public int compare( DatatypeValidator o1, DatatypeValidator o2){
-      return 0;
-    }
 
     private String getErrorString(int major, int minor, Object args[]) {
         try {
@@ -179,20 +182,20 @@ public class BooleanValidator implements DatatypeValidator {
      */
     private void checkContent( String content )throws InvalidDatatypeValueException {
         boolean  isContentInDomain = false;
-        for( int i = 0;i<_valueSpace.length;i++ ){
-            if( content.equals(_valueSpace[i] ) )
+        for ( int i = 0;i<fValueSpace.length;i++ ) {
+            if ( content.equals(fValueSpace[i] ) )
                 isContentInDomain = true;
         }
         if (isContentInDomain == false)
-           throw new InvalidDatatypeValueException(
-                                                  getErrorString(DatatypeMessageProvider.NotBoolean,
-                                                                 DatatypeMessageProvider.MSG_NONE,
-                                                                 new Object[] { content}));
-        if ( (_facetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            RegularExpression regex = new RegularExpression(_pattern, "X" );
+            throw new InvalidDatatypeValueException(
+                                                   getErrorString(DatatypeMessageProvider.NotBoolean,
+                                                                  DatatypeMessageProvider.MSG_NONE,
+                                                                  new Object[] { content}));
+        if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+            RegularExpression regex = new RegularExpression(fPattern, "X" );
             if ( regex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
-                                                        "does not match regular expression facet" + _pattern );
+                                                        "does not match regular expression facet" + fPattern );
         }
     }
 }

@@ -61,13 +61,25 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 /**
- * ENTITYValidator defines the interface that data type validators must obey.
+ * IDREFValidator defines the interface that data type validators must obey.
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
  * 
  * @author Jeffrey Rodriguez-
  */
-public class ENTITYValidator implements DatatypeValidator {
+public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
+    private DatatypeValidator fBaseValidator  = null;
+    private boolean           fDerivedByList  = false;
+
+
+    public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
+        this( null, null, false ); // Native, No Facets defined, Restriction
+    }
+
+    public IDREFDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+         boolean derivedByList ) throws InvalidDatatypeFacetException { 
+    }
+
 
     /**
      * Checks that "content" string is valid 
@@ -85,48 +97,10 @@ public class ENTITYValidator implements DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content ) throws InvalidDatatypeValueException{
+    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+        return null;
     }
 
-    /**
-     * set the facets for this datatype
-     * 
-     * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other.
-     * 
-     * @param facets A hashtable where facet name Symbols  are keys and facet values are stored
-     *               in the hashtable.  Usually facet values are strings, except for the
-     *               enumeration facet.  The value for this facet is a Vector of strings, one
-     *               per enumeration value
-     * @exception throws UnknownFacetException
-     * @exception throws IllegalFacetException
-     * @exception throws IllegalFacetValueException
-     * @exception UnknownFacetException
-     * @exception IllegalFacetException
-     * @exception IllegalFacetValueException
-     * @see         org.apache.xerces.validators.schema.SchemaSymbols
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetException
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
-     */
-    public void setFacets(Hashtable facets, String derivedBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-    }
-
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
-    public void setBasetype(String base){
-    }
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale){
-    }
 
     /**
      * REVISIT
@@ -136,8 +110,24 @@ public class ENTITYValidator implements DatatypeValidator {
      * @param o2
      * @return 
      */
-    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+    public int compare( String content1, String content2){
         return -1;
     }
+
+
+    public Hashtable getFacets(){
+       return null;
+   }
+   /**
+     * Name of base type as a string.
+     * A Native datatype has the string "native"  as its
+     * base type.
+     * 
+     * @param base   the validator for this type's base type
+     */
+    private void setBasetype(DatatypeValidator base){
+        fBaseValidator = base;
+    }
+
 
 }

@@ -55,75 +55,23 @@
  * <http://www.apache.org/>.
  */
 
+
 package org.apache.xerces.validators.datatype;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.text.ParseException;
-import org.apache.xerces.validators.schema.SchemaSymbols;
 
-public class RecurringDurationValidator implements DatatypeValidator {
 
-    /**
-     * 
-     * validate that a string matches a datatype
-     * 
-     * validate returns true or false depending on whether the string content is an
-     * instance of the data type represented by this validator.
-     * 
-     * @param content A string containing the content to be validated
-     * @exception throws InvalidDatatypeException if the content is
-     *                   invalid according to the rules for the validators
-     * @exception InvalidDatatypeValueException
-     */
-    public void validate(String content) throws InvalidDatatypeValueException{
+
+public class InvalidDatatypeFacetException extends XMLException {
+
+    public InvalidDatatypeFacetException ( ){ 
+        super();
     }
-
-    /**
-     * set the facets for this datatype
-     *
-     * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other
-     *
-     * @param facets A hashtable where facet names are keys and facet values are stored
-     *        in the hashtable.  Usually facet values are strings, except for the 
-     *        enumeration facet.  The value for this facet is a Vector of strings, one
-     *        per enumeration value
-     *
-     * @exception throws UnknownFacetException
-     * @exception throws IllegalFacetException
-     * @exception throws IllegalFacetValueException
-     */
-    public void setFacets(Hashtable facets, String derivedBy ) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
-        if( facets == null ) // No facets to set should not be here
-            return; 
-
+    public InvalidDatatypeFacetException ( String message ) {
+        super( message );
     }
-
-    /**
-     * set the base type for this datatype
-     *
-     * @param base the validator for this type's base type
-     *
-     */
-    public void setBasetype(String base) {
+    public InvalidDatatypeFacetException ( Exception exception ) {
+        super( exception );
     }
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale) {
+    public InvalidDatatypeFacetException ( String message, Exception exception ) {
+        super( message, exception );
     }
-
-    // REVISIT
-
-    public int compare( DatatypeValidator o1, DatatypeValidator o2) {
-        return -1;
-    }
-
 }
-

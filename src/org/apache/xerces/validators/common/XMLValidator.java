@@ -2379,7 +2379,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                              /****/   
                         }
                         else{
-                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)) );
+                            fTempAttDecl.datatypeValidator.validate(fStringPool.toString(attrList.getAttValue(index)), null );
                         }
                     }
                 }
@@ -2626,7 +2626,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                        +",locapart: "+fStringPool.toString(fTempElementDecl.name.localpart));
                 }
                 else {
-                    dv.validate(fDatatypeBuffer.toString());
+                    dv.validate(fDatatypeBuffer.toString(), null);
                 }
 
             } 

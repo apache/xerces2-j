@@ -67,7 +67,20 @@ import java.util.Locale;
  * @author Jeffrey Rodriguez
  * @version $Id:
  */
-public class IDValidator implements DatatypeValidator {
+public class IDDatatypeValidator extends AbstractDatatypeValidator {
+    private DatatypeValidator fBaseValidator = null;
+    private boolean           fDerivedByList = false;
+
+
+    public IDDatatypeValidator () throws InvalidDatatypeFacetException {
+        this( null, null, false ); // Native, No Facets defined, Restriction
+    }
+
+    public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+            boolean derivedByList ) throws InvalidDatatypeFacetException  {
+    }
+
+
 
     /**
      * Checks that "content" string is valid 
@@ -85,47 +98,8 @@ public class IDValidator implements DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content ) throws InvalidDatatypeValueException{
-    }
-
-    /**
-     * set the facets for this datatype
-     * 
-     * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other.
-     * 
-     * @param facets A hashtable where facet name Symbols  are keys and facet values are stored
-     *               in the hashtable.  Usually facet values are strings, except for the
-     *               enumeration facet.  The value for this facet is a Vector of strings, one
-     *               per enumeration value
-     * @exception throws UnknownFacetException
-     * @exception throws IllegalFacetException
-     * @exception throws IllegalFacetValueException
-     * @exception UnknownFacetException
-     * @exception IllegalFacetException
-     * @exception IllegalFacetValueException
-     * @see         org.apache.xerces.validators.schema.SchemaSymbols
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetException
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
-     */
-    public void setFacets(Hashtable facets, String derivedBy ) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException{
-    }
-
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
-    public void setBasetype(String base){
-    }
-
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale){
+    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+        return null;
     }
 
     /**
@@ -136,8 +110,23 @@ public class IDValidator implements DatatypeValidator {
      * @param o2
      * @return 
      */
-    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+    public int compare( String content1, String content2){
         return -1;
+    }
+
+    public Hashtable getFacets(){
+        return null;
+    }
+
+    /**
+     * Name of base type as a string.
+     * A Native datatype has the string "native"  as its
+     * base type.
+     * 
+     * @param base   the validator for this type's base type
+     */
+    private void setBasetype(DatatypeValidator base){
+        fBaseValidator = base;
     }
 
 }

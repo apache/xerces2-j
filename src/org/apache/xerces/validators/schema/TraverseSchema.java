@@ -66,7 +66,7 @@ import  org.apache.xerces.validators.common.XMLAttributeDecl;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
-import  org.apache.xerces.validators.datatype.DatatypeValidatorRegistry;
+import  org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
@@ -80,9 +80,7 @@ import java.net.MalformedURLException;
 //Unit Test 
 import  org.apache.xerces.parsers.DOMParser;
 import  org.apache.xerces.validators.common.XMLValidator;
-import  org.apache.xerces.validators.datatype.*;
-
-import  org.apache.xerces.validators.datatype.DatatypeValidator;
+import  org.apache.xerces.validators.datatype.DatatypeValidator.*;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import  org.apache.xerces.framework.XMLContentSpec;
 import  org.apache.xerces.utils.QName;
@@ -400,8 +398,9 @@ public class TraverseSchema implements
 
     private Element fSchemaRootElement;
 
-    private DatatypeValidatorRegistry fDatatypeRegistry =
-                                             DatatypeValidatorRegistry.getDatatypeRegistry();
+    private DatatypeValidatorFactoryImpl fDatatypeRegistry =  
+                          DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+
     private Hashtable fComplexTypeRegistry = new Hashtable();
     private Hashtable fAttributeDeclRegistry = new Hashtable();
 
@@ -1027,10 +1026,21 @@ public class TraverseSchema implements
 
         // create & register validator for "generated" type if it doesn't exist
         try {
-            DatatypeValidator newValidator = (DatatypeValidator) baseValidator.getClass().newInstance();
-           if (numFacets > 0)
-               newValidator.setFacets(facetData, varietyProperty );
-           fDatatypeRegistry.addValidator(fStringPool.toString(newSimpleTypeName),newValidator);
+           String nameOfType = 
+                            fStringPool.toString( newSimpleTypeName );
+
+           DatatypeValidator newValidator =
+                 fDatatypeRegistry.getDatatypeValidator( nameOfType );
+
+           if( newValidator == null ) { // not previously registered
+               boolean  derivedByList = 
+                    varietyProperty.equals( SchemaSymbols.ATTVAL_LIST ) ? true:false;
+
+               fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator,
+                              facetData, derivedByList ); 
+              
+               }
+            
            } catch (Exception e) {
                //e.printStackTrace(System.err);
                reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
@@ -1302,8 +1312,9 @@ public class TraverseSchema implements
             }
 
             // overide the facets of the baseTypeValidator
-            if (numFacets > 0)
-                baseTypeValidator.setFacets(facetData, derivedBy );
+            // Talk with Eric - This is not allowed in the new Architecture
+            //if (numFacets > 0)
+            //    baseTypeValidator.setFacets(facetData, derivedBy );
 
             // now we are ready with our own simpleTypeValidator
             simpleTypeValidator = baseTypeValidator;
@@ -1945,7 +1956,7 @@ public class TraverseSchema implements
                     dv = fDatatypeRegistry.getDatatypeValidator(datatype);
                     if (dv != null) 
                         //REVISIT
-                        dv.validate(fStringPool.toString(attDefaultValue));
+                        dv.validate(fStringPool.toString(attDefaultValue), null);
                     else
                         reportSchemaError(SchemaMessageProvider.NoValidatorFor,
                                           new Object [] { datatype });

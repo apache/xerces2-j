@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,17 +54,79 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
- 
+
 package org.apache.xerces.validators.datatype;
 
-/**
- * UnknownFacetException is thrown when a facet which not one of the datatype facets
- * is supplied to a datatype validator.
- */
-public class UnknownFacetException
-    extends Exception {
+import java.util.Hashtable;
+import java.util.Locale;
 
-    public UnknownFacetException() { super(); }
-    public UnknownFacetException(String msg) { super(msg); }
+/**
+ * ENTITYDatatypeValidator defines the interface that data type validators must obey.
+ * These validators can be supplied by the application writer and may be useful as
+ * standalone code as well as plugins to the validator architecture.
+ * 
+ * @author Jeffrey Rodriguez-
+ * @version $Id$
+ */
+public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
+    private DatatypeValidator fBaseValidator = null;
+    private boolean           fDerivedByList = false;
+
+    public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
+      this( null, null, false ); // Native, No Facets defined, Restriction
+    }
+
+    public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
+              boolean derivedByList  ) throws InvalidDatatypeFacetException {
+        ;
+    }
+
+
+    /**
+     * Checks that "content" string is valid 
+     * datatype.
+     * If invalid a Datatype validation exception is thrown.
+     * 
+     * @param content A string containing the content to be validated
+     * @param derivedBylist
+     *                Flag which is true when type
+     *                is derived by list otherwise it
+     *                it is derived by extension.
+     *                
+     * @exception throws InvalidDatatypeException if the content is
+     *                   invalid according to the rules for the validators
+     * @exception InvalidDatatypeValueException
+     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     */
+    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+        return null;
+    }
+
+    /**
+     * REVISIT
+     * Compares two Datatype for order
+     * 
+     * @return 
+     */
+    public int compare( String  content1, String content2){
+        return -1;
+    }
+
+    public Hashtable getFacets(){
+        return null;
+    }
+
+    // Private methods start here
+
+
+    /**
+     * 
+     * @param base   the validator for this type's base type
+     */
+    private void setBasetype(DatatypeValidator base){
+        fBaseValidator = base;
+    }
+
+
 
 }

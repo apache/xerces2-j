@@ -66,7 +66,7 @@ import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.validators.common.Grammar;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLElementDecl;
-import org.apache.xerces.validators.datatype.DatatypeValidatorRegistry;
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.validators.schema.XUtil;
 
 import org.w3c.dom.Document;
@@ -459,7 +459,7 @@ public class DTDGrammar
         fAttributeDecl.list = attList;
         fAttributeDecl.enumeration = enumeration;
         fAttributeDecl.datatypeValidator = 
-            DatatypeValidatorRegistry.getDatatypeRegistry().getDatatypeValidator(attTypeString);
+            DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(attTypeString);
         // REVISIT: Don't forget the enumeration
         fAttributeDecl.defaultType = attDefaultType;
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);

@@ -61,10 +61,16 @@ package org.apache.xerces.validators.datatype;
  * InvalidDatatypeValueException is thrown when data value doesn't match it's datatype
  *
  */
-public class InvalidDatatypeValueException
-    extends Exception {
+public class InvalidDatatypeValueException extends XMLException {
 
     public InvalidDatatypeValueException() { super(); }
     public InvalidDatatypeValueException(String msg) { super(msg); }
+    public InvalidDatatypeValueException ( Exception exception ) {
+        super( exception );
+    }
+    public InvalidDatatypeValueException ( String message, Exception exception ) {
+        super( message, exception );
+    }
+
 
 }

@@ -1,30 +1,28 @@
 # Makefile for directory ./org/apache/xerces/validators/datatype
 
 TARGETS=\
-	BinaryValidator.class\
-	BooleanValidator.class\
+	AbstractDatatypeValidator.class\
+	BinaryDatatypeValidator.class\
+	BooleanDatatypeValidator.class\
 	DatatypeMessageProvider.class\
 	DatatypeValidator.class\
-	DatatypeValidatorRegistry.class\
-	DecimalValidator.class\
-	DoubleValidator.class\
-	FloatValidator.class\
-	ConstrainException.class\
-	IllegalFacetException.class\
-	IllegalFacetValueException.class\
+	DatatypeValidatorFactory.class\
+	DecimalDatatypeValidator.class\
+	DoubleDatatypeValidator.class\
+	ENTITYDatatypeValidator.class \
+	FloatDatatypeValidator.class\
+	IDDatatypeValidator.class \
+	IDREFDatatypeValidator.class \
+	InvalidDatatypeFacetException.class\
 	InvalidDatatypeValueException.class\
-	RecurringDurationValidator.class\
-	StringValidator.class\
-	TimeDurationValidator.class\
-	UnknownFacetException.class\
-	URIReferenceValidator.class \
-	IDValidator.class \
-	IDREFValidator.class \
-	ENTITYValidator.class \
-	NOTATIONValidator.class \
-	QNameValidator.class\
-	URIReferenceValidator.class \
-	DatatypeValidatorRegistry.class 
+	NOTATIONDatatypeValidator.class \
+	QNameDatatypeValidator.class\
+	StringDatatypeValidator.class\
+	URIReferenceDatatypeValidator.class \
+	RecurringDurationDatatypeValidator.class\
+	TimeDurationDatatypeValidator.class\
+	DatatypeValidatorFactoryImpl.class\
+	XMLException.class 
 
 DIRS = 
 

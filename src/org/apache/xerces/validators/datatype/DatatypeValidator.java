@@ -68,6 +68,7 @@ import java.util.Locale;
  * W3C to remove facets from the data type spec.
  * 
  * @author Jeffrey Rodriguez-
+ * @version $i$
  */
 public interface DatatypeValidator {
     public static final int FACET_LENGTH       = 1;
@@ -84,8 +85,6 @@ public interface DatatypeValidator {
     public static final int FACET_ENCODING     = 1<<11;
     public static final int FACET_DURATION     = 1<<12;
     public static final int FACET_PERIOD       = 1<<13;
-    public static final int DERIVED_BY_RESTRICTION   = 1;
-    public static final int DERIVED_BY_LIST          = 1<<1;
 
 
 
@@ -105,56 +104,28 @@ public interface DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content ) throws InvalidDatatypeValueException;
-
-    /**
-     * set the facets for this datatype
-     * 
-     * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other.
-     * 
-     * @param facets A hashtable where facet name Symbols  are keys and facet values are stored
-     *               in the hashtable.  Usually facet values are strings, except for the
-     *               enumeration facet.  The value for this facet is a Vector of strings, one
-     *               per enumeration value
-     * @exception throws UnknownFacetException
-     * @exception throws IllegalFacetException
-     * @exception throws IllegalFacetValueException
-     * @exception UnknownFacetException
-     * @exception IllegalFacetException
-     * @exception IllegalFacetValueException
-     * @exception ConstrainException
-     * @see org.apache.xerces.validators.schema.SchemaSymbols
-     * @see org.apache.xerces.validators.datatype.IllegalFacetException
-     * @see org.apache.xerces.validators.datatype.IllegalFacetValueException
-     * @see org.apache.xerces.validators.datatype.ConstrainException
-     */
-    public void setFacets(Hashtable facets,String  derivationType ) throws UnknownFacetException, 
-        IllegalFacetException, IllegalFacetValueException,  ConstrainException; 
-
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
-    public void setBasetype(String base);
+    public Object validate(String content, Object state ) throws InvalidDatatypeValueException;
 
 
     /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale);
-
-    /**
-     * REVISIT
-     * Compares two Datatype for order
+     * returns the datatype facet if any is set as a
+     * Hashtable
      * 
-     * @param o1
-     * @param o2
      * @return 
      */
-    public int compare( DatatypeValidator o1, DatatypeValidator o2);
+    public Hashtable getFacets();
+
+
+    /**
+     * Compares content in the Domain value vs. lexical
+     * value.
+     * e.g. If type is a float then 1.0 may be equivalent
+     * to 1 even tough both are lexically different.
+     * 
+     * @param value1
+     * @param valu2
+     * @return 
+     */
+    public int compare( String value1, String value2);
 
 }

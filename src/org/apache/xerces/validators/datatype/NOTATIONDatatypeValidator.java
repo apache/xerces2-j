@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,8 +66,19 @@ import java.util.Locale;
  * standalone code as well as plugins to the validator architecture.
  * 
  * @author Jeffrey Rodriguez-
+ * @version $Id$
  */
-public class NOTATIONValidator implements DatatypeValidator {
+public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
+    private DatatypeValidator fBaseValidator = null;
+
+    public NOTATIONDatatypeValidator () throws InvalidDatatypeFacetException {
+        this( null, null, false ); // Native, No Facets defined, Restriction
+    }
+
+    public NOTATIONDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+         boolean derivedByList ) throws InvalidDatatypeFacetException {
+    }
+
 
     /**
      * Checks that "content" string is valid 
@@ -85,41 +96,14 @@ public class NOTATIONValidator implements DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content ) throws InvalidDatatypeValueException{
+    public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+        return null;
     }
 
-    /**
-     * set the facets for this datatype
-     * 
-     * setFacets is responsible for ensuring that the supplied facets do not contradict each
-     * other.
-     * 
-     * @param facets A hashtable where facet name Symbols  are keys and facet values are stored
-     *               in the hashtable.  Usually facet values are strings, except for the
-     *               enumeration facet.  The value for this facet is a Vector of strings, one
-     *               per enumeration value
-     * @exception throws UnknownFacetException
-     * @exception throws IllegalFacetException
-     * @exception throws IllegalFacetValueException
-     * @exception UnknownFacetException
-     * @exception IllegalFacetException
-     * @exception IllegalFacetValueException
-     * @see         org.apache.xerces.validators.schema.SchemaSymbols
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetException
-     * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
-     */
-    public void setFacets(Hashtable facets, String derivedBy) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    public Hashtable getFacets(){
+        return null;
     }
 
-    /**
-     * Name of base type as a string.
-     * A Native datatype has the string "native"  as its
-     * base type.
-     * 
-     * @param base   the validator for this type's base type
-     */
-    public void setBasetype(String base){
-    }
 
 
     /**
@@ -136,8 +120,20 @@ public class NOTATIONValidator implements DatatypeValidator {
      * @param o2
      * @return 
      */
-    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+    public int compare( String content1, String content2){
         return -1;
     }
+    /**
+     * Name of base type as a string.
+     * A Native datatype has the string "native"  as its
+     * base type.
+     * 
+     * @param base   the validator for this type's base type
+     */
+
+    private void setBasetype(DatatypeValidator base){
+        fBaseValidator = base;
+    }
+
 
 }

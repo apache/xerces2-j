@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,17 +54,81 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
- 
-package org.apache.xerces.validators.datatype;
+
 
 /**
- * IllegalFacetException is thrown when the supplied facet is not allowed 
- * for a datatype
- */
-public class IllegalFacetException
-    extends Exception {
+ * @version $Id$
+ * @author  Jeffrey Rodriguez
+*/
 
-    public IllegalFacetException() { super(); }
-    public IllegalFacetException(String msg) { super(msg); }
 
+
+package org.apache.xerces.validators.datatype;
+import java.util.Hashtable;
+import org.apache.xerces.validators.datatype.DatatypeValidator;
+
+
+class AbstractDatatypeValidator implements DatatypeValidator {
+
+    private Hashtable fFacets; // Hashtable of Facets Strings.
+
+    public AbstractDatatypeValidator(){
+    }
+    public AbstractDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
+                                                                    boolean list ){ 
+
+
+    }
+
+    /**
+     * Checks that "content" string is valid
+     * datatype.
+     * If invalid a Datatype validation exception is thrown.
+     *
+     * @param content A string containing the content to be validated
+     * @param derivedBylist
+     *                Flag which is true when type
+     *                is derived by list otherwise it
+     *                it is derived by extension.
+     *
+     * @exception throws InvalidDatatypeException if the content is
+     *                   invalid according to the rules for the validators
+     * @exception InvalidDatatypeValueException
+     * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+     */
+    public Object validate(String content, Object state) throws InvalidDatatypeValueException{ 
+        return null;
+    }
+
+    /**
+     * returns the datatype facet if any is set as a
+     * Hashtable
+     *
+     * @return
+     */
+    public Hashtable getFacets() {
+        return null;
+    }
+    /**
+     * Compares content in the Domain value vs. lexical
+     * value.
+     * e.g. If type is a float then 1.0 may be equivalent
+     * to 1 even tough both are lexically different.
+     *
+     * @param value1
+     * @param valu2
+     * @return
+     */
+    public int compare(String value1, String valu2) {
+        return 0;
+    }
+    /**
+     * sets the datatype facet if any is set as a
+     * Hashtable
+     *
+     * @return
+     */
+    
+    public void setFacets(Hashtable facets, boolean list) {
+    }
 }

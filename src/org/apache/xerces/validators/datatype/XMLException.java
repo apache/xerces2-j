@@ -54,17 +54,21 @@
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
- 
 package org.apache.xerces.validators.datatype;
 
-/**
- * IllegalFacetValueException is thrown when a facet's value does not match its datatype
- *
- */
-public class IllegalFacetValueException
-    extends Exception {
 
-    public IllegalFacetValueException() { super(); }
-    public IllegalFacetValueException(String msg) { super(msg); }
+public class XMLException extends Exception {
 
+    public XMLException ( ) {
+    }
+
+    public XMLException ( String message ) {
+    }
+    public XMLException ( Exception exception ) {
+    }
+    public XMLException ( String message, Exception exception ) {
+    }
+    public Exception getException ( ) {
+        return null;
+    }
 }

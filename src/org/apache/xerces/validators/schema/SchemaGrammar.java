@@ -64,7 +64,7 @@ import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
-import org.apache.xerces.validators.datatype.DatatypeValidatorRegistry;
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLContentModel;
 import org.apache.xerces.validators.common.XMLElementDecl;
@@ -112,7 +112,7 @@ public class SchemaGrammar extends Grammar{
     //ComplexType and SimpleTypeRegistries
     private Hashtable fComplexTypeRegistry = null;
     private Hashtable fAttributeDeclRegistry = null;
-    private DatatypeValidatorRegistry fDatatypeRegistry = null;
+    private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
 
     Hashtable topLevelGroupDecls = new Hashtable();
     Hashtable topLevelAttrDecls  = new Hashtable();
@@ -129,7 +129,7 @@ public class SchemaGrammar extends Grammar{
         return fComplexTypeRegistry;
     }
 
-    public DatatypeValidatorRegistry getDatatypeRegistry(){
+    public DatatypeValidatorFactoryImpl getDatatypeRegistry(){
         return fDatatypeRegistry;
     }
 
@@ -198,7 +198,7 @@ public class SchemaGrammar extends Grammar{
         fComplexTypeRegistry = cTypeReg;
     }
 
-    protected void setDatatypeRegistry(DatatypeValidatorRegistry dTypeReg){
+    protected void setDatatypeRegistry(DatatypeValidatorFactoryImpl dTypeReg){
         fDatatypeRegistry = dTypeReg;
     }
 

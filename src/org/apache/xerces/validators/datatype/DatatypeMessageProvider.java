@@ -62,6 +62,11 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import org.apache.xerces.utils.XMLMessageProvider;
 
+/**
+ * @version $i$
+ */
+
+
 public class DatatypeMessageProvider implements XMLMessageProvider {
     /**
      * The domain of messages concerning the XML Schema: Datatypes specification.
