@@ -100,7 +100,7 @@ public class AttrNSImpl
 	} else {
 	    this.namespaceURI = null;
 	}
-        
+
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
@@ -125,14 +125,20 @@ public class AttrNSImpl
 		} else if (prefix.equals("xmlns")) {
 		    this.namespaceURI = "http://www.w3.org/2000/xmlns/";
 		}
+	    } else if (qualifiedName.equals("xmlns")) {
+		this.namespaceURI = "http://www.w3.org/2000/xmlns/";
 	    }
 	} else {
-	    if ((prefix != null &&
+	    if ((prefix != null
+		 &&
 		 ((prefix.equals("xml")
 		   && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))
-		  ||(prefix.equals("xmlns")
-		     && !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))))
-		|| qualifiedName.equals("xmlns")) {
+		  ||
+		  (prefix.equals("xmlns")
+		   && !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))))
+		||
+		(qualifiedName.equals("xmlns")
+		 && !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))) {
 		throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
 					   "NAMESPACE_ERR");
 	    }
@@ -172,7 +178,7 @@ public class AttrNSImpl
         // REVIST: This code could/should be done at a lower-level, such that the namespaceURI
         // is set properly upon creation. However, there still seems to be some DOM spec 
         // interpretation grey-area.
-        return namespaceURI;
+	return namespaceURI;
     }
     
     /** 
@@ -211,13 +217,25 @@ public class AttrNSImpl
         if (syncData) {
             synchronizeData();
         }
-    	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
+	// treat an empty string as a null
+	if (prefix != null && prefix.equals("")) {
+	    prefix = null;
+	}
+	if (namespaceURI == null ||
+	    (prefix != null
+	     &&
+	     ((prefix.equals("xmlns")
+	       && !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))
+	      ||
+	      (prefix.equals("xml")
+	       && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))))) {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+				       "NAMESPACE_ERR");
+    	}
+	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
-        } else if (namespaceURI == null || namespaceURI.equals("")) {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
+        }
         this.prefix = prefix;
     }
                                         

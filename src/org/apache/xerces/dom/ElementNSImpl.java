@@ -206,25 +206,20 @@ public class ElementNSImpl
         if (syncData) {
             synchronizeData();
         }
-    	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
+	// treat an empty string as a null
+	if (prefix != null && prefix.equals("")) {
+	    prefix = null;
+	}
+	if (namespaceURI == null
+	    || (prefix != null && prefix.equals("xml")
+		&& !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) {
+    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
+				       "NAMESPACE_ERR");
+        }
+	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
     	                               "INVALID_CHARACTER_ERR");
         }
-        
-        if (prefix != null && prefix.equals("xml")) {
-            if (!(namespaceURI != null && namespaceURI.equals("") 
-            && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))) 
-            {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-            } 
-        }
-        else if (namespaceURI == null || namespaceURI.equals("")) 
-        {
-    	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-    	                            "NAMESPACE_ERR");
-    	}
-        
         this.prefix = prefix;
     }
                                         
