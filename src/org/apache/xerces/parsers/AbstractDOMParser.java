@@ -1550,7 +1550,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 }
             }
 
-            if (fDeferredEntityDecl != -1) {
+            if (fDeferredEntityDecl != -1 && 
+                 fDeferredDocumentImpl.getLastChild(fDeferredEntityDecl, false) == -1) {
+                    // entity definition exists and it does not have any children
                int prevIndex = -1;
                int childIndex = fDeferredDocumentImpl.getLastChild(fCurrentNodeIndex, false);
                while (childIndex != -1) {
