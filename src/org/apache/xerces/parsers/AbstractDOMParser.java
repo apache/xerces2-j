@@ -368,7 +368,12 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void ignorableWhitespace(XMLString text) throws XNIException {
-
+        if (fInCDATASection) {
+            CDATASection cdataSection = (CDATASection)fCurrentNode;
+            cdataSection.appendData(text.toString());
+            return;
+        }
+        
         Node child = fCurrentNode.getLastChild();
         if (child != null && child.getNodeType() == Node.TEXT_NODE) {
             Text textNode = (Text)child;
@@ -520,7 +525,8 @@ public abstract class AbstractDOMParser
             int entityLength = attributes.getEntityLength(attrIndex, i);
 
             // is this entity not in this text?
-            if (entityOffset > textOffset + textLength) {
+            //  
+            if ( text.getNodeValue().length() == 0 || entityOffset > textOffset + textLength) {
                 break;
             }
          
