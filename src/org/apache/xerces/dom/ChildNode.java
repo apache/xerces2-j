@@ -83,11 +83,7 @@ public abstract class ChildNode
     // Data
     //
 
-    /** Previous sibling. */
-    protected ChildNode previousSibling;
-
-    /** Next sibling. */
-    protected ChildNode nextSibling;
+    int parentIndex = -1;	// cache
 
     //
     // Constructors
@@ -137,10 +133,8 @@ public abstract class ChildNode
 
     	ChildNode newnode = (ChildNode) super.cloneNode(deep);
     	
-        // Need to break the association w/ original kids
-    	newnode.previousSibling = null;
-        newnode.nextSibling     = null;
-        newnode.isFirstChild(false);
+        // invalidate cache
+    	newnode.parentIndex = -1;
 
     	return newnode;
 
@@ -166,23 +160,47 @@ public abstract class ChildNode
 
     /** The next child of this node's parent, or null if none */
     public Node getNextSibling() {
-        return nextSibling;
+        NodeImpl parent = parentNode();
+        if (parent == null)
+            return null;
+	if (parentIndex < 0 || parent.item(parentIndex) != this)
+	    parentIndex = parent.getIndexOf(this);
+	return parent.item(parentIndex + 1);
     }
 
     /** The previous child of this node's parent, or null if none */
     public Node getPreviousSibling() {
-        // if we are the firstChild, previousSibling actually refers to our
-        // parent's lastChild, but we hide that
-        return isFirstChild() ? null : previousSibling;
+        NodeImpl parent = parentNode();
+        if (parent == null)
+            return null;
+	if (parentIndex < 0 || parent.item(parentIndex) != this)
+	    parentIndex = parent.getIndexOf(this);
+	return parent.item(parentIndex - 1);
     }
 
     /*
      * same as above but returns internal type
      */
     final ChildNode previousSibling() {
-        // if we are the firstChild, previousSibling actually refers to our
-        // parent's lastChild, but we hide that
-        return isFirstChild() ? null : previousSibling;
+        NodeImpl parent = parentNode();
+        if (parent == null)
+            return null;
+	if (parentIndex < 0 || parent.item(parentIndex) != this)
+	    parentIndex = parent.getIndexOf(this);
+	return (ChildNode) parent.item(parentIndex - 1);
+    }
+
+    //
+    // Protected methods
+    //
+
+    /** Denotes that this node has changed. */
+    protected void changed() {
+        // ++changes; we just let the parent know
+        NodeImpl parentNode = parentNode();
+    	if (parentNode != null) {
+            parentNode.changed();
+        }
     }
 
 } // class ChildNode

@@ -80,19 +80,8 @@ public abstract class ChildAndParentNode
     /** Owner document. */
     protected DocumentImpl ownerDocument;
 
-    /** First child. */
-    protected ChildNode firstChild = null;
-
-    // transients
-
-    /** Cached node list length. */
-    protected transient int nodeListLength = -1;
-
-    /** Last requested node. */
-    protected transient ChildNode nodeListNode;
-
-    /** Last requested node index. */
-    protected transient int nodeListIndex = -1;
+    protected ChildNode		children [];
+    protected int		length;
 
     //
     // Constructors
@@ -109,6 +98,53 @@ public abstract class ChildAndParentNode
 
     /** Constructor for serialization. */
     public ChildAndParentNode() {}
+
+    /**
+     * Called to minimize space utilization.  Affects only
+     * this node; children must be individually trimmed.
+     */
+    public void trimToSize ()
+    {
+	if (length == 0)
+	    children = null;
+        else if (children.length != length) {
+	    ChildNode	temp [] = new ChildNode [length];
+
+            System.arraycopy (children, 0, temp, 0, length);
+	    children = temp;
+	}
+    }
+
+    public void reduceWaste ()
+    {
+	if (children == null)
+	    return;
+
+	//
+	// Arbitrary -- rather than paying trimToSize() costs
+	// on most elements, we routinely accept some waste but
+	// do try to reduce egregious waste.  Interacts with
+	// the array allocation done in appendChild.
+	//
+	if ((children.length - length) > 6)
+            trimToSize ();
+    }
+
+    /**
+     * Returns the index of the node in the list of children, such
+     * that <em>item()</em> will return that child.
+     *
+     * @param maybeChild the node which may be a child of this one
+     * @return the index of the node in the set of children, or
+     *	else -1 if that node is not a child
+     */
+    final protected int getIndexOf(Node maybeChild)
+    {
+	for (int i = 0; i < length; i++)
+	    if (children[i] == maybeChild)
+		return i;
+	return -1;
+    }
 
     //
     // NodeList methods
@@ -145,18 +181,13 @@ public abstract class ChildAndParentNode
         }
 
     	// Need to break the association w/ original kids
-    	newnode.firstChild      = null;
-
-        // invalidate cache for children NodeList
-        newnode.nodeListIndex = -1;
-        newnode.nodeListLength = -1;
+        newnode.children = null;
+        newnode.length = 0;
 
         // Then, if deep, clone the kids too.
     	if (deep) {
-            for (Node child = firstChild;
-                 child != null;
-                 child = child.getNextSibling()) {
-                newnode.appendChild(child.cloneNode(true));
+            for (int i = 0; i < length; i++) {
+                newnode.appendChild(children[i].cloneNode(true));
             }
         }
 
@@ -189,9 +220,9 @@ public abstract class ChildAndParentNode
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-	for (Node child = firstChild;
-	     child != null; child = child.getNextSibling()) {
-	    ((NodeImpl) child).setOwnerDocument(doc);
+        ownerDocument = doc;
+	for (int i = 0; i < length; i++) {
+	    children[i].setOwnerDocument(doc);
 	}
         ownerDocument = doc;
     }
@@ -204,7 +235,7 @@ public abstract class ChildAndParentNode
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-        return firstChild != null;
+        return length > 0;
     }
 
     /**
@@ -236,7 +267,9 @@ public abstract class ChildAndParentNode
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-    	return firstChild;
+        if (length == 0)
+            return null;
+    	return children[0];
 
     }   // getFirstChild():Node
 
@@ -246,20 +279,16 @@ public abstract class ChildAndParentNode
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-        return lastChild();
+	if (length == 0)
+	    return null;
+	return children[length - 1];
 
     } // getLastChild():Node
 
     final ChildNode lastChild() {
-        // last child is stored as the previous sibling of first child
-        return firstChild != null ? firstChild.previousSibling : null;
-    }
-
-    final void lastChild(ChildNode node) {
-        // store lastChild as previous sibling of first child
-        if (firstChild != null) {
-            firstChild.previousSibling = node;
-        }
+	if (length == 0)
+	    return null;
+	return children[length - 1];
     }
 
     /**
@@ -357,11 +386,9 @@ public abstract class ChildAndParentNode
 
             // No need to check kids for right-document; if they weren't,
             // they wouldn't be kids of that DocFrag.
-            for (Node kid = newChild.getFirstChild(); // Prescan
-                 kid != null;
-                 kid = kid.getNextSibling()) {
-
-                if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
+            for (int i = 0; i < length; i++) { // Prescan
+                if (errorChecking &&
+                    !ownerDocument.isKidOK(this, children[i])) {
                     throw new DOMExceptionImpl(
                                            DOMException.HIERARCHY_REQUEST_ERR, 
                                            "DOM006 Hierarchy request error");
@@ -403,65 +430,52 @@ public abstract class ChildAndParentNode
                 oldparent.removeChild(newInternal);
             }
 
-            // Convert to internal type, to avoid repeated casting
-            ChildNode refInternal = (ChildNode)refChild;
+            if (refChild == null) { // append
 
-            // Attach up
-            newInternal.ownerNode = this;
-            newInternal.isOwned(true);
+                // this is the only place this vector needs allocating,
+                // though it may also need to be grown in insertBefore.
+                // most elements have very few children
+                if (children == null)
+                    children = new ChildNode [3];
+                else if (children.length == length) {
+                    ChildNode temp [] = new ChildNode [length * 2];
+                    System.arraycopy(children, 0, temp, 0, length);
+                    children = temp;
+                }
 
-            // Attach before and after
-            // Note: firstChild.previousSibling == lastChild!!
-            if (firstChild == null) {
-                // this our first and only child
-                firstChild = newInternal;
-                newInternal.isFirstChild(true);
-                newInternal.previousSibling = newInternal;
+                // set parent
+                newInternal.ownerNode = this;
+                newInternal.isOwned(true);
+                newInternal.parentIndex = length;
+
+                children [length++] = newInternal;
+
             } else {
-                if (refInternal == null) {
-                    // this is an append
-                    ChildNode lastChild = firstChild.previousSibling;
-                    lastChild.nextSibling = newInternal;
-                    newInternal.previousSibling = lastChild;
-                    firstChild.previousSibling = newInternal;
-                } else {
-                    // this is an insert
-                    if (refChild == firstChild) {
-                        // at the head of the list
-                        firstChild.isFirstChild(false);
-                        newInternal.nextSibling = firstChild;
-                        newInternal.previousSibling =
-                            firstChild.previousSibling;
-                        firstChild.previousSibling = newInternal;
-                        firstChild = newInternal;
-                        newInternal.isFirstChild(true);
-                    } else {
-                        // somewhere in the middle
-                        ChildNode prev = refInternal.previousSibling;
-                        newInternal.nextSibling = refInternal;
-                        prev.nextSibling = newInternal;
-                        refInternal.previousSibling = newInternal;
-                        newInternal.previousSibling = prev;
-                    }
+
+                // grow array if needed
+                if (children.length == length) {
+                    ChildNode temp [] = new ChildNode [length * 2];
+                    System.arraycopy(children, 0, temp, 0, length);
+                    children = temp;
+                }
+
+                for (int i = 0; i < length; i++) {
+                    if (children [i] != refChild)
+                        continue;
+
+                    // set parent
+                    newInternal.ownerNode = this;
+                    newInternal.isOwned(true);
+                    newInternal.parentIndex = i;
+
+                    System.arraycopy(children, i, children, i + 1, length - i);
+                    children [i] = newInternal;
+                    length++;
+                    break;
                 }
             }
 
             changed();
-
-            // update cached length if we have any
-            if (nodeListLength != -1) {
-                nodeListLength++;
-            }
-            if (nodeListIndex != -1) {
-                // if we happen to insert just before the cached node, update
-                // the cache to the new node to match the cached index
-                if (nodeListNode == refInternal) {
-                    nodeListNode = newInternal;
-                } else {
-                    // otherwise just invalidate the cache
-                    nodeListIndex = -1;
-                }
-            }
 
             if(MUTATIONEVENTS && ownerDocument.mutationEvents)
             {
@@ -632,50 +646,24 @@ public abstract class ChildAndParentNode
             }
         } // End mutation preprocessing
 
-        // update cached length if we have any
-        if (nodeListLength != -1) {
-            nodeListLength--;
-        }
-        if (nodeListIndex != -1) {
-            // if the removed node is the cached node
-            // move the cache to its (soon former) previous sibling
-            if (nodeListNode == oldInternal) {
-                nodeListIndex--;
-                nodeListNode = oldInternal.previousSibling();
-            } else {
-                // otherwise just invalidate the cache
-                nodeListIndex = -1;
+        // Patch tree past oldChild
+	for (int i = 0; i < length; i++) {
+	    if (children [i] != oldInternal)
+		continue;
+	    if ((i + 1) != length) {
+		System.arraycopy (children, i + 1, children, i,
+		    (length - 1) - i);
             }
-        }
+	    length--;
+	    children[length] = null;
 
-        // Patch linked list around oldChild
-        // Note: lastChild == firstChild.previousSibling
-        if (oldInternal == firstChild) {
-            // removing first child
-            oldInternal.isFirstChild(false);
-            firstChild = oldInternal.nextSibling;
-            if (firstChild != null) {
-                firstChild.isFirstChild(true);
-                firstChild.previousSibling = oldInternal.previousSibling;
-            }
-        } else {
-            ChildNode prev = oldInternal.previousSibling;
-            ChildNode next = oldInternal.nextSibling;
-            prev.nextSibling = next;
-            if (next == null) {
-                // removing last child
-                firstChild.previousSibling = prev;
-            } else {
-                // removing some other child in the middle
-                next.previousSibling = prev;
-            }
-        }
+            break;
+	}
 
         // Remove oldInternal's references to tree
         oldInternal.ownerNode       = ownerDocument;
         oldInternal.isOwned(false);
-        oldInternal.nextSibling     = null;
-        oldInternal.previousSibling = null;
+        oldInternal.parentIndex = -1;
 
         changed();
 
@@ -755,24 +743,7 @@ public abstract class ChildAndParentNode
      * @return int
      */
     public int getLength() {
-
-        if (nodeListLength == -1) { // is the cached length invalid ?
-            ChildNode node;
-            // start from the cached node if we have one
-            if (nodeListIndex != -1 && nodeListNode != null) {
-                nodeListLength = nodeListIndex;
-                node = nodeListNode;
-            } else {
-                node = firstChild;
-                nodeListLength = 0;
-            }
-            for (; node != null; node = node.nextSibling) {
-                nodeListLength++;
-            }
-        }
-
-        return nodeListLength;
-
+        return length;
     } // getLength():int
 
     /**
@@ -782,32 +753,13 @@ public abstract class ChildAndParentNode
      * @param Index int
      */
     public Node item(int index) {
-        // short way
-        if (nodeListIndex != -1 && nodeListNode != null) {
-            if (nodeListIndex < index) {
-                while (nodeListIndex < index && nodeListNode != null) {
-                    nodeListIndex++;
-                    nodeListNode = nodeListNode.nextSibling;
-                }
-            }
-            else if (nodeListIndex > index) {
-                while (nodeListIndex > index && nodeListNode != null) {
-                    nodeListIndex--;
-                    nodeListNode = nodeListNode.previousSibling();
-                }
-            }
-            return nodeListNode;
-        }
-
-        // long way
-        nodeListNode = firstChild;
-        for (nodeListIndex = 0; 
-             nodeListIndex < index && nodeListNode != null; 
-             nodeListIndex++) {
-            nodeListNode = nodeListNode.nextSibling;
-        }
-        return nodeListNode;
-
+	if (length == 0 || index >= length)
+	    return null;
+	try {
+	    return children[index];
+	} catch (ArrayIndexOutOfBoundsException e) {
+	    return null;
+	}
     } // item(int):Node
 
     //
@@ -822,8 +774,8 @@ public abstract class ChildAndParentNode
     public void normalize() {
 
         Node kid;
-        for (kid = firstChild; kid != null; kid = kid.getNextSibling()) {
-            kid.normalize();
+        for (int i = 0; i < length; i++) {
+            children[i].normalize();
         }
     }
 
@@ -850,11 +802,9 @@ public abstract class ChildAndParentNode
             }
 
             // Recursively set kids
-            for (ChildNode mykid = firstChild;
-                 mykid != null;
-                 mykid = mykid.nextSibling) {
-                if(!(mykid instanceof EntityReference)) {
-                    mykid.setReadOnly(readOnly,true);
+            for (int i = 0; i < length; i++) {
+                if(!(children[i] instanceof EntityReference)) {
+                    children[i].setReadOnly(readOnly,true);
                 }
             }
         }
@@ -893,28 +843,29 @@ public abstract class ChildAndParentNode
         // create children and link them as siblings
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl)this.ownerDocument;
-        ChildNode first = null;
-        ChildNode last = null;
-        for (int index = ownerDocument.getLastChild(nodeIndex);
-             index != -1;
-             index = ownerDocument.getPrevSibling(index)) {
 
-            ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
-            if (last == null) {
-                last = node;
-            }
-            else {
-                first.previousSibling = node;
-            }
-            node.ownerNode = this;
-            node.isOwned(true);
-            node.nextSibling = first;
-            first = node;
+        // first count them
+        for (int index = ownerDocument.getLastChild(nodeIndex, false);
+             index != -1;
+             index = ownerDocument.getPrevSibling(index, false)) {
+            length++;
         }
-        if (last != null) {
-            firstChild = first;
-            first.isFirstChild(true);
-            lastChild(last);
+
+        // then fluff them up
+        if (length > 0) {
+            children = new ChildNode [length];
+
+            int count = length;
+            for (int index = ownerDocument.getLastChild(nodeIndex);
+                 index != -1;
+                 index = ownerDocument.getPrevSibling(index)) {
+
+                ChildNode node = (ChildNode)ownerDocument.getNodeObject(index);
+                node.ownerNode = this;
+                node.isOwned(true);
+                node.parentIndex = --count;
+                children[count] = node;
+            }
         }
 
         // set mutation events flag back to its original value
@@ -949,10 +900,6 @@ public abstract class ChildAndParentNode
         // to try to synchildren when we just desealize object.
 
         needsSyncChildren(false);
-
-        // initialize transients
-        nodeListLength = -1;
-        nodeListIndex = -1;
 
     } // readObject(ObjectInputStream)
 

@@ -237,19 +237,19 @@ public class AttrImpl
             if (needsSyncChildren()) {
                 synchronizeChildren();
             }
-            while(firstChild!=null)
-                internalRemoveChild(firstChild,MUTATION_LOCAL);
+            while (length != 0)
+                internalRemoveChild(children[0], MUTATION_LOCAL);
         }
         else
         {
             // simply discard children
-            if (firstChild != null) {
-                // remove ref from first child to last child
-                firstChild.previousSibling = null;
-                firstChild.isFirstChild(false);
-                // then remove ref to first child
-                firstChild   = null;
+            for (int i = 0; i < length; i++) {
+                // remove ref from every child to this node
+                children[i].ownerNode = ownerDocument;
+                children[i].isOwned(false);
+                children[i].parentIndex = -1;
             }
+            length = 0;
             needsSyncChildren(false);
         }
 
@@ -283,17 +283,15 @@ public class AttrImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-        if (firstChild == null) {
+        if (length == 0) {
             return "";
         }
-        ChildNode node = firstChild.nextSibling;
-        if (node == null) {
-            return firstChild.getNodeValue();
+        if (length == 1) {
+            return children[0].getNodeValue();
         }
-    	StringBuffer value = new StringBuffer(firstChild.getNodeValue());
-    	while (node != null) {
-            value.append(node.getNodeValue());
-            node = node.nextSibling;
+    	StringBuffer value = new StringBuffer(children[0].getNodeValue());
+    	for (int i = 1; i < length; i++) {
+            value.append(children[i].getNodeValue());
     	}
     	return value.toString();
 
@@ -353,20 +351,15 @@ public class AttrImpl
     public void normalize() {
 
     	Node kid, next;
-    	for (kid = firstChild; kid != null; kid = next) {
-    		next = kid.getNextSibling();
-
-    		// If kid and next are both Text nodes (but _not_ CDATASection,
-    		// which is a subclass of Text), they can be merged.
-    		if (next != null
-			 && kid.getNodeType() == Node.TEXT_NODE
-			 && next.getNodeType() == Node.TEXT_NODE)
-    	    {
-    			((Text)kid).appendData(next.getNodeValue());
-    			removeChild(next);
-    			next = kid; // Don't advance; there might be another.
-    		}
-
+    	for (int i = 0; i < length; i++) {
+            // If kid and next are both Text nodes (but _not_ CDATASection,
+            // which is a subclass of Text), they can be merged.
+            if (i + 1 < length
+                && children[i].getNodeType() == Node.TEXT_NODE
+                && children[i + 1].getNodeType() == Node.TEXT_NODE) {
+                ((Text)children[i]).appendData(children[i + 1].getNodeValue());
+                removeChild(children[i + 1]);
+            }
         }
 
     } // normalize()

@@ -338,6 +338,13 @@ public abstract class NodeImpl
         return null;            // default behavior, overriden in ChildNode
     }
 
+    // overriden in subclasses ParentNode and ChildAndParentNode
+    public void reduceWaste () {}
+
+    protected int getIndexOf (Node maybeChild) {
+        return -1;              // overridden by ParentNode
+    }
+
     /**
      * Return the collection of attributes associated with this node,
      * or null if none. At this writing, Element is the only type of node

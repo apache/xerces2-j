@@ -233,7 +233,7 @@ public class EntityReferenceImpl
      * This doesn't really support editing the Entity though.
      */
     protected void synchronize() {
-        if (firstChild != null) {
+        if (length != 0) {
             return;
         }
     	DocumentType doctype;

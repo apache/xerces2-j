@@ -1142,6 +1142,9 @@ public class DOMParser
         else {
             fCurrentElementNode = fCurrentElementNode.getParentNode();
             fWithinElement = false;
+            if (fDocumentImpl != null) {
+                ((NodeImpl)fCurrentElementNode).reduceWaste();
+            }
         }
 
     } // endElement(QName)

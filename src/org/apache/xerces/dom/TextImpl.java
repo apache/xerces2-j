@@ -182,7 +182,7 @@ public class TextImpl
         // insert new text node
         Node parentNode = getParentNode();
     	if (parentNode != null) {
-    		parentNode.insertBefore(newText, nextSibling);
+            parentNode.insertBefore(newText, getNextSibling());
         }
 
     	return newText;

@@ -1385,24 +1385,26 @@ public class DeferredDocumentImpl
 
         getNodeType(0);
 
-        // create children and link them as siblings
-        ChildNode first = null;
-        ChildNode last = null;
+        // first count children
+        for (int index = getLastChild(0, false);
+             index != -1;
+             index = getPrevSibling(index, false)) {
+            length++;
+        }
+
+        // then fluff them up
+        children = new ChildNode [length];
+
+        int count = length;
         for (int index = getLastChild(0);
              index != -1;
              index = getPrevSibling(index)) {
 
             ChildNode node = (ChildNode)getNodeObject(index);
-            if (last == null) {
-                last = node;
-            }
-            else {
-                first.previousSibling = node;
-            }
             node.ownerNode = this;
             node.isOwned(true);
-            node.nextSibling = first;
-            first = node;
+            node.parentIndex = --count;
+            children[count] = node;
 
             // save doctype and document type
             int type = node.getNodeType();
@@ -1412,12 +1414,6 @@ public class DeferredDocumentImpl
             else if (type == Node.DOCUMENT_TYPE_NODE) {
                 docType = (DocumentTypeImpl)node;
             }
-        }
-
-        if (first != null) {
-            firstChild = first;
-            first.isFirstChild(true);
-            lastChild(last);
         }
 
         // set mutation events flag back to its original value

@@ -294,8 +294,8 @@ public class DocumentImpl
              }
 
         if (deep) {
-            for (ChildNode n = firstChild; n != null; n = n.nextSibling) {
-                newdoc.appendChild(newdoc.importNode(n, true));
+            for (int i = 0; i < length; i++) {
+                newdoc.appendChild(newdoc.importNode(children[i], true));
             }
         }
 
