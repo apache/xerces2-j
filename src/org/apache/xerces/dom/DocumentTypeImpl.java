@@ -123,11 +123,11 @@ public class DocumentTypeImpl
         super(ownerDocument, name, null);
 
         // DOM
-        entities  = new NamedNodeMapImpl(ownerDocument, null);
-        notations = new NamedNodeMapImpl(ownerDocument, null);
+        entities  = new NamedNodeMapImpl(this, null);
+        notations = new NamedNodeMapImpl(this, null);
 
         // NON-DOM
-        elements = new NamedNodeMapImpl(ownerDocument,null);
+        elements = new NamedNodeMapImpl(this,null);
 
     } // <init>(DocumentImpl,String)
   
@@ -222,9 +222,9 @@ public class DocumentTypeImpl
     	DocumentTypeImpl newnode = (DocumentTypeImpl)super.cloneNode(deep);
 
     	// NamedNodeMaps must be cloned explicitly, to avoid sharing them.
-    	newnode.entities  = entities.cloneMap();
-    	newnode.notations = notations.cloneMap();
-    	newnode.elements  = elements.cloneMap();
+    	newnode.entities  = entities.cloneMap(newnode);
+    	newnode.notations = notations.cloneMap(newnode);
+    	newnode.elements  = elements.cloneMap(newnode);
 
     	return newnode;
 

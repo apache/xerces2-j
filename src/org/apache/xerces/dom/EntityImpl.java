@@ -138,6 +138,10 @@ public class EntityImpl
         return Node.ENTITY_NODE;
     }
 
+    public Node getParentNode() {
+        return null;
+    }
+
     /** Returns the node value. */
     public String getNodeValue() {
         return null;

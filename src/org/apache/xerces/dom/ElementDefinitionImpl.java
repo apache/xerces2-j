@@ -112,9 +112,10 @@ public class ElementDefinitionImpl
      */
     public Node cloneNode(boolean deep) {
 
-    	ElementDefinitionImpl newnode = (ElementDefinitionImpl) super.cloneNode(deep);
+    	ElementDefinitionImpl newnode =
+            (ElementDefinitionImpl) super.cloneNode(deep);
     	// NamedNodeMap must be explicitly replicated to avoid sharing
-    	newnode.attributes = attributes.cloneMap();
+    	newnode.attributes = attributes.cloneMap(newnode);
     	return newnode;
 
     } // cloneNode(boolean):Node

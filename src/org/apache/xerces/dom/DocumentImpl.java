@@ -172,11 +172,7 @@ public class DocumentImpl
         this.docType = (DocumentTypeImpl)doctype;
         if (this.docType != null) {
             docType.ownerDocument = this;
-            docType.entities.ownerDocument = this;
-            docType.notations.ownerDocument = this;
-            docType.elements.ownerDocument = this;
         }
-
     }
 
     //

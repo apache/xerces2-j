@@ -122,6 +122,10 @@ public class NotationImpl
         return Node.NOTATION_NODE;
     }
 
+    public Node getParentNode() {
+        return null;
+    }
+
     /** 
      * Notations never have a nodeValue.
      * @throws DOMException(NO_MODIFICATION_ALLOWED_ERR)
