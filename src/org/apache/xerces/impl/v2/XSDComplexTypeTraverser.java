@@ -96,8 +96,12 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     private class ComplexTypeRecoverableError extends Exception {
 
-      ComplexTypeRecoverableError() {super();}
-      ComplexTypeRecoverableError(String s) {super(s);}
+      Object[] errorSubstText=null;
+      ComplexTypeRecoverableError(String msgKey) {super(msgKey);}
+      ComplexTypeRecoverableError(String msgKey, Object[] args) 
+          {super(msgKey);
+           errorSubstText=args;
+          }
       
     }
 
@@ -197,9 +201,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_COMPLEXCONTENT)) {
-              //
-              // EXPLICIT COMPLEX CONTENT - to be done
-              //
+              //traverseComplexContent(child, complexType, mixedAtt.booleanValue(),
+                //                     schemaDoc, grammar);
             }
             else {
               //
@@ -213,7 +216,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
        }
        catch (ComplexTypeRecoverableError e) {
-         handleComplexTypeError(e.getMessage(),complexType);
+         handleComplexTypeError(e.getMessage(),e.errorSubstText, complexType);
        }
 
        if (DEBUG) {
@@ -290,8 +293,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -------------------------------------------------------------
        if (attrNode != null) {
            if (!isAttrOrAttrGroup(attrNode)) {
-              throw new ComplexTypeRecoverableError("Invalid child " + 
-              attrNode.getLocalName() + " in complexType " + typeInfo.fName);
+              throw new ComplexTypeRecoverableError("src-ct",  
+               new Object[]{typeInfo.fName});
            }
            traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,schemaDoc,grammar);
        }
@@ -345,13 +348,10 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     }
 
 
-    private void handleComplexTypeError(String message, 
-                                        XSComplexTypeDecl typeInfo) {
+    private void handleComplexTypeError(String messageId,Object[] args,
+                                        XSComplexTypeDecl typeInfo) { 
 
-        String typeName = typeInfo.fName; 
-        if (message != null) {
-            reportGenericSchemaError("ComplexType '" + typeName + "': " + message);
-        }
+        reportSchemaError(messageId, args); 
 
         //
         //  Mock up the typeInfo structure so that there won't be problems during
@@ -403,14 +403,13 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // check that there aren't duplicate attributes
             int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, attQName);
             if (temp > -1) {
-              reportGenericSchemaError("ct-props-correct.4:  Duplicate attribute " +
-              fStringPool.toString(attQName.rawname) + " in type definition");
+              //Error - ct-props-correct.4:  
             }
 
             // check that there aren't multiple attributes with type derived from ID
             if (dvIsDerivedFromID) {
                if (typeInfo.containsAttrTypeID())  {
-                 reportGenericSchemaError("ct-props-correct.5: More than one attribute derived from type ID cannot appear in the same complex type definition.");
+                 // Error  - "ct-props-correct.5" 
                }
                typeInfo.setContainsAttrTypeID();
             }
