@@ -1180,51 +1180,11 @@ public class XMLDTDValidator
             String attType = getAttributeTypeName(fTempAttDecl);
             int attDefaultType =fTempAttDecl.simpleType.defaultType;
             String attValue = null;
-            
-            boolean found = false;
-            if((fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_ENUMERATION ||
-                fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_NOTATION) && 
-                fPerformValidation) {
-                    
-                for (int i=0; i<fTempAttDecl.simpleType.enumeration.length ; i++) {
-                  for (int j=0; j<fTempAttDecl.simpleType.enumeration.length ; j++) {
-                      if (fTempAttDecl.simpleType.enumeration[i].equals
-                         (fTempAttDecl.simpleType.enumeration[j]) && i!=j) {
-                           found = true;
-                           break;
-                         }
-                    }    
-                     if (found) 
-                         break;
-                   }
-
-                StringBuffer enumValueString = new StringBuffer();
-                if (fTempAttDecl.simpleType.enumeration != null) {
-                    enumValueString.append("(");
-                    for (int i = 0; i < fTempAttDecl.simpleType.enumeration.length; i++) {
-                        enumValueString.append(fTempAttDecl.simpleType.enumeration[i]+" ");
-                    }
-                    enumValueString.append(")");
-                }
-                                           
-                   if (found && fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_ENUMERATION) {
-                      fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                   "MSG_DISTINCT_TOKENS_IN_ENUMERATION", 
-                   new Object[] {attRawName, enumValueString},
-                   XMLErrorReporter.SEVERITY_ERROR);
-                   
-                   } else if (found && fTempAttDecl.simpleType.type ==  XMLSimpleType.TYPE_NOTATION) {
-                      fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                   "MSG_DISTINCT_NOTATION_IN_ENUMERATION", 
-                   new Object[] {attRawName, enumValueString},
-                   XMLErrorReporter.SEVERITY_ERROR);
-                   
-                }    
-            }
                             
             if (fTempAttDecl.simpleType.defaultValue != null) {
                 attValue = fTempAttDecl.simpleType.defaultValue;
             }
+            
             boolean specified = false;
             boolean required = attDefaultType == XMLSimpleType.DEFAULT_TYPE_REQUIRED;
             boolean cdata = attType == XMLSymbols.fCDATASymbol;

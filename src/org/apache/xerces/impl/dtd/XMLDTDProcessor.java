@@ -946,6 +946,28 @@ public class XMLDTDProcessor
                          }
                 }
             }
+            
+            // VC: No Duplicate Tokens
+            // XML 1.0 SE Errata - E2
+            if (type == XMLSymbols.fENUMERATIONSymbol || type == XMLSymbols.fNOTATIONSymbol) {
+                outer: 
+                    for (int i = 0; i < enumeration.length; ++i) {
+                        for (int j = i + 1; j < enumeration.length; ++j) {
+                            if (enumeration[i].equals(enumeration[j])) {
+                                // Only report the first uniqueness violation. There could be others,
+                                // but additional overhead would be incurred tracking unique tokens
+                                // that have already been encountered. -- mrglavas
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               type == XMLSymbols.fENUMERATIONSymbol 
+                                                   ? "MSG_DISTINCT_TOKENS_IN_ENUMERATION" 
+                                                   : "MSG_DISTINCT_NOTATION_IN_ENUMERATION",
+                                               new Object[]{ elementName, enumeration[i], attributeName },
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                                break outer;
+                            }
+                        }
+                    }
+            }
 
             // VC: Attribute Default Legal
             boolean ok = true;
