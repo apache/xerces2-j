@@ -404,32 +404,32 @@ public class DeferredDocumentImpl
 
     /** Sets an attribute on an element node. */
     public int setDeferredAttribute(int elementNodeIndex,
-				    String attrName, String attrURI,
-				    String attrValue, boolean specified) {
+                                    String attrName, String attrURI,
+                                    String attrValue, boolean specified) {
         // create attribute
-	int attrNodeIndex = createDeferredAttribute(attrName, attrURI,
+        int attrNodeIndex = createDeferredAttribute(attrName, attrURI,
                                                     attrValue, specified);
-	int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
-	int attrIndex  = attrNodeIndex & CHUNK_MASK;
-	// set attribute's parent to element
-	setChunkIndex(fNodeParent, elementNodeIndex, attrChunk, attrIndex);
+        int attrChunk = attrNodeIndex >> CHUNK_SHIFT;
+        int attrIndex  = attrNodeIndex & CHUNK_MASK;
+        // set attribute's parent to element
+        setChunkIndex(fNodeParent, elementNodeIndex, attrChunk, attrIndex);
 
         int elementChunk     = elementNodeIndex >> CHUNK_SHIFT;
         int elementIndex     = elementNodeIndex & CHUNK_MASK;
 
-	// get element's last attribute
-	int lastAttrNodeIndex = getChunkIndex(fNodeExtra,
-					      elementChunk, elementIndex);
-	if (lastAttrNodeIndex != 0) {
-	    int lastAttrChunk = lastAttrNodeIndex >> CHUNK_SHIFT;
-	    int lastAttrIndex = lastAttrNodeIndex & CHUNK_MASK;
-	    // add link from new attribute to last attribute
-	    setChunkIndex(fNodePrevSib, lastAttrNodeIndex,
-			  attrChunk, attrIndex);
-	}
-	// add link from element to new last attribute
-	setChunkIndex(fNodeExtra, attrNodeIndex,
-		      elementChunk, elementIndex);
+        // get element's last attribute
+        int lastAttrNodeIndex = getChunkIndex(fNodeExtra,
+                                              elementChunk, elementIndex);
+        if (lastAttrNodeIndex != 0) {
+            int lastAttrChunk = lastAttrNodeIndex >> CHUNK_SHIFT;
+            int lastAttrIndex = lastAttrNodeIndex & CHUNK_MASK;
+            // add link from new attribute to last attribute
+            setChunkIndex(fNodePrevSib, lastAttrNodeIndex,
+                          attrChunk, attrIndex);
+        }
+        // add link from element to new last attribute
+        setChunkIndex(fNodeExtra, attrNodeIndex,
+                      elementChunk, elementIndex);
  
         // return node index
         return attrNodeIndex;
@@ -915,11 +915,11 @@ public class DeferredDocumentImpl
             //
 
             case Node.ATTRIBUTE_NODE: {
-		if (fNamespacesEnabled) {
-		    node = new DeferredAttrNSImpl(this, nodeIndex);
-		} else {
-		    node = new DeferredAttrImpl(this, nodeIndex);
-		}
+                if (fNamespacesEnabled) {
+                    node = new DeferredAttrNSImpl(this, nodeIndex);
+                } else {
+                    node = new DeferredAttrImpl(this, nodeIndex);
+                }
                 break;
             }
 
@@ -960,11 +960,11 @@ public class DeferredDocumentImpl
                 }
 
                 // create node
-		if (fNamespacesEnabled) {
-		    node = new DeferredElementNSImpl(this, nodeIndex);
-		} else {
-		    node = new DeferredElementImpl(this, nodeIndex);
-		}
+                if (fNamespacesEnabled) {
+                    node = new DeferredElementNSImpl(this, nodeIndex);
+                } else {
+                    node = new DeferredElementImpl(this, nodeIndex);
+                }
 
                 // save the document element node
                 if (docElement == null) {
@@ -1702,10 +1702,9 @@ public class DeferredDocumentImpl
     // utility methods
 
     /** Ensures that the internal tables are large enough. */
-    protected boolean ensureCapacity(int chunk, int index) {
-
-        // create buffers
+    protected void ensureCapacity(int chunk, int index) {
         if (fNodeType == null) {
+            // create buffers
             fNodeType       = new int[INITIAL_CHUNK_COUNT][];
             fNodeName       = new Object[INITIAL_CHUNK_COUNT][];
             fNodeValue      = new Object[INITIAL_CHUNK_COUNT][];
@@ -1715,14 +1714,8 @@ public class DeferredDocumentImpl
             fNodeURI        = new Object[INITIAL_CHUNK_COUNT][];
             fNodeExtra      = new int[INITIAL_CHUNK_COUNT][];
         }
-
-        // return true if table is already big enough
-        try {
-            return fNodeType[chunk][index] != 0;
-        }
-
-        // resize the tables
-        catch (ArrayIndexOutOfBoundsException ex) {
+        else if (fNodeType.length <= chunk) {
+            // resize the tables
             int newsize = chunk * 2;
 
             int[][] newArray = new int[newsize][];
@@ -1757,12 +1750,12 @@ public class DeferredDocumentImpl
             System.arraycopy(fNodeExtra, 0, newArray, 0, chunk);
             fNodeExtra = newArray;
         }
-
-        catch (NullPointerException ex) {
-            // ignore
+        else if (fNodeType[chunk] != null) {
+            // Done - there's sufficient capacity
+            return;
         }
 
-        // create chunks
+        // create new chunks
         createChunk(fNodeType, chunk);
         createChunk(fNodeName, chunk);
         createChunk(fNodeValue, chunk);
@@ -1772,10 +1765,10 @@ public class DeferredDocumentImpl
         createChunk(fNodeURI, chunk);
         createChunk(fNodeExtra, chunk);
 
-        // success
-        return true;
+        // Done
+        return;
 
-    } // ensureCapacity(int,int):boolean
+    } // ensureCapacity(int,int)
 
     /** Creates a node of the specified type. */
     protected int createNode(short nodeType) {
