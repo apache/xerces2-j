@@ -21,13 +21,10 @@
 	if you have multiple threads parsing at the same time.
       </p>
       <p>
-	The parser configuration will affect the performance of the parser.
-	If you are interested in evaluating the parser performance with DTDs use the 
-	<code>DTDConfiguration</code> (<em>Note</em>: you can build Xerces with DTD-only support 
-	using <em>dtdjars</em> build target). 
-	For testing the performance for XML Schema validation turn on the schema validation feature and use 
-	the <code>StandardParserConfiguration </code> (<em>Note</em>: this is the default parser
-	configuration).
+	The parser configuration may affect the performance of the parser.
+	For example, if you are interested in evaluating the parser performance
+	with DTDs use the <code>DTDConfiguration</code> (<em>Note</em>: you can 
+	build Xerces with DTD-only support using <em>dtdjars</em> build target).
       </p>
     </a>
   </faq>
@@ -78,6 +75,11 @@
     <q>XML Application Performance</q>
     <a>
       <ul>
+    <li><strong>Grammar Caching</strong> -- if you do need validation, consider
+      using grammar caching to reduce the cost of validation by allowing the parser
+      to skip grammar loading and assessment. See this <link idref="faq-grammars">FAQ</link> 
+      on how to perform grammar caching with Xerces.
+    </li>
 	<li><strong>Validation</strong> -- if you don't need validation (and infoset augmentation) 
 	  of XML documents, 
 	  don't include validators (DTD or XML Schema) in the pipeline. 
