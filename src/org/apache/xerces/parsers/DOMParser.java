@@ -1134,7 +1134,7 @@ public class DOMParser
 		    // done here.
 		    int prefixIndex = xmlAttrList.getAttrPrefix(attrHandle);
 		    String prefix = fStringPool.toString(prefixIndex);
-		    if (namespaceURI == null) {
+		    if (namespaceURI == null || namespaceURI.length() == 0) {
 			if (prefix != null) {
 			    if (prefix.equals("xmlns")) {
 				namespaceURI = "http://www.w3.org/2000/xmlns/";
@@ -2124,7 +2124,7 @@ public class DOMParser
 		    // So as long as the XML parser doesn't do it, it needs to
 		    // done here.
 		    String prefix = fStringPool.toString(attributeDecl.prefix);
-		    if (namespaceURI == null) {
+		    if (namespaceURI == null || namespaceURI.length() == 0) {
 			if (prefix != null) {
 			    if (prefix.equals("xmlns")) {
 				namespaceURI = "http://www.w3.org/2000/xmlns/";
