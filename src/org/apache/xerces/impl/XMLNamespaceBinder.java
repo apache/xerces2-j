@@ -569,7 +569,7 @@ public class XMLNamespaceBinder
         // end prefix mappings
         if (fDocumentHandler != null) {
             int count = fNamespaceSupport.getDeclaredPrefixCount();
-            for (int i = count; i > 0; i--) {
+            for (int i = count - 1; i >= 0; i--) {
                 String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
                 fDocumentHandler.endPrefixMapping(prefix);
             }
