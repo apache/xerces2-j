@@ -140,7 +140,8 @@ public final  class SchemaSymbols {
     public static final String ATT_MINOCCURS =  "minOccurs";
     public static final String ATT_NAME =  "name";
     public static final String ATT_NAMESPACE =  "namespace";
-    public static final String ATT_NULLABLE =  "nullable";
+    public static final String ATT_NILLABLE =  "nillable";
+    public static final String ATT_NIL =  "nil";
     public static final String ATT_PROCESSCONTENTS =  "processContents";
     public static final String ATT_REF =  "ref";
     public static final String ATT_REFER =  "refer";
@@ -204,7 +205,7 @@ public final  class SchemaSymbols {
 
     public static final int                     INFINITY = -1;          // used for maxOccurs
 
-    public static final int NULLABLE = 1;
+    public static final int NILLABLE = 1;
     public static final int ABSTRACT = 2;
     public static final int FIXED = 4;
 

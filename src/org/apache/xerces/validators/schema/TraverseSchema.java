@@ -4078,7 +4078,7 @@ int aaaa= 1;
      *         maxOccurs = string
      *         minOccurs = nonNegativeInteger
      *         name = NCName
-     *         nullable = boolean
+     *         nillable = boolean
      *         ref = QName
      *         type = QName>
      *   Content: (annotation? , (simpleType | complexType)? , (unique | key | keyref)*)
@@ -4162,7 +4162,7 @@ int aaaa= 1;
             }
         }
         
-        // parse out 'block', 'final', 'nullable', 'abstract'
+        // parse out 'block', 'final', 'nillable', 'abstract'
         String blockSetStr = null;
         Attr blockAttr = elementDecl.getAttributeNode( SchemaSymbols.ATT_BLOCK );
         if (blockAttr != null)
@@ -4184,13 +4184,13 @@ int aaaa= 1;
                 (((finalSet & SchemaSymbols.RESTRICTION) == 0) && 
                 ((finalSet & SchemaSymbols.EXTENSION) == 0))))  
             reportGenericSchemaError("The values of the 'final' attribute of an element must be either #all or a list of 'restriction' and 'extension'; " + finalSetStr + " was found");
-        boolean isNullable = elementDecl.getAttribute
-            (SchemaSymbols.ATT_NULLABLE).equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
+        boolean isNillable = elementDecl.getAttribute
+            (SchemaSymbols.ATT_NILLABLE).equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
         boolean isAbstract = elementDecl.getAttribute
             (SchemaSymbols.ATT_ABSTRACT).equals(SchemaSymbols.ATTVAL_TRUE)? true:false;
         int elementMiscFlags = 0;
-        if (isNullable) {
-            elementMiscFlags += SchemaSymbols.NULLABLE;
+        if (isNillable) {
+            elementMiscFlags += SchemaSymbols.NILLABLE;
         }
         if (isAbstract) {
             elementMiscFlags += SchemaSymbols.ABSTRACT;
@@ -4657,7 +4657,7 @@ int aaaa= 1;
         // mark element if its type belongs to different Schema.
         fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
 
-        // set BlockSet, FinalSet, Nullable and Abstract for this element decl
+        // set BlockSet, FinalSet, Nillable and Abstract for this element decl
         fSchemaGrammar.setElementDeclBlockSet(elementIndex, blockSet);
         fSchemaGrammar.setElementDeclFinalSet(elementIndex, finalSet);
         fSchemaGrammar.setElementDeclMiscFlags(elementIndex, elementMiscFlags);
