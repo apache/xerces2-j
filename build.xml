@@ -194,7 +194,7 @@ Copyright:
     <jar jarfile="${build.dir}/${jar.parser}"
          basedir="${build.dest}"
          compress="false"
-         includes="org/apache/**"/>
+         includes="org/apache/**, META-INF/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -204,7 +204,7 @@ Copyright:
     <jar jarfile="${build.dir}/${jar.apis}"
          basedir="${build.dest}"
          compress="false"
-         includes="org/xml/**, org/w3c/**, javax/**,META-INF/**"/>
+         includes="org/xml/**, org/w3c/**, javax/**"/>
   </target>
 
   <!-- =================================================================== -->
