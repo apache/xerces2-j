@@ -113,19 +113,21 @@ public class AttrNSImpl
     {
         int index = qualifiedName.indexOf(':');
         String prefix;
-
         // DOM Level 3: namespace URI is never empty string.
         this.namespaceURI = (namespaceURI !=null &&
                              namespaceURI.length() == 0) ? null : namespaceURI;
+        
+        
         if (index < 0) {
             prefix = null;
             localName = qualifiedName;
-
-            if (ownerDocument().errorChecking &&
-                qualifiedName.equals("xmlns") &&
-                (namespaceURI == null || !namespaceURI.equals(xmlnsURI))) {
+            if (ownerDocument().errorChecking) {
+                if ( qualifiedName.equals("xmlns") &&
+                (namespaceURI == null || !namespaceURI.equals(xmlnsURI)) ||
+                     (namespaceURI !=null && namespaceURI.equals(xmlnsURI) && !qualifiedName.equals("xmlns"))) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
                 throw new DOMException(DOMException.NAMESPACE_ERR, msg);
+                }
             }
         }
         else {
@@ -143,11 +145,11 @@ public class AttrNSImpl
                         String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
                         throw new DOMException(DOMException.NAMESPACE_ERR, msg);
                     }
-                } else if (prefix.equals("xmlns")) {
-                    if (!namespaceURI.equals(xmlnsURI)) {
+                } else if (prefix.equals("xmlns") && !namespaceURI.equals(xmlnsURI) ||
+                           (!prefix.equals("xmlns") && namespaceURI != null && 
+                            namespaceURI.equals(xmlnsURI))) {
                         String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
                         throw new DOMException(DOMException.NAMESPACE_ERR, msg);
-                    }
                 } else if (index == 0) {
                     String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NAMESPACE_ERR", null);
                     throw new DOMException(DOMException.NAMESPACE_ERR, msg);
