@@ -126,6 +126,27 @@ catch (SAXException e) {
     to get the best performance.
    </note>
   </property>
+  <property name='http://apache.org/xml/properties/security-manager'
+            id='security-manager'>
+   <desc>
+    It is possible to create XML documents whose processing could
+    result in the use of all system resources.  This property enables
+    Xerces to detect such documents, and abort their processing.
+   </desc>
+   <type>org.apache.xerces.util.SecurityManager</type>
+   <access general='read-write'/>
+   <note>
+    The <code>org.apache.xerces.util.SecurityManager</code> class
+    contains a number of methods that allow applications to tailor Xerces's 
+    tolerance of document constructs that could result in the heavy
+    consumption of system resources (see the javadoc of this class for
+    details).  Default values that should be appropriate for many
+    environments are provided when the class is instantiated.  <strong>Xerces will not
+    behave in a strictly spec-compliant way when this property is set</strong>.
+    By default, this property is not set; Xerces's behaviour is therefore strictly 
+    spec-compliant by default.
+   </note>
+  </property>
  </pcategory>
  <pcategory name='DOM Properties'>
   <property name='http://apache.org/xml/properties/dom/current-element-node'
