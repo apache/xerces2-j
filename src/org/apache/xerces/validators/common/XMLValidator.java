@@ -123,6 +123,7 @@ public final class XMLValidator
     private static final boolean DEBUG_PRINT_ATTRIBUTES = false;
     private static final boolean DEBUG_PRINT_CONTENT = false;
     private static final boolean DEBUG_SCHEMA_VALIDATION = false;
+    private static final boolean DEBUG_ELEMENT_CHILDREN = false;
 
     // Chunk size constants
 
@@ -140,52 +141,7 @@ public final class XMLValidator
 
     // debugging
 
-        private static XMLValidator schemaValidator = null;
-
-    private static boolean DEBUG = false;
-
-    // all the following were moved into Grammar class
-    // Element list
-    
-    //private int fElementCount = 0;
-
-    /*
-    // REVISIT: Validation. Convert elementType to <uri,localpart> tuple!
-    private int[][] fElementType = new int[INITIAL_CHUNK_COUNT][];
-    // REVISIT: For now, Qname seems to be a overkill 
-    private QName[][] fElementQName = new QName[INITIAL_CHUNK_COUNT][];
-    private int[][] fScope = new int[INITIAL_CHUNK_COUNT][];
-
-    private byte[][] fElementDeclIsExternal = new byte[INITIAL_CHUNK_COUNT][];
-    private int[][] fContentSpecType = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fContentSpec = new int[INITIAL_CHUNK_COUNT][];
-    private XMLContentModel[][] fContentModel = new XMLContentModel[INITIAL_CHUNK_COUNT][];
-    private int[][] fAttlistHead = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fAttlistTail = new int[INITIAL_CHUNK_COUNT][];
-    */
-    // ContentSpecNode list
-
-    //private int fNodeCount = 0;
-    //private byte[][] fNodeType = new byte[INITIAL_CHUNK_COUNT][];
-    //private int[][] fNodeValue = new int[INITIAL_CHUNK_COUNT][];
-
-    // AttDef list
-
-   // private int fAttDefCount = 0;
-    /*
-    // REVISIT: Validation. I don't think we need to store the prefix.
-    //          The namespace URI is important.
-    private int[][] fAttPrefix = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fAttName = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fAttType = new int[INITIAL_CHUNK_COUNT][];
-    private AttributeValidator[][] fAttValidator = new AttributeValidator[INITIAL_CHUNK_COUNT][];
-    private int[][] fEnumeration = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fAttDefaultType = new int[INITIAL_CHUNK_COUNT][];
-    private int[][] fAttValue = new int[INITIAL_CHUNK_COUNT][];
-    private byte[][] fAttDefIsExternal = new byte[INITIAL_CHUNK_COUNT][];
-    private int[][] fNextAttDef = new int[INITIAL_CHUNK_COUNT][];
-    
-    */
+//    private static boolean DEBUG = false;
 
     // other
 
@@ -229,7 +185,6 @@ public final class XMLValidator
 
     // declarations
 
-    // private ContentSpecImpl fContentSpecImpl = null;
     private int fDeclaration[];
     private XMLErrorReporter fErrorReporter = null;
     private DefaultEntityHandler fEntityHandler = null;
@@ -243,15 +198,17 @@ public final class XMLValidator
     private int[] fElementEntityStack = new int[8];
     private int[] fElementIndexStack = new int[8];
     private int[] fContentSpecTypeStack = new int[8];
-    private int[] fElementChildCount = new int[8];
-    private QName[][] fElementChildren = new QName[8][];
+    
+    private QName[] fElementChildren = new QName[32];
+    private int fElementChildrenLength = 0;
+    private int[] fElementChildrenOffsetStack = new int[32];
     private int fElementDepth = -1;
+
     private boolean fNamespacesEnabled = false;
     private NamespacesScope fNamespacesScope = null;
     private int fNamespacesPrefix = -1;
     private QName fRootElement = new QName();
     private int fAttrListHandle = -1;
-    //private int fElementDeclCount = 0;
     private int fCurrentElementEntity = -1;
     private int fCurrentElementIndex = -1;
     private int fCurrentContentSpecType = -1;
@@ -313,14 +270,6 @@ public final class XMLValidator
     private int fDATATYPESymbol = -1;
     private int fEpsilonIndex = -1;
 
-    /* these below should also be in the Grammar class.
-    // building content models
-
-    private int fLeafCount = 0;
-    private int fCount = 0;
-    private int[] fContentList = new int[64];
-    */
-
     //
     // Constructors
     //
@@ -330,10 +279,6 @@ public final class XMLValidator
                         XMLErrorReporter errorReporter,
                         DefaultEntityHandler entityHandler,
                         XMLDocumentScanner documentScanner) {
-
-        //REVISIT fGrammarResolver needed to be initialiezed somehow. 
-        //        since SchemaGrammarResolver is the only implementation, for now ,we use this.
-        //fGrammarResolver = SchemaGrammarResolver.instanceGrammarResolver();
 
         // keep references
         fStringPool = stringPool;
@@ -349,14 +294,6 @@ public final class XMLValidator
         entityHandler.setCharDataHandler(this);
         fDocumentScanner.setEventHandler(this);
         init();
-
-        if (DEBUG) {
-            // REVISIT: Synchronization.
-            if (schemaValidator == null) {
-                // only set for the first one!!
-                schemaValidator = this;
-            }
-        }
 
     } // <init>(StringPool,XMLErrorReporter,DefaultEntityHandler,XMLDocumentScanner)
 
@@ -374,10 +311,6 @@ public final class XMLValidator
     public void initHandlers(boolean sendCharDataAsCharArray,
                              XMLDocumentHandler docHandler,
                              XMLDocumentHandler.DTDHandler dtdHandler) {
-
-                //****DEBUG****
-                if (DEBUG) print("(GEN) XMLValidator.initHandlers\n");
-                //****DEBUG****
 
         fSendCharDataAsCharArray = sendCharDataAsCharArray;
         fEntityHandler.setSendCharDataAsCharArray(fSendCharDataAsCharArray);
@@ -620,26 +553,12 @@ public final class XMLValidator
                         }
                 }
 
-                //****DEBUG****
-        if (DEBUG) {
-            String nsFlag = "";
-            if ( fNamespacesEnabled ) {
-                nsFlag = "NameSpacesEnabled";
-            }
-            print("(SCN) XMLValidator.scanElementType: " + param("elementType",element.rawname) + nsFlag + "\n");
-        }
-                //****DEBUG****
-
     } // scanElementType(XMLEntityHandler.EntityReader,char,QName)
 
     /** Scans expected element type. */
     public boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
                                            char fastchar, QName element) 
         throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(SCN) XMLValidator.scanExpectedElementType ... \n");
-                //****DEBUG****
 
         if (fCurrentElementCharArrayRange == null) {
             fCurrentElementCharArrayRange = fStringPool.createCharArrayRange();
@@ -678,18 +597,10 @@ public final class XMLValidator
                         }
                 }
 
-                //****DEBUG****
-                if (DEBUG) print("(SCN) XMLValidator.scanAttributeName: " + param("elementType",element.rawname) + param("attrName",attribute.rawname) + "\n");
-                //****DEBUG****
-
     } // scanAttributeName(XMLEntityHandler.EntityReader,QName,QName)
 
     /** Call start document. */
     public void callStartDocument() throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("\n(VAL) XMLValidator.callStartDocument\n");
-                //****DEBUG****
 
         if (!fCalledStartDocument) {
             fDocumentHandler.startDocument();
@@ -699,10 +610,6 @@ public final class XMLValidator
 
     /** Call end document. */
     public void callEndDocument() throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.callEndDocument\n\n");
-                //****DEBUG****
 
         if (fCalledStartDocument) {
             fDocumentHandler.endDocument();
@@ -768,10 +675,6 @@ public final class XMLValidator
         // (2) add default attrs (FIXED and NOT_FIXED)
         //
 
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.callStartElement: " + param("elementType",element.rawname) + "\n");
-                //****DEBUG****
-
         if (!fSeenRootElement) {
             fSeenRootElement = true;
             rootElementSpecified(element);
@@ -788,43 +691,48 @@ public final class XMLValidator
         fAttrListHandle = -1;
 
         //before we increment the element depth, add this element's QName to its enclosing element 's children list
-        if (fElementDepth >= 0) {
-            QName[] children = fElementChildren[fElementDepth];
-            int childCount = fElementChildCount[fElementDepth];
-            try {
-                children[childCount].setValues(element);
-            } 
-            catch (NullPointerException ex) {
-                children = fElementChildren[fElementDepth] = new QName[128];
-                for (int i=0; i < 128; i++) {
-                    children[i] = new QName();
-                }
-                childCount = 0; // should really assert this...
-                children[childCount].setValues(element);
-            } 
-            catch (ArrayIndexOutOfBoundsException ex) {
-                QName[] newChildren = new QName[childCount * 2];
-                for (int i = children.length; i < newChildren.length; i++) {
-                    newChildren[i] = new QName();
-                }
-                System.arraycopy(children, 0, newChildren, 0, childCount);
-                children = fElementChildren[fElementDepth] = newChildren;
-                children[childCount].setValues(element);
+        fElementDepth++;
+        //if (fElementDepth >= 0) {
+        if (fValidating) {
+            // push current length onto stack
+            if (fElementChildrenOffsetStack.length < fElementDepth) {
+                int newarray[] = new int[fElementChildrenOffsetStack.length * 2];
+                System.arraycopy(fElementChildrenOffsetStack, 0, newarray, 0, fElementChildrenOffsetStack.length);
+                fElementChildrenOffsetStack = newarray;
             }
-            fElementChildCount[fElementDepth] = ++childCount;
+            fElementChildrenOffsetStack[fElementDepth] = fElementChildrenLength;
+
+            // add this element to children
+            if (fElementChildren.length <= fElementChildrenLength) {
+                QName[] newarray = new QName[fElementChildrenLength * 2];
+                System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
+                fElementChildren = newarray;
+            }
+            QName qname = fElementChildren[fElementChildrenLength];
+            if (qname == null) {
+                for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
+                    fElementChildren[i] = new QName();
+                }
+                qname = fElementChildren[fElementChildrenLength];
+            }
+            qname.setValues(element);
+            fElementChildrenLength++;
+            if (DEBUG_ELEMENT_CHILDREN) {
+                printChildren();
+                printStack();
+            }
         }
         
         // One more level of depth
-        fElementDepth++;
+        //fElementDepth++;
+        
         ensureStackCapacity(fElementDepth);
-
         fCurrentElement.setValues(element);
         fCurrentElementEntity = fEntityHandler.getReaderId();
         fElementTypeStack[fElementDepth] = fCurrentElement.rawname;
         fElementEntityStack[fElementDepth] = fCurrentElementEntity;
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
-        fElementChildCount[fElementDepth] = 0;
 
         //REVISIT: Validation
         if ( fCurrentElementIndex > -1 && fGrammar instanceof SchemaGrammar  && fValidating) {
@@ -861,12 +769,6 @@ public final class XMLValidator
             newStack = new int[newElementDepth * 2];
             System.arraycopy(fContentSpecTypeStack, 0, newStack, 0, newElementDepth);
             fContentSpecTypeStack = newStack;
-            newStack = new int[newElementDepth * 2];
-            System.arraycopy(fElementChildCount, 0, newStack, 0, newElementDepth);
-            fElementChildCount = newStack;
-            QName[][] newContentStack = new QName[newElementDepth * 2][];
-            System.arraycopy(fElementChildren, 0, newContentStack, 0, newElementDepth);
-            fElementChildren = newContentStack;
         }
     }
 
@@ -874,10 +776,6 @@ public final class XMLValidator
     public void callEndElement(int readerId) throws Exception {
         if ( DEBUG_SCHEMA_VALIDATION )
             System.out.println("=======EndElement : " + fStringPool.toString(fCurrentElement.localpart)+"\n");
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.callEndElement: " + param("readerId",readerId) + "\n");
-                //****DEBUG****
 
         int prefixIndex = fCurrentElement.prefix;
         // REVISIT: Validation
@@ -891,17 +789,31 @@ public final class XMLValidator
                                        new Object[] { fStringPool.toString(elementType) },
                                        XMLErrorReporter.ERRORTYPE_FATAL_ERROR);
         }
+        fElementDepth--;
         if (fValidating) {
             int elementIndex = fCurrentElementIndex;
             if (elementIndex != -1 && fCurrentContentSpecType != -1) {
-                int childCount = peekChildCount();
-                int result = checkContent(elementIndex, childCount, peekChildren());
+                QName children[] = fElementChildren;
+                int childrenOffset = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
+                int childrenLength = fElementChildrenLength - childrenOffset;
+                if (DEBUG_ELEMENT_CHILDREN) {
+                    System.out.println("endElement("+fStringPool.toString(fCurrentElement.rawname)+')');
+                    System.out.print("offset: ");
+                    System.out.print(childrenOffset);
+                    System.out.print(", length: ");
+                    System.out.print(childrenLength);
+                    System.out.println();
+                    printChildren();
+                    printStack();
+                }
+                int result = checkContent(elementIndex, 
+                                          children, childrenOffset, childrenLength);
 
                 if ( DEBUG_SCHEMA_VALIDATION )
                     System.out.println("!!!!!!!!In XMLValidator, the return value from checkContent : " + result);
 
                 if (result != -1) {
-                    int majorCode = result != childCount ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
+                    int majorCode = result != childrenLength ? XMLMessages.MSG_CONTENT_INVALID : XMLMessages.MSG_CONTENT_INCOMPLETE;
                     fGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     reportRecoverableXMLError(majorCode,
                                               0,
@@ -909,6 +821,7 @@ public final class XMLValidator
                                               XMLContentSpec.toString(fGrammar, fStringPool, fTempElementDecl.contentSpecIndex));// REVISIT: getContentSpecAsString(elementIndex));
                 }
             }
+            fElementChildrenLength = fElementChildrenOffsetStack[fElementDepth + 1] + 1;
         }
         fDocumentHandler.endElement(fCurrentElement);
         if (fNamespacesEnabled) {
@@ -916,7 +829,8 @@ public final class XMLValidator
         }
 
         // now pop this element off the top of the element stack
-        if (fElementDepth-- < 0) {
+        //if (fElementDepth-- < 0) {
+        if (fElementDepth < -1) {
             throw new RuntimeException("FWK008 Element stack underflow");
         }
         if (fElementDepth < 0) {
@@ -972,52 +886,18 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // callEndElement(int)
 
-    /** Returns true if the version number is valid. */
-    /*public boolean validVersionNum(String version) {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.validVersionNum: version=" + version + "\n");
-                //****DEBUG****
-
-        return XMLCharacterProperties.validVersionNum(version);
-    }*/
-
-    /** Returns true if the encoding name is valid. */
-    /*public boolean validEncName(String encoding) {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.validEncName: encoding=" + encoding + "\n");
-                //****DEBUG****
-
-        return XMLCharacterProperties.validEncName(encoding);
-    }*/
-
     /** Call start CDATA section. */
     public void callStartCDATA() throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.callStartCDATA\n");
-                //****DEBUG****
-
         fDocumentHandler.startCDATA();
     }
 
     /** Call end CDATA section. */
     public void callEndCDATA() throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.callEndCDATA\n");
-                //****DEBUG****
-
         fDocumentHandler.endCDATA();
     }
 
     /** Call characters. */
     public void callCharacters(int ch) throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.callCharacters: ... \n");
-                //****DEBUG****
 
         if (fCharRefData == null) {
             fCharRefData = new char[2];
@@ -1053,174 +933,17 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fDocumentHandler.comment(comment);
     }
 
-    /** Scan doctype declaration. */
-    /*public void scanDoctypeDecl(boolean standalone) throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(SCN) XMLValidator.scanDoctypeDecl\n");
-                //****DEBUG****
-
-                //****DEBUG****
-                if (DEBUG) print("\n\n**** BEGIN DTD ****\n\n");
-                //****DEBUG****
-
-        fScanningDTD = true;
-        fCheckedForSchema = true;
-        fSeenDoctypeDecl = true;
-        fStandaloneReader = standalone ? fEntityHandler.getReaderId() : -1;
-        fDeclsAreExternal = false;
-        if (fDTDImporter == null) {
-            fDTDImporter = new DTDImporter(fStringPool, fErrorReporter, fEntityHandler, this);
-        } 
-        else {
-            fDTDImporter.reset(fStringPool);
-        }
-        fDTDImporter.initHandlers(fDTDHandler);
-        fDTDImporter.setValidating(fValidating);
-        fDTDImporter.setNamespacesEnabled(fNamespacesEnabled);
-        if (fDTDImporter.scanDoctypeDecl(standalone) && fValidating) {
-            // check declared elements
-            if (fWarningOnUndeclaredElements) {
-                // REVISIT: comment out because won't compile 
-                // checkDeclaredElements();
-            }
-
-            // check required notations
-            fEntityHandler.checkRequiredNotations();
-        }
-        fScanningDTD = false;
-
-                //****DEBUG****
-                if (DEBUG) print("\n\n**** END DTD ****\n\n");
-                //****DEBUG****
-
-    } // scanDoctypeDecl(boolean)
-    */
-    /** Scan attribute value. */
-//    public int scanAttValue(QName element, QName attribute) throws Exception {
-
- //       fAttrNameLocator = getLocatorImpl(fAttrNameLocator);
- //       int attValue = fDocumentScanner.scanAttValue(element, attribute, fValidating/* && attType != fCDATASymbol*/);
- //       if (attValue == -1) {
-  //          return XMLDocumentScanner.RESULT_FAILURE;
-  //      }
-
-                //****DEBUG****
-    //            if (DEBUG) print("(SCN) XMLValidator.scanAttValue: " + param ("elementType",element.rawname) +  param ("attrName",attribute.rawname) + 
-//                                                        param ("attValue",attValue) + "\n" );
-                //****DEBUG****
-
-                //
-                // Check for Schema and load
-                //
-    
-        /*
-        if (!fCheckedForSchema) {
-            fCheckedForSchema = true;
-            if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
-                                
-                if (fSchemaImporter == null) {
-                    fSchemaImporter = new SchemaImporter(fStringPool, fErrorReporter, fEntityHandler, this);
-                } else {
-                    fSchemaImporter.reset(fStringPool);
-                }
-                String fs = fEntityHandler.expandSystemId(fStringPool.toString(attValue));
-                EntityResolver resolver = fEntityHandler.getEntityResolver();
-                InputSource is = resolver == null ? null : resolver.resolveEntity(null, fs);
-                if (is == null) {
-                    is = new InputSource(fs);
-                }
-
-                                //****DEBUG****
-                                if (DEBUG) print( "\n\n**** BEGIN SCHEMA ****\n\n" );
-                                //****DEBUG****
-
-                fSchemaImporter.loadSchema(is);
-
-                                //****DEBUG****
-                                if (DEBUG) print( "\n\n**** END SCHEMA ****\n\n" );
-                                //****DEBUG****
-
-                fSchemaDocument = fSchemaImporter.getSchemaDocument();
-            }
-        }
-        */
-
-      /*  if (!fValidating && fAttDefCount == 0) {
-            int attType = fCDATASymbol;
-            if (fAttrListHandle == -1)
-                fAttrListHandle = fAttrList.startAttrList();
-            // REVISIT: Should this be localpart or rawname?
-            if (fAttrList.addAttr(attribute, attValue, attType, true, true) == -1) {
-                return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
-            }
-            return XMLDocumentScanner.RESULT_SUCCESS;
-        }
-
-        // REVISIT: Validation. What should these be?
-        int attDefIndex = getAttDef(element, attribute);
-        if (attDefIndex == -1) {
-            if (fValidating) {
-                // REVISIT - cache the elem/attr tuple so that we only give
-                //  this error once for each unique occurrence
-                Object[] args = { fStringPool.toString(element.rawname),
-                                  fStringPool.toString(attribute.rawname) };
-                fErrorReporter.reportError(fAttrNameLocator,
-                                           XMLMessages.XML_DOMAIN,
-                                           XMLMessages.MSG_ATTRIBUTE_NOT_DECLARED,
-                                           XMLMessages.VC_ATTRIBUTE_VALUE_TYPE,
-                                           args,
-                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
-            }
-            int attType = fCDATASymbol;
-            if (fAttrListHandle == -1) {
-                fAttrListHandle = fAttrList.startAttrList();
-            }
-            // REVISIT: Validation. What should the name be?
-            if (fAttrList.addAttr(attribute, attValue, attType, true, true) == -1) {
-                return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
-            }
-            return XMLDocumentScanner.RESULT_SUCCESS;
-        }
-
-        int attType = getAttType(attDefIndex);
-        if (attType != fCDATASymbol) {
-            AttributeValidator av = getAttributeValidator(attDefIndex);
-            int enumHandle = getEnumeration(attDefIndex);
-            // REVISIT: Validation. What should these be?
-            attValue = av.normalize(element, attribute, 
-                                    attValue, attType, enumHandle);
-        }
-
-        if (fAttrListHandle == -1) {
-            fAttrListHandle = fAttrList.startAttrList();
-        }
-        // REVISIT: Validation. What should the name be?
-        if (fAttrList.addAttr(attribute, attValue, attType, true, true) == -1) {
-            return XMLDocumentScanner.RESULT_DUPLICATE_ATTR;
-        }
-
-        return XMLDocumentScanner.RESULT_SUCCESS;
-
-    } // scanAttValue(QName,QName):int
-*/
     //
     // NamespacesScope.NamespacesHandler methods
     //
 
     /** Start a new namespace declaration scope. */
     public void startNamespaceDeclScope(int prefix, int uri) throws Exception {
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.startNamespaceDeclScope: " + param("prefix",prefix) + param("uri",uri) + "\n");
-                //****DEBUG****
         fDocumentHandler.startNamespaceDeclScope(prefix, uri);
     }
 
     /** End a namespace declaration scope. */
     public void endNamespaceDeclScope(int prefix) throws Exception {
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.endNamespaceDeclScope: " + param("prefix",prefix) + "\n");
-                //****DEBUG****
         fDocumentHandler.endNamespaceDeclScope(prefix);
     }
 
@@ -1231,10 +954,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 int attValue, int attType, boolean list,
                                  int enumHandle) throws Exception {
 
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.normalizeAttValue: " + param("elementType",element.rawname) + param("attValue",attValue) +
-                                                        param("attType",attType) + param("enumHandle",enumHandle) + "\n");
-                //****DEBUG****
         AttributeValidator av = getValidatorForAttType(attType, list);
         if (av != null) {
             return av.normalize(element, attribute, attValue, attType, enumHandle);
@@ -1864,10 +1583,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     protected int whatCanGoHere(int elementIndex, boolean fullyValid,
                                 InsertableElementsInfo info) throws Exception {
 
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.whatCanGoHere: ...\n");
-                //****DEBUG****
-
         //
         //  Do some basic sanity checking on the info packet. First, make sure
         //  that insertAt is not greater than the child count. It can be equal,
@@ -1928,11 +1643,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** addId. */
     protected boolean addId(int idIndex) {
 
-                //****DEBUG****
-                if (DEBUG) print("(POP) XMLValidator.addId" + param("idIndex",idIndex) + "\n");
-                //****DEBUG****
-
-                //System.err.println("addId(" + fStringPool.toString(idIndex) + ") " + idIndex);
         Integer key = new Integer(idIndex);
         if (fIdDefs == null) {
             fIdDefs = new Hashtable();
@@ -1951,11 +1661,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** addIdRef. */
     protected void addIdRef(int idIndex) {
 
-                //****DEBUG****
-                if (DEBUG) print("(POP) XMLValidator.addIdRef" + param("idIndex",idIndex) + "\n");
-                //****DEBUG****
-
-                //System.err.println("addIdRef(" + fStringPool.toString(idIndex) + ") " + idIndex);
         Integer key = new Integer(idIndex);
         if (fIdDefs != null && fIdDefs.containsKey(key)) {
             return;
@@ -1986,10 +1691,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Returns a locator implementation. */
     private LocatorImpl getLocatorImpl(LocatorImpl fillin) {
-
-                //****DEBUG****
-                if (DEBUG) print("(INF) XMLValidator.getLocatorImpl: ...\n");
-                //****DEBUG****
 
         Locator here = fErrorReporter.getLocator();
         if (fillin == null)
@@ -2107,10 +1808,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
      */
     private XMLContentModel getContentModel(int elementIndex) 
         throws CMException {
-
-                //****DEBUG****
-                if (DEBUG) print("(INF) XMLValidator.getContentModel: " + param("elementIndex",elementIndex) + "\n");
-                //****DEBUG****
 
         // See if a content model already exists first
         XMLContentModel cmRet = getElementContentModel(elementIndex);
@@ -2377,9 +2074,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Reset common. */
     private void resetCommon(StringPool stringPool) throws Exception {
 
-                //****DEBUG****
-                if (DEBUG) print("(POP) XMLValidator.resetCommon\n");
-                //****DEBUG****
         fStringPool = stringPool;
         fValidating = fValidationEnabled;
         fValidationEnabledByDynamic = false;
@@ -2387,6 +2081,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         poolReset();
         fCalledStartDocument = false;
         fStandaloneReader = -1;
+        fElementChildrenLength = 0;
         fElementDepth = -1;
         fSeenRootElement = false;
         fSeenDoctypeDecl = false;
@@ -2394,7 +2089,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fNamespacesPrefix = -1;
         fRootElement.clear();
         fAttrListHandle = -1;
-        //fElementDeclCount = 0;
         fCheckedForSchema = false;
 
         fCurrentScope = TOP_LEVEL_SCOPE;
@@ -2413,10 +2107,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Initialize. */
     private void init() {
 
-                //****DEBUG****
-                if (DEBUG) print("(POP) XMLValidator.init\n");
-                //****DEBUG****
-        //fEMPTYSymbol = fStringPool.addSymbol("EMPTY");
         fEMPTYSymbol = XMLElementDecl.TYPE_EMPTY;
         fANYSymbol = XMLElementDecl.TYPE_ANY;
         fMIXEDSymbol = XMLElementDecl.TYPE_MIXED;
@@ -2782,165 +2472,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fContentModel[chunk][index] = cm;
         */
     }
-    
-    // ensure capacity
-
-    /** Ensures that there is enough storage for element information. */
-    /*private boolean ensureElementCapacity(int chunk) {
-
-        try {
-            return fElementType[chunk][0] == 0;
-        } 
-        catch (ArrayIndexOutOfBoundsException ex) {
-            byte[][] newByteArray = new byte[chunk * 2][];
-            System.arraycopy(fElementDeclIsExternal, 0, newByteArray, 0, chunk);
-            fElementDeclIsExternal = newByteArray;
-            //REVISIT: fElementType            
-            int[][] newIntArray = new int[chunk * 2][];
-            System.arraycopy(fElementType, 0, newIntArray, 0, chunk);
-            fElementType = newIntArray;
-            //REVISIT: fElementQName           
-            QName[][] newQNameArray = new QName[chunk * 2][];
-            System.arraycopy(fElementQName, 0, newQNameArray, 0, chunk);
-            fElementQName = newQNameArray;
-            //REVISIT: fScope             
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fScope, 0, newIntArray, 0, chunk);
-            fScope = newIntArray;
-
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fContentSpecType, 0, newIntArray, 0, chunk);
-            fContentSpecType = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fContentSpec, 0, newIntArray, 0, chunk);
-            fContentSpec = newIntArray;
-            XMLContentModel[][] newContentModel = new XMLContentModel[chunk * 2][];
-            System.arraycopy(fContentModel, 0, newContentModel, 0, chunk);
-            fContentModel = newContentModel;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fAttlistHead, 0, newIntArray, 0, chunk);
-            fAttlistHead = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fAttlistTail, 0, newIntArray, 0, chunk);
-            fAttlistTail = newIntArray;
-        } catch (NullPointerException ex) {
-            // ignore
-        }
-        //REVISIT: fElementType, fElementQName, fScope
-        fElementType[chunk] = new int[CHUNK_SIZE];
-        fElementQName[chunk] = new QName[CHUNK_SIZE];
-        fScope[chunk] = new int[CHUNK_SIZE];
-        //by default, all the scope should be top-level
-        for (int i=0; i<CHUNK_SIZE; i++) {
-            fScope[chunk][i] = TOP_LEVEL_SCOPE;
-        }
-
-        fElementDeclIsExternal[chunk] = new byte[CHUNK_SIZE];
-        fContentSpecType[chunk] = new int[CHUNK_SIZE];
-        fContentSpec[chunk] = new int[CHUNK_SIZE];
-        fContentModel[chunk] = new XMLContentModel[CHUNK_SIZE];
-        fAttlistHead[chunk] = new int[CHUNK_SIZE];
-        fAttlistTail[chunk] = new int[CHUNK_SIZE];
-        return true;
-
-    } // ensureElementCapacity(int):boolean
-    */
-
-    /** Ensures that there is enough storage for node information. */
-    /*    private boolean ensureNodeCapacity(int chunk) {
-
-        try {
-            return fNodeType[chunk][0] == 0;
-        } 
-        catch (ArrayIndexOutOfBoundsException ex) {
-            byte[][] newByteArray = new byte[chunk * 2][];
-            System.arraycopy(fNodeType, 0, newByteArray, 0, chunk);
-            fNodeType = newByteArray;
-            int[][] newIntArray = new int[chunk * 2][];
-            System.arraycopy(fNodeValue, 0, newIntArray, 0, chunk);
-            fNodeValue = newIntArray;
-        } 
-        catch (NullPointerException ex) {
-            // ignore
-        }
-        fNodeType[chunk] = new byte[CHUNK_SIZE];
-        fNodeValue[chunk] = new int[CHUNK_SIZE];
-        return true;
-
-    } // ensureNodeCapacity(int):boolean
-    */
-    
-    /** Ensures that there's enough storage for attribute information. */
-    /*private boolean ensureAttrCapacity(int chunk) {
-
-        try {
-            return fAttName[chunk][0] == 0;
-        } 
-        catch (ArrayIndexOutOfBoundsException ex) {
-            byte[][] newByteArray = new byte[chunk * 2][];
-            System.arraycopy(fAttDefIsExternal, 0, newByteArray, 0, chunk);
-            fAttDefIsExternal = newByteArray;
-            int[][] newIntArray = new int[chunk * 2][];
-            System.arraycopy(fAttPrefix, 0, newIntArray, 0, chunk);
-            fAttPrefix = newIntArray;
-            System.arraycopy(fAttName, 0, newIntArray, 0, chunk);
-            fAttName = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fAttType, 0, newIntArray, 0, chunk);
-            fAttType = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fEnumeration, 0, newIntArray, 0, chunk);
-            fEnumeration = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fAttDefaultType, 0, newIntArray, 0, chunk);
-            fAttDefaultType = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fAttValue, 0, newIntArray, 0, chunk);
-            fAttValue = newIntArray;
-            newIntArray = new int[chunk * 2][];
-            System.arraycopy(fNextAttDef, 0, newIntArray, 0, chunk);
-            fNextAttDef = newIntArray;
-            AttributeValidator[][] newValidatorArray = new AttributeValidator[chunk * 2][];
-            System.arraycopy(fAttValidator, 0, newValidatorArray, 0, chunk);
-            fAttValidator = newValidatorArray;
-        } 
-        catch (NullPointerException ex) {
-            // ignore
-        }
-        fAttDefIsExternal[chunk] = new byte[CHUNK_SIZE];
-        fAttPrefix[chunk] = new int[CHUNK_SIZE];
-        fAttName[chunk] = new int[CHUNK_SIZE];
-        fAttType[chunk] = new int[CHUNK_SIZE];
-        fAttValidator[chunk] = new AttributeValidator[CHUNK_SIZE];
-        fEnumeration[chunk] = new int[CHUNK_SIZE];
-        fAttDefaultType[chunk] = new int[CHUNK_SIZE];
-        fAttValue[chunk] = new int[CHUNK_SIZE];
-        fNextAttDef[chunk] = new int[CHUNK_SIZE];
-        return true;
-
-    } // ensureAttrCapacity(int):boolean
-    */
-
-    /** 
-     * Ensures that there is enough storage for the string pool to
-     * declaration mappings.
-     */
-    /*private void ensureDeclarationCapacity(int stringIndex) {
-        if (fDeclaration == null) {
-            fDeclaration = new int[stringIndex + 1];
-            for (int i = 0; i < stringIndex; i++) {
-                fDeclaration[i] = -1;
-            }
-        }
-        else if (fDeclaration.length < stringIndex + 1) {
-            int newint[] = new int[stringIndex + 1];
-            System.arraycopy(fDeclaration, 0, newint, 0, fDeclaration.length);
-            for (int i = fDeclaration.length; i < stringIndex - 1; i++) {
-                newint[i] = -1;
-            }
-            fDeclaration = newint;
-        }
-    }*/
 
     // query attribute information
 
@@ -3508,10 +3039,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                               XMLAttrList attrList) 
         throws Exception {
 
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.validateElementAndAttributes: " + param("elementType",element.rawname) + " !!!!\n");
-                //****DEBUG****
-
         if (fGrammar == null && 
             !fValidating && !fNamespacesEnabled) {
             fCurrentElementIndex = -1;
@@ -3798,55 +3325,25 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Character data in content. */
     private void charDataInContent() {
 
-                //****DEBUG****
-                if (DEBUG) print("(???) XMLValidator.charDataInContent\n");
-                //****DEBUG****
-
-        QName[] children = fElementChildren[fElementDepth];
-        int childCount = fElementChildCount[fElementDepth];
-        try {
-            children[childCount].localpart = -1;
-        } 
-        catch (NullPointerException ex) {
-            children = fElementChildren[fElementDepth] = new QName[256];
-            for (int i=0; i<256; i++) {
-                children[i] = new QName();
-            }
-            childCount = 0; // should really assert this...
-            children[childCount].localpart = -1;
-        } 
-        catch (ArrayIndexOutOfBoundsException ex) {
-            QName[] newChildren = new QName[childCount * 2];
-            for (int i=0; i<childCount*2; i++) {
-                children[i] = new QName();
-            }
-            System.arraycopy(children, 0, newChildren, 0, childCount);
-            children = fElementChildren[fElementDepth] = newChildren;
-            children[childCount].localpart = -1;
+        if (DEBUG_ELEMENT_CHILDREN) {
+            System.out.println("charDataInContent()");
         }
-        fElementChildCount[fElementDepth] = ++childCount;
+        if (fElementChildren.length <= fElementChildrenLength) {
+            QName[] newarray = new QName[fElementChildren.length * 2];
+            System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
+            fElementChildren = newarray;
+        }
+        QName qname = fElementChildren[fElementChildrenLength];
+        if (qname == null) {
+            for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
+                fElementChildren[i] = new QName();
+            }
+            qname = fElementChildren[fElementChildrenLength];
+        }
+        qname.clear();
+        fElementChildrenLength++;
 
     } // charDataInCount()
-
-    /** Peek child count. */
-    private int peekChildCount() {
-
-                //****DEBUG****
-                if (DEBUG) print("(???) XMLValidator.peekChildCount\n");
-                //****DEBUG****
-
-        return fElementChildCount[fElementDepth];
-    }
-
-    /** Peek children. */
-    private QName[] peekChildren() {
-
-                //****DEBUG****
-                if (DEBUG) print("(???) XMLValidator.peekChildren\n");
-                //****DEBUG****
-
-        return fElementChildren[fElementDepth];
-    }
 
     /**
      * Check that the content of an element is valid.
@@ -3885,11 +3382,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
      * @exception Exception Thrown on error.
      */
     private int checkContent(int elementIndex, 
-                             int childCount, QName[] children) throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(VAL) XMLValidator.checkContent: " + param("elementIndex",elementIndex) + "... \n");
-                //****DEBUG****
+                             QName[] children,
+                             int childOffset, 
+                             int childCount) throws Exception {
 
         // Get the element name index from the element
         // REVISIT: Validation
@@ -3949,7 +3444,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             XMLContentModel cmElem = null;
             try {
                 cmElem = getContentModel(elementIndex);
-                return cmElem.validateContent(childCount, children);
+                return cmElem.validateContent(children, childOffset, childCount);
             }
             catch(CMException excToCatch) {
                 // REVISIT - Translate the caught exception to the protected error API
@@ -4075,10 +3570,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
      */
     private void checkIdRefs() throws Exception {
 
-                //****DEBUG****
-                if (DEBUG) print("(???) XMLValidator.checkIdRefs\n");
-                //****DEBUG****
-
         if (fIdRefs == null)
             return;
         Enumeration en = fIdRefs.keys();
@@ -4097,118 +3588,46 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // checkIdRefs()
 
-    /** 
-     * Checks that all declared elements refer to declared elements
-     * in their content models. This method calls out to the error
-     * handler to indicate warnings.
-     */
-    /*private void checkDeclaredElements() throws Exception {
-
-                //****DEBUG****
-                if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
-                //****DEBUG****
-
-        for (int i = 0; i < fElementCount; i++) {
-            int type = fGrammar.getContentSpecType(i);
-            if (type == fMIXEDSymbol || type == fCHILDRENSymbol) {
-                int chunk = i >> CHUNK_SHIFT;
-                int index = i &  CHUNK_MASK;
-                int contentSpecIndex = fContentSpec[chunk][index];
-                checkDeclaredElements(i, contentSpecIndex);
-            }
-        }
-
-    } // checkUndeclaredElements()
-    */
-    /** 
-     * Does a recursive (if necessary) check on the specified element's
-     * content spec to make sure that all children refer to declared
-     * elements.
-     * <p>
-     * This method assumes that it will only be called when there is
-     * a validation handler.
-     */
-    /*
-    private void checkDeclaredElements(int elementIndex, 
-                                       int contentSpecIndex) throws Exception {
-        
-                //****DEBUG****
-                if (DEBUG) print("(???) XMLValidator.checkDeclaredElements\n");
-                //****DEBUG****
-
-        // get spec type and value
-        int chunk = contentSpecIndex >> CHUNK_SHIFT;
-        int index = contentSpecIndex &  CHUNK_MASK;
-        int type  = fNodeType[chunk][index];
-        int value = fNodeValue[chunk][index];
-
-        // temp vars
-        // REVISIT: Validation. Use tuples.
-        QName qname = new QName(-1, type, type);
-
-        // handle type
-        switch (type) {
-        
-            // #PCDATA | element
-            case XMLContentSpec.CONTENTSPECNODE_LEAF: {
-                // perform check for declared element
-                if (value != -1 && getDeclaration(qname) == -1) {
-                    int elemChunk = elementIndex >> CHUNK_SHIFT;
-                    int elemIndex = elementIndex &  CHUNK_MASK;
-                    int elementType = fElementType[elemChunk][elemIndex];
-                    Object[] args = { fStringPool.toString(elementType),
-                                      fStringPool.toString(value) };
-                    fErrorReporter.reportError(fErrorReporter.getLocator(),
-                                               XMLMessages.XML_DOMAIN,
-                                               XMLMessages.MSG_UNDECLARED_ELEMENT_IN_CONTENTSPEC,
-                                               XMLMessages.P45_UNDECLARED_ELEMENT_IN_CONTENTSPEC,
-                                               args,
-                                               XMLErrorReporter.ERRORTYPE_WARNING);
-                }
-                break;
-            }
-
-            // (...)? | (...)* | (...)+
-            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE:
-            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE: 
-            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE: {
-                checkDeclaredElements(elementIndex, value);
-                break;
-            }
-
-            // (... , ...) | (... | ...)
-            case XMLContentSpec.CONTENTSPECNODE_CHOICE:
-            case XMLContentSpec.CONTENTSPECNODE_SEQ: {
-                checkDeclaredElements(elementIndex, value);
-                if (++index == CHUNK_SIZE) {
-                    chunk++;
-                    index = 0;
-                }
-                checkDeclaredElements(elementIndex, fNodeValue[chunk][index]);
-                break;
-            }
-        }
-    }
-    */
     // debugging
 
-    /** Returns the string value for a string pool index. */
-        private String nameOf(int stringPoolIndex) {
-                return fStringPool.toString(stringPoolIndex);
-        }
-
-    /** Returns a contatenated name and its associated string pool value. */
-        private String param(String name, int stringPoolIndex) {
-                return name + "=\"" + fStringPool.toString(stringPoolIndex) + "\" ";
-        }
-
-    /** Prints a message to standard error. */
-        private void print(String message) {
-                if (this == schemaValidator ) {
-                        System.err.println(message);
+    private void printChildren() {
+        if (DEBUG_ELEMENT_CHILDREN) {
+            System.out.print('[');
+            for (int i = 0; i < fElementChildrenLength; i++) {
+                System.out.print(' ');
+                QName qname = fElementChildren[i];
+                if (qname != null) {
+                    System.out.print(fStringPool.toString(qname.rawname));
                 }
+                else {
+                    System.out.print("null");
+                }
+                if (i < fElementChildrenLength - 1) {
+                    System.out.print(", ");
+                }
+                System.out.flush();
+            }
+            System.out.print(" ]");
+            System.out.println();
         }
-        
+    }
+    
+    private void printStack() {
+        if (DEBUG_ELEMENT_CHILDREN) {
+            System.out.print('{');
+            for (int i = 0; i <= fElementDepth; i++) {
+                System.out.print(' ');
+                System.out.print(fElementChildrenOffsetStack[i]);
+                if (i < fElementDepth) {
+                    System.out.print(", ");
+                }
+                System.out.flush();
+            }
+            System.out.print(" }");
+            System.out.println();
+        }
+    }
+    
     //
     // Interfaces
     //
@@ -4232,61 +3651,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     //
     // Classes
     //
-
-    /**
-     * Content spec implementation. 
-     */
-    //final class ContentSpecImpl 
-        //implements XMLContentSpec {
-
-        //
-        // Data
-        //
-
-        /** String pool. */
-        //protected StringPool fStringPool;
-
-        /** Handle. */
-        //protected int fHandle;
-
-        /** Type. */
-        //protected int fType;
-
-        //
-        // Public methods
-        //
-
-        /** Returns the handle. */
-        //public int getHandle() {
-        //    return fHandle;
-        //}
-
-        /** Returns the type. */
-        //public int getType() {
-        //    return fType;
-        //}
-
-        /** 
-         * Fills in the XMLContentSpec with the information
-         * associated with the specified handle. 
-         */
-        //public void getNode(int handle, XMLContentSpec node) {
-          //  getContentSpecNode(handle, node);
-        //}
-
-        //
-        // Object methods
-        //
-
-        /** Returns a string representation of the object. */
-        //public String toString() {
-          //  if (fType == fMIXEDSymbol || fType == fCHILDRENSymbol)
-        //        return contentSpecNodeAsString(fHandle);
-        //    else
-        //        return fStringPool.toString(fType);
-       // }
-
-    //} // class ContentSpecImpl
 
         /**
          * AttValidatorCDATA.
