@@ -42,7 +42,7 @@ public class XSObjectListImpl implements XSObjectList {
         }
     };
     
-    private final int DEFAULT_SIZE = 4;
+    private static final int DEFAULT_SIZE = 4;
 
     // The array to hold all data
     private XSObject[] fArray = null;
@@ -51,7 +51,7 @@ public class XSObjectListImpl implements XSObjectList {
     
 
 
-    public XSObjectListImpl(){
+    public XSObjectListImpl() {
         fArray = new XSObject[DEFAULT_SIZE];
         fLength = 0;
     }
