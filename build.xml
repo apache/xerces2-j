@@ -274,7 +274,7 @@ Copyright:
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}"
-		 excludes="dom/rename/**">
+		 excludes="dom/rename/**" />
     </copy>
     <javac srcdir="${build.tests}"
            destdir="${build.dest}"
