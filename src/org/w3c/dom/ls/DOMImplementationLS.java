@@ -105,4 +105,12 @@ public interface DOMImplementationLS {
      */
     public DOMInput createDOMInput();
 
+    
+    /* TODO: Real wording should be collected from W3C next LS
+     * Create a new empty output source.
+     * @return  The newly created output object.
+     * - Gopal Sharma
+     */
+    public DOMOutput createDOMOutput();
+
 }
