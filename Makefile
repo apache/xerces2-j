@@ -37,6 +37,21 @@ ${BINZIPFILE}:: ./src/classfiles_updated
 
 	@echo Building the binary release package
 	${MKDIR} bin
+	${MKDIR} bin/samples
+	${MKDIR} bin/samples/dom
+	${CP} samples/dom/*.java bin/samples/dom
+	${MKDIR} bin/samples/dom/traversal
+	${CP} samples/dom/traversal/*.java bin/samples/dom/traversal
+	${MKDIR} bin/samples/dom/wrappers
+	${CP} samples/dom/wrappers/*.java bin/samples/dom/wrappers
+	${MKDIR} bin/samples/sax
+	${CP} samples/sax/*.java bin/samples/sax
+	${MKDIR} bin/samples/sax/helpers
+	${CP} samples/sax/helpers/*.java bin/samples/sax/helpers
+	${MKDIR} bin/samples/ui
+	${CP} samples/ui/*.java bin/samples/ui
+	${MKDIR} bin/samples/util
+	${CP} samples/util/*.java bin/samples/util
 	${CP} -r docs bin
 	${RM} -r bin/docs/CVS
 	${RM} -r bin/docs/dtd/CVS

@@ -147,7 +147,7 @@ source: ../bin/${JARFILE}
 	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org javax; cd ../src
 
 ###################################
-#copy the .class files unser samples
+#copy the .class files under samples
 samples: ../bin/${SAMPLESJARFILE}
 ../bin/${SAMPLESJARFILE}: classfiles_updated
 
