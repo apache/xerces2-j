@@ -74,11 +74,11 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
 
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
     private static final boolean fDebug = false;
-    private static DatatypeValidatorFactoryImpl _instance = new DatatypeValidatorFactoryImpl();
+    //private static DatatypeValidatorFactoryImpl _instance = new DatatypeValidatorFactoryImpl();
     private Hashtable fRegistry = new Hashtable();
 
 
-    private DatatypeValidatorFactoryImpl() {
+    public DatatypeValidatorFactoryImpl() {
         initializeRegistry();
     }
 
@@ -385,12 +385,13 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         fRegistry.put(name,v);
     }
 
-    static public DatatypeValidatorFactoryImpl getDatatypeRegistry()  {
-        return _instance;
-    }
+    //static public DatatypeValidatorFactoryImpl getDatatypeRegistry()  {
+      //  return _instance;
+    //}
 
     static public void main( String argv[] ){
-        DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+      //  DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+        DatatypeValidatorFactoryImpl  tstRegistry = new DatatypeValidatorFactoryImpl();
 
 
         DatatypeValidator   tstData1            = tstRegistry.getDatatypeValidator( "NTOKEN" );
