@@ -350,7 +350,10 @@ public class XMLContentSpec {
                                                             true, parentContentSpecType );
                         str.append(')');
                     } else {
-                        str.append(stringPool.toString(contentSpec.value));
+                        appendContentSpec(provider, stringPool, contentSpec, str, 
+                                                                true, parentContentSpecType );
+
+                        //str.append(stringPool.toString(contentSpec.value));
                     }
                     str.append('*');
                     break;
