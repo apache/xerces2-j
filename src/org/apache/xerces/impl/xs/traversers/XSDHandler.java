@@ -451,6 +451,14 @@ public class XSDHandler {
     } // end parseSchema
 
     /**
+     * Pull the grammar out of the bucket simply using
+     * its TNS as a key
+     */
+    SchemaGrammar getGrammar(String tns) {
+        return fGrammarBucket.getGrammar(tns);
+    }
+
+    /**
      * First try to find a grammar in the bucket, if failed, consult the
      * grammar pool. If a grammar is found in the pool, then add it (and all
      * imported ones) into the bucket.
@@ -589,7 +597,7 @@ public class XSDHandler {
             sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace);
         }
         else {
-            sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone());
+            sg = new SchemaGrammar(currSchemaInfo.fTargetNamespace, desc.makeClone(), fSymbolTable);
             fGrammarBucket.putGrammar(sg);
         }
 
