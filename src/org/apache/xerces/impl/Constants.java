@@ -327,18 +327,27 @@ public final class Constants {
     
     /** 
      * Boolean indicating whether an attribute is declared in the DTD is stored 
-     * in augmentations using string "ATTRIBUTE_DECLARED". The absence of this
+     * in augmentations using the string "ATTRIBUTE_DECLARED". The absence of this
      * augmentation indicates that the attribute was not declared in the DTD.
      */
     public final static String ATTRIBUTE_DECLARED = "ATTRIBUTE_DECLARED";
     
     /** 
      * Boolean indicating whether an entity referenced in the document has
-     * not been read is stored in augmentations using string "ENTITY_SKIPPED". 
+     * not been read is stored in augmentations using the string "ENTITY_SKIPPED". 
      * The absence of this augmentation indicates that the entity had a 
      * declaration and was expanded.
      */
     public final static String ENTITY_SKIPPED = "ENTITY_SKIPPED";
+    
+    /**
+     * Boolean indicating whether a character is a probable white space
+     * character (ch <= 0x20) that was the replacement text of a character 
+     * reference is stored in augmentations using the string "CHAR_REF_PROBABLE_WS". 
+     * The absence of this augmentation indicates that the character is not 
+     * probable white space and/or was not included from a character reference.
+     */
+    public final static String CHAR_REF_PROBABLE_WS = "CHAR_REF_PROBABLE_WS";
 
     // XML version constants 
     public final static short XML_VERSION_1_0 = 1;

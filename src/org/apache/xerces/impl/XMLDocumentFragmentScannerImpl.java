@@ -1072,8 +1072,11 @@ public class XMLDocumentFragmentScannerImpl
                 if (fNotifyCharRefs) {
                     fDocumentHandler.startGeneralEntity(fCharRefLiteral, null, null, null);
                 }
-                Augmentations augs = new AugmentationsImpl();
-                augs.putItem(CHAR_REF, Boolean.TRUE);
+                Augmentations augs = null;
+                if (fValidation && ch <= 0x20) {
+                    augs = new AugmentationsImpl();
+                    augs.putItem(Constants.CHAR_REF_PROBABLE_WS, Boolean.TRUE);
+                }
                 fDocumentHandler.characters(fStringBuffer2, augs);
                 if (fNotifyCharRefs) {
                     fDocumentHandler.endGeneralEntity(fCharRefLiteral, null);

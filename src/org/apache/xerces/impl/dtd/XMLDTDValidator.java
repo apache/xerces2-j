@@ -833,7 +833,7 @@ public class XMLDTDValidator
                 }
                 
                 // For E15.2
-                if (augs != null && augs.getItem(XMLDocumentFragmentScannerImpl.CHAR_REF) == Boolean.TRUE) {
+                if (augs != null && augs.getItem(Constants.CHAR_REF_PROBABLE_WS) == Boolean.TRUE) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                                "MSG_CONTENT_INVALID_SPECIFIED",
                                                new Object[]{ fCurrentElement.rawname, 
