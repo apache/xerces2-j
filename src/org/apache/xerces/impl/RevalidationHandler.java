@@ -68,7 +68,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
  * @author Elena Litani, IBM
  *
  */
-public interface DOMRevalidationHandler extends XMLDocumentHandler{
+public interface RevalidationHandler extends XMLDocumentHandler{
 
     /**
      * Set the base URI of the document

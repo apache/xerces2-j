@@ -57,11 +57,10 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.impl.DOMRevalidationHandler;
 import org.apache.xerces.dom3.DOMError;
 import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.DOMRevalidationHandler;
+import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
@@ -149,7 +148,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
     protected final QName fQName = new QName();
 
     /** Validation handler represents validator instance. */
-    protected DOMRevalidationHandler fValidationHandler;
+    protected RevalidationHandler fValidationHandler;
 
     /** symbol table */
     protected SymbolTable fSymbolTable;
@@ -205,7 +204,7 @@ public class DOMNormalizer implements XMLGrammarPool  {
         }
     }
 
-    protected void setValidationHandler (DOMRevalidationHandler validator){
+    protected void setValidationHandler (RevalidationHandler validator){
         this.fValidationHandler = validator;
         
     }

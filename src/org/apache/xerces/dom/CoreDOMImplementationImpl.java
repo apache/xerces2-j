@@ -73,7 +73,7 @@ import org.apache.xerces.parsers.DOMBuilderImpl;
 import org.apache.xml.serialize.XMLSerializer;
 
 // DOM Revalidation
-import org.apache.xerces.impl.DOMRevalidationHandler;
+import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 
 /**
@@ -99,7 +99,7 @@ implements DOMImplementation, DOMImplementationLS {
     //
 
 
-    DOMRevalidationHandler fDOMRevalidator = null;
+    RevalidationHandler fDOMRevalidator = null;
 
     boolean free = true;
 
@@ -255,7 +255,7 @@ implements DOMImplementation, DOMImplementationLS {
     // Protected methods
     //
     /** NON-DOM */
-    synchronized DOMRevalidationHandler getValidator (String schemaType){
+    synchronized RevalidationHandler getValidator (String schemaType){
         // REVISIT: implement a pool of validators to avoid long
         //          waiting for several threads
         //          implement retrieving grammar based on schemaType

@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
-import org.apache.xerces.impl.DOMRevalidationHandler;
+import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.DatatypeException;
@@ -138,7 +138,7 @@ import java.io.IOException;
  * @version $Id$
  */
 public class XMLSchemaValidator
-             implements XMLComponent, XMLDocumentFilter, FieldActivator, DOMRevalidationHandler {
+             implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler {
 
     //
     // Constants
