@@ -4403,13 +4403,106 @@ public class TraverseSchema implements
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + "is either not fixed, or is not fixed with the same value as in the base");
       }
          
-      // check identity constraints - TO BE DONE
+      // check identity constraints 
+      checkIDConstraintRestriction(eltndx1, eltndx2, aGrammar, localpart1, localpart2);
 
       // check disallowed substitutions - TO BE DONE
 
       // check that the derived element's type is derived from the base's. - TO BE DONE
   
     }
+
+    private void checkIDConstraintRestriction(int derivedElemIndex, int baseElemIndex, 
+                SchemaGrammar grammar, int derivedElemName, int baseElemName) throws Exception {
+        // this method throws no errors if the ID constraints on
+        // the derived element are a logical subset of those on the
+        // base element--that is, those that are present are
+        // identical to ones in the base element.  
+        XMLElementDecl derivedElemDecl = new XMLElementDecl();
+        grammar.getElementDecl(derivedElemIndex, derivedElemDecl);
+        XMLElementDecl baseElemDecl = new XMLElementDecl();
+        grammar.getElementDecl(baseElemIndex, baseElemDecl);
+        Vector derivedUnique = derivedElemDecl.unique;
+        Vector baseUnique = baseElemDecl.unique;
+        if(derivedUnique.size() > baseUnique.size()) {
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
+                    fStringPool.toString(derivedElemName) + 
+                    " has fewer <unique> Identity Constraints than the base element"+
+                    fStringPool.toString(baseElemName));
+        } else {
+            boolean found = true;
+            for(int i=0; i<derivedUnique.size() && found; i++) {
+                Unique id = (Unique)derivedUnique.elementAt(i);
+                found = false;
+                for(int j=0; j<baseUnique.size(); j++) {
+                    if(id.equals((Unique)baseUnique.elementAt(j))) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(!found) {
+                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
+                    fStringPool.toString(derivedElemName) + 
+                    " has a <unique> Identity Constraint that does not appear on the base element"+
+                    fStringPool.toString(baseElemName));
+            }
+        }
+
+        Vector derivedKey = derivedElemDecl.key;
+        Vector baseKey = baseElemDecl.key;
+        if(derivedKey.size() > baseKey.size()) {
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
+                    fStringPool.toString(derivedElemName) + 
+                    " has fewer <key> Identity Constraints than the base element"+
+                    fStringPool.toString(baseElemName));
+        } else {
+            boolean found = true;
+            for(int i=0; i<derivedKey.size() && found; i++) {
+                Key id = (Key)derivedKey.elementAt(i);
+                found = false;
+                for(int j=0; j<baseKey.size(); j++) {
+                    if(id.equals((Key)baseKey.elementAt(j))) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(!found) {
+                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
+                    fStringPool.toString(derivedElemName) + 
+                    " has a <key> Identity Constraint that does not appear on the base element"+
+                    fStringPool.toString(baseElemName));
+            }
+        }
+
+        Vector derivedKeyRef = derivedElemDecl.keyRef;
+        Vector baseKeyRef = baseElemDecl.keyRef;
+        if(derivedKeyRef.size() > baseKeyRef.size()) {
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
+                    fStringPool.toString(derivedElemName) + 
+                    " has fewer <keyref> Identity Constraints than the base element"+
+                    fStringPool.toString(baseElemName));
+        } else {
+            boolean found = true;
+            for(int i=0; i<derivedKeyRef.size() && found; i++) {
+                KeyRef id = (KeyRef)derivedKeyRef.elementAt(i);
+                found = false;
+                for(int j=0; j<baseKeyRef.size(); j++) {
+                    if(id.equals((KeyRef)baseKeyRef.elementAt(j))) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(!found) {
+                throw new ParticleRecoverableError("rcase-nameAndTypeOK.5:  derived element " + 
+                    fStringPool.toString(derivedElemName) + 
+                    " has a <keyref> Identity Constraint that does not appear on the base element"+
+                    fStringPool.toString(baseElemName));
+            }
+        }
+    } // checkIDConstraintRestriction
 
     private boolean checkOccurrenceRange(int min1, int max1, int min2, int max2) {
 

@@ -179,4 +179,19 @@ public abstract class IdentityConstraint {
         return s;
     } // toString():String
 
+    // equals:  returns true if and only if the String
+    // representations of all members of both objects (except for
+    // the elenemtName field) are equal.
+    public boolean equals(IdentityConstraint id) {
+        boolean areEqual = fIdentityConstraintName.equals(id.fIdentityConstraintName);
+        if(!areEqual) return false;
+        areEqual = fSelector.toString().equals(id.fSelector.toString());
+        if(!areEqual) return false;
+        areEqual = (fFieldCount == id.fFieldCount);
+        if(!areEqual) return false;
+        for(int i=0; i<fFieldCount; i++) 
+            if(!fFields[i].toString().equals(id.fFields[i].toString())) return false;
+        return true;
+    } // equals
+
 } // class IdentityConstraint
