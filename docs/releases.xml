@@ -2,9 +2,56 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version='&ParserName; TBD'>
+  <release version='&ParserName; 2.6.0'>
    <desc>TBD</desc>
    <changes>
+    <update>
+     <note>
+      Modified PSVI interfaces (<code>org.apache.xerces.xs</code>) and
+      updated the implementation accordingly. Methods were added to expose 
+      actual values and their types and new interfaces were added for 
+      loading XSModels. 
+     </note>
+     <submitter name='Sandy Gao'/>
+    </update>
+    <fix>
+     <note>
+      Fixed various bugs related to PSVI.
+     </note>
+     <submitter name='Sandy Gao, Pete Lloyd'/>
+    </fix>
+    <update>
+     <note>
+      Implemented experimental support for the
+      <jump href="http://www.w3.org/TR/2003/PR-xml11-20031105/">XML 1.1</jump> PR.
+      This still excludes section 2.13.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Implemented missing support for Registry-based 
+      Naming Authority in the URI implementation.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
+    <fix>
+     <note>
+      Modified the XJavac task used by the build file so that
+      Xerces can be built on Linux with Blackdown JDK 1.4.
+     </note>
+     <submitter name='Amit Kapoor'/>
+    </fix>
+    <fix>
+     <note>
+      Removed static references to sun.io.CharToByteConverter 
+      which made it impossible to compile Xerces on platforms 
+      that do not have this internal class. With binaries on 
+      such platforms, the serializer was unusable with 
+      many encodings.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
     <fix>
      <note>
       Fixed several bugs regarding error reporting in the 
@@ -23,7 +70,7 @@
       Fixed various bugs regarding text inclusion and relative URI 
       resolution in the XInclude implementation.
      </note>
-     <submitter name='Peter McCracken, Neil Pitman'/>
+     <submitter name='Michael Glavassevich, Peter McCracken, Neil Pitman'/>
     </update>
     <update>
      <note>
@@ -68,6 +115,12 @@
       the &lt;html&gt; element.
      </note>
      <submitter name='Andy Clark'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various bugs.
+     </note>
+     <submitter name="Neil Delima, Sandy Gao, Michael Glavassevich, Elena Litani, Peter McCracken"/>
     </fix>
    </changes>
   </release>
