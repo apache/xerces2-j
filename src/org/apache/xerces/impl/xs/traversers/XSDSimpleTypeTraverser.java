@@ -117,8 +117,6 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     //private data
     private String fListName = "";
 
-    private XSDocumentInfo fSchemaDoc = null;
-    private SchemaGrammar fGrammar = null;
     private int fSimpleTypeAnonCount = 0;
     private final QName fQName = new QName();
 
@@ -132,11 +130,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                                      XSDocumentInfo schemaDoc,
                                      SchemaGrammar grammar) {
         // General Attribute Checking
-        fSchemaDoc = schemaDoc;
-        fGrammar = grammar;
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, true, schemaDoc);
         String nameAtt = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
-        DatatypeValidator type = traverseSimpleTypeDecl(elmNode, attrValues, schemaDoc, true);
+        DatatypeValidator type = traverseSimpleTypeDecl(elmNode, attrValues, schemaDoc, grammar, true);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
@@ -145,18 +141,16 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     DatatypeValidator traverseLocal(Element elmNode,
                                     XSDocumentInfo schemaDoc,
                                     SchemaGrammar grammar) {
-        fSchemaDoc = schemaDoc;
-        fGrammar = grammar;
-
         Object[] attrValues = fAttrChecker.checkAttributes(elmNode, false, schemaDoc);
-        DatatypeValidator type = traverseSimpleTypeDecl (elmNode, attrValues, schemaDoc, false);
+        DatatypeValidator type = traverseSimpleTypeDecl (elmNode, attrValues, schemaDoc, grammar, false);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         return type;
     }
 
     private DatatypeValidator traverseSimpleTypeDecl(Element simpleTypeDecl, Object[] attrValues,
-                                                     XSDocumentInfo schemaDoc, boolean isGlobal) {
+                                                     XSDocumentInfo schemaDoc,
+                                                     SchemaGrammar grammar, boolean isGlobal) {
 
         String nameProperty  = (String)attrValues[XSAttributeChecker.ATTIDX_NAME];
         String qualifiedName = nameProperty;
@@ -165,16 +159,16 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // set qualified name
         //---------------------------------------------------
         if (nameProperty == null) { // anonymous simpleType
-            qualifiedName = fSchemaDoc.fTargetNamespace == null?
+            qualifiedName = schemaDoc.fTargetNamespace == null?
                 ",#s#"+(fSimpleTypeAnonCount++):
-                fSchemaDoc.fTargetNamespace+",#S#"+(fSimpleTypeAnonCount++);
+                schemaDoc.fTargetNamespace+",#S#"+(fSimpleTypeAnonCount++);
             //REVISIT:
             // add to symbol table?
         }
         else {
-            qualifiedName = fSchemaDoc.fTargetNamespace == null?
+            qualifiedName = schemaDoc.fTargetNamespace == null?
                 ","+nameProperty:
-                fSchemaDoc.fTargetNamespace+","+nameProperty;
+                schemaDoc.fTargetNamespace+","+nameProperty;
             //REVISIT:
             // add to symbol table?
 
@@ -280,7 +274,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 return null;
             }
             if (DOMUtil.getLocalName(content).equals( SchemaSymbols.ELT_SIMPLETYPE )) {
-                baseValidator = traverseLocal(content, fSchemaDoc, fGrammar);
+                baseValidator = traverseLocal(content, schemaDoc, grammar);
                 if (baseValidator != null && union) {
                     dTValidators.addElement((DatatypeValidator)baseValidator);
                 }
@@ -315,7 +309,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 if (union) {
                     baseTypeName = (QName)memberTypes.elementAt(i);
                 }
-                baseValidator = findDTValidator ( simpleTypeDecl, baseTypeName, baseRefContext);
+                baseValidator = findDTValidator ( simpleTypeDecl, baseTypeName, baseRefContext, schemaDoc);
                 if (baseValidator == null) {
                     Object[] args = { content.getAttribute( SchemaSymbols.ATT_BASE ), nameProperty};
                     reportSchemaError("dt-unknown-basetype", args);
@@ -387,7 +381,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 }
             }
             while (content!=null) {
-                baseValidator = traverseLocal(content, fSchemaDoc, fGrammar);
+                baseValidator = traverseLocal(content, schemaDoc, grammar);
                 if (baseValidator != null) {
                     if (fListName.length() != 0 && baseValidator instanceof ListDatatypeValidator) {
                         reportCosListOfAtomic(nameProperty);
@@ -412,7 +406,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
         if (restriction && content != null) {
-            fFacetInfo fi = traverseFacets(content, contentAttrs,nameProperty, baseValidator, schemaDoc, fGrammar);
+            fFacetInfo fi = traverseFacets(content, contentAttrs,nameProperty, baseValidator, schemaDoc, grammar);
             content = fi.nodeAfterFacets;
             if (content != null) {
                 content = null;
@@ -460,7 +454,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             newDV = new UnionDatatypeValidator(dTValidators, fErrorReporter);
         }
 
-        // don't add global components without name to the grammar 
+        // don't add global components without name to the grammar
         if (nameProperty == null && isGlobal) {
             return null;
         }
@@ -468,7 +462,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         if (newDV != null && isGlobal) {
             newDV.setFinalSet(finalProperty);
             ((AbstractDatatypeValidator)newDV).fLocalName = nameProperty;
-            fGrammar.addGlobalTypeDecl(newDV);
+            grammar.addGlobalTypeDecl(newDV);
         }
 
         return newDV;
@@ -486,7 +480,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
     //return DatatypeValidator available for the baseTypeStr, null if not found or disallowed.
     // also throws an error if the base type won't allow itself to be used in this context.
     // REVISIT: can this code be re-used?
-    private DatatypeValidator findDTValidator (Element elm, QName baseTypeStr, int baseRefContext ) {
+    private DatatypeValidator findDTValidator (Element elm, QName baseTypeStr, int baseRefContext, XSDocumentInfo schemaDoc) {
         if (baseTypeStr.uri !=null &&  baseTypeStr.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
             baseTypeStr.localpart.equals(SchemaSymbols.ATTVAL_ANYSIMPLETYPE) &&
             baseRefContext == SchemaSymbols.RESTRICTION) {
@@ -496,7 +490,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             return  (DatatypeValidator)SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_STRING);
         }
         DatatypeValidator baseValidator = null;
-        baseValidator = (DatatypeValidator)fSchemaHandler.getGlobalDecl(fSchemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr);
+        baseValidator = (DatatypeValidator)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr);
         if (baseValidator != null) {
             if ((baseValidator.getFinalSet() & baseRefContext) != 0) {
                 reportSchemaError("dt-restiction-final",new Object[] { baseTypeStr.rawname} );
