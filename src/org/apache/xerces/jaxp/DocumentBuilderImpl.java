@@ -122,6 +122,11 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                 setErrorHandler(new DefaultValidationErrorHandler());
             }
 
+            // "namespaceAware" ==  SAX Namespaces feature
+            namespaceAware = dbf.isNamespaceAware();
+            domParser.setFeature("http://xml.org/sax/features/namespaces",
+                                 namespaceAware);
+
             // XXX Ignore unimplemented features for now
             try {
                 // Set various parameters obtained from DocumentBuilderFactory
