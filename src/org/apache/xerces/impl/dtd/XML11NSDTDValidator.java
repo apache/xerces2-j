@@ -215,8 +215,11 @@ public class XML11NSDTDValidator extends XML11DTDValidator {
         // Example: <foo xmlns:a='NS' xmlns:b='NS' a:attr='v1' b:attr='v2'/>
         int attrCount = attributes.getLength();
         for (int i = 0; i < attrCount - 1; i++) {
-            String alocalpart = attributes.getLocalName(i);
             String auri = attributes.getURI(i);
+            if (auri == null || auri == NamespaceContext.XMLNS_URI) {
+                continue;
+            }
+            String alocalpart = attributes.getLocalName(i);
             for (int j = i + 1; j < attrCount; j++) {
                 String blocalpart = attributes.getLocalName(j);
                 String buri = attributes.getURI(j);

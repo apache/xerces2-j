@@ -116,10 +116,6 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
      */
     protected boolean fPerformValidation;
 
-    protected String[] fUri = new String[4];
-    protected String[] fLocalpart = new String[4];
-    protected int fLength = 0;
-
     // private data
     //
 
@@ -257,7 +253,6 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
 
             // bind attributes (xmlns are already bound bellow)
             int length = fAttributes.getLength();
-            fLength = 0; //initialize structure
             for (int i = 0; i < length; i++) {
                 fAttributes.getName(i, fAttributeQName);
 
@@ -270,7 +265,6 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
                 //
                 if (fAttributeQName.uri != null
                     && fAttributeQName.uri == uri) {
-                    checkDuplicates(fAttributeQName, fAttributes);
                     continue;
                 }
                 if (aprefix != XMLSymbols.EMPTY_STRING) {
@@ -286,7 +280,30 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
                             XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     fAttributes.setURI(i, uri);
-                    checkDuplicates(fAttributeQName, fAttributes);
+                }
+            }
+
+            if (length > 1) {
+                QName name = fAttributes.checkDuplicatesNS();
+                if (name != null) {
+                    if (name.uri != null) {
+                        fErrorReporter.reportError(
+                            XMLMessageFormatter.XMLNS_DOMAIN,
+                            "AttributeNSNotUnique",
+                            new Object[] {
+                                fElementQName.rawname,
+                                name.localpart,
+                                name.uri },
+                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    } else {
+                        fErrorReporter.reportError(
+                            XMLMessageFormatter.XMLNS_DOMAIN,
+                            "AttributeNotUnique",
+                            new Object[] {
+                                fElementQName.rawname,
+                                name.rawname },
+                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                 }
             }
         }
@@ -322,40 +339,6 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
         return empty;
 
     } // scanStartElement():boolean
-
-    private final void checkDuplicates(
-        QName qname,
-        XMLAttributesImpl attributes) {
-
-        // Example: <foo xmlns:a='NS' xmlns:b='NS' a:attr='v1' b:attr='v2'/>
-        // search if such attribute already exists
-        for (int i = 0; i < fLength; i++) {
-            if (qname.uri == fUri[i]
-                && fLocalpart[i].equals(qname.localpart)) {
-                fErrorReporter.reportError(
-                    XMLMessageFormatter.XMLNS_DOMAIN,
-                    "AttributeNSNotUnique",
-                    new Object[] {
-                        fElementQName.rawname,
-                        qname.rawname,
-                        qname.uri },
-                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
-            }
-        }
-        int index = fLength;
-        if (fLength++ == fUri.length) {
-            String[] uris = new String[fUri.length + 4];
-            String[] lps = new String[fUri.length + 4];
-            System.arraycopy(fUri, 0, uris, 0, fUri.length);
-            System.arraycopy(fLocalpart, 0, lps, 0, fLocalpart.length);
-            fUri = uris;
-            fLocalpart = lps;
-
-        }
-
-        fUri[index] = qname.uri;
-        fLocalpart[index] = qname.localpart;
-    }
 
     /**
     * Scans an attribute.
@@ -395,15 +378,26 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
 
         // content
         int oldLen = attributes.getLength();
-        attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
 
-        // WFC: Unique Att Spec
-        if (oldLen == attributes.getLength()) {
-            reportFatalError(
-                "AttributeNotUnique",
-                new Object[] {
-                    fCurrentElement.rawname,
-                    fAttributeQName.rawname });
+        if (fBindNamespaces) {
+            attributes.addAttributeNS(
+                fAttributeQName,
+                XMLSymbols.fCDATASymbol,
+                null);
+        } else {
+            attributes.addAttribute(
+                fAttributeQName,
+                XMLSymbols.fCDATASymbol,
+                null);
+
+            // WFC: Unique Att Spec
+            if (oldLen == attributes.getLength()) {
+                reportFatalError(
+                    "AttributeNotUnique",
+                    new Object[] {
+                        fCurrentElement.rawname,
+                        fAttributeQName.rawname });
+            }
         }
 
         //REVISIT: one more case needs to be included: external PE and standalone is no

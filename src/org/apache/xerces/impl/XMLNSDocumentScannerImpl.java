@@ -112,9 +112,9 @@ extends XMLDocumentScannerImpl {
       *   scanner if DTD grammar is missing.*/
     protected boolean fPerformValidation;
 
-    protected String[] fUri= new String[4];
-    protected String[] fLocalpart = new String[4];
-    protected int fLength = 0;
+    // protected String[] fUri= new String[4];
+    // protected String[] fLocalpart = new String[4];
+    // protected int fLength = 0;
 
 
     // private data
@@ -248,7 +248,7 @@ extends XMLDocumentScannerImpl {
 
             // bind attributes (xmlns are already bound bellow)
             int length = fAttributes.getLength();
-            fLength = 0; //initialize structure
+            // fLength = 0; //initialize structure
             for (int i = 0; i < length; i++) {
                 fAttributes.getName(i, fAttributeQName);
 
@@ -258,7 +258,7 @@ extends XMLDocumentScannerImpl {
                 // REVISIT: try removing the first "if" and see if it is faster.
                 //
                 if (fAttributeQName.uri != null && fAttributeQName.uri == uri) {
-                    checkDuplicates(fAttributeQName, fAttributes);
+                    // checkDuplicates(fAttributeQName, fAttributes);
                     continue;
                 }
                 if (aprefix != XMLSymbols.EMPTY_STRING) {
@@ -270,7 +270,25 @@ extends XMLDocumentScannerImpl {
                                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     fAttributes.setURI(i, uri);
-                    checkDuplicates(fAttributeQName, fAttributes);
+                    // checkDuplicates(fAttributeQName, fAttributes);
+                }
+            }
+            
+            if (length > 1) {
+                QName name = fAttributes.checkDuplicatesNS();
+                if (name != null) {
+                    if (name.uri != null) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "AttributeNSNotUnique",
+                                                   new Object[]{fElementQName.rawname, name.localpart, name.uri},
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
+                    else {
+                        fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
+                                                   "AttributeNotUnique",
+                                                   new Object[]{fElementQName.rawname, name.rawname}, 
+                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                 }
             }
         }
@@ -306,7 +324,7 @@ extends XMLDocumentScannerImpl {
 
     } // scanStartElement():boolean
 
-    private final void checkDuplicates(QName qname, XMLAttributesImpl attributes){
+    /** private final void checkDuplicates(QName qname, XMLAttributesImpl attributes){
 
         // Example: <foo xmlns:a='NS' xmlns:b='NS' a:attr='v1' b:attr='v2'/>
         // search if such attribute already exists
@@ -331,7 +349,7 @@ extends XMLDocumentScannerImpl {
 
         fUri[index] = qname.uri;
         fLocalpart[index] = qname.localpart;
-    }
+    } **/
 
 
 
@@ -370,13 +388,19 @@ extends XMLDocumentScannerImpl {
 
         // content
         int oldLen = attributes.getLength();
-        attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
-
-        // WFC: Unique Att Spec
-        if (oldLen == attributes.getLength()) {
-            reportFatalError("AttributeNotUnique",
-                             new Object[]{fCurrentElement.rawname,
+        
+        if (fBindNamespaces) {
+            attributes.addAttributeNS(fAttributeQName, XMLSymbols.fCDATASymbol, null);
+        }
+        else {
+            attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
+        	
+            // WFC: Unique Att Spec
+            if (oldLen == attributes.getLength()) {
+                reportFatalError("AttributeNotUnique",
+                                 new Object[]{fCurrentElement.rawname,
                                  fAttributeQName.rawname});
+            }
         }
 
         //REVISIT: one more case needs to be included: external PE and standalone is no
@@ -393,7 +417,7 @@ extends XMLDocumentScannerImpl {
 
         // record namespace declarations if any.
         if (fBindNamespaces) {
-
+            
             String localpart = fAttributeQName.localpart;
             String prefix = fAttributeQName.prefix != null
                             ? fAttributeQName.prefix : XMLSymbols.EMPTY_STRING;
