@@ -509,7 +509,8 @@ public class Counter
                 parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, schemaValidation);
             }
             catch (SAXNotRecognizedException e) {
-                // ignore
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+
             }
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
@@ -518,7 +519,8 @@ public class Counter
                 parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
             }
             catch (SAXNotRecognizedException e) {
-                // ignore
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
+
             }
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
@@ -527,7 +529,8 @@ public class Counter
                 parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
             }
             catch (SAXNotRecognizedException e) {
-                // ignore
+                System.err.println("warning: Parser does not support feature ("+DYNAMIC_VALIDATION_FEATURE_ID+")");
+
             }
             catch (SAXNotSupportedException e) {
                 System.err.println("warning: Parser does not support feature ("+DYNAMIC_VALIDATION_FEATURE_ID+")");
