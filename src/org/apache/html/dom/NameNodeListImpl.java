@@ -130,63 +130,61 @@ import org.apache.xerces.dom.DeepNodeListImpl;
 public class NameNodeListImpl 
     extends DeepNodeListImpl
     implements NodeList {
-
-
+    
+    
     /** Constructor. */
     public NameNodeListImpl(NodeImpl rootNode, String tagName) {
 	super( rootNode, tagName );
     }  
-
+    
 
     /** 
      * Iterative tree-walker. When you have a Parent link, there's often no
      * need to resort to recursion. NOTE THAT only Element nodes are matched
      * since we're specifically supporting getElementsByTagName().
      */
-    private Node nextMatchingElementAfter(Node current) {
-
-	    Node next;
-	    while (current != null) {
-		    // Look down to first child.
-		    if (current.hasChildNodes()) {
-			    current = (current.getFirstChild());
-		    }
-
-		    // Look right to sibling (but not from root!)
-		    else if (current != rootNode && null != (next = current.getNextSibling())) {
-				current = next;
-			}
-
-			// Look up and right (but not past root!)
-			else {
-				next = null;
-				for (; current != rootNode; // Stop when we return to starting point
-					current = current.getParentNode()) {
-
-					next = current.getNextSibling();
-					if (next != null)
-						break;
-				}
-				current = next;
-			}
-
-			// Have we found an Element with the right tagName?
-			// ("*" matches anything.)
-		    if (current != rootNode 
-		        && current != null
-		        && current.getNodeType() ==  Node.ELEMENT_NODE 
-		        && ((ElementImpl) current).getAttribute( "name" ).equals("*") 
-		            || ((ElementImpl) current).getAttribute( "name" ).equals(tagName))
-		    {
-			    return current;
-			}
-
-		// Otherwise continue walking the tree
-	    }
-
-	    // Fell out of tree-walk; no more instances found
-	    return null;
-
+    protected Node nextMatchingElementAfter(Node current) {
+        
+        Node next;
+        while (current != null) {
+            // Look down to first child.
+            if (current.hasChildNodes()) {
+                current = (current.getFirstChild());
+            }
+            
+            // Look right to sibling (but not from root!)
+            else if (current != rootNode && null != (next = current.getNextSibling())) {
+                current = next;
+            }
+            
+            // Look up and right (but not past root!)
+            else {
+                next = null;
+                for (; current != rootNode; // Stop when we return to starting point
+                     current = current.getParentNode()) {
+                    
+                    next = current.getNextSibling();
+                    if (next != null)
+                        break;
+                }
+                current = next;
+            }
+            
+            // Have we found an Element with the right tagName?
+            // ("*" matches anything.)
+            if (current != rootNode && current != null
+                && current.getNodeType() ==  Node.ELEMENT_NODE  ) {
+                String name = ((ElementImpl) current).getAttribute( "name" );
+                if ( name.equals("*") || name..equals(tagName))
+                    return current;
+            }
+            
+            // Otherwise continue walking the tree
+        }
+        
+        // Fell out of tree-walk; no more instances found
+        return null;
+        
     } // nextMatchingElementAfter(int):Node
-
+    
 } // class NameNodeListImpl
