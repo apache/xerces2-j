@@ -170,7 +170,7 @@ public class CoreDocumentImpl
     protected String fDocumentURI;
 
     /**Experimental DOM Level 3 feature: errorHandler */
-    protected final DOMErrorHandlerWrapper fErrorHandlerWrapper = new DOMErrorHandlerWrapper();
+    protected final transient DOMErrorHandlerWrapper fErrorHandlerWrapper = new DOMErrorHandlerWrapper();
 
     /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
