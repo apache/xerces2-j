@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.dv;
 
 import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.util.ObjectFactory;
 
 /**
  * Defines a factory API that enables applications to <p>
@@ -104,7 +103,7 @@ public abstract class SchemaDVFactory {
 
         try {
             // if the class name is not specified, use the default one
-            return (SchemaDVFactory)(ObjectFactory.newInstance( 
+            return (SchemaDVFactory)(ObjectFactory.newInstance(
                 factoryClass, ObjectFactory.findClassLoader(), true));
         } catch (ClassCastException e4) {
             throw new DVFactoryException("Schema factory class " + factoryClass + " does not extend from SchemaDVFactory.");
