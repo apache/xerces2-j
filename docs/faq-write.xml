@@ -421,7 +421,7 @@ void pullParse(XMLInputSource input) throws Exception {
     config.setInputSource(input);
     parser.reset();
     while (continueParse) {
-        continueParse = continueParse && config.parse(false);
+        continueParse = continueParse &amp;&amp; config.parse(false);
     }
 }</source>
     <p>
