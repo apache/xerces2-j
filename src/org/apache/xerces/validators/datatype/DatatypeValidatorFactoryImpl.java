@@ -90,7 +90,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
  */
 public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
-    private static final boolean fDebug = true;
+    private static final boolean fDebug = false;
     private Hashtable fRegistry;
     private boolean   fRegistryExpanded = false;
 
