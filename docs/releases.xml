@@ -5,12 +5,16 @@
   <s2 title='TBD'>
     <ul>
         <li>Completed implementation of schema Identity Constraints [Neil Graham]</li>
-        <li>Update XPath support to bring it into compliance with Schema 
-            PR [Achille Fokoue Nkoutche/Neil Graham]</li>
-        <li>Implemented Schema PR changes to the syntax of &lt;attribute&gt; 
-            declarations [Ted Han (than@ghx.com)/Neil Graham]</li>
+        <li>Update XPath support to bring it into compliance with Schema PR [Achille Fokoue Nkoutche/Neil Graham]</li>
+        <li>Implemented Schema PR changes to the syntax of &lt;attribute&gt; declarations [Ted Han (than@ghx.com)/Neil Graham]</li>
         <li>Added French resource bundle for regex package [Jean-Claude Dufourd, Laurent Foret/Neil Graham]</li>
         <li>Added support for Schema &quot;final&quot; attribute [Neil Graham]</li>
+        <li>Added support for nillable and removed limitation for xsi:schemaLocation usage [Elena Litani]</li>
+        <li>PR changes for Datatypes (including implementation of date/time) [Sandy Gao, Elena Litani]</li>
+        <li>Added support for fixed attribute on datatype facets [Elena Litani]      
+        <li>Constraint checking [Lisa Martin, Neil Graham, Sandy Gao, Elena Litani]</li>
+        <li>Miscellaneous bug fixes [Arnaud Le Hors, Jeffrey Rodrigues, Elena Litani]</li>
+
     </ul>
   </s2>
   <s2 title='March 16, 2001 (version 1.3.1)'>
