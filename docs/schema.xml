@@ -4,7 +4,8 @@
 	<s2 title="Introduction">
 		<p>This package contains an implementation of the W3C XML 
 		Schema Language, a recommendation of the Worldwide Web Consortium
-        available in two parts:  
+        available in three parts:  
+		<jump href="http://www.w3.org/TR/XMLSchema-0">XML Schema:  Primer</jump>  and
 		<jump href="http://www.w3.org/TR/XMLSchema-1">XML Schema:  Structures</jump>  and
 		<jump href="http://www.w3.org/TR/XMLSchema-2">XML Schema:  Datatypes</jump>. 
         We consider this implementation to be complete except for the
