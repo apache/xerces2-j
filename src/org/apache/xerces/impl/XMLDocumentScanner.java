@@ -1717,7 +1717,7 @@ public class XMLDocumentScanner
                                     setScannerState(SCANNER_STATE_TERMINATED);
                                     return false;
                                 }
-                                else {
+                                else if (XMLChar.isInvalid(c)) {
                                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, "InvalidCharInContent",
                                                                new Object[] {Integer.toString(c, 16)},
                                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
