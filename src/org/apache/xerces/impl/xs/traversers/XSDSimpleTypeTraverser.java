@@ -241,7 +241,6 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                 content = DOMUtil.getNextSiblingElement(content);
             }
         }
-        fAttrChecker.returnAttrArray(contentAttrs, schemaDoc);
 
         // get base type from "base" attribute
         XSSimpleType baseValidator = null;
@@ -273,16 +272,22 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
 
+        // when there is an error finding the base type of a restriciton
+        // we use anySimpleType as the base, then we should skip the facets,
+        // because anySimpleType doesn't recognize any facet.
+        boolean skipFacets = false;
+        
         // check if there is a child "simpleType"
         if (content != null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_SIMPLETYPE)) {
             if (restriction || list) {
                 // it's an error for both "base" and "simpleType" to appear
                 if (baseTypeName != null) {
                     reportSchemaError(list ? "src-simple-type.3" : "src-simple-type.2", null, content);
-                    return errorType(name, schemaDoc.fTargetNamespace, refType);
                 }
-                // traver this child to get the base type
-                baseValidator = traverseLocal(content, schemaDoc, grammar);
+                else {
+                    // traver this child to get the base type
+                    baseValidator = traverseLocal(content, schemaDoc, grammar);
+                }
                 // get the next element
                 content = DOMUtil.getNextSiblingElement(content);
             }
@@ -311,23 +316,27 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         else if ((restriction || list) && baseTypeName == null) {
             // it's an error if neither "base" nor "simpleType" appears
             reportSchemaError("src-simple-type.2", null, child);
-            return errorType(name, schemaDoc.fTargetNamespace, refType);
+            // base can't be found, skip the facets.
+            skipFacets = true;
+            baseValidator = SchemaGrammar.fAnySimpleType;
         }
         else if (union && (memberTypes == null || memberTypes.size() == 0)) {
             // it's an error if "memberTypes" is empty and no "simpleType" appears
             reportSchemaError("src-union-memberTypes-or-simpleTypes", null, child);
-            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.UNION);
+            dTValidators = new Vector(1);
+            dTValidators.addElement(SchemaGrammar.fAnySimpleType);
         }
 
         // error finding "base" or error traversing "simpleType".
         // don't need to report an error, since some error has been reported.
         if ((restriction || list) && baseValidator == null) {
-            return errorType(name, schemaDoc.fTargetNamespace, refType);
+            baseValidator = SchemaGrammar.fAnySimpleType;
         }
         // error finding "memberTypes" or error traversing "simpleType".
         // don't need to report an error, since some error has been reported.
         if (union && (dTValidators == null || dTValidators.size() == 0)) {
-            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.UNION);
+            dTValidators = new Vector(1);
+            dTValidators.addElement(SchemaGrammar.fAnySimpleType);
         }
 
         // item type of list types can't have list content
@@ -355,11 +364,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             FacetInfo fi = traverseFacets(content, baseValidator, schemaDoc);
             content = fi.nodeAfterFacets;
 
-            try {
-                fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
-                newDecl.applyFacets(fi.facetdata, fi.fPresentFacets, fi.fFixedFacets, fValidationState);
-            } catch (InvalidDatatypeFacetException ex) {
-                reportSchemaError(ex.getKey(), ex.getArgs(), child);
+            if (!skipFacets) {
+                try {
+                    fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
+                    newDecl.applyFacets(fi.facetdata, fi.fPresentFacets, fi.fFixedFacets, fValidationState);
+                } catch (InvalidDatatypeFacetException ex) {
+                    reportSchemaError(ex.getKey(), ex.getArgs(), child);
+                }
             }
         }
 
@@ -376,6 +387,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
         }
         
+        fAttrChecker.returnAttrArray(contentAttrs, schemaDoc);
+
         // return the new type
         return newDecl;
     }
