@@ -250,6 +250,9 @@ public abstract class Grammar {
     /** Temporary qualified name. */
     private QName fQName2 = new QName();
 
+    /** Temporary Attribute decl. */
+    protected XMLAttributeDecl fAttributeDecl = new XMLAttributeDecl();
+
     // for buildSyntaxTree method
 
     private int fLeafCount = 0;
@@ -454,6 +457,26 @@ public abstract class Grammar {
         return true;
 
     } // getAttributeDecl
+
+
+    /**
+     * Returns whether the given attribute is of type CDATA or not
+     *
+     * @param elName The element name.
+     * @param atName The attribute name.
+     *
+     * @return true if the attribute is of type CDATA
+     */
+    public boolean isCDATAAttribute(QName elName, QName atName) {
+        int elDeclIdx = getElementDeclIndex(elName, -1);
+        int atDeclIdx = getAttributeDeclIndex(elDeclIdx, atName.rawname);
+        if (getAttributeDecl(elDeclIdx, fAttributeDecl)
+            && fAttributeDecl.simpleType.type != XMLSimpleType.TYPE_CDATA){
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * getFirstEntityDeclIndex

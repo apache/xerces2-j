@@ -67,8 +67,6 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.Grammar;
 import org.apache.xerces.impl.validation.GrammarPool;
-import org.apache.xerces.impl.validation.XMLAttributeDecl;
-import org.apache.xerces.impl.validation.XMLSimpleType;
 
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
@@ -229,9 +227,6 @@ public class XMLDocumentScanner
 
     /** Element stack. */
     protected ElementStack fElementStack = new ElementStack();
-
-    /** Attribute decl. */
-    protected XMLAttributeDecl fAttributeDecl = new XMLAttributeDecl();
 
     // features
 
@@ -825,21 +820,14 @@ public class XMLDocumentScanner
         }
 
         // get the attribute type from the Grammar
-        if (fCurrentGrammar == null) {
+        if (fCurrentGrammar == null && fGrammarPool != null) {
             // REVISIT: should we use the systemId as the key instead?
             fCurrentGrammar = fGrammarPool.getGrammar("");
         }
         boolean cdata = true;
         if (fCurrentGrammar != null) {
-            int elDeclIdx =
-                fCurrentGrammar.getElementDeclIndex(fCurrentElement, -1);
-            int atDeclIdx =
-                fCurrentGrammar.getAttributeDeclIndex(elDeclIdx,
-                                                      fAttributeQName.rawname);
-            if (fCurrentGrammar.getAttributeDecl(elDeclIdx, fAttributeDecl)
-                && fAttributeDecl.simpleType.type != XMLSimpleType.TYPE_CDATA){
-                cdata = false;
-            }
+            cdata = fCurrentGrammar.isCDATAAttribute(fCurrentElement,
+                                                     fAttributeQName);
         }
         //REVISIT: one more case needs to be included: external PE and standalone is no
         boolean isVC =  fHasExternalDTD && !fStandalone;        
