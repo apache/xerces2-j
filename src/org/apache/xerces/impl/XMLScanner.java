@@ -1109,6 +1109,8 @@ public abstract class XMLScanner
 
         // keep track of the entity depth
         fEntityDepth++;
+        // must reset entity scanner
+        fEntityScanner = fEntityManager.getEntityScanner();
 
     } // startEntity(String,XMLResourceIdentifier,String)
 
@@ -1310,10 +1312,8 @@ public abstract class XMLScanner
     }
 
     // private methods
-    private void init() {
-        // initialize scanner
-        fEntityScanner = fEntityManager.getEntityScanner();
-        
+    private void init() { 
+        fEntityScanner = null;       
         // initialize vars
         fEntityDepth = 0;
         fReportEntity = true;

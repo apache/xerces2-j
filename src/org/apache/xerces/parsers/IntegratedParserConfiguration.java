@@ -194,9 +194,15 @@ extends StandardParserConfiguration {
     
     /** Configures the pipeline. */
 	protected void configurePipeline() {
+        
+        // use XML 1.0 datatype library
+         setProperty(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
+         
 		// setup dtd pipeline
 		if (fDTDScanner != null) {
+            fProperties.put(DTD_SCANNER, fDTDScanner);
 			if (fDTDProcessor != null) {
+                fProperties.put(DTD_PROCESSOR, fDTDProcessor);
 				fDTDScanner.setDTDHandler(fDTDProcessor);
 				fDTDProcessor.setDTDHandler(fDTDHandler);
 				fDTDScanner.setDTDContentModelHandler(fDTDProcessor);

@@ -355,7 +355,8 @@ public class XMLDTDScannerImpl
     public boolean scanDTDInternalSubset(boolean complete, boolean standalone,
                                          boolean hasExternalSubset)
         throws IOException, XNIException {
-
+        // reset entity scanner
+        fEntityScanner = fEntityManager.getEntityScanner();
         fEntityManager.setEntityHandler(this);
         fStandalone = standalone;
         if (fScannerState == SCANNER_STATE_TEXT_DECL) {

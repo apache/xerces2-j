@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001 - 2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2002, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
@@ -57,17 +57,24 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.XMLVersionDetector;
-import org.apache.xerces.impl.XMLEntityManager;
-import org.apache.xerces.impl.dv.DTDDVFactory;
+import java.io.IOException;
 
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.impl.XML11DTDScannerImpl;
+import org.apache.xerces.impl.XML11DocumentScannerImpl;
+import org.apache.xerces.impl.XML11NamespaceBinder;
+import org.apache.xerces.impl.XMLEntityHandler;
+import org.apache.xerces.impl.XMLVersionDetector;
+import org.apache.xerces.impl.dtd.XML11DTDProcessor;
+import org.apache.xerces.impl.dtd.XML11DTDValidator;
+import org.apache.xerces.impl.dv.DTDDVFactory;
+import org.apache.xerces.impl.xs.XMLSchemaValidator;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
-import org.apache.xerces.xni.parser.XMLDocumentScanner;
-import org.apache.xerces.xni.parser.XMLDTDScanner;
 
 /**
  * This class is the configuration used to parse XML 1.1 documents.
@@ -81,7 +88,7 @@ import org.apache.xerces.xni.parser.XMLDTDScanner;
  * @version $Id$
  */
 public class XML11Configuration
-    extends StandardParserConfiguration {
+    extends IntegratedParserConfiguration {
 
     //
     // Constants
@@ -92,8 +99,27 @@ public class XML11Configuration
     // Data
     //
 
-    protected XMLVersionDetector fVersionDetector = null;
+    protected XMLVersionDetector fVersionDetector = new XMLVersionDetector();
+    
+    // the XML 1.1 document scanner
+    protected XML11DocumentScannerImpl fXML11DocScanner = null;
+    
+    // the XML 1.1 DTD scanner
+    protected XML11DTDScannerImpl fXML11DTDScanner = null;
 
+    // the XML 1.1 DTD validator
+    protected XML11DTDValidator fXML11DTDValidator = null;
+    
+    // the XML 1.1 DTD processor
+    protected XML11DTDProcessor fXML11DTDProcessor = null;
+    
+    // the XML 1.1 namespace binder
+    protected XML11NamespaceBinder fXML11NamespaceBinder = null;
+    
+    // the XML 1.1. datatype factory
+    protected DTDDVFactory  fXML11DatatypeFactory = null;
+    
+    
     //
     // Constructors
     //
@@ -150,27 +176,167 @@ public class XML11Configuration
     //
     // Public methods
     //
+    public boolean parse(boolean complete) throws XNIException, IOException {
+        
+        //
+        // reset and configure pipeline and set InputSource.
+        if (fInputSource !=null) {
+            try {
+                fVersionDetector.reset(this);
+                reset();
 
-    // factory methods
-
-    /** Create a document scanner. */
-    protected XMLDocumentScanner createDocumentScanner() {
-        if(fVersionDetector == null) {
-            fVersionDetector = new XMLVersionDetector();
+                short version = fVersionDetector.determineDocVersion(fInputSource);
+                if (version == Constants.XML_VERSION_1_1){
+                    // XML 1.1 pipeline
+                    configureXML11Pipeline();
+                }
+                // resets and sets the pipeline.
+                fVersionDetector.startDocumentParsing((XMLEntityHandler)fScanner, version);
+                fInputSource = null;
+            } 
+            catch (XNIException ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw ex;
+            } 
+            catch (IOException ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw ex;
+            } 
+            catch (RuntimeException ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw ex;
+            }
+            catch (Exception ex) {
+                if (PRINT_EXCEPTION_STACK_TRACE)
+                    ex.printStackTrace();
+                throw new XNIException(ex);
+            }
         }
-        return fVersionDetector;
-    } // createDocumentScanner():XMLDocumentScanner
 
-    /** Create a DTD scanner. */
-    protected XMLDTDScanner createDTDScanner() {
-        if(fVersionDetector == null) {
-            fVersionDetector = new XMLVersionDetector();
+        try {
+            return fScanner.scanDocument(complete);
+        } 
+        catch (XNIException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } 
+        catch (IOException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
+        } 
+        catch (RuntimeException ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw ex;
         }
-        return fVersionDetector;
-    } // createDTDScanner():XMLDTDScanner
+        catch (Exception ex) {
+            if (PRINT_EXCEPTION_STACK_TRACE)
+                ex.printStackTrace();
+            throw new XNIException(ex);
+        }
 
-    /** Create a datatype validator factory. */
-    protected DTDDVFactory createDatatypeValidatorFactory() {
-        return DTDDVFactory.getInstance(XML11_DATATYPE_VALIDATOR_FACTORY);
-    } // createDatatypeValidatorFactory():DatatypeValidatorFactory
+    } // parse(boolean):boolean
+
+	/** Configures the XML 1.1 pipeline. 
+     *  Note: this method also resets the new XML11 components
+     */
+	protected void configureXML11Pipeline() {
+        
+        // create datatype factory
+        if (fXML11DatatypeFactory == null) {
+            fXML11DatatypeFactory= DTDDVFactory.getInstance(XML11_DATATYPE_VALIDATOR_FACTORY);
+        }
+        setProperty(DATATYPE_VALIDATOR_FACTORY, fXML11DatatypeFactory);
+        
+
+		if (fXML11DTDScanner == null) {
+			fXML11DTDScanner = new XML11DTDScannerImpl();
+		}
+		// setup dtd pipeline
+		if (fXML11DTDProcessor == null) {
+			fXML11DTDProcessor = new XML11DTDProcessor();
+		}
+		fProperties.put(DTD_SCANNER, fXML11DTDScanner);
+		fProperties.put(DTD_PROCESSOR, fXML11DTDProcessor);
+
+		fXML11DTDScanner.setDTDHandler(fXML11DTDProcessor);
+		fXML11DTDProcessor.setDTDHandler(fDTDHandler);
+		fXML11DTDScanner.setDTDContentModelHandler(fXML11DTDProcessor);
+		fXML11DTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+
+		if (fXML11DocScanner == null) {
+			fXML11DocScanner = new XML11DocumentScannerImpl();
+		}
+        
+        if(fXML11DTDValidator == null) {
+            fXML11DTDValidator = new XML11DTDValidator();
+        }
+                
+		fScanner = fXML11DocScanner;
+        ((XMLComponent)fScanner).reset(this);
+		fProperties.put(DOCUMENT_SCANNER, fXML11DocScanner);
+		fProperties.put(DTD_VALIDATOR, fXML11DTDValidator);
+		if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
+			if (fXML11NamespaceBinder == null) {
+				fXML11NamespaceBinder = new XML11NamespaceBinder();
+			}
+			fProperties.put(NAMESPACE_BINDER, fXML11NamespaceBinder);
+
+			fScanner.setDocumentHandler(fXML11DTDValidator);
+			fXML11DTDValidator.setDocumentSource(fScanner);
+
+			fXML11DTDValidator.setDocumentHandler(fXML11NamespaceBinder);
+			fXML11NamespaceBinder.setDocumentSource(fXML11DTDValidator);
+
+			fXML11NamespaceBinder.setDocumentHandler(fDocumentHandler);
+			fDocumentHandler.setDocumentSource(fXML11NamespaceBinder);
+			fLastComponent = fXML11NamespaceBinder;
+            fXML11NamespaceBinder.reset(this);
+		}
+		else {
+			fScanner.setDocumentHandler(fXML11DTDValidator);
+			fXML11DTDValidator.setDocumentSource(fScanner);
+			fXML11DTDValidator.setDocumentHandler(fDocumentHandler);
+			fDocumentHandler.setDocumentSource(fXML11DTDValidator);
+			fLastComponent = fXML11DTDValidator;
+		}
+		// reset all 1.1 components
+
+		fXML11DTDProcessor.reset(this);
+		fXML11DTDScanner.reset(this);
+		fXML11DTDValidator.reset(this);
+
+        
+                // setup document pipeline
+        if (fFeatures.get(XMLSCHEMA_VALIDATION) == Boolean.TRUE) {
+            // If schema validator was not in the pipeline insert it.
+            if (fSchemaValidator == null) {
+                fSchemaValidator = new XMLSchemaValidator();
+
+                // add schema component
+                fProperties.put(SCHEMA_VALIDATOR, fSchemaValidator);
+                addComponent(fSchemaValidator);
+                // add schema message formatter
+                if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+                    XSMessageFormatter xmft = new XSMessageFormatter();
+                    fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+                }
+
+            }
+
+            fLastComponent.setDocumentHandler(fSchemaValidator);
+            fSchemaValidator.setDocumentSource(fLastComponent);
+            fSchemaValidator.setDocumentHandler(fDocumentHandler);
+            fLastComponent = fSchemaValidator;
+        }
+	} // configurePipeline()
+
+
+
+
 } // class XML11Configuration

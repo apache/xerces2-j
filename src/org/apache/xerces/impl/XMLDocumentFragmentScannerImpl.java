@@ -341,7 +341,9 @@ public class XMLDocumentFragmentScannerImpl
      */
     public boolean scanDocument(boolean complete) 
         throws IOException, XNIException {
-
+        
+        // reset entity scanner
+        fEntityScanner = fEntityManager.getEntityScanner();
         // keep dispatching "events"
         fEntityManager.setEntityHandler(this);
         do {
@@ -1457,7 +1459,6 @@ public class XMLDocumentFragmentScannerImpl
          */
         public boolean dispatch(boolean complete) 
             throws IOException, XNIException {
-
             try {
                 boolean again;
                 do {

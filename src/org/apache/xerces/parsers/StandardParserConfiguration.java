@@ -148,12 +148,6 @@ public class StandardParserConfiguration
     protected static final String SCHEMA_NONS_LOCATION =
     Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_NONS_LOCATION;
 
-
-    // debugging
-
-    /** Set to true and recompile to print exception stack trace. */
-    private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
-
     //
     // Data
     //

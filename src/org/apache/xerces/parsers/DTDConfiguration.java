@@ -220,7 +220,7 @@ public class DTDConfiguration
     // debugging
 
     /** Set to true and recompile to print exception stack trace. */
-    private static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
+    protected static final boolean PRINT_EXCEPTION_STACK_TRACE = false;
 
     //
     // Data
@@ -638,59 +638,71 @@ public class DTDConfiguration
         // configure the pipeline and initialize the components
         configurePipeline();
         super.reset();
-
-
     } // reset()
 
     /** Configures the pipeline. */
-    protected void configurePipeline() {
+	protected void configurePipeline() {
 
-        // REVISIT: This should be better designed. In other words, we
-        //          need to figure out what is the best way for people to
-        //          re-use *most* of the standard configuration but do 
-        //          things common things such as remove a component (e.g.
-        //          the validator), insert a new component (e.g. XInclude), 
-        //          etc... -Ac
+		// REVISIT: This should be better designed. In other words, we
+		//          need to figure out what is the best way for people to
+		//          re-use *most* of the standard configuration but do 
+		//          things common things such as remove a component (e.g.
+		//          the validator), insert a new component (e.g. XInclude), 
+		//          etc... -Ac
 
-        // setup document pipeline
-        if (fDTDValidator != null) {
-            fScanner.setDocumentHandler(fDTDValidator);
-            // filters
-            fDTDValidator.setDocumentHandler(fNamespaceBinder);
-            fDTDValidator.setDocumentSource(fScanner);
-            fNamespaceBinder.setDocumentHandler(fDocumentHandler);
-            fNamespaceBinder.setDocumentSource(fDTDValidator);
-        }
-        else {
-            fScanner.setDocumentHandler(fNamespaceBinder);
-            fNamespaceBinder.setDocumentHandler(fDocumentHandler);
-            fNamespaceBinder.setDocumentSource(fDTDValidator);
-        }
+		// setup document pipeline
+		if (fDTDValidator != null) {
+			fScanner.setDocumentHandler(fDTDValidator);
+			if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
 
-        fLastComponent = fNamespaceBinder;
+				// filters
+				fDTDValidator.setDocumentHandler(fNamespaceBinder);
+				fDTDValidator.setDocumentSource(fScanner);
+				fNamespaceBinder.setDocumentHandler(fDocumentHandler);
+				fNamespaceBinder.setDocumentSource(fDTDValidator);
+				fLastComponent = fNamespaceBinder;
+			}
+			else {
+				fDTDValidator.setDocumentHandler(fDocumentHandler);
+				fDTDValidator.setDocumentSource(fScanner);
+				fLastComponent = fDTDValidator;
+			}
+		}
+		else {
+			if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
+				fScanner.setDocumentHandler(fNamespaceBinder);
+				fNamespaceBinder.setDocumentHandler(fDocumentHandler);
+				fNamespaceBinder.setDocumentSource(fScanner);
+				fLastComponent = fNamespaceBinder;
+			}
+			else {
+				fScanner.setDocumentHandler(fDocumentHandler);
+				fLastComponent = fScanner;
+			}
+		}
 
-        // setup dtd pipeline
-        if (fDTDScanner != null) {
-            if (fDTDProcessor != null) {
-                fDTDScanner.setDTDHandler(fDTDProcessor);
-                fDTDProcessor.setDTDSource(fDTDScanner);
-                fDTDProcessor.setDTDHandler(fDTDHandler);
-                fDTDHandler.setDTDSource(fDTDProcessor);
-                
-                fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
-                fDTDProcessor.setDTDContentModelSource(fDTDScanner);
-                fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
-                fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
-            }
-            else {
-                fDTDScanner.setDTDHandler(fDTDHandler);
-                fDTDHandler.setDTDSource(fDTDScanner);
-                fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
-                fDTDContentModelHandler.setDTDContentModelSource(fDTDScanner);
-            }
-        }
+		// setup dtd pipeline
+		if (fDTDScanner != null) {
+			if (fDTDProcessor != null) {
+				fDTDScanner.setDTDHandler(fDTDProcessor);
+				fDTDProcessor.setDTDSource(fDTDScanner);
+				fDTDProcessor.setDTDHandler(fDTDHandler);
+				fDTDHandler.setDTDSource(fDTDProcessor);
 
-    } // configurePipeline()
+				fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
+				fDTDProcessor.setDTDContentModelSource(fDTDScanner);
+				fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+				fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
+			}
+			else {
+				fDTDScanner.setDTDHandler(fDTDHandler);
+				fDTDHandler.setDTDSource(fDTDScanner);
+				fDTDScanner.setDTDContentModelHandler(fDTDContentModelHandler);
+				fDTDContentModelHandler.setDTDContentModelSource(fDTDScanner);
+			}
+		}
+
+	} // configurePipeline()
 
     // features and properties
 
