@@ -688,16 +688,9 @@ public class XMLEntityManager
        // give the entity resolver a chance
         XMLInputSource xmlInputSource = null;
         if (fEntityResolver != null) {
-            XMLResourceIdentifierImpl ri = null;
-            if (resourceIdentifier instanceof XMLResourceIdentifierImpl) {
-                ri = (XMLResourceIdentifierImpl)resourceIdentifier;
-            }
-            else {
-                fResourceIdentifier.clear();
-                ri = fResourceIdentifier;
-            }
-            ri.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
-            xmlInputSource = fEntityResolver.resolveEntity(ri);
+            resourceIdentifier.setBaseSystemId(baseSystemId);
+            resourceIdentifier.setExpandedSystemId(expandedSystemId);
+            xmlInputSource = fEntityResolver.resolveEntity(resourceIdentifier);
         }
 
         // do default resolution
