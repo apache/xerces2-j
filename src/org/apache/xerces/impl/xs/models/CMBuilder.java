@@ -63,6 +63,7 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSModelGroup;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.models.*;
 
@@ -70,456 +71,247 @@ import org.apache.xerces.impl.xs.models.*;
  * This class constructs content models for a given grammar.
  *
  * @author Elena Litani, IBM
+ * @author Sandy Gao, IBM
+ * 
  * @version $Id$
  */
 public class CMBuilder {
 
-    private final QName fQName1 = new QName();
-    private final QName fQName2 = new QName();
-
+    // REVISIT: should update the decl pool to cache XSCM objects too
     private XSDeclarationPool fDeclPool = null;
+    
+    // It never changes, so a static member is good enough
+    private static XSEmptyCM fEmptyCM = new XSEmptyCM();
 
     // needed for DFA construction
     private int fLeafCount;
-                           
-    public CMBuilder (XSDeclarationPool pool){
+    // needed for UPA
+    private int fParticleCount;
+
+    public CMBuilder(XSDeclarationPool pool) {
         fDeclPool = pool;
     }
 
-    public void setDeclPool (XSDeclarationPool declPool){
+    public void setDeclPool(XSDeclarationPool declPool) {
         fDeclPool = declPool;
     }
 
     /**
      * Get content model for the a given type
      *
-     * @param elementDeclIndex
-     * @param comparator
-     * @return a content model validator
-     * @exception RuntimeException
+     * @param typeDecl  get content model for which complex type 
+     * @return          a content model validator
      */
     public XSCMValidator getContentModel(XSComplexTypeDecl typeDecl) {
 
+        // for complex type with empty or simple content,
+        // there is no content model validator
         short contentType = typeDecl.fContentType;
         if (contentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE ||
             contentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
             return null;
         }
 
-        XSCMValidator cmValidator = null;
-
         XSParticleDecl particle = typeDecl.fParticle;
-
-        // This check is performed in XSComplexTypeDecl.
-        //if (cmValidator != null)
-        //    return cmValidator;
-
-
-        if (particle != null)
-            particle = expandParticleTree( (XSParticleDecl)particle);
-
-        // And create the content model according to the spec type
-
-        if (particle == null) {
-            // create special content model for no element content
-            cmValidator = new XSEmptyCM();
-        }
-        else if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
-               //
-              // Create a child model as
-              // per the element-only case
-            cmValidator = createChildModel(particle, true);
-        }
-        else if (contentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
-            //  This method will create an optimal model for the complexity
-            //  of the element's defined model. If its simple, it will create
-            //  a SimpleContentModel object. If its a simple list, it will
-            //  create a SimpleListContentModel object. If its complex, it
-            //  will create a DFAContentModel object.
-            //
-            cmValidator = createChildModel(particle, false);
+        
+        // if the content is element only or mixed, but no particle
+        // is defined, return the empty content model
+        if (particle == null)
+            return fEmptyCM;
+        
+        // if the content model contains "all" model group,
+        // we create an "all" content model, otherwise a DFA content model
+        XSCMValidator cmValidator = null;
+        if (particle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
+            ((XSModelGroup)particle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL) {
+            cmValidator = createAllCM(particle);
         }
         else {
-            throw new RuntimeException("Unknown content type for a element decl "
-                                       + "in getElementContentModelValidator() in Grammar class");
+            cmValidator = createDFACM(particle);
         }
 
+        // if the validator returned is null, it means there is nothing in
+        // the content model, so we return the empty content model.
+        if (cmValidator == null)
+            cmValidator = fEmptyCM;
+            
         return cmValidator;
     }
 
+    XSCMValidator createAllCM(XSParticleDecl particle) {
+        if (particle.fMaxOccurs == 0)
+            return null;
 
-    private XSParticleDecl expandParticleTree( XSParticleDecl particle) {
+        // create an all content model. the parameter indicates whether
+        // the <all> itself is optional        
+        XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0);
+        
+        // get the model group, and add all children of it to the content model
+        XSModelGroup group = (XSModelGroup)particle.fValue;
+        for (int i = 0; i < group.fParticleCount; i++) {
+            // for all non-empty particles
+            if (group.fParticles[i].fType != XSParticleDecl.PARTICLE_EMPTY &&
+                group.fParticles[i].fMaxOccurs != 0)
+                // add the element decl to the all content model
+                allContent.addElement((XSElementDecl)group.fParticles[i].fValue,
+                                      group.fParticles[i].fMinOccurs == 0);
+        }
+        return allContent;
+    }
+    
+    XSCMValidator createDFACM(XSParticleDecl particle) {
+        fLeafCount = 0;
+        fParticleCount = 0;
+        // convert particle tree to CM tree
+        CMNode node = buildSyntaxTree(particle);
+        if (node == null)
+            return null;
+        // build DFA content model from the CM tree
+        return new XSDFACM(node, fLeafCount);
+    }
 
-        // We may want to consider trying to combine this with buildSyntaxTree at some
-        // point (if possible)
+    // 1. convert particle tree to CM tree:
+    // 2. expand all occurrence values: a{n, unbounded} -> a, a, ..., a+
+    //                                  a{n, m} -> a, a, ..., a?, a?, ...
+    // 3. convert model groups (a, b, c, ...) or (a | b | c | ...) to
+    //    binary tree: (((a,b),c),...) or (((a|b)|c)|...)
+    // 4. make sure each leaf node (XSCMLeaf) has a distinct position
+    private CMNode buildSyntaxTree(XSParticleDecl particle) {
 
         int maxOccurs = particle.fMaxOccurs;
         int minOccurs = particle.fMinOccurs;
         short type = particle.fType;
+        CMNode nodeRet = null;
+        
         if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
             (type == XSParticleDecl.PARTICLE_ELEMENT)) {
-            // Make a clone of the leaf particle, so that if there are two
-            // references to the same group, we have two different leaf
-            // particles for the same element or wildcard decl.
+            // (task 1) element and wildcard particles should be converted to
+            // leaf nodes
+            // REVISIT: Make a clone of the leaf particle, so that if there
+            // are two references to the same group, we have two different
+            // leaf particles for the same element or wildcard decl.
             // This is useful for checking UPA.
-            //return expandContentModel(particle.clone(false), minOccurs, maxOccurs);
-            return expandContentModel(particle, minOccurs, maxOccurs);
+            nodeRet = new XSCMLeaf(particle.fType, particle.fValue, fParticleCount++, fLeafCount++);
+            // (task 2) expand occurrence values
+            nodeRet = expandContentModel(nodeRet, minOccurs, maxOccurs);
         }
-        else if (type == XSParticleDecl.PARTICLE_CHOICE ||
-                 type == XSParticleDecl.PARTICLE_ALL ||
-                 type == XSParticleDecl.PARTICLE_SEQUENCE) {
-
-            Object left = particle.fValue;
-            Object right = particle.fOtherValue;
-
-            left =  expandParticleTree( (XSParticleDecl)left);
-            if (right != null)
-                right =  expandParticleTree( (XSParticleDecl)right);
-
-            // At this point, by expanding the particle tree, we may have a null left or right
-            if (left==null && right==null)
-                return null;
-
-            if (left == null)
-                return expandContentModel((XSParticleDecl)right, minOccurs, maxOccurs);
-
-            if (right == null)
-                return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
-
-            XSParticleDecl newParticle;
-            if (fDeclPool !=null) {
-                newParticle = fDeclPool.getParticleDecl();
-            } else {            
-                newParticle = new XSParticleDecl();
-            }
-            newParticle.fType = particle.fType;
-            newParticle.fValue = left;
-            newParticle.fOtherValue = right;
-            return expandContentModel((XSParticleDecl)newParticle, minOccurs, maxOccurs);
-        }
-        else if (type == XSParticleDecl.PARTICLE_EMPTY) {
-            return null;
-        }
-
-        return particle;
-    }
-
-
-
-    /**
-     * When the element has a 'CONTENTTYPE_ELEMENT' model, this method is called to
-     * create the content model object. It looks for some special case simple
-     * models and creates SimpleContentModel objects for those. For the rest
-     * it creates the standard DFA style model.
-     *
-     * @param grammar
-     * @param fParticleIndex
-     * @return
-     */
-    private XSCMValidator createChildModel(XSParticleDecl particle, boolean isMixed) {
-
-        //
-        //  Get the content spec node for the element we are working on.
-        //  This will tell us what kind of node it is, which tells us what
-        //  kind of model we will try to create.
-        //
-        //XMLContentSpec fParticle = new XMLContentSpec();
-        short type = particle.fType;
-        if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-            // let fall through to build a DFAContentModel
-        }
-        else if (isMixed) {
-            if (type ==XSParticleDecl.PARTICLE_ALL) {
-                // All the nodes under an ALL must be additional ALL nodes and
-                // ELEMENTs (or ELEMENTs under ZERO_OR_ONE nodes.)
-                // We collapse the ELEMENTs into a single vector.
-                XSAllCM allContent = new XSAllCM(false);
-                gatherAllLeaves ((XSParticleDecl)(particle.fValue), allContent);
-                gatherAllLeaves ((XSParticleDecl)(particle.fOtherValue), allContent);
-                return allContent;
-
-            }
-            else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
-                 XSParticleDecl left = (XSParticleDecl)particle.fValue;
-
-
-                // An ALL node can appear under a ZERO_OR_ONE node.
-                if (type ==XSParticleDecl.PARTICLE_ALL) {
-                    XSAllCM allContent = new XSAllCM(true);
-                    gatherAllLeaves (left, allContent);
-                    return allContent;
-
+        else if (type == XSParticleDecl.PARTICLE_MODELGROUP) {
+            // (task 1,3) convert model groups to binary trees
+            XSModelGroup group = (XSModelGroup)particle.fValue;
+            CMNode temp = null;
+            for (int i = 0; i < group.fParticleCount; i++) {
+                // first convert each child to a CM tree
+                temp = buildSyntaxTree(group.fParticles[i]);
+                // then combine them using binary operation
+                if (temp != null) {
+                    if (nodeRet == null) {
+                        nodeRet = temp;
+                    }
+                    else {
+                        nodeRet = new XSCMBinOp(group.fCompositor, nodeRet, temp);
+                    }
                 }
             }
-            // otherwise, let fall through to build a DFAContentModel
-        }
-        else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-            //
-            //  Check that the left value is not null, since any content model
-            //  with PCDATA should be MIXED, so we should not have gotten here.
-            //
-            if (particle.fValue == null &&
-                particle.fOtherValue == null)
-                throw new RuntimeException("ImplementationMessages.VAL_NPCD");
-
-            //
-            //  Its a single leaf, so its an 'a' type of content model, i.e.
-            //  just one instance of one element. That one is definitely a
-            //  simple content model.
-            //
-            // pass element declaration
-
-            return new XSSimpleCM(type, (XSElementDecl)particle.fValue);
-        }
-        else if ((type == XSParticleDecl.PARTICLE_CHOICE)
-                 ||  (type == XSParticleDecl.PARTICLE_SEQUENCE)) {
-            //
-            //  Lets see if both of the children are leafs. If so, then it
-            //  it has to be a simple content model
-            //
-            XSParticleDecl left = (XSParticleDecl)particle.fValue;
-            XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
-
-            if ((right.fType == XSParticleDecl.PARTICLE_ELEMENT)
-                &&  (left.fType == XSParticleDecl.PARTICLE_ELEMENT)) {
-                //
-                //  Its a simple choice or sequence, so we can do a simple
-                //  content model for it.
-                //
-                // pass both element decls
-                return new XSSimpleCM(type, (XSElementDecl)left.fValue, (XSElementDecl)right.fValue);
-            }
-
-        }
-    else if (type == XSParticleDecl.PARTICLE_ALL) {
-
-            XSParticleDecl left = (XSParticleDecl)particle.fValue;
-            XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
-
-            XSAllCM allContent = new XSAllCM(false);
-
-            gatherAllLeaves (left, allContent);
-            gatherAllLeaves (right, allContent);
-            return allContent;
-        }
-        else if ((type == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
-                 ||  (type == XSParticleDecl.PARTICLE_ZERO_OR_MORE)
-                 ||  (type == XSParticleDecl.PARTICLE_ONE_OR_MORE)) {
-            //
-            //  Its a repetition, so see if its one child is a leaf. If so
-            //  its a repetition of a single element, so we can do a simple
-            //  content model for that.
-            XSParticleDecl left = (XSParticleDecl) particle.fValue;
-
-            if (left.fType == XSParticleDecl.PARTICLE_ELEMENT) {
-                //
-                //  It is, so we can create a simple content model here that
-                //  will check for this repetition. We pass -1 for the unused
-                //  right node.
-                //
-                return new XSSimpleCM(type, (XSElementDecl)left.fValue);
-            }
-            else if (left.fType==XSParticleDecl.PARTICLE_ALL) {
-                 XSAllCM allContent = new XSAllCM(true);
-                gatherAllLeaves (left, allContent);
-                return allContent;
-            }
-
-
-        }
-        else {
-            throw new RuntimeException("ImplementationMessages.VAL_CST");
+            // (task 2) expand occurrence values
+            if (nodeRet != null)
+                nodeRet = expandContentModel(nodeRet, minOccurs, maxOccurs);
         }
 
-        //
-        //  Its not a simple content model, so here we have to create a DFA
-        //  for this element. So we create a DFAContentModel object. He
-        //  encapsulates all of the work to create the DFA.
-        //
-
-        fLeafCount = 0;
-        CMNode node = buildSyntaxTree(particle);
-        return new XSDFACM(node, fLeafCount, isMixed);
-    }
-
-
-
-    private XSParticleDecl expandContentModel(XSParticleDecl particle,
-                                              int minOccurs, int maxOccurs) {
-
-        XSParticleDecl leafParticle = particle;
-        XSParticleDecl optional = null;
-        if (minOccurs==1 && maxOccurs==1) {
-            return particle;
-        }
-        else if (minOccurs==0 && maxOccurs==1) {
-            //zero or one
-            return createParticle ( XSParticleDecl.PARTICLE_ZERO_OR_ONE,particle,null);
-        }
-        else if (minOccurs == 0 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-            //zero or more
-            return createParticle (XSParticleDecl.PARTICLE_ZERO_OR_MORE, particle, null);
-        }
-        else if (minOccurs == 1 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-            //one or more
-            return createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE, particle, null);
-        }
-        else if (maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
-            // => a,a,..,a+
-            particle = createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE,
-                                       particle, null);
-
-            for (int i=0; i < (minOccurs-1); i++) {
-                particle = createParticle (XSParticleDecl.PARTICLE_SEQUENCE, leafParticle, particle);
-            }
-            return particle;
-
-        }
-        else {
-            // {n,m} => a,a,a,...(a),(a),...
-
-
-            if (minOccurs==0) {
-                optional = createParticle (XSParticleDecl.PARTICLE_ZERO_OR_ONE,
-                                           leafParticle,
-                                           null);
-                particle = optional;
-                for (int i=0; i < (maxOccurs-minOccurs-1); i++) {
-                    particle = createParticle (XSParticleDecl.PARTICLE_SEQUENCE,
-                                               particle,
-                                               optional);
-                }
-            }
-            else {
-                for (int i=0; i<(minOccurs-1); i++) {
-                    particle = createParticle (XSParticleDecl.PARTICLE_SEQUENCE,
-                                               particle,
-                                               leafParticle);
-                }
-
-                optional = createParticle(XSParticleDecl.PARTICLE_ZERO_OR_ONE,
-                                          leafParticle,
-                                          null);
-
-                for (int i=0; i < (maxOccurs-minOccurs); i++) {
-                    particle = createParticle(XSParticleDecl.PARTICLE_SEQUENCE,
-                                              particle,
-                                              optional);
-                }
-            }
-        }
-
-        return particle;
-    }
-
-    /**
-     *  Recursively builds an AllContentModel based on a particle tree
-     *  rooted at an ALL node.
-     */
-     private void gatherAllLeaves(XSParticleDecl particle,
-                                        XSAllCM allContent) {
-        Object left = particle.fValue;
-        Object right = particle.fOtherValue;
-        int type = particle.fType;
-
-        if (type == XSParticleDecl.PARTICLE_ALL) {
-
-            // At an all node, visit left and right subtrees
-            gatherAllLeaves ((XSParticleDecl)left, allContent);
-            gatherAllLeaves ((XSParticleDecl) particle.fOtherValue, allContent);
-        }
-        else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-
-            // At leaf, add the element to list of elements permitted in the all
-            allContent.addElement ((XSElementDecl)left, false);
-        }
-        else if (type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
-
-            // At ZERO_OR_ONE node, subtree must be an element
-            // that was specified with minOccurs=0, maxOccurs=1
-            // Add the optional element to list of elements permitted in the all
-
-            if (((XSParticleDecl)left).fType == XSParticleDecl.PARTICLE_ELEMENT) {
-                allContent.addElement ((XSElementDecl)(((XSParticleDecl)left).fValue), true);
-            }
-            else {
-            // report error
-        throw new RuntimeException("ImplementationMessages.VAL_CST");
-            }
-        }
-        else {
-            // report error
-            throw new RuntimeException("ImplementationMessages.VAL_CSTA");
-        }
-    }
-
-    private XSParticleDecl createParticle (short type,
-                                           XSParticleDecl left,
-                                           XSParticleDecl right) {
-
-        XSParticleDecl newParticle;
-        if (fDeclPool !=null) {
-            newParticle = fDeclPool.getParticleDecl();
-        } else {            
-            newParticle = new XSParticleDecl();
-        }
-        newParticle.fType = type;
-        newParticle.fValue = (Object) left;
-        newParticle.fOtherValue = (Object)right;
-        return newParticle;
-    }
-
-    // this method is needed to convert a tree of ParticleDecl
-    // nodes into a tree of content models that XSDFACM methods can then use as input.
-    private final CMNode buildSyntaxTree(XSParticleDecl startNode) {
-
-        // We will build a node at this level for the new tree
-        CMNode nodeRet = null;
-        if (startNode.fType == XSParticleDecl.PARTICLE_WILDCARD) {
-            nodeRet = new XSCMLeaf(startNode, fLeafCount++);
-        }
-        //
-        //  If this node is a leaf, then its an easy one. We just add it
-        //  to the tree.
-        //
-        else if (startNode.fType == XSParticleDecl.PARTICLE_ELEMENT) {
-            //
-            //  Create a new leaf node, and pass it the current leaf count,
-            //  which is its DFA state position. Bump the leaf count after
-            //  storing it. This makes the positions zero based since we
-            //  store first and then increment.
-            //
-            nodeRet = new XSCMLeaf(startNode, fLeafCount++);
-        }
-        else {
-            //
-            //  Its not a leaf, so we have to recurse its left and maybe right
-            //  nodes. Save both values before we recurse and trash the node.
-            final XSParticleDecl leftNode = ((XSParticleDecl)startNode.fValue);
-            final XSParticleDecl rightNode = ((XSParticleDecl)startNode.fOtherValue);
-
-            if ((startNode.fType == XSParticleDecl.PARTICLE_CHOICE)
-                ||  (startNode.fType == XSParticleDecl.PARTICLE_SEQUENCE)) {
-                //
-                //  Recurse on both children, and return a binary op node
-                //  with the two created sub nodes as its children. The node
-                //  type is the same type as the source.
-                //
-
-                nodeRet = new XSCMBinOp( startNode.fType, buildSyntaxTree(leftNode)
-                                       , buildSyntaxTree(rightNode));
-            }
-            else if (startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_MORE
-               || startNode.fType == XSParticleDecl.PARTICLE_ZERO_OR_ONE
-               || startNode.fType == XSParticleDecl.PARTICLE_ONE_OR_MORE) {
-                nodeRet = new XSCMUniOp(startNode.fType, buildSyntaxTree(leftNode));
-            }
-            else {
-                throw new RuntimeException("ImplementationMessages.VAL_CST");
-            }
-        }
-        // And return our new node for this level
         return nodeRet;
     }
 
+    // 2. expand all occurrence values: a{n, unbounded} -> a, a, ..., a+
+    //                                  a{n, m} -> a, a, ..., a?, a?, ...
+    // 4. make sure each leaf node (XSCMLeaf) has a distinct position
+    private CMNode expandContentModel(CMNode node,
+                                      int minOccurs, int maxOccurs) {
+
+        CMNode nodeRet = null;
+
+        if (minOccurs==1 && maxOccurs==1) {
+            nodeRet = node;
+        }
+        else if (minOccurs==0 && maxOccurs==1) {
+            //zero or one
+            nodeRet = new XSCMUniOp(XSParticleDecl.PARTICLE_ZERO_OR_ONE, node);
+        }
+        else if (minOccurs == 0 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            //zero or more
+            nodeRet = new XSCMUniOp(XSParticleDecl.PARTICLE_ZERO_OR_MORE, node);
+        }
+        else if (minOccurs == 1 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            //one or more
+            nodeRet = new XSCMUniOp(XSParticleDecl.PARTICLE_ONE_OR_MORE, node);
+        }
+        else if (maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+            // => a,a,..,a+
+            // create a+ node first, then put minOccurs-1 a's in front of it
+            // for the first time "node" is used, we don't need to make a copy
+            // and for other references to node, we make copies
+            nodeRet = new XSCMUniOp(XSParticleDecl.PARTICLE_ONE_OR_MORE, node);
+            for (int i=0; i < minOccurs-1; i++) {
+                // (task 4) we need to call copyNode here, so that we append
+                // an entire new copy of the node (a subtree). this is to ensure
+                // all leaf nodes have distinct position
+                nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                                        copyNode(node), nodeRet);
+            }
+        }
+        else {
+            // {n,m} => a,a,a,...(a),(a),...
+            // first n a's, then m-n a?'s.
+            // copyNode is called, for the same reason as above
+            if (minOccurs > 0) {
+                nodeRet = node;
+                for (int i=0; i<minOccurs-1; i++) {
+                    nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                                            nodeRet, copyNode(node));
+                }
+            }
+            if (maxOccurs > minOccurs) {
+                node = new XSCMUniOp(XSParticleDecl.PARTICLE_ZERO_OR_ONE, node);
+                if (nodeRet == null) {
+                    nodeRet = node;
+                }
+                else {
+                    nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                                            nodeRet, copyNode(node));
+                }
+                for (int i=minOccurs; i<maxOccurs-1; i++) {
+                    nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                                            nodeRet, node);
+                }
+            }
+        }
+
+        return nodeRet;
+    }
+    
+    // 4. make sure each leaf node (XSCMLeaf) has a distinct position
+    private CMNode copyNode(CMNode node) {
+        int type = node.type();
+        // for choice or sequence, copy the two subtrees, and combine them
+        if (type == XSModelGroup.MODELGROUP_CHOICE ||
+            type == XSModelGroup.MODELGROUP_SEQUENCE) {
+            XSCMBinOp bin = (XSCMBinOp)node;
+            node = new XSCMBinOp(type, copyNode(bin.getLeft()),
+                                 copyNode(bin.getRight()));
+        }
+        // for ?+*, copy the subtree, and put it in a new ?+* node
+        else if (type == XSParticleDecl.PARTICLE_ZERO_OR_MORE ||
+                 type == XSParticleDecl.PARTICLE_ONE_OR_MORE ||
+                 type == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
+            XSCMUniOp uni = (XSCMUniOp)node;
+            node = new XSCMUniOp(type, copyNode(uni.getChild()));
+        }
+        // for element/wildcard (leaf), make a new leaf node,
+        // with a distinct position
+        else if (type == XSParticleDecl.PARTICLE_ELEMENT ||
+                 type == XSParticleDecl.PARTICLE_WILDCARD) {
+            XSCMLeaf leaf = (XSCMLeaf)node;
+            node = new XSCMLeaf(leaf.type(), leaf.getLeaf(), leaf.getParticleId(), fLeafCount++);
+        }
+        
+        return node;
+    }
 }

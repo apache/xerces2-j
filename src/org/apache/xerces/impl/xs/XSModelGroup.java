@@ -58,64 +58,36 @@
 package org.apache.xerces.impl.xs;
 
 /**
- * Store schema particle declaration.
+ * Store schema model group declaration.
  *
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public class XSParticleDecl {
+public class XSModelGroup {
 
-    // types of particles
-    public static final short PARTICLE_EMPTY        = 0;
-    public static final short PARTICLE_ELEMENT      = 1;
-    public static final short PARTICLE_WILDCARD     = 2;
-    public static final short PARTICLE_MODELGROUP   = 3;
-    public static final short PARTICLE_ZERO_OR_MORE = 4;
-    public static final short PARTICLE_ZERO_OR_ONE  = 5;
-    public static final short PARTICLE_ONE_OR_MORE  = 6;
+    // types of model groups
+    // REVISIT: can't use same constants as those in XSParticleDecl, because
+    // there are place where the constants are used together. For example,
+    // to check whether the content is an element or a sequence.
+    public static final short MODELGROUP_CHOICE       = 11;
+    public static final short MODELGROUP_SEQUENCE     = 12;
+    public static final short MODELGROUP_ALL          = 13;
 
-    // type of the particle
-    public short fType = PARTICLE_EMPTY;
+    // compositor of the model group
+    public short fCompositor;
     
-    // term of the particle
-    // for PARTICLE_ELEMENT : the element decl
-    // for PARTICLE_WILDCARD: the wildcard decl
-    // for PARTICLE_MODELGROUP: the model group
-    public Object fValue = null;
+    // particles
+    public XSParticleDecl[] fParticles = null;
+    public int fParticleCount = 0;
 
-    // minimum occurrence of this particle
-    public int fMinOccurs = 1;
-    // maximum occurrence of this particle
-    public int fMaxOccurs = 1;
-
-    // clone this decl
-    public XSParticleDecl makeClone() {
-        XSParticleDecl particle = new XSParticleDecl();
-        particle.fType = fType;
-        particle.fMinOccurs = fMinOccurs;
-        particle.fMaxOccurs = fMaxOccurs;
-        particle.fDescription = fDescription;
-        particle.fValue = fValue;
-        return particle;
-    }
-    
-    /**
-     * 3.9.6 Schema Component Constraint: Particle Emptiable
-     * whether this particle is emptible
-     */
-    public boolean emptiable() {
-        return minEffectiveTotalRange() == 0;
-    }
-
-    // whether this particle contains nothing
+    // whether this model group contains nothing
     public boolean isEmpty() {
-        if (fType == PARTICLE_EMPTY)
-             return true;
-        if (fType == PARTICLE_ELEMENT || fType == PARTICLE_WILDCARD)
-            return false; 
-
-        return ((XSModelGroup)fValue).isEmpty();
+        for (int i = 0; i < fParticleCount; i++) {
+            if (!fParticles[i].isEmpty())
+                return false;
+        }
+        return true;
     }
 
     /**
@@ -126,22 +98,73 @@ public class XSParticleDecl {
      * values from the spec are retrievable by these methods.
      */
     public int minEffectiveTotalRange() {
-        if (fType == PARTICLE_MODELGROUP) {
-            return ((XSModelGroup)fValue).minEffectiveTotalRange() * fMinOccurs;
+        if (fCompositor == MODELGROUP_CHOICE)
+            return minEffectiveTotalRangeChoice();
+        else
+            return minEffectiveTotalRangeAllSeq();
+    }
+
+    // return the sum of all min values of the particles
+    private int minEffectiveTotalRangeAllSeq() {
+        int total = 0;
+        for (int i = 0; i < fParticleCount; i++)
+            total += fParticles[i].minEffectiveTotalRange();
+        return total;
+    }
+
+    // return the min of all min values of the particles
+    private int minEffectiveTotalRangeChoice() {
+        int min = 0, one;
+        if (fParticles.length > 0)
+            min = fParticles[0].minEffectiveTotalRange();
+        
+        for (int i = 1; i < fParticleCount; i++) {
+            one = fParticles[i].minEffectiveTotalRange();
+            if (one < min)
+                min = one;
         }
-        return fMinOccurs;
+
+        return min;
     }
 
     public int maxEffectiveTotalRange() {
-        if (fType == PARTICLE_MODELGROUP) {
-            int max = ((XSModelGroup)fValue).maxEffectiveTotalRange();
+        if (fCompositor == MODELGROUP_CHOICE)
+            return maxEffectiveTotalRangeChoice();
+        else
+            return maxEffectiveTotalRangeAllSeq();
+    }
+
+    // if one of the max value of the particles is unbounded, return unbounded;
+    // otherwise return the sum of all max values
+    private int maxEffectiveTotalRangeAllSeq() {
+        int total = 0, one;
+        for (int i = 0; i < fParticleCount; i++) {
+            one = fParticles[i].maxEffectiveTotalRange();
+            if (one == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+                return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            total += one;
+        }
+        return total;
+    }
+
+    // if one of the max value of the particles is unbounded, return unbounded;
+    // otherwise return the max of all max values
+    private int maxEffectiveTotalRangeChoice() {
+        int max = 0, one;
+        if (fParticles.length > 0) {
+            max = fParticles[0].minEffectiveTotalRange();
             if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                 return SchemaSymbols.OCCURRENCE_UNBOUNDED;
-            if (max != 0 && fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
-                return SchemaSymbols.OCCURRENCE_UNBOUNDED;
-            return max * fMaxOccurs;
         }
-        return fMaxOccurs;
+
+        for (int i = 1; i < fParticleCount; i++) {
+            one = fParticles[i].maxEffectiveTotalRange();
+            if (one == SchemaSymbols.OCCURRENCE_UNBOUNDED)
+                return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+            if (one > max)
+                max = one;
+        }
+        return max;
     }
 
     /**
@@ -151,47 +174,30 @@ public class XSParticleDecl {
     public String toString() {
         if (fDescription == null) {
             StringBuffer buffer = new StringBuffer();
-            appendParticle(buffer);
-            if (!(fMinOccurs == 0 && fMaxOccurs == 0 ||
-                  fMinOccurs == 1 && fMaxOccurs == 1)) {
-                buffer.append("{" + fMinOccurs);
-                if (fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
-                    buffer.append("-UNBOUNDED");
-                else if (fMinOccurs != fMaxOccurs)
-                    buffer.append("-" + fMaxOccurs);
-                buffer.append("}");
+            if (fCompositor == MODELGROUP_ALL)
+                buffer.append("all(");
+            else
+                buffer.append('(');
+            if (fParticles.length > 0)
+                buffer.append(fParticles[0].toString());
+            for (int i = 1; i < fParticleCount; i++) {
+                if (fCompositor == MODELGROUP_CHOICE)
+                    buffer.append('|');
+                else
+                    buffer.append(',');
+                buffer.append(fParticles[i].toString());
             }
+            buffer.append(')');
             fDescription = buffer.toString();
         }
         return fDescription;
     }
 
-    /**
-     * append the string description of this particle to the string buffer
-     * this is for error message.
-     */
-    void appendParticle(StringBuffer buffer) {
-        switch (fType) {
-        case PARTICLE_EMPTY:
-            buffer.append("EMPTY");
-            break;
-        case PARTICLE_ELEMENT:
-        case PARTICLE_WILDCARD:
-            buffer.append('(');
-            buffer.append(fValue.toString());
-            buffer.append(')');
-            break;
-        case PARTICLE_MODELGROUP:
-            buffer.append(fValue.toString());
-            break;
-        }
-    }
-
     public void reset(){
-        fType = PARTICLE_EMPTY;
-        fValue = null;
-        fMinOccurs = 1;
-        fMaxOccurs = 1;
+        fCompositor = MODELGROUP_SEQUENCE;
+        fParticles = null;
+        fParticleCount = 0;
         fDescription = null;
     }
+    
 } // class XSParticle

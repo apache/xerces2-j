@@ -90,6 +90,10 @@ public final class XSDeclarationPool {
     private XSParticleDecl fParticleDecl[][] = new XSParticleDecl[INITIAL_CHUNK_COUNT][];
     private int fParticleDeclIndex = 0;
 
+    /** Particle declaration pool */
+    private XSModelGroup fModelGroup[][] = new XSModelGroup[INITIAL_CHUNK_COUNT][];
+    private int fModelGroupIndex = 0;
+
     /** Attribute declaration pool */
     private XSAttributeDecl fAttrDecl[][] = new XSAttributeDecl[INITIAL_CHUNK_COUNT][];
     private int fAttrDeclIndex = 0;
@@ -188,6 +192,19 @@ public final class XSDeclarationPool {
         return fParticleDecl[chunk][index];
     }
 
+    public final XSModelGroup getModelGroup(){
+        int     chunk       = fModelGroupIndex >> CHUNK_SHIFT;
+        int     index       = fModelGroupIndex &  CHUNK_MASK;
+        ensureModelGroupCapacity(chunk);
+        if (fModelGroup[chunk][index] == null) {
+            fModelGroup[chunk][index] = new XSModelGroup();
+        } else {
+            fModelGroup[chunk][index].reset();
+        }
+        fModelGroupIndex++;
+        return fModelGroup[chunk][index];
+    }
+
     // REVISIT: do we need decl pool for group declarations, attribute group,
     //          notations?
     //          it seems like each schema would use a small number of those
@@ -222,12 +239,28 @@ public final class XSDeclarationPool {
         return true;
     }
 
+    private boolean ensureModelGroupCapacity(int chunk) {
+        if (chunk >= fModelGroup.length) {
+            fModelGroup = resize(fModelGroup, fModelGroup.length * 2);
+        } else if (fModelGroup[chunk] != null) {
+            return false;
+        }
+
+        fModelGroup[chunk] = new XSModelGroup[CHUNK_SIZE];
+        return true;
+    }
+
     private static XSParticleDecl[][] resize(XSParticleDecl array[][], int newsize) {
         XSParticleDecl newarray[][] = new XSParticleDecl[newsize][];
         System.arraycopy(array, 0, newarray, 0, array.length);
         return newarray;
     }
 
+    private static XSModelGroup[][] resize(XSModelGroup array[][], int newsize) {
+        XSModelGroup newarray[][] = new XSModelGroup[newsize][];
+        System.arraycopy(array, 0, newarray, 0, array.length);
+        return newarray;
+    }
 
     private boolean ensureAttrDeclCapacity(int chunk) {
         if (chunk >= fAttrDecl.length) {
@@ -303,6 +336,7 @@ public final class XSDeclarationPool {
     public void reset(){
         fElementDeclIndex = 0;
         fParticleDeclIndex = 0;
+        fModelGroupIndex = 0;
         fSTDeclIndex = 0;
         fCTDeclIndex = 0;
         fAttrDeclIndex = 0;

@@ -338,6 +338,10 @@ public class XSConstraints {
             SGHandler.addSubstitutionGroup(grammars[i].getSubstitutionGroups());
         }
 
+        XSParticleDecl fakeDerived = new XSParticleDecl();
+        XSParticleDecl fakeBase = new XSParticleDecl();
+        fakeDerived.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+        fakeBase.fType = XSParticleDecl.PARTICLE_MODELGROUP;
         // before worrying about complexTypes, let's get
         // groups redefined by restriction out of the way.
         for (int g = grammars.length-1; g >= 0; g--) {
@@ -345,19 +349,20 @@ public class XSConstraints {
             SimpleLocator [] rgLocators = grammars[g].getRGLocators();
             for(int i=0; i<redefinedGroups.length; ) {
                 XSGroupDecl derivedGrp = redefinedGroups[i++];
-                XSParticleDecl derivedParticle = derivedGrp.fParticle;
+                XSModelGroup derivedMG = derivedGrp.fModelGroup;
                 XSGroupDecl baseGrp = redefinedGroups[i++];
-                XSParticleDecl baseParticle = baseGrp.fParticle;
-                if(baseParticle == null) {
-                    if(derivedParticle != null) { // can't be a restriction!
+                XSModelGroup baseMG = baseGrp.fModelGroup;
+                if(baseMG == null) {
+                    if(derivedMG != null) { // can't be a restriction!
                         reportSchemaError(errorReporter, rgLocators[i/2-1],
                                           "src-redefine.6.2.2",
                                           new Object[]{derivedGrp.fName, "rcase-Recurse.2"});
                     } 
                 } else {
+                    fakeDerived.fValue = derivedMG;
+                    fakeBase.fValue = baseMG;
                     try {
-                        particleValidRestriction(SGHandler, 
-                            derivedParticle, baseParticle);
+                        particleValidRestriction(fakeDerived, SGHandler, fakeBase, SGHandler);
                     } catch (XMLSchemaException e) {
                         String key = e.getKey();
                         reportSchemaError(errorReporter, rgLocators[i/2-1],
@@ -420,8 +425,10 @@ public class XSConstraints {
                     (types[j].fBaseType instanceof XSComplexTypeDecl) &&
                     ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle != null) {
                   try {
-                      particleValidRestriction(SGHandler, types[j].fParticle,
-                         ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle);
+                      particleValidRestriction(types[j].fParticle,
+                                               SGHandler,
+                                               ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle,
+                                               SGHandler);
                   } catch (XMLSchemaException e) {
                       reportSchemaError(errorReporter, ctLocators[j],
                                         e.getKey(),
@@ -505,14 +512,9 @@ public class XSConstraints {
           return;
        }
 
-       XSParticleDecl left = (XSParticleDecl)particle.fValue;
-       checkElementDeclsConsistent(type, left, elemDeclHash, sgHandler);
-
-       XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
-       if (right != null) {
-         checkElementDeclsConsistent(type, right, elemDeclHash, sgHandler);
-       }
-       
+       XSModelGroup group = (XSModelGroup)particle.fValue;
+       for (int i = 0; i < group.fParticleCount; i++)
+           checkElementDeclsConsistent(type, group.fParticles[i], elemDeclHash, sgHandler);
     }
 
     public static void findElemInTable(XSComplexTypeDecl type, XSElementDecl elem, 
@@ -541,26 +543,22 @@ public class XSConstraints {
         }
     }
 
-    // Invoke particleValidRestriction with a substitution group handler for each
     /*
        Check that a given particle is a valid restriction of a base particle.
     */
-
-    public static void particleValidRestriction(SubstitutionGroupHandler sgHandler,
-                                     XSParticleDecl dParticle,
-                                     XSParticleDecl bParticle)
+    private static void particleValidRestriction(XSParticleDecl dParticle,
+                                     SubstitutionGroupHandler dSGHandler,
+                                     XSParticleDecl bParticle,
+                                     SubstitutionGroupHandler bSGHandler)
                                      throws XMLSchemaException {
-
-    // Invoke particleValidRestriction with a substitution group handler for each
-    // particle.
-
-       particleValidRestriction(dParticle, sgHandler, bParticle, sgHandler);
+       particleValidRestriction(dParticle, dSGHandler, bParticle, bSGHandler, true);
     }
 
     private static void particleValidRestriction(XSParticleDecl dParticle,
                                      SubstitutionGroupHandler dSGHandler,
                                      XSParticleDecl bParticle,
-                                     SubstitutionGroupHandler bSGHandler)
+                                     SubstitutionGroupHandler bSGHandler,
+                                     boolean checkWCOccurrence)
                                      throws XMLSchemaException {
 
        Vector dChildren = null;
@@ -583,13 +581,12 @@ public class XSConstraints {
        //   - turning top-level elements with substitution groups into CHOICE groups.
        //
 
-       int dType = dParticle.fType;
+       short dType = dParticle.fType;
        //
        // Handle pointless groups for the derived particle
        //
-       if (dType == XSParticleDecl.PARTICLE_SEQUENCE ||
-           dType == XSParticleDecl.PARTICLE_CHOICE ||
-           dType == XSParticleDecl.PARTICLE_ALL) {
+       if (dType == XSParticleDecl.PARTICLE_MODELGROUP) {
+         dType = ((XSModelGroup)dParticle.fValue).fCompositor;
 
          // Find a group, starting with this particle, with more than 1 child.   There
          // may be none, and the particle of interest trivially becomes an element or
@@ -599,6 +596,8 @@ public class XSConstraints {
             // Particle has been replaced.   Retrieve new type info.
             dParticle = dtmp;
             dType = dParticle.fType;
+            if (dType == XSParticleDecl.PARTICLE_MODELGROUP)
+               dType = ((XSModelGroup)dParticle.fValue).fCompositor;
          }
 
          // Fill in a vector with the children of the particle, removing any
@@ -623,9 +622,7 @@ public class XSConstraints {
              if (subGroup.length >0 ) {
                 // Now, set the type to be CHOICE.  The "group" will have the same
                 // occurrence information as the original particle.
-                dType = XSParticleDecl.PARTICLE_CHOICE;
-                dMinOccurs = dParticle.fMinOccurs;
-                dMaxOccurs = dParticle.fMaxOccurs;
+                dType = XSModelGroup.MODELGROUP_CHOICE;
                 dMinEffectiveTotalRange = dMinOccurs;
                 dMaxEffectiveTotalRange = dMaxOccurs;
 
@@ -643,13 +640,12 @@ public class XSConstraints {
            }
        }
 
-       int bType = bParticle.fType;
+       short bType = bParticle.fType;
        //
        // Handle pointless groups for the base particle
        //
-       if (bType == XSParticleDecl.PARTICLE_SEQUENCE ||
-           bType == XSParticleDecl.PARTICLE_CHOICE ||
-           bType == XSParticleDecl.PARTICLE_ALL) {
+       if (bType == XSParticleDecl.PARTICLE_MODELGROUP) {
+         bType = ((XSModelGroup)bParticle.fValue).fCompositor;
 
          // Find a group, starting with this particle, with more than 1 child.   There
          // may be none, and the particle of interest trivially becomes an element or
@@ -659,6 +655,8 @@ public class XSConstraints {
             // Particle has been replaced.   Retrieve new type info.
             bParticle = btmp;
             bType = bParticle.fType;
+            if (bType == XSParticleDecl.PARTICLE_MODELGROUP)
+               bType = ((XSModelGroup)bParticle.fValue).fCompositor;
          }
 
          // Fill in a vector with the children of the particle, removing any
@@ -679,9 +677,7 @@ public class XSConstraints {
              XSElementDecl[] bsubGroup = bSGHandler.getSubstitutionGroup(bElement);
              if (bsubGroup.length >0 ) {
                 // Now, set the type to be CHOICE
-                bType = XSParticleDecl.PARTICLE_CHOICE;
-                bMinOccurs = bParticle.fMinOccurs;
-                bMaxOccurs = bParticle.fMaxOccurs;
+                bType = XSModelGroup.MODELGROUP_CHOICE;
 
                 bChildren = new Vector(bsubGroup.length+1);
                 for (int i = 0; i < bsubGroup.length; i++) {
@@ -715,12 +711,13 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
                  checkNSCompat((XSElementDecl)dParticle.fValue,dMinOccurs,dMaxOccurs,
-                               (XSWildcardDecl)bParticle.fValue,bMinOccurs,bMaxOccurs);
+                               (XSWildcardDecl)bParticle.fValue,bMinOccurs,bMaxOccurs,
+                               checkWCOccurrence);
                  return;
               }
 
               // Elt:All RecurseAsIfGroup
-              case XSParticleDecl.PARTICLE_CHOICE:
+              case XSModelGroup.MODELGROUP_CHOICE:
               {
                  // Treat the element as if it were in a group of the same type
                  // as the base Particle
@@ -731,8 +728,8 @@ public class XSConstraints {
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
-              case XSParticleDecl.PARTICLE_SEQUENCE:
-              case XSParticleDecl.PARTICLE_ALL:
+              case XSModelGroup.MODELGROUP_SEQUENCE:
+              case XSModelGroup.MODELGROUP_ALL:
               {
                  // Treat the element as if it were in a group of the same type
                  // as the base Particle
@@ -764,9 +761,9 @@ public class XSConstraints {
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_CHOICE:
-              case XSParticleDecl.PARTICLE_SEQUENCE:
-              case XSParticleDecl.PARTICLE_ALL:
+              case XSModelGroup.MODELGROUP_CHOICE:
+              case XSModelGroup.MODELGROUP_SEQUENCE:
+              case XSModelGroup.MODELGROUP_ALL:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  throw new XMLSchemaException("cos-particle-restrict.2",
@@ -781,7 +778,7 @@ public class XSConstraints {
             }
          }
 
-         case XSParticleDecl.PARTICLE_ALL:
+         case XSModelGroup.MODELGROUP_ALL:
          {
             switch (bType) {
 
@@ -796,20 +793,21 @@ public class XSConstraints {
                  checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
                                                 dMaxEffectiveTotalRange,
                                                 dSGHandler,
-                                                bParticle,bMinOccurs,bMaxOccurs);
+                                                bParticle,bMinOccurs,bMaxOccurs,
+                                                checkWCOccurrence);
 
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_ALL:
+              case XSModelGroup.MODELGROUP_ALL:
               {
                  checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_CHOICE:
-              case XSParticleDecl.PARTICLE_SEQUENCE:
+              case XSModelGroup.MODELGROUP_CHOICE:
+              case XSModelGroup.MODELGROUP_SEQUENCE:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  throw new XMLSchemaException("cos-particle-restrict.2",
@@ -824,7 +822,7 @@ public class XSConstraints {
             }
          }
 
-         case XSParticleDecl.PARTICLE_CHOICE:
+         case XSModelGroup.MODELGROUP_CHOICE:
          {
             switch (bType) {
 
@@ -839,19 +837,20 @@ public class XSConstraints {
                  checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
                                                 dMaxEffectiveTotalRange,
                                                 dSGHandler,
-                                                bParticle,bMinOccurs,bMaxOccurs);
+                                                bParticle,bMinOccurs,bMaxOccurs,
+                                                checkWCOccurrence);
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_CHOICE:
+              case XSModelGroup.MODELGROUP_CHOICE:
               {
                  checkRecurseLax(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_ALL:
-              case XSParticleDecl.PARTICLE_SEQUENCE:
+              case XSModelGroup.MODELGROUP_ALL:
+              case XSModelGroup.MODELGROUP_SEQUENCE:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  throw new XMLSchemaException("cos-particle-restrict.2",
@@ -867,7 +866,7 @@ public class XSConstraints {
          }
 
 
-         case XSParticleDecl.PARTICLE_SEQUENCE:
+         case XSModelGroup.MODELGROUP_SEQUENCE:
          {
             switch (bType) {
 
@@ -882,25 +881,26 @@ public class XSConstraints {
                  checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
                                                 dMaxEffectiveTotalRange,
                                                 dSGHandler,
-                                                bParticle,bMinOccurs,bMaxOccurs);
+                                                bParticle,bMinOccurs,bMaxOccurs,
+                                                checkWCOccurrence);
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_ALL:
+              case XSModelGroup.MODELGROUP_ALL:
               {
                  checkRecurseUnordered(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                        bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_SEQUENCE:
+              case XSModelGroup.MODELGROUP_SEQUENCE:
               {
                  checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSParticleDecl.PARTICLE_CHOICE:
+              case XSModelGroup.MODELGROUP_CHOICE:
               {
                  int min1 = dMinOccurs * dChildren.size();
                  int max1 = (dMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)?
@@ -943,8 +943,8 @@ public class XSConstraints {
          return p;
 
        if (p.fMinOccurs==1 && p.fMaxOccurs==1 &&
-           p.fValue!=null && p.fOtherValue==null)
-         return getNonUnaryGroup((XSParticleDecl)p.fValue);
+           p.fValue!=null && ((XSModelGroup)p.fValue).fParticleCount == 1)
+         return getNonUnaryGroup(((XSModelGroup)p.fValue).fParticles[0]);
        else
          return p;
     }
@@ -959,10 +959,9 @@ public class XSConstraints {
 
        Vector children = new Vector();
 
-       gatherChildren(p.fType, (XSParticleDecl)p.fValue, children);
-       if (p.fOtherValue != null) {
-         gatherChildren(p.fType, (XSParticleDecl)p.fOtherValue, children);
-       }
+       XSModelGroup group = (XSModelGroup)p.fValue;
+       for (int i = 0; i < group.fParticleCount; i++)
+           gatherChildren(group.fCompositor, group.fParticles[i], children);
 
        return children;
     }
@@ -973,6 +972,8 @@ public class XSConstraints {
        int min = p.fMinOccurs;
        int max = p.fMaxOccurs;
        int type = p.fType;
+       if (type == XSParticleDecl.PARTICLE_MODELGROUP)
+          type = ((XSModelGroup)p.fValue).fCompositor;
 
        if (type == XSParticleDecl.PARTICLE_EMPTY)
           return;
@@ -983,16 +984,13 @@ public class XSConstraints {
           return;
        }
 
-       XSParticleDecl left = (XSParticleDecl)p.fValue;
-       XSParticleDecl right = (XSParticleDecl)p.fOtherValue;
        if (! (min==1 && max==1)) {
           children.addElement(p);
        }
        else if (parentType == type) {
-          gatherChildren(type,left,children);
-          if (right != null) {
-            gatherChildren(type,right,children);
-          }
+          XSModelGroup group = (XSModelGroup)p.fValue;
+          for (int i = 0; i < group.fParticleCount; i++)
+             gatherChildren(type, group.fParticles[i], children);
        }
        else if (!p.isEmpty()) {
           children.addElement(p);
@@ -1102,11 +1100,12 @@ public class XSConstraints {
     }
 
     private static void checkNSCompat(XSElementDecl elem, int min1, int max1,
-                                      XSWildcardDecl wildcard, int min2, int max2)
+                                      XSWildcardDecl wildcard, int min2, int max2,
+                                      boolean checkWCOccurrence)
                               throws XMLSchemaException {
 
       // check Occurrence ranges
-      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+      if (checkWCOccurrence && !checkOccurrenceRange(min1,max1,min2,max2)) {
         throw new XMLSchemaException("rcase-NSCompat.2",
                                   new Object[]{elem.fName});
       }
@@ -1139,12 +1138,13 @@ public class XSConstraints {
 
     private static void checkNSRecurseCheckCardinality(Vector children, int min1, int max1,
                                           SubstitutionGroupHandler dSGHandler,
-                                          XSParticleDecl wildcard, int min2, int max2)
+                                          XSParticleDecl wildcard, int min2, int max2,
+                                          boolean checkWCOccurrence)
                                           throws XMLSchemaException {
 
 
       // check Occurrence ranges
-      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+      if (checkWCOccurrence && !checkOccurrenceRange(min1,max1,min2,max2)) {
          throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.2", null);
       }
 
@@ -1153,7 +1153,7 @@ public class XSConstraints {
       try {
         for (int i = 0; i < count; i++) {
            XSParticleDecl particle1 = (XSParticleDecl)children.elementAt(i);
-           particleValidRestriction(particle1, dSGHandler, wildcard, null);
+           particleValidRestriction(particle1, dSGHandler, wildcard, null, false);
 
         }
       }

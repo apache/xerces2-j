@@ -2395,11 +2395,6 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
                 }
             }
-            // REVISIT: report an error for invalid boolean value?
-            //else if (!value.equals(SchemaSymbols.ATTVAL_FALSE) &&
-            //         !value.equals(SchemaSymbols.ATTVAL_FALSE_0)) {
-            //    reportSchemaError("cvc-elt.3.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL, xsiNil});
-            //}
         }
     }
 

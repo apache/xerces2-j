@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs.models;
 import org.apache.xerces.impl.dtd.models.CMNode;
 import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSModelGroup;
 
 /**
  *
@@ -77,8 +78,8 @@ public class XSCMBinOp extends CMNode {
         super(type);
 
         // Insure that its one of the types we require
-        if ((type() != XSParticleDecl.PARTICLE_CHOICE)
-        &&  (type() != XSParticleDecl.PARTICLE_SEQUENCE)) {
+        if ((type() != XSModelGroup.MODELGROUP_CHOICE)
+        &&  (type() != XSModelGroup.MODELGROUP_SEQUENCE)) {
             throw new RuntimeException("ImplementationMessages.VAL_BST");
         }
 
@@ -109,9 +110,9 @@ public class XSCMBinOp extends CMNode {
         //  this node is nullable. If its a concatenation, then both of
         //  them have to be nullable.
         //
-        if (type() == XSParticleDecl.PARTICLE_CHOICE)
+        if (type() == XSModelGroup.MODELGROUP_CHOICE)
             return (fLeftChild.isNullable() || fRightChild.isNullable());
-        else if (type() == XSParticleDecl.PARTICLE_SEQUENCE)
+        else if (type() == XSModelGroup.MODELGROUP_SEQUENCE)
             return (fLeftChild.isNullable() && fRightChild.isNullable());
         else
             throw new RuntimeException("ImplementationMessages.VAL_BST");
@@ -122,12 +123,12 @@ public class XSCMBinOp extends CMNode {
     //  Protected, inherited methods
     // -------------------------------------------------------------------
     protected void calcFirstPos(CMStateSet toSet) {
-        if (type() == XSParticleDecl.PARTICLE_CHOICE) {
+        if (type() == XSModelGroup.MODELGROUP_CHOICE) {
             // Its the the union of the first positions of our children.
             toSet.setTo(fLeftChild.firstPos());
             toSet.union(fRightChild.firstPos());
         }
-         else if (type() == XSParticleDecl.PARTICLE_SEQUENCE) {
+         else if (type() == XSModelGroup.MODELGROUP_SEQUENCE) {
             //
             //  If our left child is nullable, then its the union of our
             //  children's first positions. Else is our left child's first
@@ -143,12 +144,12 @@ public class XSCMBinOp extends CMNode {
     }
 
     protected void calcLastPos(CMStateSet toSet) {
-        if (type() == XSParticleDecl.PARTICLE_CHOICE) {
+        if (type() == XSModelGroup.MODELGROUP_CHOICE) {
             // Its the the union of the first positions of our children.
             toSet.setTo(fLeftChild.lastPos());
             toSet.union(fRightChild.lastPos());
         }
-        else if (type() == XSParticleDecl.PARTICLE_SEQUENCE) {
+        else if (type() == XSModelGroup.MODELGROUP_SEQUENCE) {
             //
             //  If our right child is nullable, then its the union of our
             //  children's last positions. Else is our right child's last

@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSModelGroup;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.w3c.dom.Element;
@@ -73,7 +74,6 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
     XSDAbstractParticleTraverser (XSDHandler handler,
                                   XSAttributeChecker gAttrCheck) {
-
         super(handler, gAttrCheck);
     }
 
@@ -106,10 +106,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 child = DOMUtil.getNextSiblingElement(child);
             }
         }
-        XSParticleDecl left = null;
-        XSParticleDecl right = null;
         String childName = null;
-        XSParticleDecl particle, temp;
+        XSParticleDecl particle;
+        fPArray.pushContext();
+
         for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
 
             particle = null;
@@ -124,58 +124,42 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 reportSchemaError("s4s-elt-must-match", args, child);
             }
 
-            if (left == null) {
-                left = particle;
-            }
-            else if (right == null) {
-                right = particle;
-            }
-            else {
-                if (fSchemaHandler.fDeclPool !=null) {
-                    temp = fSchemaHandler.fDeclPool.getParticleDecl();
-                } else {        
-                    temp = new XSParticleDecl();
-                }
-                temp.fType = XSParticleDecl.PARTICLE_ALL;
-                temp.fValue = left;
-                temp.fOtherValue = right;
-                left = temp;
-                right = particle;
-            }
+            if (particle != null)
+                fPArray.addParticle(particle);
         }
 
-        if (left != null) {
-            if (fSchemaHandler.fDeclPool !=null) {
-                temp = fSchemaHandler.fDeclPool.getParticleDecl();
-            } else {        
-                temp = new XSParticleDecl();
-            }
-            temp.fType = XSParticleDecl.PARTICLE_ALL;
-            temp.fValue = left;
-            temp.fOtherValue = right;
-            left = temp;
-        }
-
+        particle = null;
         // REVISIT: model group
         // Quick fix for the case that particle <all> does not have any children.
         // For now we return null. In the future we might want to return model group decl.
-        if (left != null) {
+        if (fPArray.getParticleCount() != 0) {
 
             XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
             XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
             Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-            left.fMinOccurs = minAtt.intValue();
-            left.fMaxOccurs = maxAtt.intValue();
+            
+            XSModelGroup group = new XSModelGroup();
+            group.fCompositor = XSModelGroup.MODELGROUP_ALL;
+            group.fParticleCount = fPArray.getParticleCount();
+            group.fParticles = fPArray.popContext();
+            particle = new XSParticleDecl();
+            particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            particle.fMinOccurs = minAtt.intValue();
+            particle.fMaxOccurs = maxAtt.intValue();
+            particle.fValue = group;
 
-            left = checkOccurrences(left,
-                                    SchemaSymbols.ELT_ALL,
-                                    (Element)allDecl.getParentNode(),
-                                    allContextFlags,
-                                    defaultVals.longValue());
+            particle = checkOccurrences(particle,
+                                        SchemaSymbols.ELT_ALL,
+                                        (Element)allDecl.getParentNode(),
+                                        allContextFlags,
+                                        defaultVals.longValue());
+        }
+        else {
+            fPArray.discardContext();
         }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
-        return left;
+        return particle;
     }
 
     /**
@@ -250,11 +234,11 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 child = DOMUtil.getNextSiblingElement(child);
             }
         }
-        XSParticleDecl left = null;
-        XSParticleDecl right = null;
         boolean hadContent = false;
         String childName = null;
-        XSParticleDecl particle, temp;
+        XSParticleDecl particle;
+        fPArray.pushContext();
+
         for (;child != null;child = DOMUtil.getNextSiblingElement(child)) {
 
             particle = null;
@@ -277,10 +261,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                particle = traverseChoice( child,schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = traverseChoice(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                particle = traverseSequence(child,schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = traverseSequence(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
             }
             else if (childName.equals(SchemaSymbols.ELT_ANY)) {
                 particle = fSchemaHandler.fWildCardTraverser.traverseAny(child, schemaDoc, grammar);
@@ -296,80 +280,128 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                 reportSchemaError("s4s-elt-must-match", args, child);
             }
 
-
-            if (left == null) {
-                left = particle;
-            }
-            else if (right == null) {
-                right = particle;
-            }
-            else {
-                if (fSchemaHandler.fDeclPool !=null) {
-                    temp = fSchemaHandler.fDeclPool.getParticleDecl();
-                } else {        
-                    temp = new XSParticleDecl();
-                }
-                if (choice)
-                    temp.fType = XSParticleDecl.PARTICLE_CHOICE;
-                else
-                    temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
-                temp.fValue = left;
-                temp.fOtherValue = right;
-                left = temp;
-                right = particle;
-            }
+            if (particle != null)
+                fPArray.addParticle(particle);
         }
 
+        particle = null;
+        
         // REVISIT: model group
         // Quick fix for the case that particles <choice> | <sequence> do not have any children.
         // For now we return null. In the future we might want to return model group decl.
-
-        if (left != null) {
-            if (fSchemaHandler.fDeclPool !=null) {
-                temp = fSchemaHandler.fDeclPool.getParticleDecl();
-            } else {        
-                temp = new XSParticleDecl();
-            }
-            if (choice)
-                temp.fType = XSParticleDecl.PARTICLE_CHOICE;
-            else
-                temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
-            temp.fValue = left;
-            temp.fOtherValue = right;
-            left = temp;
+        if (fPArray.getParticleCount() != 0) {
 
             XInt minAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MINOCCURS];
             XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
             Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-            left.fMinOccurs = minAtt.intValue();
-            left.fMaxOccurs = maxAtt.intValue();
-            left = checkOccurrences(left,
-                                    choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
-                                    (Element)decl.getParentNode(),
-                                    allContextFlags,
-                                    defaultVals.longValue());
+
+            XSModelGroup group = new XSModelGroup();
+            group.fCompositor = choice ? XSModelGroup.MODELGROUP_CHOICE : XSModelGroup.MODELGROUP_SEQUENCE;
+            group.fParticleCount = fPArray.getParticleCount();
+            group.fParticles = fPArray.popContext();
+            particle = new XSParticleDecl();
+            particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            particle.fMinOccurs = minAtt.intValue();
+            particle.fMaxOccurs = maxAtt.intValue();
+            particle.fValue = group;
+
+            particle = checkOccurrences(particle,
+                                        choice ? SchemaSymbols.ELT_CHOICE : SchemaSymbols.ELT_SEQUENCE,
+                                        (Element)decl.getParentNode(),
+                                        allContextFlags,
+                                        defaultVals.longValue());
+        }
+        else {
+            fPArray.discardContext();
         }
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
-        return left;
+        return particle;
     }
 
     // Determines whether a content spec tree represents an "all" content model
     protected boolean hasAllContent(XSParticleDecl particle) {
         // If the content is not empty, is the top node ALL?
-        if (particle != null) {
-
-            // REVISIT: defered?
-            // An ALL node could be optional, so we have to be prepared
-            // to look one level below a ZERO_OR_ONE node for an ALL.
-            //if (fParticle.type == XSParticleDecl.CONTENTSPECNODE_ZERO_OR_ONE) {
-            //    fSchemaGrammar.getContentSpec(content.value, content);
-            //}
-
-            return(particle.fType == XSParticleDecl.PARTICLE_ALL);
+        if (particle != null && particle.fType == XSParticleDecl.PARTICLE_MODELGROUP) {
+            return ((XSModelGroup)particle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL;
         }
 
         return false;
     }
 
+    // the inner class: used to store particles for model groups
+    // to avoid creating a new Vector in each model group, or when traversing
+    // each model group, we use this one big array to store all particles
+    // for model groups. when the traversal finishes, this class returns an
+    // XSParticleDecl[] containing all particles for the current model group.
+    // it's possible that we need to traverse another model group while
+    // traversing one (one inside another one; referring to a global group,
+    // etc.), so we have push/pos context methods to save the same of the
+    // current traversal before starting the traversal of another model group.
+    protected static class ParticleArray {
+        // big array to contain all particles
+        XSParticleDecl[] fParticles = new XSParticleDecl[10];
+        // the ending position of particles in the array for each context
+        // index 0 is reserved, with value 0. index 1 is used for the fist
+        // context. so that the number of particles for context 'i' can be
+        // computed simply by fPos[i] - fPos[i-1].
+        int[] fPos = new int[5];
+        // number of contexts
+        int fContextCount = 0;
+        
+        // start a new context (start traversing a new model group)
+        void pushContext() {
+            fContextCount++;
+            // resize position array if necessary
+            if (fContextCount == fPos.length) {
+                int newSize = fContextCount * 2;
+                int[] newArray = new int[newSize];
+                System.arraycopy(fPos, 0, newArray, 0, fContextCount);
+                fPos = newArray;
+            }
+            // the initial ending position of the current context is the
+            // ending position of the previsous context. which means there is
+            // no particle for the current context yet.
+            fPos[fContextCount] = fPos[fContextCount-1];
+        }
+        
+        // get the number of particles of this context (model group)
+        int getParticleCount() {
+            return fPos[fContextCount] - fPos[fContextCount-1];
+        }
+        
+        // add a particle to the current context
+        void addParticle(XSParticleDecl particle) {
+            // resize the particle array if necessary
+            if (fPos[fContextCount] == fParticles.length) {
+                int newSize = fPos[fContextCount] * 2;
+                XSParticleDecl[] newArray = new XSParticleDecl[newSize];
+                System.arraycopy(fParticles, 0, newArray, 0, fPos[fContextCount]);
+                fParticles = newArray;
+            }
+            fParticles[fPos[fContextCount]++] = particle;
+        }
+        
+        // end the current context, and return an array of particles
+        XSParticleDecl[] popContext() {
+            int count = fPos[fContextCount] - fPos[fContextCount-1];
+            XSParticleDecl[] array = new XSParticleDecl[count];
+            System.arraycopy(fParticles, fPos[fContextCount-1], array, 0, count);
+            // clear the particle array, to release memory
+            for (int i = fPos[fContextCount-1]; i < fPos[fContextCount]; i++)
+                fParticles[i] = null;
+            fContextCount--;
+            return array;
+        }
+        
+        void discardContext() {
+            // clear the particle array, to release memory
+            for (int i = fPos[fContextCount-1]; i < fPos[fContextCount]; i++)
+                fParticles[i] = null;
+            fContextCount--;
+        }
+    }
+
+    // the big particle array to hold all particles in model groups
+    ParticleArray fPArray = new ParticleArray();
 }

@@ -143,16 +143,16 @@ public class SchemaGrammar implements Grammar {
      */
     protected SchemaGrammar(int grammar) {
         SchemaDVFactory schemaFactory = SchemaDVFactory.getInstance();
-        
+
         if (grammar == GRAMMAR_XS) {
             // target namespace
             fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-
+    
             // grammar description
             fGrammarDescription = new XSDDescription();
             fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
             fGrammarDescription.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
-
+    
             // no global decls other than types
             fGlobalAttrDecls  = new SymbolHash(1);
             fGlobalAttrGrpDecls = new SymbolHash(1);
@@ -160,7 +160,7 @@ public class SchemaGrammar implements Grammar {
             fGlobalGroupDecls = new SymbolHash(1);
             fGlobalNotationDecls = new SymbolHash(1);
             fGlobalIDConstraintDecls = new SymbolHash(1);
-
+    
             // get all built-in types
             fGlobalTypeDecls = schemaFactory.getBuiltInTypes();
             // add anyType
@@ -169,7 +169,6 @@ public class SchemaGrammar implements Grammar {
         else if (grammar == GRAMMAR_XSI) {
             // target namespace
             fTargetNamespace = SchemaSymbols.URI_XSI;
-    
             // grammar description
             fGrammarDescription = new XSDDescription();
             fGrammarDescription.fContextType = XSDDescription.CONTEXT_PREPARSE;
@@ -483,18 +482,28 @@ public class SchemaGrammar implements Grammar {
         fAnyType.fBaseType = fAnyType;
         fAnyType.fDerivedBy = SchemaSymbols.RESTRICTION;
         fAnyType.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
-        XSWildcardDecl wildcard = new XSWildcardDecl();
+
+        // the wildcard used in anyType (content and attribute)
         // the spec will change strict to lax for anyType
+        XSWildcardDecl wildcard = new XSWildcardDecl();
         wildcard.fProcessContents = SchemaSymbols.ANY_LAX;
+        // the particle for the content wildcard
         XSParticleDecl particleW = new XSParticleDecl();
         particleW.fMinOccurs = 0;
         particleW.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
         particleW.fType = XSParticleDecl.PARTICLE_WILDCARD;
         particleW.fValue = wildcard;
+        // the model group of a sequence of the above particle
+        XSModelGroup group = new XSModelGroup();
+        group.fCompositor = XSModelGroup.MODELGROUP_SEQUENCE;
+        group.fParticleCount = 1;
+        group.fParticles = new XSParticleDecl[1];
+        group.fParticles[0] = particleW;
+        // the content of anyType: particle of the above model group
         XSParticleDecl particleG = new XSParticleDecl();
-        particleG.fType = XSParticleDecl.PARTICLE_SEQUENCE;
-        particleG.fValue = particleW;
-        particleG.fOtherValue = null;
+        particleG.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+        particleG.fValue = group;
+        
         fAnyType.fParticle = particleG;
         fAnyType.fAttrGrp.fAttributeWC = wildcard;
     }

@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSModelGroup;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.DOMUtil;
@@ -119,25 +120,19 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
 
         XSParticleDecl particle = null;
 
-        if (group != null) {
-            // empty particle
-            if (minOccurs == 0 && maxOccurs == 0) {
-            } else if (minOccurs == 1 && maxOccurs == 1) {
-                particle = group.fParticle;
+        // not empty group, not empty particle
+        if (group != null && group.fModelGroup != null &&
+            !(minOccurs == 0 && maxOccurs == 0)) {
+            // create a particle to contain this model group
+            if (fSchemaHandler.fDeclPool != null) {
+                particle = fSchemaHandler.fDeclPool.getParticleDecl();
+            } else {        
+                particle = new XSParticleDecl();
             }
-            else if (!( minOccurs == 1 && maxOccurs == 1)) {
-                // if minOccurs==maxOccurs==1 we don't need to create new particle
-                // create new particle in the grammar if minOccurs<maxOccurs
-                if (fSchemaHandler.fDeclPool !=null) {
-                    particle = fSchemaHandler.fDeclPool.getParticleDecl();
-                } else {        
-                    particle = new XSParticleDecl();
-                }
-                particle.fType = group.fParticle.fType;
-                particle.fValue = group.fParticle;
-                particle.fMinOccurs = minOccurs;
-                particle.fMaxOccurs = maxOccurs;
-            }
+            particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            particle.fValue = group.fModelGroup;
+            particle.fMinOccurs = minOccurs;
+            particle.fMaxOccurs = maxOccurs;
         }
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
@@ -206,7 +201,8 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 group = new XSGroupDecl();
                 group.fName = strNameAttr;
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
-                group.fParticle = particle;
+                if (particle != null)
+                    group.fModelGroup = (XSModelGroup)particle.fValue;
                 grammar.addGlobalGroupDecl(group);
             }
         }

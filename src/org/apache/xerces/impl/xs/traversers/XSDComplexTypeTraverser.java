@@ -69,6 +69,7 @@ import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUse;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSModelGroup;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
@@ -721,16 +722,27 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else if (baseContent==null) {
             }
             else {
-                if (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_ALL ||
-                    baseType.fParticle.fType == XSParticleDecl.PARTICLE_ALL) {
+                // if the content of either type is an "all" model group, error.
+                if (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
+                    ((XSModelGroup)typeInfo.fParticle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL ||
+                    baseType.fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
+                    ((XSModelGroup)baseType.fParticle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL) {
                     throw new ComplexTypeRecoverableError("cos-all-limited.1.2",
                           null, complexContent);
                 }
-                XSParticleDecl temp = new XSParticleDecl();
-                temp.fType = XSParticleDecl.PARTICLE_SEQUENCE;
-                temp.fValue = baseContent;
-                temp.fOtherValue = typeInfo.fParticle;
-                typeInfo.fParticle = temp;
+                // the "sequence" model group to contain both particles
+                XSModelGroup group = new XSModelGroup();
+                group.fCompositor = XSModelGroup.MODELGROUP_SEQUENCE;
+                group.fParticleCount = 2;
+                group.fParticles = new XSParticleDecl[2];
+                group.fParticles[0] = baseType.fParticle;
+                group.fParticles[1] = typeInfo.fParticle;
+                // the particle to contain the above sequence
+                XSParticleDecl particle = new XSParticleDecl();
+                particle.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+                particle.fValue = group;
+                
+                typeInfo.fParticle = particle;
             }
 
             // Set the contentType
@@ -949,17 +961,21 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     private static synchronized XSParticleDecl getErrorContent() {
         if (fErrorContent==null) {
-            fErrorContent = new XSParticleDecl();
-            fErrorContent.fType = XSParticleDecl.PARTICLE_SEQUENCE;
-            XSParticleDecl particle = new XSParticleDecl();
             fErrorWildcard = new XSWildcardDecl();
             fErrorWildcard.fProcessContents = XSWildcardDecl.WILDCARD_SKIP;
+            XSParticleDecl particle = new XSParticleDecl();
             particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
             particle.fValue = fErrorWildcard;
             particle.fMinOccurs = 0;
             particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-            fErrorContent.fValue = particle;
-            fErrorContent.fOtherValue = null;
+            XSModelGroup group = new XSModelGroup();
+            group.fCompositor = XSModelGroup.MODELGROUP_SEQUENCE;
+            group.fParticleCount = 1;
+            group.fParticles = new XSParticleDecl[1];
+            group.fParticles[0] = particle;
+            fErrorContent = new XSParticleDecl();
+            fErrorContent.fType = XSParticleDecl.PARTICLE_MODELGROUP;
+            fErrorContent.fValue = group;
         }
 
         return fErrorContent;

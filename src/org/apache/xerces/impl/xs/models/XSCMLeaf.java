@@ -76,8 +76,13 @@ public class XSCMLeaf
     // Data
     //
 
-    /** This is the leaf particle. */
-    private XSParticleDecl fLeaf = null;
+    /** This is the leaf: element decl or wildcard decl. */
+    private Object fLeaf = null;
+    
+    /**
+     * Identify the particle: for UPA checking
+     */
+    private int fParticleId = -1;
 
     /**
      * Part of the algorithm to convert a regex directly to a DFA
@@ -91,25 +96,25 @@ public class XSCMLeaf
     //
 
     /** Constructs a content model leaf. */
-    public XSCMLeaf(XSParticleDecl leaf, int position)  {
-        super(leaf.fType);
+    public XSCMLeaf(int type, Object leaf, int id, int position)  {
+        super(type);
 
         // Store the element index and position
         fLeaf = leaf;
+        fParticleId = id;
         fPosition = position;
-    }
-
-    /** Constructs a content model leaf. */
-    public XSCMLeaf(XSParticleDecl leaf)  {
-        this(leaf, -1);
     }
 
     //
     // Package methods
     //
 
-    final XSParticleDecl getLeaf() {
+    final Object getLeaf() {
         return fLeaf;
+    }
+    
+    final int getParticleId() {
+        return fParticleId;
     }
 
     final int getPosition() {
@@ -132,7 +137,7 @@ public class XSCMLeaf
     }
 
     public String toString() {
-        StringBuffer strRet = new StringBuffer(fLeaf.fValue.toString());
+        StringBuffer strRet = new StringBuffer(fLeaf.toString());
         if (fPosition >= 0) {
             strRet.append
             (

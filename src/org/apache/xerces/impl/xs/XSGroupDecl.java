@@ -70,7 +70,7 @@ public class XSGroupDecl {
     public String fName = null;
     // target namespace of the group
     public String fTargetNamespace = null;
-    // particle of the group
-    public XSParticleDecl fParticle = null;
+    // model group of the group
+    public XSModelGroup fModelGroup = null;
 
 } // class XSGroupDecl

@@ -64,6 +64,7 @@ import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.XSModelGroup;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -103,7 +104,7 @@ public class XSDFACM
      * actual validation.  Note tat since either XSElementDecl or XSParticleDecl object
      * can live here, we've got to use an Object.
      */
-    private XSParticleDecl fElemMap[] = null;
+    private Object fElemMap[] = null;
 
     /**
      * This is a map of whether the element map contains information
@@ -111,21 +112,13 @@ public class XSDFACM
      */
     private int fElemMapType[] = null;
 
+    /**
+     * id of the unique input symbol
+     */
+    private int fElemMapId[] = null;
+    
     /** The element map size. */
     private int fElemMapSize = 0;
-
-    /* Used to indicate a mixed model */
-    private boolean fMixed;
-
-    /**
-     * The string index for the 'end of content' string that we add to
-     * the string pool. This is used as the special name of an element
-     * that represents the end of the syntax tree.
-     */
-    private static final XSParticleDecl fEOCParticle = new XSParticleDecl();
-    static {
-        fEOCParticle.fType = XSParticleDecl.PARTICLE_ELEMENT;
-    }
 
     /**
      * The NFA position of the special EOC (end of content) node. This
@@ -216,24 +209,8 @@ public class XSDFACM
      * @exception RuntimeException Thrown if DFA can't be built.
      */
 
-   public XSDFACM(CMNode syntaxTree,
-                          int leafCount) {
-       this(syntaxTree, leafCount, false);
-   }
-
-    /**
-     * Constructs a DFA content model.
-     *
-     * @param symbolTable    The symbol table.
-     * @param syntaxTree    The syntax tree of the content model.
-     * @param leafCount     The number of leaves.
-     *
-     * @exception RuntimeException Thrown if DFA can't be built.
-     */
-
-   public XSDFACM(CMNode syntaxTree,
-                          int leafCount, boolean mixed) {
-
+   public XSDFACM(CMNode syntaxTree, int leafCount) {
+   
         // Store away our index and pools in members
         fLeafCount = leafCount;
 
@@ -242,8 +219,6 @@ public class XSDFACM
         //  magical nodes in the syntax tree.
         //  (already done in static initialization...
         //
-
-        fMixed = mixed;
 
         //
         //  Ok, so lets grind through the building of the DFA. This method
@@ -321,14 +296,14 @@ public class XSDFACM
                 continue;
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex].fValue);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
                 if (matchingDecl != null) {
                     break;
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if(((XSWildcardDecl)fElemMap[elemIndex].fValue).allowNamespace(curElem.uri)) {
-                    matchingDecl = fElemMap[elemIndex].fValue;
+                if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
+                    matchingDecl = fElemMap[elemIndex];
                     break;
                 }
             }
@@ -351,14 +326,14 @@ public class XSDFACM
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex].fValue);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
                 if (matchingDecl != null) {
                     return matchingDecl;
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if(((XSWildcardDecl)fElemMap[elemIndex].fValue).allowNamespace(curElem.uri))
-                    return fElemMap[elemIndex].fValue;
+                if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri))
+                    return fElemMap[elemIndex];
             }
         }
 
@@ -433,13 +408,6 @@ public class XSDFACM
          * "(a, (b, a+, (c, (b, a+)+, a+, (d,  (c, (b, a+)+, a+)+, (b, a+)+, a+)+)+)+)+"
          */
 
-        XSCMLeaf nodeEOC = new XSCMLeaf(fEOCParticle);
-        fHeadNode = new XSCMBinOp(
-        XSParticleDecl.PARTICLE_SEQUENCE
-            , syntaxTree
-            , nodeEOC
-        );
-
         //
         //  And handle specially the EOC node, which also must be numbered
         //  and counted as a non-epsilon leaf node. It could not be handled
@@ -448,7 +416,12 @@ public class XSDFACM
         //  building loop.
         //
         fEOCPos = fLeafCount;
-        nodeEOC.setPosition(fLeafCount++);
+        XSCMLeaf nodeEOC = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, null, -1, fLeafCount++);
+        fHeadNode = new XSCMBinOp(
+            XSModelGroup.MODELGROUP_SEQUENCE,
+            syntaxTree,
+            nodeEOC
+        );
 
         //
         //  Ok, so now we have to iterate the new tree and do a little more
@@ -466,7 +439,7 @@ public class XSDFACM
         //
         fLeafList = new XSCMLeaf[fLeafCount];
         fLeafListType = new int[fLeafCount];
-        postTreeBuildInit(fHeadNode, 0);
+        postTreeBuildInit(fHeadNode);
 
         //
         //  And, moving onward... We now need to build the follow position
@@ -488,8 +461,9 @@ public class XSDFACM
         //  input element. So we need to a zero based range of indexes that
         //  map to element types. This element map provides that mapping.
         //
-        fElemMap = new XSParticleDecl[fLeafCount];
+        fElemMap = new Object[fLeafCount];
         fElemMapType = new int[fLeafCount];
+        fElemMapId = new int[fLeafCount];
         fElemMapSize = 0;
         for (int outIndex = 0; outIndex < fLeafCount; outIndex++) {
             // optimization from Henry Zongaro:
@@ -497,16 +471,17 @@ public class XSDFACM
             fElemMap[outIndex] = null;
 
             int inIndex = 0;
-            final XSParticleDecl decl = fLeafList[outIndex].getLeaf();
+            final int id = fLeafList[outIndex].getParticleId();
             for (; inIndex < fElemMapSize; inIndex++) {
-                if (decl == fElemMap[inIndex])
+                if (id == fElemMapId[inIndex])
                     break;
             }
 
             // If it was not in the list, then add it, if not the EOC node
             if (inIndex == fElemMapSize) {
-                fElemMap[fElemMapSize] = decl;
+                fElemMap[fElemMapSize] = fLeafList[outIndex].getLeaf();
                 fElemMapType[fElemMapSize] = fLeafListType[outIndex];
+                fElemMapId[fElemMapSize] = id;
                 fElemMapSize++;
             }
         }
@@ -514,7 +489,7 @@ public class XSDFACM
         // the last entry in the element map must be the EOC element.
         // remove it from the map.
         if (DEBUG) {
-            if (fElemMap[fElemMapSize-1] != fEOCParticle)
+            if (fElemMapId[fElemMapSize-1] != -1)
                 System.err.println("interal error in DFA: last element is not EOC.");
         }
         fElemMapSize--;
@@ -529,9 +504,9 @@ public class XSDFACM
         int fSortCount = 0;
 
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-            final XSParticleDecl decl = fElemMap[elemIndex];
+            final int id = fElemMapId[elemIndex];
             for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
-                if (decl == fLeafList[leafIndex].getLeaf())
+                if (id == fLeafList[leafIndex].getParticleId())
                     fLeafSorter[fSortCount++] = leafIndex;
             }
             fLeafSorter[fSortCount++] = -1;
@@ -734,7 +709,8 @@ public class XSDFACM
         fHeadNode = null;
         fLeafList = null;
         fFollowList = null;
-
+        fLeafListType = null;
+        fElemMapId = null;
     }
 
     /**
@@ -746,12 +722,12 @@ public class XSDFACM
      */
     private void calcFollowList(CMNode nodeCur) {
         // Recurse as required
-        if (nodeCur.type() == XSParticleDecl.PARTICLE_CHOICE) {
+        if (nodeCur.type() == XSModelGroup.MODELGROUP_CHOICE) {
             // Recurse only
             calcFollowList(((XSCMBinOp)nodeCur).getLeft());
             calcFollowList(((XSCMBinOp)nodeCur).getRight());
         }
-         else if (nodeCur.type() == XSParticleDecl.PARTICLE_SEQUENCE) {
+         else if (nodeCur.type() == XSModelGroup.MODELGROUP_SEQUENCE) {
             // Recurse first
             calcFollowList(((XSCMBinOp)nodeCur).getLeft());
             calcFollowList(((XSCMBinOp)nodeCur).getRight());
@@ -820,9 +796,9 @@ public class XSDFACM
 
         switch(type ) {
 
-        case XSParticleDecl.PARTICLE_CHOICE:
-        case XSParticleDecl.PARTICLE_SEQUENCE: {
-            if (type == XSParticleDecl.PARTICLE_CHOICE)
+        case XSModelGroup.MODELGROUP_CHOICE:
+        case XSModelGroup.MODELGROUP_SEQUENCE: {
+            if (type == XSModelGroup.MODELGROUP_CHOICE)
                 System.out.print("Choice Node ");
             else
                 System.out.print("Seq Node ");
@@ -861,9 +837,8 @@ public class XSDFACM
                 "Leaf: (pos="
                 + ((XSCMLeaf)nodeCur).getPosition()
                 + "), "
-                + ((XSCMLeaf)nodeCur).getLeaf().fValue
                 + "(elemIndex="
-                + ((XSCMLeaf)nodeCur).getLeaf().fValue
+                + ((XSCMLeaf)nodeCur).getLeaf()
                 + ") "
             );
 
@@ -906,42 +881,40 @@ public class XSDFACM
     }
 
     /** Post tree build initialization. */
-    private int postTreeBuildInit(CMNode nodeCur, int curIndex) throws RuntimeException {
+    private void postTreeBuildInit(CMNode nodeCur) throws RuntimeException {
         // Set the maximum states on this node
         nodeCur.setMaxStates(fLeafCount);
 
+        XSCMLeaf leaf = null;
+        int pos = 0;
         // Recurse as required
         if (nodeCur.type() == XSParticleDecl.PARTICLE_WILDCARD) {
-            fLeafList[curIndex] = (XSCMLeaf)nodeCur;
-            fLeafListType[curIndex] = XSParticleDecl.PARTICLE_WILDCARD;
-            curIndex++;
+            leaf = (XSCMLeaf)nodeCur;
+            pos = leaf.getPosition();
+            fLeafList[pos] = leaf;
+            fLeafListType[pos] = XSParticleDecl.PARTICLE_WILDCARD;
         }
-        else if ((nodeCur.type() == XSParticleDecl.PARTICLE_CHOICE)
-        ||  (nodeCur.type() == XSParticleDecl.PARTICLE_SEQUENCE))
-        {
-            curIndex = postTreeBuildInit(((XSCMBinOp)nodeCur).getLeft(), curIndex);
-            curIndex = postTreeBuildInit(((XSCMBinOp)nodeCur).getRight(), curIndex);
+        else if ((nodeCur.type() == XSModelGroup.MODELGROUP_CHOICE) ||
+                 (nodeCur.type() == XSModelGroup.MODELGROUP_SEQUENCE)) {
+            postTreeBuildInit(((XSCMBinOp)nodeCur).getLeft());
+            postTreeBuildInit(((XSCMBinOp)nodeCur).getRight());
         }
-         else if (nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_MORE
-         || nodeCur.type() == XSParticleDecl.PARTICLE_ONE_OR_MORE
-         || nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
-        {
-            curIndex = postTreeBuildInit(((XSCMUniOp)nodeCur).getChild(), curIndex);
+        else if (nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_MORE ||
+                 nodeCur.type() == XSParticleDecl.PARTICLE_ONE_OR_MORE ||
+                 nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_ONE) {
+            postTreeBuildInit(((XSCMUniOp)nodeCur).getChild());
         }
-         else if (nodeCur.type() == XSParticleDecl.PARTICLE_ELEMENT) {
-            //
+        else if (nodeCur.type() == XSParticleDecl.PARTICLE_ELEMENT) {
             //  Put this node in the leaf list at the current index if its
             //  a non-epsilon leaf.
-            //
-            fLeafList[curIndex] = (XSCMLeaf)nodeCur;
-            fLeafListType[curIndex] = XSParticleDecl.PARTICLE_ELEMENT;
-            curIndex++;
+            leaf = (XSCMLeaf)nodeCur;
+            pos = leaf.getPosition();
+            fLeafList[pos] = leaf;
+            fLeafListType[pos] = XSParticleDecl.PARTICLE_ELEMENT;
         }
-         else
-        {
+        else {
             throw new RuntimeException("ImplementationMessages.VAL_NIICM");
         }
-        return curIndex;
     }
 
     /**
@@ -965,7 +938,7 @@ public class XSDFACM
                         fTransTable[i][k] != -1) {
                         if (conflictTable[j][k] == 0) {
                             conflictTable[j][k] = XSConstraints.overlapUPA
-                                                   (fElemMap[j].fValue,fElemMap[k].fValue,
+                                                   (fElemMap[j],fElemMap[k],
                                                    subGroupHandler) ?
                                                    (byte)1 : (byte)-1;
                         }
@@ -991,7 +964,7 @@ public class XSDFACM
         // again, if this grammar is cached.
         for (int i = 0; i < fElemMapSize; i++) {
             if (fElemMapType[i] == XSParticleDecl.PARTICLE_WILDCARD) {
-                XSWildcardDecl wildcard = (XSWildcardDecl)fElemMap[i].fValue;
+                XSWildcardDecl wildcard = (XSWildcardDecl)fElemMap[i];
                 if (wildcard.fType == XSWildcardDecl.WILDCARD_LIST ||
                     wildcard.fType == XSWildcardDecl.WILDCARD_OTHER) {
                     return true;
