@@ -419,6 +419,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         if (restriction && content != null) {
             fFacetInfo fi = traverseFacets(content, contentAttrs,nameProperty, baseValidator, schemaDoc, fGrammar);
+            if (fi.nodeAfterFacets != null)
+                reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_RESTRICTION, "(annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))"});
             fFacetData = fi.facetdata;
         }
         DatatypeValidator newDV = null;
