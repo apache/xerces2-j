@@ -907,8 +907,8 @@ public class XMLEntityManager
         String literalSystemId = xmlInputSource.getSystemId();
         String baseSystemId = xmlInputSource.getBaseSystemId();
         String encoding = xmlInputSource.getEncoding();
+        final boolean encodingExternallySpecified = (encoding != null);
         Boolean isBigEndian = null;
-		boolean declaredEncoding = false;
 
         // create reader
         InputStream stream = null;
@@ -920,8 +920,6 @@ public class XMLEntityManager
         }
         if (reader == null) {
             stream = xmlInputSource.getByteStream();
-			if(stream != null && encoding != null)
-				declaredEncoding = true;
             if (stream == null) {
                 URL location = new URL(expandedSystemId);
                 URLConnection connect = location.openConnection();
@@ -1073,7 +1071,7 @@ public class XMLEntityManager
         fCurrentEntity = new ScannedEntity(name,
                 new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
                 stream, reader, encoding, literal, false, isExternal);
-		fCurrentEntity.setDeclaredEncoding(declaredEncoding);
+		fCurrentEntity.setEncodingExternallySpecified(encodingExternallySpecified);
         fEntityScanner.setCurrentEntity(fCurrentEntity);
         fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
         return encoding;
@@ -2317,8 +2315,11 @@ public class XMLEntityManager
         /** Auto-detected encoding. */
         public String encoding;
         
-        /** Encoding has been set externally for eg: using DOMInput*/
-        boolean declaredEncoding = false;
+        /** 
+         * Encoding has been set externally, for example
+         * using a SAX InputSource or a DOM LSInput.
+         */
+        boolean externallySpecifiedEncoding = false;
         
         // version
         
@@ -2495,6 +2496,16 @@ public class XMLEntityManager
             return null;
         }
         
+        /** Returns whether the encoding of this entity was externally specified. **/
+        public boolean isEncodingExternallySpecified() {
+            return externallySpecifiedEncoding;
+        }
+        
+        /** Sets whether the encoding of this entity was externally specified. **/
+        public void setEncodingExternallySpecified(boolean value) {
+            externallySpecifiedEncoding = value;
+        }
+        
         //
         // Object methods
         //
@@ -2513,14 +2524,6 @@ public class XMLEntityManager
             return str.toString();
             
         } // toString():String
-		
-		public boolean isDeclaredEncoding() {
-			return declaredEncoding;
-		}
-		
-		public void setDeclaredEncoding(boolean value) {
-			declaredEncoding = value;
-		}
 
     } // class ScannedEntity
 

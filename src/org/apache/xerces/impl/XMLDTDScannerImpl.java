@@ -706,7 +706,9 @@ public class XMLDTDScannerImpl
                 encoding = fStrings[1];
 
                 fEntityScanner.setXMLVersion(version);
-                fEntityScanner.setEncoding(encoding);
+                if (!fEntityScanner.fCurrentEntity.isEncodingExternallySpecified()) {
+                    fEntityScanner.setEncoding(encoding);
+                }
 
                 // call handler
                 if (fDTDHandler != null) {

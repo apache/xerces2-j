@@ -680,7 +680,7 @@ public class XMLDocumentFragmentScannerImpl
         }
 
         // set encoding on reader
-        if (encoding != null && !fEntityScanner.fCurrentEntity.isDeclaredEncoding()) {
+        if (encoding != null && !fEntityScanner.fCurrentEntity.isEncodingExternallySpecified()) {
             fEntityScanner.setEncoding(encoding);
         }
 
