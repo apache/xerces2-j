@@ -258,11 +258,11 @@ public class NamedNodeMapImpl
 
         NodeImpl argn = (NodeImpl)arg;
 
-    	if (argn.parentNode != null) {
+    	if (argn.ownerNode != null) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
-        argn.parentNode = ownerNode;
+        argn.ownerNode = ownerNode;
    	int i = findNamePoint(arg.getNodeName(),0);
     	Node previous = null;
     	if (i >= 0) {
@@ -317,7 +317,7 @@ public class NamedNodeMapImpl
         }
 
         NodeImpl argn = (NodeImpl)arg;
-    	if (argn.parentNode != null) {
+    	if (argn.ownerNode != null) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
                                        "DOM009 Attribute already in use");
         }
@@ -393,7 +393,7 @@ public class NamedNodeMapImpl
             && findNamePoint(name, i+1) < 0) {
             
             NodeImpl clone = (NodeImpl)d.cloneNode(true);
-            clone.parentNode = ownerNode;
+            clone.ownerNode = ownerNode;
             nodes.setElementAt(clone, i);
         }
         else {
@@ -402,7 +402,7 @@ public class NamedNodeMapImpl
 
         ++changes;
         // remove owning element
-        n.parentNode = null;
+        n.ownerNode = null;
         return n;
 
     } // removeNamedItem(String):Node
@@ -465,7 +465,7 @@ public class NamedNodeMapImpl
             int j = findNamePoint(nodeName,0);
             if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
                 NodeImpl clone = (NodeImpl)d.cloneNode(true);
-                clone.parentNode = ownerNode;
+                clone.ownerNode = ownerNode;
                 nodes.setElementAt(clone, i);
             } else {
                 nodes.removeElementAt(i);
@@ -479,7 +479,7 @@ public class NamedNodeMapImpl
 
         // Need to remove references to an Attr's owner before the
         // MutationEvents fire.
-        n.parentNode = null;
+        n.ownerNode = null;
 
         // We can't use the standard dispatchAggregate, since it assumes
         // that the Attr is still attached to an owner. This code is
@@ -633,7 +633,7 @@ public class NamedNodeMapImpl
     			    if (!nnode.getSpecified()) {
     			        if (DEBUG) System.out.println("reconcile (test==0, specified = false): clone default");
                         NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                        clone.parentNode = ownerNode;
+                        clone.ownerNode = ownerNode;
     				    nodes.setElementAt(clone, n);
     				    // Advance over both, since names in sync
     				    ++n;
@@ -650,7 +650,7 @@ public class NamedNodeMapImpl
     			else if (test > 0) {
     			    if (DEBUG) System.out.println("reconcile (test>0): insert new default");
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                    clone.parentNode = ownerNode;
+                    clone.ownerNode = ownerNode;
     				nodes.insertElementAt(clone, n);
     				// Now in sync, so advance over both
     				++n;
@@ -682,7 +682,7 @@ public class NamedNodeMapImpl
                 while (d < dsize) {
                     dnode = (AttrImpl)defaults.nodes.elementAt(d++);
                     NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                    clone.parentNode = ownerNode;
+                    clone.ownerNode = ownerNode;
     			    if (DEBUG) System.out.println("reconcile: adding"+clone);
                     nodes.addElement(clone);
                 }

@@ -122,8 +122,7 @@ public abstract class NodeImpl
     /** Owner document. */
 	protected DocumentImpl ownerDocument;
 
-    /** Parent node. */
-    protected NodeImpl parentNode;
+    protected NodeImpl ownerNode; // typically the parent but not always!
 
     /** Previous sibling. */
 	protected NodeImpl previousSibling;
@@ -413,7 +412,7 @@ public abstract class NodeImpl
         newnode.ownerDocument = ownerDocument;
 
         // Need to break the association w/ original kids
-    	newnode.parentNode      = null;
+    	newnode.ownerNode      = null;
     	newnode.previousSibling = null;
         newnode.nextSibling     = null;
 
@@ -458,7 +457,7 @@ public abstract class NodeImpl
      * Attribute will never have parents.
      */
     public Node getParentNode() {
-        return parentNode;
+        return ownerNode;
     }
 
     /** The next child of this node's parent, or null if none */
@@ -1199,7 +1198,7 @@ public abstract class NodeImpl
                 return retval;
             }    
             else if(type==Node.ENTITY_REFERENCE_NODE)
-                eventAncestor=eventAncestor.parentNode;
+                eventAncestor=eventAncestor.ownerNode;
             else 
                 return null;
                 // Any other parent means we're not in an Attr
@@ -1377,6 +1376,7 @@ public abstract class NodeImpl
     /** Denotes that this node has changed. */
     protected void changed() {
     	++changes;
+        NodeImpl parentNode = (NodeImpl) getParentNode();
     	if (parentNode != null) {
             parentNode.changed();
         }

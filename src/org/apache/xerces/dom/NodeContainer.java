@@ -379,7 +379,9 @@ public abstract class NodeContainer
         if (errorChecking) {
             // Prevent cycles in the tree
             boolean treeSafe = true;
-            for (NodeImpl a = parentNode; treeSafe && a != null; a = a.parentNode) {
+            for (Node a = getParentNode();
+                 treeSafe && a != null;
+                 a = a.getParentNode()) {
                 treeSafe = newInternal != a;
             }
             if(!treeSafe) {
@@ -458,7 +460,7 @@ public abstract class NodeContainer
                    ? lastChild : ((NodeImpl)refChild).previousSibling;
 
     		// Attach up
-    		newInternal.parentNode = this;
+    		newInternal.ownerNode = this;
 
     		// Attach after
     		newInternal.previousSibling = prev;
@@ -517,7 +519,7 @@ public abstract class NodeContainer
                                 if(p.getNodeType()==ATTRIBUTE_NODE)
                                     p=(ElementImpl)( ((AttrImpl)p).getOwnerElement() );
                                 else
-                                    p=p.parentNode;
+                                    p=p.ownerNode;
                             }
                             if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                             {
@@ -639,9 +641,9 @@ public abstract class NodeContainer
                         eventAncestor=(NodeImpl)(enclosingAttr.node.getOwnerElement());
                     if(eventAncestor!=null) // Might have been orphan Attr
                     {
-                        for(NodeImpl p=eventAncestor.parentNode;
+                        for(NodeImpl p=eventAncestor.ownerNode;
                             p!=null;
-                            p=p.parentNode)
+                            p=p.ownerNode)
                         {
                             eventAncestor=p; // Last non-null ancestor
                         }
@@ -679,7 +681,7 @@ public abstract class NodeContainer
         }
 
     	// Remove oldInternal's references to tree
-    	oldInternal.parentNode      = null;
+    	oldInternal.ownerNode      = null;
         oldInternal.nextSibling     = null;
         oldInternal.previousSibling = null;
 

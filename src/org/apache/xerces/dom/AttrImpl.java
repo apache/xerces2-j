@@ -88,8 +88,8 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * (see the INUSE exception), so this object's mutability is
  * officially not an issue.
  * <p>
- * Note: The parentNode attribute is used to store the Element the Attr
- * node is associated with. However, Attr nodes do not have parent nodes. So,
+ * Note: The ownerNode attribute is used to store the Element the Attr
+ * node is associated with. Attr nodes do not have parent nodes. So,
  * the getParentNode() method is defined to return null for Attr nodes.
  * Besides, the getOwnerElement() method can be used to get the element node
  * this attribute is associated with.
@@ -218,7 +218,7 @@ public class AttrImpl
             // It needs the previous value. Note that this may be
             // a treewalk, so I've put it under the conditional.
             lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0 && parentNode!=null)
+            if(lc.captures+lc.bubbles+lc.defaults>0 && ownerNode!=null)
             {
                oldvalue=getValue();
             }
@@ -310,7 +310,7 @@ public class AttrImpl
      *             is <tt>getOwnerElement()</tt>.
      */
     public Element getElement() {
-        return (Element)parentNode;
+        return (Element)ownerNode;
     }
 
     /**
@@ -320,7 +320,7 @@ public class AttrImpl
      * @since WD-DOM-Level-2-19990719
      */
     public Element getOwnerElement() {
-        return (Element)parentNode;
+        return (Element)ownerNode;
     }
     
     public void normalize() {

@@ -179,7 +179,7 @@ public final class DeferredAttrNSImpl
             else {
                 last.nextSibling = node;
             }
-            node.parentNode = this;
+            node.ownerNode = this;
             node.previousSibling = last;
             last = node;
         }

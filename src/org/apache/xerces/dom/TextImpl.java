@@ -188,6 +188,7 @@ public class TextImpl
     	setNodeValue(value.substring(0, offset));
 
         // insert new text node
+        Node parentNode = getParentNode();
     	if (parentNode != null) {
     		parentNode.insertBefore(newText, nextSibling);
         }

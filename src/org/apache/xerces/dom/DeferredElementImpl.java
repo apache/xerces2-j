@@ -158,7 +158,7 @@ public class DeferredElementImpl
             do {
                 NodeImpl attr = (NodeImpl)ownerDocument.getNodeObject(index);
                 attrs.setNamedItem(attr);
-                attr.parentNode = this;
+                attr.ownerNode = this;
                 index = ownerDocument.getNextSibling(index);
             } while (index != -1);
         }
@@ -190,7 +190,7 @@ public class DeferredElementImpl
             else {
                 last.nextSibling = node;
             }
-            node.parentNode = this;
+            node.ownerNode = this;
             node.previousSibling = last;
             last = node;
         }
