@@ -5,7 +5,7 @@
 	xmlns:xit="http://www.schemaTest.org/xinclude-test">
 
 <import namespace="http://www.w3.org/XML/1998/namespace"
-        schemaLocation="file:///C:/eclipse/workspace/xinclude/files/xml.xsd"/>
+        schemaLocation="./xmlbase.xsd"/>
 
 <!-- used for test01.xml -->
 <complexType name="childType" mixed="true">

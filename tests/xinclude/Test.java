@@ -307,30 +307,30 @@ public class Test implements XMLErrorHandler {
             return true;
         }
 
-        // try {
+        try {
             if (passed == expectedPass) {
-                /** if (compareOutput(new FileReader(expectedOutputFile),
-                    new StringReader(fResults))) { **/
+                if (compareOutput(new FileReader(expectedOutputFile),
+                    new StringReader(fResults))) {
                     fLogStream.println("Result: PASS");
                     return true;
-                /** }
+                }
                 else {
                     fLogStream.println("Result: FAIL");
                     return false;
-                } **/
+                }
             }
             else {
                 fLogStream.println(fResults);
                 fLogStream.println("Result: FAIL");
                 return false;
             }
-        // }
-        /** catch (IOException e) {
+        }
+        catch (IOException e) {
             fLogStream.println(
                 "Unexpected IO problem attempting to verify results: " + e);
             fLogStream.println("Result: FAIL");
             return false;
-        } **/
+        }
     }
 
     /* (non-Javadoc)
