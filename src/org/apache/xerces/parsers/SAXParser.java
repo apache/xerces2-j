@@ -158,6 +158,12 @@ public class SAXParser
     /** Default constructor. */
     public SAXParser() {
         setSendCharDataAsCharArray(true);
+        try{
+        //setNamespaces(true ); //JR-defect 48 fix - turn on Namespaces
+         setFeature( "http://xml.org/sax/features/namespaces", true );
+        }catch( SAXNotRecognizedException e ){ 
+        }catch( SAXNotSupportedException  e ){ 
+        }
     }
 
     //
