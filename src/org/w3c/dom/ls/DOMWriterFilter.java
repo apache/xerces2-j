@@ -15,7 +15,12 @@ package org.w3c.dom.ls;
 import org.w3c.dom.traversal.NodeFilter;
 
 /**
- * DOM Level 3 WD - Experimental.
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  *  <code>DOMWriterFilter</code>s provide applications the ability to examine 
  * nodes as they are being serialized. <code>DOMWriterFilter</code> lets the 
  * application decide what nodes should be serialized or not. 

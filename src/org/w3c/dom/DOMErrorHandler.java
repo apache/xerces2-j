@@ -13,7 +13,12 @@
 package org.w3c.dom;
 
 /**
- * DOM Level 3 WD - Experimental.
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * <code>DOMErrorHandler</code> is a callback interface that the DOM 
  * implementation can call when reporting errors that happens while 
  * processing XML data, or when doing some other processing (e.g. validating 

@@ -13,7 +13,12 @@
 package org.w3c.dom.ls;
 
 /**
- * DOM Level 3 WD - Experimental.
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * This interface represents a single input source for an XML entity. 
  * <p> This interface allows an application to encapsulate information about 
  * an input source in a single object, which may include a public 

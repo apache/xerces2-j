@@ -13,7 +13,17 @@
 package org.w3c.dom;
 
 /**
- * DOM Level 3 WD - Experimental.
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * When associating an object to a key on a node using <code>setUserData</code>
  *  the application can provide a handler that gets called when the node the 
  * object is associated to is being cloned or imported. This can be used by 

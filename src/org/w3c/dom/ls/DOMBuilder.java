@@ -18,7 +18,12 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMErrorHandler;
 
 /**
- * DOM Level 3 WD - Experimental.
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * A interface to an object that is able to build a DOM tree from various 
  * input sources.
  * <p><code>DOMBuilder</code> provides an API for parsing XML documents and 
