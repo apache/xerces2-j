@@ -137,6 +137,37 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         new UnionDV()
     };
 
+    static final short NORMALIZE_NONE = 0;
+    static final short NORMALIZE_TRIM = 1;
+    static final short NORMALIZE_FULL = 2;
+    static final short[] fDVNormalizeType = {
+        NORMALIZE_NONE, //AnySimpleDV(),
+        NORMALIZE_FULL, //StringDV(),
+        NORMALIZE_TRIM, //BooleanDV(),
+        NORMALIZE_TRIM, //DecimalDV(),
+        NORMALIZE_TRIM, //FloatDV(),
+        NORMALIZE_TRIM, //DoubleDV(),
+        NORMALIZE_TRIM, //DurationDV(),
+        NORMALIZE_TRIM, //DateTimeDV(),
+        NORMALIZE_TRIM, //TimeDV(),
+        NORMALIZE_TRIM, //DateDV(),
+        NORMALIZE_TRIM, //YearMonthDV(),
+        NORMALIZE_TRIM, //YearDV(),
+        NORMALIZE_TRIM, //MonthDayDV(),
+        NORMALIZE_TRIM, //DayDV(),
+        NORMALIZE_TRIM, //MonthDV(),
+        NORMALIZE_TRIM, //HexBinaryDV(),
+        NORMALIZE_NONE, //Base64BinaryDV(),  // Base64 know how to deal with spaces
+        NORMALIZE_TRIM, //AnyURIDV(),
+        NORMALIZE_TRIM, //QNameDV(),
+        NORMALIZE_TRIM, //QNameDV(),   // notation
+        NORMALIZE_FULL, //IDDV(),
+        NORMALIZE_FULL, //IDREFDV(),
+        NORMALIZE_FULL, //EntityDV(),
+        NORMALIZE_FULL, //ListDV(),
+        NORMALIZE_NONE, //UnionDV()
+    };
+
     static final short SPECIAL_PATTERN_NONE     = 0;
     static final short SPECIAL_PATTERN_NMTOKEN  = 1;
     static final short SPECIAL_PATTERN_NAME     = 2;
@@ -1639,10 +1670,18 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }
 
     // normalize the string according to the whiteSpace facet
-    protected static String normalize(Object content, short ws) {
+    protected String normalize(Object content, short ws) {
         if (content == null)
             return null;
         
+        short norm_type = fDVNormalizeType[fValidationDV];
+        if (norm_type == NORMALIZE_NONE) {
+            return content.toString();
+        }
+        else if (norm_type == NORMALIZE_TRIM) {
+            return content.toString().trim();
+        }
+
         if (!(content instanceof StringBuffer)) {
             String strContent = content.toString();
             return normalize(strContent, ws);
