@@ -62,7 +62,6 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
-import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.xs.XSObject;
