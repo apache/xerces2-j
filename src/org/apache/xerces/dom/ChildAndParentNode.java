@@ -189,11 +189,11 @@ public abstract class ChildAndParentNode
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-        ownerDocument = doc;
 	for (Node child = firstChild;
 	     child != null; child = child.getNextSibling()) {
 	    ((NodeImpl) child).setOwnerDocument(doc);
 	}
+        ownerDocument = doc;
     }
 
     /**
