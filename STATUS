@@ -4,6 +4,8 @@ There are lots of things that need to be done:
 
 Here are some things at the top of my list (in no particular order):
 
+* Binary build for v1.0.1
+
 * Additional Support for W3C XML schema.  There's both the structures
   spec and the datatypes spec.  There's a lot of work to do in the
   structures area, and that's the area I'll be working on for the next
@@ -36,9 +38,8 @@ Here are some things at the top of my list (in no particular order):
 * Incorporation of features and improvements from other technology
   contributions. 
   
-  The first one is the printers proposal from Assaf Arkin
+  The first one is the printers proposal from Assaf Arkin. <DONE>
  
-
 * refinement and extension of the incremental parsing API
 
 * scripts to build parser subconfigurations
@@ -60,3 +61,8 @@ Here are some things at the top of my list (in no particular order):
 * Major work on the build system.
   
   ANT vs Makefiles is the current discussion
+
+* Hook up JavaScript DOM API tests (see http://www.nist.gov/xml)
+
+* JAXP Wrappers for Xerces
+  pending resolution of licensing issues
