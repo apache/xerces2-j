@@ -61,6 +61,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
@@ -183,6 +184,9 @@ public abstract class BasicParserConfiguration
     protected SymbolTable fSymbolTable;
 
     // data
+
+    /** Locale. */
+    protected Locale fLocale;
 
     /** Recognized properties. */
     protected Vector fRecognizedProperties;
@@ -510,6 +514,18 @@ public abstract class BasicParserConfiguration
         fProperties.put(propertyId, value);
 
     } // setProperty(String,Object)
+
+    /**
+     * Set the locale to use for messages.
+     *
+     * @param locale The locale object to use for localization of messages.
+     *
+     * @exception XNIException Thrown if the parser does not support the
+     *                         specified locale.
+     */
+    public void setLocale(Locale locale) throws XNIException {
+        fLocale = locale;
+    } // setLocale(Locale)
 
     //
     // XMLComponentManager methods
