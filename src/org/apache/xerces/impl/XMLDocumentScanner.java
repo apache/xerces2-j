@@ -202,9 +202,6 @@ public class XMLDocumentScanner
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
 
-    /** Error reporter. */
-    protected XMLErrorReporter fErrorReporter;
-
     /** Entity manager. */
     protected XMLEntityManager fEntityManager;
 
@@ -271,9 +268,6 @@ public class XMLDocumentScanner
 
     /** Trailing miscellaneous section dispatcher. */
     protected Dispatcher fTrailingMiscDispatcher = new TrailingMiscDispatcher();
-
-    /** End of input dispatcher. */
-    protected Dispatcher fEndOfInputDispatcher = new EndOfInputDispatcher();
 
     // private data
 
@@ -356,7 +350,6 @@ public class XMLDocumentScanner
         /***/
 
         // initialize scanner
-        fEntityManager.setEntityHandler(this);
         fEntityScanner = fEntityManager.getEntityScanner();
         
         // initialize vars
@@ -455,8 +448,13 @@ public class XMLDocumentScanner
         fEntityStack.push(entity);
 
         // call handler
-        if (!fScanningAttribute && fDocumentHandler != null) {
-            fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+        if (fDocumentHandler != null) {
+            if (!fScanningAttribute) {
+                fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+            }
+            if (name.equals("[xml]")) {
+                fDocumentHandler.startDocument();
+            }
         }
 
     } // startEntity(String,String,String,String)
@@ -478,6 +476,9 @@ public class XMLDocumentScanner
 
         // check for un-balanced entity content
         // 1) state isn't set back to SCANNER_STATE_CONTENT
+        /***
+        // REVISIT: Put these checks back and verify that this is the
+        //          right way to detect and signal these errors. -Ac
         if (fScannerState != SCANNER_STATE_CONTENT) {
             switch (fScannerState) {
                 case SCANNER_STATE_COMMENT: {
@@ -494,6 +495,7 @@ public class XMLDocumentScanner
                 }
             }
         }
+        /***/
 
         // 2) scanner markup depth isn't what it was at the start of
         //    the entity
@@ -503,8 +505,13 @@ public class XMLDocumentScanner
         }
 
         // call handler
-        if (!fScanningAttribute && fDocumentHandler != null) {
-            fDocumentHandler.endEntity(name);
+        if (fDocumentHandler != null) {
+            if (name.equals("[xml]")) {
+                fDocumentHandler.endDocument();
+            }
+            if (!fScanningAttribute) {
+                fDocumentHandler.endEntity(name);
+            }
         }
 
     } // endEntity(String)
@@ -1524,11 +1531,6 @@ public class XMLDocumentScanner
         public boolean dispatch(boolean complete) 
             throws IOException, SAXException {
 
-            // start the document
-            if (fDocumentHandler != null) {
-                fDocumentHandler.startDocument();
-            }
-
             // next dispatcher is prolog regardless of whether there
             // is an XMLDecl in this document
             setScannerState(SCANNER_STATE_PROLOG);
@@ -1887,15 +1889,13 @@ public class XMLDocumentScanner
     
                         if (XMLChar.isInvalid(ch)) {
                             if (ch == -1 ) {
-                                setScannerState(SCANNER_STATE_END_OF_INPUT);
-                                setDispatcher(fEndOfInputDispatcher);
-                                return true;
+                                setScannerState(SCANNER_STATE_TERMINATED);
+                                return false;
                             }
                             else {
                                 // REVISIT report error
                                 // throw new SAXException("invalid char in trailing Misc);
-                                setScannerState(SCANNER_STATE_END_OF_INPUT);
-                                setDispatcher(fEndOfInputDispatcher);
+                                setScannerState(SCANNER_STATE_TERMINATED);
                                 return false;
                             }
                         }
@@ -1913,51 +1913,11 @@ public class XMLDocumentScanner
                 //       the exception and move to end of input. -Ac
             }
 
-            setScannerState(SCANNER_STATE_END_OF_INPUT);
-            setDispatcher(fEndOfInputDispatcher);
-            return true;
-
-        } // dispatch(boolean):boolean
-
-    } // class TrailingMiscDispatcher
-
-    /**
-     * Dispatcher to handle end of input processing.
-     *
-     * @author Andy Clark, IBM
-     */
-    protected final class EndOfInputDispatcher
-        implements Dispatcher {
-
-        //
-        // Dispatcher methods
-        //
-
-        /** 
-         * Dispatch an XML "event".
-         *
-         * @param complete True if this dispatcher is intended to scan
-         *                 and dispatch as much as possible.                 
-         *
-         * @returns True if there is more to dispatch either from this 
-         *          or a another dispatcher.
-         *
-         * @throws IOException  Thrown on i/o error.
-         * @throws SAXException Thrown on parse error.
-         */
-        public boolean dispatch(boolean complete) 
-            throws IOException, SAXException {
-
-            // TODO
-
-            // end the document
-            if (fDocumentHandler != null) {
-                fDocumentHandler.endDocument();
-            }
+            setScannerState(SCANNER_STATE_TERMINATED);
             return false;
 
         } // dispatch(boolean):boolean
 
-    } // class EndOfInputDispatcher
+    } // class TrailingMiscDispatcher
 
 } // class XMLDocumentScanner

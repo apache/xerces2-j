@@ -387,6 +387,7 @@ public abstract class XMLDocumentParser
 
         try {
             reset();
+            fEntityManager.setEntityHandler(fScanner);
             fEntityManager.startDocumentEntity(source);
             fScanner.scanDocument(true);
             fParseInProgress = false;

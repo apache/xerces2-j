@@ -98,6 +98,15 @@ public abstract class XMLScanner {
     /** String buffer. */
     protected XMLStringBuffer fStringBuffer = new XMLStringBuffer();
 
+    /** Error reporter. */
+    protected XMLErrorReporter fErrorReporter;
+
+    //
+    // Protected methods
+    //
+
+    // common scanning methods
+
     /**
      * Scans a processing instruction.
      * <p>
@@ -250,4 +259,5 @@ public abstract class XMLScanner {
         }
         return value;
     }
-}
+
+} // class XMLScanner

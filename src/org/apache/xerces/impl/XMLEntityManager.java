@@ -114,8 +114,8 @@ public class XMLEntityManager
     // Constants
     //
 
-    /** Default buffer size (1024). */
-    public static final int DEFAULT_BUFFER_SIZE = 1024;
+    /** Default buffer size (2048). */
+    public static final int DEFAULT_BUFFER_SIZE = 2048;
 
     // xerces features
 
@@ -137,6 +137,13 @@ public class XMLEntityManager
 
     /** Debugging. */
     private static final boolean DEBUG = false;
+
+    /** 
+     * Debug printing of buffer. This debugging flag works best when you
+     * resize the DEFAULT_BUFFER_SIZE down to something reasonable like
+     * 64 bytes.
+     */
+    private static final boolean DEBUG_PRINT = false;
 
     //
     // Data
@@ -230,6 +237,11 @@ public class XMLEntityManager
         Entity entity = new InternalEntity(name, text);
         fEntities.put(name, entity);
     } // addInternalEntity(String,String)
+
+    /** Returns true if the specified entity is declared. */
+    public boolean isEntityDeclared(String name) {
+        return fEntities.get(name) != null;
+    } // isEntityDeclared(String):boolean
 
     /**
      * resolveEntity
@@ -429,6 +441,11 @@ public class XMLEntityManager
                 PushbackInputStream pbstream = new PushbackInputStream(stream, 4);
                 pbstream.unread(b4, 0, count);
                 stream = pbstream;
+
+                // REVISIT: Should save the original input stream instead of
+                //          the pushback input stream so that when we swap out
+                //          the OneCharReader, we don't still have a method
+                //          indirection to get at the underlying bytes. -Ac
             }
 
             // create reader from input stream
@@ -440,15 +457,19 @@ public class XMLEntityManager
             //reader = new OneCharReader(reader);
         }
 
+        /***
         // REVISIT: This goes away once I've updated the entity
         //          scanner to buffer from a standard java.io.Reader
         //          object. -Ac
         reader = new PushbackReader(reader, 32);
+        /***/
 
         // push entity on stack
+        if (fCurrentEntity != null) {
+            fEntityStack.push(fCurrentEntity);
+        }
         fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
                                            stream, reader, encoding);
-        fEntityStack.push(fCurrentEntity);
 
         // call handler
         if (fEntityHandler != null) {
@@ -461,15 +482,16 @@ public class XMLEntityManager
     /**
      * Ends an entity.
      */
-    protected void endEntity() throws IOException, SAXException {
-
-        // pop stack
-        Entity entity = (Entity)fEntityStack.pop();
+    protected void endEntity() throws SAXException {
 
         // call handler
         if (fEntityHandler != null) {
-            fEntityHandler.endEntity(entity.name);
+            fEntityHandler.endEntity(fCurrentEntity.name);
         }
+
+        // pop stack
+        fCurrentEntity = fEntityStack.size() > 0
+                       ? (ScannedEntity)fEntityStack.pop() : null;
 
     } // endEntity(String)
 
@@ -825,11 +847,11 @@ public class XMLEntityManager
         /** Character buffer. */
         public char[] ch = new char[fBufferSize];
 
-        /** Offset. */
-        public int offset;
+        /** Position in character buffer. */
+        public int position;
 
-        /** Length. */
-        public int length;
+        /** Count of characters in buffer. */
+        public int count;
 
         //
         // Constructors
@@ -890,9 +912,19 @@ public class XMLEntityManager
          * 
          * @return 
          */
-        public int peekChar() throws IOException {
+        public int peekChar() throws IOException, SAXException {
             if (DEBUG) System.out.println("#peekChar()");
-            return peek(); 
+
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("peekChar: ");
+                print();
+                System.out.println(" -> '"+fCurrentEntity.ch[fCurrentEntity.position]+"'");
+            }
+            return fCurrentEntity.ch[fCurrentEntity.position];
+
         } // peekChar():int
     
         /**
@@ -902,11 +934,23 @@ public class XMLEntityManager
          */
         public int scanChar() throws IOException, SAXException {
             if (DEBUG) System.out.println("#scanChar()");
-            int c = read();
-            if (c == -1) {
-                endEntity();
+
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanChar: ");
+                print();
+                System.out.println();
+            }
+            int c = fCurrentEntity.ch[fCurrentEntity.position++];
+            if (DEBUG_PRINT) {
+                System.out.print(")scanChar: ");
+                print();
+                System.out.println(" -> '"+(char)c+"'");
             }
             return c;
+
         } // scanChar():int
     
         /**
@@ -917,20 +961,28 @@ public class XMLEntityManager
         public String scanNmtoken() throws IOException, SAXException {
             if (DEBUG) System.out.println("#scanNmtoken()");
     
-            fCurrentEntity.length = 0;
-            boolean nmtoken = false;
-            while (XMLChar.isName(peek())) {
-                nmtoken = true;
-                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
             }
-    
+
+            int offset = fCurrentEntity.position;
+            while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
+                if (++fCurrentEntity.position == fCurrentEntity.ch.length) {
+                    int length = fCurrentEntity.position - offset;
+                    System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
+                    load(length);
+                    offset = 0;
+                }
+            }
+            int length = fCurrentEntity.position - offset;
+
             String symbol = null;
-            if (nmtoken) {
-                symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
+            if (length > 0) {
+                symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, offset, length);
             }
             return symbol;
     
-        } // scanNmtoken
+        } // scanNmtoken():String
     
         /**
          * scanName
@@ -940,23 +992,45 @@ public class XMLEntityManager
         public String scanName() throws IOException, SAXException {
             if (DEBUG) System.out.println("#scanName()");
     
-            fCurrentEntity.length = 0;
-            boolean name = false;
-            if (XMLChar.isNameStart(peek())) {
-                name = true;
-                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
-                while (XMLChar.isName(peek())) {
-                    fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanName: ");
+                print();
+                System.out.println();
+            }
+
+            int offset = fCurrentEntity.position;
+            if (XMLChar.isNameStart(fCurrentEntity.ch[offset])) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
+                    load(1);
+                    offset = 0;
+                }
+                while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
+                    if (++fCurrentEntity.position == fCurrentEntity.count) {
+                        int length = fCurrentEntity.position - offset;
+                        System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
+                        load(length);
+                        offset = 0;
+                    }
                 }
             }
-    
+            int length = fCurrentEntity.position - offset;
+
             String symbol = null;
-            if (name) {
-                symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
+            if (length > 0) {
+                symbol = fSymbolTable.addSymbol(fCurrentEntity.ch, offset, length);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print(")scanName: ");
+                print();
+                System.out.println(" -> "+String.valueOf(symbol));
             }
             return symbol;
     
-        } // scanName
+        } // scanName():String
     
         /**
          * scanQName
@@ -966,39 +1040,54 @@ public class XMLEntityManager
         public boolean scanQName(QName qname) throws IOException, SAXException {
             if (DEBUG) System.out.println("#scanQName()");
     
-            String prefix = null;
-            String localpart = null;
-            String rawname = null;
-    
-            fCurrentEntity.length = 0;
-            int colons = -1;
-            int index = 0;
-            if (XMLChar.isNameStart(peek())) {
-                colons = 0;
-                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
-                int c = -1;
-                while (XMLChar.isName(c = peek())) {
-                    if (c == ':') {
-                        colons++;
-                        if (colons == 1) {
-                            index = fCurrentEntity.length + 1;
-                            prefix = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
-                        }
-                    }
-                    fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+
+            int offset = fCurrentEntity.position;
+            if (XMLChar.isNameStart(fCurrentEntity.ch[offset])) {
+                if (++fCurrentEntity.position == fCurrentEntity.count) {
+                    fCurrentEntity.ch[0] = fCurrentEntity.ch[offset];
+                    load(1);
+                    offset = 0;
                 }
-                localpart = fSymbolTable.addSymbol(fCurrentEntity.ch, index, fCurrentEntity.length - index);
-                rawname = fSymbolTable.addSymbol(fCurrentEntity.ch, 0, fCurrentEntity.length);
+                int index = -1;
+                while (XMLChar.isName(fCurrentEntity.ch[fCurrentEntity.position])) {
+                    char c = fCurrentEntity.ch[fCurrentEntity.position];
+                    if (c == ':') {
+                        if (index != -1) {
+                            break;
+                        }
+                        index = offset;
+                    }
+                    if (++fCurrentEntity.position == fCurrentEntity.count) {
+                        int length = fCurrentEntity.position - offset;
+                        System.arraycopy(fCurrentEntity.ch, offset, fCurrentEntity.ch, 0, length);
+                        load(length);
+                        offset = 0;
+                    }
+                }
+                int length = fCurrentEntity.position - offset;
+                if (length > 0) {
+                    String prefix = null;
+                    String localpart = null;
+                    String rawname = null;
+                    if (index != -1) {
+                        prefix = fSymbolTable.addSymbol(fCurrentEntity.ch, offset, index - offset);
+                        localpart = fSymbolTable.addSymbol(fCurrentEntity.ch, offset + index + 1, length - index - 1);
+                    }
+                    else {
+                        localpart = fSymbolTable.addSymbol(fCurrentEntity.ch, offset, length);
+                        rawname = localpart;
+                    }
+                    qname.setValues(prefix, localpart, rawname, null);
+                    return true;
+                }
             }
-    
-            if (colons >= 0 && colons < 2) {
-                qname.setValues(prefix, localpart, rawname, null);
-                return true;
-            }
-    
+
             return false;
     
-        } // scanQName
+        } // scanQName(QName):boolean
     
         /**
          * scanContent
@@ -1008,18 +1097,34 @@ public class XMLEntityManager
         public int scanContent(XMLString content) 
             throws IOException, SAXException {
     
-            fCurrentEntity.length = 0;
-            while (peek() != '<' && peek() != '&') {
-                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
-                if (fCurrentEntity.length == fCurrentEntity.ch.length) {
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
+                fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
+                load(1);
+            }
+
+            // REVISIT: Use AndyH trick for grabbing longest runs of
+            //          content characters. -Ac
+            int offset = fCurrentEntity.position;
+            while (fCurrentEntity.position < fCurrentEntity.count) {
+                char c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (c == '<' || c == '&') {
+                    fCurrentEntity.position--;
                     break;
                 }
             }
-            content.setValues(fCurrentEntity.ch, 0, fCurrentEntity.length);
+            int length = fCurrentEntity.position - offset;
+            content.setValues(fCurrentEntity.ch, offset, length);
     
-            return peek();
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.position--;
+                content.length--;
+            }
+            return fCurrentEntity.ch[fCurrentEntity.position];
     
-        } // scanContent
+        } // scanContent(XMLString):int
     
         /**
          * scanAttContent
@@ -1030,18 +1135,43 @@ public class XMLEntityManager
         public int scanAttContent(int quote, XMLString content)
             throws IOException, SAXException {
     
-            fCurrentEntity.length = 0;
-            while (peek() != quote) {
-                fCurrentEntity.ch[fCurrentEntity.length++] = (char)read();
-                if (fCurrentEntity.length == fCurrentEntity.ch.length) {
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
+                fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
+                load(1);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(scanAttContent, '"+(char)quote+"': ");
+                print();
+                System.out.println();
+            }
+
+            // REVISIT: Handle entity reference in attribute value. -Ac
+            int offset = fCurrentEntity.position;
+            while (fCurrentEntity.position < fCurrentEntity.count) {
+                char c = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (c == quote) {
+                    fCurrentEntity.position--;
                     break;
                 }
             }
-            content.setValues(fCurrentEntity.ch, 0, fCurrentEntity.length);
+            int length = fCurrentEntity.position - offset;
+            content.setValues(fCurrentEntity.ch, offset, length);
     
-            return peek();
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                fCurrentEntity.position--;
+                content.length--;
+            }
+            if (DEBUG_PRINT) {
+                System.out.print(")scanAttContent, '"+(char)quote+"': ");
+                print();
+                System.out.println(" -> '"+fCurrentEntity.ch[fCurrentEntity.position]+"'");
+            }
+            return fCurrentEntity.ch[fCurrentEntity.position];
     
-        } // scanAttContent
+        } // scanAttContent(int,XMLString):int
     
         /**
          * scanData
@@ -1061,12 +1191,33 @@ public class XMLEntityManager
          * @param c
          */
         public boolean skipChar(int c) throws IOException, SAXException {
-            int pc = read();
-            if (pc != c) {
-                unread(pc);
+
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
             }
-            return pc == c;
-        }
+            if (DEBUG_PRINT) {
+                System.out.print("(skipChar, '"+(char)c+"': ");
+                print();
+                System.out.println();
+            }
+
+            if (fCurrentEntity.ch[fCurrentEntity.position] == c) {
+                fCurrentEntity.position++;
+                if (DEBUG_PRINT) {
+                    System.out.print(")skipChar, '"+(char)c+"': ");
+                    print();
+                    System.out.println(" -> true");
+                }
+                return true;
+            }
+            if (DEBUG_PRINT) {
+                System.out.print(")skipChar, '"+(char)c+"': ");
+                print();
+                System.out.println(" -> false");
+            }
+            return false;
+
+        } // skipChar(int):boolean
     
         /**
          * skipSpaces
@@ -1074,15 +1225,41 @@ public class XMLEntityManager
         public boolean skipSpaces() throws IOException, SAXException {
             if (DEBUG) System.out.println("#skipSpaces()");
     
-            boolean spaces = false;
-            while (XMLChar.isSpace(peek())) {
-                spaces = true;
-                read();
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
             }
+            if (DEBUG_PRINT) {
+                System.out.print("(skipSpaces: ");
+                print();
+                System.out.println();
+            }
+
+            if (XMLChar.isSpace(fCurrentEntity.ch[fCurrentEntity.position])) {
+                fCurrentEntity.position++;
+                LOOP: while (true) {
+                    while (fCurrentEntity.position < fCurrentEntity.count) {
+                        if (!XMLChar.isSpace(fCurrentEntity.ch[fCurrentEntity.position])) {
+                            break LOOP;
+                        }
+                        fCurrentEntity.position++;
+                    }
+                    load(0);
+                }
+                if (DEBUG_PRINT) {
+                    System.out.print(")skipSpaces: ");
+                    print();
+                    System.out.println(" -> true");
+                }
+                return true;
+            }
+            if (DEBUG_PRINT) {
+                System.out.print(")skipSpaces: ");
+                print();
+                System.out.println(" -> false");
+            }
+            return false;
     
-            return spaces;
-    
-        } // skipSpaces
+        } // skipSpaces():boolean
     
         /**
          * skipString
@@ -1092,23 +1269,40 @@ public class XMLEntityManager
         public boolean skipString(String s) throws IOException, SAXException {
             if (DEBUG) System.out.println("#skipString(\""+s+"\")");
     
+            if (fCurrentEntity.position == fCurrentEntity.count) {
+                load(0);
+            }
+            if (DEBUG_PRINT) {
+                System.out.print("(skipString, \""+s+"\": ");
+                print();
+                System.out.println();
+            }
+
             int length = s.length();
             for (int i = 0; i < length; i++) {
-                int c = read();
+                char c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if (c != s.charAt(i)) {
-                    unread(c);
-                    if (i > 0) {
-                        char[] ch = new char[i];
-                        s.getChars(0, i, ch, 0);
-                        unread(ch, 0, ch.length);
+                    fCurrentEntity.position -= i + 1;
+                    if (DEBUG_PRINT) {
+                        System.out.print(")skipString, \""+s+"\": ");
+                        print();
+                        System.out.println(" -> false");
                     }
                     return false;
                 }
+                if (fCurrentEntity.position == fCurrentEntity.count) {
+                    System.arraycopy(fCurrentEntity.ch, fCurrentEntity.count - i - 1, fCurrentEntity.ch, 0, i + 1);
+                    load(i + 1);
+                }
             }
-    
+            if (DEBUG_PRINT) {
+                System.out.print(")skipString, \""+s+"\": ");
+                print();
+                System.out.println(" -> true");
+            }
             return true;
     
-        } // skipString
+        } // skipString(String):boolean
     
         //
         // Locator methods
@@ -1120,7 +1314,7 @@ public class XMLEntityManager
          * @return 
          */
         public String getPublicId() {
-            return fCurrentEntity.publicId;
+            return fCurrentEntity != null ? fCurrentEntity.publicId : null;
         } // getPublicId():String
     
         /**
@@ -1129,7 +1323,7 @@ public class XMLEntityManager
          * @return 
          */
         public String getSystemId() {
-            return fCurrentEntity.systemId;
+            return fCurrentEntity != null ? fCurrentEntity.systemId : null;
         } // getSystemId():String
     
         /**
@@ -1138,7 +1332,7 @@ public class XMLEntityManager
          * @return 
          */
         public int getLineNumber() {
-            return fCurrentEntity.lineNumber;
+            return fCurrentEntity != null ? fCurrentEntity.lineNumber : -1;
         } // getLineNumber():int
     
         /**
@@ -1147,44 +1341,83 @@ public class XMLEntityManager
          * @return 
          */
         public int getColumnNumber() {
-            return fCurrentEntity.columnNumber;
+            return fCurrentEntity != null ? fCurrentEntity.columnNumber : -1;
         } // getColumnNumber():int
     
         //
         // Private methods
         //
     
-        /** Peeks the next character. */
-        private final int peek() throws IOException {
-            int c = fCurrentEntity.reader.read();
-            if (c == -1) {
-                throw new EOFException();
+        /** Loads a chunk of text. */
+        private final void load(int offset) throws IOException, SAXException {
+            if (DEBUG) System.out.println("*** load() ***");
+            if (DEBUG_PRINT) {
+                System.out.print("(load, "+offset+": ");
+                print();
+                System.out.println();
             }
-            if (DEBUG) System.out.println("?"+(char)c);
-            ((PushbackReader)fCurrentEntity.reader).unread(c);
-            return c;
-        }
-    
-        /** Reads the next character. */
-        private int read() throws IOException {
-            int c = fCurrentEntity.reader.read();
-            if (c == -1) {
-                throw new EOFException();
+            int length = fCurrentEntity.ch.length - offset;
+            if (DEBUG_PRINT) System.out.println("  length to try to read: "+length);
+            int count = fCurrentEntity.reader.read(fCurrentEntity.ch, offset, length);
+            if (DEBUG_PRINT) System.out.println("  length actually read:  "+count);
+            if (count == -1) {
+                endEntity();
+                if (fCurrentEntity == null) {
+                    throw new EOFException();
+                }
             }
-            if (DEBUG) System.out.println("+"+(char)c);
-            return c;
-        }
+            fCurrentEntity.count = count + offset;
+            fCurrentEntity.position = fCurrentEntity.count > 0 ? offset : -1;
+            if (DEBUG_PRINT) {
+                System.out.print(")load, "+offset+": ");
+                print();
+                System.out.println();
+            }
+        } // load(int)
     
-        private void unread(int c) throws IOException {
-            if (DEBUG) System.out.println("-"+(char)c);
-            ((PushbackReader)fCurrentEntity.reader).unread(c);
-        }
-    
-        private void unread(char[] ch, int offset, int length) throws IOException {
-            if (DEBUG) System.out.println("-"+new String(ch, offset, length));
-            ((PushbackReader)fCurrentEntity.reader).unread(ch, offset, length);
-        }
-    
+        /** Prints the contents of the buffer. */
+        private final void print() {
+            if (DEBUG_PRINT) {
+                System.out.print('[');
+                System.out.print(fCurrentEntity.count);
+                if (fCurrentEntity.count > 0) {
+                    System.out.print(" \"");
+                    for (int i = 0; i < fCurrentEntity.count; i++) {
+                        if (i == fCurrentEntity.position) {
+                            System.out.print('^');
+                        }
+                        char c = fCurrentEntity.ch[i];
+                        switch (c) {
+                            case '\n': {
+                                System.out.print("\\n");
+                                break;
+                            }
+                            case '\r': {
+                                System.out.print("\\r");
+                                break;
+                            }
+                            case '\t': {
+                                System.out.print("\\t");
+                                break;
+                            }
+                            case '\\': {
+                                System.out.print("\\\\");
+                                break;
+                            }
+                            default: {
+                                System.out.print(c);
+                            }
+                        }
+                    }
+                    if (fCurrentEntity.position == fCurrentEntity.count) {
+                        System.out.print('^');
+                    }
+                    System.out.print('"');
+                }
+                System.out.print(']');
+            }
+        } // print()
+
     } // class EntityScanner
 
     /**
