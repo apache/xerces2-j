@@ -652,7 +652,7 @@ public abstract class ParentNode
         if (child != null) {
             Node next = child.getNextSibling();
             if (next == null) {
-                return hasTextContent(child) ? child.getNodeValue() : "";
+                return hasTextContent(child) ? ((NodeImpl) child).getTextContent() : "";
             }
             StringBuffer buf = new StringBuffer();
             getTextContent(buf);
@@ -692,7 +692,7 @@ public abstract class ParentNode
             removeChild(child);
         }
         // create a Text node to hold the given content
-        if (textContent != null){
+        if (textContent != null && textContent.length() != 0){
             appendChild(ownerDocument().createTextNode(textContent));
         }
     }
