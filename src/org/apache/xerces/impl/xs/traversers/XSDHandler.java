@@ -490,7 +490,7 @@ public class XSDHandler {
         // are valid
         
         // a schema document can always access it's own target namespace
-        currSchemaInfo.fImportedNS.addElement(currSchemaInfo.fTargetNamespace);
+        currSchemaInfo.addAllowedNS(currSchemaInfo.fTargetNamespace);
 
         if (fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace) == null) {
             SchemaGrammar sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
@@ -535,7 +535,7 @@ public class XSDHandler {
                 }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // a schema document can access it's imported namespaces
-                currSchemaInfo.fImportedNS.addElement(schemaNamespace);
+                currSchemaInfo.addAllowedNS(schemaNamespace);
                 // consciously throw away whether was a duplicate; don't care.
                 // pass the systemId of the current document as the base systemId
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint, (String)fDoc2SystemId.get(schemaRoot), false, XSDDescription.CONTEXT_IMPORT);
@@ -891,7 +891,7 @@ public class XSDHandler {
         }
 
         // now check whether this document can access the requsted namespace
-        if (!currSchema.fImportedNS.contains(declToTraverse.uri)) {
+        if (!currSchema.isAllowedNS(declToTraverse.uri)) {
             // cannot get to this schema from the one containing the requesting decl
             reportSchemaError("src-resolve.4", new Object[]{fDoc2SystemId.get(currSchema.fSchemaDoc), declToTraverse.uri});
             return null;

@@ -177,4 +177,12 @@ class XSDocumentInfo {
         return fTargetNamespace == null?"no targetNamspace":"targetNamespace is " + fTargetNamespace;
     }
 
+    public void addAllowedNS(String namespace) {
+        fImportedNS.addElement(namespace == null ? "" : namespace);
+    }
+    
+    public boolean isAllowedNS(String namespace) {
+        return fImportedNS.contains(namespace == null ? "" : namespace);
+    }
+    
 } // XSDocumentInfo
