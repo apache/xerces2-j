@@ -63,15 +63,19 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/xerces/utils
 	${CP}  ../src/org/apache/xerces/utils/*.class                    ../class/org/apache/xerces/utils
 
-#-src/org/apache/xerces/validaters/common
+#-src/org/apache/xerces/utils/regex
+	${MKDIR} ../class/org/apache/xerces/utils/regex
+	${CP}  ../src/org/apache/xerces/utils/regex/*.class                    ../class/org/apache/xerces/utils/regex
+
+#-src/org/apache/xerces/validators/common
 	${MKDIR} ../class/org/apache/xerces/validators/common
 	${CP}  ../src/org/apache/xerces/validators/common/*.class      ../class/org/apache/xerces/validators/common
 
-#-src/org/apache/xerces/validaters/datatype
+#-src/org/apache/xerces/validators/datatype
 	${MKDIR} ../class/org/apache/xerces/validators/datatype
 	${CP}  ../src/org/apache/xerces/validators/datatype/*.class      ../class/org/apache/xerces/validators/datatype
 
-#-src/org/apache/xerces/validaters/dtd
+#-src/org/apache/xerces/validators/dtd
 	${MKDIR} ../class/org/apache/xerces/validators/dtd
 	${CP}  ../src/org/apache/xerces/validators/dtd/*.class           ../class/org/apache/xerces/validators/dtd
 
