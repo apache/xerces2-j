@@ -152,7 +152,6 @@ public abstract class AbstractDOMParser
     /** Set to true and recompile to debug entity references. */
     private static final boolean DEBUG_ENTITY_REF = false;
 
-
     // XMLNS namespace: XML-Infoset
     public static final String XMLNS_URI ="http://www.w3.org/2000/xmlns/";
 
