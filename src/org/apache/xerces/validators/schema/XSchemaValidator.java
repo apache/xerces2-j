@@ -3011,7 +3011,7 @@ public class XSchemaValidator implements XMLValidator {
         return -1;
     }
 
-	private void reportSchemaError(int major, Object args[]) {
+	private void reportSchemaError(int major, Object args[]) throws Exception {
 //	    try {
     		fErrorReporter.reportError(fErrorReporter.getLocator(),
 	    							   SchemaMessageProvider.SCHEMA_DOMAIN,
