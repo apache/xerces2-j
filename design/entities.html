@@ -96,7 +96,7 @@
      </span>
     </li>
     <li>
-     There will be a central entity manager<br>
+     There will be a single entity manager per parser instance<br>
      <span class='note'>
       Scanners need to have a way of locating entities and
       reading their contents. An entity manager would provide
@@ -104,7 +104,8 @@
      </span>
     </li>
     <li>
-     XML scanners will use a single entity scanner<br>
+     There will be a single entity scanner per parser instance that 
+     XML scanners will use<br>
      <span class='note'>
       This entity scanner can still delegate to custom, optimized
       input stream readers for performance.
@@ -116,7 +117,8 @@
   <h2>Entity Manager</h2>
   <p>
    The entity manager is a core component in any parser
-   configuration. Some of the responsibilities of the entity 
+   configuration and there is only one entity manager per parser
+   instance. Some of the responsibilities of the entity 
    manager are:
    <ul>
     <li>Registering declared entities</li>
