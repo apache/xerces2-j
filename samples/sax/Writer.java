@@ -72,6 +72,9 @@ public class Writer
 
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
     protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
+    
+    /** Validate schema annotations feature id (http://apache.org/xml/features/validate-annotations) */
+    protected static final String VALIDATE_ANNOTATIONS_ID = "http://apache.org/xml/features/validate-annotations";
 
     /** Dynamic validation feature id (http://apache.org/xml/features/validation/dynamic). */
     protected static final String DYNAMIC_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/dynamic";
@@ -106,6 +109,9 @@ public class Writer
 
     /** Default Schema full checking support (false). */
     protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+    
+    /** Default validate schema annotations (false). */
+    protected static final boolean DEFAULT_VALIDATE_ANNOTATIONS = false;
     
     /** Default dynamic validation support (false). */
     protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
@@ -536,6 +542,7 @@ public class Writer
         boolean externalDTD = DEFAULT_LOAD_EXTERNAL_DTD;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
         boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+        boolean validateAnnotations = DEFAULT_VALIDATE_ANNOTATIONS;
         boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
         boolean canonical = DEFAULT_CANONICAL;
 
@@ -591,6 +598,10 @@ public class Writer
                 }
                 if (option.equalsIgnoreCase("f")) {
                     schemaFullChecking = option.equals("f");
+                    continue;
+                }
+                if (option.equalsIgnoreCase("va")) {
+                    validateAnnotations = option.equals("va");
                     continue;
                 }
                 if (option.equalsIgnoreCase("dv")) {
@@ -668,6 +679,15 @@ public class Writer
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
             }
             try {
+                parser.setFeature(VALIDATE_ANNOTATIONS_ID, validateAnnotations);
+            }
+            catch (SAXNotRecognizedException e) {
+                System.err.println("warning: Parser does not support feature ("+VALIDATE_ANNOTATIONS_ID+")");
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+VALIDATE_ANNOTATIONS_ID+")");
+            }
+            try {
                 parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
             }
             catch (SAXNotRecognizedException e) {
@@ -742,6 +762,8 @@ public class Writer
         System.err.println("  -s | -S     Turn on/off Schema validation support.");
         System.err.println("              NOTE: Not supported by all parsers.");
         System.err.println("  -f  | -F    Turn on/off Schema full checking.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
+        System.err.println("  -va | -VA   Turn on/off validation of schema annotations.");
         System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
         System.err.println("              NOTE: Not supported by all parsers.");
