@@ -102,6 +102,9 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     // whether this pool is locked
     protected boolean fPoolIsLocked;
 
+    // the number of grammars in the pool
+    protected int fGrammarCount = 0;
+
     private static final boolean DEBUG = false ;
 	
     //
@@ -137,7 +140,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     public Grammar [] retrieveInitialGrammarSet (String grammarType) {
         synchronized (fGrammars) {
             int grammarSize = fGrammars.length ;
-            Grammar [] tempGrammars = new Grammar[grammarSize];
+            Grammar [] tempGrammars = new Grammar[fGrammarCount];
             int pos = 0;
             for (int i = 0; i < grammarSize; i++) {
                 for (Entry e = fGrammars[i]; e != null; e = e.next) {
@@ -223,6 +226,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
                 // create a new entry
                 Entry entry = new Entry(hash, desc, grammar, fGrammars[index]);
                 fGrammars[index] = entry;
+                fGrammarCount++;
             }
         }
     } // putGrammar(Grammar)
@@ -270,6 +274,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
 		    }
 	    	    Grammar tempGrammar = entry.grammar;
 	    	    entry.grammar = null;
+                fGrammarCount--;
 	            return tempGrammar;
 	        }
 	    }
@@ -324,6 +329,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
                 fGrammars[i] = null;
             }
         }
+        fGrammarCount = 0;
     } // clear()
 
     /**
