@@ -75,7 +75,7 @@ public class TestFirstChild {
 
 
         System.out.println(" --- "
-                           + org.apache.xerces.framework.Version.fVersion
+                           + org.apache.xerces.impl.Version.fVersion
                            + " --- ");
         Document doc = getNodeSet1();
         NodeFilter nodefilter = null;
