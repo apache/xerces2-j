@@ -26,7 +26,7 @@
   <faq title="JIRA">
     <q>How do I use JIRA to report bugs?</q>
     <a> <p>
-    Please refer to the <link idref="jira">Reporting bugs in JIRA</link>
+    Please refer to the <link idref="jira">Reporting bugs in JIRA</link>.
     </p>
     </a>
   </faq>
@@ -54,19 +54,25 @@
     </a>
  </faq>
  <faq title="ClassCastException using Xerces">
-   <q>Why do I get ClassCastException when I use Xerces and WebSphere Application Server (WAS)?
- </q>
- <a>
-    <p>
-Xerces uses the <code>ObjectFactory</code> class to load some classes dynamically, e.g. the parser configuration. The <code>ObjectFactory</code> finds the specified implementation class by querying the system property, reading <code>META-INF/services/factoryId</code> file or using a fallback classname. After the implementation is found, the <code>ObjectFactory</code> tries to load the file using the context classloader and if it is null, the <code>ObjectFactory</code> uses the system classloader. 
-</p>
-<p>
-If you run Xerces in an environment, such as WAS, that has multiple classloaders you may get ClassCastExceptions thrown from Xerces because different classloaders might get involved in loading Xerces classes. For example, ClassCastExceptions may occur when utility EAR classes that use Xerces load Xerces classes from WAR modules. 
-</p>
-<p>
-We suggest you read <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0310_searle/searle.html">"Avoiding ClassCastExceptions..."</jump> article which explains a workaround for this problem. 
-Also you might want to read <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0112_deboer/deboer.html">"J2EE Class Loading Demystified"</jump> article that explains how multiple classloaders work in WAS.
-    
+   <q>Why do I get a ClassCastException when I use Xerces and WebSphere Application Server?</q>
+   <a>
+     <p>
+      Xerces uses the <code>ObjectFactory</code> class to load some classes dynamically, e.g. the parser configuration.
+      The <code>ObjectFactory</code> finds the specified implementation class by querying the system property, reading
+      <code>META-INF/services/factoryId</code> file or using a fallback classname. After the implementation is found, the 
+      <code>ObjectFactory</code> tries to load the file using the context classloader and if it is null, the 
+      <code>ObjectFactory</code> uses the system classloader. 
+     </p>
+     <p>
+      If you run Xerces in an environment, such as WebSphere&#xAE; Application Server, that has multiple classloaders you may 
+      get ClassCastExceptions thrown from Xerces because different classloaders might get involved in loading Xerces classes.
+      For example, ClassCastExceptions may occur when utility EAR classes that use Xerces load Xerces classes from WAR modules. 
+     </p>
+     <p>
+      We suggest you read the <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0310_searle/searle.html">"Avoiding ClassCastExceptions..."</jump>
+      article which explains a workaround for this problem. Also you might want to read the
+      <jump href="http://www-106.ibm.com/developerworks/websphere/library/techarticles/0112_deboer/deboer.html">"J2EE Class Loading Demystified"</jump>
+      article that explains how multiple classloaders work in WebSphere Application Server.
     </p>
   </a>
  </faq>
