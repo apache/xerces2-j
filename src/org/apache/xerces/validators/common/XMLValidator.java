@@ -2247,7 +2247,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                System.out.println("I am geting the Schema Document");
             }
 
-            Element root   = document.getDocumentElement();// This is what we pass to TraverserSchema
+            Element root   = null;
+            if (document != null) {
+                root = document.getDocumentElement();// This is what we pass to TraverserSchema
+            }
             if (root == null) {
                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, "Can't get back Schema document's root element :" + loc); 
             } else {
