@@ -32,6 +32,13 @@
           </note>
           <submitter name='Elena Litani'/>
       </add>      
+    <update>
+       <note>
+        Modified support for DOM L3 compareDocumentPosition (formerly 
+        compareTreePosition).
+       </note>
+       <submitter name='Lisa Martin'/>
+    </update>
       <update>
        <note>
         Modified several XNI interfaces, i.e. NamespaceContext, XMLResourceIdentifier,
