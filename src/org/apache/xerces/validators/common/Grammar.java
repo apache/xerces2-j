@@ -67,7 +67,7 @@ import org.w3c.dom.Document;
  * @version $Id$
  */
 public class Grammar
-    implements XMLContentSpec.Provider {
+implements XMLContentSpec.Provider {
 
     //
     // Constants
@@ -110,7 +110,7 @@ public class Grammar
 
     private int fAttributeDeclCount;
     private QName fAttributeDeclName[][] = new QName[INITIAL_CHUNK_COUNT][];
-    private int   fAttributeDeclType[][] = new int[INITIAL_CHUNK_COUNT][];
+    private String   fAttributeDeclType[][] = new String[INITIAL_CHUNK_COUNT][];
     private DatatypeValidator fAttributeDeclDatatypeValidator[][] = new DatatypeValidator[INITIAL_CHUNK_COUNT][];
     private String fAttributeDeclDefaultValue[][] = new String[INITIAL_CHUNK_COUNT][];
     private int fAttributeDeclNextAttributeDeclIndex[][] = new int[INITIAL_CHUNK_COUNT][];
@@ -128,43 +128,35 @@ public class Grammar
     }
 
     public int getElementDeclIndex(int nameIndex, int scopeIndex) {//TODO
-        
 
         return -1;
     }
 
     public boolean getElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
-
-           }
+            return false;
+        }
 
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
 
-        elementDecl.name.localpart        = fElementDeclNameIndex[chunk][index];               
-        elementDecl.type                  = fElementDeclType[chunk][index];                    
-        elementDecl.datatypeValidator     = fElementDeclDatatypeValidator[chunk][index];       
-        elementDecl.contentSpecIndex      = fElementDeclContentSpecIndex[chunk][index];        
-        elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index];   
+        elementDecl.name.localpart          = fElementDeclNameIndex[chunk][index];               
+        elementDecl.type                    = fElementDeclType[chunk][index];                    
+        elementDecl.datatypeValidator       = fElementDeclDatatypeValidator[chunk][index];       
+        elementDecl.contentSpecIndex        = fElementDeclContentSpecIndex[chunk][index];        
+        elementDecl.contentModelValidator   = fElementDeclContentModelValidator[chunk][index];   
 
+        //elementDecl.enclosingScope          = 
+        elementDecl.firstAttributeDeclIndex = fElementDeclFirstAttributeDeclIndex[chunk][index];
+        elementDecl.lastAttributeDeclIndex  = fElementDeclLastAttributeDeclIndex[chunk][index];
 
-        //elementDecl. fElementDeclFirstAttributeDeclIndex[chunk][index];
-
-        //elementDecl.name.uri              =
-        //elementDecl.name                  = 
-        //elementDecl.type                  =
-        //elementDecl.datatypeValidator     =
-        //elementDecl.contentSpecIndex      =
-        //elementDecl.contentModelValidator =
-        
-
-        return false;
+        return true;
     }
 
     public int getFirstAttributeDeclIndex(int elementDeclIndex) {
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
-        
+
         return  fElementDeclFirstAttributeDeclIndex[chunk][index];
     }
 
@@ -176,6 +168,9 @@ public class Grammar
     }
 
     public boolean getContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
+        if (contentSpecIndex < 0 || contentSpecIndex >= fContentSpecCount )
+           return false;
+
         int chunk = contentSpecIndex >> CHUNK_SHIFT;
         int index = contentSpecIndex & CHUNK_MASK;
 
@@ -185,29 +180,29 @@ public class Grammar
         contentSpecNode.value      = fContentSpecValue[chunk][index];
         contentSpecNode.otherValue = fContentSpecOtherValue[chunk][index];
 
-        if( contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
-                   contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_SEQ ){
-               if (++contentSpecIndex == CHUNK_SIZE ) {
-                   chunk++;
-                   contentSpecIndex = 0;
-               }
-               contentSpecNode.otherValue = fContentSpecOtherValue[chunk][contentSpecIndex];
-           } else {
-               contentSpecNode.otherValue = -1;
-           }
+        if ( contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+             contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_SEQ ) {
+            if (++contentSpecIndex == CHUNK_SIZE ) {
+                chunk++;
+                contentSpecIndex = 0;
+            }
+            contentSpecNode.otherValue = fContentSpecOtherValue[chunk][contentSpecIndex];
+        } else {
+            contentSpecNode.otherValue = -1;
+        }
         return true;
     }
 
 
     public boolean getElementContentModel(int elementDeclIndex,
-                                                           XMLContentModel contentModel ) {
-      if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
-          return false;
-      int chunk = elementDeclIndex >> CHUNK_SHIFT;
-      int index = elementDeclIndex & CHUNK_MASK;
-      contentModel =  fElementDeclContentModelValidator[chunk][index];
-      return true;
-  }
+                                          XMLContentModel contentModel ) {
+        if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
+            return false;
+        int chunk = elementDeclIndex >> CHUNK_SHIFT;
+        int index = elementDeclIndex & CHUNK_MASK;
+        contentModel =  fElementDeclContentModelValidator[chunk][index];
+        return true;
+    }
 
 
 
@@ -227,8 +222,7 @@ public class Grammar
 
         int chunk = fElementDeclCount >> CHUNK_SHIFT;
         int index = fElementDeclCount & CHUNK_MASK;
-        if( ensureElementDeclCapacity(chunk) == true ){ // create an ElementDecl
-
+        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
             fElementDeclNameIndex[chunk][index]               = -1; 
             fElementDeclType[chunk][index]                    = -1;    
             fElementDeclDatatypeValidator[chunk][index]       = null;
@@ -239,17 +233,14 @@ public class Grammar
 
             fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
             fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
-
-
         }
-
         return fElementDeclCount++;
     }
 
     protected void setElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
-            
+
         }
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
@@ -263,13 +254,16 @@ public class Grammar
         //fElementDeclLastAttributeDeclIndex[chunk][index]  = 
     }
 
-    public void addAttributeDecl(int attributeDeclIndex, int elementDeclIndex) {
-    }
-
 
     protected int createContentSpec() {
+        int chunk = fContentSpecCount >> CHUNK_SHIFT;
+        int index = fContentSpecCount & CHUNK_MASK;
 
-
+        if ( ensureContentSpecCapacity(chunk) == true ) { // create an ContentSpec
+            fContentSpecType[chunk][index]       = -1;
+            fContentSpecValue[chunk][index]      = -1;
+            fContentSpecOtherValue[chunk][index] = -1;
+        }
 
         return fContentSpecCount++;
     }
@@ -277,19 +271,51 @@ public class Grammar
     protected void setContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
         int   chunk = contentSpecIndex >> CHUNK_SHIFT;
         int   index = contentSpecIndex & CHUNK_MASK;
-        
+
         fContentSpecType[chunk][index]       = contentSpec.type;
         fContentSpecValue[chunk][index]      = contentSpec.value;
         fContentSpecOtherValue[chunk][index] = contentSpec.otherValue;
     }
 
     protected int createAttributeDecl() {
+        int chunk = fAttributeDeclCount >> CHUNK_SHIFT;
+        int index = fAttributeDeclCount & CHUNK_MASK;
 
+        if ( ensureAttributeDeclCapacity(chunk) == true ) { // create an AttributeDecl
+            fAttributeDeclName[chunk][index]                    = null; 
+            fAttributeDeclType[chunk][index]                    = null; 
+            fAttributeDeclDatatypeValidator[chunk][index]       = null;
+            fAttributeDeclDefaultValue[chunk][index]            = null;
+            fAttributeDeclNextAttributeDeclIndex[chunk][index]  = -1;
+        }
         return fAttributeDeclCount++;
     }
 
 
     protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+       int elemChunk     = elementDeclIndex >> CHUNK_SHIFT;
+       int elemIndex     = elementDeclIndex &  CHUNK_MASK;
+
+       int thisAttrChunk = attributeDeclIndex >> CHUNK_SHIFT;
+       int thisAttrIndex = attributeDeclIndex &  CHUNK_MASK; 
+
+       fAttributeDeclName[thisAttrChunk][thisAttrIndex]  =  attributeDecl.name;
+       fAttributeDeclType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.defaultType;
+       fAttributeDeclDatatypeValidator[thisAttrChunk][thisAttrIndex] =  attributeDecl.datatypeValidator;
+       fAttributeDeclDefaultValue[thisAttrChunk][thisAttrIndex]      =  attributeDecl.defaultValue;
+
+
+       int lastAttrDeclIndex = fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex];
+       int lastAttrChunk     = lastAttrDeclIndex >> CHUNK_SHIFT; 
+       int lastAttrIndex     = lastAttrDeclIndex &  CHUNK_MASK;
+
+       fAttributeDeclNextAttributeDeclIndex[lastAttrChunk][lastAttrIndex]
+                                                                = attributeDeclIndex;
+
+       fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
+
+       fAttributeDeclNextAttributeDeclIndex[thisAttrChunk][thisAttrIndex]
+                                      =  -1; // we are created at the end of ElementDecl
     }
 
     //
@@ -301,11 +327,9 @@ public class Grammar
     private boolean ensureElementDeclCapacity(int chunk) {
         try {
             return fElementDeclNameIndex[chunk][0] == 0;
-        } 
-        catch (ArrayIndexOutOfBoundsException ex) {
+        } catch (ArrayIndexOutOfBoundsException ex) {
             fElementDeclNameIndex = resize(fElementDeclNameIndex, fElementDeclNameIndex.length * 2);
-        }
-        catch (NullPointerException ex) {
+        } catch (NullPointerException ex) {
             // ignore
         }
         fElementDeclNameIndex[chunk] = new int[CHUNK_SIZE];
