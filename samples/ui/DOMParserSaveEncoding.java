@@ -104,7 +104,8 @@ public class DOMParserSaveEncoding extends DOMParser
          encoding            = fStringPool.toString( encodingIndex );
          setMimeEncoding( encoding );
       }
-      super.startDocument( versionIndex,  encodingIndex, standAloneIndex );//passes control to superclass
+ //     super.startDocument( versionIndex,  encodingIndex, standAloneIndex );//passes control to superclass
+      super.startDocument();
    }
 
   }

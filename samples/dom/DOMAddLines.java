@@ -249,8 +249,9 @@ public class DOMAddLines extends DOMParser  {
    public void startDocument(int versionIndex, int encodingIndex,
                                    int standAloneIndex)
    {
-     super.startDocument( versionIndex, encodingIndex,
-                                    standAloneIndex);
+     //super.startDocument( versionIndex, encodingIndex,
+     //                               standAloneIndex);
+     super.startDocument();
      NodeImpl node = null ;
       try {
       node = (NodeImpl) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
