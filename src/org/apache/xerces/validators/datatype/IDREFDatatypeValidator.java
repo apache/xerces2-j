@@ -59,6 +59,10 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.xerces.utils.XMLCharacterProperties;
+import org.apache.xerces.utils.XMLMessages;
+
+
 
 /**
  * IDREFValidator defines the interface that data type validators must obey.
@@ -69,8 +73,17 @@ import java.util.Locale;
  * @version $Id$
  */
 public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator  = null;
-    private boolean           fDerivedByList  = false;
+    private DatatypeValidator fBaseValidator    = null;
+    private boolean           fDerivedByList    = false;
+    private Hashtable              fTableOfId   = null; //This is pass to us through the state object
+    private Hashtable              fTableIDRefs = null;
+    private Object                   fNullValue = null;
+    private Locale            fLocale           = null;
+    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+
+
+
+
 
 
     public IDREFDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -101,6 +114,14 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+            //Pass content as a String
+
+        this.fTableOfId = (Hashtable) state;
+
+        if (!XMLCharacterProperties.validName(content)) {//Check if is valid key
+            throw new InvalidDatatypeValueException( "ID is not valid" );//Need Message
+        }
+        addIdRef( content, state);
         return null;
     }
 
@@ -137,6 +158,46 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
      */
     private void setBasetype(DatatypeValidator base){
         fBaseValidator = base;
+    }
+
+    /** addId. */
+    private void addIdRef(String content, Object state) {
+
+        if ( state == null ) {
+            if(content != null &&  this.fTableOfId.containsKey( content ) ){
+                return;
+            }
+            if( this.fTableIDRefs == null ){
+                this.fTableIDRefs = new Hashtable();
+            } else if( fTableIDRefs.containsKey( content ) ){
+                return;
+            }
+
+            if ( this.fNullValue == null ){
+                fNullValue = new Object();
+            }
+            this.fTableIDRefs.put( content, fNullValue ); 
+        } else {
+            ;
+        }
+    } // addId(int):boolean
+
+
+
+     /**
+     * set the locate to be used for error messages
+     */
+    public void setLocale(Locale locale) {
+        fLocale = locale;
+    }
+
+
+    private String getErrorString(int major, int minor, Object args[]) {
+        try {
+            return fMessageProvider.createMessage(fLocale, major, minor, args);
+        } catch (Exception e) {
+            return "Illegal Errorcode "+minor;
+        }
     }
 
 
