@@ -19,6 +19,7 @@ package org.apache.xerces.impl;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLChar;
@@ -667,7 +668,11 @@ public class XMLDocumentScannerImpl
                 // if no XMLDecl, then scan piece of prolog
                 return true;
             }
-
+            catch (MalformedByteSequenceException e) {
+                fErrorReporter.reportError(e.getDomain(), e.getKey(), 
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
             // premature end of file
             catch (EOFException e) {
                 reportFatalError("PrematureEOF", null);
@@ -831,7 +836,11 @@ public class XMLDocumentScannerImpl
                     setDispatcher(fContentDispatcher);
                 }
             }
-
+            catch (MalformedByteSequenceException e) {
+                fErrorReporter.reportError(e.getDomain(), e.getKey(), 
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
             // premature end of file
             catch (EOFException e) {
                 reportFatalError("PrematureEOF", null);
@@ -940,7 +949,11 @@ public class XMLDocumentScannerImpl
                     }
                 } while (complete || again);
             }
-
+            catch (MalformedByteSequenceException e) {
+                fErrorReporter.reportError(e.getDomain(), e.getKey(), 
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
             // premature end of file
             catch (EOFException e) {
                 reportFatalError("PrematureEOF", null);
@@ -1174,6 +1187,11 @@ public class XMLDocumentScannerImpl
                         }
                     }
                 } while (complete || again);
+            }
+            catch (MalformedByteSequenceException e) {
+                fErrorReporter.reportError(e.getDomain(), e.getKey(), 
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
             }
             catch (EOFException e) {
                 // NOTE: This is the only place we're allowed to reach

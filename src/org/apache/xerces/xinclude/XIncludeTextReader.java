@@ -229,16 +229,12 @@ public class XIncludeTextReader {
             consumeBOM(stream, encoding);
             
             // If the document is UTF-8 or US-ASCII use 
-            // the Xerces readers for these encodings.
+            // the Xerces readers for these encodings. For
+            // US-ASCII consult the encoding map since
+            // this encoding has many aliases.
             if (encoding.equals("UTF-8")) {
                 return new UTF8Reader(stream, 
                     XMLEntityManager.DEFAULT_BUFFER_SIZE, 
-                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
-                    fErrorReporter.getLocale() );
-            }
-            else if (encoding.equals("US-ASCII")) {
-                return new ASCIIReader(stream,
-                    XMLEntityManager.DEFAULT_BUFFER_SIZE,
                     fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
                     fErrorReporter.getLocale() );
             }
@@ -256,7 +252,13 @@ public class XIncludeTextReader {
             	throw new IOException( aFormatter.formatMessage( aLocale, 
             	    "EncodingDeclInvalid", 
                     new Object[] {encoding} ) );
-            }            
+            }
+            else if (javaEncoding.equals("ASCII")) {
+                return new ASCIIReader(stream,
+                    XMLEntityManager.DEFAULT_BUFFER_SIZE,
+                    fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), 
+                    fErrorReporter.getLocale() );
+            }
             
             return new InputStreamReader(stream, javaEncoding);
         }

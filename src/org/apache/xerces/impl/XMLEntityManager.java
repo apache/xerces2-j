@@ -1847,12 +1847,6 @@ public class XMLEntityManager
             }
             return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale() );
         }
-        if (ENCODING.equals("US-ASCII")) {
-            if (DEBUG_ENCODINGS) {
-                System.out.println("$$$ creating ASCIIReader");
-            }
-            return new ASCIIReader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
-        }
         if(ENCODING.equals("ISO-10646-UCS-4")) {
             if(isBigEndian != null) {
                 boolean isBE = isBigEndian.booleanValue();
@@ -1917,6 +1911,14 @@ public class XMLEntityManager
                 javaEncoding = "ISO8859_1";
             }
         }
+        else if (javaEncoding.equals("ASCII")) {
+            if (DEBUG_ENCODINGS) {
+                System.out.println("$$$ creating ASCIIReader");
+            }
+            return new ASCIIReader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
+        }
+        
+        
         if (DEBUG_ENCODINGS) {
             System.out.print("$$$ creating Java InputStreamReader: encoding="+javaEncoding);
             if (javaEncoding == encoding) {

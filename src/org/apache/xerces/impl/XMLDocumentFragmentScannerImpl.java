@@ -19,6 +19,7 @@ package org.apache.xerces.impl;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.XMLAttributesImpl;
@@ -1608,7 +1609,11 @@ public class XMLDocumentFragmentScannerImpl
                     }
                 } while (complete || again);
             }
-    
+            catch (MalformedByteSequenceException e) {
+                fErrorReporter.reportError(e.getDomain(), e.getKey(), 
+                    e.getArguments(), XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                return false;
+            }
             // premature end of file
             catch (EOFException e) {
                 endOfFileHook(e);
