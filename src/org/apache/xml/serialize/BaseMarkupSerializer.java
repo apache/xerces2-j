@@ -1203,7 +1203,7 @@ public abstract class BaseMarkupSerializer
         case Node.ELEMENT_NODE :  {
 
             if (fDOMFilter !=null && 
-                  (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_PROCESSING_INSTRUCTION)!= 0) {
+                  (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ELEMENT)!= 0) {
                   short code = fDOMFilter.acceptNode(node);
                   switch (code) {
                     case NodeFilter.FILTER_REJECT: {
