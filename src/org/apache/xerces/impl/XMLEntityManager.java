@@ -373,7 +373,7 @@ public class XMLEntityManager
      */
     protected void startEntity(String name, InputSource inputSource)
         throws IOException, SAXException {
-        
+
         // get information
         String publicId = inputSource.getPublicId();
         String systemId = inputSource.getSystemId();
@@ -392,8 +392,8 @@ public class XMLEntityManager
         fReader = new PushbackReader(reader, 32);
 
         // push entity on stack
-        ScannedEntity entity = new ScannedEntity(name, publicId, systemId, reader);
-        fEntityStack.push(entity);
+        fCurrentEntity = new ScannedEntity(name, publicId, systemId, reader);
+        fEntityStack.push(fCurrentEntity);
 
         // call handler
         if (fEntityHandler != null) {

@@ -88,7 +88,7 @@ public abstract class XMLDocumentParser
     //
 
     /** Entity manager. */
-    protected XMLEntityManager fEntityManager;
+    //protected XMLEntityManager fEntityManager;
 
     /** fScanner */
     protected XMLDocumentScanner fScanner;
@@ -146,9 +146,9 @@ public abstract class XMLDocumentParser
         fGrammarPool = grammarPool;
         fProperties.put(XERCES_PROPERTIES_PREFIX + "internal/grammar-pool",
                         fGrammarPool);
-        fEntityManager = new XMLEntityManager();
-        fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/entity-manager",
-                        fEntityManager);
+        //fEntityManager = new XMLEntityManager();
+        //fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/entity-manager",
+                        //fEntityManager);
         fScanner = new XMLDocumentScanner();
         fProperties.put(XERCES_PROPERTIES_PREFIX+"internal/document-scanner",
                         fScanner);

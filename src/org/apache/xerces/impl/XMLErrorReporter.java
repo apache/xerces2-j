@@ -269,10 +269,7 @@ public class XMLErrorReporter
             String property =
                 propertyId.substring(XERCES_PROPERTIES_PREFIX.length());
 
-            if (property.equals("internal/locator")) {
-                fLocator = (Locator) value;
-            }
-            else if (property.equals("internal/error-handler")) {
+            if (property.equals("internal/error-handler")) {
                 fErrorHandler = (ErrorHandler) value;
             }
         }
