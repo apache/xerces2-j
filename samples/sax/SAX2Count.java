@@ -326,7 +326,7 @@ extends DefaultHandler {
             outer:
           
             while ( (c =  argopt.getArguments()) != -1 ){
-                System.out.println( "c =" + c );
+                //System.out.println( "c =" + c );
                 switch (c) {
                 case 'v':
                     setValidation = true;
