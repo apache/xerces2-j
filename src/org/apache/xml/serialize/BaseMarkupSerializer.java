@@ -385,6 +385,7 @@ public abstract class BaseMarkupSerializer
     public void serialize( Element elem )
         throws IOException
     {
+        prepare();
         if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         try {
@@ -409,6 +410,7 @@ public abstract class BaseMarkupSerializer
     public void serialize( DocumentFragment frag )
         throws IOException
     {
+        prepare();
         if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         try {
@@ -433,6 +435,7 @@ public abstract class BaseMarkupSerializer
     public void serialize( Document doc )
         throws IOException
     {
+        prepare();
         if ( _printer == null )
             throw new IllegalStateException( "SER002 No writer supplied for serializer" );
         try {
