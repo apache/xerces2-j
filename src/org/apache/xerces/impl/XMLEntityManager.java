@@ -932,9 +932,9 @@ public class XMLEntityManager
         if (fCurrentEntity != null) {
             fEntityStack.push(fCurrentEntity);
         }
+        
         fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
-                                           stream, reader, encoding, 
-                                           literal);
+                                           stream, reader, encoding, literal);
 
         // call handler
         if (fEntityHandler != null) {
@@ -2621,8 +2621,23 @@ public class XMLEntityManager
          */
         public String getSystemId() {
             if (fCurrentEntity != null) {
-                return fCurrentEntity.systemId != null
-                     ? fCurrentEntity.systemId : fCurrentEntity.name;
+                //return fCurrentEntity.systemId != null
+                //     ? fCurrentEntity.systemId : fCurrentEntity.name;
+
+                if (fCurrentEntity.systemId != null ) {
+                    return fCurrentEntity.systemId;
+                }
+                else {
+                    // search for the first external entity on the stack 
+                    int size = fEntityStack.size();
+                    for (int i=size-1; i>0 ; i--) {
+                        ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+
+                        if (firstExternalEntity.systemId != null) {
+                            return firstExternalEntity.systemId;
+                        }
+                    }
+                }
             }
             return null;
         } // getSystemId():String
@@ -2646,7 +2661,26 @@ public class XMLEntityManager
          * @return The line number, or -1 if none is available.
          */
         public int getLineNumber() {
-            return fCurrentEntity != null ? fCurrentEntity.lineNumber : -1;
+            //return fCurrentEntity != null ? fCurrentEntity.lineNumber : -1;
+            if (fCurrentEntity != null) {
+                if (fCurrentEntity.systemId != null ) {
+                    return fCurrentEntity.lineNumber;
+                }
+                else {
+                    // search for the first external entity on the stack 
+                    int size = fEntityStack.size();
+                    for (int i=size-1; i>0 ; i--) {
+                        ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+
+                        if (firstExternalEntity.systemId != null) {
+                            return firstExternalEntity.lineNumber;
+                        }
+                    }
+                }
+            }
+
+            return -1;
+
         } // getLineNumber():int
     
         /**
@@ -2672,7 +2706,25 @@ public class XMLEntityManager
          * @return The column number, or -1 if none is available.
          */
         public int getColumnNumber() {
-            return fCurrentEntity != null ? fCurrentEntity.columnNumber : -1;
+            //return fCurrentEntity != null ? fCurrentEntity.columnNumber : -1;
+            if (fCurrentEntity != null) {
+                if (fCurrentEntity.systemId != null ) {
+                    return fCurrentEntity.columnNumber;
+                }
+                else {
+                    // search for the first external entity on the stack 
+                    int size = fEntityStack.size();
+                    for (int i=size-1; i>0 ; i--) {
+                        ScannedEntity firstExternalEntity = (ScannedEntity)fEntityStack.elementAt(i);
+
+                        if (firstExternalEntity.systemId != null) {
+                            return firstExternalEntity.columnNumber;
+                        }
+                    }
+                }
+            }
+
+            return -1;
         } // getColumnNumber():int
     
         //
