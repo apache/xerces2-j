@@ -134,6 +134,19 @@ try {
  				  the DOM tree. The document will always contain the entity reference 
   				 child nodes.</td></tr>
 		</table>	
+                <p>http://apache.org/xml/features/dom/include-ignorable-whitespace</p>
+                <table>
+                        <tr><th>true</th><td>Include ignorable whitespace text nodes in the DOM tree.</td></tr>
+                        <tr><th>false</th><td>Do not include ignorable whitespace text nodes in the DOM tree.</td></tr>
+                        <tr><th>Default</th><td>true</td></tr>
+                        <tr><th>Note</th><td>The only way that the parser can determine if text
+                                is ignorable is by reading the associated grammar
+                               and having a content model for the document. When
+                               ignorable whitespace text nodes are included in
+                               the DOM tree, they will be flagged as ignorable.
+                               The ignorable flag can be queried by calling the
+                               TextImpl#isIgnorableWhitespace():boolean method.</td></tr>
+                </table>
 	</s2>
 	<s2 title="SAX Features">
 		<p>http://xml.org/sax/features/use-locator</p>

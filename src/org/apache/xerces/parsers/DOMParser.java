@@ -133,6 +133,7 @@ public class DOMParser
         // Xerces features
         "http://apache.org/xml/features/dom/defer-node-expansion",
         "http://apache.org/xml/features/dom/create-entity-ref-nodes",
+        "http://apache.org/xml/features/dom/include-ignorable-whitespace",
         // Experimental features
         "http://apache.org/xml/features/domx/grammar-access",
     };
@@ -184,6 +185,7 @@ public class DOMParser
     private String  fDocumentClassName;
     private boolean fDeferNodeExpansion;
     private boolean fCreateEntityReferenceNodes;
+    private boolean fIncludeIgnorableWhitespace;
 
     // built-in entities
 
@@ -230,6 +232,7 @@ public class DOMParser
             setDocumentClassName(DEFAULT_DOCUMENT_CLASS_NAME);
             setCreateEntityReferenceNodes(true);
             setDeferNodeExpansion(true);
+            setIncludeIgnorableWhitespace(true);
         } catch (SAXException e) {
             throw new RuntimeException("fatal error constructing DOMParser");
         }
@@ -429,6 +432,39 @@ public class DOMParser
         return fCreateEntityReferenceNodes;
     }
 
+    /**
+     * This feature determines whether text nodes that can be
+     * considered "ignorable whitespace" are included in the DOM
+     * tree.
+     * <p>
+     * Note: The only way that the parser can determine if text
+     * is ignorable is by reading the associated grammar
+     * and having a content model for the document. When
+     * ignorable whitespace text nodes *are* included in
+     * the DOM tree, they will be flagged as ignorable.
+     * The ignorable flag can be queried by calling the
+     * TextImpl#isIgnorableWhitespace():boolean method.
+     *
+     * @param include True to include ignorable whitespace text nodes;
+     *                false to not include ignorable whitespace text
+     *                nodes.
+     *
+     * @see #getIncludeIgnorableWhitespace
+     */
+    public void setIncludeIgnorableWhitespace(boolean include) throws SAXException {
+        fIncludeIgnorableWhitespace = include;
+    }
+
+    /**
+     * Returns true if ignorable whitespace text nodes are included
+     * in the DOM tree.
+     *
+     * @see #setIncludeIgnorableWhitespace
+     */
+    public boolean getIncludeIgnorableWhitespace() throws SAXException {
+        return fIncludeIgnorableWhitespace;
+    }
+    
     // properties
 
     /**
@@ -576,6 +612,24 @@ public class DOMParser
             }
 
             //
+            // http://apache.org/xml/features/dom/include-ignorable-whitespace
+            //   This feature determines whether text nodes that can be
+            //   considered "ignorable whitespace" are included in the DOM
+            //   tree.
+            //   Note: The only way that the parser can determine if text
+            //         is ignorable is by reading the associated grammar
+            //         and having a content model for the document. When
+            //         ignorable whitespace text nodes *are* included in
+            //         the DOM tree, they will be flagged as ignorable.
+            //         The ignorable flag can be queried by calling the
+            //         TextImpl#isIgnorableWhitespace():boolean method.
+            //
+            if (feature.equals("dom/include-ignorable-whitespace")) {
+                setIncludeIgnorableWhitespace(state);
+                return;
+            }
+            
+            //
             // Experimental features
             //
 
@@ -660,6 +714,23 @@ public class DOMParser
             //
             else if (feature.equals("dom/create-entity-ref-nodes")) {
                 return getCreateEntityReferenceNodes();
+            }
+
+            //
+            // http://apache.org/xml/features/dom/include-ignorable-whitespace
+            //   This feature determines whether text nodes that can be
+            //   considered "ignorable whitespace" are included in the DOM
+            //   tree.
+            //   Note: The only way that the parser can determine if text
+            //         is ignorable is by reading the associated grammar
+            //         and having a content model for the document. When
+            //         ignorable whitespace text nodes *are* included in
+            //         the DOM tree, they will be flagged as ignorable.
+            //         The ignorable flag can be queried by calling the
+            //         TextImpl#isIgnorableWhitespace():boolean method.
+            //
+            if (feature.equals("dom/include-ignorable-whitespace")) {
+                return getIncludeIgnorableWhitespace();
             }
 
             //
@@ -1107,6 +1178,12 @@ public class DOMParser
 
     /** Ignorable whitespace. */
     public void ignorableWhitespace(int dataIndex) throws Exception {
+
+        // ignore the whitespace
+        if (!fIncludeIgnorableWhitespace) {
+            fStringPool.orphanString(dataIndex);
+            return;
+        }
 
         // deferred node expansion
         if (fDeferredDocumentImpl != null) {
