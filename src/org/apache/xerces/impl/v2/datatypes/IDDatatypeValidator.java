@@ -116,12 +116,33 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
      *                   invalid according to the rules for the validators
      */
     public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException{
-
-        // REVISIT: in case user uses pattern we may not validate correctly
-        //          since we don't inherit pattern for now.
-        // 
+       return checkContent(content, state, false);
+    }
 
 
+
+    private Object checkContent( String content, ValidationContext state, boolean asBase )
+    throws InvalidDatatypeValueException {
+
+
+        // validate against parent type if any
+        if (fBaseValidator instanceof IDDatatypeValidator) {
+            // validate content as a base type
+            ((IDDatatypeValidator)fBaseValidator).checkContent(content, state, true);
+        }
+
+        // we check pattern first
+        if ((fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0) {
+            if (fRegex == null || fRegex.matches( content) == false)
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' does not match regular expression facet '" + fPattern + "'." );
+        }
+
+
+        // if this is a base validator, we only need to check pattern facet
+        // all other facet were inherited by the derived type
+        if (asBase)
+            return content;
         if (state != null) {
             if (state.isIdDeclared(content)) {
                 throw new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
@@ -130,6 +151,8 @@ public class IDDatatypeValidator extends StringDatatypeValidator {
         }
 
         return content;
+
+    
     }
 
 

@@ -61,6 +61,8 @@ import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 
 import java.util.Hashtable;
+import java.util.Enumeration;
+
 
 public class  ValidationState implements ValidationContext {
 
@@ -90,8 +92,19 @@ public class  ValidationState implements ValidationContext {
     public void setSymbolTable(SymbolTable sTable) {
         fSymbolTable = sTable;
     }
-    
-    
+
+    public boolean checkIDRefID () {
+        Enumeration en = fIdRefTable.keys();
+
+        while (en.hasMoreElements()) {
+            String key = (String)en.nextElement();
+            if (fIdTable == null || !fIdTable.containsKey(key)) {
+                  return false;
+            }
+        }
+        return true;
+    }
+
     public void reset () {
         fIdTable.clear();
         fIdRefTable.clear();
@@ -134,8 +147,8 @@ public class  ValidationState implements ValidationContext {
     }
     // get symbols
 
-    public String getSymbol (String symbol){
-            return fSymbolTable.addSymbol(symbol);
+    public String getSymbol (String symbol) {
+        return fSymbolTable.addSymbol(symbol);
     }
     // qname, notation
     public String getURI(String prefix) {

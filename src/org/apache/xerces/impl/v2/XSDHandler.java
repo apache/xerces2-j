@@ -399,6 +399,10 @@ class XSDHandler {
              // If the schema is duplicate, we needn't call constructTrees() again.
              // To handle mutual <include>s
 
+            if (newSchemaRoot == null && localName.equals(SchemaSymbols.ELT_IMPORT)) {
+                // <import/>
+                return currSchemaInfo;
+            }
             XSDocumentInfo newSchemaInfo = null;
              if (fLastSchemaWasDuplicate) {
                  newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
@@ -864,6 +868,9 @@ class XSDHandler {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
         XMLInputSource schemaSource=null;
         Document schemaDoc = null;
+        if (schemaNamespace == null && schemaHint == null) {
+             return null;
+        }
         try {
             schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
             if (schemaSource != null) {

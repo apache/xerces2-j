@@ -150,7 +150,7 @@ public class NOTATIONDatatypeValidator extends AbstractStringValidator {
         // REVISIT: XML Schema group does not clearly specify how QNames should be 
         // compared against length, minLength, maxLength we don't do any comparison
         //
-        if ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
+        if (state !=null && (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 &&
             (fEnumeration != null)) {
             String prefix = state.getSymbol("");
             String localpart = content;

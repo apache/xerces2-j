@@ -1302,9 +1302,10 @@ public class SchemaValidator
         fElementDepth--;
         if (fElementDepth == -1) {
             if (fDoValidation) {
-                    // 7 If the element information item is the ·validation root·, it must be ·valid· per Validation Root Valid (ID/IDREF) (§3.3.4).
-                    // REVISIT: how to do it? new simpletype design?
-                    // IDREFDatatypeValidator.checkIdRefs(fTableOfIDs, fTableOfIDRefs);
+                    // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (§3.3.4).
+                    if (!fValidationState.checkIDRefID()){
+                        reportSchemaError("ValidationRoot",null);
+                    }
             }
         } else {
             // get the states for the parent element.

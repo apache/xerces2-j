@@ -129,20 +129,41 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
      */
     public Object validate(String content, ValidationContext state ) throws InvalidDatatypeValueException{
         
-        // REVISIT: in case user uses pattern we may not validate correctly
-        //          since we don't inherit pattern for now.
-        // 
+        return checkContent (content, state, false);
 
-        // state should never be null.
-        state.addIdRef(content);
-        if (!state.isIdDeclared(content)) {
-
-            InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );
-        }
-        return content;
     }
 
 
+    private Object checkContent( String content, ValidationContext state, boolean asBase )
+    throws InvalidDatatypeValueException {
+        // validate against parent type if any
+        if (fBaseValidator instanceof IDREFDatatypeValidator) {
+            // validate content as a base type
+            ((IDREFDatatypeValidator)fBaseValidator).checkContent(content, state, true);
+        }
+
+        // we check pattern first
+        if ((fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0) {
+            if (fRegex == null || fRegex.matches( content) == false)
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' does not match regular expression facet '" + fPattern + "'." );
+        }
+
+
+        // if this is a base validator, we only need to check pattern facet
+        // all other facet were inherited by the derived type
+        if (asBase)
+            return content;
+
+        // state could be null when we validate schema (facet enumeration)
+        if (state != null) {
+            state.addIdRef(content);
+            if (!state.isIdDeclared(content)) {
+                InvalidDatatypeValueException error = new InvalidDatatypeValueException( content );
+            }
+        }
+        return content;
+    }
     /**
        * Returns a copy of this object.
        */
@@ -150,22 +171,5 @@ public class IDREFDatatypeValidator extends StringDatatypeValidator {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
 
-    /*
-    public static void checkIdRefs(Hashtable IDList, Hashtable IDREFList) throws InvalidDatatypeValueException {
-        Enumeration en = IDREFList.keys();
 
-        while ( en.hasMoreElements() ) {
-            String key = (String)en.nextElement();
-            if ( !IDList.containsKey(key) ) {
-                InvalidDatatypeValueException error = new InvalidDatatypeValueException( key );
-
-                //REVISIT: handle errors
-
-                //error.setMinorCode(XMLMessages.MSG_ELEMENT_WITH_ID_REQUIRED);
-                //error.setMajorCode(XMLMessages.VC_IDREF);
-                throw error;
-            }
-        }
-    } // checkIdRefs()
-    */
 }

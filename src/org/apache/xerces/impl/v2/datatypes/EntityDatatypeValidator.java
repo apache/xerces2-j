@@ -112,6 +112,9 @@ public class EntityDatatypeValidator extends StringDatatypeValidator {
         if (state == null) {
             throw new InvalidDatatypeValueException("EntityState is not intialized");
         }
+        if (state == null) {
+            return content;
+        }
         if (state.isEntityDeclared(content)) {
             if (!state.isEntityUnparsed(content)){
                 throw new InvalidDatatypeValueException ("Entity is not unparsed: "+content); 
