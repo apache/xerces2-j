@@ -21,15 +21,6 @@
   </a>
  </faq>
  
- 
- <faq title='DOM Level 3 Implementation'>
-  <q>How can I get access to DOM Level 3 implementation?</q>
-  <a>
-   <p>DOM Level 3 interfaces are located in org.apache.xerces.dom3 package. Xerces provides implementation for: DOMWriter, DOMBuilder, DOMASBuilder (that allows to preparse XML Schemas). Xerces also includes several features from Core.
-   </p>
-  <note>DOM Level 3 interfaces are unstable: the specification is a working draft. For more information, please, refer to <link idref="api">DOM Level 3 API</link> </note>
-  </a>
- </faq>
 
 <faq title='IDs and XML Schemas'>
   <q>Why getElementById() does not always work for documents validated against XML Schemas?</q>

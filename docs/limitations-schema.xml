@@ -19,9 +19,6 @@
 	</s2>
 	<s2 title="Limitations">
         <ul>
-            <li>No interface is provided for exposing the post-schema
-            validation infoset , beyond
-            that provided by DOM or SAX;</li>
             <li>There are certain constraints that we don't check in
                 this release, namely:
                 <br/> - Unique Particle Attribution;

@@ -67,40 +67,34 @@
     <jump href='http://www.w3.org/TR/xmlschema-2/'>Datatypes</jump>
     Recommendations
    </li>
+   
   </ul>
  </s2>
  <s2 title='Changes from Previous Release'>
   <p>
-   This is the first Xerces2 release to include support for validating
-   XML documents against XML Schema grammars. The XML Schema validation 
-   engine was completely redesigned and rewritten for Xerces2. Therefore,
-   the XML Schema support in this release should be considered alpha.
+   Xerces2 release includes full XML Schema support with completely redesigned and rewritten XML Schema validation engine. For more information, refer to the 
+   <link idref='limitations-schema'>XML Schema Implementation</link> page. 
   </p>
   <p>
-   This release also introduces some changes to the Xerces Native
+   This release also provides a partial implementation of Document Object Model Level 3  
+    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/'>Core</jump>, 
+    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html'>Abstract Schemas</jump> and 
+    <jump href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>Load and Save</jump> Working Drafts. For more information, refer to the 
+   <link idref='dom3'>DOM Level 3 Implementation</link> page. 
+  </p>
+  <p>
+   The &ParserNameLong; &ParserVersion; introduced some changes to the Xerces Native
    Interface. The following list enumerates the important changes:
   </p>
   <ul>
-   <li>
-    Filter interfaces were added to simplify the implementation and
-    use of pipeline components that consume and produce document
-    and DTD events.
+   <li>The <code>Augmentations</code> interface was added to the core XNI interfaces.
    </li>
    <li>
-    Getter methods were added to the <code>XMLParserConfiguration</code>
-    interface to query the registered handlers, resolvers, etc.
+    The <code>XMLDocumentHandler</code> interface was modified to include <code>Augmentations</code> as an extra parameter for parser events. Getter methods were added to the <code>XMLAttributes</code> to query the <code>Augmentations</code>. 
    </li>
+
    <li>
-    The <code>XMLDTDHandler#internalEntityDecl</code> method was
-    modified to include the non-normalized literal value of the
-    internal entity.
-   </li>
-   <li>
-    The <code>XMLAttributes</code> interface was simplified by
-    removing the methods relating to entities appearing in
-    attribute values. The non-normalized attribute value in
-    conjunction with the non-normalized value for internal entity
-    declarations makes these methods unnecessary.
+    The PSVI interfaces were added as an extention to the core XNI (still under development).
    </li>
   </ul>
   <p>
