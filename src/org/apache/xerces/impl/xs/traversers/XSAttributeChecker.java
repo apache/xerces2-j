@@ -71,7 +71,7 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
-import org.apache.xerces.impl.xs.XSGrammarResolver;
+import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
@@ -1516,7 +1516,7 @@ public class XSAttributeChecker {
     }
 
     // validate attriubtes from non-schema namespaces
-    public void checkNonSchemaAttributes(XSGrammarResolver grammarResolver) {
+    public void checkNonSchemaAttributes(XSGrammarBucket grammarBucket) {
         // for all attributes
         Enumeration enum = fNonSchemaAttrs.keys();
         XSAttributeDecl attrDecl;
@@ -1526,7 +1526,7 @@ public class XSAttributeChecker {
             String attrURI = attrRName.substring(0,attrRName.indexOf(','));
             String attrLocal = attrRName.substring(attrRName.indexOf(',')+1);
             // find associated grammar
-            SchemaGrammar sGrammar = grammarResolver.getGrammar(attrURI);
+            SchemaGrammar sGrammar = grammarBucket.getGrammar(attrURI);
             if (sGrammar == null)
                 continue;
             // and get the datatype validator, if there is one

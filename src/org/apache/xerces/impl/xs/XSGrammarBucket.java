@@ -65,7 +65,7 @@ import java.util.Enumeration;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSGrammarResolver {
+public class XSGrammarBucket {
 
     // Data
 
@@ -137,11 +137,11 @@ public class XSGrammarResolver {
 
     /**
      * Clear the registry.
-     * REVISIT: update to use another XMLGrammarResolver
+     * REVISIT: update to use another XSGrammarBucket
      */
     public void reset() {
         fNoNSGrammar = null;
         fGrammarRegistry.clear();
     }
 
-} // class XSGrammarResolver
+} // class XSGrammarBucket

@@ -66,7 +66,6 @@ import org.apache.xerces.impl.validation.EntityState;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidator;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
-import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.impl.dv.dtd.ENTITYDatatypeValidator;
 import org.apache.xerces.impl.dv.dtd.IDDatatypeValidator;
@@ -235,8 +234,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
 
-    /** Grammar pool. */
-    protected GrammarPool fGrammarPool;
+    /** Grammar bucket. */
+    protected DTDGrammarBucket fGrammarBucket;
 
     /** Datatype validator factory. */
     protected DatatypeValidatorFactory fDatatypeValidatorFactory;
@@ -565,7 +564,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
-        fGrammarPool = (GrammarPool)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.GRAMMAR_POOL_PROPERTY);
+        fGrammarBucket = new DTDGrammarBucket();
         fDatatypeValidatorFactory = (DatatypeValidatorFactory)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY);
 
         fElementDepth = -1;                      
@@ -1147,7 +1146,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         fDTDGrammar = createDTDGrammar();
         //fDTDGrammar.setDatatypeValidatorFactory(fDatatypeValidatorFactory);
         // REVISIT: should we use the systemId as the key instead?
-        fGrammarPool.putGrammar("", fDTDGrammar);
+        fGrammarBucket.putGrammar("", fDTDGrammar);
 
         // call handlers
         fDTDGrammar.startDTD(locator);

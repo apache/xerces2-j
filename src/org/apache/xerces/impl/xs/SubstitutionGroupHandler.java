@@ -71,13 +71,13 @@ import java.util.Vector;
 public class SubstitutionGroupHandler {
 
     // grammar resolver
-    XSGrammarResolver fGrammarResolver;
+    XSGrammarBucket fGrammarBucket;
 
     /**
      * Default constructor
      */
-    public SubstitutionGroupHandler(XSGrammarResolver grammarResolver) {
-        fGrammarResolver = grammarResolver;
+    public SubstitutionGroupHandler(XSGrammarBucket grammarBucket) {
+        fGrammarBucket = grammarBucket;
     }
 
     // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
@@ -98,7 +98,7 @@ public class SubstitutionGroupHandler {
             return null;
 
         // get grammar of the element
-        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri);
+        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
         if (sGrammar == null)
             return null;
 

@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.xs.traversers;
 
-import org.apache.xerces.impl.xs.XSGrammarResolver;
+import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.SchemaNamespaceSupport;
@@ -262,7 +262,7 @@ public class XSDHandler {
     private SymbolTable fSymbolTable;
 
     // the GrammarResolver
-    private XSGrammarResolver fGrammarResolver;
+    private XSGrammarBucket fGrammarBucket;
 
     //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
@@ -312,8 +312,8 @@ public class XSDHandler {
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
-    public XSDHandler (XSGrammarResolver gResolver) {
-        fGrammarResolver = gResolver;
+    public XSDHandler (XSGrammarBucket gBucket) {
+        fGrammarBucket = gBucket;
 
         // REVISIT: do we use shadowed or synchronized symbol table of
         //          SchemaSymbols.fSymbolTable?
@@ -373,10 +373,10 @@ public class XSDHandler {
 
         // sixth phase: validate attribute of non-schema namespaces
         // REVISIT: skip this for now. we reall don't want to do it.
-        //fAttributeChecker.checkNonSchemaAttributes(fGrammarResolver);
+        //fAttributeChecker.checkNonSchemaAttributes(fGrammarBucket);
 
         // and return.
-        return fGrammarResolver.getGrammar(schemaNamespace);
+        return fGrammarBucket.getGrammar(schemaNamespace);
     } // end parseSchema
 
     // may wish to have setter methods for ErrorHandler,
@@ -410,9 +410,9 @@ public class XSDHandler {
             }
         }
         SchemaGrammar sg = null;
-        if ((sg = fGrammarResolver.getGrammar(currSchemaInfo.fTargetNamespace)) == null) {
+        if ((sg = fGrammarBucket.getGrammar(currSchemaInfo.fTargetNamespace)) == null) {
             sg = new SchemaGrammar(fSymbolTable, currSchemaInfo.fTargetNamespace);
-            fGrammarResolver.putGrammar(sg);
+            fGrammarBucket.putGrammar(sg);
         }
 
         Vector dependencies = new Vector();
@@ -661,7 +661,7 @@ public class XSDHandler {
             XSDocumentInfo currSchemaDoc =
             (XSDocumentInfo)schemasToProcess.pop();
             Document currDoc = currSchemaDoc.fSchemaDoc;
-            SchemaGrammar currSG = fGrammarResolver.getGrammar(currSchemaDoc.fTargetNamespace);
+            SchemaGrammar currSG = fGrammarBucket.getGrammar(currSchemaDoc.fTargetNamespace);
             if (DOMUtil.isHidden(currDoc)) {
                 // must have processed this already!
                 continue;
@@ -834,7 +834,7 @@ public class XSDHandler {
             reportSchemaError("src-resolve.4", new Object[]{currSchema, declToTraverse.uri});
             return null;
         }
-        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
+        SchemaGrammar sGrammar = fGrammarBucket.getGrammar(schemaWithDecl.fTargetNamespace);
 
         Object retObj = null;
         switch (declType) {
@@ -968,7 +968,7 @@ public class XSDHandler {
             XSDocumentInfo keyrefSchemaDoc = (XSDocumentInfo)fDoc2XSDocumentMap.get(keyrefDoc);
             keyrefSchemaDoc.fNamespaceSupport.makeGlobal();
             keyrefSchemaDoc.fNamespaceSupport.setEffectiveContext( fKeyrefNamespaceContext[i] );
-            SchemaGrammar keyrefGrammar = fGrammarResolver.getGrammar(keyrefSchemaDoc.fTargetNamespace);
+            SchemaGrammar keyrefGrammar = fGrammarBucket.getGrammar(keyrefSchemaDoc.fTargetNamespace);
             // need to set <keyref> to hidden before traversing it,
             // because it has global scope
             DOMUtil.setHidden(fKeyrefs[i]);
@@ -1186,7 +1186,7 @@ public class XSDHandler {
         for (int i = 0; i < fLocalElemStackPos; i++) {
             Element currElem = fLocalElementDecl[i];
             XSDocumentInfo currSchema = (XSDocumentInfo)fDoc2XSDocumentMap.get(DOMUtil.getDocument(currElem));
-            SchemaGrammar currGrammar = fGrammarResolver.getGrammar(currSchema.fTargetNamespace);
+            SchemaGrammar currGrammar = fGrammarBucket.getGrammar(currSchema.fTargetNamespace);
             fElementTraverser.traverseLocal (fParticle[i], currElem, currSchema, currGrammar, fAllContext[i]);
         }
     }

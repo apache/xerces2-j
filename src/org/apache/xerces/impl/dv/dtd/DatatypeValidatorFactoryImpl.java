@@ -60,7 +60,7 @@ package org.apache.xerces.impl.dv.dtd;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.lang.reflect.*;
-import org.apache.xerces.impl.dtd.Grammar;
+import org.apache.xerces.impl.dtd.DTDGrammar;
 
 
 
@@ -563,7 +563,7 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
                 ex.printStackTrace();
             }
         }
-        Grammar grammar             = new Grammar();
+        DTDGrammar grammar             = new DTDGrammar();
         if (grammar != null) {
             ENTITYDatatypeValidator entityValidator
             = (ENTITYDatatypeValidator) tstRegistry.getDatatypeValidator("ENTITY");

@@ -825,7 +825,7 @@ public class XMLSchemaValidator
     //
 
     /** Schema grammar resolver. */
-    final XSGrammarResolver fGrammarResolver;
+    final XSGrammarBucket fGrammarBucket;
     final SubstitutionGroupHandler fSubGroupHandler;
 
     /** Schema handler */
@@ -957,9 +957,9 @@ public class XMLSchemaValidator
     /** Default constructor. */
     public XMLSchemaValidator() {
 
-        fGrammarResolver = new XSGrammarResolver();
-        fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
-        fSchemaHandler = new XSDHandler(fGrammarResolver);
+        fGrammarBucket = new XSGrammarBucket();
+        fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
+        fSchemaHandler = new XSDHandler(fGrammarBucket);
 
     } // <init>()
 
@@ -1051,12 +1051,12 @@ public class XMLSchemaValidator
         fExternalNoNamespaceSchema = (String)componentManager.getProperty(SCHEMA_NONS_LOCATION);
 
         // clear grammars, and put the one for schema namespace there
-        fGrammarResolver.reset();
-        fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
+        fGrammarBucket.reset();
+        fGrammarBucket.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
         fGrammarPool = (GrammarPool)componentManager.getProperty(GRAMMAR_POOL);
         Grammar [] initialGrammars = fGrammarPool.getGrammarsNS();
         for (int i = 0; i < initialGrammars.length; i++) {
-            fGrammarResolver.putGrammar((SchemaGrammar)(initialGrammars[i]));
+            fGrammarBucket.putGrammar((SchemaGrammar)(initialGrammars[i]));
         }
 
         // clear thing in substitution group handler
@@ -1397,7 +1397,7 @@ public class XMLSchemaValidator
 
         // try again to get the element decl
         if (fCurrentElemDecl == null) {
-            SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri);
+            SchemaGrammar sGrammar = fGrammarBucket.getGrammar(element.uri);
             if (sGrammar != null)
                 fCurrentElemDecl = sGrammar.getGlobalElementDecl(element.localpart);
         }
@@ -1580,7 +1580,7 @@ public class XMLSchemaValidator
 
             // check extra schema constraints on root element
             if (fElementDepth == -1 && fDoValidation && fFullChecking) {
-                XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
+                XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
             }
 
             return null;
@@ -1660,7 +1660,7 @@ public class XMLSchemaValidator
             if (fDoValidation) {
                 // check extra schema constraints
                 if (fFullChecking) {
-                    XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
+                    XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
                 }
             }
         }
@@ -1718,12 +1718,12 @@ public class XMLSchemaValidator
                     break;
                 }
                 location = t.nextToken();
-                if (fGrammarResolver.getGrammar(namespace) == null)
+                if (fGrammarBucket.getGrammar(namespace) == null)
                     fSchemaHandler.parseSchema(namespace, location);
             }
         }
         if (nsLocation != null) {
-            if (fGrammarResolver.getGrammar(null) == null)
+            if (fGrammarBucket.getGrammar(null) == null)
                 fSchemaHandler.parseSchema(null, nsLocation);
         }
     }
@@ -1746,7 +1746,7 @@ public class XMLSchemaValidator
 
         // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
         XSTypeDecl type = null;
-        SchemaGrammar grammar = fGrammarResolver.getGrammar(typeName.uri);
+        SchemaGrammar grammar = fGrammarBucket.getGrammar(typeName.uri);
         if (grammar != null)
             type = grammar.getGlobalTypeDecl(typeName.localpart);
         if (type == null) {
@@ -1944,7 +1944,7 @@ public class XMLSchemaValidator
                 if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP)
                     continue;
                 // now get the grammar and attribute decl
-                SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempQName.uri);
+                SchemaGrammar grammar = fGrammarBucket.getGrammar(fTempQName.uri);
                 if (grammar != null)
                     currDecl = grammar.getGlobalAttributeDecl(fTempQName.localpart);
                 // if can't find
@@ -2014,7 +2014,7 @@ public class XMLSchemaValidator
                 if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
                     ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
                    QName qName = (QName)actualValue;
-                   SchemaGrammar grammar = fGrammarResolver.getGrammar(qName.uri);
+                   SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
                    if (grammar != null)
                        fCurrentPSVI.fNotation = grammar.getNotationDecl(qName.localpart);
                 }

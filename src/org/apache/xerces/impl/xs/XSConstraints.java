@@ -307,13 +307,13 @@ public class XSConstraints {
      * Unique Particle Attribution, Particle Derivation (Restriction),
      * Element Declrations Consistent.
      */
-    public static void fullSchemaChecking(XSGrammarResolver grammarResolver,
+    public static void fullSchemaChecking(XSGrammarBucket grammarBucket,
                                           SubstitutionGroupHandler SGHandler,
                                           CMBuilder cmBuilder,
                                           XMLErrorReporter errorReporter) {
         // get all grammars, and put all substitution group information
         // in the substitution group handler
-        SchemaGrammar[] grammars = grammarResolver.getGrammars();
+        SchemaGrammar[] grammars = grammarBucket.getGrammars();
         for (int i = grammars.length-1; i >= 0; i--) {
             SGHandler.addSubstitutionGroup(grammars[i].getSubstitutionGroups());
         }

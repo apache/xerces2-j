@@ -82,7 +82,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.xs.XSGrammarResolver;
+import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.SchemaSymbols;
@@ -136,7 +136,7 @@ public class DOMASBuilderImpl
     // Data
     //
 
-    protected XSGrammarResolver fGrammarResolver;
+    protected XSGrammarBucket fGrammarBucket;
     protected SubstitutionGroupHandler fSubGroupHandler;
     protected CMBuilder fCMBuilder;
     protected XSDHandler fSchemaHandler;
@@ -254,9 +254,9 @@ public class DOMASBuilderImpl
     public ASModel parseASURI(String uri)
                               throws DOMASException, Exception {
        if (fSchemaHandler == null) {
-           fGrammarResolver = new XSGrammarResolver();
-           fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
-           fSchemaHandler = new XSDHandler(fGrammarResolver);
+           fGrammarBucket = new XSGrammarBucket();
+           fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
+           fSchemaHandler = new XSDHandler(fGrammarBucket);
            fCMBuilder = new CMBuilder(new XSDeclarationPool());
        }
 
@@ -279,18 +279,18 @@ public class DOMASBuilderImpl
        XSI_NIL = fSymbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
        URI_SCHEMAFORSCHEMA = fSymbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
 
-       initGrammarResolver();
+       initGrammarBucket();
        fSubGroupHandler.reset();
        fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas);
 
        SchemaGrammar grammar = fSchemaHandler.parseSchema(null,uri);
 
        if (getFeature(SCHEMA_FULL_CHECKING)) {
-           XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fErrorReporter);
+           XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
        }
 
        ASModelImpl newAsModel = new ASModelImpl();
-       addGrammars(newAsModel, fGrammarResolver);
+       addGrammars(newAsModel, fGrammarBucket);
        return newAsModel;
     }
 
@@ -322,9 +322,9 @@ public class DOMASBuilderImpl
     public ASModel parseASInputSource(DOMInputSource is)
                                       throws DOMASException, Exception {
        if (fSchemaHandler == null) {
-           fGrammarResolver = new XSGrammarResolver();
-           fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
-           fSchemaHandler = new XSDHandler(fGrammarResolver);
+           fGrammarBucket = new XSGrammarBucket();
+           fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
+           fSchemaHandler = new XSDHandler(fGrammarBucket);
            fCMBuilder = new CMBuilder(new XSDeclarationPool());
        }
 
@@ -345,40 +345,40 @@ public class DOMASBuilderImpl
        XSI_NIL = fSymbolTable.addSymbol(SchemaSymbols.OXSI_NIL);
        URI_SCHEMAFORSCHEMA = fSymbolTable.addSymbol(SchemaSymbols.OURI_SCHEMAFORSCHEMA);
 
-       initGrammarResolver();
+       initGrammarBucket();
        fSubGroupHandler.reset();
        fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas);
 
        SchemaGrammar grammar = fSchemaHandler.parseSchema(is.getBaseURI(),is.getSystemId());
 
        if (getFeature(SCHEMA_FULL_CHECKING)) {
-           XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fErrorReporter);
+           XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
        }
 
        ASModelImpl newAsModel = new ASModelImpl();
-       addGrammars(newAsModel, fGrammarResolver);
+       addGrammars(newAsModel, fGrammarBucket);
        return newAsModel;
     }
 
-    // put all the grammars we have access to in the GrammarResolver
-    private void initGrammarResolver() {
-        fGrammarResolver.reset();
-        fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
+    // put all the grammars we have access to in the GrammarBucket
+    private void initGrammarBucket() {
+        fGrammarBucket.reset();
+        fGrammarBucket.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
         if (fAbstractSchema != null)
-            initGrammarResolverRecurse(fAbstractSchema);
+            initGrammarBucketRecurse(fAbstractSchema);
     }
-    private void initGrammarResolverRecurse(ASModelImpl currModel) {
+    private void initGrammarBucketRecurse(ASModelImpl currModel) {
         if(currModel.getGrammar() != null) {
-            fGrammarResolver.putGrammar(currModel.getGrammar());
+            fGrammarBucket.putGrammar(currModel.getGrammar());
         }
         for(int i = 0; i < currModel.getInternalASModels().size(); i++) {
             ASModelImpl nextModel = (ASModelImpl)(currModel.getInternalASModels().elementAt(i));
-            initGrammarResolverRecurse(nextModel);
+            initGrammarBucketRecurse(nextModel);
         }
     }
 
-    private void addGrammars(ASModelImpl model, XSGrammarResolver grammarResolver) {
-        SchemaGrammar [] grammarList = grammarResolver.getGrammars();
+    private void addGrammars(ASModelImpl model, XSGrammarBucket grammarBucket) {
+        SchemaGrammar [] grammarList = grammarBucket.getGrammars();
         for(int i=0; i<grammarList.length; i++) {
             ASModelImpl newModel = new ASModelImpl();
             newModel.setGrammar(grammarList[i]);

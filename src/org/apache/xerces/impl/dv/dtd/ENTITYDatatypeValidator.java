@@ -64,7 +64,7 @@ import java.util.StringTokenizer;
 
 
 import org.apache.xerces.impl.dtd.XMLEntityDecl;
-import org.apache.xerces.impl.dtd.Grammar;
+import org.apache.xerces.impl.dtd.DTDGrammar;
 
 
 /**
@@ -86,14 +86,14 @@ import org.apache.xerces.impl.dtd.Grammar;
  * 
  * @author Jeffrey Rodriguez-
  * @version $Id$
- * @see org.apache.xerces.impl.dtd.Grammar
+ * @see org.apache.xerces.impl.dtd.AbstractDTDGrammar
  * @see org.apache.xerces.impl.dtd.DTDGrammar
  * @see org.apache.xerces.impl.xs.SchemaGrammar
  */
 public class ENTITYDatatypeValidator extends AbstractDatatypeValidator 
 implements StatefullDatatypeValidator {
     private DatatypeValidator        fBaseValidator    = null;
-    private Grammar                  fGrammar          = null;
+    private DTDGrammar                  fGrammar          = null;
     private XMLEntityDecl            fEntityDecl       = new XMLEntityDecl();
 
     public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -168,7 +168,7 @@ implements StatefullDatatypeValidator {
      */
     public void initialize( Object grammar ) {
         //System.out.println("ENTITYDatatypeValidator initialized" );
-        fGrammar = (Grammar) grammar;
+        fGrammar = (DTDGrammar) grammar;
         //System.out.println("grammar = " + fGrammar );
     }
 

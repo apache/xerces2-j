@@ -63,7 +63,7 @@ import java.util.Enumeration;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.dv.dtd.DatatypeValidatorFactory;
-import org.apache.xerces.impl.dtd.Grammar;
+import org.apache.xerces.impl.dtd.AbstractDTDGrammar;
 import org.apache.xerces.impl.dtd.models.ContentModelValidator;
 import org.apache.xerces.impl.dtd.XMLElementDecl;
 import org.apache.xerces.impl.dtd.XMLAttributeDecl;
@@ -97,7 +97,7 @@ import org.xml.sax.SAXException;
  * @version $Id$
  */
 public class DTDGrammar
-    extends Grammar
+    extends AbstractDTDGrammar
     implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     //
