@@ -2,18 +2,27 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
-    <s2 title='July 17, 2000'>
+    <s2 title='July 26, 2000'>
         <ul>
-           <li>Added "anyAttribute" support for Schema [ericye]</li>           
-           <li>Added "xsi:type" support for Schema [ericye]</li>
-           <li>Added full equivClass support for Schema [ericye]</li>
-           <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec [ericye]</li>
-           <li>Fixed "xml:space" bug in DTD validation [ericye, andyc]</li>
-           <li>Expanded "any" element support to model groups [ericye]</li>
-           <li>Fixed "any" element bugs when there are multilple URIs [ericye]</li>
-           <li>Cleaned up XMLValidator [ericye]</li>
-           <li>Fixed misc. Schema bugs [ericye]</li>
-           <li>Fixed resolving Schema location bug in XMLValidator [David.Blankenship@kla_tencor.com, ericye]</li>
+           <li>Added "anyAttribute" support for Schema. [ericye]</li>           
+           <li>Added "xsi:type" support for Schema. [ericye]</li>
+           <li>Added full equivClass support for Schema. [ericye]</li>
+           <li>Fixed "form" attribute behavior to be fully compilant with Schema Spec. [ericye]</li>
+           <li>Fixed "xml:space" bug in DTD validation. [ericye, andyc]</li>
+           <li>Expanded "any" element support to model groups. [ericye]</li>
+           <li>Fixed "any" element bugs when there are multilple URIs. [ericye]</li>
+           <li>Cleaned up XMLValidator. [ericye]</li>
+           <li>Fixed misc. Schema bugs. [ericye]</li>
+           <li>Fixed resolving Schema location bug in XMLValidator. [David.Blankenship@kla_tencor.com, ericye]</li>
+	   <li>Fixed for BUG:SAXParser endElement reports incorrect local name. [jeffreyr]</li>
+	   <li>Fixed DOM Java Serialization-previous fix did not work. [jeffreyr]</li>
+	   <li>Added testcase under test to test DOM Java Serialization. [jeffreyr]</li>
+	   <li>Added James Duncan fix suggestion to not compile RevalidatingDOMParser. [James Duncan, jeffreyr]</li> 
+	   <li>Miscelanous DOM enhancements [lehors]. </li>
+	   <li>Fixed parameterizes entities in XMLDTDScanner. [jeffreyr]</li>
+	   <li>Fixed bug reported by Philippe MOUAWAD, on XMLContentSpec toString method. [jeffreyr]</li>
+	   <li>Fixed problem with DTD validation when namespace is supported is on. [andyc,ericye]</li>
+	   <li>Fixed bug reported by Michael Brundage in StringReader. [jeffreyr]</li>
         </ul>
     </s2>
     <s2 title='June 21, 2000'>
