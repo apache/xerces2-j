@@ -77,8 +77,12 @@ public interface XMLDocumentHandler {
     /**
      * The start of the document.
      *
-     * @param systemId The system identifier of the entity if the entity
-     *                 is external, null otherwise.
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing 
+     *                 of this document. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can 
+     *                 at least report the system identifier of the
+     *                 document.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -87,7 +91,7 @@ public interface XMLDocumentHandler {
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException;
 
     /**

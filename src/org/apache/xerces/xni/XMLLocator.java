@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.xni.parser;
+package org.apache.xerces.xni;
 
 /**
  * Location information.

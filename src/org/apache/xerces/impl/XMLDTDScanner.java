@@ -272,7 +272,7 @@ public class XMLDTDScanner
         if (fScannerState == SCANNER_STATE_TEXT_DECL) {
             // call handler
             if (fDTDHandler != null) {
-                fDTDHandler.startDTD();
+                fDTDHandler.startDTD(fEntityScanner);
                 fStartDTDCalled = true;
             }
             // set starting state for internal subset
@@ -427,7 +427,7 @@ public class XMLDTDScanner
         if (name.equals("[dtd]")) {
             // call handler
             if (fDTDHandler != null && fStartDTDCalled == false) {
-                fDTDHandler.startDTD();
+                fDTDHandler.startDTD(fEntityScanner);
             }
             fExtEntityDepth++;
         }

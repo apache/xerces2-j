@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -153,7 +154,6 @@ public class XMLDTDValidator
      */
     public void reset(XMLComponentManager componentManager)
         throws XMLConfigurationException {
-        
         super.reset(componentManager);
 
         for (int i = 0; i < fElementQNamePartsStack.length; i++) {
@@ -164,7 +164,6 @@ public class XMLDTDValidator
         fElementDepth = -1;
 
     } // reset(XMLComponentManager)
-     
 
     //
     // XMLDocumentHandler methods
@@ -183,16 +182,16 @@ public class XMLDTDValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding)
+    public void startDocument(XMLLocator locator, String encoding)
         throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(systemId, encoding);
+            fDocumentHandler.startDocument(locator, encoding);
         }
 
     
-    } // startDocument(String,String)
+    } // startDocument(XMLLocator,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -761,7 +760,7 @@ public class XMLDTDValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws XNIException {
+    public void startDTD(XMLLocator locator) throws XNIException {
 
         // set state
         fInDTD = true;
@@ -770,12 +769,12 @@ public class XMLDTDValidator
         fDTDGrammar = new DTDGrammar(fSymbolTable);
 
         // call handlers
-        fDTDGrammar.startDTD();
+        fDTDGrammar.startDTD(locator);
         if (fDTDHandler != null) {
-            fDTDHandler.startDTD();
+            fDTDHandler.startDTD(locator);
         }
 
-    } // startDTD()
+    } // startDTD(XMLLocator)
 
     /**
      * An element declaration.

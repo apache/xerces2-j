@@ -78,8 +78,13 @@ public interface XMLDocumentFragmentHandler {
     /**
      * The start of the document fragment.
      *
-     * @param baseSystemId     The base system identifier for this
-     *                         fragment.
+     * @param locator          The document locator, or null if the
+     *                         document location cannot be reported
+     *                         during the parsing of this fragment.
+     *                         However, it is <em>strongly</em>
+     *                         recommended that a locator be supplied
+     *                         that can at least report the base
+     *                         system identifier.
      * @param namespaceContext The namespace context in effect at the
      *                         start of this document fragment. This
      *                         object only represents the current context.
@@ -90,7 +95,7 @@ public interface XMLDocumentFragmentHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(String baseSystemId,
+    public void startDocumentFragment(XMLLocator locator,
                                       NamespaceContext namespaceContext) 
         throws XNIException;
 

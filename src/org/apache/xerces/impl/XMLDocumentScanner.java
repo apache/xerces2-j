@@ -550,7 +550,7 @@ public class XMLDocumentScanner
         // call handler
         if (fDocumentHandler != null) {
             if (name.equals("[xml]")) {
-                fDocumentHandler.startDocument(systemId, encoding);
+                fDocumentHandler.startDocument(fEntityScanner, encoding);
             }
             else if (!fScanningAttribute) {
                 fDocumentHandler.startEntity(name, publicId, systemId, 

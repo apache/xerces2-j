@@ -65,15 +65,12 @@ import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentFragmentHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 /**
  * XPath matcher.
@@ -333,7 +330,7 @@ public class XPathMatcher
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(String baseSystemId,
+    public void startDocumentFragment(XMLLocator locator,
                                       NamespaceContext namespaceContext) 
         throws XNIException {
         if (DEBUG_METHODS) {
@@ -365,7 +362,7 @@ public class XPathMatcher
             namespaceContext = namespaceContext.getParentContext();
         }
 
-    } // startDocumentFragment(NamespaceContext)
+    } // startDocumentFragment(XMLLocator,NamespaceContext)
 
     /**
      * This method notifies the start of an entity.
@@ -929,9 +926,9 @@ public class XPathMatcher
                 System.out.println("#### argv["+i+"]: \""+expr+"\" -> \""+xpath.toString()+'"');
                 org.apache.xerces.parsers.XMLDocumentParser parser =
                     new org.apache.xerces.parsers.XMLDocumentParser(symbols) {
-                    public void startDocument(String systemId, String encoding) 
+                    public void startDocument(XMLLocator locator, String encoding) 
                         throws XNIException {
-                        matcher.startDocumentFragment(systemId, null);
+                        matcher.startDocumentFragment(locator, null);
                     }
                     public void startElement(QName element, XMLAttributes attributes) throws XNIException {
                         matcher.startElement(element, attributes);

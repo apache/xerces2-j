@@ -71,10 +71,10 @@ import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLLocator;
 
 //import org.xml.sax.Locator;
 
@@ -153,10 +153,6 @@ public class StandardParserConfiguration
     /** Property identifier: entity manager. */
     protected static final String ENTITY_MANAGER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
-    
-    /** Property identifier: locator. */
-    protected static final String LOCATOR = 
-        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCATOR_PROPERTY;
     
     /** Property identifier document scanner: */
     protected static final String DOCUMENT_SCANNER = 
@@ -269,8 +265,9 @@ public class StandardParserConfiguration
 
         // add default recognized properties
         final String[] recognizedProperties = {
-            ERROR_REPORTER,             ENTITY_MANAGER, 
-            LOCATOR,                    GRAMMAR_POOL,   
+            ERROR_REPORTER,             
+            ENTITY_MANAGER, 
+            GRAMMAR_POOL,   
             DATATYPE_VALIDATOR_FACTORY,
         };
         addRecognizedProperties(recognizedProperties);
@@ -290,10 +287,9 @@ public class StandardParserConfiguration
         fEntityManager = createEntityManager();
         fProperties.put(ENTITY_MANAGER, fEntityManager);
         addComponent(fEntityManager);
-        fLocator = (XMLLocator)fEntityManager.getEntityScanner();
-        fProperties.put(LOCATOR, fLocator);
 
-        fErrorReporter = createErrorReporter(fEntityManager.getEntityScanner());
+        fErrorReporter = createErrorReporter();
+        fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
         fProperties.put(ERROR_REPORTER, fErrorReporter);
         addComponent(fErrorReporter);
 
@@ -350,6 +346,8 @@ public class StandardParserConfiguration
      *                         specified locale.
      */
     public void setLocale(Locale locale) throws XNIException {
+        // REVISIT: Is this code needed? We're now creating
+        //          these components in the constructor. -Ac
         if (fErrorReporter == null) {
             if (fEntityManager == null) {
                 fEntityManager = createEntityManager();
@@ -357,8 +355,8 @@ public class StandardParserConfiguration
                 addComponent(fEntityManager);
                 fLocator = (XMLLocator)fEntityManager.getEntityScanner();
             }
-            fErrorReporter =
-                createErrorReporter(fEntityManager.getEntityScanner());
+            fErrorReporter = createErrorReporter();
+            fErrorReporter.setDocumentLocator(fEntityManager.getEntityScanner());
             fProperties.put(ERROR_REPORTER, fErrorReporter);
             addComponent(fErrorReporter);
         }
@@ -590,9 +588,9 @@ public class StandardParserConfiguration
     } // createEntityManager():XMLEntityManager
 
     /** Creates an error reporter. */
-    protected XMLErrorReporter createErrorReporter(XMLLocator locator) {
-        return new XMLErrorReporter(locator);
-    } // createErrorReporter(XMLLocator):XMLErrorReporter
+    protected XMLErrorReporter createErrorReporter() {
+        return new XMLErrorReporter();
+    } // createErrorReporter():XMLErrorReporter
 
     /** Create a document scanner. */
     protected XMLDocumentScanner createDocumentScanner() {

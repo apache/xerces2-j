@@ -76,9 +76,10 @@ import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 
 import org.xml.sax.SAXException;
@@ -285,12 +286,12 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws XNIException {
+    public void startDTD(XMLLocator locator) throws XNIException {
         //Initialize stack
         fOpStack = null;
         fNodeIndexStack = null;
         fPrevNodeIndexStack = null;
-    } // startDTD()
+    } // startDTD(XMLLocator)
 
     /**
      * This method notifies of the start of an entity. The DTD has the 

@@ -65,10 +65,11 @@ import java.io.Writer;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
@@ -200,14 +201,34 @@ public class DocumentTracer
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
 
         fIndent = 0;
         printIndent();
         fOut.print("startDocument(");
-        fOut.print("systemId=");
-        printQuotedString(systemId);
+        fOut.print("locator=");
+        if (locator == null) {
+            fOut.print("null");
+        }
+        else {
+            fOut.print('{');
+            fOut.print("publicId=");
+            printQuotedString(locator.getPublicId());
+            fOut.print(',');
+            fOut.print("systemId=");
+            printQuotedString(locator.getSystemId());
+            fOut.print(',');
+            fOut.print("baseSystemId=");
+            printQuotedString(locator.getBaseSystemId());
+            fOut.print(',');
+            fOut.print("lineNumber=");
+            fOut.print(locator.getLineNumber());
+            fOut.print(',');
+            fOut.print("columnNumber=");
+            fOut.print(locator.getColumnNumber());
+            fOut.print('}');
+        }
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
@@ -215,7 +236,7 @@ public class DocumentTracer
         fOut.flush();
         fIndent++;
 
-    } // startDocument()
+    } // XMLLocator()
 
     /** XML Declaration. */
     public void xmlDecl(String version, String encoding, String actualEncoding,
@@ -482,14 +503,37 @@ public class DocumentTracer
     //
 
     /** Start DTD. */
-    public void startDTD() throws XNIException {
+    public void startDTD(XMLLocator locator) throws XNIException {
 
         printIndent();
-        fOut.println("startDTD()");
+        fOut.print("startDTD(");
+        fOut.print("locator=");
+        if (locator == null) {
+            fOut.print("null");
+        }
+        else {
+            fOut.print('{');
+            fOut.print("publicId=");
+            printQuotedString(locator.getPublicId());
+            fOut.print(',');
+            fOut.print("systemId=");
+            printQuotedString(locator.getSystemId());
+            fOut.print(',');
+            fOut.print("baseSystemId=");
+            printQuotedString(locator.getBaseSystemId());
+            fOut.print(',');
+            fOut.print("lineNumber=");
+            fOut.print(locator.getLineNumber());
+            fOut.print(',');
+            fOut.print("columnNumber=");
+            fOut.print(locator.getColumnNumber());
+            fOut.print('}');
+        }
+        fOut.println(')');
         fOut.flush();
         fIndent++;
 
-    } // startDTD()
+    } // startDTD(XMLLocator)
 
     /** Element declaration. */
     public void elementDecl(String name, String contentModel)

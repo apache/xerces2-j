@@ -64,6 +64,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -132,9 +133,9 @@ public abstract class AbstractXMLDocumentParser
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
-    } // startDocument(String,String)
+    } // startDocument(XMLLocator,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -409,9 +410,9 @@ public abstract class AbstractXMLDocumentParser
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws XNIException {
+    public void startDTD(XMLLocator locator) throws XNIException {
         fInDTD = true;
-    } // startDTD()
+    } // startDTD(XMLLocator)
 
     /**
      * An element declaration.

@@ -71,13 +71,13 @@ import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLLocator;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.AttributeList;
@@ -127,12 +127,7 @@ public abstract class AbstractSAXParser
     protected static final String NAMESPACE_PREFIXES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
 
-    // NOTE: The locator and symbol table properties are for internal
-    //       use. -Ac
-
-    /** Property identifier: locator. */
-    protected static final String LOCATOR =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.LOCATOR_PROPERTY;
+    // NOTE: The symbol table properties is for internal use. -Ac
 
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE =
@@ -228,24 +223,14 @@ public abstract class AbstractSAXParser
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
-
-        // get the locator
-        Locator locator = null;
-        try {
-            XMLLocator xmlLocator = (XMLLocator)fConfiguration.getProperty(LOCATOR);
-            locator = new LocatorProxy(xmlLocator);
-        }
-        catch (XMLConfigurationException e) {
-            // ignore
-        }
 
         try {
             // SAX1
             if (fDocumentHandler != null) {
                 if (locator != null) {
-                    fDocumentHandler.setDocumentLocator(locator);
+                    fDocumentHandler.setDocumentLocator(new LocatorProxy(locator));
                 }
                 fDocumentHandler.startDocument();
             }
@@ -253,7 +238,7 @@ public abstract class AbstractSAXParser
             // SAX2
             if (fContentHandler != null) {
                 if (locator != null) {
-                    fContentHandler.setDocumentLocator(locator);
+                    fContentHandler.setDocumentLocator(new LocatorProxy(locator));
                 }
                 fContentHandler.startDocument();
             }
@@ -1123,16 +1108,6 @@ public abstract class AbstractSAXParser
      */
     public void setDocumentHandler(DocumentHandler documentHandler) {
         fDocumentHandler = documentHandler;
-        try {
-            XMLLocator xmlLocator = (XMLLocator)fConfiguration.getProperty(LOCATOR);
-            if (xmlLocator != null) {
-                Locator locator = new LocatorProxy(xmlLocator);
-                fDocumentHandler.setDocumentLocator(locator);
-            }
-        }
-        catch (XMLConfigurationException e) {
-            // do nothing
-        }
     } // setDocumentHandler(DocumentHandler)
 
     //
@@ -1158,9 +1133,6 @@ public abstract class AbstractSAXParser
      * @see #getContentHandler
      */
     public void setContentHandler(ContentHandler contentHandler) {
-        if (contentHandler == null) {
-            throw new NullPointerException();
-        }
         fContentHandler = contentHandler;
     } // setContentHandler(ContentHandler)
 

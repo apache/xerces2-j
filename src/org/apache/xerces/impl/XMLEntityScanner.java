@@ -61,8 +61,8 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
-import org.apache.xerces.xni.parser.XMLLocator;
 
 /**
  * This class allows various parser scanners to scan basic XML constructs

@@ -87,6 +87,20 @@ public interface XMLDTDHandler {
     //
 
     /**
+     * The start of the DTD.
+     *
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing of 
+     *                 the document DTD. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can 
+     *                 at least report the base system identifier of the
+     *                 DTD.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startDTD(XMLLocator locator) throws XNIException;
+
+    /**
      * This method notifies of the start of an entity. The DTD has the 
      * pseudo-name of "[dtd]; and parameter entity names start with '%'.
      * <p>
@@ -129,11 +143,19 @@ public interface XMLDTDHandler {
     public void textDecl(String version, String encoding) throws XNIException;
 
     /**
-     * The start of the DTD.
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]; and parameter entity names start with '%'.
+     * <p>
+     * <strong>Note:</strong> Since the DTD is an entity, the handler
+     * will be notified of the end of the DTD entity by calling the
+     * endEntity method with the entity name "[dtd]" <em>after</em> calling
+     * the endDTD method.
+     * 
+     * @param name The name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws XNIException;
+    public void endEntity(String name) throws XNIException;
 
     /**
      * A comment.
@@ -311,20 +333,5 @@ public interface XMLDTDHandler {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endDTD() throws XNIException;
-
-    /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; and parameter entity names start with '%'.
-     * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
-     * 
-     * @param name The name of the entity.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endEntity(String name) throws XNIException;
 
 } // interface XMLDTDHandler

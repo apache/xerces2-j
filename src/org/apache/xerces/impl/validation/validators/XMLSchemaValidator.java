@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999,2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,11 +64,12 @@ import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLLocator;
+import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -115,15 +116,15 @@ public class XMLSchemaValidator
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(systemId, encoding);
+            fDocumentHandler.startDocument(locator, encoding);
         }
 
-    } // startDocument(String,String)
+    } // startDocument(XMLLocator,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If

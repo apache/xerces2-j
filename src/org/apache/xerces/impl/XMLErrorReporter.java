@@ -62,13 +62,13 @@ import java.util.Locale;
 
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.MessageFormatter;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLLocator;
 import org.apache.xerces.xni.parser.XMLParseException;
 
 /**
@@ -198,7 +198,7 @@ public class XMLErrorReporter
     //
 
     /** Constructs an error reporter with a locator. */
-    public XMLErrorReporter(XMLLocator locator) {
+    public XMLErrorReporter() {
 
         // REVISIT: [Q] Should the locator be passed to the reportError
         //              method? Otherwise, there is no way for a parser
@@ -216,9 +216,8 @@ public class XMLErrorReporter
         //       reported. -Ac
 
         fMessageFormatters = new Hashtable();
-        fLocator = locator;
 
-    } // <init>(Locator)
+    } // <init>()
 
     //
     // Methods
@@ -232,6 +231,15 @@ public class XMLErrorReporter
     public void setLocale(Locale locale) {
         fLocale = locale;
     } // setLocale(Locale)
+
+    /**
+     * Sets the document locator.
+     *
+     * @param locator The locator.
+     */
+    public void setDocumentLocator(XMLLocator locator) {
+        fLocator = locator;
+    } // setDocumentLocator(XMLLocator)
 
     /**
      * Registers a message formatter for the specified domain.

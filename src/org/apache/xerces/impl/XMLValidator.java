@@ -87,6 +87,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -672,15 +673,15 @@ public class XMLValidator
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(systemId, encoding);
+            fDocumentHandler.startDocument(locator, encoding);
         }
 
-    } // startDocument(String,String)
+    } // startDocument(XMLLocator,String)
 
     /**
      * Notifies of the presence of an XMLDecl line in the document. If
@@ -1152,7 +1153,7 @@ public class XMLValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDTD() throws XNIException {
+    public void startDTD(XMLLocator locator) throws XNIException {
 
         // initialize state
         fInDTD = true;
@@ -1166,12 +1167,12 @@ public class XMLValidator
         fGrammarPool.putGrammar("", fDTDGrammar);
 
         // call handlers
-        fDTDGrammar.startDTD();
+        fDTDGrammar.startDTD(locator);
         if (fDTDHandler != null) {
-            fDTDHandler.startDTD();
+            fDTDHandler.startDTD(locator);
         }
 
-    } // startDTD()
+    } // startDTD(XMLLocator)
 
     /**
      * An element declaration.

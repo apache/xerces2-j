@@ -62,6 +62,7 @@ import java.io.PrintWriter;
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -229,7 +230,7 @@ public class Counter
     //
 
     /** Start document. */
-    public void startDocument(String systemId, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding) 
         throws XNIException {
 
         fElements            = 0;
@@ -239,7 +240,7 @@ public class Counter
         fTagCharacters       = 0;
         fOtherCharacters     = 0;
 
-    } // startDocument(String,String)
+    } // startDocument(XMLLocator,String)
 
     /** Start element. */
     public void startElement(QName element, XMLAttributes attrs) 

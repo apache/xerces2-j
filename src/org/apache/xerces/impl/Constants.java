@@ -151,9 +151,6 @@ public final class Constants {
     /** Include ignorable whitespace feature ("dom/include-ignorable-whitespace"). */
     public static final String INCLUDE_IGNORABLE_WHITESPACE = "dom/include-ignorable-whitespace";
 
-    /** EXPERIMENTAL: Grammar access feature ("domx/grammar-access"). */
-    //public static final String GRAMMAR_ACCESS_FEATURE = "domx/grammar-access";
-
     /** Default attribute values feature ("validation/default-attribute-values"). */
     public static final String DEFAULT_ATTRIBUTE_VALUES_FEATURE = "validation/default-attribute-values";
 
@@ -188,9 +185,6 @@ public final class Constants {
 
     /** Error handler property ("internal/error-handler"). */
     public static final String ERROR_HANDLER_PROPERTY = "internal/error-handler";
-
-    /** Locator property ("internal/locator"). */
-    public static final String LOCATOR_PROPERTY = "internal/locator";
 
     /** Entity manager property ("internal/entity-manager"). */
     public static final String ENTITY_MANAGER_PROPERTY = "internal/entity-manager";
