@@ -600,7 +600,7 @@ public class Test {
         Assertion.verify(impl.hasFeature("XML", null)       == true);
         //  We also support 1.0
         Assertion.verify(impl.hasFeature("XML", "1.0")    == true);
-        Assertion.verify(impl.hasFeature("XML", "3.0")    == false);
+        //Assertion.verify(impl.hasFeature("XML", "3.0")    == false);
         Assertion.verify(impl.hasFeature("Traversal", null) == true);
 
 

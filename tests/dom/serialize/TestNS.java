@@ -377,6 +377,7 @@ public class TestNS {
                     //serializer.serialize((Document)core);
                     //writer.setFeature("entities",true);
                     //writer.writeNode(System.out, core);
+                      dOut.setByteStream(System.out);
                       writer.write(core,dOut);
                 } else {
 

@@ -60,17 +60,22 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.ls.LSSerializer;
-import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom.DOMOutputImpl;
+import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xerces.dom3.DOMConfiguration;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xml.serialize.DOMSerializerImpl;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.Serializer;
 import org.apache.xml.serialize.SerializerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
-import org.apache.xerces.dom.DOMOutputImpl;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * Tests that original behavior of XMLSerializer is not broken.
@@ -78,7 +83,7 @@ import org.apache.xerces.dom.DOMOutputImpl;
  * 
  * @author Elena Litani, IBM
  */
-public class TestXmlns {
+public class TestXmlns implements DOMErrorHandler{
 
       public static void main(String[] args) {
 
@@ -110,12 +115,23 @@ public class TestXmlns {
             System.out.println("\n---XMLSerializer output---");
             System.out.println(writer.toString());
 
+          DOMSerializerImpl s = new DOMSerializerImpl();
+                  DOMParser p = new DOMParser();
+                  try {
+       
+                      p.parse(args[0]);
+                  } catch (Exception e){
+                  }
+                  Document doc = p.getDocument();
+
 
             // create DOM Serializer
 
             System.out.println("\n---DOMWriter output---");
             LSSerializer domWriter = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createLSSerializer();
-            
+            DOMConfiguration config = domWriter.getDomConfig();
+            config.setParameter("error-handler", new TestXmlns());
+            config.setParameter("namespaces", Boolean.FALSE);
             try {
                 LSOutput dOut = new DOMOutputImpl();
                 dOut.setByteStream(System.out);
@@ -126,4 +142,25 @@ public class TestXmlns {
 
             
       }
+    /* (non-Javadoc)
+     * @see org.apache.xerces.dom3.DOMErrorHandler#handleError(org.apache.xerces.dom3.DOMError)
+     */
+    public boolean handleError(DOMError error){
+        short severity = error.getSeverity();
+        if (severity == DOMError.SEVERITY_ERROR) {
+            System.out.println("[dom3-error]: "+error.getMessage());
+        }
+        
+        if (severity == DOMError.SEVERITY_FATAL_ERROR) {
+                   System.out.println("[dom3-fatal-error]: "+error.getMessage());
+               }
+
+        if (severity == DOMError.SEVERITY_WARNING) {
+            System.out.println("[dom3-warning]: "+error.getMessage());
+        }
+        return true;
+
+    }
+
+
 }
