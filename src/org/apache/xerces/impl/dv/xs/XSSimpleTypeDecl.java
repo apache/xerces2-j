@@ -1464,7 +1464,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         } else if (fVariety == VARIETY_LIST) {
 
-            ListData values = (ListData)ob;
+            ListDV.ListData values = (ListDV.ListData)ob;
             int len = values.length();
             if (fItemType.fVariety == VARIETY_UNION) {
                 XSSimpleTypeDecl[] memberTypes = (XSSimpleTypeDecl[])validatedInfo.memberTypes;
@@ -1566,7 +1566,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 memberTypes[i] = (XSSimpleTypeDecl)validatedInfo.memberType;
             }
 
-            ListData v = new ListData(avalue);
+            ListDV.ListData v = new ListDV.ListData(avalue);
             validatedInfo.actualValue = v;
             validatedInfo.memberType = null;
             validatedInfo.memberTypes = memberTypes;

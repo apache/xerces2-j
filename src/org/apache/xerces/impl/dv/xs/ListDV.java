@@ -84,50 +84,51 @@ public class ListDV extends TypeValidator{
     public int getDataLength(Object value) {
         return ((ListData)value).length();
     }
+
+    final static class ListData {
+        final Object[] data;
+        private String canonical;
+        public ListData(Object[] data) {
+            this.data = data;
+        }
+        public synchronized String toString() {
+            if (canonical == null) {
+                int len = data.length;
+                StringBuffer buf = new StringBuffer();
+                if (len > 0) {
+                    buf.append(data[0].toString());
+                }
+                for (int i = 1; i < len; i++) {
+                    buf.append(' ');
+                    buf.append(data[i].toString());
+                }
+                canonical = buf.toString();
+            }
+            return canonical;
+        }
+        public int length() {
+            return data.length;
+        }
+        public Object item(int index) {
+            return data[index];
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ListData))
+                return false;
+            Object[] odata = ((ListData)obj).data;
+    
+            int count = data.length;
+            if (count != odata.length)
+                return false;
+    
+            for (int i = 0 ; i < count ; i++) {
+                if (!data[i].equals(odata[i]))
+                    return false;
+            }//end of loop
+    
+            //everything went fine.
+            return true;
+        }
+    }
 } // class ListDV
 
-final class ListData {
-    final Object[] data;
-    private String canonical;
-    public ListData(Object[] data) {
-        this.data = data;
-    }
-    public synchronized String toString() {
-        if (canonical == null) {
-            int len = data.length;
-            StringBuffer buf = new StringBuffer();
-            if (len > 0) {
-                buf.append(data[0].toString());
-            }
-            for (int i = 1; i < len; i++) {
-                buf.append(' ');
-                buf.append(data[i].toString());
-            }
-            canonical = buf.toString();
-        }
-        return canonical;
-    }
-    public int length() {
-        return data.length;
-    }
-    public Object item(int index) {
-        return data[index];
-    }
-    public boolean equals(Object obj) {
-        if (!(obj instanceof ListData))
-            return false;
-        Object[] odata = ((ListData)obj).data;
-
-        int count = data.length;
-        if (count != odata.length)
-            return false;
-
-        for (int i = 0 ; i < count ; i++) {
-            if (!data[i].equals(odata[i]))
-                return false;
-        }//end of loop
-
-        //everything went fine.
-        return true;
-    }
-}
