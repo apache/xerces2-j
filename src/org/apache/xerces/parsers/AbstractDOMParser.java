@@ -205,11 +205,15 @@ public abstract class AbstractDOMParser
     /** Current node. */
     protected Node fCurrentNode;
     protected CDATASection fCurrentCDATASection;
-
+    
+    /** Character buffer */
+    protected final StringBuffer fStringBuffer = new StringBuffer(50);
+  
     // internal subset
 
     /** Internal subset buffer. */
     protected StringBuffer fInternalSubset;
+    
 
     // deferred expansion data
 
@@ -231,6 +235,9 @@ public abstract class AbstractDOMParser
 
     /** True if inside CDATA section. */
     protected boolean fInCDATASection;
+    
+    /** True if saw the first chunk of characters */
+    protected boolean fFirstChunk = false;
 
     // data
 
@@ -381,12 +388,16 @@ public abstract class AbstractDOMParser
         fDocumentTypeIndex = -1;
         fDeferredDocumentImpl = null;
         fCurrentNode = null;
+        
+        // reset string buffer
+        fStringBuffer.setLength(0);
 
         // reset state information
         fInDocument = false;
         fInDTD = false;
         fInDTDExternalSubset = false;
         fInCDATASection = false;
+        fFirstChunk = false;
         fCurrentCDATASection = null;
         fCurrentCDATASectionIndex = -1;
 
@@ -422,6 +433,7 @@ public abstract class AbstractDOMParser
         }
         if (fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
+                setCharacterData();
                 EntityReference er = fDocument.createEntityReference(name);
                 // we don't need synchronization now, because entity ref will be
                 // expanded anyway. Synch only needed when user creates entityRef node
@@ -505,10 +517,19 @@ public abstract class AbstractDOMParser
      */
     public void comment(XMLString text, Augmentations augs) throws XNIException {
         
-        if (!fIncludeComments || fInDTD) {
-              return;
-        }
+     if (fInDTD) {        
+            if (fInternalSubset != null && !fInDTDExternalSubset) {
+                fInternalSubset.append("<!-- ");
+                fInternalSubset.append(text.toString());
+                fInternalSubset.append(" -->");
+            }
+            return;
+     }
+     if (!fIncludeComments) {
+            return;
+     }
         if (!fDeferNodeExpansion) {
+            setCharacterData();
             Comment comment = fDocument.createComment(text.toString());
             fCurrentNode.appendChild(comment);
         }
@@ -539,8 +560,20 @@ public abstract class AbstractDOMParser
      */
     public void processingInstruction(String target, XMLString data, Augmentations augs)
         throws XNIException {
+        
+        if (fInDTD) {        
+            if (fInternalSubset != null && !fInDTDExternalSubset) {
+                fInternalSubset.append("<?");
+                fInternalSubset.append(target.toString());
+                fInternalSubset.append(' ');
+                fInternalSubset.append(data.toString());
+                fInternalSubset.append("?>");
+
+            }
+        }
 
         if (!fDeferNodeExpansion) {
+            setCharacterData();
             ProcessingInstruction pi =
                 fDocument.createProcessingInstruction(target, data.toString());
             fCurrentNode.appendChild(pi);
@@ -734,6 +767,7 @@ public abstract class AbstractDOMParser
                 }
                 // REVISIT: Handle entities in attribute value.
             }
+            setCharacterData();
             fCurrentNode.appendChild(el);
             fCurrentNode = el;
         }
@@ -816,12 +850,21 @@ public abstract class AbstractDOMParser
                 }
                 Node child = fCurrentNode.getLastChild();
                 if (child != null && child.getNodeType() == Node.TEXT_NODE) {
-                    Text textNode = (Text)child;
-                    textNode.appendData(value);
+                //    Text textNode = (Text)child;
+                //    textNode.appendData(value);
+                // collect all the data into the string buffer. 
+                   if (fFirstChunk) {                    
+                       fStringBuffer.append(((TextImpl)child).removeData());
+                       fFirstChunk = false;
+                   }
+                   fStringBuffer.append(value);                
                 }
                 else {
-                    Text textNode = fDocument.createTextNode(value);
-                    fCurrentNode.appendChild(textNode);
+                //    Text textNode = fDocument.createTextNode(value);
+                //    fCurrentNode.appendChild(textNode);
+                   fFirstChunk = true;
+                   Text textNode = fDocument.createTextNode(value);
+                   fCurrentNode.appendChild(textNode);                
                 }
             }
         }
@@ -931,6 +974,7 @@ public abstract class AbstractDOMParser
             System.out.println("==>endElement ("+element.rawname+")");
         }
         if (!fDeferNodeExpansion) {
+            setCharacterData();
             fCurrentNode = fCurrentNode.getParentNode();
         }
         else {
@@ -960,7 +1004,7 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startCDATA(Augmentations augs) throws XNIException {
-
+	setCharacterData();
         fInCDATASection = true;
     } // startCDATA()
 
@@ -1026,11 +1070,12 @@ public abstract class AbstractDOMParser
      *                   Thrown by handler to signal an error.
      */
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
-        if (DEBUG_EVENTS || DEBUG_ENTITY_REF) {
+        if (DEBUG_EVENTS ) {
             System.out.println("==>endGeneralEntity: ("+name+")");
         }
         if (fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
+            	setCharacterData();
                 if (fDocumentType != null) {
                     NamedNodeMap entities = fDocumentType.getEntities();
                     NodeImpl entity = (NodeImpl)entities.getNamedItem(name);
@@ -1425,6 +1470,7 @@ public abstract class AbstractDOMParser
         String literalSystemId = identifier.getLiteralSystemId();
         if (fInternalSubset != null && !fInDTDExternalSubset) {
             fInternalSubset.append("<!NOTATION ");
+            fInternalSubset.append(name);
             if (publicId != null) {
                 fInternalSubset.append("PUBLIC '");
                 fInternalSubset.append(publicId);
@@ -1694,5 +1740,26 @@ public abstract class AbstractDOMParser
         
         return attr;
     }
+    
+   // If data rececived in more than one chunk, the data
+   // is stored in StringBuffer.      
+   // This function is called then the state is changed and the 
+   // data needs to be appended to the current node
+   protected void  setCharacterData(){
+       // handle character data
+       fFirstChunk = false;
+       if (fStringBuffer.length() > 0) {
+           // if we have data in the buffer we must have created
+           // a text node already.
+           Node child = fCurrentNode.getLastChild();
+           // REVISIT: should this check be performed?
+           if (child != null && child.getNodeType() == Node.TEXT_NODE) {
+               ((TextImpl)child).replaceData(fStringBuffer.toString());
+           }
+           // reset string buffer
+            fStringBuffer.setLength(0);
+       }
+   }
+
     
 } // class AbstractDOMParser

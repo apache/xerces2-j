@@ -655,7 +655,7 @@ public class XMLDTDScannerImpl
                 }
             }
         }
-
+        fEntityManager.fCurrentEntity.mayReadChunks = true;
         return textDecl;
     
     } // scanTextDecl(boolean):boolean

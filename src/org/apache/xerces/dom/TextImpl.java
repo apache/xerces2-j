@@ -192,4 +192,22 @@ public class TextImpl
 
     } // splitText(int):Text
 
+        
+    /**
+     * NON-DOM (used by DOMParser): Reset data for the node. 
+     */
+    public void replaceData (String value){
+       data = value;
+    }
+
+    /**
+     * NON-DOM (used by DOMParser: Sets data to empty string. 
+     *  Returns the value the data was set to.
+     */
+    public String removeData (){
+        String olddata=data;
+        data = "";
+        return olddata;
+   }
+
 } // class TextImpl

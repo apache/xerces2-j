@@ -587,7 +587,7 @@ public class XMLDocumentScannerImpl
                 reportFatalError("PrematureEOF", null);
                 throw e;
             }
-
+            fEntityManager.fCurrentEntity.mayReadChunks = true;
             // if no XMLDecl, then scan piece of prolog
             return true;
 
