@@ -233,6 +233,7 @@ public class TraverseSchema implements
     private Stack fCurrentGroupNameStack = new Stack();
     private Vector fElementRecurseComplex = new Vector();
     private Vector fTopLevelElementsRefdFromGroup = new Vector();
+    private Stack fCurrentAttrGroupNameStack = new Stack();
 
     private Vector fSubstitutionGroupRecursionRegistry = new Vector();
     private boolean fElementDefaultQualified = false;
@@ -6334,11 +6335,14 @@ throws Exception {
                 //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             } else {
                 Element parent = (Element)attrGrpDecl.getParentNode();
-                if (parent.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) &&
-                    parent.getAttribute(SchemaSymbols.ATT_NAME).equals(localpart)) {
+                //if (parent.getLocalName().equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) &&
+                //    parent.getAttribute(SchemaSymbols.ATT_NAME).equals(localpart)) {
+                // Check if we are in the middle of traversing this attribute group (i.e. circular references)
+                // ??? the spec only mentioned direct circular ref
+                if (fCurrentAttrGroupNameStack.search(localpart) > - 1) {
                     if (!((Element)parent.getParentNode()).getLocalName().equals(SchemaSymbols.ELT_REDEFINE)) {
-                        reportGenericSchemaError("src-attribute_group.3: Circular group reference is disallowed outside <redefine> -- "+ref);
-            }
+                        reportGenericSchemaError("src-attribute_group.3: Circular attribute group reference is disallowed outside <redefine> -- "+ref);
+                    }
                     return -1;
                 }
             }
@@ -6360,6 +6364,8 @@ throws Exception {
 				// REVISIT:  localize
                 reportGenericSchemaError ( "an attributeGroup must have a name or a ref attribute present");
 
+        fCurrentAttrGroupNameStack.push(attGrpNameStr);
+
         for (;
              child != null ; child = XUtil.getNextSiblingElement(child)) {
 
@@ -6377,6 +6383,9 @@ throws Exception {
             else
 				break;
         }
+
+        fCurrentAttrGroupNameStack.pop();
+
 		if (child != null) {
 			if ( child.getLocalName().equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) {
                 if (anyAttDecls != null) {
