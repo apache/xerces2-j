@@ -280,7 +280,7 @@ Copyright:
     <mkdir dir="${build.tests}"/>
     <copy todir="${build.tests}">
         <fileset dir="${tests.dir}"
-         excludes="dom/rename/**, dom/dom3/**, dom/registry/**" />
+         excludes="dom/rename/**, dom/registry/**" />
     </copy>
     <xjavac srcdir="${build.tests}"
            destdir="${build.dest}"
@@ -1079,6 +1079,8 @@ Copyright:
         <fileset dir="${tests.dir}" />
     </copy>
      <replace file="${build.tests}/dom/mem/Test.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+     <replace file="${build.tests}/dom/dom3/Test.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
 
     <xjavac srcdir="${build.tests}"
