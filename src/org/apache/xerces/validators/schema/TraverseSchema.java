@@ -4101,19 +4101,28 @@ public class TraverseSchema implements
           }
           int bAttDefIndex = bGrammar.findAttributeDecl(bAttListHead, fTempAttributeDecl.name);
           if (bAttDefIndex > -1) {
-             //
-             // derivation-ok-restriction.  Constraint 2.1.1
-             // 
              fTemp2AttributeDecl.clear();
              bGrammar.getAttributeDecl(bAttDefIndex, fTemp2AttributeDecl);
+
+             // derivation-ok-restriction.  Constraint 2.1.1
+             if ((fTemp2AttributeDecl.defaultType & 
+                   XMLAttributeDecl.DEFAULT_TYPE_REQUIRED) > 0 &&
+                (fTempAttributeDecl.defaultType & 
+                   XMLAttributeDecl.DEFAULT_TYPE_REQUIRED) <= 0) {
+               throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.1:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation has an inconsistent REQUIRED setting to that of attribute in base");
+             }
+             
+             //
+             // derivation-ok-restriction.  Constraint 2.1.2
+             // 
              if (!(checkSimpleTypeDerivationOK(
                   fTempAttributeDecl.datatypeValidator,
                   fTemp2AttributeDecl.datatypeValidator))) {
-               throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.1:  Type of attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation must be a restriction of type of attribute in base");
+               throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.2:  Type of attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' in derivation must be a restriction of type of attribute in base");
              }
 
              //
-             // derivation-ok-restriction.  Constraint 2.1.2
+             // derivation-ok-restriction.  Constraint 2.1.3
              // 
              if ((fTemp2AttributeDecl.defaultType & 
                    XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) {
@@ -4122,7 +4131,7 @@ public class TraverseSchema implements
                    XMLAttributeDecl.DEFAULT_TYPE_FIXED) > 0) ||
                    !fTempAttributeDecl.defaultValue.equals(fTemp2AttributeDecl.defaultValue)) {
                   
-                  throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.2.2:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' is either not fixed, or is not fixed with the same value as the attribute in the base");
+                  throw new ComplexTypeRecoverableError("derivation-ok-restriction.2.1.3:  Attribute '" + fStringPool.toString(fTempAttributeDecl.name.localpart) + "' is either not fixed, or is not fixed with the same value as the attribute in the base");
                }
              }
                     
