@@ -1638,10 +1638,17 @@ public class XMLEntityManager
             int c = -1;
             while (fCurrentEntity.position < fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
+                /***
                 if (!XMLChar.isContent(c)) {
                     fCurrentEntity.position--;
                     break;
                 }
+                /***/
+                if (c == '<' || c == '&') {
+                    fCurrentEntity.position--;
+                    break;
+                }
+                /***/
             }
             int length = fCurrentEntity.position - offset;
             content.setValues(fCurrentEntity.ch, offset, length);
