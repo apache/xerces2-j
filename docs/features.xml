@@ -80,6 +80,14 @@ try {
 			<tr><th>Default:</th>	<td>true</td></tr>
 		</table>
 
+		<anchor name="schema-full-checking"/>
+		<p>http://apache.org/xml/features/validation/schema-full-checking</p>
+		<table>
+			<tr><th>True:</th>		<td>Enable full schema constraint checking, including checking which may be time-consuming or memory intensive.  Currently, particle unique attribution constraint checking and particle derivation resriction checking are controlled by this option.</td></tr>
+			<tr><th>False:</th>		<td>Disable full constraint checking.</td></tr>
+			<tr><th>Default:</th>	<td>false</td></tr>
+		</table>
+
 		<anchor name="dynamic"/>
 		<p>http://apache.org/xml/features/validation/dynamic</p>
 		<table>
