@@ -190,6 +190,14 @@ public class XIncludeHandler
         Constants.SAX_FEATURE_PREFIX
             + Constants.ALLOW_DTD_EVENTS_AFTER_ENDDTD_FEATURE;
     
+    /** Feature identifier: fixup base URIs. */
+    protected static final String XINCLUDE_FIXUP_BASE_URIS =
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FIXUP_BASE_URIS_FEATURE;
+    
+    /** Feature identifier: fixup language. */
+    protected static final String XINCLUDE_FIXUP_LANGUAGE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.XINCLUDE_FIXUP_LANGUAGE_FEATURE;
+    
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -215,10 +223,10 @@ public class XIncludeHandler
 
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES =
-        { ALLOW_UE_AND_NOTATION_EVENTS };
+        { ALLOW_UE_AND_NOTATION_EVENTS, XINCLUDE_FIXUP_BASE_URIS, XINCLUDE_FIXUP_LANGUAGE };
 
     /** Feature defaults. */
-    private static final Boolean[] FEATURE_DEFAULTS = { Boolean.TRUE };
+    private static final Boolean[] FEATURE_DEFAULTS = { Boolean.TRUE, Boolean.TRUE, Boolean.TRUE };
 
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES =
@@ -305,6 +313,10 @@ public class XIncludeHandler
     // buffering the necessary DTD events
     private ArrayList fNotations;
     private ArrayList fUnparsedEntities;
+    
+    // flags which control whether base URI or language fixup is performed.
+    private boolean fFixupBaseURIs = true;
+    private boolean fFixupLanguage = true;
 
     // for SAX compatibility.
     // Has the value of the ALLOW_UE_AND_NOTATION_EVENTS feature
@@ -402,6 +414,32 @@ public class XIncludeHandler
             }
         }
         catch (XMLConfigurationException e) {
+        }
+        
+        try {
+            fFixupBaseURIs =
+                componentManager.getFeature(XINCLUDE_FIXUP_BASE_URIS);
+            if (fChildConfig != null) {
+                fChildConfig.setFeature(
+                    XINCLUDE_FIXUP_BASE_URIS,
+                    fFixupBaseURIs);
+            }
+        }
+        catch (XMLConfigurationException e) {
+            fFixupBaseURIs = true;
+        }
+        
+        try {
+            fFixupLanguage =
+                componentManager.getFeature(XINCLUDE_FIXUP_LANGUAGE);
+            if (fChildConfig != null) {
+                fChildConfig.setFeature(
+                    XINCLUDE_FIXUP_LANGUAGE,
+                    fFixupLanguage);
+            }
+        }
+        catch (XMLConfigurationException e) {
+            fFixupLanguage = true;
         }
         
         // Get symbol table.
@@ -797,7 +835,9 @@ public class XIncludeHandler
         // we process the xml:base and xml:lang attributes regardless
         // of what type of element it is.
         processXMLBaseAttributes(attributes);
-        processXMLLangAttributes(attributes);
+        if (fFixupLanguage) {
+            processXMLLangAttributes(attributes);
+        }
 
         if (isIncludeElement(element)) {
             boolean success = this.handleIncludeElement(attributes);
@@ -856,7 +896,9 @@ public class XIncludeHandler
         // we process the xml:base and xml:lang attributes regardless
         // of what type of element it is.
         processXMLBaseAttributes(attributes);
-        processXMLLangAttributes(attributes);
+        if (fFixupLanguage) {
+            processXMLLangAttributes(attributes);
+        }
 
         if (isIncludeElement(element)) {
             boolean success = this.handleIncludeElement(attributes);
@@ -1752,14 +1794,13 @@ public class XIncludeHandler
             // Modify attributes to fix the base URI (spec 4.5.5).
             // We only do it to top level included elements, which have a different
             // base URI than their include parent.
-            if (!sameBaseURIAsIncludeParent()) {
+            if (fFixupBaseURIs && !sameBaseURIAsIncludeParent()) {
                 if (attributes == null) {
                     attributes = new XMLAttributesImpl();
                 }
 
                 // This causes errors with schema validation, if the schema doesn't
                 // specify that these elements can have an xml:base attribute
-                // TODO: add a user option to turn this off?
                 String uri = null;
                 try {
                     uri = this.getRelativeBaseURI();
@@ -1780,7 +1821,7 @@ public class XIncludeHandler
             // Modify attributes to perform language-fixup (spec 4.5.6).
             // We only do it to top level included elements, which have a different
             // [language] than their include parent.
-            if (!sameLanguageAsIncludeParent()) {
+            if (fFixupLanguage && !sameLanguageAsIncludeParent()) {
                 if (attributes == null) {
                     attributes = new XMLAttributesImpl();
                 }
