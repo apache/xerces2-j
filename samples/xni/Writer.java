@@ -22,14 +22,13 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.xerces.parsers.XMLDocumentParser;
-import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;

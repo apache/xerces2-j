@@ -17,7 +17,6 @@
 package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.datatypes.XSDateTime;
 
 /**

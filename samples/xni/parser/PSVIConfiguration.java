@@ -17,13 +17,12 @@
 package xni.parser;
 
 
-import xni.PSVIWriter;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.util.SymbolTable;
-
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponentManager;
+
+import xni.PSVIWriter;
 
 /**
  * This is the DTD/ XML Schema parser configuration that includes PSVIWriter component.

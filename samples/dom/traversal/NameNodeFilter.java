@@ -16,9 +16,8 @@
 package dom.traversal;
 
 
-import org.w3c.dom.traversal.*;
 import org.w3c.dom.Node;
-import org.w3c.dom.Element;
+import org.w3c.dom.traversal.NodeFilter;
 
  /** An example filter which enables the client to set a <b>name</b> value 
   *  accept those node names which <b>match</b> (or explicitly <b>not match</b>) 

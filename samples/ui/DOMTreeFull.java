@@ -17,22 +17,19 @@ package ui;
 
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.util.Hashtable;
+
 import javax.swing.JTree;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.Hashtable;
-import java.util.Enumeration;
+import org.w3c.dom.Notation;
 
 /**
  *  DOMTree class to enter every DOM node into a Swing JTree tree.

@@ -17,24 +17,20 @@
 package xni.parser;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.util.StringTokenizer;
 
-import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
-
-import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**
