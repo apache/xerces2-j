@@ -19,7 +19,7 @@
     <xsl:for-each select='category'>
      <xsl:apply-templates select='.'/>
     </xsl:for-each>
-    Last modified: <xsl:value-of select='date'/>
+    Last modified: <xsl:value-of select='@date'/>
    </BODY>
   </HTML>
  </xsl:template>

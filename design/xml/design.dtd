@@ -2,8 +2,9 @@
 <!-- $Id$ -->
 
 <!-- overall organization -->
-<!ELEMENT design (date?,note*,types*,category*)>
-<!ATTLIST design name CDATA #IMPLIED>
+<!ELEMENT design (note*,types*,category*)>
+<!ATTLIST design name CDATA #IMPLIED
+                 date CDATA #IMPLIED>
 <!ELEMENT date (#PCDATA)>
 <!ELEMENT types (category)*>
 <!ELEMENT category (note*,(class|interface)*)>
