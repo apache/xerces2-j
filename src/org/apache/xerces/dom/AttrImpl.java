@@ -98,9 +98,9 @@ import org.w3c.dom.Text;
  * <p><b>WARNING</b>: Some of the code here is partially duplicated in
  * ParentNode, be careful to keep these two classes in sync!
  *
- * @see AttrNSImpl
- * 
- * @xerces.internal 
+ * @xerces.internal
+ *
+ * @see AttrNSImpl 
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM

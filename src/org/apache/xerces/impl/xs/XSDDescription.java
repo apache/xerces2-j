@@ -22,7 +22,7 @@ import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 
-/*
+/**
  * All information specific to XML Schema grammars.
  *
  * @xerces.internal 
