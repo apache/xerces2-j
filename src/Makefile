@@ -120,9 +120,18 @@ source: ../bin/${JARFILE}
 	${CP}  ../src/org/apache/xml/serialize/*.class                  ../class/org/apache/xml/serialize
 	${CP}  ../src/org/apache/xml/serialize/*.res                    ../class/org/apache/xml/serialize 
 
+#-src/org/apache/html/dom
+	${MKDIR} ../class/org/apache/html
+	${MKDIR} ../class/org/apache/html/dom
+	${CP}  ../src/org/apache/html/dom/*.class                  ../class/org/apache/html/dom
+
 #-src/org/w3c/dom
 	${MKDIR} ../class/org/w3c/dom	
 	${CP}  ../src/org/w3c/dom/*.class				../class/org/w3c/dom
+
+#-src/org/w3c/dom/html
+	${MKDIR} ../class/org/w3c/dom/html	
+	${CP}  ../src/org/w3c/dom/html/*.class				../class/org/w3c/dom/html
 
 #-src/org/xml/sax
 	${MKDIR} ../class/org/xml/sax
