@@ -1694,7 +1694,6 @@ public class XMLDocumentScannerImpl
                                                      null);
                                 }
                                 fEntityScanner.skipSpaces();
-                                fEntityScanner.skipSpaces();
                                 if (!fEntityScanner.skipChar('>')) {
                                     reportFatalError("DoctypedeclUnterminated", new Object[]{fDoctypeName});
                                 }

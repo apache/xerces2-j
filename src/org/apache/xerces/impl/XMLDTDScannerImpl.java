@@ -1696,7 +1696,9 @@ public class XMLDTDScannerImpl
             throws IOException, XNIException {
         
         skipSeparator(false, true);
-        while (complete && fScannerState == SCANNER_STATE_MARKUP_DECL) {
+        boolean again = true;
+        while (again && fScannerState == SCANNER_STATE_MARKUP_DECL) {
+            again = complete;
             if (fEntityScanner.skipChar('<')) {
                 fMarkUpDepth++;
                 if (fEntityScanner.skipChar('?')) {
