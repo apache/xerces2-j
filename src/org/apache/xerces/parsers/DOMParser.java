@@ -239,9 +239,6 @@ public class DOMParser
 
     /** Returns the document. */
     public Document getDocument() {
-        if (fDocumentImpl != null) {
-            fDocumentImpl.setErrorChecking(true);
-        }
         return fDocument;
     }
 
@@ -935,6 +932,7 @@ public class DOMParser
                     }
                 }
                 if (docClass.isAssignableFrom(defaultDocClass)) {
+                    // set DOM error checking off
                     fDocumentImpl = (DocumentImpl)fDocument;
                     fDocumentImpl.setErrorChecking(false);
                 }
@@ -950,7 +948,12 @@ public class DOMParser
     } // startDocument()
 
     /** End document. */
-    public void endDocument() throws Exception {}
+    public void endDocument() throws Exception {
+        // set DOM error checking back on
+        if (fDocumentImpl != null) {
+            fDocumentImpl.setErrorChecking(true);
+        }
+    }
 
     /** XML declaration. */
     public void xmlDecl(int versionIndex, int encodingIndex, int standaloneIndex) throws Exception {
