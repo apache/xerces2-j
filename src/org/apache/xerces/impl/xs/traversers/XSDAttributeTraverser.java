@@ -384,7 +384,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         if (attDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (!checkDefaultValid(attribute)) {
-                reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt}, attrDecl);
+                reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, attDefault.normalizedValue}, attrDecl);
             }
         }
 
@@ -418,8 +418,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         boolean ret = true;
 
         try {
-            //set the actual value
+            // validate the original lexical rep, and set the actual value
             ((XSSimpleType)attribute.getTypeDefinition()).validate(attribute.getValInfo().normalizedValue, fValidationState, attribute.getValInfo());
+            // validate the canonical lexical rep
+            ((XSSimpleType)attribute.getTypeDefinition()).validate(attribute.getValInfo().stringValue(), fValidationState, attribute.getValInfo());
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }
@@ -433,8 +435,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         boolean ret = true;
 
         try {
-            //set the actual value
+            // validate the original lexical rep, and set the actual value
             ((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).validate(attrUse.fDefault.normalizedValue, fValidationState, attrUse.fDefault);
+            // validate the canonical lexical rep
+            ((XSSimpleType)attrUse.fAttrDecl.getTypeDefinition()).validate(attrUse.fDefault.stringValue(), fValidationState, attrUse.fDefault);
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }

@@ -257,7 +257,7 @@ public class XSConstraints {
      * returns the compiled form of the value
      * The parameter value could be either a String or a ValidatedInfo object
      */
-    public static Object ElementDefaultValidImmediate(XSTypeDefinition type, Object value, ValidationContext context, ValidatedInfo vinfo) {
+    public static Object ElementDefaultValidImmediate(XSTypeDefinition type, String value, ValidationContext context, ValidatedInfo vinfo) {
 
         XSSimpleType dv = null;
 
@@ -296,13 +296,10 @@ public class XSConstraints {
             dv = STRING_TYPE;
         }
         try {
-            if (value instanceof String) {
-                actualValue = dv.validate((String)value, context, vinfo);
-            } else {
-                ValidatedInfo info = (ValidatedInfo)value;
-                dv.validate(context, info);
-                actualValue = info.actualValue;
-            }
+            // validate the original lexical rep, and set the actual value
+            actualValue = dv.validate(value, context, vinfo);
+            // validate the canonical lexical rep
+            actualValue = dv.validate(vinfo.stringValue(), context, vinfo);
         } catch (InvalidDatatypeValueException ide) {
             return null;
         }
