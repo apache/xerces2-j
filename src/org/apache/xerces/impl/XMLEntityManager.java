@@ -1361,13 +1361,13 @@ public class XMLEntityManager
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating UTF8Reader");
             }
-            return new UTF8Reader(inputStream, fBufferSize);
+            return new UTF8Reader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale() );
         }
         if (ENCODING.equals("US-ASCII")) {
             if (DEBUG_ENCODINGS) {
                 System.out.println("$$$ creating ASCIIReader");
             }
-            return new ASCIIReader(inputStream, fBufferSize);
+            return new ASCIIReader(inputStream, fBufferSize, fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN), fErrorReporter.getLocale());
         }
         if(ENCODING.equals("ISO-10646-UCS-4")) {
             if(isBigEndian != null) {

@@ -62,6 +62,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.UTFDataFormatException;
 
+import java.util.Locale;
+import org.apache.xerces.util.MessageFormatter;
+
 /**
  * @author Andy Clark, IBM
  *
@@ -98,31 +101,46 @@ public class UTF8Reader
     /** Surrogate character. */
     private int fSurrogate = -1;
 
+    // message formatter; used to produce localized
+    // exception messages
+    private MessageFormatter fFormatter = null;
+
+    //Locale to use for messages
+    private Locale fLocale = null;
+
     //
     // Constructors
     //
 
     /** 
      * Constructs a UTF-8 reader from the specified input stream 
-     * using the default buffer size.
+     * using the default buffer size and the given MessageFormatter.
      *
      * @param inputStream The input stream.
+     * @param messageFormatter  given MessageFormatter
+     * @param locale    Locale to use for messages
      */
-    public UTF8Reader(InputStream inputStream) {
-        this(inputStream, DEFAULT_BUFFER_SIZE);
-    } // <init>(InputStream)
+    public UTF8Reader(InputStream inputStream, MessageFormatter messageFormatter,
+            Locale locale) {
+        this(inputStream, DEFAULT_BUFFER_SIZE, messageFormatter, locale);
+    } // <init>(InputStream, MessageFormatter)
 
     /** 
-     * Constructs a UTF-8 reader from the specified input stream 
-     * and buffer size.
+     * Constructs a UTF-8 reader from the specified input stream, 
+     * buffer size and MessageFormatter.
      *
      * @param inputStream The input stream.
      * @param size        The initial buffer size.
+     * @param messageFormatter  the formatter for localizing/formatting errors.
+     * @param locale    the Locale to use for messages
      */
-    public UTF8Reader(InputStream inputStream, int size) {
+    public UTF8Reader(InputStream inputStream, int size,
+            MessageFormatter messageFormatter, Locale locale) {
         fInputStream = inputStream;
         fBuffer = new byte[size];
-    } // <init>(InputStream,int)
+        fFormatter = messageFormatter;
+        fLocale = locale;
+    } // <init>(InputStream,int, MessageFormatter)
 
     //
     // Reader methods
@@ -609,7 +627,7 @@ public class UTF8Reader
      *                          or if some other I/O error occurs
      */
     public void mark(int readAheadLimit) throws IOException {
-	    throw new IOException("mark not supported");
+	    throw new IOException(fFormatter.formatMessage(fLocale, "OperationNotSupported", new Object[]{"mark()", "UTF-8"}));
     } // mark(int)
 
     /**
@@ -649,14 +667,8 @@ public class UTF8Reader
     private void expectedByte(int position, int count)
         throws UTFDataFormatException {
 
-        StringBuffer str = new StringBuffer();
-        str.append("expected byte ");
-        str.append(position);
-        str.append(" of ");
-        str.append(count);
-        str.append("-byte UTF-8 sequence");
-
-        String message = str.toString();
+        String message = fFormatter.formatMessage(fLocale, "ExpectedByte",
+                new Object[] {Integer.toString(position), Integer.toString(count)});
         throw new UTFDataFormatException(message);
 
     } // expectedByte(int,int,int)
@@ -665,16 +677,8 @@ public class UTF8Reader
     private void invalidByte(int position, int count, int c) 
         throws UTFDataFormatException {
 
-        StringBuffer str = new StringBuffer();
-        str.append("invalid byte ");
-        str.append(position);
-        str.append(" of ");
-        str.append(count);
-        str.append("-byte UTF-8 sequence (0x");
-        str.append(Integer.toHexString(c));
-        str.append(')');
-
-        String message = str.toString();
+        String message = fFormatter.formatMessage(fLocale, "InvalidByte", 
+                new Object [] {Integer.toString(position), Integer.toString(count)});
         throw new UTFDataFormatException(message);
 
     } // invalidByte(int,int,int,int)
@@ -684,9 +688,9 @@ public class UTF8Reader
         
         StringBuffer str = new StringBuffer();
         str.append("high surrogate bits in UTF-8 sequence must not exceed 0x10 but found 0x");
-        str.append(Integer.toHexString(uuuuu));
 
-        String message = str.toString();
+        String message = fFormatter.formatMessage(fLocale, "InvalidHighSurrogate", 
+                new Object[] {Integer.toHexString(uuuuu)});
         throw new UTFDataFormatException(message);
 
     } // invalidSurrogate(int)

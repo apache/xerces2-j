@@ -60,6 +60,8 @@ package org.apache.xerces.impl.io;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Locale;
+import org.apache.xerces.util.MessageFormatter;
 
 /**
  * A simple ASCII byte reader. This is an optimized reader for reading
@@ -89,6 +91,13 @@ public class ASCIIReader
     /** Byte buffer. */
     protected byte[] fBuffer;
 
+    // message formatter; used to produce localized
+    // exception messages
+    private MessageFormatter fFormatter = null;
+
+    //Locale to use for messages
+    private Locale fLocale = null;
+
     //
     // Constructors
     //
@@ -98,10 +107,13 @@ public class ASCIIReader
      * using the default buffer size.
      *
      * @param inputStream The input stream.
+     * @param messageFormatter  the MessageFormatter to use to message reporting.
+     * @param locale    the Locale for which messages are to be reported
      */
-    public ASCIIReader(InputStream inputStream) {
-        this(inputStream, DEFAULT_BUFFER_SIZE);
-    } // <init>(InputStream)
+    public ASCIIReader(InputStream inputStream, MessageFormatter messageFormatter,
+            Locale locale) {
+        this(inputStream, DEFAULT_BUFFER_SIZE, messageFormatter, locale);
+    } // <init>(InputStream, MessageFormatter, Locale)
 
     /** 
      * Constructs an ASCII reader from the specified input stream 
@@ -109,11 +121,16 @@ public class ASCIIReader
      *
      * @param inputStream The input stream.
      * @param size        The initial buffer size.
+     * @param messageFormatter  the MessageFormatter to use to message reporting.
+     * @param locale    the Locale for which messages are to be reported
      */
-    public ASCIIReader(InputStream inputStream, int size) {
+    public ASCIIReader(InputStream inputStream, int size,
+            MessageFormatter messageFormatter, Locale locale) {
         fInputStream = inputStream;
         fBuffer = new byte[size];
-    } // <init>(InputStream,int)
+        fFormatter = messageFormatter;
+        fLocale = locale;
+    } // <init>(InputStream,int, MessageFormatter, Locale)
 
     //
     // Reader methods
@@ -135,7 +152,7 @@ public class ASCIIReader
     public int read() throws IOException {
         int b0 = fInputStream.read();
         if (b0 > 0x80) {
-            throw new IOException("character not 7-bit ASCII");
+            throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0)}));
         }
         return b0;
     } // read():int
@@ -162,7 +179,7 @@ public class ASCIIReader
         for (int i = 0; i < count; i++) {
             int b0 = fBuffer[i];
             if (b0 > 0x80) {
-                throw new IOException("character not 7-bit ASCII");
+                throw new IOException(fFormatter.formatMessage(fLocale, "InvalidASCII", new Object [] {Integer.toString(b0)}));
             }
             ch[offset + i] = (char)b0;
         }

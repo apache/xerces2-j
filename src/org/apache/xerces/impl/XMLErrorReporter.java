@@ -232,6 +232,15 @@ public class XMLErrorReporter
     } // setLocale(Locale)
 
     /**
+     * Gets the current locale.
+     * 
+     * @return the current Locale
+     */
+    public Locale getLocale() {
+        return fLocale ;
+    } // getLocale():  Locale
+
+    /**
      * Sets the document locator.
      *
      * @param locator The locator.
