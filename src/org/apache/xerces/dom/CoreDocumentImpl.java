@@ -16,7 +16,6 @@
 
 package org.apache.xerces.dom;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -131,10 +130,7 @@ extends ParentNode implements Document  {
 
     // DOM Level 3: normalizeDocument
     transient DOMNormalizer domNormalizer = null;
-    transient DOMConfigurationImpl fConfiguration= null;
-
-    // support of XPath API
-    transient Object fXPathEvaluator = null;
+    transient DOMConfigurationImpl fConfiguration = null;
 
     /** Table for quick check of child insertion. */
     private final static int[] kidOK;
