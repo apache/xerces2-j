@@ -1365,26 +1365,21 @@ public class XSDHandler {
                 // expand it, and check whether the same document has been
                 // parsed before. If so, return the document corresponding to
                 // that system id.
-                String schemaId = null;
-                XSDKey key = null;
-                if (schemaSource.getByteStream() == null &&
-                    schemaSource.getCharacterStream() == null) {
-                    schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId());
-                    key = new XSDKey(schemaId, referType, schemaNamespace);
-                    if (fTraversed.get(key) != null) {
-                        fLastSchemaWasDuplicate = true;
-                        return(Document)(fTraversed.get(key));
-                    }
+                String schemaId = XMLEntityManager.expandSystemId(schemaSource.getSystemId(), schemaSource.getBaseSystemId());
+                XSDKey key = new XSDKey(schemaId, referType, schemaNamespace);
+                if ((schemaDoc = (Document)fTraversed.get(key)) != null) {
+                    fLastSchemaWasDuplicate = true;
+                    return schemaDoc;
                 }
+                
                 fSchemaParser.reset();
                 fSchemaParser.parse(schemaSource);
                 schemaDoc = fSchemaParser.getDocument();
                 // now we need to store the mapping information from system id
                 // to the document. also from the document to the system id.
-                if (schemaId != null) {
-                    fTraversed.put(key, schemaDoc );
+                fTraversed.put(key, schemaDoc );
+                if (schemaId != null)
                     fDoc2SystemId.put(schemaDoc, schemaId );
-                }
                 fLastSchemaWasDuplicate = false;
                 return schemaDoc;
             }
@@ -1998,10 +1993,20 @@ public class XSDHandler {
                 // and ignore the second one.
                 return referType == key.referType &&
                        referNS == key.referNS &&
+                       systemId != null &&
                        systemId.equals(key.systemId);
             }
 
-            // for import/instance/preparse, as long as the target namespaces
+            // there could be at most one preparsed schema document
+            // the only chance this document is reused is that its
+            // target namespace is imported by another document, but this
+            // case is coverd in constructTrees
+            if (referType == XSDDescription.CONTEXT_PREPARSE ||
+                key.referType == XSDDescription.CONTEXT_PREPARSE) {
+                return false;
+            }
+                
+            // for import/instance, as long as the target namespaces
             // are the same, we don't need to parse the document again
             return referNS == key.referNS;
         }
