@@ -1888,6 +1888,13 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            offset = 0;
+                            fCurrentEntity.position = newlines;
+                            if (load(newlines, false)) {
+                                break;
+                            }
+                        }
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
                             fCurrentEntity.position++;
                             offset++;
@@ -1897,6 +1904,13 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            offset = 0;
+                            fCurrentEntity.position = newlines;
+                            if (load(newlines, false)) {
+                                break;
+                            }
+                        }
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2019,6 +2033,13 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            offset = 0;
+                            fCurrentEntity.position = newlines;
+                            if (load(newlines, false)) {
+                                break;
+                            }
+                        }
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2169,6 +2190,13 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            offset = 0;
+                            fCurrentEntity.position = newlines;
+                            if (load(newlines, false)) {
+                                break;
+                            }
+                        }
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2178,6 +2206,14 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
+                        if (fCurrentEntity.position == fCurrentEntity.count) {
+                            offset = 0;
+                            fCurrentEntity.position = newlines;
+                            fCurrentEntity.count = newlines;
+                            if (load(newlines, false)) {
+                                break;
+                            }
+                        }
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2228,6 +2264,10 @@ public class XMLEntityManager
                         done = true;
                         break;
                     }
+                }
+                else if (c == '\r' || c == '\n') {
+                    fCurrentEntity.position--;
+                    break;
                 }
             }
             int length = fCurrentEntity.position - offset;

@@ -471,17 +471,36 @@ public abstract class XMLScanner
             char c1 = Character.toLowerCase(target.charAt(1));
             char c2 = Character.toLowerCase(target.charAt(2));
             if (c0 == 'x' && c1 == 'm' && c2 == 'l') {
-                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN, "ReservedPITarget", 
-                                            null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
+                                           "ReservedPITarget", 
+                                           null, 
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+        }
+
+        // spaces
+        if (!fEntityScanner.skipSpaces()) {
+            if (!fEntityScanner.skipString("?>")) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "SpaceRequiredInPI",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
             }
         }
 
         // data
-        // REVISIT: handle invalid character, eof
         if (fEntityScanner.scanData("?>", data)) {
             fStringBuffer.clear();
             do {
                 fStringBuffer.append(data);
+                int c = fEntityScanner.peekChar();
+                if (c != -1 && XMLChar.isInvalid(c)) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "InvalidCharInPI",
+                                               new Object[] { Integer.toHexString(c) },
+                                               XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    fEntityScanner.scanChar();
+                }
             } while (fEntityScanner.scanData("?>", data));
             fStringBuffer.append(data);
             data.setValues(fStringBuffer);

@@ -680,7 +680,7 @@ public class XMLDocumentScanner
                     do {
                         fStringBuffer.append(fString);
                         int c = fEntityScanner.peekChar();
-                        if (c == '<' || c == '&' || c == ']') {
+                        if (c == '<' || c == '&' || c == ']' || c == '%') {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
@@ -713,7 +713,7 @@ public class XMLDocumentScanner
                     do {
                         fStringBuffer.append(fString);
                         int c = fEntityScanner.peekChar();
-                        if (c == '<' || c == '&' || c == ']') {
+                        if (c == '<' || c == '&' || c == ']' || c == '%') {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
@@ -744,7 +744,7 @@ public class XMLDocumentScanner
                     do {
                         fStringBuffer.append(fString);
                         int c = fEntityScanner.peekChar();
-                        if (c == '<' || c == '&' || c == ']') {
+                        if (c == '<' || c == '&' || c == ']' || c == '%') {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
@@ -1059,6 +1059,9 @@ public class XMLDocumentScanner
                                                "LessthanInAttValue",
                                                new Object[] { null, fAttributeQName.rawname }, 
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                }
+                else if (c == '%') {
+                    fStringBuffer.append((char)fEntityScanner.scanChar());
                 }
                 else if (c != -1 && XMLChar.isInvalid(c)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
@@ -2154,6 +2157,22 @@ public class XMLDocumentScanner
                             else if (fEntityScanner.skipChar('!')) {
                                 setScannerState(SCANNER_STATE_COMMENT);
                                 again = true;
+                            }
+                            /***
+                            // REVISIT: Should we detect this?
+                            else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MarkupNotRecognizedInMisc",
+                                                           null,
+                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                                // REVISIT: continue after fatal error
+                            }
+                            /***/
+                            else {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MarkupNotRecognizedInMisc",
+                                                           null,
+                                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
                             }
                             break;
                         }
