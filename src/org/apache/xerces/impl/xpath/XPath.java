@@ -249,18 +249,18 @@ public class XPath {
                         }
                         case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:{
                             isNamespaceAtt=true;
-                    }
+                        }
                         case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME:{
 
-                    token = xtokens.getToken(++i);
-                    String prefix = xtokens.getTokenString(token);
-                    String uri = null;
-                    if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
-                        uri = context.getURI(prefix);
-                    }
-                    if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
-                        throw new XPathException("c-general-xpath-ns");
-                    }
+                            token = xtokens.getToken(++i);
+                            String prefix = xtokens.getTokenString(token);
+                            String uri = null;
+                            if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
+                                uri = context.getURI(prefix);
+                            }
+                            if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
+                                throw new XPathException("c-general-xpath-ns");
+                            }
 
                             if (isNamespaceAtt)
                             {
@@ -272,19 +272,19 @@ public class XPath {
                                 break;
                             }
 
-                    token = xtokens.getToken(++i);
-                    String localpart = xtokens.getTokenString(token);
-                    String rawname = prefix != XMLSymbols.EMPTY_STRING
+                            token = xtokens.getToken(++i);
+                            String localpart = xtokens.getTokenString(token);
+                            String rawname = prefix != XMLSymbols.EMPTY_STRING
                                    ? fSymbolTable.addSymbol(prefix+':'+localpart)
                                    : localpart;
 
-                    // build step
-                    Axis axis = new Axis(Axis.ATTRIBUTE);
-                    NodeTest nodeTest = new NodeTest(new QName(prefix, localpart, rawname, uri));
-                    Step step = new Step(axis, nodeTest);
-                    stepsVector.addElement(step);
-                    break;
-                }
+                            // build step
+                            Axis axis = new Axis(Axis.ATTRIBUTE);
+                            NodeTest nodeTest = new NodeTest(new QName(prefix, localpart, rawname, uri));
+                            Step step = new Step(axis, nodeTest);
+                            stepsVector.addElement(step);
+                            break;
+                        }
                     }
                     firstTokenOfLocationPath=false;
                     break;
@@ -298,11 +298,6 @@ public class XPath {
                     // should never have a bare double colon
                     throw new XPathException("c-general-xpath");
                 }
-                /***
-                case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY: {
-                    break;
-                }
-                /***/
                 case XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD: {
 
                     // consume "::" token and drop through
@@ -423,7 +418,7 @@ public class XPath {
         int size = stepsVector.size();
         if (size == 0) {
             if (locationPathsVector.size()==0)
-            throw new XPathException("c-general-xpath");
+                throw new XPathException("c-general-xpath");
             else
                 throw new XPathException("c-general-xpath");
         }
