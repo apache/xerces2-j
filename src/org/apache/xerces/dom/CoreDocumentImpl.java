@@ -479,9 +479,14 @@ extends ParentNode implements Document  {
      * @since DOM Level 3
      */
     public Object getFeature(String feature, String version) {
+        
+        boolean anyVersion = version == null || version.length() == 0;
+        
         if ((feature.equalsIgnoreCase("XPath")
-        || feature.equalsIgnoreCase("+XPath"))&& version.equals("3.0")){
-            try{
+            || feature.equalsIgnoreCase("+XPath")) && 
+            (anyVersion || version.equals("3.0"))) {
+
+            try {
                 Class xpathClass = ObjectFactory.findProviderClass(
                 "org.apache.xpath.domapi.XPathEvaluatorImpl",
                 ObjectFactory.findClassLoader(), true);
@@ -491,7 +496,6 @@ extends ParentNode implements Document  {
                 return fXPathEvaluator;
             }
             catch (Exception e){
-                //e.printStackTrace();
                 return null;
             }
         }
