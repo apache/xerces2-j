@@ -13,7 +13,6 @@ include ../../../../src/Makefile.incl
 TARGETS=\
 	Attributes.class\
 	AttributeList.class\
-	Configurable.class\
 	ContentHandler.class\
 	DocumentHandler.class\
 	DTDHandler.class\
