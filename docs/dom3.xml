@@ -1,0 +1,77 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE s1 SYSTEM
+"./dtd/document.dtd">
+<s1 title="Document Object Model Level 3 Implementation">
+<s2 title="Disclaimer">
+<p>
+The &ParserNameLong; &ParserVersion;  contains a partial implementation of the W3C Document Object Model 
+Level 3.  This implementation is experimental.  The DOM Level 3 specification is 
+still in working draft stage: you should not consider this implementation complete or correct.  The limitations of this implementation are detailed below. Please read this document before using this package.  
+</p>
+</s2> 
+<s2 title="Introduction">
+<p>
+The &ParserNameLong; &ParserVersion; contains an implementation of a subset of the W3C DOM Level 3 as 
+specified in <jump
+href="http://www.w3.org/TR/2001/WD-DOM-Level-3-Core-20010913/">Core</jump>, <jump
+href="http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/abstract-schemas.html">Abstract 
+Schemas</jump> and <jump
+href='http://www.w3.org/TR/2001/WD-DOM-Level-3-ASLS-20011025/load-save.html'>Load 
+and Save</jump>.  
+</p>
+<note>DOM Level 3 interfaces are located in org.apache.xerces.dom3 package</note>
+</s2>
+
+<s2 title='Implementation of DOM Level 3 Core'>
+<ul>
+    <li>
+        DOMImplementationRegistry (see DOMImplementationSource)
+    </li>
+    <li>
+        DOMImplementationRegistry (DOMImplementationSource really)
+    </li>
+    <li>
+        Node.isSameNode()
+    </li>
+    <li>
+        Node.getInterface()
+    </li>
+    <li>
+        Node.set/getUserData()
+    </li>
+    <li>
+        DOMErrorHandler, DOMError, DOMLocator
+    </li>
+</ul>
+</s2> <s2 title='Implementation of DOM Level 3 Load and Save'>
+<ul>
+    <li>
+        DOMBuilder - supports all required features. Does not provide implementation to 
+        parseWithContext() and DOMBuilderFilter
+    </li>
+    <li>
+        DOMWriter - supports all required features. Provides support for "format-pretty-print 
+         " (true)
+    </li>
+    <li>
+        DOMInputSource
+    </li>
+    <li>
+        DocumentLS
+    </li>
+    <li>
+        DOMImplementationLS
+    </li>
+</ul>
+</s2> <s2 title='Implementation of DOM Level 3 Abstract Schemas'>
+<ul>
+    <li>
+        DOMImplementationAS
+    </li>
+    <li>
+        DOMASBuilder that allows to preparse XML Schemas and set those on the parser.
+    </li>
+</ul>
+<note>
+DOMASBuilder only allows pre-parsing of XML Schemas. The parser provides a partial implementation for <code>ASModel</code> so that it can serve as a containter for several grammars. For more information, see dom.ASBuilder sample.
+</note>
+</s2></s1>
