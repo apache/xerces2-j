@@ -384,5 +384,13 @@ public interface Element extends Node {
      */
     public void setIdAttributeNS(String namespaceURI, String localName,
                                     boolean makeId) throws DOMException;
+                                    
+    /**
+     *  The type information associated with this element. 
+     * @since DOM Level 3
+     */
+    public TypeInfo getSchemaTypeInfo();
+
+
 
 }

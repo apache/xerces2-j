@@ -155,5 +155,11 @@ public interface Attr extends Node {
      * @since DOM Level 3 
      */
     public boolean getIsId();
+    
+    /**
+     *  The type information associated with this element. 
+     * @since DOM Level 3
+     */
+    public TypeInfo getSchemaTypeInfo();
 
 }
