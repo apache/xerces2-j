@@ -1953,12 +1953,43 @@ public class XSDHandler {
         }
     }
 
-    // used to identify a reference to a schema document
-    // if the same document is referenced twice with the same key, then
-    // we only need to parse it once.
+    /**
+     * used to identify a reference to a schema document
+     * if the same document is referenced twice with the same key, then
+     * we only need to parse it once.
+     * 
+     * When 2 XSDKey's are compared, the following table can be used to
+     * determine whether they are equal:
+     *      inc     red     imp     pre     ins
+     * inc  N/L      ?      N/L     N/L     N/L
+     * red   ?      N/L      ?       ?       ?
+     * imp  N/L      ?      N/P     N/P     N/P
+     * pre  N/L      ?      N/P     N/P     N/P
+     * ins  N/L      ?      N/P     N/P     N/P
+     * 
+     * Where: N/L: duplicate when they have the same namespace and location.
+     *         ? : not clear from the spec.
+     *             REVISIT: to simplify the process, also considering
+     *             it's very rare, we treat them as not duplicate.
+     *        N/P: not possible. imp/pre/ins are referenced by namespace.
+     *             when the first time we encounter a schema document for a
+     *             namespace, we create a grammar and store it in the grammar
+     *             bucket. when we see another reference to the same namespace,
+     *             we first check whether a grammar with the same namespace is
+     *             already in the bucket, which is true in this case, so we
+     *             won't create another XSDKey.
+     *             
+     * Conclusion from the table: two XSDKey's are duplicate only when all of
+     * the following are true:
+     * 1. They are both "redefine", or neither is "redefine" (which implies
+     *    that they are both "include");
+     * 2. They have the same namespace and location.
+     */
     private static class XSDKey {
         String systemId;
         short  referType;
+        // for inclue/redefine, this is the enclosing namespace
+        // for import/preparse/instance, this is the target namespace
         String referNS;
 
         XSDKey(String systemId, short referType, String referNS) {
@@ -1968,13 +1999,9 @@ public class XSDHandler {
         }
         
         public int hashCode() {
-            if (referType == XSDDescription.CONTEXT_INCLUDE ||
-                referType == XSDDescription.CONTEXT_REDEFINE) {
-                return systemId.hashCode();
-            }
-            else {
-                return referNS == null ? 0 : referNS.hashCode();
-            }
+            // according to the description at the beginning of this class,
+            // we use the hashcode of the namespace as the hashcoe of this key.
+            return referNS == null ? 0 : referNS.hashCode();
         }
 
         public boolean equals(Object obj) {
@@ -1983,32 +2010,20 @@ public class XSDHandler {
             }
             XSDKey key = (XSDKey)obj;
             
-            // for include and redefine
-            if (referType == XSDDescription.CONTEXT_INCLUDE ||
-                referType == XSDDescription.CONTEXT_REDEFINE ||
-                key.referType == XSDDescription.CONTEXT_INCLUDE ||
+            // condition 1: both are redefine
+            if (referType == XSDDescription.CONTEXT_REDEFINE ||
                 key.referType == XSDDescription.CONTEXT_REDEFINE) {
-                // only when the same document is included (or redefined)
-                // twice by the same namespace, we consider it a duplicate,
-                // and ignore the second one.
-                return referType == key.referType &&
-                       referNS == key.referNS &&
-                       systemId != null &&
-                       systemId.equals(key.systemId);
+                return referType == key.referType;
             }
-
-            // there could be at most one preparsed schema document
-            // the only chance this document is reused is that its
-            // target namespace is imported by another document, but this
-            // case is coverd in constructTrees
-            if (referType == XSDDescription.CONTEXT_PREPARSE ||
-                key.referType == XSDDescription.CONTEXT_PREPARSE) {
+            
+            // condition 2: same namespace and same locatoin
+            if (referNS != key.referNS ||
+                (systemId == null && key.systemId != null) ||
+                !systemId.equals(key.systemId)) {
                 return false;
             }
-                
-            // for import/instance, as long as the target namespaces
-            // are the same, we don't need to parse the document again
-            return referNS == key.referNS;
+            
+            return true;
         }
     }
     
