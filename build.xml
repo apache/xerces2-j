@@ -61,9 +61,9 @@ Copyright:
   <target name="init">
     <property name="name" value="xerces"/>
     <property name="Name" value="Xerces-J"/>
-    <property name="version" value="1.4.3"/>
-    <property name="version_postfix" value=".1.4.3"/>
-    <property name="appendit" value="1_4_3"/>
+    <property name="version" value="1.4.4"/>
+    <property name="version_postfix" value=".1.4.4"/>
+    <property name="appendit" value="1_4_4"/>
     <property name="year" value="1999-2001"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
