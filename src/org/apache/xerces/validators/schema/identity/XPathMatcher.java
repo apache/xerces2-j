@@ -119,7 +119,7 @@ public class XPathMatcher {
     //
 
     /** XPath location path. */
-    private XPath.LocationPath fLocationPath;
+    private XPath.LocationPath[] fLocationPaths;
 
     /** Application preference to buffer content or not. */
     private boolean fShouldBufferContent;
@@ -131,22 +131,22 @@ public class XPathMatcher {
     private StringBuffer fMatchedBuffer = new StringBuffer();
 
     /** True if XPath has been matched. */
-    private boolean fMatched;
+    private boolean[] fMatched;
 
     /** The matching string. */
     private String fMatchedString;
 
     /** Integer stack of step indexes. */
-    private IntStack fStepIndexes = new IntStack();
+    private IntStack[] fStepIndexes;
 
     /** Current step. */
-    private int fCurrentStep;
+    private int[] fCurrentStep;
 
     /** 
      * No match depth. The value of this field will be zero while
-     * matching is successful.
+     * matching is successful for the given xpath expression.
      */
-    private int fNoMatchDepth;
+    private int [] fNoMatchDepth;
 
     // Xerces 1.x framework
 
@@ -188,9 +188,14 @@ public class XPathMatcher {
      *      null unless it's a Selector.
      */
     public XPathMatcher(XPath xpath, boolean shouldBufferContent, IdentityConstraint idConstraint) {
-        fLocationPath = xpath.getLocationPath();
+        fLocationPaths = xpath.getLocationPaths();
         fShouldBufferContent = shouldBufferContent;
         fIDConstraint = idConstraint;
+        fStepIndexes = new IntStack[fLocationPaths.length];
+        for(int i=0; i<fStepIndexes.length; i++) fStepIndexes[i] = new IntStack();
+        fCurrentStep = new int[fLocationPaths.length];
+        fNoMatchDepth = new int[fLocationPaths.length];
+        fMatched = new boolean[fLocationPaths.length];
         if (DEBUG_METHODS) {
             System.out.println(toString()+"#<init>()");
         }
@@ -202,7 +207,10 @@ public class XPathMatcher {
 
     /** Returns true if XPath has been matched. */
     public boolean isMatched() {
-        return fMatched;
+        // xpath has been matched if any one of the members of the union have matched.
+        for (int i=0; i < fLocationPaths.length; i++) 
+            if (fMatched[i]) return true;
+        return false;
     } // isMatched():boolean
 
     // returns whether this XPathMatcher was matching a Selector
@@ -260,10 +268,12 @@ public class XPathMatcher {
 
         // reset state
         clear();
-        fMatchedBuffer.setLength(0);
-        fStepIndexes.clear();
-        fCurrentStep = 0;
-        fNoMatchDepth = 0;
+        for(int i = 0; i < fLocationPaths.length; i++) {
+            fStepIndexes[i].clear();
+            fCurrentStep[i] = 0;
+            fNoMatchDepth[i] = 0;
+            fMatched[i]=false;
+        }
 
         // keep values
         fStringPool = stringPool;
@@ -296,141 +306,156 @@ public class XPathMatcher {
                                ")");
         }
 
-        // push context
-        int startStep = fCurrentStep;
-        fStepIndexes.push(startStep);
-        if (DEBUG_STACK) {
-            System.out.println(toString()+": "+fStepIndexes);
-        }
+        for(int i = 0; i < fLocationPaths.length; i++) {
+            // push context 
+            int startStep = fCurrentStep[i];
+            fStepIndexes[i].push(startStep);
 
-        // return, if not matching
-        if (fMatched || fNoMatchDepth > 0) {
-            fNoMatchDepth++;
-            return;
-        }
+            // try next xpath, if not matching
+            if (fMatched[i] || fNoMatchDepth[i] > 0) {
+                fNoMatchDepth[i]++;
+                continue;
+            }
 
-        // consume self::node() steps
-        XPath.Step[] steps = fLocationPath.steps;
-        while (fCurrentStep < steps.length && 
-               steps[fCurrentStep].axis.type == XPath.Axis.SELF) {
-            if (DEBUG_MATCH) {
-                XPath.Step step = steps[fCurrentStep];
-                System.out.println(toString()+" [SELF] MATCHED!");
+            if (DEBUG_STACK) {
+                System.out.println(toString()+": "+fStepIndexes[i]);
             }
-            fCurrentStep++;
-        }
-        if (fCurrentStep == steps.length) {
-            if (DEBUG_MATCH) {
-                System.out.println(toString()+" XPath MATCHED!");
-            }
-            fMatched = true;
-            fBufferContent = true && fShouldBufferContent;
-        }
-        
-        // now if the current step is a descendant step, we let the next
-        // step do its thing; if it fails, we reset ourselves
-        // to look at this step for next time we're called.
-        // so first consume all descendants:
-         int descendantStep = fCurrentStep;
-         while(fCurrentStep < steps.length && steps[fCurrentStep].axis.type == XPath.Axis.DESCENDANT) {
-            if (DEBUG_MATCH) {
-                XPath.Step step = steps[fCurrentStep];
-                System.out.println(toString()+" [DESCENDANT] MATCHED!");
-            }
-            fCurrentStep++;
-        }
-        if (fCurrentStep == steps.length) {
-            if (DEBUG_MATCH) {
-                System.out.println(toString()+" XPath DIDN'T MATCH!");
-            }
-            fNoMatchDepth++;
-            if (DEBUG_MATCH) {
-               System.out.println(toString()+" [CHILD] after NO MATCH");
-            }
-            return;
-         }
 
-        // match child::... step, if haven't consumed any self::node()
-        if ((fCurrentStep == startStep || fCurrentStep > descendantStep) &&
-            steps[fCurrentStep].axis.type == XPath.Axis.CHILD) {
-            XPath.Step step = steps[fCurrentStep];
-            XPath.NodeTest nodeTest = step.nodeTest;
-            if (DEBUG_MATCH) {
-                System.out.println(toString()+" [CHILD] before");
-            }
-            if (nodeTest.type == XPath.NodeTest.QNAME) {
-                if (!nodeTest.name.equals(element)) {
-                     if(fCurrentStep > descendantStep) {
-                        fCurrentStep = descendantStep;
-                        return;
-                     }
-                    fNoMatchDepth++;
-                    if (DEBUG_MATCH) {
-                        System.out.println(toString()+" [CHILD] after NO MATCH");
-                    }
-                    return;
-                }
-            }
-            fCurrentStep++;
-            if (DEBUG_MATCH) {
-                System.out.println(toString()+" [CHILD] after MATCHED!");
-            }
-        }
-        if (fCurrentStep == steps.length) {
-            fMatched = true;
-            fBufferContent = true && fShouldBufferContent;
-        }
-
-        // match attribute::... step
-        if (fCurrentStep < steps.length &&
-            steps[fCurrentStep].axis.type == XPath.Axis.ATTRIBUTE) {
-            if (DEBUG_MATCH) {
-                System.out.println(toString()+" [ATTRIBUTE] before");
-            }
-            int aindex = attributes.getFirstAttr(handle);
-            if (aindex != -1) {
-                XPath.NodeTest nodeTest = steps[fCurrentStep].nodeTest;
-                QName aname = new QName(); // REVISIT: cache this
-                while (aindex != -1) {
-                    int aprefix = attributes.getAttrPrefix(aindex);
-                    int alocalpart = attributes.getAttrLocalpart(aindex);
-                    int arawname = attributes.getAttrName(aindex);
-                    int auri = attributes.getAttrURI(aindex);
-                    aname.setValues(aprefix, alocalpart, arawname, auri);
-                    if (nodeTest.type != XPath.NodeTest.QNAME ||
-                        nodeTest.name.equals(aname)) {
-                        fCurrentStep++;
-                        if (fCurrentStep == steps.length) {
-                            fMatched = true;
-                            int avalue = attributes.getAttValue(aindex);
-                            fMatchedString = fStringPool.toString(avalue);
-                            // now, we have to go on the hunt for 
-                            // datatype validator; not an easy or pleasant task...
-                            int eIndex = fGrammar.getElementDeclIndex(element, scope);
-                            int attIndex = fGrammar.getAttributeDeclIndex(eIndex, aname);
-                            XMLAttributeDecl tempAttDecl = new XMLAttributeDecl();
-                            fGrammar.getAttributeDecl(attIndex, tempAttDecl);
-                            DatatypeValidator aValidator = tempAttDecl.datatypeValidator;
-                            matched(fMatchedString, aValidator);
-                        }
-                        break;
-                    }
-                    aindex = attributes.getNextAttr(aindex);
-                }
-            }
-            if (!fMatched) {
-               if(fCurrentStep > descendantStep) {
-                  fCurrentStep = descendantStep;
-                  return;
-              }
-                fNoMatchDepth++;
+            // consume self::node() steps
+            XPath.Step[] steps = fLocationPaths[i].steps;
+            while (fCurrentStep[i] < steps.length && 
+                    steps[fCurrentStep[i]].axis.type == XPath.Axis.SELF) {
                 if (DEBUG_MATCH) {
-                    System.out.println(toString()+" [ATTRIBUTE] after");
+                    XPath.Step step = steps[fCurrentStep[i]];
+                    System.out.println(toString()+" [SELF] MATCHED!");
                 }
-                return;
+                fCurrentStep[i]++;
             }
-            if (DEBUG_MATCH) {
-                System.out.println(toString()+" [ATTRIBUTE] after MATCHED!");
+            if (fCurrentStep[i] == steps.length) {
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" XPath MATCHED!");
+                }
+                fMatched[i] = true;
+                int j=0;
+                for(; j<i && !fMatched[j]; j++);
+                if(j==i)
+                    fBufferContent = fShouldBufferContent;
+                continue;
+            }
+        
+            // now if the current step is a descendant step, we let the next
+            // step do its thing; if it fails, we reset ourselves
+            // to look at this step for next time we're called.
+            // so first consume all descendants:
+            int descendantStep = fCurrentStep[i];
+            while(fCurrentStep[i] < steps.length && steps[fCurrentStep[i]].axis.type == XPath.Axis.DESCENDANT) {
+                if (DEBUG_MATCH) {
+                    XPath.Step step = steps[fCurrentStep[i]];
+                    System.out.println(toString()+" [DESCENDANT] MATCHED!");
+                }
+                fCurrentStep[i]++;
+            }
+            if (fCurrentStep[i] == steps.length) {
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" XPath DIDN'T MATCH!");
+                }
+                fNoMatchDepth[i]++;
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" [CHILD] after NO MATCH");
+                }
+                continue;
+            }
+
+            // match child::... step, if haven't consumed any self::node()
+            if ((fCurrentStep[i] == startStep || fCurrentStep[i] > descendantStep) &&
+                steps[fCurrentStep[i]].axis.type == XPath.Axis.CHILD) {
+                XPath.Step step = steps[fCurrentStep[i]];
+                XPath.NodeTest nodeTest = step.nodeTest;
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" [CHILD] before");
+                }
+                if (nodeTest.type == XPath.NodeTest.QNAME) {
+                    if (!nodeTest.name.equals(element)) {
+                        if(fCurrentStep[i] > descendantStep) {
+                            fCurrentStep[i] = descendantStep;
+                            continue;
+                        }
+                        fNoMatchDepth[i]++;
+                        if (DEBUG_MATCH) {
+                            System.out.println(toString()+" [CHILD] after NO MATCH");
+                        }
+                        continue;
+                    }
+                }
+                fCurrentStep[i]++;
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" [CHILD] after MATCHED!");
+                }
+            }
+            if (fCurrentStep[i] == steps.length) {
+                fMatched[i] = true;
+                int j=0;
+                for(; j<i && !fMatched[j]; j++);
+                if(j==i)
+                    fBufferContent = fShouldBufferContent;
+                continue;
+            }
+
+            // match attribute::... step
+            if (fCurrentStep[i] < steps.length &&
+                steps[fCurrentStep[i]].axis.type == XPath.Axis.ATTRIBUTE) {
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" [ATTRIBUTE] before");
+                }
+                int aindex = attributes.getFirstAttr(handle);
+                if (aindex != -1) {
+                    XPath.NodeTest nodeTest = steps[fCurrentStep[i]].nodeTest;
+                    QName aname = new QName(); // REVISIT: cache this
+                    while (aindex != -1) {
+                        int aprefix = attributes.getAttrPrefix(aindex);
+                        int alocalpart = attributes.getAttrLocalpart(aindex);
+                        int arawname = attributes.getAttrName(aindex);
+                        int auri = attributes.getAttrURI(aindex);
+                        aname.setValues(aprefix, alocalpart, arawname, auri);
+                        if (nodeTest.type != XPath.NodeTest.QNAME ||
+                            nodeTest.name.equals(aname)) {
+                            fCurrentStep[i]++;
+                            if (fCurrentStep[i] == steps.length) {
+                                fMatched[i] = true;
+                                int j=0;
+                                for(; j<i && !fMatched[j]; j++);
+                                if(j==i) {
+                                    int avalue = attributes.getAttValue(aindex);
+                                    fMatchedString = fStringPool.toString(avalue);
+                                    // now, we have to go on the hunt for 
+                                    // datatype validator; not an easy or pleasant task...
+                                    int eIndex = fGrammar.getElementDeclIndex(element, scope);
+                                    int attIndex = fGrammar.getAttributeDeclIndex(eIndex, aname);
+                                    XMLAttributeDecl tempAttDecl = new XMLAttributeDecl();
+                                    fGrammar.getAttributeDecl(attIndex, tempAttDecl);
+                                    DatatypeValidator aValidator = tempAttDecl.datatypeValidator;
+                                    matched(fMatchedString, aValidator);
+                                }
+                            }
+                            break;
+                        }
+                        aindex = attributes.getNextAttr(aindex);
+                    }
+                }
+                if (!fMatched[i]) {
+                    if(fCurrentStep[i] > descendantStep) {
+                        fCurrentStep[i] = descendantStep;
+                        continue;
+                    }
+                    fNoMatchDepth[i]++;
+                    if (DEBUG_MATCH) {
+                        System.out.println(toString()+" [ATTRIBUTE] after");
+                    }
+                    continue;
+                }
+                if (DEBUG_MATCH) {
+                    System.out.println(toString()+" [ATTRIBUTE] after MATCHED!");
+                }
             }
         }
 
@@ -446,14 +471,17 @@ public class XPathMatcher {
         }
 
         // collect match content
-        if (fBufferContent && fNoMatchDepth == 0) {
-            if (!DEBUG_METHODS && DEBUG_METHODS2) {
-                System.out.println(toString()+"#characters("+
+        // so long as one of our paths is matching, store the content
+        for(int i=0; i<fLocationPaths.length; i++) 
+            if (fBufferContent && fNoMatchDepth[i] == 0) {
+                if (!DEBUG_METHODS && DEBUG_METHODS2) {
+                    System.out.println(toString()+"#characters("+
                                    "text="+normalize(new String(ch, offset, length))+
                                    ")");
+                }
+                fMatchedBuffer.append(ch, offset, length);
+                break;
             }
-            fMatchedBuffer.append(ch, offset, length);
-        }
         
     } // characters(char[],int,int)
 
@@ -477,30 +505,35 @@ public class XPathMatcher {
                                "})");
         }
         
-        // don't do anything, if not matching
-        if (fNoMatchDepth > 0) {
-            fNoMatchDepth--;
-        }
-
-        // signal match, if appropriate
-        else {
-            if (fBufferContent) {
-                fBufferContent = false;
-                fMatchedString = fMatchedBuffer.toString();
-                int eIndex = fGrammar.getElementDeclIndex(element, scope);
-                XMLElementDecl temp = new XMLElementDecl();
-                fGrammar.getElementDecl(eIndex, temp);
-                DatatypeValidator val = temp.datatypeValidator;
-                matched(fMatchedString, val);
+        for(int i = 0; i<fLocationPaths.length; i++) {
+            // don't do anything, if not matching
+            if (fNoMatchDepth[i] > 0) {
+                fNoMatchDepth[i]--;
             }
-            clear();
-        }
 
-        // go back a step
-        fCurrentStep = fStepIndexes.pop();
+            // signal match, if appropriate
+            else {
+                int j=0;
+                for(; j<i && !fMatched[j]; j++);
+                if (j<i) continue;
+                if (fBufferContent) {
+                    fBufferContent = false;
+                    fMatchedString = fMatchedBuffer.toString();
+                    int eIndex = fGrammar.getElementDeclIndex(element, scope);
+                    XMLElementDecl temp = new XMLElementDecl();
+                    fGrammar.getElementDecl(eIndex, temp);
+                    DatatypeValidator val = temp.datatypeValidator;
+                    matched(fMatchedString, val);
+                }
+                clear();
+            }
+
+            // go back a step
+            fCurrentStep[i] = fStepIndexes[i].pop();
         
-        if (DEBUG_STACK) {
-            System.out.println(toString()+": "+fStepIndexes);
+            if (DEBUG_STACK) {
+                System.out.println(toString()+": "+fStepIndexes[i]);
+            }
         }
 
     } // endElement(QName)
@@ -533,23 +566,25 @@ public class XPathMatcher {
             s = s.substring(index2 + 1);
         }
         str.append(s);
-        str.append('[');
-        XPath.Step[] steps = fLocationPath.steps;
-        for (int i = 0; i < steps.length; i++) {
-            if (i == fCurrentStep) {
+        for(int i =0;i<fLocationPaths.length; i++) {
+            str.append('[');
+            XPath.Step[] steps = fLocationPaths[i].steps;
+            for (int j = 0; j < steps.length; j++) {
+                if (j == fCurrentStep[i]) {
+                    str.append('^');
+                }
+                str.append(steps[i].toString());
+                if (j < steps.length - 1) {
+                    str.append('/');
+                }
+            }
+            if (fCurrentStep[i] == steps.length) {
                 str.append('^');
             }
-            str.append(steps[i].toString());
-            if (i < steps.length - 1) {
-                str.append('/');
-            }
+            str.append(']');
+            str.append(',');
         }
-        if (fCurrentStep == steps.length) {
-            str.append('^');
-        }
-        str.append(']');
         return str.toString();
-        /***/
     } // toString():String
 
     //
@@ -560,7 +595,6 @@ public class XPathMatcher {
     private void clear() {
         fBufferContent = false;
         fMatchedBuffer.setLength(0);
-        fMatched = false;
         fMatchedString = null;
     } // clear()
 
