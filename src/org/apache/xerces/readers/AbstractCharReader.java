@@ -1257,7 +1257,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
      * @return the character skipped
      * @exception java.lang.Exception
      */
-    private int fskipAsciiCharData() throws Exception {
+    private int skipAsciiCharData() throws Exception {
         int index = fCurrentIndex;
         int offset = fCurrentOffset - index;
         while (true) {
