@@ -258,7 +258,7 @@ implements XMLContentSpec.Provider {
                 contentSpecTree(contentSpecIndex, contentSpec, children);
                 contentModel = new MixedContentModel(children.qname,
                                                      children.type,
-                                                     0, children.length, isDTD());
+                                                     0, children.length, false, isDTD());
             }catch(  CMException ex ){
                 ex.printStackTrace();
             }

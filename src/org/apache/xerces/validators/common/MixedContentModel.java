@@ -164,6 +164,8 @@ public class MixedContentModel
         }
         fOrdered = ordered;
 
+        fDTD = dtd;
+
     } // <init>(QName[],int[],int,int,boolean,boolean)
     
     //
