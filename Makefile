@@ -39,6 +39,7 @@ ${BINZIPFILE}: ./src/classfiles_updated
 	${CP} -r data bin
 	${RM} -r bin/data/CVS
 	${CP} LICENSE bin
+	${RM} bin/build.xml
 	mv bin xerces-${PRODUCTVERSION}
 	jar cvfM ${BINJARFILE} xerces-${PRODUCTVERSION} 
 	mv xerces-${PRODUCTVERSION} bin
@@ -51,8 +52,10 @@ package_src: ./source/src/Makefile
 	${CP} -r data source
 	${RM} -r source/data/CVS
 	${MKDIR} source/docs
-	${CP} docs/*.xml docs/*.ent source/docs
+	${CP} docs/*.xml source/docs
+	${CP} docs/*.ent source/docs
 	${CP} LICENSE source
+	${RM} bin/build.xml
 	mv source xerces-${PRODUCTVERSION}
 	jar cvfM ${SRCJARFILE} xerces-${PRODUCTVERSION} 
 	mv xerces-${PRODUCTVERSION} source
