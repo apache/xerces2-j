@@ -639,15 +639,20 @@ class Token implements java.io.Serializable {
         "Cn", "Lu", "Ll", "Lt", "Lm", "Lo", "Mn", "Me", "Mc", "Nd",
         "Nl", "No", "Zs", "Zl", "Zp", "Cc", "Cf", null, "Co", "Cs",
         "Pd", "Ps", "Pe", "Pc", "Po", "Sm", "Sc", "Sk", "So", // 28
-        "L", "M", "N", "Z", "C", "P", "S",      // 29-35
+        "Pi", "Pf",  // 29, 30
+        "L", "M", "N", "Z", "C", "P", "S",      // 31-37
     };
-    static final int CHAR_LETTER = 29;
-    static final int CHAR_MARK = 30;
-    static final int CHAR_NUMBER = 31;
-    static final int CHAR_SEPARATOR = 32;
-    static final int CHAR_OTHER = 33;
-    static final int CHAR_PUNCTUATION = 34;
-    static final int CHAR_SYMBOL = 35;
+
+    // Schema Rec. {Datatypes} - Punctuation 
+    static final int CHAR_INIT_QUOTE  = 29;     // Pi - initial quote
+    static final int CHAR_FINAL_QUOTE = 30;     // Pf - final quote
+    static final int CHAR_LETTER = 31;
+    static final int CHAR_MARK = 32;
+    static final int CHAR_NUMBER = 33;
+    static final int CHAR_SEPARATOR = 34;
+    static final int CHAR_OTHER = 35;
+    static final int CHAR_PUNCTUATION = 36;
+    static final int CHAR_SYMBOL = 37;
     static final String[] blockNames = {
         "Basic Latin",                          // 0
         "Latin-1 Supplement",
@@ -739,8 +744,21 @@ class Token implements java.io.Serializable {
                 for (int i = 0;  i < ranges.length;  i ++) {
                     ranges[i] = Token.createRange();
                 }
+                int type;
                 for (int i = 0;  i < 0x10000;  i ++) {
-                    int type = Character.getType((char)i);
+                    type = Character.getType((char)i);
+                    if (type == Character.START_PUNCTUATION || 
+                        type == Character.END_PUNCTUATION) {
+                        //build table of Pi values
+                        if (i == 0x00AB || i == 0x2018 || i == 0x201B || i == 0x201C ||
+                            i == 0x201F || i == 0x2039) {
+                            type = CHAR_INIT_QUOTE;
+                        }
+                        //build table of Pf values
+                        if (i == 0x00BB || i == 0x2019 || i == 0x201D || i == 0x203A ) {
+                            type = CHAR_FINAL_QUOTE;
+                        }
+                    }
                     ranges[type].addRange(i, i);
                     switch (type) {
                       case Character.UPPERCASE_LETTER:
@@ -776,6 +794,8 @@ class Token implements java.io.Serializable {
                       case Character.DASH_PUNCTUATION:
                       case Character.START_PUNCTUATION:
                       case Character.END_PUNCTUATION:
+                      case CHAR_INIT_QUOTE:
+                      case CHAR_FINAL_QUOTE:
                       case Character.OTHER_PUNCTUATION:
                         type = CHAR_PUNCTUATION;
                         break;
