@@ -497,7 +497,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         //of the document                            
                         checkInValidXMLCharacters(commentdata, fDocument.isXML11Version());                        
                     }
-                }//end-else if comment node is not to be removed.                                                
+                }//end-else if comment node is not to be removed.
+				break;
             }
         case Node.ENTITY_REFERENCE_NODE: { 
                 if (DEBUG_ND) {
