@@ -2,9 +2,28 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version='&ParserName; TBD'>
+  <release version='&ParserName; 2.6.1'>
    <desc>TBD</desc>
    <changes>
+    <add>
+     <note>
+      Added support for XML Catalogs.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <fix>
+     <note>
+      Implemented some remaining XML Schema errata and 
+      fixed several schema related bugs. 
+     </note>
+     <submitter name='Sandy Gao'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed various DOM Level 3 bugs.
+     </note>
+     <submitter name='Neil Delima, Michael Glavassevich, Elena Litani, K. Venugopal'/>
+    </fix>
     <fix>
      <note>
       Modified the XJavac task used by the build file so that
@@ -16,7 +35,7 @@
      <note>
       Implemented the latest 
       <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/">XInclude</jump> 
-      draft.
+      draft, excluding support for XPointer.
      </note>
      <submitter name='Michael Glavassevich, K. Venugopal'/>
     </update>
@@ -34,6 +53,18 @@
       namespace support was disabled.
      </note>
      <submitter name='Michael Glavassevich'/>
+    </fix>
+    <update>
+     <note>
+      Implemented various performance improvements.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </update>
+    <fix>
+     <note>
+      Fixed various bugs.
+     </note>
+     <submitter name='Michael Glavassevich, Kohsuke Kawaguchi, Elena Litani'/>
     </fix>
    </changes>
   </release>
