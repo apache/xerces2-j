@@ -3416,9 +3416,7 @@ public final class XMLValidator
                 String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
                 if (anotherSchemaURI != null) {
                    //before switch Grammar, set the elementIndex to be the template elementIndex of its type
-                    // but if the content type is empty, we don't bother switching the grammar.
-                   if (contentSpecType != -1
-                       && contentSpecType != XMLElementDecl.TYPE_EMPTY ) {
+                   if (contentSpecType != -1) {
                       TraverseSchema.ComplexTypeInfo typeInfo = ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
                       if (typeInfo != null) {
                          elementIndex = typeInfo.templateElementIndex;
@@ -4025,7 +4023,7 @@ public final class XMLValidator
       // Get the element name index from the element
       // REVISIT: Validation
       final int elementType = fCurrentElement.rawname;
-      
+
       if (DEBUG_PRINT_CONTENT) {
          String strTmp = fStringPool.toString(elementType);
          System.out.println("Name: "+strTmp+", "+
@@ -4075,7 +4073,7 @@ public final class XMLValidator
           // 3.2.1 The element information item must have no
           // character or element information item [children].
           //
-          if (childCount == 0 && fNil) {              
+          if (childCount == 0 && fNil) {
               fNil = false;
               //return success
               return -1;
@@ -4132,7 +4130,7 @@ public final class XMLValidator
                                        XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
          } else {
             try {
-                
+
                 if (fCurrentDV == null ) { //no character data
                     fGrammar.getElementDecl(elementIndex, fTempElementDecl);
                     fCurrentDV = fTempElementDecl.datatypeValidator;
@@ -4152,7 +4150,7 @@ public final class XMLValidator
                    String currentElementDefault = ((SchemaGrammar)fGrammar).getElementDefaultValue(fCurrentElementIndex);
                    int hasFixed =  (((SchemaGrammar)fGrammar).getElementDeclMiscFlags(fCurrentElementIndex) & SchemaSymbols.FIXED);
                    if (fNil) {
-                       if (value.length() != 0) {                       
+                       if (value.length() != 0) {
                          reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                                  XMLMessages.SCHEMA_GENERIC_ERROR,
                                                  "An element <" +fStringPool.toString(elementType)+"> with attribute xsi:nil=\"true\" must be empty");
@@ -4208,7 +4206,7 @@ public final class XMLValidator
                                           new Object [] { "In element '"+fStringPool.toString(elementType)+"' : "+idve.getMessage()},
                                           XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
             }
-            
+
             fCurrentDV = null;
             fFirstChunk= true;
             fTrailing=false;
