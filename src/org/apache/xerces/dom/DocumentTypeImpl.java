@@ -315,8 +315,8 @@ public class DocumentTypeImpl
     	
         if (needsSyncChildren()) {
             synchronizeChildren();
-            }
-        setReadOnly(readOnly, deep);
+        }
+        super.setReadOnly(readOnly, deep);
 
         // set read-only property
         elements.setReadOnly(readOnly, true);
