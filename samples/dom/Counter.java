@@ -120,9 +120,6 @@ public class Counter {
     /** Default namespaces support (true). */
     protected static final boolean DEFAULT_NAMESPACES = true;
 
-    /** Default namespace prefixes (false). */
-    protected static final boolean DEFAULT_NAMESPACE_PREFIXES = false;
-
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
 
@@ -438,8 +435,6 @@ public class Counter {
         System.err.println("  -p name     Select parser by name.");
         System.err.println("  -x number   Select number of repetitions.");
         System.err.println("  -n  | -N    Turn on/off namespace processing.");
-        System.err.println("  -np | -NP   Turn on/off namespace prefixes.");
-        System.err.println("              NOTE: Requires use of -n.");
         System.err.println("  -v  | -V    Turn on/off validation.");
         System.err.println("  -s  | -S    Turn on/off Schema validation support.");
         System.err.println("              NOTE: Not supported by all parsers.");
