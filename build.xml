@@ -167,6 +167,7 @@ Copyright:
 
     <copy file="${src.dir}/org/apache/xerces/parsers/org.xml.sax.driver"
       tofile="${build.dest}/META-INF/services/org.xml.sax.driver"/>
+    
   </target>
 
   <!-- =================================================================== -->
@@ -175,6 +176,9 @@ Copyright:
   <target name="prepare-src" depends="prepare-common">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
       tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
+      
+    <copy file="${src.dir}/org/apache/xerces/dom/org.w3c.dom.DOMImplementationSourceList"
+      tofile="${build.dest}/META-INF/services/org.w3c.dom.DOMImplementationSourceList"/>
 
     <!-- copy src files -->
     <copy todir="${build.src}">
@@ -871,6 +875,9 @@ Copyright:
   <target name="dtdprepare-src" depends="prepare-common">
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration"
       tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
+      
+    <copy file="${src.dir}/org/apache/xerces/dom/org.apache.xerces.dom.DOMImplementationSourceImpl"
+      tofile="${build.dest}/META-INF/services/org.w3c.dom.DOMImplementationSourceList"/>
 
     <!-- copy src files -->
     <copy todir="${build.src}">
@@ -887,7 +894,7 @@ Copyright:
                         org/apache/xerces/impl/xs/identity/**
                         org/apache/xerces/impl/xs/traversers/**
                         org/apache/xerces/impl/xs/models/**
-			org/apache/xerces/impl/xs/opti/**
+                        org/apache/xerces/impl/xs/opti/**
                         org/apache/xerces/impl/xs/util/NSItemListImpl.java                      
                         org/apache/xerces/impl/xs/util/XInt.java
                         org/apache/xerces/impl/xs/util/XIntPool.java
@@ -902,7 +909,7 @@ Copyright:
                         org/apache/xerces/parsers/DOMASBuilderImpl.java
                         org/apache/xerces/parsers/StandardParserConfiguration.java
                         org/apache/xerces/parsers/IntegratedParserConfiguration.java
-			org/apache/xerces/parsers/XIncludeParserConfiguration.java
+                        org/apache/xerces/parsers/XIncludeParserConfiguration.java
                         org/apache/xerces/parsers/SecurityConfiguration.java
                         org/apache/xerces/parsers/XML11Configuration.java
                         org/apache/xerces/parsers/XMLGrammarCachingConfiguration.java
@@ -1122,6 +1129,9 @@ Copyright:
     <copy file="${src.dir}/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration"
       tofile="${build.dest}/META-INF/services/org.apache.xerces.xni.parser.XMLParserConfiguration"/>
 
+    <copy file="${src.dir}/org/apache/xerces/dom/org.w3c.dom.DOMImplementationSourceList"
+      tofile="${build.dest}/META-INF/services/org.w3c.dom.DOMImplementationSourceList"/>
+    
     <!-- copy src files -->
     <copy todir="${build.src}">
         <fileset 
@@ -1171,6 +1181,8 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DOMLocatorImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
+    <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationListImpl.java"  
+             token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DOMImplementationSourceImpl.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
     <replace file="${build.src}/org/apache/xerces/dom/DOMXSImplementationSourceImpl.java"  
@@ -1183,7 +1195,7 @@ Copyright:
              token="org.apache.xerces.dom3" value="org.w3c.dom"/> 
     <replace file="${build.src}/org/apache/xerces/parsers/AbstractDOMParser.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>                                   
-   <replace file="${build.src}/org/apache/xerces/util/DOMErrorHandlerWrapper.java"  
+    <replace file="${build.src}/org/apache/xerces/util/DOMErrorHandlerWrapper.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>             
     <replace file="${build.src}/org/apache/xml/serialize/XMLSerializer.java"  
              token="org.apache.xerces.dom3" value="org.w3c.dom"/>
