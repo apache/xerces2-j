@@ -215,8 +215,6 @@ public class DefaultEntityHandler
     public int addExternalPEDecl(int name, int publicId, int systemId, boolean isExternal) throws Exception {
         if (fParameterEntityPool == null)
             fParameterEntityPool = new EntityPool(fStringPool, fErrorReporter, false);
-System.err.println("adding extPEDecl: " + fStringPool.toString(name) +
-                   " with base: " + fSystemId); 
         int entityHandle = fParameterEntityPool.addEntityDecl(name, -1, publicId, systemId, fStringPool.addSymbol(fSystemId), -1, isExternal);
         return entityHandle;
     }
