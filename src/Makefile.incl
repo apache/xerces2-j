@@ -36,8 +36,8 @@ MV = mv
 #
 # Define the version strings
 #
-PRODUCTVERSION = 1_2_0
-PRODUCTVERSION_DOT = 1.2.0
+PRODUCTVERSION = 1_2_1
+PRODUCTVERSION_DOT = 1.2.1
 PRODUCTNAME = Xerces
 
 #define the jar file names
@@ -80,7 +80,7 @@ SRCJARFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.jar
 .SUFFIXES: .class .java
 
 .java.class:
-	${JAVAC} -classpath "$(CLPATH)" $<
+	${JAVAC} -g -classpath "$(CLPATH)" $<
 	touch ${TOP}/src/classfiles_updated
 
 all:: dirs compile 
