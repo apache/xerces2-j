@@ -396,7 +396,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         fIncludeIgnorableWhitespace =
             fConfiguration.getFeature(INCLUDE_IGNORABLE_WHITESPACE);
 
-        fDeferNodeExpansion =
+        fDeferNodeExpansion =  
             fConfiguration.getFeature(DEFER_NODE_EXPANSION);
 
         fNamespaceAware = fConfiguration.getFeature(NAMESPACES);
@@ -2002,10 +2002,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                     elementDefIndex = fDeferredDocumentImpl.createDeferredElementDefinition(elementName);
                     fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, elementDefIndex);
                 }
-
                 // add default attribute
                 int attrIndex = fDeferredDocumentImpl.createDeferredAttribute(
                                     attributeName, defaultValue.toString(), false);
+                if (type.equals("ID")) {               
+                    fDeferredDocumentImpl.setIdAttribute(attrIndex);
+                }
                 // REVISIT: set ID type correctly
                 fDeferredDocumentImpl.appendChild(elementDefIndex, attrIndex);
             }
@@ -2049,6 +2051,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
                 }
                 attr.setValue(defaultValue.toString());
                 attr.setSpecified(false);
+                attr.setIdAttribute(type.equals("ID"));
 
                 // add default attribute to element definition
                 if (nsEnabled){
