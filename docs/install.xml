@@ -13,8 +13,9 @@
 jar xf &ParserName;-src.&parserversion;.zip
 jar xf &ParserName;-tools.&parserversion;.zip</source>
   <p>
-   All of these commands creates a sub-directory called
-   "&parserdir;" in the current directory.
+   All of these commands create a sub-directory called
+   "&parserdir;" in the current directory, except for the command to unpack
+   the &quot;tools&quot; distribution, since you may install this anywhere you like.
   </p>
  </s2>
  <s2 title='Files in the Binary Package'>
@@ -28,8 +29,16 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Web page redirect to docs/html/index.html</td>
    </tr>
    <tr>
-    <td>xerces.jar</td>
-    <td>Jar file containing all the parser class files</td>
+    <td>xercesImpl.jar</td>
+    <td>Jar file containing all the parser class files that implement
+    one of the standard API&apos;s supported by the parser</td>
+   </tr>
+   <tr>
+    <td>xmlParserAPIs.jar</td>
+    <td>Jar file containing all the standard API&apos;s implemented by
+    the parser.  Currently, &ParserName; supports DOM level 2, SAX
+    2.0 R2 PR1, and the <code>javax.xml.parsers</code> part of JAXP
+    1.1.  </td>
    </tr>
    <tr>
     <td>xercesSamples.jar</td>
@@ -40,11 +49,11 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Directory containing sample XML data files</td>
    </tr>
    <tr>
-    <td>docs/html/</td>
+    <td>docs/</td>
     <td>Directory containing documentation</td>
    </tr>
    <tr>
-    <td>docs/apiDocs/</td>
+    <td>docs/javadocs/</td>
     <td>Directory containing Javadoc API for parser framework</td>
    </tr>
    <tr>
@@ -55,7 +64,8 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
   <note>
    To use &ParserName; you do not need the source files. 
    However, if you want to recompile the sources you need to
-   download the source package.
+   download the source package and have the contents of the tools
+   package (or equivalent) available.
   </note>
  </s2>
  <s2 title='Files in the Source Package'>
@@ -69,7 +79,7 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>Batch file for invoking Ant build for Windows users</td>
    </tr>
    <tr>
-    <td>build</td>
+    <td>build.sh</td>
     <td>Shell script for invoking Ant build for UNIX users</td>
    </tr>
    <tr>
@@ -117,11 +127,43 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    </tr>
   </table>
   <note>
-   In order to compile the source code using Ant or build the
-   release packages, you must download the 
+   In order to compile the source code using Ant or to build the
+   release distributions yourself, you must have the contents of 
    <code>&ParserName;-tools.&parserversion;.zip</code>
-   package and extract it in the same directory where you
-   extracted the source package.
+   on your classpath; i.e., you will need access to a version of ant,
+   xalan, StyleBook and an XML parser such as xerces.
+   For ease of use, we recommend extracting
+   <code>&ParserName;-tools.&parserversion;.zip</code>
+   in your xerces root directory; the build.sh and build.bat scripts
+   are written for this case.
   </note>
  </s2>
+ <s2 title='Changes in Xerces jar files'>
+ <p>In order to accomodate the very common case in which xerces is
+ used with an XSL processor such as xalan, between Xerces 2.0.0 beta 3
+ and beta 4 a change in the default organization of xerces&apos;s jar
+ files was introduced.  As well as the <code>xercesSamples.jar</code>
+ file, which we still produce, xerces formerly came with a file called
+ <code>xerces.jar</code>.  This file contained all of the
+ parser&apos;s functionality.  Two files are now included:
+ <code>xercesImpl.jar</code>, our implementation of various API&apos;s,
+ and <code>xmlParserAPIs.jar</code>, the API&apos;s themselves.  This
+ was done so that, if your XSLT processor ships with API&apos;s at the
+ same level as those supported by &ParserName;, you can avoid putting
+ <code>xmlParserAPIs.jar</code> on your classpath.</p>
+ <p>Should you wish to use the old form of the jarfiles, we have
+ included several ant targets for backward compatibility.  An
+ &quot;ant target&quot; is an argument given to ant, our build tool,
+ that tells it which portions of the <code>build.xml</code> file to
+ apply.  If you are on a Windows system and you wish to get only the
+ old xerces jar files, you would execute <code>build.bat
+ oldjars</code>.  If you want to regenerate new versions of the xerces
+ binary, source and tools distributions with the old-style jarfiles,
+ you would execute <code>build.bat oldall</code>.  The situation is
+ analogous for Unix users, except that <code>build.sh</code> would be
+ used instead of <code>build.bat</code>.  For further information and
+ more options, please look inside build.xml itself; all possibilities
+ are documented there.
+ </p>
+</s2>
 </s1>
