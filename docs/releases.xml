@@ -2,30 +2,64 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
-  <release version="&ParserName; TBD">
+  <release version="&ParserName; 2.3.0">
     <desc>
-        TBD
+        With this release, the Xerces-J developers are declaring the Xerces
+        Native Interface (XNI) core and parsers packages
+        to be gold.  
+        This release also brings Xerces into compliance with the most recent
+        work of the W3C DOM working group on DOM level 3 Core
+        and Load/Save, and introduces many fixes to bring Xerces's behaviour 
+        into line with XML Schema errata.  Support for the
+        parsing of documents written according to the XML 1.1 candidate recommendation 
+        has also been completed, except that no option for verifying that documents
+        are normalized has yet been implemented.
+        Finally, Xerces now provides means by which applications can force
+        the parser to reject certain kinds of documents the processing of which could
+        result in a denial-of-service attack.
     </desc>
     <changes>
-      <update>
+    <update>
        <note>
         Modified XMLLocator interface to remove setter methods for move
         towards finalizing XNI.
        </note>
        <submitter name='Andy Clark'/>
-      </update>
-      <add>
+    </update>
+    <add>
           <note>Implemented several DOM Level 3 features, including DOMConfiguration, exposing type
           information via DOM, and allowing to set an ID attribute in the DOM.
           </note>
           <submitter name='Elena Litani'/>
-        </add>      
-        <update>
+      </add>      
+      <update>
           <note>Modified several XNI interfaces, i.e. NamespaceContext, XMLResourceIdentifier, and updated implementation
           accordingly.
           </note>
           <submitter name='Elena Litani'/>
-        </update>      
+      </update>      
+      <update>
+            <note>
+            Modified XMLDTDHandler, XMLDTDSource, XMLDTDContentModelHandler and
+            XMLDTDContentModelSource to make these pipelines doubly-linked,
+            as was done in the last release for the main document pipeline.
+        </note>
+        <submitter name="Neil Graham"/>
+      </update>
+      <add>
+        <note>Completed experimental support for XML 1.1 and
+            XML Namespaces 1.1 CR's, except for XML 1.1 section 2.13.
+        </note>
+        <submitter name="Neil Graham"/>
+    </add>
+    <add>
+        <note>
+            Provided a mechanism by which applications can instruct the parser
+            to abort the parsing of documents containing constructs that
+            could swamp system resources.
+        </note>
+        <submitter name="Neil Graham, Neeraj Bajaj"/>
+      </add>
       <fix>
         <note>
           Fix comment parsing bug that prevented Tomcat 4.1.12 from making
