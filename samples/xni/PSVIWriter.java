@@ -601,7 +601,7 @@ implements XMLComponent, XMLDocumentFilter {
         
         checkForChildren();
         if (elemPSVI != null) {
-            if (elemPSVI.schemaSpecified()){  // value was specified in the instance!
+            if (elemPSVI.isSpecified()){  // value was specified in the instance!
                 printIndentTag("<character>");
                 printElement("characterCode", text.toString());
                 printElement("elementContentWhitespace", "false");
@@ -851,8 +851,8 @@ implements XMLComponent, XMLDocumentFilter {
                 printElement("psv:schemaErrorCode","");
             }
             printElement("psv:nil", String.valueOf(elemPSVI.isNil()));
-            printElement("psv:schemaNormalizedValue",elemPSVI.schemaNormalizedValue());
-            String specified = elemPSVI.schemaSpecified()?"infoset":"schema";
+            printElement("psv:schemaNormalizedValue",elemPSVI.getSchemaNormalizedValue());
+            String specified = elemPSVI.isSpecified()?"infoset":"schema";
             printElement("psv:schemaSpecified",specified);
 
         }
@@ -899,8 +899,8 @@ implements XMLComponent, XMLDocumentFilter {
 
             }
 
-            printElement("psv:schemaNormalizedValue",attrPSVI.schemaNormalizedValue());
-            printElement("psv:schemaSpecified", (attrPSVI.schemaSpecified())?"infoset":"schema");
+            printElement("psv:schemaNormalizedValue",attrPSVI.getSchemaNormalizedValue());
+            printElement("psv:schemaSpecified", (attrPSVI.isSpecified())?"infoset":"schema");
 
             short definationType = attrPSVI.getTypeDefinitionType();
             if (definationType == XSTypeDecl.SIMPLE_TYPE) {

@@ -63,6 +63,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.XMLDocumentParser;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
@@ -78,6 +79,8 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+
+import org.apache.xerces.xni.psvi.ElementPSVI;
 
 /**
  * Provides a complete trace of XNI document and DTD events for
@@ -228,7 +231,7 @@ public class DocumentTracer
             fOut.print("literal systemId=");
             printQuotedString(locator.getLiteralSystemId());
             fOut.print(',');
-            fOut.print("baseSystemId=");
+            fOut.print("baseSystemId=");                     
             printQuotedString(locator.getBaseSystemId());
             fOut.print(',');
             fOut.print("expanded systemId=");
@@ -335,6 +338,12 @@ public class DocumentTracer
         fOut.print("characters(");
         fOut.print("text=");
         printQuotedString(text.ch, text.offset, text.length);
+        if (augs != null) {
+            ElementPSVI element = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+            fOut.print(" schemaNormalized=");
+            printQuotedString(element.getSchemaNormalizedValue());
+        }
+        
         fOut.println(')');
         fOut.flush();
 
