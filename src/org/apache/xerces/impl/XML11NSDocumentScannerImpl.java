@@ -377,18 +377,21 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
         fEntityScanner.skipSpaces();
 
         // content
-        int oldLen = attributes.getLength();
+        int attrIndex;
 
         if (fBindNamespaces) {
+            attrIndex = attributes.getLength();
             attributes.addAttributeNS(
                 fAttributeQName,
                 XMLSymbols.fCDATASymbol,
                 null);
         } else {
-            attributes.addAttribute(
-                fAttributeQName,
-                XMLSymbols.fCDATASymbol,
-                null);
+            int oldLen = attributes.getLength();
+            attrIndex =
+                attributes.addAttribute(
+                    fAttributeQName,
+                    XMLSymbols.fCDATASymbol,
+                    null);
 
             // WFC: Unique Att Spec
             if (oldLen == attributes.getLength()) {
@@ -409,13 +412,13 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
             fTempString2,
             fAttributeQName.rawname,
             attributes,
-            oldLen,
+            attrIndex,
             isVC,
             fCurrentElement.rawname);
         String value = fTempString.toString();
-        attributes.setValue(oldLen, value);
-        attributes.setNonNormalizedValue(oldLen, fTempString2.toString());
-        attributes.setSpecified(oldLen, true);
+        attributes.setValue(attrIndex, value);
+        attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());
+        attributes.setSpecified(attrIndex, true);
 
         // record namespace declarations if any.
         if (fBindNamespaces) {
@@ -487,14 +490,14 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
                     uri.length() != 0 ? uri : null);
                 // bind namespace attribute to a namespace
                 attributes.setURI(
-                    oldLen,
+                    attrIndex,
                     fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS));
 
             } else {
                 // attempt to bind attribute
                 if (fAttributeQName.prefix != null) {
                     attributes.setURI(
-                        oldLen,
+                        attrIndex,
                         fNamespaceContext.getURI(fAttributeQName.prefix));
                 }
             }

@@ -387,13 +387,15 @@ extends XMLDocumentScannerImpl {
         fEntityScanner.skipSpaces();
 
         // content
-        int oldLen = attributes.getLength();
-        
+        int attrIndex;
+       
         if (fBindNamespaces) {
+            attrIndex = attributes.getLength();
             attributes.addAttributeNS(fAttributeQName, XMLSymbols.fCDATASymbol, null);
         }
         else {
-            attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
+            int oldLen = attributes.getLength();
+            attrIndex = attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
         	
             // WFC: Unique Att Spec
             if (oldLen == attributes.getLength()) {
@@ -409,11 +411,11 @@ extends XMLDocumentScannerImpl {
         // REVISIT: it seems that this function should not take attributes, and length
         scanAttributeValue(this.fTempString, fTempString2,
                            fAttributeQName.rawname, attributes,
-                           oldLen, isVC,fCurrentElement.rawname);
+                           attrIndex, isVC,fCurrentElement.rawname);
         String value = fTempString.toString();
-        attributes.setValue(oldLen, value);
-        attributes.setNonNormalizedValue(oldLen, fTempString2.toString());
-        attributes.setSpecified(oldLen, true);
+        attributes.setValue(attrIndex, value);
+        attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());
+        attributes.setSpecified(attrIndex, true);
 
         // record namespace declarations if any.
         if (fBindNamespaces) {
@@ -479,13 +481,13 @@ extends XMLDocumentScannerImpl {
                 // declare prefix in context
                 fNamespaceContext.declarePrefix(prefix, uri.length() != 0 ? uri : null);
                 // bind namespace attribute to a namespace
-                attributes.setURI(oldLen, fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS));
+                attributes.setURI(attrIndex, fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS));
 
             }
             else {
                 // attempt to bind attribute
                 if (fAttributeQName.prefix != null) {
-                    attributes.setURI(oldLen, fNamespaceContext.getURI(fAttributeQName.prefix));
+                    attributes.setURI(attrIndex, fNamespaceContext.getURI(fAttributeQName.prefix));
                 }
             }
         }

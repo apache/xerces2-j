@@ -853,7 +853,7 @@ public class XMLDocumentFragmentScannerImpl
 
         // content
         int oldLen = attributes.getLength();
-        attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
+        int attrIndex = attributes.addAttribute(fAttributeQName, XMLSymbols.fCDATASymbol, null);
 
         // WFC: Unique Att Spec
         if (oldLen == attributes.getLength()) {
@@ -865,10 +865,10 @@ public class XMLDocumentFragmentScannerImpl
         boolean isVC =  fHasExternalDTD && !fStandalone;        
         scanAttributeValue(fTempString, fTempString2,
                            fAttributeQName.rawname, attributes,
-                           oldLen, isVC,fCurrentElement.rawname);
-        attributes.setValue(oldLen, fTempString.toString());
-        attributes.setNonNormalizedValue(oldLen, fTempString2.toString());
-        attributes.setSpecified(oldLen, true);
+                           attrIndex, isVC,fCurrentElement.rawname);
+        attributes.setValue(attrIndex, fTempString.toString());
+        attributes.setNonNormalizedValue(attrIndex, fTempString2.toString());
+        attributes.setSpecified(attrIndex, true);
 
         if (DEBUG_CONTENT_SCANNING) System.out.println("<<< scanAttribute()");
     } // scanAttribute(XMLAttributes)
