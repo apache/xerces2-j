@@ -128,7 +128,7 @@ implements XMLComponent, XMLDocumentFilter {
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =
     "http://apache.org/xml/features/dom/include-ignorable-whitespace";
 
-    protected static final String PSVI_OUTPUT ="e:\\psvi_output.xml";
+    protected static final String PSVI_OUTPUT ="psvi_output.xml";
 
     /** Include ignorable whitespace. */
     protected boolean fIncludeIgnorableWhitespace;
