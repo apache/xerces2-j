@@ -1708,6 +1708,11 @@ public class XMLSchemaValidator
         fCurrentType = null;
         fNil = false;
 
+        // and the buffer to hold the value of the element
+        fBuffer.setLength(0);
+        fSawCharacters = false;
+        fSawChildren = false;
+
         // check what kind of declaration the "decl" from 
         // oneTransition() maps to
         if (decl != null) {
@@ -1840,11 +1845,6 @@ public class XMLSchemaValidator
         fCurrCMState = null;
         if (fCurrentCM != null)
             fCurrCMState = fCurrentCM.startContentModel();
-
-        // and the buffer to hold the value of the element
-        fBuffer.setLength(0);
-        fSawCharacters = false;
-        fSawChildren = false;
 
         // get information about xsi:nil
         String xsiNil = attributes.getValue(URI_XSI, XSI_NIL);
