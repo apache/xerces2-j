@@ -1749,7 +1749,7 @@ public class XSchemaValidator implements XMLValidator {
                 int entityName = fStringPool.addSymbol(child.getAttribute(ATT_NAME));
 
                 if (name.equals(ELT_TEXTENTITYDECL)) {
-                    int value = fStringPool.addString(child.getFirstChild().getNodeValue());
+                    int value = fStringPool.addString(child.getFirstChild().getFirstChild().getNodeValue());
                     fEntityPool.addEntityDecl(entityName, value, -1, -1, -1, -1, true);
                 }
                 else {
