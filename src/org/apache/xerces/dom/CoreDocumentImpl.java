@@ -797,6 +797,15 @@ extends ParentNode implements Document  {
     public void setXmlEncoding(String value) {
         encoding = value;
     }
+    
+    /**
+     * @deprecated This method is internal and only exists for
+     * compatibility with older applications. New applications
+     * should never call this method.
+     */
+    public void setEncoding(String value) {
+        setXmlEncoding(value);
+    }
 
     /**
      * DOM Level 3 WD - Experimental.
@@ -804,6 +813,15 @@ extends ParentNode implements Document  {
      */
     public String getXmlEncoding() {
         return encoding;
+    }
+    
+    /**
+     * @deprecated This method is internal and only exists for
+     * compatibility with older applications. New applications
+     * should never call this method.
+     */
+    public String getEncoding() {
+        return getXmlEncoding();
     }
 
     /**
@@ -837,6 +855,15 @@ extends ParentNode implements Document  {
             xml11Version = false;
         }
     }
+    
+    /**
+     * @deprecated This method is internal and only exists for
+     * compatibility with older applications. New applications
+     * should never call this method.
+     */
+    public void setVersion(String value) {
+        setXmlVersion(value);
+    }
 
     /**
      * DOM Level 3 WD - Experimental.
@@ -844,6 +871,15 @@ extends ParentNode implements Document  {
      */
     public String getXmlVersion() {
         return (version == null)?"1.0":version;
+    }
+    
+    /**
+     * @deprecated This method is internal and only exists for
+     * compatibility with older applications. New applications
+     * should never call this method.
+     */
+    public String getVersion() {
+        return getXmlVersion();
     }
 
     /**
@@ -860,6 +896,15 @@ extends ParentNode implements Document  {
                                   throws DOMException {
             standalone = value;
     }
+    
+    /**
+     * @deprecated This method is internal and only exists for
+     * compatibility with older applications. New applications
+     * should never call this method.
+     */
+    public void setStandalone(boolean value) {
+        setXmlStandalone(value);
+    }
 
     /**
      * DOM Level 3 WD - Experimental.
@@ -869,7 +914,15 @@ extends ParentNode implements Document  {
     public boolean getXmlStandalone() {
         return standalone;
     }
-
+    
+    /**
+     * @deprecated This method is internal and only exists for
+     * compatibility with older applications. New applications
+     * should never call this method.
+     */
+    public boolean getStandalone() {
+        return getXmlStandalone();
+    }
 
     /**
      * DOM Level 3 WD - Experimental.
