@@ -438,17 +438,17 @@ public abstract class ChildAndParentNode
 
             changed();
 
-            // update cache if we have any
+            // update cached length if we have any
             if (nodeListLength != -1) {
                 nodeListLength++;
             }
             if (nodeListIndex != -1) {
-                // if the cache happens to be the refNode do the obvious
+                // if we happen to insert just before the cached node, update
+                // the cache to the new node to match the cached index
                 if (nodeListNode == refInternal) {
-                    nodeListIndex--;
                     nodeListNode = newInternal;
                 } else {
-                    // otherwise just invalidate it
+                    // otherwise just invalidate the cache
                     nodeListIndex = -1;
                 }
             }
@@ -647,6 +647,22 @@ public abstract class ChildAndParentNode
             }
         }
 
+        // update cached length if we have any
+        if (nodeListLength != -1) {
+            nodeListLength--;
+        }
+        if (nodeListIndex != -1) {
+            // if the removed node is the cached node
+            // update the cache to its (now former) previous sibling
+            if (nodeListNode == oldInternal) {
+                nodeListIndex--;
+                nodeListNode = oldInternal.previousSibling();
+            } else {
+                // otherwise just invalidate the cache
+                nodeListIndex = -1;
+            }
+        }
+
         // Remove oldInternal's references to tree
         oldInternal.ownerNode       = ownerDocument;
         oldInternal.isOwned(false);
@@ -654,15 +670,6 @@ public abstract class ChildAndParentNode
         oldInternal.previousSibling = null;
 
         changed();
-
-        // update cache
-        if (nodeListLength > 0) {
-            nodeListLength--;
-        }
-        if (nodeListIndex != -1 && nodeListNode != null) {
-            nodeListIndex--;
-            nodeListNode = nodeListNode.previousSibling();
-        }
 
         if(MUTATIONEVENTS)
         {
