@@ -85,17 +85,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     private int        fMinLength        = 0;
     private String     fPattern          = null;
     private Vector     fEnumeration      = null;
-    private String     fMaxInclusive     = null;
-    private String     fMaxExclusive     = null;
-    private String     fMinInclusive     = null;
-    private String     fMinExclusive     = null;
     private int        fFacetsDefined    = 0;
-    private  short      fWhiteSpace = DatatypeValidator.PRESERVE;
-
-    private boolean    isMaxExclusiveDefined = false;
-    private boolean    isMaxInclusiveDefined = false;
-    private boolean    isMinExclusiveDefined = false;
-    private boolean    isMinInclusiveDefined = false;
+    private  short     fWhiteSpace = DatatypeValidator.PRESERVE;
     private RegularExpression fRegex         = null;
 
 
@@ -151,18 +142,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration = (Vector)facets.get(key);
-                } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
-                    fMaxInclusive = (String)facets.get(key);
-                } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-                    fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
-                    fMaxExclusive = (String)facets.get(key);
-                } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-                    fFacetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
-                    fMinInclusive = (String)facets.get(key);
-                } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-                    fFacetsDefined += DatatypeValidator.FACET_MINEXCLUSIVE;
-                    fMinExclusive = (String)facets.get(key);
                 } else if (key.equals(SchemaSymbols.ELT_WHITESPACE)) {
                     fFacetsDefined += DatatypeValidator.FACET_WHITESPACE;
                     String ws = (String)facets.get(key);
@@ -198,28 +177,12 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                                                 "'must be less than the value of maxLength = '" + fMaxLength + "'.");
                 }
             }
-
-            isMaxExclusiveDefined = ((fFacetsDefined & 
-                                        DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
-            isMaxInclusiveDefined = ((fFacetsDefined & 
-                                        DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
-            isMinExclusiveDefined = ((fFacetsDefined &
-                                        DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
-            isMinInclusiveDefined = ((fFacetsDefined &
-                                        DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
-
-            if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
-                throw new InvalidDatatypeFacetException(
-                                                        "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
-            }
-            if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
-                throw new InvalidDatatypeFacetException(
-                                                        "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
-            }
         }// End of Facets Setting
     }
 
-
+    /**
+     * return value of whiteSpace facet
+     */
     public short getWSFacet(){
         return fWhiteSpace;
     }
@@ -287,50 +250,10 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             }
         }
 
-
-
         if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
             if ( fEnumeration.contains( content ) == false )
                 throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
         }
-
-        if ( isMaxExclusiveDefined == true ) {
-            int comparisonResult;
-            comparisonResult  = compare( content, fMaxExclusive );
-            if ( comparisonResult >= 0 ) {
-                throw new InvalidDatatypeValueException( "MaxExclusive:Value '"+content+ "'  must be " +
-                                                         "lexicographically less than" + fMaxExclusive );
-
-            }
-
-        }
-        if ( isMaxInclusiveDefined == true ) {
-            int comparisonResult;
-            comparisonResult  = compare( content, fMaxInclusive );
-            if ( comparisonResult > 0 )
-                throw new InvalidDatatypeValueException( "MaxInclusive:Value '"+content+ "' must be " +
-                                                         "lexicographically less or equal than" + fMaxInclusive );
-        }
-
-        if ( isMinExclusiveDefined == true ) {
-            int comparisonResult;
-            comparisonResult  = compare( content, fMinExclusive );
-
-            //System.out.println( "exclusive = " + comparisonResult );
-
-            if ( comparisonResult <= 0 )
-                throw new InvalidDatatypeValueException( "MinExclusive:Value '"+content+ "' must be " +
-                                                         "lexicographically greater than" + fMinExclusive );
-        }
-        if ( isMinInclusiveDefined == true ) {
-            int comparisonResult;
-            comparisonResult = compare( content, fMinInclusive );
-            //System.out.println( "inclusive = " + comparisonResult );
-            if ( comparisonResult < 0 )
-                throw new InvalidDatatypeValueException( "MinInclusive:Value '"+content+ "' must be " +
-                                                         "lexicographically greater or equal than '" + fMinInclusive  + "'." );
-        }
-
 
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
             //RegularExpression regex = new RegularExpression(fPattern );
@@ -360,16 +283,9 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             newObj.fMaxLength        =  this.fMaxLength;
             newObj.fMinLength        =  this.fMinLength;
             newObj.fPattern          =  this.fPattern;
+            newObj.fWhiteSpace       =  this.fWhiteSpace;
             newObj.fEnumeration      =  this.fEnumeration;
-            newObj.fMaxInclusive     =  this.fMaxInclusive;
-            newObj.fMaxExclusive     =  this.fMaxExclusive;
-            newObj.fMinInclusive     =  this.fMinInclusive;
-            newObj.fMinExclusive     =  this.fMinExclusive;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-            newObj.isMaxExclusiveDefined = this.isMaxExclusiveDefined;
-            newObj.isMaxInclusiveDefined = this.isMaxInclusiveDefined;
-            newObj.isMinExclusiveDefined = this.isMinExclusiveDefined;
-            newObj.isMinInclusiveDefined = this.isMinInclusiveDefined;
         } catch ( InvalidDatatypeFacetException ex) {
             ex.printStackTrace();
         }
