@@ -2338,6 +2338,7 @@ public class XMLSchemaValidator
             typeName = (QName)fQNameDV.validate(xsiType, fValidationState, null);
         }
         catch (InvalidDatatypeValueException e) {
+            reportSchemaError(e.getKey(), e.getArgs());
             reportSchemaError("cvc-elt.4.1", new Object[]{element.rawname, URI_XSI+","+XSI_TYPE, xsiType});
             return null;
         }
@@ -2646,6 +2647,7 @@ public class XMLSchemaValidator
             // PSVI: attribute is invalid, record errors
             attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
             attrPSVI.addErrorCode("cvc-attribute.3");
+            reportSchemaError(idve.getKey(), idve.getArgs());
             reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
         }
         // PSVI: attribute normalized value
@@ -2914,6 +2916,7 @@ public class XMLSchemaValidator
                         fDocumentHandler.characters(fXMLString, fAugmentations);
 
                     }
+                    reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, textContent});
                 }
             }
@@ -2968,6 +2971,7 @@ public class XMLSchemaValidator
                         fDocumentHandler.characters(fXMLString, fAugmentations);
 
                     }
+                    reportSchemaError(e.getKey(), e.getArgs());
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 }
                 // REVISIT: eventually, this method should return the same actualValue as elementLocallyValidType...
