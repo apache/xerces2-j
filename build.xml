@@ -97,6 +97,7 @@ Copyright:
     <property name="build.tests" value="${build.dir}/tests"/>
     <property name="build.data" value="${build.dir}/data"/>
     <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
+    <property name="compilation.classpath" value="${build.dest}"/>
 
     <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
     <property name="distbin.dir" value="${build.dir}/${name}-${appendit}"/>
@@ -193,13 +194,14 @@ Copyright:
         includes="**/*.res, **/*.properties">
       </fileset>
     </copy>
-
     <javac srcdir="${build.src}"
            excludes="**/RevalidatingDOMParser.java "
+           classpath="${compilation.classpath}"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
-           optimize="${optimize}" />
+           optimize="${optimize}" 
+           includeAntRuntime="false"/> 
   </target>
 
   <!-- =================================================================== -->
@@ -222,7 +224,8 @@ Copyright:
     <javac srcdir="${build.samples}"
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
-           debug="${debug}"/>
+           debug="${debug}"
+           includeAntRuntime="false"/> 
   </target>
 
   <!-- =================================================================== -->
