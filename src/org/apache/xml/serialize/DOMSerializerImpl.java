@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.xerces.dom.AttrImpl;
@@ -928,10 +929,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
             // Use FileOutputStream if this URI is for a local file.
             if (protocol.equals("file") 
                 && (host == null || host.length() == 0 || host.equals("localhost"))) {
-                // REVISIT: We have to decode %nn sequences. For
-                // now files containing spaces and other characters
-                // which were escaped in the URI will fail. -- mrglavas
-                out = new FileOutputStream(new File(url.getPath()));
+                out = new FileOutputStream(getPathWithoutEscapes(url.getPath()));              
             }
             // Try to write to some other kind of URI. Some protocols
             // won't support this, though HTTP should work.
@@ -1153,6 +1151,24 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
         }        
         }
                
+    }
+    
+    private String getPathWithoutEscapes(String origPath) {
+        if (origPath != null && origPath.length() != 0 && origPath.indexOf('%') != -1) {
+            // Locate the escape characters
+            StringTokenizer tokenizer = new StringTokenizer(origPath, "%");
+            StringBuffer result = new StringBuffer(origPath.length());
+            int size = tokenizer.countTokens();
+            result.append(tokenizer.nextToken());
+            for(int i = 1; i < size; ++i) {
+                String token = tokenizer.nextToken();
+                // Decode the 2 digit hexadecimal number following % in '%nn'
+                result.append((char)Integer.valueOf(token.substring(0, 2), 16).intValue());
+                result.append(token.substring(2));
+            }
+            return result.toString();
+        }
+        return origPath;
     }
 
 }//DOMSerializerImpl
