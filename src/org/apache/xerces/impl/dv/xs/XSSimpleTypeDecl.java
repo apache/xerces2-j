@@ -725,7 +725,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"maxInclusive"});
             } else {
                 try {
-                    fMaxInclusive = getActualValue(facets.maxInclusive, context, tempInfo);
+                    fMaxInclusive = getActualValue(facets.maxInclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MAXINCLUSIVE;
                     if ((fixedFacet & FACET_MAXINCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXINCLUSIVE;
@@ -759,7 +759,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"maxExclusive"});
             } else {
                 try {
-                    fMaxExclusive = getActualValue(facets.maxExclusive, context, tempInfo);
+                    fMaxExclusive = getActualValue(facets.maxExclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MAXEXCLUSIVE;
                     if ((fixedFacet & FACET_MAXEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MAXEXCLUSIVE;
@@ -792,7 +792,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"minExclusive"});
             } else {
                 try {
-                    fMinExclusive = getActualValue(facets.minExclusive, context, tempInfo);
+                    fMinExclusive = getActualValue(facets.minExclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MINEXCLUSIVE;
                     if ((fixedFacet & FACET_MINEXCLUSIVE) != 0)
                         fFixedFacet |= FACET_MINEXCLUSIVE;
@@ -825,7 +825,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 reportError("cos-applicable-facets", new Object[]{"minInclusive"});
             } else {
                 try {
-                    fMinInclusive = getActualValue(facets.minInclusive, context, tempInfo);
+                    fMinInclusive = getActualValue(facets.minInclusive, context, tempInfo, true);
                     fFacetsDefined |= FACET_MININCLUSIVE;
                     if ((fixedFacet & FACET_MININCLUSIVE) != 0)
                         fFixedFacet |= FACET_MININCLUSIVE;
@@ -1271,7 +1271,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             validatedInfo = new ValidatedInfo();
 
         // first normalize string value, and convert it to actual value
-        Object ob = getActualValue(content, context, validatedInfo);
+        boolean needNormalize = context==null||context.needToNormalize();
+        Object ob = getActualValue(content, context, validatedInfo, needNormalize);
 
         validate(context, validatedInfo);
 
@@ -1291,7 +1292,8 @@ public class XSSimpleTypeDecl implements XSSimpleType {
             validatedInfo = new ValidatedInfo();
 
         // first normalize string value, and convert it to actual value
-        Object ob = getActualValue(content, context, validatedInfo);
+        boolean needNormalize = context==null||context.needToNormalize();
+        Object ob = getActualValue(content, context, validatedInfo, needNormalize);
 
         validate(context, validatedInfo);
 
@@ -1466,10 +1468,12 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     }// checkExtraRules()
 
     //we can still return object for internal use.
-    private Object getActualValue(Object content, ValidationContext context, ValidatedInfo validatedInfo) throws InvalidDatatypeValueException{
+    private Object getActualValue(Object content, ValidationContext context,
+                                  ValidatedInfo validatedInfo, boolean needNormalize)
+            throws InvalidDatatypeValueException{
 
         String nvalue; 
-        if (context==null ||context.needToNormalize()) {
+        if (needNormalize) {
             nvalue = normalize(content, fWhiteSpace);
         } else {
             nvalue = content.toString();
@@ -1535,7 +1539,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 // so we take two steps to get the actual value:
                 // 1. fItemType.getActualValue()
                 // 2. fItemType.chekcFacets()
-                avalue[i] = fItemType.getActualValue(parsedList.nextToken(), context, validatedInfo);
+                avalue[i] = fItemType.getActualValue(parsedList.nextToken(), context, validatedInfo, false);
                 if (context.needFacetChecking() &&
                     (fItemType.fFacetsDefined != 0 && fItemType.fFacetsDefined != FACET_WHITESPACE)) {
                     fItemType.checkFacets(validatedInfo);
@@ -1559,7 +1563,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                     // so we take two steps to get the actual value:
                     // 1. fMemberType[i].getActualValue()
                     // 2. fMemberType[i].chekcFacets()
-                    Object aValue = fMemberTypes[i].getActualValue(content, context, validatedInfo);
+                    Object aValue = fMemberTypes[i].getActualValue(content, context, validatedInfo, true);
                     if (context.needFacetChecking() &&
                         (fMemberTypes[i].fFacetsDefined != 0 && fMemberTypes[i].fFacetsDefined != FACET_WHITESPACE)) {
                         fMemberTypes[i].checkFacets(validatedInfo);
