@@ -745,15 +745,15 @@ public class MIME2Java {
 	// Add support for Cp1252 and friends
 	// Since this code page should be written out in mixed case,
 	// there is no need to reverse the function.
-        s_revhash.put("Cp1250", "WINDOWS-1250");
-        s_revhash.put("Cp1251", "WINDOWS-1251");
-        s_revhash.put("Cp1252", "WINDOWS-1252");
-        s_revhash.put("Cp1253", "WINDOWS-1253");
-        s_revhash.put("Cp1254", "WINDOWS-1254");
-        s_revhash.put("Cp1255", "WINDOWS-1255");
-        s_revhash.put("Cp1256", "WINDOWS-1256");
-        s_revhash.put("Cp1257", "WINDOWS-1257");
-        s_revhash.put("Cp1258", "WINDOWS-1258");
+        s_revhash.put("CP1250", "WINDOWS-1250");
+        s_revhash.put("CP1251", "WINDOWS-1251");
+        s_revhash.put("CP1252", "WINDOWS-1252");
+        s_revhash.put("CP1253", "WINDOWS-1253");
+        s_revhash.put("CP1254", "WINDOWS-1254");
+        s_revhash.put("CP1255", "WINDOWS-1255");
+        s_revhash.put("CP1256", "WINDOWS-1256");
+        s_revhash.put("CP1257", "WINDOWS-1257");
+        s_revhash.put("CP1258", "WINDOWS-1258");
         s_revhash.put("TIS620", "TIS-620");
         s_revhash.put("ISO2022CN",  "ISO-2022-CN");
         s_revhash.put("JIS0201",    "X0201");
