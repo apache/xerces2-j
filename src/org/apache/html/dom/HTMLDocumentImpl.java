@@ -270,7 +270,8 @@ public class HTMLDocumentImpl
 
     public synchronized String getTitle()
     {
-        HTMLElement    head;
+        HTMLElement head;
+        NodeList    list;
         Node        title;
 
         // Get the HEAD element and look for the TITLE element within.
@@ -278,10 +279,9 @@ public class HTMLDocumentImpl
         // and return the title's text (the Text node contained within).
         head = getHead();
         title = head.getElementsByTagName( "TITLE" ).item( 0 );
-        if ( title != null )
-        {
-            if ( title.getParentNode() != head )
-                head.appendChild( title );
+        list = head.getElementsByTagName( "TITLE" );
+        if ( list.getLength() > 0 ) {
+            title = list.item( 0 );
             return ( (HTMLTitleElement) title ).getText();
         }
         // No TITLE found, return an empty string.
@@ -291,16 +291,17 @@ public class HTMLDocumentImpl
 
     public synchronized void setTitle( String newTitle )
     {
-        HTMLElement    head;
+        HTMLElement head;
+        NodeList    list;
         Node        title;
 
         // Get the HEAD element and look for the TITLE element within.
         // When found, make sure the TITLE is a direct child of HEAD,
         // and set the title's text (the Text node contained within).
         head = getHead();
-        title = head.getElementsByTagName( "TITLE" ).item( 0 );
-        if ( title != null )
-        {
+        list = head.getElementsByTagName( "TITLE" );
+        if ( list.getLength() > 0 ) {
+            title = list.item( 0 );
             if ( title.getParentNode() != head )
                 head.appendChild( title );
             ( (HTMLTitleElement) title ).setText( newTitle );
@@ -310,6 +311,7 @@ public class HTMLDocumentImpl
             // No TITLE found, create a new element and place it at the end
             // of the HEAD element.
             title = new HTMLTitleElementImpl( this, "TITLE" );
+            ( (HTMLTitleElement) title ).setText( newTitle );
             head.appendChild( title );
         }
     }
@@ -331,15 +333,9 @@ public class HTMLDocumentImpl
         synchronized ( html )
         {
             body = head.getNextSibling();
-            while ( body != null && ! ( body instanceof HTMLBodyElement ) )
+            while ( body != null && ! ( body instanceof HTMLBodyElement )
+                    && ! ( body instanceof HTMLFrameSetElement ) )
                 body = body.getNextSibling();
-            // If BODY was not found, try looking for FRAMESET instead.
-            if ( body == null )
-            {
-                body = head.getNextSibling();
-                while ( body != null && ! ( body instanceof HTMLFrameSetElement ) )
-                    body = body.getNextSibling();
-            }
 
             // BODY/FRAMESET exists but might not be second element in HTML
             // (after HEAD): make sure it is and return it.
@@ -373,6 +369,7 @@ public class HTMLDocumentImpl
         Node    body;
         Node    head;
         Node    child;
+        NodeList list;
 
         synchronized ( newBody )
         {
@@ -383,12 +380,12 @@ public class HTMLDocumentImpl
             head = getHead();
             synchronized ( html )
             {
-                body = this.getElementsByTagName( "BODY" ).item( 0 );
-                // BODY exists but might not follow HEAD in HTML. If not,
-                // make it so and replce it. Start with the HEAD and make
-                // sure the BODY is the first element after the HEAD.
-                if ( body != null )
-                {
+                list = this.getElementsByTagName( "BODY" );
+                if ( list.getLength() > 0 ) {
+                    // BODY exists but might not follow HEAD in HTML. If not,
+                    // make it so and replce it. Start with the HEAD and make
+                    // sure the BODY is the first element after the HEAD.
+                    body = list.item( 0 );
                     synchronized ( body )
                     {
                         child = head;
@@ -424,32 +421,32 @@ public class HTMLDocumentImpl
 
     public NodeList getElementsByName( String elementName )
     {
-	return new NameNodeListImpl( this, elementName );
+        return new NameNodeListImpl( this, elementName );
     }
 
 
     public final NodeList getElementsByTagName( String tagName )
     {
-	return super.getElementsByTagName( tagName.toUpperCase() );
+        return super.getElementsByTagName( tagName.toUpperCase() );
     }
 
 
     public final NodeList getElementsByTagNameNS( String namespaceURI,
-					          String localName )
+                                                  String localName )
     {
-	if ( namespaceURI != null && namespaceURI.length() > 0 )
-	    return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase() );
-	else
-	    return super.getElementsByTagName( localName.toUpperCase() );
+        if ( namespaceURI != null && namespaceURI.length() > 0 )
+            return super.getElementsByTagNameNS( namespaceURI, localName.toUpperCase() );
+        else
+            return super.getElementsByTagName( localName.toUpperCase() );
     } 
 
 
     public Element createElementNS( String namespaceURI, String qualifiedName )
     {
-	if ( namespaceURI == null || namespaceURI.length() == 0 )
-	    return createElement( qualifiedName );
-	else
-	    return super.createElementNS( namespaceURI, qualifiedName );
+        if ( namespaceURI == null || namespaceURI.length() == 0 )
+            return createElement( qualifiedName );
+        else
+            return super.createElementNS( namespaceURI, qualifiedName );
     }
 
 
@@ -503,9 +500,9 @@ public class HTMLDocumentImpl
      *   is not acceptable
      */
     public Attr createAttribute( String name )
-	throws DOMException
+        throws DOMException
     {
-	return super.createAttribute( name.toLowerCase() );
+        return super.createAttribute( name.toLowerCase() );
     }
 
 
@@ -626,16 +623,16 @@ public class HTMLDocumentImpl
     public Node cloneNode( boolean deep )
     {
         HTMLDocumentImpl    clone;
-	NodeImpl            node;
-
+        NodeImpl            node;
+        
         clone = new HTMLDocumentImpl();
-	if ( deep ) {
-	    node = (NodeImpl) getFirstChild();
-	    while ( node != null ) {
-		clone.appendChild( clone.importNode( node, true ) );
-		node = (NodeImpl) node.getNextSibling();
-	    }
-	}
+        if ( deep ) {
+            node = (NodeImpl) getFirstChild();
+            while ( node != null ) {
+                clone.appendChild( clone.importNode( node, true ) );
+                node = (NodeImpl) node.getNextSibling();
+            }
+        }
         return clone;
     }
 
@@ -676,93 +673,93 @@ public class HTMLDocumentImpl
      */
     private static void populateElementTypes()
     {
-	// This class looks like it is due to some strange
-	// (read: inconsistent) JVM bugs.
-	// Initially all this code was placed in the static constructor,
-	// but that caused some early JVMs (1.1) to go mad, and if a
-	// class could not be found (as happened during development),
-	// the JVM would die.
-	// Bertrand Delacretaz <bdelacretaz@worldcom.ch> pointed out
-	// several configurations where HTMLAnchorElementImpl.class
-	// failed, forcing me to revert back to Class.forName().
-
+        // This class looks like it is due to some strange
+        // (read: inconsistent) JVM bugs.
+        // Initially all this code was placed in the static constructor,
+        // but that caused some early JVMs (1.1) to go mad, and if a
+        // class could not be found (as happened during development),
+        // the JVM would die.
+        // Bertrand Delacretaz <bdelacretaz@worldcom.ch> pointed out
+        // several configurations where HTMLAnchorElementImpl.class
+        // failed, forcing me to revert back to Class.forName().
+        
         if ( _elementTypesHTML != null )
             return;
         _elementTypesHTML = new Hashtable( 63 );
-	populateElementType( "A", "HTMLAnchorElementImpl" );
-	populateElementType( "APPLET", "HTMLAppletElementImpl" );
-	populateElementType( "AREA", "HTMLAreaElementImpl" );
-	populateElementType( "BASE",  "HTMLBaseElementImpl" );
-	populateElementType( "BASEFONT", "HTMLBaseFontElementImpl" );
-	populateElementType( "BLOCKQUOTE", "HTMLQuoteElementImpl" );
-	populateElementType( "BODY", "HTMLBodyElementImpl" );
-	populateElementType( "BR", "HTMLBRElementImpl" );
-	populateElementType( "BUTTON", "HTMLButtonElementImpl" );
-	populateElementType( "DEL", "HTMLModElementImpl" );
-	populateElementType( "DIR", "HTMLDirectoryElementImpl" );
-	populateElementType( "DIV",  "HTMLDivElementImpl" );
-	populateElementType( "DL", "HTMLDListElementImpl" );
-	populateElementType( "FIELDSET", "HTMLFieldSetElementImpl" );
-	populateElementType( "FONT", "HTMLFontElementImpl" );
-	populateElementType( "FORM", "HTMLFormElementImpl" );
-	populateElementType( "FRAME","HTMLFrameElementImpl" );
-	populateElementType( "FRAMESET", "HTMLFrameSetElementImpl" );
-	populateElementType( "HEAD", "HTMLHeadElementImpl" );
-	populateElementType( "H1", "HTMLHeadingElementImpl" );
-	populateElementType( "H2", "HTMLHeadingElementImpl" );
-	populateElementType( "H3", "HTMLHeadingElementImpl" );
-	populateElementType( "H4", "HTMLHeadingElementImpl" );
-	populateElementType( "H5", "HTMLHeadingElementImpl" );
-	populateElementType( "H6", "HTMLHeadingElementImpl" );
-	populateElementType( "HR", "HTMLHRElementImpl" );
-	populateElementType( "HTML", "HTMLHtmlElementImpl" );
-	populateElementType( "IFRAME", "HTMLIFrameElementImpl" );
-	populateElementType( "IMG", "HTMLImageElementImpl" );
-	populateElementType( "INPUT", "HTMLInputElementImpl" );
-	populateElementType( "INS", "HTMLModElementImpl" );
-	populateElementType( "ISINDEX", "HTMLIsIndexElementImpl" );
-	populateElementType( "LABEL", "HTMLLabelElementImpl" );
-	populateElementType( "LEGEND", "HTMLLegendElementImpl" );
-	populateElementType( "LI", "HTMLLIElementImpl" );
-	populateElementType( "LINK", "HTMLLinkElementImpl" );
-	populateElementType( "MAP", "HTMLMapElementImpl" );
-	populateElementType( "MENU", "HTMLMenuElementImpl" );
-	populateElementType( "META", "HTMLMetaElementImpl" );
-	populateElementType( "OBJECT", "HTMLObjectElementImpl" );
-	populateElementType( "OL", "HTMLOListElementImpl" );
-	populateElementType( "OPTGROUP", "HTMLOptGroupElementImpl" );
-	populateElementType( "OPTION", "HTMLOptionElementImpl" );
-	populateElementType( "P", "HTMLParagraphElementImpl" );
-	populateElementType( "PARAM", "HTMLParamElementImpl" );
-	populateElementType( "PRE", "HTMLPreElementImpl" );
-	populateElementType( "Q", "HTMLQuoteElementImpl" );
-	populateElementType( "SCRIPT", "HTMLScriptElementImpl" );
-	populateElementType( "SELECT", "HTMLSelectElementImpl" );
-	populateElementType( "STYLE", "HTMLStyleElementImpl" );
-	populateElementType( "TABLE", "HTMLTableElementImpl" );
-	populateElementType( "CAPTION", "HTMLTableCaptionElementImpl" );
-	populateElementType( "TD", "HTMLTableCellElementImpl" );
-	populateElementType( "TH", "HTMLTableCellElementImpl" );
-	populateElementType( "COL", "HTMLTableColElementImpl" );
-	populateElementType( "COLGROUP", "HTMLTableColElementImpl" );
-	populateElementType( "TR", "HTMLTableRowElementImpl" );
-	populateElementType( "TBODY", "HTMLTableSectionElementImpl" );
-	populateElementType( "THEAD", "HTMLTableSectionElementImpl" );
-	populateElementType( "TFOOT", "HTMLTableSectionElementImpl" );
-	populateElementType( "TEXTAREA", "HTMLTextAreaElementImpl" );
-	populateElementType( "TITLE", "HTMLTitleElementImpl" );
-	populateElementType( "UL", "HTMLUListElementImpl" );
+        populateElementType( "A", "HTMLAnchorElementImpl" );
+        populateElementType( "APPLET", "HTMLAppletElementImpl" );
+        populateElementType( "AREA", "HTMLAreaElementImpl" );
+        populateElementType( "BASE",  "HTMLBaseElementImpl" );
+        populateElementType( "BASEFONT", "HTMLBaseFontElementImpl" );
+        populateElementType( "BLOCKQUOTE", "HTMLQuoteElementImpl" );
+        populateElementType( "BODY", "HTMLBodyElementImpl" );
+        populateElementType( "BR", "HTMLBRElementImpl" );
+        populateElementType( "BUTTON", "HTMLButtonElementImpl" );
+        populateElementType( "DEL", "HTMLModElementImpl" );
+        populateElementType( "DIR", "HTMLDirectoryElementImpl" );
+        populateElementType( "DIV",  "HTMLDivElementImpl" );
+        populateElementType( "DL", "HTMLDListElementImpl" );
+        populateElementType( "FIELDSET", "HTMLFieldSetElementImpl" );
+        populateElementType( "FONT", "HTMLFontElementImpl" );
+        populateElementType( "FORM", "HTMLFormElementImpl" );
+        populateElementType( "FRAME","HTMLFrameElementImpl" );
+        populateElementType( "FRAMESET", "HTMLFrameSetElementImpl" );
+        populateElementType( "HEAD", "HTMLHeadElementImpl" );
+        populateElementType( "H1", "HTMLHeadingElementImpl" );
+        populateElementType( "H2", "HTMLHeadingElementImpl" );
+        populateElementType( "H3", "HTMLHeadingElementImpl" );
+        populateElementType( "H4", "HTMLHeadingElementImpl" );
+        populateElementType( "H5", "HTMLHeadingElementImpl" );
+        populateElementType( "H6", "HTMLHeadingElementImpl" );
+        populateElementType( "HR", "HTMLHRElementImpl" );
+        populateElementType( "HTML", "HTMLHtmlElementImpl" );
+        populateElementType( "IFRAME", "HTMLIFrameElementImpl" );
+        populateElementType( "IMG", "HTMLImageElementImpl" );
+        populateElementType( "INPUT", "HTMLInputElementImpl" );
+        populateElementType( "INS", "HTMLModElementImpl" );
+        populateElementType( "ISINDEX", "HTMLIsIndexElementImpl" );
+        populateElementType( "LABEL", "HTMLLabelElementImpl" );
+        populateElementType( "LEGEND", "HTMLLegendElementImpl" );
+        populateElementType( "LI", "HTMLLIElementImpl" );
+        populateElementType( "LINK", "HTMLLinkElementImpl" );
+        populateElementType( "MAP", "HTMLMapElementImpl" );
+        populateElementType( "MENU", "HTMLMenuElementImpl" );
+        populateElementType( "META", "HTMLMetaElementImpl" );
+        populateElementType( "OBJECT", "HTMLObjectElementImpl" );
+        populateElementType( "OL", "HTMLOListElementImpl" );
+        populateElementType( "OPTGROUP", "HTMLOptGroupElementImpl" );
+        populateElementType( "OPTION", "HTMLOptionElementImpl" );
+        populateElementType( "P", "HTMLParagraphElementImpl" );
+        populateElementType( "PARAM", "HTMLParamElementImpl" );
+        populateElementType( "PRE", "HTMLPreElementImpl" );
+        populateElementType( "Q", "HTMLQuoteElementImpl" );
+        populateElementType( "SCRIPT", "HTMLScriptElementImpl" );
+        populateElementType( "SELECT", "HTMLSelectElementImpl" );
+        populateElementType( "STYLE", "HTMLStyleElementImpl" );
+        populateElementType( "TABLE", "HTMLTableElementImpl" );
+        populateElementType( "CAPTION", "HTMLTableCaptionElementImpl" );
+        populateElementType( "TD", "HTMLTableCellElementImpl" );
+        populateElementType( "TH", "HTMLTableCellElementImpl" );
+        populateElementType( "COL", "HTMLTableColElementImpl" );
+        populateElementType( "COLGROUP", "HTMLTableColElementImpl" );
+        populateElementType( "TR", "HTMLTableRowElementImpl" );
+        populateElementType( "TBODY", "HTMLTableSectionElementImpl" );
+        populateElementType( "THEAD", "HTMLTableSectionElementImpl" );
+        populateElementType( "TFOOT", "HTMLTableSectionElementImpl" );
+        populateElementType( "TEXTAREA", "HTMLTextAreaElementImpl" );
+        populateElementType( "TITLE", "HTMLTitleElementImpl" );
+        populateElementType( "UL", "HTMLUListElementImpl" );
     }
-
-
+    
+    
     private static void populateElementType( String tagName, String className )
     {
-	try {
-	    _elementTypesHTML.put( tagName, Class.forName( "org.apache.html.dom." + className ) );
-	} catch ( ClassNotFoundException except ) {
-	    new RuntimeException( "HTM019 OpenXML Error: Could not find class " + className + " implementing HTML element " + tagName
-				  + "\n" + className + "\t" + tagName);
-	}
+        try {
+            _elementTypesHTML.put( tagName, Class.forName( "org.apache.html.dom." + className ) );
+        } catch ( ClassNotFoundException except ) {
+            new RuntimeException( "HTM019 OpenXML Error: Could not find class " + className + " implementing HTML element " + tagName
+                                  + "\n" + className + "\t" + tagName);
+        }
     }
 
 
