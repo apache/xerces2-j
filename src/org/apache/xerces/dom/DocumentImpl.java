@@ -311,15 +311,18 @@ public class DocumentImpl
 
     /**
      * Since a Document may contain at most one top-level Element child,
-  	 * and at most one DocumentType declaraction, we need to subclass our
-  	 * add-children methods to implement this constraint.
-	 * Since appendChild() is implemented as insertBefore(,null),
-	 * altering the latter fixes both.
-  	 * <p>
-  	 * While I'm doing so, I've taken advantage of the opportunity to
-  	 * cache documentElement and docType so we don't have to
-  	 * search for them.
-	 */
+     * and at most one DocumentType declaraction, we need to subclass our
+     * add-children methods to implement this constraint.
+     * Since appendChild() is implemented as insertBefore(,null),
+     * altering the latter fixes both.
+     * <p>
+     * While I'm doing so, I've taken advantage of the opportunity to
+     * cache documentElement and docType so we don't have to
+     * search for them.
+     *
+     * REVISIT: According to the spec it is not allowed to alter neither the
+     * document element nor the document type in any way
+     */
     public Node insertBefore(Node newChild, Node refChild)
         throws DOMException {
 
@@ -349,7 +352,10 @@ public class DocumentImpl
 
     /**
      * Since insertBefore caches the docElement (and, currently, docType),
-	 * removeChild has to know how to undo the cache
+     * removeChild has to know how to undo the cache
+     *
+     * REVISIT: According to the spec it is not allowed to alter neither the
+     * document element nor the document type in any way
      */
     public Node removeChild(Node oldChild)
         throws DOMException {
@@ -367,6 +373,28 @@ public class DocumentImpl
     	return oldChild;
 
     }   // removeChild(Node):Node
+
+    /**
+     * Since we cache the docElement (and, currently, docType),
+     * replaceChild has to update the cache
+     *
+     * REVISIT: According to the spec it is not allowed to alter neither the
+     * document element nor the document type in any way
+     */
+    public Node replaceChild(Node newChild, Node oldChild)
+        throws DOMException {
+	
+        super.replaceChild(newChild, oldChild);
+
+        int type = oldChild.getNodeType();
+        if(type == Node.ELEMENT_NODE) {
+    	    docElement = (ElementImpl)newChild;
+        }
+        else if (type == Node.DOCUMENT_TYPE_NODE) {
+    	    docType = (DocumentTypeImpl)newChild;
+        }
+        return oldChild;
+    }   // replaceChild(Node,Node):Node
 
     //
     // Document methods
