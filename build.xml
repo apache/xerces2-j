@@ -218,6 +218,7 @@ Copyright:
 
     <xjavac srcdir="${build.src}"
            destdir="${build.dest}"
+           classpath="${build.dir}/classes:${tools.dir}/${jar.apis}"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"
