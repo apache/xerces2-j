@@ -23,7 +23,7 @@ import org.apache.xerces.impl.dv.ValidationContext;
  * 
  * @author Ankit Pasricha, IBM
  */
-public class YearMonthDurationDV extends DurationDV {
+class YearMonthDurationDV extends DurationDV {
     
     public Object getActualValue(String content, ValidationContext context)
         throws InvalidDatatypeValueException {
