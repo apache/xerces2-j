@@ -2616,8 +2616,6 @@ public class XMLSchemaValidator
         Object actualValue = null;
         try {
             actualValue = attDV.validate(attrValue, fValidationState, fValidatedInfo);
-            // PSVI: attribute normalized value
-            attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
             // PSVI: attribute memberType
             attrPSVI.fMemberType = fValidatedInfo.memberType;
             // PSVI: element notation
@@ -2643,6 +2641,11 @@ public class XMLSchemaValidator
             attrPSVI.addErrorCode("cvc-attribute.3");
             reportSchemaError("cvc-attribute.3", new Object[]{element.rawname, fTempQName.rawname, attrValue});
         }
+        // PSVI: attribute normalized value
+        // NOTE: we always store the normalized value, even if it's invlid,
+        // because it might still be useful to the user. But when the it's
+        // not valid, the normalized value is not trustable.
+        attrPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
     
         // get the value constraint from use or decl
         // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
