@@ -1464,7 +1464,8 @@ public abstract class Grammar {
         //  Its not a leaf, so we have to recurse its left and maybe right
         //  nodes. Save both values before we recurse and trash the node.
         //
-        final int     leftNode = ((int[])(contentSpec.value))[0];
+        final int leftNode = contentSpec.value != null 
+                           ? ((int[])(contentSpec.value))[0] : -1;
         int rightNode = -1 ;
         if (contentSpec.otherValue != null ) 
             rightNode = ((int[])(contentSpec.otherValue))[0];
