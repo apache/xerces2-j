@@ -969,16 +969,33 @@ public class XMLDocumentFragmentScannerImpl
                 if (fDocumentHandler != null && fStringBuffer.length > 0) {
                     fDocumentHandler.characters(fStringBuffer, null);
                 }
-                int brackets = 2;
+                int brackets = 0;
                 while (fEntityScanner.skipChar(']')) {
                     brackets++;
                 }
-                if (fDocumentHandler != null && brackets > 2) {
+                if (fDocumentHandler != null && brackets > 0) {
                     fStringBuffer.clear();
-                    for (int i = 2; i < brackets; i++) {
-                        fStringBuffer.append(']');
+                    if (brackets > XMLEntityManager.DEFAULT_BUFFER_SIZE) {
+                        // Handle large sequences of ']'
+                        int chunks = brackets / XMLEntityManager.DEFAULT_BUFFER_SIZE;
+                        int remainder = brackets % XMLEntityManager.DEFAULT_BUFFER_SIZE;
+                        for (int i = 0; i < XMLEntityManager.DEFAULT_BUFFER_SIZE; i++) {
+                            fStringBuffer.append(']');
+                        }
+                        for (int i = 0; i < chunks; i++) {
+                            fDocumentHandler.characters(fStringBuffer, null);
+                        }
+                        if (remainder != 0) {
+                            fStringBuffer.length = remainder;
+                            fDocumentHandler.characters(fStringBuffer, null);
+                        }
                     }
-                    fDocumentHandler.characters(fStringBuffer, null);
+                    else {
+                    	for (int i = 0; i < brackets; i++) {
+                    	    fStringBuffer.append(']');
+                    	}
+                       fDocumentHandler.characters(fStringBuffer, null);
+                    }
                 }
                 if (fEntityScanner.skipChar('>')) {
                     break;
