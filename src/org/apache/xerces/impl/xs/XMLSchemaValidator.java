@@ -584,7 +584,6 @@ public class XMLSchemaValidator
                 fDocumentHandler.endElement(element, modifiedAugs);
             }            
        }
-
     } // emptyElement(QName,XMLAttributes, Augmentations)
 
     /**
@@ -597,7 +596,9 @@ public class XMLSchemaValidator
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
         
+        boolean emptyAug = false;
         if (augs == null) {
+            emptyAug = true;
             augs = fAugmentations;
             augs.clear();
         }
@@ -618,7 +619,7 @@ public class XMLSchemaValidator
                 // thus we only need to send augs information if any;
                 // the normalized data for union will be send
                 // after normalization is performed (at the endElement())
-                if (augs != null) {
+                if (!emptyAug) {
                     fDocumentHandler.characters(fEmptyXMLStr, augs);
                 }
             } else {            
@@ -673,14 +674,6 @@ public class XMLSchemaValidator
                 fDocumentHandler.endElement(element, modifiedAugs);
             }            
         }
-        // reset normalization values
-        if (fNormalizeData) {
-            fTrailing = false;
-            fUnionType = false;
-            fWhiteSpace = -1;
-        
-        }
-
     } // endElement(QName, Augmentations)
 
     /**
@@ -1343,7 +1336,6 @@ public class XMLSchemaValidator
     // handle character contents
     void handleCharacters(XMLString text) {
 
-        //System.out.println('\n'+"===>Characters("+text.toString()+")");
         fCurrentPSVI.fNormalizedValue = null;
         if (fSkipValidationDepth >= 0)
             return;
@@ -1360,7 +1352,6 @@ public class XMLSchemaValidator
                 int spaces = normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
                 int length = fNormalizedStr.length();
                 if (length > 0) {
-                    //System.out.println("firstchunk="+fFirstChunk+"; trailing="+fTrailing);
                     if (!fFirstChunk && (fWhiteSpace==XSSimpleType.WS_COLLAPSE) ) {
                         if (fTrailing) { 
                             // previous chunk ended on whitespace 
@@ -1414,14 +1405,21 @@ public class XMLSchemaValidator
         // we saw first chunk of characters
         fFirstChunk = false;
         
-        // we need to save normalized value so that we can perform
-        // validation at the end element after all data was received
-        if (normalizedStr != null) { 
+        // save normalized value for validation purposes
+        if (fNil) {
+            // if element was nil and there is some character data
+            // we should expose it to the user
+            // otherwise error does not make much sense
+            fCurrentPSVI.fNormalizedValue = null;
+            fBuffer.append(text.toString());
+        } 
+        if (normalizedStr != null) {
             fBuffer.append(normalizedStr);
         } else {
             fBuffer.append(text.toString());
         }
         
+
         if (!allWhiteSpace) {
             fSawCharacters = true;
         }
@@ -1715,7 +1713,6 @@ public class XMLSchemaValidator
         // PSVI: add element type
         fCurrentPSVI.fTypeDecl = fCurrentType;
 
-
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
         if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
@@ -1753,6 +1750,7 @@ public class XMLSchemaValidator
                  }
              }
         }
+
     
         // then try to get the content model
         fCurrentCM = null;
@@ -1985,6 +1983,15 @@ public class XMLSchemaValidator
                                                   : ElementPSVI.INVALID_VALIDITY;
 
         fDefaultValue = defaultValue;
+
+
+        // reset normalization values
+        if (fNormalizeData) {
+            fTrailing = false;
+            fUnionType = false;
+            fWhiteSpace = -1;
+        }
+
         return augs;
     } // handleEndElement(QName,boolean)*/
 
