@@ -325,7 +325,7 @@ public class XMLValidator
     /** Element declarations in DTD. */
     private Vector fDTDElementDecls = new Vector();
 
-    /** Temporary string buffer. */
+    /** Temporary string buffers. */
     private StringBuffer fBuffer = new StringBuffer();
 
     // symbols: general
@@ -1178,20 +1178,24 @@ public class XMLValidator
                               String defaultType, XMLString defaultValue)
         throws SAXException {
 
+        if (type != fCDATASymbol) {
+            normalizeDefaultAttrValue(defaultValue);
+        }
+
         if (fValidation) {
             //
-            // a) VC: One ID per Element Type, If duplicate ID attribute 
-            // b) VC: ID attribute Default. if there is a declareared attribute default for ID it should be of type #IMPLIED or #REQUIRED                                               
+            // a) VC: One ID per Element Type, If duplicate ID attribute
+            // b) VC: ID attribute Default. if there is a declareared attribute
+            //        default for ID it should be of type #IMPLIED or #REQUIRED
             if (type == fIDSymbol) {
-                if (defaultValue != null) {
-                    if (defaultValue.length != 0) {
-                        if (defaultType == null || 
-                            !(defaultType == fIMPLIEDSymbol || defaultType == fREQUIREDSymbol)) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "IDDefaultTypeInvalid",
-                                                       new Object[]{ attributeName},
-                                                       XMLErrorReporter.SEVERITY_ERROR);
-                        }
+                if (defaultValue != null && defaultValue.length != 0) {
+                    if (defaultType == null || 
+                        !(defaultType == fIMPLIEDSymbol ||
+                          defaultType == fREQUIREDSymbol)) {
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                   "IDDefaultTypeInvalid",
+                                                   new Object[]{ attributeName},
+                                                   XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
 
@@ -1208,11 +1212,12 @@ public class XMLValidator
             }
 
             //
-            //  VC: One Notaion Per Element Type, should check if there is a duplicate NOTATION attribute 
+            //  VC: One Notaion Per Element Type, should check if there is a
+            //      duplicate NOTATION attribute
 
             if (type == fNOTATIONSymbol) {
-                // VC: Notation Attributes:
-                //     all notation names in the (attribute) declaration must be declared.
+                // VC: Notation Attributes: all notation names in the
+                //     (attribute) declaration must be declared.
                 for (int i=0; i<enumeration.length; i++) {
                     fNotationEnumVals.put(enumeration[i], attributeName);
                 }
@@ -1232,35 +1237,32 @@ public class XMLValidator
             // VC: Attribute Default Legal
             boolean ok = true;
             if (defaultValue != null && 
-                (defaultType==null || (defaultType != null && defaultType == fFIXEDSymbol)))
-                if (type == fNMTOKENSSymbol || type == fENTITIESSymbol || type == fIDREFSSymbol) {
+                (defaultType == null ||
+                 (defaultType != null && defaultType == fFIXEDSymbol))) {
 
-                    // Since the default value has been normalized, there should be any leading or trailing spaces
-                    String trimmedValue = defaultValue.toString().trim();
+                String value = defaultValue.toString();
+                if (type == fNMTOKENSSymbol ||
+                    type == fENTITIESSymbol || type == fIDREFSSymbol) {
 
-                    if (trimmedValue.length() == 0 || ! defaultValue.equals(trimmedValue)) {
-                        ok = false;
-                    } 
-                    else {
-                        StringTokenizer tokenizer = new StringTokenizer(trimmedValue);
-                        if (tokenizer.hasMoreTokens()) {
-                            while (true) {
-                                String nmtoken = tokenizer.nextToken();
-                                if (type == fNMTOKENSSymbol) {
-                                    if (!XMLChar.isValidNmtoken(nmtoken)) {
-                                        ok = false;
-                                        break;
-                                    }
-                                } 
-                                else if (type == fENTITIESSymbol || type == fIDREFSSymbol) {
-                                    if (!XMLChar.isValidName(nmtoken)) {
-                                        ok = false;
-                                        break;
-                                    }
-                                }
-                                if (!tokenizer.hasMoreTokens()) {
+                    StringTokenizer tokenizer = new StringTokenizer(value);
+                    if (tokenizer.hasMoreTokens()) {
+                        while (true) {
+                            String nmtoken = tokenizer.nextToken();
+                            if (type == fNMTOKENSSymbol) {
+                                if (!XMLChar.isValidNmtoken(nmtoken)) {
+                                    ok = false;
                                     break;
                                 }
+                            } 
+                            else if (type == fENTITIESSymbol ||
+                                     type == fIDREFSSymbol) {
+                                if (!XMLChar.isValidName(nmtoken)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (!tokenizer.hasMoreTokens()) {
+                                break;
                             }
                         }
                     }
@@ -1272,15 +1274,14 @@ public class XMLValidator
                         type == fIDREFSymbol ||
                         type == fNOTATIONSymbol) {
 
-
-                        if (!XMLChar.isValidName( defaultValue.toString())) {
+                        if (!XMLChar.isValidName(value)) {
                             ok = false;
                         }
 
                     } else if (type == fNMTOKENSymbol ||
                                type == fENUMERATIONSymbol) {
 
-                        if (!XMLChar.isValidNmtoken( defaultValue.toString())) {
+                        if (!XMLChar.isValidNmtoken(value)) {
                             ok = false;
                         }
                     }
@@ -1296,13 +1297,13 @@ public class XMLValidator
                     }
 
                 }
-            if (!ok) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_ATT_DEFAULT_INVALID",
-                                           new Object[]{attributeName, defaultValue.toString()},
-                                           XMLErrorReporter.SEVERITY_ERROR);
+                if (!ok) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_ATT_DEFAULT_INVALID",
+                                               new Object[]{attributeName, value},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
             }
-
         }
 
         // call handlers
@@ -1738,7 +1739,7 @@ public class XMLValidator
         throws SAXException {
 
         // is there anything to do?
-        if (elementIndex == -1) {
+        if (elementIndex == -1 || fCurrentGrammar == null) {
             return;
         }
 
@@ -1757,7 +1758,7 @@ public class XMLValidator
 
             fCurrentGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
-            if (DEBUG_ATTRIBUTES)
+            if (DEBUG_ATTRIBUTES) {
                 if (fTempAttDecl != null) {
                     XMLElementDecl elementDecl = new XMLElementDecl();
                     fCurrentGrammar.getElementDecl(elementIndex, elementDecl);
@@ -1770,7 +1771,7 @@ public class XMLValidator
                                        + attributes.getLength() +"\n"
                                       );
                 }
-
+            }
             String attPrefix = fTempAttDecl.name.prefix;
             String attRawName = fTempAttDecl.name.rawname;
             String attLocalpart = fTempAttDecl.name.localpart;
@@ -1798,8 +1799,7 @@ public class XMLValidator
             if (!specified) {
                 if (required) {
                     if (fValidation) {
-                        Object[] args = { element.localpart,
-                            attRawName};
+                        Object[] args = {element.localpart, attRawName};
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED", args,
                                                    XMLErrorReporter.SEVERITY_ERROR);
@@ -1808,8 +1808,7 @@ public class XMLValidator
                     if (fValidation && fStandaloneIsYes)
                         if (((DTDGrammar) fCurrentGrammar).getAttributeDeclIsExternal(attlistIndex)) {
 
-                            Object[] args = { element.localpart,
-                                attRawName};
+                            Object[] args = { element.localpart, attRawName};
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                        "MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED", args,
                                                        XMLErrorReporter.SEVERITY_ERROR);
@@ -1827,131 +1826,132 @@ public class XMLValidator
         // 1. if every attribute seen is declared in the DTD
         // 2. check if the VC: default_fixed holds
         // 3. validate every attribute.
-        if (fValidation) {
-            int attrCount = attributes.getLength();
-            for (int i = 0; i< attrCount; i++) {
-                String attrRawName = attributes.getName(i);
-                boolean declared = false;
-
-                if (fCurrentGrammar != null) {
-                    // check VC: Standalone Document Declartion, entities references appear in the document.
-                    // REVISIT: this can be combined to a single check in startEntity 
-                    // if we add one more argument in startEnity, inAttrValue
-                    if (fStandaloneIsYes) {
-                        int entityCount = attributes.getEntityCount(i);
-                        for (int j=0;  j < entityCount; j++) {
-                            String entityName= attributes.getEntityName(i, j);
-                            int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
-                            if (entIndex > -1) {
-                                fCurrentGrammar.getEntityDecl(entIndex, fEntityDecl);
-                                if (fEntityDecl.inExternal) {
-                                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                                "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
-                                                                new Object[]{entityName}, XMLErrorReporter.SEVERITY_ERROR);
-                                }
+        int attrCount = attributes.getLength();
+        for (int i = 0; i < attrCount; i++) {
+            String attrRawName = attributes.getName(i);
+            boolean declared = false;
+            if (fValidation) {
+                if (fStandaloneIsYes) {
+                    // check VC: Standalone Document Declaration, entities
+                    // references appear in the document.
+                    // REVISIT: this can be combined to a single check in
+                    // startEntity if we add one more argument in
+                    // startEnity, inAttrValue
+                    int entityCount = attributes.getEntityCount(i);
+                    for (int j=0;  j < entityCount; j++) {
+                        String entityName= attributes.getEntityName(i, j);
+                        int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
+                        if (entIndex > -1) {
+                            fCurrentGrammar.getEntityDecl(entIndex,
+                                                          fEntityDecl);
+                            if (fEntityDecl.inExternal) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
+                                                           new Object[]{entityName},
+                                                           XMLErrorReporter.SEVERITY_ERROR);
                             }
-
                         }
-                    }
-
-                    int attDefIndex = -1;
-                    int position = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
-                    while (position != -1) {
-                        fCurrentGrammar.getAttributeDecl(position, fTempAttDecl);
-                        if (fTempAttDecl.name.rawname == attrRawName) {
-                            // found the match att decl, 
-                            attDefIndex = position;
-                            declared = true;
-                            break;
-                        }
-                        position = fCurrentGrammar.getNextAttributeDeclIndex(position);
-                    }
-                    if (attDefIndex == -1) {
-                        // REVISIT - cache the elem/attr tuple so that we only give
-                        //  this error once for each unique occurrence
-                        Object[] args = { element.rawname, attrRawName };
-
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_ATTRIBUTE_NOT_DECLARED",
-                                                   args,XMLErrorReporter.SEVERITY_ERROR);   
-                    } 
-                    else {
-
-                        // fTempAttDecl should have the right value set now, so the following is not needed
-                        // fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
-
-                        String attributeType = getAttributeTypeName(fTempAttDecl);
-                        attributes.setType(i, attributeType);
                     }
                 }
-
-                // REVISIT: this is done in XMLScanner, Just that entity ref positions not being moved accordingly
-                //normalizeAttrValue(attributes, i);
-
-                if (declared) {
-                    String attrValue = attributes.getValue(i);
-                    if (fTempAttDecl.simpleType.defaultType == XMLSimpleType.DEFAULT_TYPE_FIXED) {
-                        String defaultValue = fTempAttDecl.simpleType.defaultValue;
-
-                        if (!attrValue.equals(defaultValue)) {
-                            Object[] args = { 
-                                (element.localpart),
-                                (attrRawName),
-                                (attrValue),
-                                (defaultValue)};
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MSG_FIXED_ATTVALUE_INVALID",
-                                                       args, XMLErrorReporter.SEVERITY_ERROR);
-                        }
-                    }
-
-                    if (fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENTITY ||
-                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENUMERATION ||
-                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ID ||
-                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_IDREF ||
-                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NMTOKEN ||
-                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NOTATION
-                       ) {
-                        validateDTDattribute(element, attrValue, fTempAttDecl);
-                    }
+            }
+            int attDefIndex = -1;
+            int position =
+                fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
+            while (position != -1) {
+                fCurrentGrammar.getAttributeDecl(position, fTempAttDecl);
+                if (fTempAttDecl.name.rawname == attrRawName) {
+                    // found the match att decl, 
+                    attDefIndex = position;
+                    declared = true;
+                    break;
                 }
-            } // for all attributes
-        } // if validation
+                position = fCurrentGrammar.getNextAttributeDeclIndex(position);
+            }
+            if (!declared) {
+                if (fValidation) {
+                    // REVISIT - cache the elem/attr tuple so that we only
+                    // give this error once for each unique occurrence
+                    Object[] args = { element.rawname, attrRawName };
+
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_ATTRIBUTE_NOT_DECLARED",
+                                               args,XMLErrorReporter.SEVERITY_ERROR);   
+                }
+                continue;
+            }
+            // attribute is declared
+
+            // fTempAttDecl should have the right value set now, so
+            // the following is not needed
+            // fGrammar.getAttributeDecl(attDefIndex,fTempAttDecl);
+
+            String type = getAttributeTypeName(fTempAttDecl);
+            attributes.setType(i, type);
+
+            boolean changedByNormalization = false;
+            String oldValue = attributes.getValue(i);
+            String attrValue = oldValue;
+            if (attributes.isSpecified(i) && type != fCDATASymbol) {
+                changedByNormalization = normalizeAttrValue(attributes, i);
+                attrValue = attributes.getValue(i);
+                if (fValidation && fStandaloneIsYes
+                    && changedByNormalization) {
+                    // check VC: Standalone Document Declaration
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE",
+                                               new Object[]{attrRawName, oldValue, attrValue},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+            if (!fValidation) {
+                continue;
+            }
+            if (fTempAttDecl.simpleType.defaultType ==
+                XMLSimpleType.DEFAULT_TYPE_FIXED) {
+                String defaultValue = fTempAttDecl.simpleType.defaultValue;
+
+                if (!attrValue.equals(defaultValue)) {
+                    Object[] args = {element.localpart,
+                                     attrRawName,
+                                     attrValue,
+                                     defaultValue};
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_FIXED_ATTVALUE_INVALID",
+                                               args, XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+
+            if (fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENTITY ||
+                fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENUMERATION ||
+                fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ID ||
+                fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_IDREF ||
+                fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NMTOKEN ||
+                fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NOTATION
+                ) {
+                validateDTDattribute(element, attrValue, fTempAttDecl);
+            }
+        } // for all attributes
 
     } // addDTDDefaultAttrsAndValidate(int,XMLAttrList)
 
     /**
      * Validate attributes in DTD fashion.
-     * @return normalized attribute value
      */
-    private String validateDTDattribute(QName element, String attValue, 
-                                        XMLAttributeDecl attributeDecl) 
+    private void validateDTDattribute(QName element, String attValue,
+                                      XMLAttributeDecl attributeDecl) 
         throws SAXException {
 
         switch (attributeDecl.simpleType.type) {
             case XMLSimpleType.TYPE_ENTITY: {                            
                 // NOTE: Save this information because invalidStandaloneAttDef
                 boolean isAlistAttribute = attributeDecl.simpleType.list;
-                String  unTrimValue      = attValue;
-                String  value            = unTrimValue.trim();
-
-                if (fValidation) {
-                    if (value != unTrimValue) {
-                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE",
-                                                       new Object[]{ value, attributeDecl.name.rawname, unTrimValue},
-                                                       XMLErrorReporter.SEVERITY_ERROR );
-                        }
-                    }
-                }
 
                 try {
                     if (isAlistAttribute) {
-                        fValENTITIES.validate(value, null);
+                        fValENTITIES.validate(attValue, null);
                     } 
                     else {
-                        fValENTITY.validate(value, null);
+                        fValENTITY.validate(attValue, null);
                     }
                 } 
                 catch (InvalidDatatypeValueException ex) {
@@ -1995,21 +1995,8 @@ public class XMLValidator
             }
 
             case XMLSimpleType.TYPE_ID: {
-                String  unTrimValue = attValue;
-                String  value       = unTrimValue.trim();
-                if (fValidation) {
-                    if (value != unTrimValue) {
-                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                            /*
-                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                                                      */
-                        }
-                    }
-                }
                 try {
-                    fValID.validate(value, null);
+                    fValID.validate(attValue, null);
                 } 
                 catch (InvalidDatatypeValueException ex) {
                     String  key = ex.getKeyIntoReporter();
@@ -2022,28 +2009,15 @@ public class XMLValidator
             }
         
             case XMLSimpleType.TYPE_IDREF: {
-                String  unTrimValue = attValue;
-                String  value       = unTrimValue.trim();
                 boolean isAlistAttribute = attributeDecl.simpleType.list;//Caveat - Save this information because invalidStandaloneAttDef
 
-                if (fValidation) {
-                    if (value != unTrimValue) {
-                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                            /*
-                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                                                      */
-                        }
-                    }
-                }
                 try {
                     if (isAlistAttribute) {
                         //System.out.println("values = >>" + value + "<<" );
-                        fValIDRefs.validate(value, null);
+                        fValIDRefs.validate(attValue, null);
                     } 
                     else {
-                        fValIDRef.validate(value, null);
+                        fValIDRef.validate(attValue, null);
                     }
                 } 
                 catch (InvalidDatatypeValueException ex) {
@@ -2061,40 +2035,27 @@ public class XMLValidator
             }
 
             case XMLSimpleType.TYPE_NMTOKEN: {
-                String  unTrimValue = attValue;
-                String  value       = unTrimValue.trim();
                 boolean isAlistAttribute = attributeDecl.simpleType.list;//Caveat - Save this information because invalidStandaloneAttDef
                 //changes fTempAttDef
-                if (fValidation) {
-                    if (value != unTrimValue) {
-                        if (invalidStandaloneAttDef(element, attributeDecl.name)) {
-                            /*
-                            reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                      XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                      fStringPool.toString(attributeDecl.name.rawname), unTrimValue, value);
-                                                      */
-                        }
-                    }
-                }
                 try {
                     if (isAlistAttribute) {
-                        fValNMTOKENS.validate(value, null);
+                        fValNMTOKENS.validate(attValue, null);
                     } 
                     else {
-                        fValNMTOKEN.validate(value, null);
+                        fValNMTOKEN.validate(attValue, null);
                     }
                 } 
                 catch (InvalidDatatypeValueException ex) {
                     if (isAlistAttribute){
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "NMTOKENSInvalid",
-                                                   new Object[] { value },
+                                                   new Object[] { attValue },
                                                    XMLErrorReporter.SEVERITY_ERROR);
                     } 
                     else {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "NMTOKENInvalid",
-                                                   new Object[] { value },
+                                                   new Object[] { attValue },
                                                    XMLErrorReporter.SEVERITY_ERROR);
                     }
                 }
@@ -2102,10 +2063,8 @@ public class XMLValidator
             }
 
         } // switch
-        
-        return attValue;
 
-    } // validateDTDattribute(QName,String,XMLAttributeDecl):String
+    } // validateDTDattribute(QName,String,XMLAttributeDecl)
 
     /** Returns true if invalid standalone attribute definition. */
     boolean invalidStandaloneAttDef(QName element, QName attribute) {
@@ -2124,163 +2083,141 @@ public class XMLValidator
         return state;
     }
 
-    /** normalize the attribute in the attributes, index is the position */
-    /***
-    private void normalizeAttrValue(XMLAttributes attributes, int index) {
-
+    /**
+     * Normalize the attribute value of a non CDATA attributes collapsing
+     * sequences of space characters (x20)
+     *
+     * @param attributes The list of attributes
+     * @param index The index of the attribute to normalize
+     */
+    private boolean normalizeAttrValue(XMLAttributes attributes, int index) {
         // vars
+        boolean leadingSpace = true;
+        boolean spaceStart = false;
+        boolean readingNonSpace = false;
+        int count = 0;
+        int eaten = 0;
         String attrValue = attributes.getValue(index);
         char[] attValue = new char[attrValue.length()];
-        boolean isCDATA = attributes.getType(index) == fCDATASymbol;
-        fBuffer.setLength(0);
 
+        fBuffer.setLength(0);
         attrValue.getChars(0, attrValue.length(), attValue, 0);
+        for (int i = 0; i < attValue.length; i++) {
 
-        if (isCDATA) {
-            for (int i = 0; i < attValue.length; i++) {
-                if (attValue[i] == '\r' || attValue[i] == '\n' || attValue[i] == ' ') {
-                    attValue[i] = ' ';
+            if (attValue[i] == ' ') {
+
+                // now the tricky part
+                if (readingNonSpace) {
+                    spaceStart = true;
+                    readingNonSpace = false;
                 }
-                fBuffer.append(attValue[i]);
-            }
-        } 
-        else {
-            boolean leadingSpace = true;
-            boolean spaceStart = false;
-            boolean readingNonSpace = false;
-            int count = 0;
-            int eaten = 0;
 
-            for (int i = 0; i < attValue.length; i++) {
-
-                if (attValue[i] == '\r' || attValue[i] == '\n' || attValue[i] == ' ') {
-                    attValue[i] = ' ';
-                    // now the tricky part
-
-                    if (readingNonSpace) {
-                        spaceStart = true;
-                        readingNonSpace = false;
-                    }
-
-                    if (spaceStart && !leadingSpace) {
-                        spaceStart = false;
-                        fBuffer.append(attValue[i]);
-                        count++;
-                    } 
-                    else {
-                        if (leadingSpace || !spaceStart) {
-                            eaten ++;
-                            int entityCount = attributes.getEntityCount(index);
-                            for (int j=0;  j < entityCount; j++) {
-                                int offset = attributes.getEntityOffset(index, j);
-                                int length = attributes.getEntityLength(index, j);
-                                if (offset <= i-eaten+1) {
-                                    if (offset+length >= i-eaten+1) {
-                                        if (length > 0)
-                                            length--;
-                                    }
-                                } 
-                                else {
-                                    if (offset > 0)
-                                        offset--;
+                if (spaceStart && !leadingSpace) {
+                    spaceStart = false;
+                    fBuffer.append(attValue[i]);
+                    count++;
+                } 
+                else {
+                    if (leadingSpace || !spaceStart) {
+                        eaten ++;
+                        int entityCount = attributes.getEntityCount(index);
+                        for (int j = 0;  j < entityCount; j++) {
+                            int offset = attributes.getEntityOffset(index, j);
+                            int length = attributes.getEntityLength(index, j);
+                            if (offset <= i-eaten+1) {
+                                if (offset+length >= i-eaten+1) {
+                                    if (length > 0)
+                                        length--;
                                 }
-                                attributes.setEntityOffset(index, j, offset);
-                                attributes.setEntityLength(index, j, length);
+                            } 
+                            else {
+                                if (offset > 0)
+                                    offset--;
                             }
+                            attributes.setEntityOffset(index, j, offset);
+                            attributes.setEntityLength(index, j, length);
                         }
                     }
-
-                } 
-                else {
-                    readingNonSpace = true;
-                    spaceStart = false;
-                    leadingSpace = false;
-                    fBuffer.append(attValue[i]);
-                    count++;
                 }
-            }
 
-            // check if the last appended character is a space.
-            if (count > 0 && fBuffer.charAt(count-1) == ' ') {
-                fBuffer.setLength(count-1);
-                int entityCount = attributes.getEntityCount(index);
-                for (int j=0;  j < entityCount; j++) {
-                    int offset = attributes.getEntityOffset(index, j);
-                    int length = attributes.getEntityLength(index, j);
-                    if (offset < count-1) {
-                        if (offset+length == count) {
-                            length--;
-                        }
-                    } 
-                    else {
-                        offset--;
-                    }
-                    attributes.setEntityOffset(index, j, offset);
-                    attributes.setEntityLength(index, j, length);
-                }
-            }
-
-        }
-        attributes.setValue(index, fBuffer.toString());
-    }
-    /***/
-
-    /** normalize the default attribute value with such a type */
-    /***
-    private String normalizeDefaultAttrValue(String defaultValue, short type) {
-
-        char[] attValue = new char[defaultValue.length()];
-        boolean isCDATA = type == XMLSimpleType.TYPE_CDATA;
-        fBuffer.setLength(0);
-
-        defaultValue.getChars(0, defaultValue.length(), attValue, 0);
-
-        if (isCDATA) {
-            for (int i = 0; i < attValue.length; i++) {
-                if (attValue[i] == '\r' || attValue[i] == '\n' || attValue[i] == ' ') {
-                    attValue[i] = ' ';
-                }
+            } 
+            else {
+                readingNonSpace = true;
+                spaceStart = false;
+                leadingSpace = false;
                 fBuffer.append(attValue[i]);
-            }
-        } 
-        else {
-            boolean leadingSpace = true;
-            boolean spaceStart = false;
-            boolean readingNonSpace = false;
-            int count = 0;
-
-            for (int i = 0; i < attValue.length; i++) {
-
-                if (attValue[i] == '\r' || attValue[i] == '\n' || attValue[i] == ' ') {
-                    attValue[i] = ' ';
-
-                    if (readingNonSpace) {
-                        spaceStart = true;
-                        readingNonSpace = false;
-                    }
-
-                    if (spaceStart && !leadingSpace) {
-                        spaceStart = false;
-                        fBuffer.append(attValue[i]);
-                        count++;
-                    } 
-                    else {
-                        // just skip it.
-                    }
-
-                } 
-                else {
-                    readingNonSpace = true;
-                    spaceStart = false;
-                    leadingSpace = false;
-                    fBuffer.append(attValue[i]);
-                    count++;
-                }
+                count++;
             }
         }
-        return fBuffer.toString();
+
+        // check if the last appended character is a space.
+        if (count > 0 && fBuffer.charAt(count-1) == ' ') {
+            fBuffer.setLength(count-1);
+            int entityCount = attributes.getEntityCount(index);
+            for (int j=0;  j < entityCount; j++) {
+                int offset = attributes.getEntityOffset(index, j);
+                int length = attributes.getEntityLength(index, j);
+                if (offset < count-1) {
+                    if (offset+length == count) {
+                        length--;
+                    }
+                } 
+                else {
+                    offset--;
+                }
+                attributes.setEntityOffset(index, j, offset);
+                attributes.setEntityLength(index, j, length);
+            }
+        }
+        String newValue = fBuffer.toString();
+        attributes.setValue(index, newValue);
+        return ! attrValue.equals(newValue);
     }
-    /***/
+
+    /**
+     * Normalize the attribute value of a non CDATA default attribute
+     * collapsing sequences of space characters (x20)
+     *
+     * @param value The value to normalize
+     * @return Whether the value was changed or not.
+     */
+    private boolean normalizeDefaultAttrValue(XMLString value) {
+
+        int oldLength = value.length;
+
+        boolean skipSpace = true; // skip leading spaces
+        int current = value.offset;
+        int end = value.offset + value.length;
+        for (int i = value.offset; i < end; i++) {
+            if (value.ch[i] == ' ') {
+                if (!skipSpace) {
+                    // take the first whitespace as a space and skip the others
+                    value.ch[current++] = ' ';
+                    skipSpace = true;
+                }
+                else {
+                    // just skip it.
+                }
+            }
+            else {
+                // simply shift non space chars if needed
+                if (current != i) {
+                    value.ch[current++] = value.ch[i];
+                }
+                skipSpace = false;
+            }
+        }
+        if (current != value.offset) {
+            if (skipSpace) {
+                // if we finished on a space trim it
+                current--;
+            }
+            // set the new value length
+            value.length = current - value.offset;
+            return true;
+        }
+        return false;
+    }
 
     /** Root element specified. */
     private void rootElementSpecified(QName rootElement) throws SAXException {

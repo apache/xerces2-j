@@ -1206,8 +1206,7 @@ public class XMLDTDScanner
             // AttValue 
             boolean isVC = !fStandalone  &&  (fSeenExternalDTD || fSeenExternalPE) ;
             scanAttributeValue(defaultVal, atName,
-                               fAttributes, 0, type.equals("CDATA"),
-                               isVC);
+                               fAttributes, 0, isVC);
         }
         return defaultType;
 
