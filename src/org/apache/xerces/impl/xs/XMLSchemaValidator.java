@@ -1268,7 +1268,7 @@ public class XMLSchemaValidator
 
         if (fDoValidation) {
             try {
-                fDoValidation = componentManager.getFeature(this.SCHEMA_VALIDATION);
+                fDoValidation = componentManager.getFeature(XMLSchemaValidator.SCHEMA_VALIDATION);
             }
             catch (XMLConfigurationException e) {
             }
