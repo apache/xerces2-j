@@ -304,7 +304,7 @@ class XSDHandler {
         }
 
         Vector dependencies = new Vector();
-        dependencies.add(currSchemaInfo);
+        dependencies.addElement(currSchemaInfo);
         Element rootNode = DOMUtil.getRoot(schemaRoot);
 
         String schemaNamespace=EMPTY_STRING;
