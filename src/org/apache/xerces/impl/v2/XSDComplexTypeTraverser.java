@@ -268,7 +268,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -----------------------------------------------------------------------
        // The content should be either "restriction" or "extension"
        // -----------------------------------------------------------------------
-       String simpleContentName = simpleContent.getLocalName();
+       String simpleContentName = DOMUtil.getLocalName(simpleContent);
        if (simpleContentName.equals(SchemaSymbols.ELT_RESTRICTION))
          typeInfo.fDerivedBy = SchemaSymbols.RESTRICTION;
        else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
@@ -358,7 +358,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           // There may be a simple type definition in the restriction element
           // The data type validator will be based on it, if specified
           // -----------------------------------------------------------------------
-          if (simpleContent.getLocalName().equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+          if (DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
               DatatypeValidator dv =fSchemaHandler.fSimpleTypeTraverser.traverseLocal(simpleContent, schemaDoc, grammar); 
               if (dv == null) 
                 throw new ComplexTypeRecoverableError();
@@ -477,7 +477,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -----------------------------------------------------------------------
        // The content should be either "restriction" or "extension"
        // -----------------------------------------------------------------------
-       String complexContentName = complexContent.getLocalName();
+       String complexContentName = DOMUtil.getLocalName(complexContent);
        if (complexContentName.equals(SchemaSymbols.ELT_RESTRICTION))
          typeInfo.fDerivedBy = SchemaSymbols.RESTRICTION;
        else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
@@ -692,7 +692,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
            // -------------------------------------------------------------
 
 
-          String childName = complexContentChild.getLocalName();
+          String childName = DOMUtil.getLocalName(complexContentChild);
 
           if (childName.equals(SchemaSymbols.ELT_GROUP)) {
 
@@ -757,7 +757,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     private boolean isAttrOrAttrGroup(Element e)
     {
-        String elementName = e.getLocalName();
+        String elementName = DOMUtil.getLocalName(e); 
 
         if (elementName.equals(SchemaSymbols.ELT_ATTRIBUTE) ||
             elementName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP) ||

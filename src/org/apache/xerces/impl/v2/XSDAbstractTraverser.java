@@ -367,7 +367,7 @@ abstract class XSDAbstractTraverser {
         String childName;
 
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
-            childName = child.getLocalName();
+            childName = DOMUtil.getLocalName(child); 
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
                                                                                schemaDoc, grammar);
@@ -415,7 +415,7 @@ abstract class XSDAbstractTraverser {
         } // for
 
         if (child != null) {
-            childName = child.getLocalName();
+            childName = DOMUtil.getLocalName(child); 
             if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
                 XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.
                                             traverseAnyAttribute(child, schemaDoc, grammar);
