@@ -606,7 +606,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 }
 
             }
-            else if (name.equals(SEND_PSVI) ){
+            else if (name.equals(SEND_PSVI) || name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
                 // REVISIT: turning augmentation of PSVI is not support,
                 // because in this case we won't be able to retrieve element
                 // default value.
