@@ -1963,14 +1963,13 @@ public class XMLDTDValidator
                                            new Object[]{ element.rawname},
                                            XMLErrorReporter.SEVERITY_ERROR);
             }
-            else {
-                //  0. insert default attributes
-                //  1. normalize the attributes
-                //  2. validate the attrivute list.
-                // TO DO: 
-                //changed here.. also pass element name,
-                addDTDDefaultAttrsAndValidate(element, fCurrentElementIndex, attributes);
-            }
+            
+            //  0. insert default attributes
+            //  1. normalize the attributes
+            //  2. validate the attrivute list.
+            // TO DO: 
+            //changed here.. also pass element name,
+            addDTDDefaultAttrsAndValidate(element, fCurrentElementIndex, attributes);
         }
 
         // set element content state
