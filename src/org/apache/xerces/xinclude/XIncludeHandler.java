@@ -1365,7 +1365,7 @@ public class XIncludeHandler
         //       of resolving relative references, or if it should be added if they are different at all.
         //       Revisit this after a final decision has been made.
         //       The decision also affects whether we output the file name of the URI, or just the path.
-        return parentBaseURI.equals(baseURI);
+        return parentBaseURI != null && parentBaseURI.equals(baseURI);
     }
 
     /**
