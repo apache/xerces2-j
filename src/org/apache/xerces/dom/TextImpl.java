@@ -217,19 +217,21 @@ public class TextImpl
         }
 
         // make sure we can make the replacement
-        if (!canModifyPrev(this)) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                    DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "NO_MODIFICATION_ALLOWED_ERR", null));
-        }
-
-        // make sure we can make the replacement
-        if (!canModifyNext(this)) {
-            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                    DOMMessageFormatter.formatMessage(
-                            DOMMessageFormatter.DOM_DOMAIN,
-                            "NO_MODIFICATION_ALLOWED_ERR", null));
+        if (ownerDocument().errorChecking) {
+            if (!canModifyPrev(this)) {
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                        DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.DOM_DOMAIN,
+                                "NO_MODIFICATION_ALLOWED_ERR", null));
+            }
+            
+            // make sure we can make the replacement
+            if (!canModifyNext(this)) {
+                throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
+                        DOMMessageFormatter.formatMessage(
+                                DOMMessageFormatter.DOM_DOMAIN,
+                                "NO_MODIFICATION_ALLOWED_ERR", null));
+            }
         }
 
         //replace the text node
