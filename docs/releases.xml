@@ -4,7 +4,7 @@
 <s1 title="Releases">
   <s2 title='TBD'>
     <ul>
-        <li>Added French resource bundle for regex package [Jean-Claude Dufourd/Neil Graham]</li>
+        <li>Added French resource bundle for regex package [Jean-Claude Dufourd, Laurent Foret/Neil Graham]</li>
         <li>Added support for Schema &quot;final&quot; attribute [Neil Graham]</li>
     </ul>
   </s2>
