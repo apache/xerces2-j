@@ -1654,6 +1654,7 @@ public class XMLDTDScannerImpl
             if (!fEntityScanner.skipChar('[')) {
                 reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
             }
+            fReportEntity = true;
             int initialDepth = ++fIncludeSectDepth;
             if (fDTDHandler != null) {
                 fIgnoreConditionalBuffer.clear();
@@ -1702,7 +1703,6 @@ public class XMLDTDScannerImpl
                                     fDTDHandler.characters(fLiteral);
                                     fDTDHandler.endConditional();
                                 }
-                                fReportEntity = true;
                                 return;
                             }
                         }
@@ -1712,7 +1712,6 @@ public class XMLDTDScannerImpl
                     int c = fEntityScanner.scanChar();
                     if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
                         reportFatalError("IgnoreSectUnterminated", null);
-                        fReportEntity = true;
                         return;
                     }
                     if (fDTDHandler != null) {
@@ -1724,7 +1723,6 @@ public class XMLDTDScannerImpl
         else {
             reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD", null);
         }
-        fReportEntity = true;
 
     } // scanConditionalSect()
 
