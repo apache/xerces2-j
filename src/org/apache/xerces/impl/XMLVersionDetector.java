@@ -143,20 +143,21 @@ public class XMLVersionDetector
     protected static final String DTD_PROCESSOR_PROPERTY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_PROCESSOR_PROPERTY;
 
+    /** Property identifier: namespace binder. */ 
+    protected static final String NAMESPACE_BINDER_PROPERTY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_BINDER_PROPERTY;
+
     // recognized properties
     private static final String[] RECOGNIZED_PROPERTIES = {
         SYMBOL_TABLE, 
         ERROR_REPORTER, 
         ENTITY_MANAGER,
-        DTD_SCANNER_PROPERTY, DTD_VALIDATOR_PROPERTY, 
+        DTD_SCANNER_PROPERTY, 
+        DTD_VALIDATOR_PROPERTY, 
         DTD_PROCESSOR_PROPERTY,
+        NAMESPACE_BINDER_PROPERTY,
     };
-    private static final String[] PROPERTY_DEFAULTS = {null, null, null, null, null, null};
-
-    // debugging
-
-    /** Debug attribute normalization. */
-    protected static final boolean DEBUG_ATTR_NORMALIZATION = false;
+    private static final String[] PROPERTY_DEFAULTS = {null, null, null, null, null, null, null};
 
     //
     // Data
@@ -214,6 +215,9 @@ public class XMLVersionDetector
     
     // the XML 1.1 DTD processor
     protected XML11DTDProcessor fXML11DTDProcessor = null;
+    
+    // the XML 1.1 namespace binder
+    protected XML11NamespaceBinder fXML11NamespaceBinder = null;
     
     // symbols
 
@@ -560,6 +564,27 @@ public class XMLVersionDetector
                 if(val.getDocumentHandler() != null) {
                     val.getDocumentHandler().setDocumentSource(fXML11DTDValidator);
                     fXML11DTDValidator.setDocumentHandler(val.getDocumentHandler());
+                }
+            }
+            // is there a namespace binder in the pipeline?
+            // if so, it'll be XML 1.0; need to replace
+            // it... (REVISIT:  does it make more sense here just to
+            // have a feature???)
+            XMLDocumentFilter nsb = null;
+            if((nsb = (XMLDocumentFilter )fComponentManager.getProperty(NAMESPACE_BINDER_PROPERTY)) != null) {
+                // do we need to new up a replacement? 
+                if(fXML11NamespaceBinder == null) {
+                    fXML11NamespaceBinder = new XML11NamespaceBinder();
+                }
+                fXML11NamespaceBinder.reset(fComponentManager);
+                // now take nsb out of the picture...
+                if(nsb.getDocumentSource() != null) {
+                    nsb.getDocumentSource().setDocumentHandler(fXML11NamespaceBinder);
+                    fXML11NamespaceBinder.setDocumentSource(nsb.getDocumentSource());
+                }
+                if(nsb.getDocumentHandler() != null) {
+                    nsb.getDocumentHandler().setDocumentSource(fXML11NamespaceBinder);
+                    fXML11NamespaceBinder.setDocumentHandler(nsb.getDocumentHandler());
                 }
             }
             // now do the same to the DTD pipeline.

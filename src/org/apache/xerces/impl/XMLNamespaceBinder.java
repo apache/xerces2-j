@@ -854,7 +854,11 @@ public class XMLNamespaceBinder
                 // http://www.w3.org/TR/1999/REC-xml-names-19990114/#dt-prefix
                 // We should only report an error if there is a prefix,
                 // that is, the local part is not "xmlns". -SG
-                if (uri == XMLSymbols.EMPTY_STRING && localpart != XMLSymbols.PREFIX_XMLNS) {
+                // Since this is an error condition in XML 1.0,
+                // and should be relatively uncommon in XML 1.1,
+                // making this test into a method call to reuse code
+                // should be acceptable.  - NG
+                if(prefixBoundToNullURI(uri, localpart)) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "EmptyPrefixedAttName",
                                                new Object[]{attributes.getQName(i)},
@@ -970,5 +974,11 @@ public class XMLNamespaceBinder
         fNamespaceSupport.popContext();
 
     } // handleEndElement(QName,boolean)
+
+    // returns true iff the given prefix is bound to "" *and*
+    // this is disallowed by the version of XML namespaces in use.
+    protected boolean prefixBoundToNullURI(String uri, String localpart) {
+        return (uri == XMLSymbols.EMPTY_STRING && localpart != XMLSymbols.PREFIX_XMLNS); 
+    } // prefixBoundToNullURI(String, String):  boolean
 
 } // class XMLNamespaceBinder
