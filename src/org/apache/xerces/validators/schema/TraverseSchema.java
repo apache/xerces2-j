@@ -4832,7 +4832,6 @@ throws Exception {
       tmpVector.addElement(new Integer(csIndex1));
 
       
-      tmpVector = null;
       if (tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_ALL || 
           tempContentSpec2.type == XMLContentSpec.CONTENTSPECNODE_SEQ) 
          checkRecurse(indexOfGrp, tmpVector, derivedScope, csIndex2, 
@@ -4841,6 +4840,7 @@ throws Exception {
          checkRecurseLax(indexOfGrp, tmpVector, derivedScope, csIndex2, 
                          tempVector2, baseScope, bInfo);
        
+      tmpVector = null;
     }
 
     private void checkNSRecurseCheckCardinality(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2) throws Exception {
