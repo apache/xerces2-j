@@ -273,6 +273,7 @@ public class NamespaceSupport
         // bind prefix to uri in current context
         fNamespace[fNamespaceSize++] = prefix;
         fNamespace[fNamespaceSize++] = uri;
+
         return true;
 
     } // declarePrefix(String,String):boolean
@@ -303,6 +304,36 @@ public class NamespaceSupport
         return null;
 
     } // getURI(String):String
+
+
+
+    /**
+     * Look up a namespace URI and get one of the mapped prefix.
+     * <p>
+     * This method looks up the namespace URI in the current context.
+     *
+     * @param uri The namespace URI to look up.
+     *
+     * @return one of the associated prefixes, or null if the uri
+     *         does not map to any prefix.
+     *
+     * @see #getPrefix
+     * @see #getPrefixes
+     */
+    public String getPrefix(String uri) {
+
+        // find uri in current context
+        for (int i = fNamespaceSize; i > 0; i -= 2) {
+            if (fNamespace[i - 1] == uri) {
+                return fNamespace[i - 2];
+            }
+        }
+
+        // uri not found
+        return null;
+
+    } // getURI(String):String
+
 
     /**
      * Return a count of all prefixes currently declared, including
@@ -442,5 +473,6 @@ public class NamespaceSupport
         } // getParentContext():NamespaceContext
 
     } // class Context
+
 
 } // class NamespaceSupport

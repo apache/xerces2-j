@@ -417,6 +417,7 @@ public abstract class BaseMarkupSerializer
     public void serialize( Element elem )
         throws IOException
     {
+        reset();
         prepare();
         serializeNode( elem );
         _printer.flush();
@@ -437,6 +438,7 @@ public abstract class BaseMarkupSerializer
     public void serialize( DocumentFragment frag )
         throws IOException
     {
+        reset();
         prepare();
         serializeNode( frag );
         _printer.flush();
@@ -457,6 +459,7 @@ public abstract class BaseMarkupSerializer
     public void serialize( Document doc )
         throws IOException
     {
+        reset();
         prepare();
         serializeNode( doc );
         serializePreRoot();
@@ -1211,11 +1214,8 @@ public abstract class BaseMarkupSerializer
             if (index >=0 && !((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
                // issue fatal error
                 if (fDOMErrorHandler != null) {
-                    fDOMError.reset();
-                    fDOMError.setMessage("The character sequence \"]]>\" must not appear in content"+
-                                         " unless used to mark the end of a CDATA section.");
-                    fDOMError.setSeverity(DOMError.SEVERITY_FATAL_ERROR);
-                    fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, fCurrentNode, null));
+                    modifyDOMError("The character sequence \"]]>\" must not appear in content"+
+                                   " unless used to mark the end of a CDATA section.", DOMError.SEVERITY_FATAL_ERROR);
                     boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
                     // Should we always terminate the serialization?
                     // otherwise should we split CDATA section..?
@@ -1227,11 +1227,9 @@ public abstract class BaseMarkupSerializer
             else if (index >=0 && ((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
                // issue warning
                if (fDOMErrorHandler != null) {
-                    fDOMError.reset();
-                    fDOMError.setMessage("Spliting a CDATA section containing the CDATA section termination marker ']]>' ");
-                    fDOMError.setSeverity(DOMError.SEVERITY_WARNING);
-                    fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, fCurrentNode, null));
-                    fDOMErrorHandler.handleError(fDOMError);
+                   modifyDOMError("Spliting a CDATA section containing the CDATA section termination marker ']]>' ", 
+                                  DOMError.SEVERITY_WARNING);
+                   fDOMErrorHandler.handleError(fDOMError);
                 }
             }
 
@@ -1618,5 +1616,20 @@ public abstract class BaseMarkupSerializer
         return null;
     }
 
+    /**
+     * The method modifies global DOM error object
+     * 
+     * @param message
+     * @param severity
+     * @return 
+     */
+    protected DOMError modifyDOMError(String message, short severity){
+            fDOMError.reset();
+            fDOMError.setMessage(message);
+            fDOMError.setSeverity(severity);
+            fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, fCurrentNode, null));
+            return fDOMError;
+        
+    }
 
 }
