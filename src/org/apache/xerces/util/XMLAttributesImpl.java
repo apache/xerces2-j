@@ -461,7 +461,7 @@ public class XMLAttributesImpl
     /**
      * Look up the index of an attribute by Namespace name.
      *
-     * @param uri The Namespace URI, or the empty string if
+     * @param uri The Namespace URI, or null if
      *        the name has no Namespace URI.
      * @param localName The attribute's local name.
      * @return The index of the attribute, or -1 if it does not
@@ -470,10 +470,11 @@ public class XMLAttributesImpl
     public int getIndex(String uri, String localPart) {
         for (int i = 0; i < fLength; i++) {
             Attribute attribute = fAttributes[i];
-            if (attribute.name.uri != null &&
-                attribute.name.uri.equals(uri) &&
-                attribute.name.localpart != null &&
-                attribute.name.localpart.equals(localPart)) {
+            if (attribute.name.localpart != null &&
+                attribute.name.localpart.equals(localPart) &&
+                ((uri==attribute.name.uri) ||
+                (uri!=null && attribute.name.uri!=null && attribute.name.uri.equals(uri))))
+            {
                 return i;
             }
         }
@@ -522,7 +523,7 @@ public class XMLAttributesImpl
      * <p>See {@link #getType(int) getType(int)} for a description
      * of the possible types.</p>
      *
-     * @param uri The Namespace URI, or the empty String if the
+     * @param uri The Namespace URI, or null if the
      *        name has no Namespace URI.
      * @param localName The local name of the attribute.
      * @return The attribute type as a string, or null if the
@@ -555,9 +556,7 @@ public class XMLAttributesImpl
      * Look up an attribute's Namespace URI by index.
      *
      * @param index The attribute index (zero-based).
-     * @return The Namespace URI, or the empty string if none
-     *         is available, or null if the index is out of
-     *         range.
+     * @return The Namespace URI
      * @see #getLength
      */
     public String getURI(int index) {
@@ -565,8 +564,7 @@ public class XMLAttributesImpl
             return null;
         }
         String uri = fAttributes[index].name.uri;
-        // REVISIT: The empty string is not entered in the symbol table!
-        return uri != null ? uri : "";
+        return uri;                        
     } // getURI(int):String
 
     /**
@@ -575,8 +573,7 @@ public class XMLAttributesImpl
      * <p>See {@link #getValue(int) getValue(int)} for a description
      * of the possible values.</p>
      *
-     * @param uri The Namespace URI, or the empty String if the
-     *        name has no Namespace URI.
+     * @param uri The Namespace URI, or null if the
      * @param localName The local name of the attribute.
      * @return The attribute value as a string, or null if the
      *         attribute is not in the list.
