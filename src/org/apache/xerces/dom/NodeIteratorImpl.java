@@ -162,7 +162,7 @@ public class NodeIteratorImpl implements NodeIterator {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMExceptionImpl.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         
         // if root is null there is no next node.
@@ -218,7 +218,7 @@ public class NodeIteratorImpl implements NodeIterator {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMExceptionImpl.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
  
         // if the root is null, or the current node is null, return null.

@@ -263,7 +263,7 @@ public class EntityReferenceImpl
      */
     public void setNodeValue(String x) throws DOMException {
     	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "NO_MODIFICATION_ALLOWED_ERR");
+    	                           "DOM001 Modification not allowed");
     }
 
     //
@@ -282,7 +282,7 @@ public class EntityReferenceImpl
     public void setReadOnly(boolean readOnly,boolean deep) {
     	//if(readOnly==false)
     	//	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-    	//                             "NO_MODIFICATION_ALLOWED_ERR");
+    	//                             "DOM001 Modification not allowed");
     	super.setReadOnly(readOnly,deep);
     }
     /***/

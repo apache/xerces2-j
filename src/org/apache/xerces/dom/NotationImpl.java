@@ -128,7 +128,7 @@ public class NotationImpl
      */
     public void setNodeValue(String value) throws DOMException {
     	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "NO_MODIFICATION_ALLOWED_ERR");
+    	                           "DOM001 Modification not allowed");
     }
 
     //
@@ -173,7 +173,8 @@ public class NotationImpl
 
     	if (readOnly) {
     		throw new DOMExceptionImpl(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR,null);
+    			DOMException.NO_MODIFICATION_ALLOWED_ERR,
+			"DOM001 Modification not allowed");
         }
         if (syncData) {
             synchronizeData();
@@ -190,7 +191,8 @@ public class NotationImpl
 
     	if(readOnly) {
     		throw new DOMExceptionImpl(
-    			DOMException.NO_MODIFICATION_ALLOWED_ERR,null);
+    			DOMException.NO_MODIFICATION_ALLOWED_ERR,
+			"DOM001 Modification not allowed");
         }
         if (syncData) {
             synchronizeData();

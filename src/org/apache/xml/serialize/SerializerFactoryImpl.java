@@ -88,7 +88,7 @@ final class SerializerFactoryImpl
 	     ! _method.equals( Method.HTML ) &&
 	     ! _method.equals( Method.XHTML ) &&
 	     ! _method.equals( Method.TEXT ) )
-	    throw new IllegalArgumentException( "The method '" + method + "' is not supported by this factory" );
+	    throw new IllegalArgumentException( "SER004 The method '" + method + "' is not supported by this factory\n" + method);
     }
 
 
@@ -137,7 +137,7 @@ final class SerializerFactoryImpl
 	}  else if ( _method.equals( Method.TEXT ) ) {
 	    return new TextSerializer( format );
 	} else {
-	    throw new IllegalStateException( "The method '" + _method + "' is not supported by this factory" );
+	    throw new IllegalStateException( "SER005 The method '" + _method + "' is not supported by this factory\n" + _method);
 	}
     }
 

@@ -264,17 +264,17 @@ public class NamedNodeMapImpl
 
     	if (readOnly) {
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                       "NO_MODIFICATION_ALLOWED_ERR");
+                                       "DOM001 Modification not allowed");
         }
     	
     	if(arg.getOwnerDocument() != ownerDocument) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
-                                       "WRONG_DOCUMENT_ERR");
+                                       "DOM005 Wrong document");
         }
 
     	if (arg instanceof AttrImpl && ((AttrImpl)arg).owned) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
-                                       "INUSE_ATTRIBUTE_ERR");
+                                       "DOM009 Attribute already in use");
         }
 
         NodeImpl argn = (NodeImpl)arg;
@@ -336,17 +336,17 @@ public class NamedNodeMapImpl
 
     	if (readOnly) {
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
-                                       "NO_MODIFICATION_ALLOWED_ERR");
+                                       "DOM001 Modification not allowed");
         }
     
     	if(arg.getOwnerDocument() != ownerDocument) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
-                                       "WRONG_DOCUMENT_ERR");
+                                       "DOM005 Wrong document");
         }
 
     	if (arg instanceof AttrImpl && ((AttrImpl)arg).owned) {
             throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
-                                       "INUSE_ATTRIBUTE_ERR");
+                                       "DOM009 Attribute already in use");
         }
 
         NodeImpl argn = (NodeImpl)arg;
@@ -423,7 +423,7 @@ public class NamedNodeMapImpl
     	int i = findNamePoint(name,0);
     	if (i < 0) {
     		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
-    		                           "NOT_FOUND_ERR");
+    		                           "DOM008 Not found");
         }
 
         Node n = (Node)(nodes.elementAt(i));
@@ -476,7 +476,7 @@ public class NamedNodeMapImpl
     	int i = findNamePoint(namespaceURI, name);
     	if (i < 0) {
     		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
-    		                           "NOT_FOUND_ERR");
+    		                           "DOM008 Not found");
         }
 
         LCount lc=null;

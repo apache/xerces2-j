@@ -331,7 +331,7 @@ public abstract class NodeContainer
     	if (readOnly)
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
      	
         boolean errorChecking = ownerDocument.errorChecking;
     	if(errorChecking && !(newChild instanceof NodeImpl)
@@ -344,7 +344,7 @@ public abstract class NodeContainer
     		    newChild.getOwnerDocument() == (Document)this )
     		) ) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "WRONG_DOCUMENT_ERR");
+    		                           "DOM005 Wrong document");
         }
 
         if (syncChildren) {
@@ -362,13 +362,13 @@ public abstract class NodeContainer
             }
             if(!treeSafe) {
                 throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-                                           "HIERARCHY_REQUEST_ERR");
+                                           "DOM006 Hierarchy request error");
             }
 
             // refChild must in fact be a child of this node (or null)
             if(refChild != null && refChild.getParentNode() != this) {
                 throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
-                                           "NOT_FOUND_ERR");
+                                           "DOM008 Not found");
             }
         }
     	
@@ -396,7 +396,7 @@ public abstract class NodeContainer
 
     		    if (errorChecking && !ownerDocument.isKidOK(this, kid)) {
         		  	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-        		  	                           "HIERARCHY_REQUEST_ERR");
+        		  	                           "DOM006 Hierarchy request error");
                 }
     		}		  	
 
@@ -407,7 +407,7 @@ public abstract class NodeContainer
     	
     	else if (errorChecking && !ownerDocument.isKidOK(this, newInternal)) {
     		throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-    		                           "HIERARCHY_REQUEST_ERR");
+    		                           "DOM006 Hierarchy request error");
         }
     	else {
 		    EnclosingAttr enclosingAttr=null;
@@ -552,13 +552,13 @@ public abstract class NodeContainer
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
      	
     	if (ownerDocument.errorChecking && 
             oldChild != null && oldChild.getParentNode() != this) {
     		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
-    		                           "NOT_FOUND_ERR");
+    		                           "DOM008 Not found");
         }
 
         // call out to any NodeIterators to remove the Node and fix-up the iterator.

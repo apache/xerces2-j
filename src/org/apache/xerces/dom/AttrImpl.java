@@ -201,7 +201,7 @@ public class AttrImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
     		
         LCount lc=null;

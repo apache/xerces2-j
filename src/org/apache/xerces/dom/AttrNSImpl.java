@@ -103,7 +103,7 @@ public class AttrNSImpl
 
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
+    	                               "DOM002 Illegal character");
         }
 
         this.ownerDocument = ownerDocument;
@@ -140,7 +140,7 @@ public class AttrNSImpl
 		(qualifiedName.equals("xmlns")
 		 && !namespaceURI.equals("http://www.w3.org/2000/xmlns/"))) {
 		throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-					   "NAMESPACE_ERR");
+					   "DOM003 Namespace error");
 	    }
 	}
     	
@@ -230,11 +230,11 @@ public class AttrNSImpl
 	      (prefix.equals("xml")
 	       && !namespaceURI.equals("http://www.w3.org/XML/1998/namespace"))))) {
     	    throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-				       "NAMESPACE_ERR");
+				       "DOM003 Namespace error");
     	}
 	if (ownerDocument.errorChecking && !DocumentImpl.isXMLName(prefix)) {
     	    throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    	                               "INVALID_CHARACTER_ERR");
+    	                               "DOM002 Illegal character");
         }
         this.prefix = prefix;
     }

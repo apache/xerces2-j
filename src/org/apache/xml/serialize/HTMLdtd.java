@@ -467,7 +467,7 @@ final class HTMLdtd
             _byChar = new Hashtable();
             is = HTMLdtd.class.getResourceAsStream( ENTITIES_RESOURCE );
             if ( is == null )
-                throw new RuntimeException( "The resource [" + ENTITIES_RESOURCE + "] could not be found." );
+                throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not be found.\n" + ENTITIES_RESOURCE);
             reader = new BufferedReader( new InputStreamReader( is ) );
             line = reader.readLine();
             while ( line != null )
@@ -498,8 +498,8 @@ final class HTMLdtd
         }
         catch ( Exception except )
         {
-            throw new RuntimeException( "The resource [" + ENTITIES_RESOURCE + "] could not load: " +
-					except.toString() );
+            throw new RuntimeException( "SER003 The resource [" + ENTITIES_RESOURCE + "] could not load: " +
+					except.toString() + "\n" + ENTITIES_RESOURCE + "\t" + except.toString());
         }
         finally
         {

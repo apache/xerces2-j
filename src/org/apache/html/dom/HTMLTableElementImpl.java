@@ -36,7 +36,7 @@ public final class HTMLTableElementImpl
     public synchronized void setCaption( HTMLTableCaptionElement caption )
     {
         if ( caption != null && ! caption.getTagName().equals( "CAPTION" ) )
-            throw new IllegalArgumentException( "Argument 'caption' is not an element of type <CAPTION>." );
+            throw new IllegalArgumentException( "HTM016 Argument 'caption' is not an element of type <CAPTION>." );
         deleteCaption();
         if ( caption != null )
             appendChild( caption );
@@ -84,7 +84,7 @@ public final class HTMLTableElementImpl
     public synchronized void setTHead( HTMLTableSectionElement tHead )
     {
         if ( tHead != null && ! tHead.getTagName().equals( "THEAD" ) )
-            throw new IllegalArgumentException( "Argument 'tHead' is not an element of type <THEAD>." );
+            throw new IllegalArgumentException( "HTM017 Argument 'tHead' is not an element of type <THEAD>." );
         deleteTHead();
         if ( tHead != null )
             appendChild( tHead );
@@ -132,7 +132,7 @@ public final class HTMLTableElementImpl
     public synchronized void setTFoot( HTMLTableSectionElement tFoot )
     {
         if ( tFoot != null && ! tFoot.getTagName().equals( "TFOOT" ) )
-            throw new IllegalArgumentException( "Argument 'tFoot' is not an element of type <TFOOT>." );
+            throw new IllegalArgumentException( "HTM018 Argument 'tFoot' is not an element of type <TFOOT>." );
         deleteTFoot();
         if ( tFoot != null )
             appendChild( tFoot );

@@ -71,7 +71,7 @@ public class HTMLBuilder
         throws SAXException
     {
         if ( ! _done )
-	    throw new SAXException( "State error: startDocument fired twice on one builder." );
+	    throw new SAXException( "HTM001 State error: startDocument fired twice on one builder." );
 	_document = null;
 	_done = false;
     }
@@ -81,9 +81,9 @@ public class HTMLBuilder
         throws SAXException
     {
         if ( _document == null )
-            throw new SAXException( "State error: document never started or missing document element." );
+            throw new SAXException( "HTM002 State error: document never started or missing document element." );
 	if ( _current != null )
-	    throw new SAXException( "State error: document ended before end of document element." );
+	    throw new SAXException( "HTM003 State error: document ended before end of document element." );
         _current = null;
 	_done = true;
     }
@@ -96,7 +96,7 @@ public class HTMLBuilder
         int         i;
         
 	if ( tagName == null )
-	    throw new SAXException( "Argument 'tagName' is null." );
+	    throw new SAXException( "HTM004 Argument 'tagName' is null." );
 
 	// If this is the root element, this is the time to create a new document,
 	// because only know we know the document element name and namespace URI.
@@ -107,7 +107,7 @@ public class HTMLBuilder
 	    elem = (ElementImpl) _document.getDocumentElement();
 	    _current = elem;
 	    if ( _current == null )
-		throw new SAXException( "State error: Document.getDocumentElement returns null." );
+		throw new SAXException( "HTM005 State error: Document.getDocumentElement returns null." );
 
 	    // Insert nodes (comment and PI) that appear before the root element.
 	    if ( _preRootNodes != null )
@@ -123,7 +123,7 @@ public class HTMLBuilder
 	    // This is a state error, indicates that document has been parsed in full,
 	    // or that there are two root elements.
 	    if ( _current == null )
-		throw new SAXException( "State error: startElement called after end of document element." );
+		throw new SAXException( "HTM006 State error: startElement called after end of document element." );
 	    elem = (ElementImpl) _document.createElement( tagName );
 	    _current.appendChild( elem );
 	    _current = elem;
@@ -143,9 +143,9 @@ public class HTMLBuilder
     {
 
         if ( _current == null )
-            throw new SAXException( "State error: endElement called with no current node." );
+            throw new SAXException( "HTM007 State error: endElement called with no current node." );
 	if ( ! _current.getNodeName().equals( tagName ) )
-	    throw new SAXException( "State error: mismatch in closing tag name " + tagName );
+	    throw new SAXException( "HTM008 State error: mismatch in closing tag name " + tagName + "\n" + tagName);
 
 	// Move up to the parent element. When you reach the top (closing the root element).
 	// the parent is document and current is null.
@@ -160,7 +160,7 @@ public class HTMLBuilder
         throws SAXException
     {
 	if ( _current == null )
-            throw new SAXException( "State error: character data found outside of root element." );
+            throw new SAXException( "HTM009 State error: character data found outside of root element." );
 	_current.appendChild( new TextImpl( _document, text ) );
     }
 
@@ -169,7 +169,7 @@ public class HTMLBuilder
         throws SAXException
     {
 	if ( _current == null )
-            throw new SAXException( "State error: character data found outside of root element." );
+            throw new SAXException( "HTM010 State error: character data found outside of root element." );
 	_current.appendChild( new TextImpl( _document, new String( text, start, length ) ) );
     }
     

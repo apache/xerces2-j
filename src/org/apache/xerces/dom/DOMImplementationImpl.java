@@ -150,7 +150,7 @@ public class DOMImplementationImpl
     {
     	if (!DocumentImpl.isXMLName(qualifiedName)) {
     		throw new DOMExceptionImpl(DOMException.INVALID_CHARACTER_ERR, 
-    		                           "INVALID_CHARACTER_ERR");
+    		                           "DOM002 Illegal character");
         }
     	return new DocumentTypeImpl(null, qualifiedName, publicID, systemID, internalSubset);
     }
@@ -181,7 +181,7 @@ public class DOMImplementationImpl
     {
     	if (doctype.getOwnerDocument() != null) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "WRONG_DOCUMENT_ERR");
+    		                           "DOM005 Wrong document");
         }
         DocumentImpl doc = new DocumentImpl(doctype);
         //((DocumentTypeImpl)doctype).ownerDocument = doc;

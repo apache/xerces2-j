@@ -157,7 +157,7 @@ public abstract class CharacterDataImpl
         if (readOnly) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR,
-        		"NO_MODIFICATION_ALLOWED_ERR");
+        		"DOM001 Modification not allowed");
         }
 
         if (syncData) {
@@ -187,12 +187,12 @@ public abstract class CharacterDataImpl
         if (readOnly) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-        		"NO_MODIFICATION_ALLOWED_ERR");
+        		"DOM001 Modification not allowed");
         }
 
         if (count < 0) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
-        	                           "INDEX_SIZE_ERR");
+        	                           "DOM004 Index out of bounds");
         }
 
         if (syncData) {
@@ -214,7 +214,7 @@ public abstract class CharacterDataImpl
         }
         catch (StringIndexOutOfBoundsException e) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
-        	                           "INDEX_SIZE_ERR");
+        	                           "DOM004 Index out of bounds");
         }
 
     } // deleteData(int,int)
@@ -234,7 +234,7 @@ public abstract class CharacterDataImpl
         if (readOnly) {
         	throw new DOMExceptionImpl(
         		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-        		"NO_MODIFICATION_ALLOWED_ERR");
+        		"DOM001 Modification not allowed");
         }
 
         if (syncData) {
@@ -255,7 +255,7 @@ public abstract class CharacterDataImpl
         }
         catch (StringIndexOutOfBoundsException e) {
         	throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
-        	                           "INDEX_SIZE_ERR");
+        	                           "DOM004 Index out of bounds");
         }
 
     } // insertData(int,int)
@@ -338,7 +338,7 @@ public abstract class CharacterDataImpl
         int length = value.length();
         if (count < 0 || offset < 0 || offset > length - 1) {
             throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
-                                       "INDEX_SIZE_ERR");
+                                       "DOM004 Index out of bounds");
         }
 
         int tailIndex = Math.min(offset + count, length);

@@ -177,7 +177,7 @@ public class TextImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
 
         if (syncData) {
@@ -185,7 +185,7 @@ public class TextImpl
         }
     	if (offset < 0 || offset > value.length() - 1) {
     		throw new DOMExceptionImpl(DOMException.INDEX_SIZE_ERR, 
-    		                           "INDEX_SIZE_ERR");
+    		                           "DOM004 Index out of bounds");
         }
     		
         // split text into two separate nodes

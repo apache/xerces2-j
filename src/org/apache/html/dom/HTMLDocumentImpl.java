@@ -410,10 +410,10 @@ public class HTMLDocumentImpl
                     thrw = ( (java.lang.reflect.InvocationTargetException) except ).getTargetException();
                 else
                     thrw = except;
-                System.out.println( "Exception " + thrw.getClass().getName() );
-                System.out.println( thrw.getMessage() );
+//                System.out.println( "Exception " + thrw.getClass().getName() );
+//                System.out.println( thrw.getMessage() );
 
-                throw new IllegalStateException( "Tag '" + tagName + "' associated with an Element class that failed to construct." );
+                throw new IllegalStateException( "HTM15 Tag '" + tagName + "' associated with an Element class that failed to construct.\n" + tagName);
             }
         }
         return new HTMLElementImpl( this, tagName );
@@ -688,7 +688,8 @@ public class HTMLDocumentImpl
 	try {
 	    _elementTypesHTML.put( tagName, Class.forName( "org.apache.html.dom." + className ) );
 	} catch ( ClassNotFoundException except ) {
-	    System.err.println( "OpenXML Error: Could not find class " + className + " implementing HTML element " + tagName );
+	    new RuntimeException( "HTM019 OpenXML Error: Could not find class " + className + " implementing HTML element " + tagName
+				  + "\n" + className + "\t" + tagName);
 	}
     }
 

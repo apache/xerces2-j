@@ -225,7 +225,7 @@ public class HTMLSerializer
 	// Do nothing for HTML/XHTML, browser might not respond
 	// well to <?xml ...?>
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
     }
 
 
@@ -238,7 +238,7 @@ public class HTMLSerializer
 	String       value;
 
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 
 	state = getElementState();
 	if ( state == null ) {

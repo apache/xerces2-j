@@ -177,7 +177,7 @@ public final class XMLSerializer
     public void startDocument()
     {
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 	// Nothing to do here. All the magic happens in startDocument(String)
     }
 
@@ -191,7 +191,7 @@ public final class XMLSerializer
 	String       value;
 
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 
 	state = getElementState();
 	if ( state == null ) {

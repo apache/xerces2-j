@@ -288,7 +288,7 @@ public abstract class BaseMarkupSerializer
     public void setOutputCharStream( Writer output )
     {
 	if ( output == null )
-	    throw new NullPointerException( "Argument 'output' is null." );
+	    throw new NullPointerException( "SER001 Argument 'output' is null." );
 	_writer = output;
 	reset();
     }
@@ -297,7 +297,7 @@ public abstract class BaseMarkupSerializer
     public void setOutputFormat( OutputFormat format )
     {
 	if ( format == null )
-	    throw new NullPointerException( "Argument 'format' is null." );
+	    throw new NullPointerException( "SER001 Argument 'format' is null." );
 	_format = format;
 	// Determine the last printable character based on the output format
 	_lastPrintable = _format.getLastPrintable();
@@ -337,7 +337,7 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 	try {
 	    startDocument();
 	} catch ( SAXException except ) { }
@@ -361,7 +361,7 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 	try {
 	    startDocument();
 	} catch ( SAXException except ) { }
@@ -385,7 +385,7 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
 	if ( _writer == null )
-	    throw new IllegalStateException( "No writer supplied for serializer" );
+	    throw new IllegalStateException( "SER002 No writer supplied for serializer" );
 	try {
 	    startDocument();
 	} catch ( SAXException except ) { }

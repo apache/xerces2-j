@@ -146,7 +146,7 @@ public class DocumentFragmentImpl
     public void setNodeValue(String x) 
         throws DOMException {
     	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "NO_MODIFICATION_ALLOWED_ERR");
+    	                           "DOM001 Modification not allowed");
     }
 
 } // class DocumentFragmentImpl

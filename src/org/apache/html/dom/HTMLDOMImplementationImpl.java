@@ -51,7 +51,7 @@ public class HTMLDOMImplementationImpl
 	HTMLDocument doc;
 
 	if ( title == null )
-	    throw new NullPointerException( "Argument 'title' is null." );
+	    throw new NullPointerException( "HTM014 Argument 'title' is null." );
 	doc = new HTMLDocumentImpl();
 	doc.setTitle( title );
 	return doc;

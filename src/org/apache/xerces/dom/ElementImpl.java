@@ -139,7 +139,7 @@ public class ElementImpl
      */
     public void setNodeValue(String value) throws DOMException {
     	throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    	                           "NO_MODIFICATION_ALLOWED_ERR");
+    	                           "DOM001 Modification not allowed");
     }
 
     /**
@@ -316,7 +316,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
     		
         if (syncData) {
@@ -356,7 +356,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
     		
         if (syncData) {
@@ -375,7 +375,7 @@ public class ElementImpl
     	}
 
         throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
-                                   "NOT_FOUND_ERR");
+                                   "DOM008 Not found");
 
     } // removeAttributeNode(Attr):Attr
 
@@ -404,7 +404,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
 
         if (syncData) {
@@ -438,7 +438,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
     	
         if (syncData) {
@@ -447,7 +447,7 @@ public class ElementImpl
 
     	if (ownerDocument.errorChecking && !(newAttr instanceof AttrImpl)) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
-    		                           "WRONG_DOCUMENT_ERR");
+    		                           "DOM005 Wrong document");
         }
 
     	AttrImpl na = (AttrImpl) newAttr;
@@ -535,7 +535,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
 
         if (syncData) {
@@ -571,7 +571,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
     		
         if (syncData) {
@@ -641,7 +641,7 @@ public class ElementImpl
     	if (readOnly) {
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         }
     	
         if (syncData) {
@@ -650,7 +650,7 @@ public class ElementImpl
 
     	if (ownerDocument.errorChecking && !(newAttr instanceof AttrImpl)) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
-    		"WRONG_DOCUMENT_ERR");
+    		"DOM005 Wrong document");
         }
 
     	AttrImpl na = (AttrImpl) newAttr;

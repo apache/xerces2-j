@@ -166,12 +166,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         
         checkIndex(refNode, offset);
@@ -186,12 +186,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         
         checkIndex(refNode, offset);
@@ -205,12 +205,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         fStartContainer = refNode.getParentNode();
         int i = 0;
@@ -225,12 +225,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         fStartContainer = refNode.getParentNode();
         int i = 0;
@@ -245,12 +245,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         fEndContainer = refNode.getParentNode();
         int i = 0;
@@ -266,12 +266,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         fEndContainer = refNode.getParentNode();
         int i = 0;
@@ -285,7 +285,7 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         
         if (toStart) {
@@ -303,12 +303,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         Node parent = refNode.getParentNode();
         if (parent != null ) // REVIST: what to do if it IS null?
@@ -330,12 +330,12 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
         }
         if ( !isAncestorTypeValid(refNode)) {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         fStartContainer = refNode;
         fEndContainer = refNode;
@@ -365,7 +365,7 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
     	}
        
         Node endPointA;
@@ -634,7 +634,7 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
     	}
         int type = newNode.getNodeType();
         if (type == Node.ATTRIBUTE_NODE
@@ -645,7 +645,7 @@ public class RangeImpl  implements Range {
         {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         if (newNode == null) return; //throw exception?
         Node cloneCurrent;
@@ -700,7 +700,7 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
     	}
         int type = newParent.getNodeType();
         if (type == Node.ATTRIBUTE_NODE
@@ -712,7 +712,7 @@ public class RangeImpl  implements Range {
         {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
-    		    "INVALID_NODE_TYPE_ERR");
+			"DOM012 Invalid node type");
         }
         
         Node root = getCommonAncestorContainer();
@@ -729,7 +729,7 @@ public class RangeImpl  implements Range {
         if (realStart != realEnd) {
            	throw new RangeExceptionImpl(
     		RangeException.BAD_BOUNDARYPOINTS_ERR, 
-    		"BAD_BOUNDARYPOINTS_ERR");
+    		"DOM013 Bad boundary points");
         }
 
     	DocumentFragment frag = extractContents();
@@ -742,7 +742,7 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
     	}
         
         Range range = fDocument.createRange();
@@ -755,7 +755,7 @@ public class RangeImpl  implements Range {
     	if( fDetach) {
     		throw new DOMExceptionImpl(
     			DOMException.INVALID_STATE_ERR, 
-    		    "INVALID_STATE_ERR");
+			"DOM011 Invalid state");
     	}
     	
     	Node node = fStartContainer;
@@ -1236,7 +1236,7 @@ public class RangeImpl  implements Range {
         if (offset < 0) {
     		throw new DOMExceptionImpl(
     			DOMException.INDEX_SIZE_ERR, 
-    		    "INDEX_SIZE_ERR");
+			"DOM004 Index out of bounds");
     	}
 
         int type = refNode.getNodeType();
@@ -1248,7 +1248,7 @@ public class RangeImpl  implements Range {
         && offset > refNode.getNodeValue().length()){
     		throw new DOMExceptionImpl(
     			DOMException.INDEX_SIZE_ERR, 
-    		    "INDEX_SIZE_ERR");
+			"DOM004 Index out of bounds");
         }
         
         Node child = refNode.getFirstChild();
@@ -1259,7 +1259,7 @@ public class RangeImpl  implements Range {
         if (i > offset) {
     		throw new DOMExceptionImpl(
     			DOMException.INDEX_SIZE_ERR, 
-    		    "INDEX_SIZE_ERR");
+			"DOM004 Index out of bounds");
         }
             
     }

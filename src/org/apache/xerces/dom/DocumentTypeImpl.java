@@ -217,7 +217,7 @@ public class DocumentTypeImpl
     public void setNodeValue(String value) throws DOMException {
     	throw new DOMExceptionImpl(
     		DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    		"NO_MODIFICATION_ALLOWED_ERR");
+    		"DOM001 Modification not allowed");
     }
 
     /** Clones the node. */

@@ -261,7 +261,7 @@ public abstract class NodeImpl
     	if (readOnly)
     		throw new DOMExceptionImpl(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
-    			"NO_MODIFICATION_ALLOWED_ERR");
+    			"DOM001 Modification not allowed");
         // revisit: may want to set the value in ownerDocument.
     	// Default behavior, overridden in some subclasses
         if (syncData) {
@@ -367,7 +367,7 @@ public abstract class NodeImpl
      */
     public Node appendChild(Node newChild) throws DOMException {
 	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-				   "HIERARCHY_REQUEST_ERR");
+				   "DOM006 Hierarchy request error");
     }
 
     /**
@@ -542,7 +542,7 @@ public abstract class NodeImpl
     public Node insertBefore(Node newChild, Node refChild) 
 	throws DOMException {
 	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-				   "HIERARCHY_REQUEST_ERR");
+				   "DOM006 Hierarchy request error");
     }
 
     /**
@@ -563,7 +563,7 @@ public abstract class NodeImpl
     public Node removeChild(Node oldChild) 
 		throws DOMException {
 	throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
-				   "NOT_FOUND_ERR");
+				   "DOM008 Not found");
     }
 
     /**
@@ -593,7 +593,7 @@ public abstract class NodeImpl
     public Node replaceChild(Node newChild, Node oldChild)
         throws DOMException {
 	throw new DOMExceptionImpl(DOMException.HIERARCHY_REQUEST_ERR, 
-				   "HIERARCHY_REQUEST_ERR");
+				   "DOM006 Hierarchy request error");
     }
 
     //
@@ -739,7 +739,7 @@ public abstract class NodeImpl
         throws DOMException
     {
 	throw new DOMExceptionImpl(DOMException.NAMESPACE_ERR, 
-				   "NAMESPACE_ERR");
+				   "DOM003 Namespace error");
     }
 
     /**
@@ -966,7 +966,8 @@ public abstract class NodeImpl
         // VALIDATE -- must have been initialized at least once, must have
         // a non-null non-blank name.
         if(!evt.initialized || evt.type==null || evt.type.equals(""))
-            throw new DOMExceptionImpl(DOMExceptionImpl.UNSPECIFIED_EVENT_TYPE,"");
+            throw new DOMExceptionImpl(DOMExceptionImpl.UNSPECIFIED_EVENT_TYPE,
+				       "DOM010 Unspecified event type");
         
         // If nobody is listening for this event, discard immediately
         LCount lc=LCount.lookup(evt.getType());
