@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
- * Copyright 2003,2004 The Apache Software Foundation.
+ * Copyright 2003-2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,14 @@
       these attributes make XInclude processing not transparent to Schema validation.
      </p>
      <p>
-      The solution to this is to modify your schema to allow <code>xml:base</code>
+      One solution to this is to modify your schema to allow <code>xml:base</code>
       attributes to appear on elements that might be included from different base URIs.
-      If this solution is really unappealing to you, voice your concerns on the
-      xerces-j-user mailing list.
+      There is a similar problem with <code>xml:lang</code> attributes that are added as a result
+      of language fixup. If the addition of <code>xml:base</code> and/or <code>xml:lang</code>
+      is undesired by your application, you can disable
+      <link idref='features' anchor='xinclude.fixup-base-uris'>base URI fixup</link> and 
+      <link idref='features' anchor='xinclude.fixup-language'>language fixup</link> so that
+      these attributes will not be added.
      </p>
     </a>
   </faq>
@@ -66,7 +70,7 @@
       Yes. The XInclude specification requires processors to use the base URI
       (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
       recommendation) to resolve relative IRIs to compute the
-      <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/#include-location">include location</jump>.
+      <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#include-location">include location</jump>.
       Support for XML Base was added to the XInclude implementation in Xerces 2.6.0.
      </p>
     </a>
@@ -88,7 +92,7 @@
     <a>
      <p>
       Currently, our implementation of XInclude is not fully complete, and we do
-      not support <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/#XPCore">XPointer</jump>
+      not support <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#XPCore">XPointer</jump>
       references.  We hope that in the future we will have a
       fully compliant XInclude processor that can handle this feature.
      </p>
@@ -100,7 +104,7 @@
     <a>
      <p>
       Yes, the values of the <code>accept</code> and <code>accept-language</code> attributes 
-      from an <jump href="http://www.w3.org/TR/2004/PR-xinclude-20040930/#include_element">include</jump>
+      from an <jump href="http://www.w3.org/TR/2004/REC-xinclude-20041220/#include_element">include</jump>
       element are included as request properties in an HTTP request. Support for content negotation 
       when parse="xml" was added to the XInclude implementation in Xerces 2.7.0.
      </p>
