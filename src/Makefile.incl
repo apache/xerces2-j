@@ -49,7 +49,6 @@ SAMPLESJARFILE = xercesSamples.jar
 PACKAGES = org.apache.xerces.parsers \
            org.apache.xerces.dom \
            org.apache.xerces.dom.events \
-           org.apache.xml.serialize \
            org.w3c.dom \
            org.w3c.dom.events \
            org.w3c.dom.range \
@@ -59,6 +58,7 @@ PACKAGES = org.apache.xerces.parsers \
            org.xml.sax.helpers \
            javax.xml.parsers
 
+#           org.apache.xml.serialize \
 #           org.apache.html.dom \
 #           org.apache.wml \
 #           org.apache.wml.dom \

@@ -3,7 +3,7 @@
 TARGETS =
 
 #DIRS = xerces xml html wml
-DIRS = xerces xml
+DIRS = xerces
 
 TOP = ../../..
 include $(TOP)/src/Makefile.incl

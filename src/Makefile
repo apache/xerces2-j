@@ -85,9 +85,9 @@ source: ../bin/${JARFILE}
 
 
 #-src/org/apache/xml/serialize
-	${MKDIR} ../class/org/apache/xml/serialize
-	${CP}  ../src/org/apache/xml/serialize/*.class                  ../class/org/apache/xml/serialize
-	${CP}  ../src/org/apache/xml/serialize/*.res                    ../class/org/apache/xml/serialize 
+#	${MKDIR} ../class/org/apache/xml/serialize
+#	${CP}  ../src/org/apache/xml/serialize/*.class                  ../class/org/apache/xml/serialize
+#	${CP}  ../src/org/apache/xml/serialize/*.res                    ../class/org/apache/xml/serialize 
 
 #-src/org/apache/html/dom
 #	${MKDIR} ../class/org/apache/html
@@ -271,9 +271,9 @@ package_src:
 	${CP}  ../src/org/apache/xerces/xni/*.java		../source/src/org/apache/xerces/xni
 
 #-src/org/apache/xml/serialize
-	${MKDIR} ../source/src/org/apache/xml/serialize
-	${CP}  ../src/org/apache/xml/serialize/*.java                   ../source/src/org/apache/xml/serialize
-	${CP}  ../src/org/apache/xml/serialize/*.res                    ../source/src/org/apache/xml/serialize
+#	${MKDIR} ../source/src/org/apache/xml/serialize
+#	${CP}  ../src/org/apache/xml/serialize/*.java                   ../source/src/org/apache/xml/serialize
+#	${CP}  ../src/org/apache/xml/serialize/*.res                    ../source/src/org/apache/xml/serialize
 
 #-src/org/w3c/dom
 	${MKDIR} ../source/src/org/w3c/dom	
@@ -403,7 +403,7 @@ package_src:
 	${CP}  ../src/org/apache/xerces/xni/Makefile                    ../source/src/org/apache/xerces/xni
 
 #-src/org/apache/xml/serialize
-	${CP}  ../src/org/apache/xml/serialize/Makefile                    ../source/src/org/apache/xml/serialize
+#	${CP}  ../src/org/apache/xml/serialize/Makefile                    ../source/src/org/apache/xml/serialize
 
 #-src/org/w3c/dom
 	${CP}  ../src/org/w3c/dom/Makefile				../source/src/org/w3c/dom
