@@ -163,6 +163,8 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_POUNDALL          = "#all";
     public static final String ATTVAL_FALSE_0           = "0";
     public static final String ATTVAL_TRUE_1            = "1";
+    public static final String ATTVAL_ANYSIMPLETYPE     = "anySimpleType";
+    public static final String ATTVAL_ANYTYPE           = "anyType";
     public static final String ATTVAL_ANYURI            = "anyURI";
     public static final String ATTVAL_BOOLEAN           = "boolean";
     public static final String ATTVAL_COLLAPSE          = "collapse";
@@ -192,6 +194,14 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_UNION             = "union";
     public static final String ATTVAL_UNQUALIFIED       = "unqualified";
 
+    // from default value
+    public static final int FROM_DEFAULT  = 0x4000;
+    public static final int REAL_VALUE    = 0x3fff;
+
+    // boolean true/false
+    public static final int BOOLEAN_FALSE = 0;
+    public static final int BOOLEAN_TRUE  = 1;
+
     // block/final values
     public static final int EMPTY_SET    = 0;
     public static final int EXTENSION    = 1;
@@ -200,6 +210,10 @@ public final  class SchemaSymbols {
     public static final int LIST         = 8;
     public static final int ENUMERATION  = 16;
     public static final int SUBSTITUTION = 32;
+
+    // form qualified/unqualified
+    public static final int FORM_UNQUALIFIED = 0;
+    public static final int FORM_QUALIFIED   = 1;
 
     // any: processContents
     public static final int ANY_STRICT = 0;

@@ -154,8 +154,8 @@ class XSDHandler {
     // the primary XSDocumentInfo we were called to parse
     private XSDocumentInfo fRoot = null;
 
-    // map between <redefine> elements and the XSDocumentInfo 
-    // objects that correspond to the documents being redefined.  
+    // map between <redefine> elements and the XSDocumentInfo
+    // objects that correspond to the documents being redefined.
     private Hashtable fRedefine2XSDMap = new Hashtable();
 
     // the XMLErrorReporter
@@ -254,7 +254,7 @@ class XSDHandler {
                                         XSDocumentInfo(schemaRoot);
         Vector dependencies = new Vector();
         Element rootNode = DOMUtil.getRoot(schemaRoot);
-        String schemaNamespace=EMPTY_STRING;        
+        String schemaNamespace=EMPTY_STRING;
         String schemaHint=null;
         Document newSchemaRoot = null;
         for (Element child =
@@ -308,7 +308,7 @@ class XSDHandler {
          * set its Document node to hidden so that we don't try to traverse
          * it again; then we look to its Dependency map entry.  We keep a
          * stack of schemas that we haven't yet finished processing; this
-         * is a depth-first traversal.  
+         * is a depth-first traversal.
          */
         Stack schemasToProcess = new Stack();
         schemasToProcess.push(fRoot);
@@ -347,7 +347,7 @@ class XSDHandler {
                     for(Element redefineComp = DOMUtil.getFirstChildElement(globalComp);
                             redefineComp != null;
                             redefineComp = DOMUtil.getNextSiblingElement(redefineComp)) {
-                        String lName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                        String lName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                         if(lName.length() == 0) // an error we'll catch later
                             continue;
                         String qName = currSchemaDoc.fTargetNamespace +","+lName;
@@ -355,32 +355,32 @@ class XSDHandler {
                         if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                             checkForDuplicateNames(qName, fUnparsedAttributeGroupRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                             // and all we need to do is error-check+rename our kkids:
                             // REVISIT!!!
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_ATTRIBUTEGROUP), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_ATTRIBUTEGROUP),
 //                                lName, targetLName);
                         } else if((componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) ||
                                 (componentType.equals(SchemaSymbols.ELT_SIMPLETYPE))) {
                             checkForDuplicateNames(qName, fUnparsedTypeRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                             // and all we need to do is error-check+rename our kkids:
                             // REVISIT!!!
                             if(componentType.equals(SchemaSymbols.ELT_COMPLEXTYPE)) {
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_COMPLEXTYPE), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_COMPLEXTYPE),
 //                                lName, targetLName);
                             } else { // must be simpleType
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_SIMPLETYPE), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_SIMPLETYPE),
 //                                lName, targetLName);
                             }
                         } else if(componentType.equals(SchemaSymbols.ELT_GROUP)) {
                             checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
                             // the check will have changed our name;
-                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME); 
+                            String targetLName = DOMUtil.getAttrValue(redefineComp, SchemaSymbols.ATT_NAME);
                             // and all we need to do is error-check+rename our kkids:
                             // REVISIT!!!
-//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_GROUP), 
+//                            renameRedefiningComponents(redefineComp, SchemaSymbols.ELT_GROUP),
 //                                lName, targetLName);
                         } else {
                             // REVISIT:  report schema element ordering error
@@ -390,7 +390,7 @@ class XSDHandler {
                     DOMUtil.setHidden(globalComp);
                 } else {
                     dependenciesCanOccur = false;
-                    String lName = DOMUtil.getAttrValue(globalComp, SchemaSymbols.ATT_NAME); 
+                    String lName = DOMUtil.getAttrValue(globalComp, SchemaSymbols.ATT_NAME);
                     if(lName.length() == 0) // an error we'll catch later
                         continue;
                     String qName = currSchemaDoc.fTargetNamespace +","+lName;
@@ -420,8 +420,8 @@ class XSDHandler {
             Vector currSchemaDepends = (Vector)fDependencyMap.get(currSchemaDoc);
             for(int i = 0; i < currSchemaDepends.size(); i++) {
                 schemasToProcess.push(currSchemaDepends.elementAt(i));
-            } 
-        } // while 
+            }
+        } // while
     } // end buildGlobalNameRegistries
 
     // Beginning at the first schema processing was requested for
@@ -502,8 +502,7 @@ class XSDHandler {
     // of this object; it creates the traversers that will be used to
     // construct schemaGrammars.
     private void createTraversers() {
-        fAttributeChecker = new
-                            XSAttributeChecker(fDatatypeRegistry, fErrorReporter);
+        fAttributeChecker = new XSAttributeChecker(this, fDatatypeRegistry, fErrorReporter);
         fAttributeGroupTraverser = new
                                    XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this,
@@ -574,7 +573,7 @@ class XSDHandler {
 
     protected void createSimpleType (String qualifiedName, DatatypeValidator baseValidator,
                                 Hashtable facetData, boolean isList){
-        
+
         try {
             fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator,
                                                        facetData, isList);
@@ -585,7 +584,7 @@ class XSDHandler {
         }
     }
     protected void createUnionSimpleType (String qualifiedName, Vector dTValidators){
-        try{            
+        try{
             fDatatypeRegistry.createDatatypeValidator( qualifiedName, dTValidators);
         }
         catch (Exception e) {
@@ -593,14 +592,14 @@ class XSDHandler {
             //reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage()});
         }
     }
-    
-    /** This method makes sure that 
+
+    /** This method makes sure that
      * if this component is being redefined that it lives in the
      * right schema.  It then renames the component correctly.  If it
-     * detects a collision--a duplicate definition--then it complains.  
+     * detects a collision--a duplicate definition--then it complains.
      */
     private void checkForDuplicateNames(String qName,
-            Hashtable registry, Element currComp, 
+            Hashtable registry, Element currComp,
             XSDocumentInfo currSchema) {
         Object objElem = null;
         if((objElem = registry.get(qName)) == null) {
@@ -619,10 +618,10 @@ class XSDHandler {
                 // REVISIT:  error that redefined element in wrong schema
             } else { // we've just got a flat-out collision
                 // REVISIT:  report error for duplicate declarations
-            } 
+            }
         }
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
-    
+
 
     //
     //!!!!!!!!!!!!!!!! IMPLEMENT the following functions !!!!!!!!!!
@@ -643,13 +642,14 @@ class XSDHandler {
         return null;
     }
 
+
     // the purpose of this method is to take the component of the
     // specified type and rename references to itself so that they
     // refer to the object being redefined.  It takes special care of
     // <group>s and <attributeGroup>s to ensure that information
     // relating to implicit restrictions is preserved for those
-    // traversers.  
-    private void renameRedefiningComponents(Element component, String componentType, 
+    // traversers.
+    private void renameRedefiningComponents(Element component, String componentType,
             String oldName, String newName) {
     } // renameRedefiningComponents(Element, String, String, String):void
 

@@ -79,18 +79,18 @@ public class XSElementDecl {
     public final QName fQName = new QName();
 
     // index to the type registry: simpleType or complexType
+    public String fTypeNS;
     public int fXSTypeDecl;
 
     // nillable/abstract/final
     public short fElementMiscFlags;
 
-    public String fBlock;
-    public String fFinal;
+    public short fBlock;
+    public short fFinal;
     public String fDefault;
 
-    // REVISIT: should we store Substitution group names?
-    //
-    public String fSubstitutionGroupName;
+    public String fSubGroupNS;
+    public int fSubGroupIdx;
 
     // REVISIT: should we expose more type information:
     // datatypeValidators or contentSpecIndex

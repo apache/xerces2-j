@@ -69,48 +69,70 @@ import org.apache.xerces.validators.common.Grammar;
 */
 
 /**
+<<<<<<< XSAttributeChecker.java
+ * Class <code>XSAttributeCheck</code> is used to check the validity of attributes
+ * appearing in the schema document. It
+ * - reports an error for invalid element (invalid namespace, invalid name)
+ * - reports an error for invalid attribute (invalid namespace, invalid name)
+ * - reports an error for invalid attribute value
+ * - return compiled values for attriute values
+ * - provide default value for missing optional attributes
+ * - provide default value for incorrect attribute values
+ *
+ * But it's the caller's responsibility to check whether a required attribute
+ * is present.
+ *
+ * Things need revisiting:
+ * - Checking on non-schema namespace attributes
+ * - Do we need to check whether an element is a child of appinfo or documentation?
+ * - We need NamespaceScope to generate QName
+ * - Do we need to update NamespaceScope and ErrorReporter when reset()?
+ * - Should have the datatype validators return compiled value
+ * - Should return QName instead of String for QName type values
+ * - Should return compiled form for wildcard namespace
+ *
  * @version $Id$
+=======
+ * @version $Id$
+>>>>>>> 1.6
  */
 
 public class XSAttributeChecker {
 
-    // store the value of an attribute in a compiled form
-    public class AttrVal {
-        // value
-        Object val;
-        // if this attribute is not specified, and the value is provided
-        // by the default value, then fromDefault == true
-        boolean fromDefault;
-        // constructor
-        protected AttrVal(Object val, boolean fromDefault) {
-            this.val = val;
-            this.fromDefault = fromDefault;
-        }
-    }
+    // constants to return
+    private static Integer[] INTD_CONSTANTS   = {new Integer(0 | SchemaSymbols.FROM_DEFAULT),
+                                                 new Integer(1 | SchemaSymbols.FROM_DEFAULT),
+                                                 new Integer(2 | SchemaSymbols.FROM_DEFAULT)};
+    private static Integer INTD_ONE           = INTD_CONSTANTS[1];
+    private static Integer INTD_TRUE          = INTD_CONSTANTS[SchemaSymbols.BOOLEAN_TRUE];
+    private static Integer INTD_FALSE         = INTD_CONSTANTS[SchemaSymbols.BOOLEAN_FALSE];
+    private static Integer INTD_QUALIFIED     = INTD_CONSTANTS[SchemaSymbols.FORM_QUALIFIED];
+    private static Integer INTD_UNQUALIFIED   = INTD_CONSTANTS[SchemaSymbols.FORM_UNQUALIFIED];
+    private static Integer INTD_EMPTY_SET     = INTD_CONSTANTS[SchemaSymbols.EMPTY_SET];
+    private static Integer INTD_ANY_STRICT    = INTD_CONSTANTS[SchemaSymbols.ANY_STRICT];
+    private static Integer INTD_USE_OPTIONAL  = INTD_CONSTANTS[SchemaSymbols.USE_OPTIONAL];
 
-    private static Boolean FORM_QUALIFIED     = Boolean.TRUE;
-    private static Boolean FORM_UNQUALIFIED   = Boolean.FALSE;
-    private static Integer INT_ZERO           = new Integer(0);
-    private static Integer INT_EMPTY_SET      = INT_ZERO;
-    private static Integer INT_ANY_STRICT     = INT_ZERO;
-    private static Integer INT_USE_OPTIONAL   = INT_ZERO;
-    private static Integer INT_WS_PRESERVE    = INT_ZERO;
-    private static Integer INT_ONE            = new Integer(1);
-    private static Integer INT_ANY_LAX        = INT_ONE;
-    private static Integer INT_USE_REQUIRED   = INT_ONE;
-    private static Integer INT_WS_REPLACE     = INT_ONE;
-    private static Integer INT_TWO            = new Integer(2);
-    private static Integer INT_ANY_SKIP       = INT_TWO;
-    private static Integer INT_USE_PROHIBITED = INT_TWO;
-    private static Integer INT_WS_COLLAPSE    = INT_TWO;
-
-    private static Integer INT_UNBOUNDED = new Integer(SchemaSymbols.OCCURRENCE_UNBOUNDED);
-
-    // used to specify whether the attribute is optional,
-    // and whether it has a default value
-    public static int ATT_REQUIRED          = 0;
-    public static int ATT_OPT_DFLT          = 1;
-    public static int ATT_OPT_NODFLT        = 2;
+    // integer values
+    private static Integer[] INT_CONSTANTS    = {new Integer(0),
+                                                 new Integer(1),
+                                                 new Integer(2)};
+    private static Integer INT_ZERO           = INT_CONSTANTS[1];
+    private static Integer INT_ONE            = INT_CONSTANTS[1];
+    private static Integer INT_TRUE           = INT_CONSTANTS[SchemaSymbols.BOOLEAN_TRUE];
+    private static Integer INT_FALSE          = INT_CONSTANTS[SchemaSymbols.BOOLEAN_FALSE];
+    private static Integer INT_QUALIFIED      = INT_CONSTANTS[SchemaSymbols.FORM_QUALIFIED];
+    private static Integer INT_UNQUALIFIED    = INT_CONSTANTS[SchemaSymbols.FORM_UNQUALIFIED];
+    private static Integer INT_EMPTY_SET      = INT_CONSTANTS[SchemaSymbols.EMPTY_SET];
+    private static Integer INT_ANY_STRICT     = INT_CONSTANTS[SchemaSymbols.ANY_STRICT];
+    private static Integer INT_ANY_LAX        = INT_CONSTANTS[SchemaSymbols.ANY_LAX];
+    private static Integer INT_ANY_SKIP       = INT_CONSTANTS[SchemaSymbols.ANY_SKIP];
+    private static Integer INT_USE_OPTIONAL   = INT_CONSTANTS[SchemaSymbols.USE_OPTIONAL];
+    private static Integer INT_USE_REQUIRED   = INT_CONSTANTS[SchemaSymbols.USE_REQUIRED];
+    private static Integer INT_USE_PROHIBITED = INT_CONSTANTS[SchemaSymbols.USE_PROHIBITED];
+    private static Integer INT_WS_PRESERVE    = INT_CONSTANTS[SchemaSymbols.WS_PRESERVE];
+    private static Integer INT_WS_REPLACE     = INT_CONSTANTS[SchemaSymbols.WS_REPLACE];
+    private static Integer INT_WS_COLLAPSE    = INT_CONSTANTS[SchemaSymbols.WS_COLLAPSE];
+    private static Integer INT_UNBOUNDED      = INT_CONSTANTS[SchemaSymbols.OCCURRENCE_UNBOUNDED];
 
     // the prefix to distinguish gloval vs. local; name vs. ref
     protected static String PRE_GLOBAL      = "G_";
@@ -209,187 +231,141 @@ public class XSAttributeChecker {
         OneAttr[] allAttrs = new OneAttr[attCount];
         allAttrs[ATT_ABSTRACT_D]        =   new OneAttr(SchemaSymbols.ATT_ABSTRACT,
                                                         DT_BOOLEAN,
-                                                        ATT_OPT_DFLT,
-                                                        Boolean.FALSE);
+                                                        INTD_FALSE);
         allAttrs[ATT_ATTRIBUTE_FD_D]    =   new OneAttr(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT,
                                                         DT_FORM,
-                                                        ATT_OPT_DFLT,
-                                                        FORM_UNQUALIFIED);
+                                                        INTD_UNQUALIFIED);
         allAttrs[ATT_BASE_R]            =   new OneAttr(SchemaSymbols.ATT_BASE,
                                                         DT_QNAME,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_BASE_N]            =   new OneAttr(SchemaSymbols.ATT_BASE,
                                                         DT_QNAME,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_BLOCK_N]           =   new OneAttr(SchemaSymbols.ATT_BLOCK,
                                                         DT_BLOCK,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_BLOCK1_N]          =   new OneAttr(SchemaSymbols.ATT_BLOCK,
                                                         DT_BLOCK1,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_BLOCK_D_D]         =   new OneAttr(SchemaSymbols.ATT_BLOCKDEFAULT,
                                                         DT_BLOCK,
-                                                        ATT_OPT_DFLT,
-                                                        INT_EMPTY_SET);
+                                                        INTD_EMPTY_SET);
         allAttrs[ATT_DEFAULT_N]         =   new OneAttr(SchemaSymbols.ATT_DEFAULT,
                                                         DT_STRING,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_ELEMENT_FD_D]      =   new OneAttr(SchemaSymbols.ATT_ELEMENTFORMDEFAULT,
                                                         DT_FORM,
-                                                        ATT_OPT_DFLT,
-                                                        FORM_UNQUALIFIED);
+                                                        INTD_UNQUALIFIED);
         allAttrs[ATT_FINAL_N]           =   new OneAttr(SchemaSymbols.ATT_FINAL,
                                                         DT_FINAL,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_FINAL1_N]          =   new OneAttr(SchemaSymbols.ATT_FINAL,
                                                         DT_FINAL1,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_FINAL_D_D]         =   new OneAttr(SchemaSymbols.ATT_FINALDEFAULT,
                                                         DT_FINAL,
-                                                        ATT_OPT_DFLT,
-                                                        INT_EMPTY_SET);
+                                                        INTD_EMPTY_SET);
         allAttrs[ATT_FIXED_N]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
                                                         DT_STRING,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_FIXED_D]           =   new OneAttr(SchemaSymbols.ATT_FIXED,
                                                         DT_BOOLEAN,
-                                                        ATT_OPT_DFLT,
-                                                        Boolean.FALSE);
+                                                        INTD_FALSE);
         allAttrs[ATT_FORM_N]            =   new OneAttr(SchemaSymbols.ATT_FORM,
                                                         DT_FORM,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_ID_N]              =   new OneAttr(SchemaSymbols.ATT_ID,
                                                         DT_ID,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_ITEMTYPE_N]        =   new OneAttr(SchemaSymbols.ATT_ITEMTYPE,
                                                         DT_QNAME,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_MAXOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS,
-                                                        ATT_OPT_DFLT,
-                                                        INT_ONE);
+                                                        INTD_ONE);
         allAttrs[ATT_MAXOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MAXOCCURS,
                                                         DT_MAXOCCURS1,
-                                                        ATT_OPT_DFLT,
-                                                        INT_ONE);
+                                                        INTD_ONE);
         allAttrs[ATT_MEMBER_T_N]        =   new OneAttr(SchemaSymbols.ATT_MEMBERTYPES,
                                                         DT_MEMBERTYPES,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_MINOCCURS_D]       =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_NONNEGINT,
-                                                        ATT_OPT_DFLT,
-                                                        INT_ONE);
+                                                        INTD_ONE);
         allAttrs[ATT_MINOCCURS1_D]      =   new OneAttr(SchemaSymbols.ATT_MINOCCURS,
                                                         DT_MINOCCURS1,
-                                                        ATT_OPT_DFLT,
-                                                        INT_ONE);
+                                                        INTD_ONE);
         allAttrs[ATT_MIXED_D]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
-                                                        ATT_OPT_DFLT,
-                                                        Boolean.FALSE);
+                                                        INTD_FALSE);
         allAttrs[ATT_MIXED_N]           =   new OneAttr(SchemaSymbols.ATT_MIXED,
                                                         DT_BOOLEAN,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_NAME_R]            =   new OneAttr(SchemaSymbols.ATT_NAME,
                                                         DT_NCNAME,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_NAMESPACE_D]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_NAMESPACE,
-                                                        ATT_OPT_DFLT,
                                                         SchemaSymbols.ATTVAL_TWOPOUNDANY);
         allAttrs[ATT_NAMESPACE_N]       =   new OneAttr(SchemaSymbols.ATT_NAMESPACE,
                                                         DT_ANYURI,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_NILLABLE_D]        =   new OneAttr(SchemaSymbols.ATT_NILLABLE,
                                                         DT_BOOLEAN,
-                                                        ATT_OPT_DFLT,
-                                                        Boolean.FALSE);
+                                                        INTD_FALSE);
         allAttrs[ATT_PROCESS_C_D]       =   new OneAttr(SchemaSymbols.ATT_PROCESSCONTENTS,
                                                         DT_PROCESSCONTENTS,
-                                                        ATT_OPT_DFLT,
-                                                        INT_ANY_STRICT);
+                                                        INTD_ANY_STRICT);
         allAttrs[ATT_PUBLIC_R]          =   new OneAttr(SchemaSymbols.ATT_PUBLIC,
                                                         DT_PUBLIC,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_REF_R]             =   new OneAttr(SchemaSymbols.ATT_REF,
                                                         DT_QNAME,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_REFER_R]           =   new OneAttr(SchemaSymbols.ATT_REFER,
                                                         DT_QNAME,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_SCHEMA_L_R]        =   new OneAttr(SchemaSymbols.ATT_SCHEMALOCATION,
                                                         DT_ANYURI,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_SCHEMA_L_N]        =   new OneAttr(SchemaSymbols.ATT_SCHEMALOCATION,
                                                         DT_ANYURI,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_SOURCE_N]          =   new OneAttr(SchemaSymbols.ATT_SOURCE,
                                                         DT_ANYURI,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_SUBSTITUTION_G_N]  =   new OneAttr(SchemaSymbols.ATT_SUBSTITUTIONGROUP,
                                                         DT_QNAME,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_SYSTEM_N]          =   new OneAttr(SchemaSymbols.ATT_SYSTEM,
                                                         DT_ANYURI,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_TARGET_N_N]        =   new OneAttr(SchemaSymbols.ATT_TARGETNAMESPACE,
                                                         DT_ANYURI,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_TYPE_N]            =   new OneAttr(SchemaSymbols.ATT_TYPE,
                                                         DT_QNAME,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_USE_D]             =   new OneAttr(SchemaSymbols.ATT_USE,
                                                         DT_USE,
-                                                        ATT_OPT_DFLT,
-                                                        INT_USE_OPTIONAL);
+                                                        INTD_USE_OPTIONAL);
         allAttrs[ATT_VALUE_NNI_N]       =   new OneAttr(SchemaSymbols.ATT_VALUE,
                                                         DT_NONNEGINT,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_VALUE_STR_N]       =   new OneAttr(SchemaSymbols.ATT_VALUE,
                                                         DT_STRING,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_VALUE_WS_N]        =   new OneAttr(SchemaSymbols.ATT_VALUE,
                                                         DT_WHITESPACE,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_VERSION_N]         =   new OneAttr(SchemaSymbols.ATT_VERSION,
                                                         DT_TOKEN,
-                                                        ATT_OPT_NODFLT,
                                                         null);
         allAttrs[ATT_XPATH_R]           =   new OneAttr(SchemaSymbols.ATT_XPATH,
                                                         DT_XPATH,
-                                                        ATT_REQUIRED,
                                                         null);
         allAttrs[ATT_XPATH1_R]          =   new OneAttr(SchemaSymbols.ATT_XPATH,
                                                         DT_XPATH1,
-                                                        ATT_REQUIRED,
                                                         null);
 
         // step 4: for each element, make a list of possible attributes
@@ -887,6 +863,9 @@ public class XSAttributeChecker {
     // used to store all seen ID values, and to check duplicate ID values
     private Hashtable fIdDefs = new Hashtable();
 
+    // used to resolver namespace prefixes
+    protected XSDHandler fSchemaHandler = null;
+
     // used to store utility reference: error reproter. set via constructor.
     protected XMLErrorReporter fErrorReporter = null;
 
@@ -894,8 +873,10 @@ public class XSAttributeChecker {
     protected Hashtable fNonSchemaAttrs = new Hashtable();
 
     // constructor. Sets fErrorReproter and get datatype validators
-    public XSAttributeChecker (DatatypeValidatorFactoryImpl datatypeRegistry,
+    public XSAttributeChecker (XSDHandler schemaHandler,
+                               DatatypeValidatorFactoryImpl datatypeRegistry,
                                XMLErrorReporter er) {
+        fSchemaHandler = schemaHandler;
         fErrorReporter = er;
         synchronized (getClass()) {
             if (fExtraDVs[DT_ANYURI] == null) {
@@ -942,7 +923,10 @@ public class XSAttributeChecker {
 
         // if the parent is xs:appInfo or xs:documentation,
         // then skip the validation, and return am empty list
-        Element parent = DOMUtil.getParent(element);
+        // REVISIT: it should be the XSDHandler's repsonsibility for not
+        // calling XSAttributeChecker for the children of
+        // appinfo and documentation
+        /*Element parent = DOMUtil.getParent(element);
         if (parent != null) {
             String pUri = DOMUtil.getNamespaceURI(parent);
             String pName = DOMUtil.getLocalName(parent);
@@ -951,7 +935,7 @@ public class XSAttributeChecker {
                  pName.equals(SchemaSymbols.ELT_DOCUMENTATION))) {
                 return new Hashtable();
             }
-        }
+        }*/
 
         String uri = DOMUtil.getNamespaceURI(element);
         String elName = DOMUtil.getLocalName(element), name;
@@ -997,7 +981,7 @@ public class XSAttributeChecker {
             // skip anything starts with x/X m/M l/L
             // simply put their values in the return hashtable
             if (attrName.toLowerCase().startsWith("xml")) {
-                attrValues.put(attrName, new AttrVal(attrVal, false));
+                attrValues.put(attrName, attrVal);
                 continue;
             }
 
@@ -1016,7 +1000,7 @@ public class XSAttributeChecker {
                     // for attributes from other namespace
                     // store them in a list, and TRY to validate them after
                     // schema traversal (because it's "lax")
-                    attrValues.put(attrName, new AttrVal(attrVal, false));
+                    attrValues.put(attrName, attrVal);
                     String attrRName = attrURI + "," + attrName;
                     Vector values = (Vector)fNonSchemaAttrs.get(attrRName);
                     if (values == null) {
@@ -1067,30 +1051,30 @@ public class XSAttributeChecker {
                     case DT_BOOLEAN:
                         retValue = attrVal.equals(SchemaSymbols.ATTVAL_TRUE) ||
                                    attrVal.equals(SchemaSymbols.ATTVAL_TRUE_1) ?
-                                   Boolean.TRUE : Boolean.FALSE;
+                                   INT_TRUE : INT_FALSE;
                         break;
                     case DT_NONNEGINT:
                         retValue = new Integer(attrVal);
                         break;
                     case DT_QNAME:
-                        //REVISIT: return QName
-                        //retValue = new QName();
-                        retValue = attrVal;
+                        retValue = resolveQName(attrVal);
                         break;
                     default:
                         retValue = attrVal;
                         break;
                     }
-                    attrValues.put(attrName, new AttrVal(retValue, false));
+                    attrValues.put(attrName, retValue);
                 }
                 else {
                     retValue = validate(attrName, attrVal, oneAttr.dvIndex);
-                    attrValues.put(attrName, new AttrVal(retValue, false));
+                    attrValues.put(attrName, retValue);
                 }
             }
             catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("Con3X3AttributeInvalidValue",
                                    new Object[] {elName, attrName, ide.getLocalizedMessage()});
+                if (oneAttr.dfltValue != null)
+                    attrValues.put(attrName, oneAttr.dfltValue);
             }
         }
 
@@ -1103,14 +1087,9 @@ public class XSAttributeChecker {
             if (DOMUtil.getAttr(element, oneAttr.name) != null)
                 continue;
 
-            // if the attribute is required, report an error
-            if (oneAttr.optdflt == ATT_REQUIRED) {
-                reportSchemaError ("Con3X3AttributeMustAppear",
-                                   new Object[] {elName, oneAttr.name});
-            }
             // if the attribute is optional with default value, apply it
-            else if (oneAttr.optdflt == ATT_OPT_DFLT) {
-                attrValues.put(oneAttr.name, new AttrVal(oneAttr.dfltValue, true));
+            else if (oneAttr.dfltValue != null) {
+                attrValues.put(oneAttr.name, oneAttr.dfltValue);
             }
         }
 
@@ -1211,9 +1190,9 @@ public class XSAttributeChecker {
         case DT_FORM:
             // form = (qualified | unqualified)
             if (value.equals (SchemaSymbols.ATTVAL_QUALIFIED))
-                retValue = FORM_QUALIFIED;
+                retValue = INT_QUALIFIED;
             else if (value.equals (SchemaSymbols.ATTVAL_UNQUALIFIED))
-                retValue = FORM_UNQUALIFIED;
+                retValue = INT_UNQUALIFIED;
             else
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (qualified | unqualified)");
             break;
@@ -1250,9 +1229,7 @@ public class XSAttributeChecker {
                     retValue = fExtraDVs[DT_QNAME].validate(token, null);
                     // REVISIT: should have the datatype validators return
                     // the object representation of the value.
-                    // REVISIT: return QName
-                    // retValue = new QName();
-                    retValue = token;
+                    retValue = resolveQName(token);
                     memberType.addElement(retValue);
                 }
                 retValue = memberType;
@@ -1439,6 +1416,18 @@ public class XSAttributeChecker {
 
         return sb.toString();
     }
+
+    protected QName resolveQName (String attrVal) {
+        String prefix = "";
+        String localpart = attrVal;
+        int colonptr = attrVal.indexOf(":");
+        if ( colonptr > 0) {
+            prefix = attrVal.substring(0,colonptr);
+            localpart = attrVal.substring(colonptr+1);
+        }
+        String uri = fSchemaHandler.resolvePrefixToURI(prefix);
+        return new QName(prefix, localpart, attrVal, uri);
+    }
 }
 
 class OneAttr {
@@ -1451,10 +1440,9 @@ class OneAttr {
     // the default value of this attribute
     public Object dfltValue;
 
-    public OneAttr(String name, int dvIndex, int optdflt, Object dfltValue) {
+    public OneAttr(String name, int dvIndex, Object dfltValue) {
         this.name = name;
         this.dvIndex = dvIndex;
-        this.optdflt = optdflt;
         this.dfltValue = dfltValue;
     }
 }
