@@ -475,7 +475,13 @@ extends XMLSerializer {
                     }
                     continue;
                 }
-                if ( XML11Char.isXML11Space(ch))
+                // Nonterminal S is unchanged in XML 1.1, so NEL (0x85) 
+                // and LSEP (0x2028) are not space characters.
+                //
+                // REVISIT: NEL and LSEP need to be escaped in order for
+                // them to be roundtripped, otherwise they will be
+                // normalized to LF when the document is read back. - mrglavas
+                if ( XMLChar.isSpace(ch))
                     _printer.printSpace();
                 else if ( unescaped && XML11Char.isXML11ValidLiteral(ch) )
                     _printer.printText( ch );
@@ -533,7 +539,13 @@ extends XMLSerializer {
                     }
                     continue;
                 }
-                if ( XML11Char.isXML11Space(ch))
+                // Nonterminal S is unchanged in XML 1.1, so NEL (0x85) 
+                // and LSEP (0x2028) are not space characters.
+                //
+                // REVISIT: NEL and LSEP need to be escaped in order for
+                // them to be roundtripped, otherwise they will be
+                // normalized to LF when the document is read back. - mrglavas
+                if (XMLChar.isSpace(ch))
                     _printer.printSpace();
                 else if ( unescaped && XML11Char.isXML11ValidLiteral(ch))
                     _printer.printText( ch );
