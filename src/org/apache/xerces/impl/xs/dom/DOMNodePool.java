@@ -117,17 +117,16 @@ public final class DOMNodePool {
         return fElements[chunk][index];
     }
 
-    private boolean ensureElementsCapacity(int chunk) {
-        try {
-            return fElements[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureElementsCapacity(int chunk) {
+        if (fElements.length <= chunk) {
             fElements = resize(fElements, fElements.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        }
+        else if (fElements[chunk] != null) {
+            return;
         }
 
         fElements[chunk] = new ElementNSImpl[CHUNK_SIZE];
-        return true;
+        return;
     }
 
     private static ElementNSImpl[][] resize(ElementNSImpl array[][], int newsize) {
@@ -153,17 +152,16 @@ public final class DOMNodePool {
         return fTextNode[chunk][index];
     }
 
-    private boolean ensureTextCapacity(int chunk) {
-        try {
-            return fTextNode[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureTextCapacity(int chunk) {
+        if (fTextNode.length <= chunk) {
             fTextNode = resize(fTextNode, fTextNode.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        }
+        else if (fTextNode[chunk] != null) {
+            return;
         }
 
         fTextNode[chunk] = new TextImpl[CHUNK_SIZE];
-        return true;
+        return;
     }
 
     private static TextImpl[][] resize(TextImpl array[][], int newsize) {
@@ -189,17 +187,16 @@ public final class DOMNodePool {
         return fAttrNode[chunk][index];
     }
 
-    private boolean ensureAttrsCapacity(int chunk) {
-        try {
-            return fAttrNode[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureAttrsCapacity(int chunk) {
+        if (fAttrNode.length <= chunk) {
             fAttrNode = resize(fAttrNode, fAttrNode.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        }
+        else if (fAttrNode[chunk] != null) {
+            return;
         }
 
         fAttrNode[chunk] = new AttrNSImpl[CHUNK_SIZE];
-        return true;
+        return;
     }
 
     private static AttrNSImpl[][] resize(AttrNSImpl array[][], int newsize) {
