@@ -945,12 +945,24 @@ public class XMLDTDScanner
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ATTRIBUTE_NAME_IN_ATTDEF",
-                             new Object[]{elName});
+            // no space, is it the end yet?
+            if (fEntityScanner.skipChar('>')) {
+                // yes, stop here
+                // call handler
+                if (fDTDHandler != null) {
+                    fDTDHandler.endAttlist();
+                }
+                fMarkUpDepth--;
+                return;
+            }
+            else {
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ATTRIBUTE_NAME_IN_ATTDEF",
+                                 new Object[]{elName});
+            }
         }
 
         // definitions
-        do {
+        while (!fEntityScanner.skipChar('>')) {
             String name = fEntityScanner.scanName();
             if (name == null) {
                 reportFatalError("AttNameRequiredInAttDef",
@@ -985,17 +997,13 @@ public class XMLDTDScanner
                                           defaultType, fLiteral);
             }
             skipSeparator(false, !scanningInternalSubset());
-            // is it the end?
-            if (fEntityScanner.skipChar('>')) {
-                // call handler
-                if (fDTDHandler != null) {
-                    fDTDHandler.endAttlist();
-                }
-                fMarkUpDepth--;
-                return;
-            }
+        }
 
-        } while(true);
+        // call handler
+        if (fDTDHandler != null) {
+            fDTDHandler.endAttlist();
+        }
+        fMarkUpDepth--;
 
     } // scanAttlistDecl()
 
@@ -1697,15 +1705,15 @@ public class XMLDTDScanner
                 }
                 else {
                     int c = fEntityScanner.peekChar();
-                    if (XMLChar.isMarkup(c)) {
-                        fStringBuffer2.append((char)fEntityScanner.scanChar());
-                    }
-                    else if (XMLChar.isInvalid(c)) {
+                    if (XMLChar.isInvalid(c)) {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "InvalidCharInLiteral",
                                                    new Object[] { Integer.toHexString(c) },
                                                    XMLErrorReporter.SEVERITY_FATAL_ERROR);
                         fEntityScanner.scanChar();
+                    }
+                    else if (c != quote) {
+                        fStringBuffer2.append((char)fEntityScanner.scanChar());
                     }
                 }
             } while (fEntityScanner.scanLiteral(quote, fString) != quote);
