@@ -157,9 +157,10 @@ class ObjectFactory {
                 fLastModified = -1;
                 fXercesProperties = null;
             }
-
+            
             synchronized (ObjectFactory.class) {
                 boolean loadProperties = false;
+                FileInputStream fis = null;
                 try {
                     // file existed last time
                     if(fLastModified >= 0) {
@@ -183,32 +184,51 @@ class ObjectFactory {
                     if(loadProperties) {
                         // must never have attempted to read xerces.properties before (or it's outdeated)
                         fXercesProperties = new Properties();
-                        FileInputStream fis = ss.getFileInputStream(propertiesFile);
+                        fis = ss.getFileInputStream(propertiesFile);
                         fXercesProperties.load(fis);
-                        fis.close();
                     }
-	            } catch (Exception x) {
-	                fXercesProperties = null;
-	                fLastModified = -1;
+                } catch (Exception x) {
+                    fXercesProperties = null;
+                    fLastModified = -1;
                     // assert(x instanceof FileNotFoundException
-	                //        || x instanceof SecurityException)
-	                // In both cases, ignore and continue w/ next location
-	            }
+                    //        || x instanceof SecurityException)
+                    // In both cases, ignore and continue w/ next location
+                }
+                finally {
+                    // try to close the input stream if one was opened.
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        }
+                        // Ignore the exception.
+                        catch (IOException exc) {}
+                    }
+                }
             }
             if(fXercesProperties != null) {
                 factoryClassName = fXercesProperties.getProperty(factoryId);
             }
         } else {
+            FileInputStream fis = null;
             try {
-                FileInputStream fis = ss.getFileInputStream(new File(propertiesFilename));
+                fis = ss.getFileInputStream(new File(propertiesFilename));
                 Properties props = new Properties();
                 props.load(fis);
-                fis.close();
                 factoryClassName = props.getProperty(factoryId);
             } catch (Exception x) {
                 // assert(x instanceof FileNotFoundException
                 //        || x instanceof SecurityException)
                 // In both cases, ignore and continue w/ next location
+            }
+            finally {
+                // try to close the input stream if one was opened.
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    }
+                    // Ignore the exception.
+                    catch (IOException exc) {}
+                }
             }
         }
         if (factoryClassName != null) {
