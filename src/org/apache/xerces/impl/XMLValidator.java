@@ -97,6 +97,7 @@ import org.xml.sax.SAXNotSupportedException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.StringTokenizer;
 
 /**
  * @author Eric Ye, IBM
@@ -1163,22 +1164,19 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                               String defaultType, XMLString defaultValue)
     throws SAXException {
 
-        //ID validation rule - If Validation enable Should check for the following:
-        // a) If duplicate ID attribute 
-        // b) if there is a declareared attribute default for ID it should be of type #IMPLIED or #REQUIRED                                               
-        if (fValidation == true) {
+        if (fValidation) {
+            //
+            // a) VC: One ID per Element Type, If duplicate ID attribute 
+            // b) VC: ID attribute Default. if there is a declareared attribute default for ID it should be of type #IMPLIED or #REQUIRED                                               
             if (type.equals("ID")) {
 
                 if (defaultValue != null) {
                     if (defaultValue.length != 0) {
                         if (defaultType == null || ! ( defaultType.equals("#IMPLIED") || defaultType.equals("#REQUIRED" ) )) {
-
                             fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                        "IDDefaultTypeInvalid",
                                                        new Object[]{ attributeName},
                                                        XMLErrorReporter.SEVERITY_ERROR);
-
-
                         }
                     }
                 }
@@ -1191,12 +1189,11 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                "MSG_MORE_THAN_ONE_ID_ATTRIBUTE",
                                                new Object[]{ elementName, previousIDAttributeName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
-
                 }
             }
 
-            //NOTATION validation rule 
-            //  should check if there is a duplicate NOTATION attribute 
+            //
+            //  VC: One Notaion Per Element Type, should check if there is a duplicate NOTATION attribute 
 
             if (type.equals("NOTATION")) {
                 if (fTableOfNOTATIONAttributeNames.containsKey( elementName ) == false) {
@@ -1207,10 +1204,84 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                                                "MSG_MORE_THAN_ONE_NOTATION_ATTRIBUTE",
                                                new Object[]{ elementName, previousNOTATIONAttributeName, attributeName},
                                                XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+            
+            // VC: Attribute Default Legal
+            boolean ok = true;
+            if ( defaultValue != null && 
+                 (defaultType==null || (defaultType != null && defaultType.equals("#FIXED")))  ) 
+            if ( type.equals("NMTOKENS") || type.equals("ENTITIES") || type.equals("IDREFS") ) {
+                
+                // Since the default value has been normalized, there should be any leading or trailing spaces
+                String trimmedValue = defaultValue.toString().trim();
 
+                if (trimmedValue.length() == 0 || ! defaultValue.equals(trimmedValue) ) {
+                    ok = false;
+                }
+                else {
+                    StringTokenizer tokenizer = new StringTokenizer(trimmedValue);
+                    if (tokenizer.hasMoreTokens()) {
+                        while (true) {
+                            String nmtoken = tokenizer.nextToken();
+                            if (type.equals("NMTOKENS")) {
+                                if (!XMLChar.isValidNmtoken(nmtoken)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            else if (type.equals("ENTITIES")||type.equals("IDREFS")) {
+                                if (!XMLChar.isValidName(nmtoken)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (!tokenizer.hasMoreTokens()) {
+                                break;
+                            }
+                        }
+                    }
                 }
 
             }
+            else {
+                if (type.equals("ENTITY") ||
+                    type.equals("ID") ||
+                    type.equals("IDREF") ||
+                    type.equals("NOTATION") )  {
+
+
+                    if ( !XMLChar.isValidName( defaultValue.toString()) ) {
+                        ok = false;
+                    }
+
+                }
+                else if ( type.equals("NMTOKEN") ||
+                          type.equals("ENUMERATION") ) {
+
+                    if (!XMLChar.isValidNmtoken( defaultValue.toString()) ) {
+                        ok = false;
+                    }
+                }
+
+                if (type.equals("NOTATION") ||
+                    type.equals("ENUMERATION") ) {
+                    ok = false;
+                    for(int i=0; i<enumeration.length; i++) {
+                        if(defaultValue.equals(enumeration[i]) ) {
+                            ok = true;
+                        }
+                    }
+                }
+
+            } 
+            if (!ok) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "MSG_ATT_DEFAULT_INVALID",
+                                           new Object[]{attributeName, defaultValue.toString()},
+                                           XMLErrorReporter.SEVERITY_ERROR);
+            }
+
         }
 
         // call handlers
