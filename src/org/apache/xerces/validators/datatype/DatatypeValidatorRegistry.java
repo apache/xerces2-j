@@ -93,13 +93,29 @@ public class DatatypeValidatorRegistry {
         fRegistry.put("recurringDuration", new RecurringDurationValidator());
         fRegistry.put("binary",            new BinaryValidator());
         fRegistry.put("uriReference",      new URIReferenceValidator());
-        fRegistry.put("QName",             new QNameValidator());
+        fRegistry.put("ID",                new IDValidator());
+        fRegistry.put("IDREF",             new IDREFValidator());
+        fRegistry.put("ENTITY",            new ENTITYValidator());
+        fRegistry.put("NOTATION",          new NOTATIONValidator());
+        fRegistry.put("QName",             new QNameValidator()); 
 
-        //Register Derived Datatypes
+
+
 
         Hashtable facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_PATTERN , "([a-zA-Z]{2}|[iI]-[a-zA-Z]+|[xX]-[a-zA-Z]+)(-[a-zA-Z]+)*" );
         addValidator("language", createDatatypeValidator("string", facets ));
+
+        addValidator("IDREFS", createDatatypeValidator( "IDREF", null ) );
+
+        addValidator("ENTITIES", createDatatypeValidator( "ENTITY", null ) );
+
+        facets = new Hashtable();
+        facets.put(SchemaSymbols.ELT_PATTERN , "\\c+" );
+        addValidator("NMTOKEN", createDatatypeValidator("string", facets ));
+
+        addValidator("NMTOKENS", createDatatypeValidator("NMTOKEN", facets ));
+
 
         facets = new Hashtable();
         facets.put(SchemaSymbols.ELT_PATTERN , "\\i\\c*" );
@@ -208,7 +224,8 @@ public class DatatypeValidatorRegistry {
         DatatypeValidator  baseDatatype  = getDatatypeValidator( baseTypeName );
         try {
             if( baseDatatype != null ) {
-                baseDatatype.setFacets(facets);
+                if( facets != null )
+                   baseDatatype.setFacets(facets);
                 baseDatatype.setBasetype( baseTypeName );
             }
         } catch (IllegalFacetException ex) {

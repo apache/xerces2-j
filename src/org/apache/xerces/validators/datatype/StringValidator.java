@@ -69,35 +69,44 @@ import org.apache.xerces.utils.regex.RegularExpression;
  *
  * StringValidator validates that XML content is a W3C string type.
  *
- * @author Ted Leung
- * @version
  */
 
 public class StringValidator implements DatatypeValidator {
-	
-    private Locale fLocale = null;
-    Hashtable facetData = null;
-    StringValidator fBaseValidator = null;
-    int fMaxLength = 0;
+    private Locale    fLocale         = null;
+    private Hashtable facetData       = null;
+    private String    fBaseValidator  = "native";
+    private int       _length          = 0;
+    private int       _maxLength       = 0;
+    private int       _minLength       = 0;
+    private String    _pattern         = null;
+    private Vector    _enumeration     = null;
+    private int       _maxInclusive    = 0;
+    private int       _maxExclusive    = 0;
+    private int       _minInclusive    = 0;
+    private int       _minExclusive    = 0;
+
+
+
+
     boolean fIsMaxLength = false;
 	
-	/**
-     * validate that a string is a W3C string type
-     *
-     * validate returns true or false depending on whether the string content is an
-     * instance of the W3C string datatype
-     * 
-     * @param content A string containing the content to be validated
-     *
-     * @exception throws InvalidDatatypeException if the content is
-     *  not a W3C string type
-     */
-
-	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
-
-        if (facetData == null)return;
+        /**
+         * validate that a string is a W3C string type
+         * 
+         * @param content A string containing the content to be validated
+         * @param list
+         * @exception throws InvalidDatatypeException if the content is
+         *                   not a W3C string type
+         * @exception InvalidDatatypeValueException
+         */
+	public void validate(String content, boolean derivedByList) throws InvalidDatatypeValueException 
+        {
+        if (facetData == null)
+            return;
 
         Enumeration eee = facetData.keys();
+
+
         while(eee.hasMoreElements()) {
             String key = (String)eee.nextElement();
             if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
@@ -107,14 +116,12 @@ public class StringValidator implements DatatypeValidator {
                     throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+vvv);
             }
             else if (key.equals(SchemaSymbols.ELT_MAXLENGTH)) {
-                if (fIsMaxLength && content.length() > fMaxLength)
-                    throw new InvalidDatatypeValueException("Value '"+content+"' with length '"+content.length()+"' exceeds maximum length of "+fMaxLength+".");
+                if (fIsMaxLength && content.length() > _maxLength)
+                    throw new InvalidDatatypeValueException("Value '"+content+"' with length '"+content.length()+"' exceeds maximum length of "+_maxLength+".");
             }
         }
 	}
 			
-	public void validate(int contentIndex) throws InvalidDatatypeValueException {
-	}
 	
 	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
 	    facetData = new Hashtable(); // reset old facets
@@ -130,7 +137,7 @@ public class StringValidator implements DatatypeValidator {
                 } catch(NumberFormatException nfe) {
                     throw new IllegalFacetValueException("maxLength value '"+value+"' is invalid.");
                 }
-                fMaxLength = vvv;
+                _maxLength = vvv;
                 fIsMaxLength = true;
             } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
             } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {

@@ -61,15 +61,13 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 /**
- * DataTypeValidator defines the interface that data type validators must obey.
+ * NOTATIONValidator defines the interface that data type validators must obey.
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
- * Note: there is no support for facets in this API, since we are trying to convince
- * W3C to remove facets from the data type spec.
  * 
  * @author Jeffrey Rodriguez-
  */
-public interface DatatypeValidator {
+public class NOTATIONValidator implements DatatypeValidator {
 
     /**
      * Checks that "content" string is valid 
@@ -87,7 +85,8 @@ public interface DatatypeValidator {
      * @exception InvalidDatatypeValueException
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
-    public void validate(String content, boolean derivedByList ) throws InvalidDatatypeValueException;
+    public void validate(String content, boolean derivedByList ) throws InvalidDatatypeValueException{
+    }
 
     /**
      * set the facets for this datatype
@@ -109,7 +108,8 @@ public interface DatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.IllegalFacetException
      * @see         org.apache.xerces.validators.datatype.IllegalFacetValueException
      */
-    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException; 
+    public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
+    }
 
     /**
      * Name of base type as a string.
@@ -118,13 +118,15 @@ public interface DatatypeValidator {
      * 
      * @param base   the validator for this type's base type
      */
-    public void setBasetype(String base);
+    public void setBasetype(String base){
+    }
 
 
     /**
     * set the locate to be used for error messages
     */
-    public void setLocale(Locale locale);
+    public void setLocale(Locale locale){
+    }
 
     /**
      * REVISIT
@@ -134,6 +136,8 @@ public interface DatatypeValidator {
      * @param o2
      * @return 
      */
-    public int compare( DatatypeValidator o1, DatatypeValidator o2);
+    public int compare( DatatypeValidator o1, DatatypeValidator o2){
+        return -1;
+    }
 
 }
