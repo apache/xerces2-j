@@ -508,8 +508,6 @@ public class XMLDTDScanner
      * @throws IOException  Thrown on i/o error.
      * @throws SAXException Thrown on parse error.
      *
-     * @author Andy Clark, IBM
-     * @author Arnaud  Le Hors, IBM
      */
     protected final boolean scanTextDecl(boolean complete) 
         throws IOException, SAXException {
@@ -611,24 +609,21 @@ public class XMLDTDScanner
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_ELEMENT_NAME_IN_ELEMENTDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ELEMENTDECL",
+                             null);
         }
 
         // element name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_ELEMENT_NAME_REQUIRED",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_ELEMENT_TYPE_REQUIRED_IN_ELEMENTDECL",
+                             null);
         }
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_AFTER_ELEMENT_NAME_IN_ELEMENTDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_CONTENTSPEC_IN_ELEMENTDECL",
+                             new Object[]{name});
         }
 
         // content model
@@ -651,9 +646,8 @@ public class XMLDTDScanner
         }
         else {
             if (!fEntityScanner.skipChar('(')) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "OpenParenthesisRequiredInContentModel",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN",
+                                 new Object[]{name});
             }
             fStringBuffer.clear();
             fStringBuffer.append('(');
@@ -666,7 +660,7 @@ public class XMLDTDScanner
                     fDTDContentModelHandler.startContentModel(name,
                                          XMLDTDContentModelHandler.TYPE_MIXED);
                 }
-                scanMixed();
+                scanMixed(name);
             }
             else {              // children content
                 // call handler
@@ -674,7 +668,7 @@ public class XMLDTDScanner
                     fDTDContentModelHandler.startContentModel(name,
                                       XMLDTDContentModelHandler.TYPE_CHILDREN);
                 }
-                scanChildren();
+                scanChildren(name);
             }
             contentModel = fStringBuffer.toString();
         }
@@ -688,10 +682,8 @@ public class XMLDTDScanner
         // end
         if (!fEntityScanner.skipChar('>')) {
             System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "ElementdeclUnterminated",
-                                       new Object[]{name},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("ElementdeclUnterminated",
+                             new Object[]{name});
         }
 
         // call handler
@@ -709,8 +701,11 @@ public class XMLDTDScanner
      * [51]    Mixed    ::=    '(' S? '#PCDATA' (S? '|' S? Name)* S? ')*'  
      *                       | '(' S? '#PCDATA' S? ')'  
      * </pre>
+     *
+     * @param elName The element type name this declaration is about.
      */
-    private final void scanMixed() throws IOException, SAXException {
+    private final void scanMixed(String elName)
+        throws IOException, SAXException {
 
         fStringBuffer.append("#PCDATA");
         skipSeparator(false, !scanningInternalSubset());
@@ -720,9 +715,8 @@ public class XMLDTDScanner
 
             String childName = fEntityScanner.scanName();
             if (childName == null) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_ELEMENT_NAME_REQUIRED",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_ELEMENT_TYPE_REQUIRED_IN_MIXED_CONTENT",
+                                 new Object[]{elName});
             }
             fStringBuffer.append(childName);
             // call handler
@@ -732,9 +726,8 @@ public class XMLDTDScanner
             skipSeparator(false, !scanningInternalSubset());
         }
         if (!fEntityScanner.skipChar(')')) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "CloseParenthesisRequiredInContentModel",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
+                             new Object[]{elName});
         }
         fStringBuffer.append(')');
         // occurence operator
@@ -753,8 +746,11 @@ public class XMLDTDScanner
      * [49]    choice    ::=    '(' S? cp ( S? '|' S? cp )+ S? ')'
      * [50]    seq       ::=    '(' S? cp ( S? ',' S? cp )* S? ')' 
      * </pre>
+     *
+     * @param elName The element type name this declaration is about.
      */
-    private final void scanChildren() throws IOException, SAXException {
+    private final void scanChildren(String elName)
+        throws IOException, SAXException {
         // call handler
         if (fDTDContentModelHandler != null) {
             fDTDContentModelHandler.childrenStartGroup();
@@ -792,9 +788,9 @@ public class XMLDTDScanner
                     currentOp = c;
                 }
                 else if (c != currentOp) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_UNTERMINATED_CHOICE",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+//                                               "MSG_UNTERMINATED_CHOICE",
+                    reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
+                                     new Object[]{elName});
                 }
                 // call handler
                 if (fDTDContentModelHandler != null) {
@@ -809,9 +805,9 @@ public class XMLDTDScanner
                     currentOp = c;
                 }
                 else if (c != currentOp) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_UNTERMINATED_SEQ",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+//                                               "MSG_UNTERMINATED_SEQ",
+                    reportFatalError("MSG_CLOSE_PAREN_REQUIRED_IN_CHILDREN",
+                                     new Object[]{elName});
                 }
                 // call handler
                 if (fDTDContentModelHandler != null) {
@@ -842,9 +838,8 @@ public class XMLDTDScanner
             else {
                 String childName = fEntityScanner.scanName();
                 if (childName == null) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_ELEMENT_NAME_REQUIRED",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("MSG_OPEN_PAREN_OR_ELEMENT_TYPE_REQUIRED_IN_CHILDREN",
+                                     new Object[]{elName});
                 }
                 // call handler
                 if (fDTDContentModelHandler != null) {
@@ -892,17 +887,15 @@ public class XMLDTDScanner
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_ATTRIBUTE_NAME_IN_ATTRDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ATTLISTDECL",
+                             null);
         }
 
         // element name
         String elName = fEntityScanner.scanName();
         if (elName == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_ELEMENT_NAME_REQUIRED",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_ELEMENT_TYPE_REQUIRED_IN_ATTLISTDECL",
+                             null);
         }
 
         // call handler
@@ -912,37 +905,33 @@ public class XMLDTDScanner
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_AFTER_ELEMENT_NAME_IN_ATTRDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ATTRIBUTE_NAME_IN_ATTDEF",
+                             new Object[]{elName});
         }
 
         // definitions
         do {
             String name = fEntityScanner.scanName();
             if (name == null) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_ATTRIBUTE_NAME_REQUIRED",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("AttNameRequiredInAttDef",
+                                 new Object[]{elName}); 
             }
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_NAME_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ATTTYPE_IN_ATTDEF",
+                                 new Object[]{elName, name});
             }
             // type
-            String type = scanAttType();
+            String type = scanAttType(elName, name);
 
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_TYPE_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_DEFAULTDECL_IN_ATTDEF",
+                                 new Object[]{elName, name}); 
             }
 
             // default decl
-            String defaultType = scanAttDefaultDecl(name, fLiteral);
+            String defaultType = scanAttDefaultDecl(elName, name, fLiteral);
 
             // call handler
             if (fDTDHandler != null) {
@@ -988,8 +977,12 @@ public class XMLDTDScanner
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!ATTLIST'
+     *
+     * @param elName The element type name this declaration is about.
+     * @param atName The attribute name this declaration is about.
      */
-    private final String scanAttType() throws IOException, SAXException {
+    private final String scanAttType(String elName, String atName)
+        throws IOException, SAXException {
 
         String type = null;
         fEnumerationCount = 0;
@@ -1026,23 +1019,20 @@ public class XMLDTDScanner
             type = "NOTATION";
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_NAME_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_AFTER_NOTATION_IN_NOTATIONTYPE",
+                                 new Object[]{elName, atName}); 
             }
             // open paren
             int c = fEntityScanner.scanChar();
             if (c != '(') {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "OPEN_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_OPEN_PAREN_REQUIRED_IN_NOTATIONTYPE",
+                                 new Object[]{elName, atName});
             }
             do {
                 String aName = fEntityScanner.scanName();
                 if (aName == null) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_SPACE_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("MSG_NAME_REQUIRED_IN_NOTATIONTYPE",
+                                     new Object[]{elName, atName}); 
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
                 fEnumeration[fEnumerationCount++] = aName;
@@ -1050,9 +1040,8 @@ public class XMLDTDScanner
                 c = fEntityScanner.scanChar();
             } while (c == '|');
             if (c != ')') {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "CLOSE_PAREN_REQUIRED_AFTER_NOTAITON_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("NotationTypeUnterminated",
+                                 new Object[]{elName, atName});
             }
         }
         else {              // Enumeration
@@ -1060,16 +1049,15 @@ public class XMLDTDScanner
             // open paren
             int c = fEntityScanner.scanChar();
             if (c != '(') {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "OPEN_PAREN_REQUIRED_BEFORE_ENUMERATION_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+//                       "OPEN_PAREN_REQUIRED_BEFORE_ENUMERATION_IN_ATTRDECL",
+                reportFatalError("AttTypeRequiredInAttDef",
+                                 new Object[]{elName, atName});
             }
             do {
                 String token = fEntityScanner.scanNmtoken();
                 if (token == null) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "NMTOKEN_REQUIRED_IN_ENUMERATION_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("NMTOKEN_REQUIRED_IN_ENUMERATION",
+                                     new Object[]{elName, atName});
                 }
                 ensureEnumerationSize(fEnumerationCount + 1);
                 fEnumeration[fEnumerationCount++] = token;
@@ -1077,9 +1065,8 @@ public class XMLDTDScanner
                 c = fEntityScanner.scanChar();
             } while (c == '|');
             if (c != ')') {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "CLOSE_PAREN_REQUIRED_AFTER_ENUMERATION_IN_ATTRDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("EnumerationUnterminated",
+                                 new Object[]{elName, atName});
             }
         }
         return type;
@@ -1097,7 +1084,7 @@ public class XMLDTDScanner
      * @param name The name of the attribute being scanned.
      * @param defaultVal The string to fill in with the default value.
      */
-    protected final String scanAttDefaultDecl(String name,
+    protected final String scanAttDefaultDecl(String elName, String atName,
                                               XMLString defaultVal)
         throws IOException, SAXException {
 
@@ -1114,9 +1101,8 @@ public class XMLDTDScanner
                 defaultType = "#FIXED";
                 // spaces
                 if (!skipSeparator(true, !scanningInternalSubset())) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_SPACE_REQUIRED_AFTER_ATTRIBUTE_DEFAULT_IN_ATTRDECL",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("MSG_SPACE_REQUIRED_AFTER_FIXED_IN_DEFAULTDECL",
+                                     new Object[]{elName, atName});
                 }
             }
             // AttValue 
@@ -1155,9 +1141,8 @@ public class XMLDTDScanner
                 isPEDecl = true;
             }
             else if (scanningInternalSubset()) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_PEDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_ENTITYDECL",
+                                 null);
                 isPEDecl = true;
             }
             else if (fEntityScanner.peekChar() == '%') {
@@ -1171,16 +1156,14 @@ public class XMLDTDScanner
         }
         else if (scanningInternalSubset() || !fEntityScanner.skipChar('%')) {
             // <!ENTITY[^ ]...> or <!ENTITY[^ %]...>
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_PEDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ENTITY_NAME_IN_ENTITYDECL",
+                             null);
             isPEDecl = false;
         }
         else if (fEntityScanner.skipSpaces()) {
             // <!ENTITY% ...>
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_PERCENT_IN_PEDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_PERCENT_IN_PEDECL",
+                             null);
             isPEDecl = false;
         }
         else {
@@ -1190,14 +1173,12 @@ public class XMLDTDScanner
             while (true) {
                 String peName = fEntityScanner.scanName();
                 if (peName == null) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_NAME_REQUIRED_IN_PEREFRENCE",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("NameRequiredInPERefrence",
+                                     null);
                 }
                 else if (!fEntityScanner.skipChar(';')) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
-                                               null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("SemicolonRequiredInPEReference",
+                                     new Object[]{peName});
                 }
                 else {
                     startPE(peName, false);
@@ -1218,19 +1199,14 @@ public class XMLDTDScanner
         // name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            // REVISIT: report error
-            throw new SAXException("expected entity name");
-        }
-        if (isPEDecl) {
-            name = "%" + name;
+            reportFatalError("MSG_ENTITY_NAME_REQUIRED_IN_ENTITYDECL",
+                             null);
         }
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            // REVISIT: report error
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_AFTER_ENTITY_NAME_IN_ENTITYDECL",
+                             new Object[]{name});
         }
 
         // public id
@@ -1238,12 +1214,11 @@ public class XMLDTDScanner
         if (fEntityScanner.skipString("PUBLIC")) {
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                // REVISIT: report error
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_BEFORE_PUBLICID_IN_ENTITYDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_PUBIDLITERAL_IN_EXTERNALID",
+                                 null);
             }
             scanLiteral(fLiteral, false);
+            // REVISIT: report error if whitespace after literal is missing
             publicId = fLiteral.toString();
         }
 
@@ -1252,12 +1227,11 @@ public class XMLDTDScanner
         if (publicId != null || fEntityScanner.skipString("SYSTEM")) {
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                // REVISIT: report error
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_BEFORE_SYSTEMID_IN_ENTITYDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
+                                 null);
             }
             scanLiteral(fLiteral, false);
+            // REVISIT: report error if whitespace after literal is missing
             systemId = fLiteral.toString();
         }
 
@@ -1266,15 +1240,13 @@ public class XMLDTDScanner
         if (systemId != null && !isPEDecl && fEntityScanner.skipString("NDATA")) {
             // spaces
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                // REVISIT: report error
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SPACE_REQUIRED_AFTER_NDATA_IN_ENTITYDECL",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
+                                 new Object[]{name});
             }
             notation = fEntityScanner.scanName();
             if (notation == null) {
-                // REVISIT: report error
-                throw new SAXException("expected notation name");
+                reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
+                                 new Object[]{name});
             }
         }
 
@@ -1290,11 +1262,14 @@ public class XMLDTDScanner
 
         // end
         if (!fEntityScanner.skipChar('>')) {
-            // REVISIT: report error
-            throw new SAXException("expected close entity decl");
+            reportFatalError("EntityDeclUnterminated",
+                             new Object[]{name});
         }
 
         // register entity and make callback
+        if (isPEDecl) {
+            name = "%" + name;
+        }
         if (systemId != null) {
             if (notation != null) {
                 fEntityManager.addUnparsedEntity(name, publicId, systemId, notation);
@@ -1337,24 +1312,21 @@ public class XMLDTDScanner
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_NOTATIONDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_NOTATIONDECL",
+                             null);
         }
 
         // notation name
         String name = fEntityScanner.scanName();
         if (name == null) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_NOTATION_NAME_REQUIRED",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_NOTATION_NAME_REQUIRED_IN_NOTATIONDECL",
+                             null);
         }
 
         // spaces
         if (!skipSeparator(true, !scanningInternalSubset())) {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MSG_SPACE_REQUIRED_AFTER_NOTATION_NAME_IN_NOTATIONDECL",
-                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_SPACE_REQUIRED_AFTER_NOTATION_NAME_IN_NOTATIONDECL",
+                             new Object[]{name});
         }
 
         // external id
@@ -1362,18 +1334,16 @@ public class XMLDTDScanner
         String publicId = null;
         if (fEntityScanner.skipString("SYSTEM")) {
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "SpaceRequiredAfterSYSTEM",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
+                                 null);
             }
             scanLiteral(fLiteral, false);
             systemId = fLiteral.toString();
         }
         else if (fEntityScanner.skipString("PUBLIC")) {
             if (!skipSeparator(true, !scanningInternalSubset())) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "SpaceRequiredAfterPUBLIC",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_SPACE_REQUIRED_AFTER_PUBIDLITERAL_IN_EXTERNALID",
+                                 null);
             }
             scanLiteral(fLiteral, false);
             publicId = fLiteral.toString();
@@ -1395,10 +1365,8 @@ public class XMLDTDScanner
         // end
         if (!fEntityScanner.skipChar('>')) {
             System.out.println("*** char: '"+(char)fEntityScanner.peekChar()+'\'');
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "NotationdeclUnterminated",
-                                       new Object[]{name},
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("NotationdeclUnterminated",
+                             new Object[]{name});
         }
 
         // call handler
@@ -1436,10 +1404,8 @@ public class XMLDTDScanner
             }
             skipSeparator(false, !scanningInternalSubset());
             if (!fEntityScanner.skipChar('[')) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MarkupNotRecognizedInDTD",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                                 null);
             }
             fIncludeSectDepth++;
             // just stop there and go back to the main loop
@@ -1451,10 +1417,8 @@ public class XMLDTDScanner
             }
             skipSeparator(false, !scanningInternalSubset());
             if (!fEntityScanner.skipChar('[')) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MarkupNotRecognizedInDTD",
-                                           null,
-                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                                 null);
             }
             int initialDepth = ++fIncludeSectDepth;
             while (true) {
@@ -1498,10 +1462,8 @@ public class XMLDTDScanner
             }
         }
         else {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "MarkupNotRecognizedInDTD",
-                                       null,
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                             null);
         }
     } // scanConditionalSect()
 
@@ -1516,7 +1478,6 @@ public class XMLDTDScanner
      * @throws IOException  Thrown on i/o error.
      * @throws SAXException Thrown on parse error.
      *
-     * @author Arnaud  Le Hors, IBM
      */
     protected final boolean scanDecls(boolean complete)
             throws IOException, SAXException {
@@ -1530,11 +1491,11 @@ public class XMLDTDScanner
                 else if (fEntityScanner.skipChar('!')) {
                     if (fEntityScanner.skipChar('-')) {
                         if (!fEntityScanner.skipChar('-')) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "InvalidCommentStart",
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                                             null);
+                        } else {
+                            scanComment();
                         }
-                        scanComment();
                     }
                     else if (fEntityScanner.skipString("ELEMENT")) {
                         scanElementDecl();
@@ -1548,35 +1509,26 @@ public class XMLDTDScanner
                     else if (fEntityScanner.skipString("NOTATION")) {
                         scanNotationDecl();
                     }
-                    else if (fEntityScanner.skipChar('[')) {
-                        if (!scanningInternalSubset()) {
-                            scanConditionalSect();
-                        }
-                        else {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "ConditionalSectionNotAllowedInInternalSubset",
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                        }
+                    else if (fEntityScanner.skipChar('[') &&
+                             !scanningInternalSubset()) {
+                        scanConditionalSect();
                     }
                     else {
-                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MarkupNotRecognizedInDTD",
-                                                   null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                                         null);
                     }
                 }
                 else {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MarkupNotRecognizedInDTD",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                                     null);
                 }
             }
             else if (fIncludeSectDepth > 0 && fEntityScanner.skipChar(']')) {
                 // end of conditional section?
                 if (!fEntityScanner.skipChar(']')
                     || !fEntityScanner.skipChar('>')) {
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_UNTERMINATED_SEQ",
-                                               null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    reportFatalError("IncludeSectUnterminated",
+                                     null);
                 }
                 // call handler
                 if (fDTDHandler != null) {
@@ -1594,9 +1546,8 @@ public class XMLDTDScanner
                 // simply skip
             }
             else {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MarkupNotRecognizedInDTD",
-                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("MSG_MARKUP_NOT_RECOGNIZED_IN_DTD",
+                                 null);
             }
             skipSeparator(false, true);
         }
@@ -1630,14 +1581,12 @@ public class XMLDTDScanner
         while (true) {
             String name = fEntityScanner.scanName();
             if (name == null) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_NAME_REQUIRED_IN_PEREFRENCE",
-                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("NameRequiredInPERefrence",
+                                 null);
             }
             else if (!fEntityScanner.skipChar(';')) {
-                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                           "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
-                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                reportFatalError("SemicolonRequiredInPEReference",
+                                 new Object[]{name});
             }
             startPE(name, false);
             fEntityScanner.skipSpaces();
@@ -1651,10 +1600,8 @@ public class XMLDTDScanner
     {
         int quote = fEntityScanner.scanChar();
         if (quote != '\'' && quote != '"') {
-            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                       "OpenQuoteMissingInDecl", 
-                                       null,
-                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("REVISIT: OpenQuoteMissingInDecl", 
+                             null);
         }
         XMLString value = fString;
         if (fEntityScanner.scanLiteral(quote, fString) != quote) {
@@ -1678,19 +1625,16 @@ public class XMLDTDScanner
                     while (true) {
                         String peName = fEntityScanner.scanName();
                         if (peName == null) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MSG_NAME_REQUIRED_IN_PEREFRENCE",
-                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("NameRequiredInPERefrence",
+                                             null);
                         }
                         else if (!fEntityScanner.skipChar(';')) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
-                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("SemicolonRequiredInPEReference",
+                                             new Object[]{peName});
                         }
                         else if (scanningInternalSubset()) {
-                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                       "MSG_PEREFERENCE_WITHIN_MARKUP",
-                                                       null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            reportFatalError("PEReferenceWithinMarkup",
+                                             new Object[]{peName});
                         }
                         startPE(peName, true);
                         fEntityScanner.skipSpaces();
@@ -1704,12 +1648,19 @@ public class XMLDTDScanner
         }
         literal.setValues(value);
         if (!fEntityScanner.skipChar(quote)) {
-            fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                        "CloseQuoteMissingInDecl", 
-                                        null,
-                                        XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            reportFatalError("REVISIT: CloseQuoteMissingInDecl", 
+                             null);
         }
     }
+
+
+    protected void reportFatalError(String msgId, Object[] args)
+        throws SAXException {
+        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                   msgId, args,
+                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
+    }
+
 
     private final void pushOpStack(int c) {
         if (fOpStack.length == fContentDepth) {
