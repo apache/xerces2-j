@@ -251,6 +251,10 @@ public class XMLValidator
         // initialize state
         fInDTD = false;
         fInDTDIgnore = false;
+        fStandaloneIsYes = false;
+        fSeenRootElement = false;
+        fBufferDatatype = false;
+        fInElementContent = false;
 
         fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
 
@@ -571,18 +575,27 @@ public class XMLValidator
     public void characters(XMLString text) throws SAXException {
         boolean callNextCharacters = true;
 
+        boolean allWhiteSpace = true;
+        for (int i=text.offset; i< text.offset+text.length; i++) {
+            if (!XMLChar.isSpace(text.ch[i])) {
+                allWhiteSpace = false;
+                break;
+            }
+        }
+
+        // if in children model, and all charaters are white spaces, call the ignoreableWhiteSpace callback.
+        if (fInElementContent && allWhiteSpace) {
+            if (fDocumentHandler != null) {
+                fDocumentHandler.ignorableWhitespace(text);
+                callNextCharacters = false;
+            }
+        }
+
         if (fValidation) {
             if (fInElementContent ) {
-                boolean allWhiteSpace = true;
                 if ( fCurrentGrammarIsDTD && 
                      fStandaloneIsYes &&
                      ((DTDGrammar)fCurrentGrammar).getElementDeclIsExternal(fCurrentElementIndex)) {
-                    for (int i=text.offset; i< text.offset+text.length; i++) {
-                        if (!XMLChar.isSpace(text.ch[i])) {
-                            allWhiteSpace = false;
-                            break;
-                        }
-                    }
                     if (allWhiteSpace) {
                         fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
                                                     "MSG_WHITE_SPACE_IN_ELEMENT_CONTENT_WHEN_STANDALONE",
@@ -592,16 +605,10 @@ public class XMLValidator
                 if (!allWhiteSpace) {
                     charDataInContent();
                 }
-                else {
-                    // call handlers method: ignorable white space when children content.
-                    if (fDocumentHandler != null) {
-                        fDocumentHandler.ignorableWhitespace(text);
-                        callNextCharacters = false;
-                    }
-                }
             }
+
             if ( fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
-            charDataInContent();
+                charDataInContent();
             }
             if (fBufferDatatype) {
                 fDatatypeBuffer.append(text.ch, text.offset, text.length);
