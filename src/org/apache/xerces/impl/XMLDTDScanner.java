@@ -66,6 +66,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.GrammarPool;
 
 import org.apache.xerces.util.XMLChar;
+import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 
 import org.apache.xerces.xni.XMLComponent;
@@ -140,6 +141,8 @@ public class XMLDTDScanner
     private boolean fScanningExtSubset;
 
     private String[] fPseudoAttributeValues = new String[3];
+
+    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
     private int[] fOpStack = new int[5];
     private int fDepth;
@@ -1242,12 +1245,39 @@ public class XMLDTDScanner
             // REVISIT: do right
             XMLString value = fString;
             if (fEntityScanner.scanAttContent(quote, fString) != quote) {
-                fStringBuffer.clear();
+                fStringBuffer2.clear();
                 do {
-                    fStringBuffer.append(fString);
+                    fStringBuffer2.append(fString);
+                    if (fEntityScanner.skipChar('&')) {
+                        if (fEntityScanner.skipChar('#')) {
+                            char c = (char) scanCharReferenceValue();
+                            fStringBuffer2.append(c);
+                        }
+                        else {
+                            fStringBuffer2.append('&');
+                        }
+                    }
+                    else if (fEntityScanner.skipChar('%')) {
+                        while (true) {
+                            String peName = fEntityScanner.scanName();
+                            if (peName == null) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MSG_NAME_REQUIRED_IN_PEREFRENCE",
+                                                           null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            } else if (!fEntityScanner.skipChar(';')) {
+                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                           "MSG_SEMICOLON_REQUIRED_IN_PEREFERENCE",
+                                                           null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                            }
+                            fEntityManager.startEntity(fSymbolTable.addSymbol("%" + peName), true);
+                            fEntityScanner.skipSpaces();
+                            if (!fEntityScanner.skipChar('%'))
+                                break;
+                        }
+                    }
                 } while (fEntityScanner.scanAttContent(quote, fString) != quote);
-                fStringBuffer.append(fString);
-                value = fStringBuffer;
+                fStringBuffer2.append(fString);
+                value = fStringBuffer2;
             }
             text = value.toString();
             if (!fEntityScanner.skipChar(quote)) {
@@ -1599,7 +1629,11 @@ public class XMLDTDScanner
             }
             else if (!fScanningExtSubset && fEntityScanner.skipChar(']')) {
                 return false;
-            } else {
+            }
+            else if (fEntityScanner.skipSpaces()) {
+                // simply skip
+            }
+            else {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "MarkupNotRecognizedInDTD",
                                            null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1622,9 +1656,12 @@ public class XMLDTDScanner
         throws IOException, SAXException
     {
         boolean sawSpace = fEntityScanner.skipSpaces();
+        /***
+         * REVISIT: this is from Glenn but don't know what this is for...
         if (!fScanningExtSubset) {
             return !spaceRequired || sawSpace;
         }
+        /***/
         if (!fEntityScanner.skipChar('%')) {
             return !spaceRequired || sawSpace;
         }
