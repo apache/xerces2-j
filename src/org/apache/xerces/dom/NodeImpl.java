@@ -69,6 +69,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.DocumentType;
 
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
@@ -160,6 +161,14 @@ public abstract class NodeImpl
      */
     public static final short TREE_POSITION_DISCONNECTED = 0x00;
 
+
+    // DocumentPosition
+    public static final short DOCUMENT_POSITION_DISCONNECTED = 0x01;
+    public static final short DOCUMENT_POSITION_PRECEDING = 0x02;
+    public static final short DOCUMENT_POSITION_FOLLOWING = 0x04;
+    public static final short DOCUMENT_POSITION_CONTAINS = 0x08;
+    public static final short DOCUMENT_POSITION_IS_CONTAINED = 0x10;
+    public static final short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     /** Serialization version. */
     static final long serialVersionUID = -6316591992167219696L;
@@ -781,6 +790,7 @@ public abstract class NodeImpl
      * @return Returns how the given node is positioned relatively to this 
      *   node.
      * @since DOM Level 3
+     * @deprecated
      */
     public short compareTreePosition(Node other) {
         // Questions of clarification for this method - to be answered by the
@@ -979,6 +989,258 @@ public abstract class NodeImpl
         return 0;
 
     }
+    /**
+     * Compares a node with this node with regard to their position in the 
+     * document. 
+     * @param other The node to compare against this node.
+     * @return Returns how the given node is positioned relatively to this 
+     *   node.
+     * @since DOM Level 3
+     */
+    public short compareDocumentPosition(Node other) {
+
+        // If the nodes are the same, no flags should be set
+        if (this==other) 
+          return 0; 
+
+        Document thisOwnerDoc, otherOwnerDoc;
+        // get the respective Document owners.  
+        if (this.getNodeType() == Node.DOCUMENT_NODE) 
+          thisOwnerDoc = (Document)this;
+        else
+          thisOwnerDoc = this.getOwnerDocument();
+        if (other.getNodeType() == Node.DOCUMENT_NODE) 
+          otherOwnerDoc = (Document)other;
+        else
+          otherOwnerDoc = other.getOwnerDocument();
+
+        // If from different documents, we know they are disconnected. 
+        // Set DISCONNECTED for now.  
+        // TODO:  set order of Document nodes by assigning doc numbers to them
+        if (thisOwnerDoc != otherOwnerDoc) 
+          return DOCUMENT_POSITION_DISCONNECTED;
+ 
+        // Find the ancestor of each node, and the distance each node is from 
+        // its ancestor.
+        // During this traversal, look for ancestor/descendent relationships 
+        // between the 2 nodes in question. 
+        // We do this now, so that we get this info correct for attribute nodes 
+        // and their children. 
+
+        Node node; 
+        Node thisAncestor = this;
+        Node otherAncestor = other;
+       
+        int thisDepth=0;
+        int otherDepth=0;
+        for (node=this; node != null; node = node.getParentNode()) {
+            thisDepth +=1;
+            if (node == other) 
+              // The other node is an ancestor of this one.
+              return (DOCUMENT_POSITION_CONTAINS | 
+                      DOCUMENT_POSITION_PRECEDING);
+            thisAncestor = node;
+        }
+
+        for (node=other; node!=null; node=node.getParentNode()) {
+            otherDepth +=1;
+            if (node == this) 
+              // The other node is a descendent of the reference node.
+              return (DOCUMENT_POSITION_IS_CONTAINED | 
+                      DOCUMENT_POSITION_FOLLOWING);
+            otherAncestor = node;
+        }
+        
+       
+
+        int thisAncestorType = thisAncestor.getNodeType();
+        int otherAncestorType = otherAncestor.getNodeType();
+        Node thisNode = this;
+        Node otherNode = other;
+
+        // Special casing for ENTITY, NOTATION, DOCTYPE and ATTRIBUTES
+        // LM:  should rewrite this.                                          
+        switch (thisAncestorType) {
+          case Node.NOTATION_NODE:
+          case Node.ENTITY_NODE: {
+            DocumentType container = thisOwnerDoc.getDoctype();
+            if (container == otherAncestor) return 
+                   (DOCUMENT_POSITION_CONTAINS | DOCUMENT_POSITION_PRECEDING);
+            switch (otherAncestorType) {
+              case Node.NOTATION_NODE: 
+              case Node.ENTITY_NODE:  {
+                if (thisAncestorType != otherAncestorType) 
+                 // the nodes are of different types
+                 return ((thisAncestorType>otherAncestorType) ? 
+                    DOCUMENT_POSITION_PRECEDING:DOCUMENT_POSITION_FOLLOWING);
+                else {
+                 // the nodes are of the same type.  Find order.
+                 if (thisAncestorType == Node.NOTATION_NODE)
+                 
+                     if (((NamedNodeMapImpl)container.getNotations()).precedes(otherAncestor,thisAncestor))
+                       return (DOCUMENT_POSITION_PRECEDING | 
+                               DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+                     else
+                       return (DOCUMENT_POSITION_FOLLOWING | 
+                               DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+                 else
+                     if (((NamedNodeMapImpl)container.getEntities()).precedes(otherAncestor,thisAncestor))
+                       return (DOCUMENT_POSITION_PRECEDING | 
+                               DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+                     else
+                       return (DOCUMENT_POSITION_FOLLOWING | 
+                               DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+                }
+              }
+            }
+            thisNode = thisAncestor = thisOwnerDoc;
+            break;
+          } 
+          case Node.DOCUMENT_TYPE_NODE: {
+            if (otherNode == thisOwnerDoc) 
+              return (DOCUMENT_POSITION_PRECEDING | 
+                      DOCUMENT_POSITION_CONTAINS);
+            else
+              return (DOCUMENT_POSITION_FOLLOWING);
+          }
+          case Node.ATTRIBUTE_NODE: {
+            thisNode = ((AttrImpl)thisAncestor).getOwnerElement();
+            if (otherAncestorType==Node.ATTRIBUTE_NODE) {
+              otherNode = ((AttrImpl)otherAncestor).getOwnerElement();
+              if (otherNode == thisNode) {
+                if (((NamedNodeMapImpl)thisNode.getAttributes()).precedes(other,this))
+                  return (DOCUMENT_POSITION_PRECEDING | 
+                          DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+                else
+                  return (DOCUMENT_POSITION_FOLLOWING | 
+                          DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+              }
+            }
+
+            // Now, find the ancestor of the element
+            thisDepth=0;
+            for (node=thisNode; node != null; node=node.getParentNode()) {
+                thisDepth +=1;
+                if (node == otherNode) 
+                  // The other node is an ancestor of the owning element
+                  {
+                  return DOCUMENT_POSITION_PRECEDING;
+                  }
+                thisAncestor = node;
+            }
+          }
+        }
+        switch (otherAncestorType) {
+          case Node.NOTATION_NODE:
+          case Node.ENTITY_NODE: {
+          DocumentType container = thisOwnerDoc.getDoctype();
+            if (container == this) return (DOCUMENT_POSITION_IS_CONTAINED | 
+                                          DOCUMENT_POSITION_FOLLOWING);
+            otherNode = otherAncestor = thisOwnerDoc;
+            break;
+          }
+          case Node.DOCUMENT_TYPE_NODE: {
+            if (thisNode == otherOwnerDoc) 
+              return (DOCUMENT_POSITION_FOLLOWING | 
+                      DOCUMENT_POSITION_IS_CONTAINED);
+            else
+              return (DOCUMENT_POSITION_PRECEDING);
+          }
+          case Node.ATTRIBUTE_NODE: {
+            otherDepth=0;
+            otherNode = ((AttrImpl)otherAncestor).getOwnerElement();
+            for (node=otherNode; node != null; node=node.getParentNode()) {
+                otherDepth +=1;
+                if (node == thisNode) 
+                  // The other node is a descendent of the reference 
+                  // node's element
+                  return DOCUMENT_POSITION_FOLLOWING | 
+                         DOCUMENT_POSITION_IS_CONTAINED;
+                otherAncestor = node;
+            }
+
+          }
+        }
+ 
+        // thisAncestor and otherAncestor must be the same at this point,  
+        // otherwise, we are not in the same document fragment
+        // TODO: need to look at ordering document fragments as well?
+        if (thisAncestor != otherAncestor) 
+          return DOCUMENT_POSITION_DISCONNECTED; 
+
+      
+        // Go up the parent chain of the deeper node, until we find a node 
+        // with the same depth as the shallower node
+
+        if (thisDepth > otherDepth) {
+          for (int i=0; i<thisDepth - otherDepth; i++)
+            thisNode = thisNode.getParentNode();
+          // Check if the node we have reached is in fact "otherNode". This can
+          // happen in the case of attributes.  In this case, otherNode 
+          // "precedes" this.
+          if (thisNode == otherNode) 
+            return DOCUMENT_POSITION_PRECEDING;
+        }
+ 
+        else {
+          for (int i=0; i<otherDepth - thisDepth; i++)
+            otherNode = otherNode.getParentNode();
+          // Check if the node we have reached is in fact "thisNode".  This can
+          // happen in the case of attributes.  In this case, otherNode 
+          // "follows" this.
+          if (otherNode == thisNode) 
+            return DOCUMENT_POSITION_FOLLOWING;
+        }
+             
+        // We now have nodes at the same depth in the tree.  Find a common 
+        // ancestor.                                   
+        Node thisNodeP, otherNodeP;
+        for (thisNodeP=thisNode.getParentNode(),
+                  otherNodeP=otherNode.getParentNode();
+             thisNodeP!=otherNodeP;) {
+             thisNode = thisNodeP;
+             otherNode = otherNodeP;
+             thisNodeP = thisNodeP.getParentNode();
+             otherNodeP = otherNodeP.getParentNode();
+        }
+
+        // At this point, thisNode and otherNode are direct children of 
+        // the common ancestor.  
+        // See whether thisNode or otherNode is the leftmost
+
+        for (Node current=thisNodeP.getFirstChild(); 
+                  current!=null;
+                  current=current.getNextSibling()) {
+               if (current==otherNode) {
+                 return DOCUMENT_POSITION_PRECEDING;
+               }
+               else if (current==thisNode) {
+                 return DOCUMENT_POSITION_FOLLOWING;
+               }
+        }
+        // REVISIT:  shouldn't get here.   Should probably throw an 
+        // exception
+        return 0;
+
+    }
+
+    /**
+     * This attribute returns the text content of this node and its 
+     * descendants. When it is defined to be null, setting it has no effect. 
+     * When set, any possible children this node may have are removed and 
+     * replaced by a single <code>Text</code> node containing the string 
+     * this attribute is set to. On getting, no serialization is performed, 
+     * the returned string does not contain any markup. No whitespace 
+     * normalization is performed, the returned string does not contain the 
+     * element content whitespaces . Similarly, on setting, no parsing is 
+     * performed either, the input string is taken as pure textual content.
+     * <br>The string returned is made of the text content of this node 
+     * depending on its type, as defined below: 
+     * <table border='1'>
+     * <tr>
+     * <th>Node type</th>
+     * <th>Content</th>
+     * </tr>
 
     /**
      * This attribute returns the text content of this node and its 
@@ -1640,6 +1902,14 @@ public abstract class NodeImpl
     protected void synchronizeData() {
         // By default just change the flag to avoid calling this method again
         needsSyncData(false);
+    }
+
+    /** 
+     * For non-child nodes, the node which "points" to this node.  
+     * For example, the owning element for an attribute
+     */
+    protected Node getContainer() {
+       return null;
     }
 
 
