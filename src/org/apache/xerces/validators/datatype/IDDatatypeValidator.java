@@ -59,8 +59,12 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Vector;
+import java.util.Enumeration;
 import org.apache.xerces.utils.XMLCharacterProperties;
 import org.apache.xerces.utils.XMLMessages;
+import org.apache.xerces.validators.schema.SchemaSymbols;
+
 
 /**
  * DataTypeValidator defines the interface that data type validators must obey.
@@ -71,11 +75,17 @@ import org.apache.xerces.utils.XMLMessages;
  * @version $Id$
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator         fBaseValidator = null;
+    private DatatypeValidator             fBaseValidator = null;
     private Object                        fNullValue = null;
-    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    private DatatypeMessageProvider       fMessageProvider = new DatatypeMessageProvider();
     private Hashtable                     fTableOfId;
-    private Locale                 fLocale           = null;
+    private Locale                        fLocale           = null;
+    
+    //REVISIT: facets when Schema Datatypes go to PR..
+    private int        fFacetsDefined    = 0;
+    private int        fLength           = 0;
+    private Vector     fEnumeration      = new Vector();
+    
     public static final  int          IDREF_STORE    = 0;
     public static final  int          ID_CLEAR       = 1;
 
@@ -87,6 +97,28 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
 
     public IDDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
                                  boolean derivedByList ) throws InvalidDatatypeFacetException  {
+         setBasetype( base ); // Set base type 
+         if ( facets != null  ){
+             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+                 String key = (String) e.nextElement();
+                 if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                    fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                    fEnumeration    = (Vector)facets.get(key);
+                 }else if ( key.equals(SchemaSymbols.ELT_LENGTH) ) {
+                    fFacetsDefined += DatatypeValidator.FACET_LENGTH;
+                    String lengthValue = (String)facets.get(key);
+                    try {
+                        fLength     = Integer.parseInt( lengthValue );
+                    } catch (NumberFormatException nfe) {
+                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"' is invalid.");
+                    }
+                    if ( fLength < 0 )
+                        throw new InvalidDatatypeFacetException("Length value '"+lengthValue+"'  must be a nonNegativeInteger.");
+                 }
+             }
+         }
+    
+    
     }
 
 
@@ -108,6 +140,23 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
     public Object validate(String content, Object IDStorage ) throws InvalidDatatypeValueException{
 
         StateMessageDatatype message;
+
+        if (fBaseValidator!=null) { 
+            if ( (fFacetsDefined & DatatypeValidator.FACET_LENGTH) != 0 ) {
+              if ( content.length() != fLength ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                        "' with length '"+content.length()+
+                                                        "' is not equal to length facet '"+fLength+"'.");
+              }
+            }
+            if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION) != 0 ) {
+              if ( fEnumeration.contains( content ) == false ) {
+                  throw new InvalidDatatypeValueException("Value '"+content+"' must be one of "+fEnumeration);
+              }
+            }
+            //REVISIT: should we propagate content to fBaseValidator?
+         }
+
 
         if (IDStorage != null ){
             //System.out.println("We received reset" );
@@ -141,21 +190,6 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
         return fTableOfId;//Return the table of Id
     }
 
-    /**
-     * REVISIT
-     * Compares two Datatype for order
-     * 
-     * @param o1
-     * @param o2
-     * @return 
-     */
-    public int compare( String content1, String content2){
-        return -1;
-    }
-
-    public Hashtable getFacets(){
-        return null;
-    }
 
     /**
        * Returns a copy of this object.
