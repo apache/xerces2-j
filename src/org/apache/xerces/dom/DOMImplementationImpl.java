@@ -171,7 +171,7 @@ public class DOMImplementationImpl
      * @param namespaceURI     The namespace URI of the document
      *                         element to create, or null. 
      * @param qualifiedName    The qualified name of the document
-     *                         element to create, or null. 
+     *                         element to create. 
      * @param doctype          The type of document to be created or null.<p>
      *
      *                         When doctype is not null, its
