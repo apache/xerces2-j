@@ -1084,13 +1084,19 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
       // if enclosing element's Schema is different, need to switch "context"
       if ( fGrammarNameSpaceIndex != fGrammarNameSpaceIndexStack[fElementDepth] ) {
+
          fGrammarNameSpaceIndex = fGrammarNameSpaceIndexStack[fElementDepth];
          if ( fValidating && fGrammarIsSchemaGrammar )
-            if ( !switchGrammar(fGrammarNameSpaceIndex) ) {
-               reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
-                                         "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex) 
-                                         + " , can not found");
-            }
+             if (fGrammarNameSpaceIndex == -1) {
+                 fGrammar = null;
+                 fGrammarIsSchemaGrammar = false;
+                 fGrammarIsDTDGrammar = false;
+             }
+             else if ( !switchGrammar(fGrammarNameSpaceIndex) ) {
+                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR, XMLMessages.SCHEMA_GENERIC_ERROR, 
+                                               "Grammar with uri 1: " + fStringPool.toString(fGrammarNameSpaceIndex) 
+                                               + " , can not found");
+             }
       }
 
       if (fValidating) {
