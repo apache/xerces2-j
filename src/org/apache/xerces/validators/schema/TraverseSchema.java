@@ -60,6 +60,7 @@ package org.apache.xerces.validators.schema;
 import  org.apache.xerces.framework.XMLErrorReporter;
 import  org.apache.xerces.validators.common.GrammarResolver;
 import  org.apache.xerces.validators.common.GrammarResolverImpl;
+import  org.apache.xerces.validators.common.XMLElementDecl;
 import  org.apache.xerces.validators.schema.SchemaSymbols;
 import  org.apache.xerces.validators.schema.XUtil;
 import  org.apache.xerces.validators.datatype.DatatypeValidator;
@@ -396,7 +397,7 @@ public class TraverseSchema implements
 
     private int fAnonTypeCount =0;
     private int fScopeCount=0;
-    private int fCurrentScope=0;
+    private int fCurrentScope=TOP_LEVEL_SCOPE;
     private int fSimpleTypeAnonCount = 0;
 
     private boolean fDefaultQualifed = false;
@@ -739,11 +740,11 @@ System.out.println("traversing complex Type : " + typeName +","+base+","+content
         fCurrentScope = scopeDefined;
 
         Element child = null;
-        int contentSpecType = 0;
+        int contentSpecType = -1;
         int csnType = 0;
         int left = -2;
         int right = -2;
-        Vector uses = new Vector();
+
         ComplexTypeInfo baseTypeInfo = null;  //if base is a complexType;
         DatatypeValidator baseTypeValidator = null; //if base is a simple type or a complex type derived from a simpleType
         DatatypeValidator simpleTypeValidator = null;
@@ -933,15 +934,14 @@ System.out.println("traversing complex Type : " + typeName +","+base+","+content
                         reportSchemaError(SchemaMessageProvider.NotADatatype,
                                           new Object [] { base }); //REVISIT check forward refs
             //handle datatypes
-            contentSpecType = fStringPool.addSymbol("DATATYPE");
+            contentSpecType = XMLElementDecl.TYPE_SIMPLE;
             left = fSchemaGrammar.addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_LEAF,
                                                  fStringPool.addSymbol(base),
                                                  -1, false);
 
         } 
         else {   
-System.out.println("I'm here!!");
-            contentSpecType = fStringPool.addSymbol("CHILDREN");
+            contentSpecType = XMLElementDecl.TYPE_CHILDREN;
             csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
             boolean mixedContent = false;
 	    //REVISIT: is the default content " elementOnly"
@@ -952,10 +952,10 @@ System.out.println("I'm here!!");
             boolean hadContent = false;
 
             if (content.equals(SchemaSymbols.ATTVAL_EMPTY)) {
-                contentSpecType = fStringPool.addSymbol("EMPTY");
+                contentSpecType = XMLElementDecl.TYPE_EMPTY;
                 left = -1; // no contentSpecNode needed
             } else if (content.equals(SchemaSymbols.ATTVAL_MIXED) ) {
-                contentSpecType = fStringPool.addSymbol("MIXED");
+                contentSpecType = XMLElementDecl.TYPE_MIXED;
                 mixedContent = true;
                 csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
             } else if (content.equals(SchemaSymbols.ATTVAL_ELEMENTONLY) || content.equals("")) {
@@ -1043,7 +1043,6 @@ System.out.println(" child element name " + child.getAttribute(SchemaSymbols.ATT
 
                 } //end of if (seeParticle)
 
-                uses.addElement(new Integer(index));
                 if (left == -2) {
                     left = index;
                 } else if (right == -2) {
@@ -1710,7 +1709,9 @@ System.out.println("traversing element decl : " + name );
 
                 haveAnonType = true;
             } else if (type.equals("")) { // "ur-typed" leaf
-                contentSpecType = fStringPool.addSymbol("UR_TYPE");
+		contentSpecType = XMLElementDecl.TYPE_ANY;
+		    //REVISIT: is this right?
+                //contentSpecType = fStringPool.addSymbol("UR_TYPE");
                 // set occurrence count
                 contentSpecNodeIndex = -1;
             } else {
@@ -1804,7 +1805,7 @@ System.out.println("traversing element decl : " + name );
         if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
              fDefaultQualifed || isTopLevel(elementDecl) ) {
             uriIndex = fTargetNSURI;
-            enclosingScope = 0;
+            enclosingScope = TOP_LEVEL_SCOPE;
         }
 
         QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
@@ -1836,6 +1837,7 @@ System.out.println("traversing element decl : " + name );
 System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + elementIndex);
 	fSchemaGrammar.setElementFromAnotherSchemaURI(elementIndex, fromAnotherSchema);
 
+	
         return eltQName;
 
     }// end of method traverseElementDecl(Element)
@@ -1964,7 +1966,7 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
         }
 
         boolean traverseElt = true; 
-        if (fCurrentScope == 0) {
+        if (fCurrentScope == TOP_LEVEL_SCOPE) {
             traverseElt = false;
         }
 
@@ -1978,7 +1980,7 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
         int allChildCount = 0;
 
         csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-        contentSpecType = fStringPool.addSymbol("CHILDREN");
+        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
         
         int left = -2;
         int right = -2;
@@ -2067,7 +2069,7 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
         int csnType = 0;
 
         csnType = XMLContentSpec.CONTENTSPECNODE_SEQ;
-        contentSpecType = fStringPool.addSymbol("CHILDREN");
+        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
 
         int left = -2;
         int right = -2;
@@ -2157,7 +2159,7 @@ System.out.println(">>>>before setElementFromAnotherSchemaURI elementIndex: " + 
         int csnType = 0;
 
         csnType = XMLContentSpec.CONTENTSPECNODE_CHOICE;
-        contentSpecType = fStringPool.addSymbol("CHILDREN");
+        contentSpecType = XMLElementDecl.TYPE_CHILDREN;
 
         int left = -2;
         int right = -2;

@@ -255,8 +255,11 @@ System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + el
             //fTempElementDecl.firstAttributeDeclIndex = attrListHead;
             elementDeclIndex = createElementDecl();
             setElementDecl(elementDeclIndex,fTempElementDecl);
+	    setFirstAttributeDeclIndex(elementDeclIndex, attrListHead);
             //note, this is the scope defined by the element, not its enclosing scope
             setElementDefinedScope(elementDeclIndex, scopeDefined);
+
+System.out.println("xxxxxEltIndex :" + elementDeclIndex + ", contentSpecType: " + contentSpecType);
         }
 
 /***********************************************************************************************************
@@ -297,9 +300,11 @@ System.out.println("######In getElementFromAnotherSchemaURI, elementIndex:" + el
         fTempContentSpecNode.type = contentSpecType;
         fTempContentSpecNode.value = value;
         fTempContentSpecNode.otherValue = otherValue;
-
-        int contentSpecIndex = createContentSpec();
+        
+	int contentSpecIndex = createContentSpec();
         setContentSpec(contentSpecIndex, fTempContentSpecNode);
+
+System.out.println("^^^^^^^add ContentSpecTypeNode: " + contentSpecIndex+","+contentSpecType +","+value+","+otherValue);
 
         return contentSpecIndex;
     }
