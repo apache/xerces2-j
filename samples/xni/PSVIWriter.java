@@ -1033,8 +1033,10 @@ implements XMLComponent, XMLDocumentFilter {
             printElement("localName",attributes.getLocalName(i));
             printElement("prefix",attributes.getPrefix(i));
             printElement("normalizedValue",attributes.getValue(i));
-            printElement("specified",String.valueOf(attributes.isSpecified(i)));
             if (!psviAvailable) {
+                // REVISIT: this attribute was defaulted from XML Schema
+                // The following properties become unavailable/ not specified.
+                printElement("specified",String.valueOf(attributes.isSpecified(i)));
                 printElement("attributeType", attributes.getType(i));
             }  else{
                 printElement("attributeType", null);
