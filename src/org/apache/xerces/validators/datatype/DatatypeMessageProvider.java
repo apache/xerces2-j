@@ -102,28 +102,29 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
      */
     public String createMessage(Locale locale, int majorCode, int minorCode, Object args[]) {
         boolean throwex = false;
-        if (fResourceBundle == null || locale != fLocale) {
-            if (locale != null)
+        if ( fResourceBundle == null || locale != fLocale ) {
+            if ( locale != null )
                 fResourceBundle = ListResourceBundle.getBundle("org.apache.xerces.msg.DatatypeMessages", locale);
-            if (fResourceBundle == null)
+            if ( fResourceBundle == null )
                 fResourceBundle = ListResourceBundle.getBundle("org.apache.xerces.msg.DatatypeMessages");
         }
-        if (majorCode < 0 || majorCode >= fgMessageKeys.length) {
+        if ( majorCode < 0 || majorCode >= fgMessageKeys.length ) {
             majorCode = MSG_BAD_MAJORCODE;
             throwex = true;
         }
         String msgKey = fgMessageKeys[majorCode];
         String msg = fResourceBundle.getString(msgKey);
-        if (args != null) {
+        if ( args != null ) {
             try {
                 msg = java.text.MessageFormat.format(msg, args);
-            } catch (Exception e) {
+            }
+            catch ( Exception e ) {
                 msg = fResourceBundle.getString(fgMessageKeys[MSG_FORMAT_FAILURE]);
                 msg += " " + fResourceBundle.getString(msgKey);
             }
         }
 
-        if (throwex) {
+        if ( throwex ) {
             throw new RuntimeException(msg);
         }
         return msg;
@@ -136,58 +137,70 @@ public class DatatypeMessageProvider implements XMLMessageProvider {
     //
     // Major Codes
     //
+    private static int counter = 0;
     public static final int 
-        MSG_BAD_MAJORCODE = 0,              //  majorCode parameter to createMessage was out of bounds
-        MSG_FORMAT_FAILURE = 1,             //  exception thrown during messageFormat call
-        NotBoolean = 2,
-        NotDecimal = 3,
-        FacetsInconsistent = 4,
-        IllegalFacetValue = 5,
-        IllegalDecimalFacet = 6,
-        UnknownFacet = 7,
-        InvalidEnumValue = 8,
-        OutOfBounds = 9,
-        NotAnEnumValue = 10,
-        NotInteger = 11,
-        IllegalIntegerFacet = 12,
-        NotReal = 13,
-        IllegalRealFacet = 14,
-        FractionDigitsLargerThanTotalDigits = 15,
-        TotalDigitsExceeded = 16,
-        FractionDigitsExceeded = 17,
-        NotFloat = 18,
-        NotDouble = 19,
-       // ...
-        MSG_MAX_CODE = 20;
+    MSG_BAD_MAJORCODE  = counter++,              //  majorCode parameter to createMessage was out of bounds
+    MSG_FORMAT_FAILURE = counter++,             //  exception thrown during messageFormat call
+    NOT_BOOLEAN        = counter++,
+    NOT_DECIMAL        = counter++,
+    NOT_FLOAT          = counter++,
+    NOT_DOUBLE         = counter++,
+    INVALID_ENUM_VALUE = counter++,
+    OUT_OF_BOUNDS      = counter++,
+    NOT_ENUM_VALUE      = counter++,
+    FRACTION_GREATER_TOTALDIGITS   = counter++,
+    FRACTION_EXCEEDED      = counter++,
+    TOTALDIGITS_EXCEEDED   = counter++,
+    ILLEGAL_FACET_VALUE    = counter++,
+    ILLEGAL_ANYURI_FACET   = counter++,
+    ILLEGAL_BOOLEAN_FACET  = counter++,
+    ILLEGAL_BASE64_FACET   = counter++,
+    ILLEGAL_DATETIME_FACET = counter++,
+    ILLEGAL_DECIMAL_FACET  = counter++,
+    ILLEGAL_DOUBLE_FACET   = counter++,
+    ILLEGAL_FLOAT_FACET    = counter++,
+    ILLEGAL_HEXBINARY_FACET  = counter++,
+    ILLEGAL_NOTATION_FACET   = counter++,
+    ILLEGAL_QNAME_FACET      = counter++,
+    ILLEGAL_STRING_FACET     = counter++,
+    ILLEGAL_LIST_FACET       = counter++,
+    ILLEGAL_UNION_FACET      = counter++,
+
+    MSG_MAX_CODE = counter;
 
     //
     // Minor Codes
     //
     public static final int
-        MSG_NONE = 0;
+    MSG_NONE = 0;
 
     public static final String[] fgMessageKeys = {
-        "BadMajorCode",                 //   0, "The majorCode parameter to createMessage was out of bounds."
-        "FormatFailed",                 //   1, "An internal error occurred while formatting the following message:"
-        "NotBoolean",                   //   2, "{0} is not a boolean"
-        "NotDecimal",                   //   3, "{0} is not a decimal"
-        "FacetsInconsistent",           //   4, "Facets are inconsistent with base type"
-        "IllegalFacetValue",            //   5, "Illegal value {0} for facet {1}."
-        "IllegalDecimalFacet",          //   6, "Illegal Facet for decimal type"
-        "UnknownFacet",                 //   7, "Unknown Facet: {0}"
-        "InvalidEnumValue",             //   8, "Invalid value for Enum constant: {0}"
-        "OutOfBounds",                  //   9, "{0} is out of bounds."
-        "NotAnEnumValue",               //  10, "{0} is not one of the specified enum values."
-        "NotInteger",                   //  11, "{0} is not an integer."
-        "IllegalIntegerFacet",          //  12, "Illegal Facet for Integer type."
-        "NotReal",                      //  13, "{0} is not a double."
-        "IllegalRealFacet",             //  14, "Illegal Facet for Real type."
-        "FractionDigitsLargerThanTotalDigits",     //  15, "fractionDigits Facet must be less than or equal to TotalDigits Facet"
-        "TotalDigitsExceeded",            //  16, "{0} has exceeded the totalDigits Facet {1}"},
-        "FractionDigitsExceeded",                //  17, "{0} has execeed the fractionDigits Facet {1}"},
-        "NotFloat",                     //  18, "{0} is not a float.",
-        "NotDouble"                     //  19, "{0} is not a double."
-
+        "BadMajorCode",                 
+        "FormatFailed",                 
+        "NotBoolean",                           
+        "NotDecimal",                   
+        "NotFloat",                     
+        "NotDouble",                     
+        "InvalidEnumValue",            
+        "OutOfBounds",                  
+        "NotAnEnumValue",               
+        "FractionDigitsLargerThanTotalDigits",     
+        "TotalDigitsExceeded",            
+        "FractionDigitsExceeded",                
+        "IllegalFacetValue",            
+        "IllegalAnyURIFacet",           
+        "IllegalBooleanFacet",
+        "IllegalBase64Facet",
+        "IllegalDateTimeFacet",
+        "IllegalDecimalFacet",
+        "IllegalDoubleFacet",
+        "IllegalFloatFacet",
+        "IllegalHexBinaryFacet",
+        "IllegalNotationFacet",
+        "IllegalQNameFacet",
+        "IllegalStringFacet",
+        "IllegalListFacet",
+        "IllegalUnionFacet"
     };
 
 }

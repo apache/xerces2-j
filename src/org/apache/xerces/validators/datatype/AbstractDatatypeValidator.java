@@ -65,7 +65,9 @@
 
 
 package org.apache.xerces.validators.datatype;
+
 import java.util.Hashtable;
+import java.util.Locale;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.utils.regex.RegularExpression;
 
@@ -76,6 +78,8 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
     protected String     fPattern         = null;
     protected RegularExpression fRegex    = null;
     protected short fFacetsDefined          = 0;
+    protected DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    protected Locale              fLocale                 = null;
      /**
      * Checks that "content" string is valid
      * datatype.
@@ -133,6 +137,23 @@ public abstract class AbstractDatatypeValidator implements DatatypeValidator, Cl
      */
     public int compare(String value1, String value2) {
         return value1.compareTo(value2);
+    }
+
+    protected String getErrorString(int major, int minor, Object args[]) {
+        try {
+            return fMessageProvider.createMessage(fLocale, major, minor, args);
+        }
+        catch ( Exception e ) {
+            return "Illegal Errorcode "+minor;
+        }
+    }
+
+
+    /**
+     * set the locate to be used for error messages
+     */
+    public void setLocale(Locale locale) {
+        fLocale = locale;
     }
 
 

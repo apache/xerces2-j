@@ -75,7 +75,6 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class StringDatatypeValidator extends AbstractDatatypeValidator{
     
-    private Locale     fLocale          = null;
     private int        fLength          = 0;
     private int        fMaxLength       = Integer.MAX_VALUE;
     private int        fMinLength       = 0;
@@ -166,7 +165,8 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
                                                                 "' must be one of 'preserve', 'replace', 'collapse'.");
                     }
                 } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_STRING_FACET,
+                                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
                 }
             }
 
@@ -336,14 +336,6 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException {
         checkContent( content, state, false );
         return null;
-    }
-
-
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
     }
 
 

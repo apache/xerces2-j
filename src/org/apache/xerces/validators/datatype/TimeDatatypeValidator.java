@@ -88,7 +88,8 @@ public class TimeDatatypeValidator extends DateTimeValidator {
      * @return normalized time representation
      * @exception Exception Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws Exception{
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
+        
         resetBuffer(str);
 
         //create structure to hold an object
@@ -108,12 +109,12 @@ public class TimeDatatypeValidator extends DateTimeValidator {
         if ( !validateDateTime(date) ) {
             //REVISIT: should we throw an exeption?
             //         we should not try normalizing in this case ..
-            throw new Exception ();
+            throw new SchemaDateTimeException ();
         }
         else if ( date[utc]!=0 ) {
             normalize(date);
         }
-        return date;
+                return date;
     }
 
 

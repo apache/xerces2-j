@@ -60,9 +60,6 @@ package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.Locale;
-import java.text.Collator;
-import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -78,7 +75,6 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class UnionDatatypeValidator extends AbstractDatatypeValidator {
     
-    private Locale  fLocale          = null;
     private Vector  fBaseValidators   = null; // union collection of validators
     private int fValidatorsSize = 0;
     private Vector     fEnumeration      = null;
@@ -109,7 +105,8 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
                 }
                 else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_UNION_FACET,
+                                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
                 }
             } //end for
 
@@ -153,16 +150,8 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
 
 
     /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
-
-
-    /**
      * 
-     * @return                          A Hashtable containing the facets
+     * @return A Hashtable containing the facets
      *         for this datatype.
      */
     public Hashtable getFacets(){
@@ -289,14 +278,9 @@ public class UnionDatatypeValidator extends AbstractDatatypeValidator {
                 }
                 else {
                     if (enumeration!=null) {
-                        if (currentDV instanceof DecimalDatatypeValidator) {
-                            ((DecimalDatatypeValidator)currentDV).checkContentEnum(content, state, enumeration);
-                        }
-                        else if (currentDV instanceof FloatDatatypeValidator) {
-                            ((FloatDatatypeValidator)currentDV).checkContentEnum(content, state, enumeration);
-                        }
-                        else if (currentDV instanceof DoubleDatatypeValidator) {
-                            ((DoubleDatatypeValidator)currentDV).checkContentEnum(content, state, enumeration);
+                        // check enumeration against value space of double, decimal and float
+                        if (currentDV instanceof AbstractNumericValidator) {
+                            ((AbstractNumericValidator)currentDV).checkContentEnum(content, state, enumeration);
                         }
                         else {
                             if (enumeration.contains( content ) == false) {

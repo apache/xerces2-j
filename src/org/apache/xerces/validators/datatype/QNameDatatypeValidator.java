@@ -81,7 +81,6 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
     
-    private Locale    fLocale          = null;
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;
     private int       fMinLength       = 0;
@@ -163,7 +162,8 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
                     fEnumeration = (Vector)facets.get(key);
                     fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_QNAME_FACET,
+                                                                            DatatypeMessageProvider.MSG_NONE, new Object[] { key }));                
                 }
             }
 
@@ -309,12 +309,6 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         return null;
     }
 
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
-    }
 
     private void checkContent( String content, boolean asBase )throws InvalidDatatypeValueException
     {

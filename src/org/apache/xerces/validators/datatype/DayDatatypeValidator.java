@@ -91,7 +91,7 @@ public class DayDatatypeValidator extends DateTimeValidator {
      * @return normalized date representation
      * @exception Exception Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws Exception{
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
         resetBuffer(str);
 
@@ -101,7 +101,7 @@ public class DayDatatypeValidator extends DateTimeValidator {
         }
         resetDateObj(date);
         if (fBuffer.charAt(0)!='-' || fBuffer.charAt(1)!='-' || fBuffer.charAt(2)!='-') {
-            throw new Exception ("Error in day parsing");
+            throw new SchemaDateTimeException ("Error in day parsing");
         }
 
         //initialize values 
@@ -114,7 +114,7 @@ public class DayDatatypeValidator extends DateTimeValidator {
         if ( DAY_SIZE<fEnd ) {
             int sign = findUTCSign(DAY_SIZE, fEnd);
             if ( sign<0 ) {
-                throw new Exception ("Error in day parsing");
+                throw new SchemaDateTimeException ("Error in day parsing");
             }
             else {
                 getTimeZone(date, sign);
@@ -123,7 +123,7 @@ public class DayDatatypeValidator extends DateTimeValidator {
         //validate and normalize
         if ( !validateDateTime(date) ) {
             //REVISIT: error message?
-            throw new Exception ();
+            throw new SchemaDateTimeException ();
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);

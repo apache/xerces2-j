@@ -58,7 +58,6 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.Vector;
 import java.util.Enumeration;
 import org.apache.xerces.utils.URI;
@@ -79,6 +78,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version  $Id$
  */
 public class AnyURIDatatypeValidator extends AbstractDatatypeValidator {
+    
     private int       fLength          = 0;
     private int       fMaxLength       = Integer.MAX_VALUE;
     private int       fMinLength       = 0;
@@ -149,8 +149,8 @@ public class AnyURIDatatypeValidator extends AbstractDatatypeValidator {
                     fEnumeration = (Vector)facets.get(key);
                     fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
-                }
+                        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_ANYURI_FACET,
+                                                                                DatatypeMessageProvider.MSG_NONE, new Object[] { key }));                }
             }
 
             if ( base != null ) {

@@ -101,7 +101,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
      * @return normalized date representation
      * @exception Exception Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws Exception{
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
         //PnYn MnDTnH nMnS: -P1Y2M3DT10H30M        
         resetBuffer(str);
@@ -115,12 +115,12 @@ public class DurationDatatypeValidator extends DateTimeValidator {
 
         char c=fBuffer.charAt(fStart++);
         if ( c!='P' && c!='-' ) {
-            throw new Exception();
+            throw new SchemaDateTimeException();
         }
         else {
             date[utc]=(c=='-')?'-':0;
             if ( c=='-' && fBuffer.charAt(fStart++)!='P' ) {
-                throw new Exception();
+                throw new SchemaDateTimeException();
             }
         }
 
@@ -163,7 +163,7 @@ public class DurationDatatypeValidator extends DateTimeValidator {
         }
 
         if ( fEnd == endDate && fStart!=fEnd ) {
-            throw new Exception();
+            throw new SchemaDateTimeException();
         }
         if ( fEnd !=endDate ) {
 
@@ -204,12 +204,12 @@ public class DurationDatatypeValidator extends DateTimeValidator {
             // no additional data shouls appear after last item
             // P1Y1M1DT is illigal value as well
             if ( fStart != fEnd || fBuffer.charAt(--fStart)=='T' ) {
-                throw new Exception();
+                throw new SchemaDateTimeException();
             }
         }
 
         if ( !designator ) {
-            throw new Exception();
+            throw new SchemaDateTimeException();
         }
 
         return date;

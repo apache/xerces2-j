@@ -58,7 +58,6 @@
 package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.Enumeration;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
@@ -75,8 +74,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeFacetException;
  */
 
 public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
-    private Locale                  fLocale          = null;
-    private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    
     private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
 
     public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
@@ -102,7 +100,8 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                     if( fPattern != null )
                        fRegex = new RegularExpression(fPattern, "X" );
                 } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_BOOLEAN_FACET,
+                                                                             DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
                 }
             }
         }// End of facet setting
@@ -151,15 +150,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
 
     //Begin private method definitions
 
-
-    private String getErrorString(int major, int minor, Object args[]) {
-        try {
-            return fMessageProvider.createMessage(fLocale, major, minor, args);
-        } catch (Exception e) {
-            return "Illegal Errorcode "+minor;
-        }
-    }
-  /**
+   /**
      * Returns a copy of this object.
      */
     public Object clone() throws CloneNotSupportedException {
@@ -200,7 +191,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
         }
         if (isContentInDomain == false)
             throw new InvalidDatatypeValueException(
-                                                   getErrorString(DatatypeMessageProvider.NotBoolean,
+                                                   getErrorString(DatatypeMessageProvider.NOT_BOOLEAN,
                                                                   DatatypeMessageProvider.MSG_NONE,
                                                                   new Object[] { content}));
     }

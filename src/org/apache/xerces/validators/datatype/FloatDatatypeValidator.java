@@ -74,7 +74,7 @@ import java.util.NoSuchElementException;
  * @version  $Id$
  */
 
-public class FloatDatatypeValidator extends AbstractNumericFacetValidator {
+public class FloatDatatypeValidator extends AbstractNumericValidator {
 
     public FloatDatatypeValidator () throws InvalidDatatypeFacetException{
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -96,6 +96,11 @@ public class FloatDatatypeValidator extends AbstractNumericFacetValidator {
             //REVISIT: should we throw exception??
             return -1;
         }
+    }
+
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_FLOAT_FACET,
+                                                                DatatypeMessageProvider.MSG_NONE, new Object[] { key}));
     }
 
     protected int compareValues (Object value1, Object value2) {
@@ -185,7 +190,7 @@ public class FloatDatatypeValidator extends AbstractNumericFacetValidator {
             f = fValueOf(content);
         }
         catch ( NumberFormatException nfe ) {
-            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NotFloat,
+            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NOT_FLOAT,
                                                                     DatatypeMessageProvider.MSG_NONE,
                                                                     new Object [] {content}));
         }
@@ -201,7 +206,7 @@ public class FloatDatatypeValidator extends AbstractNumericFacetValidator {
 
             }
             catch ( NumberFormatException nfe ) {
-                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.INVALID_ENUM_VALUE,
                                                                         DatatypeMessageProvider.MSG_NONE,
                                                                         new Object [] { enumeration.elementAt(i)}));
             }
@@ -216,14 +221,16 @@ public class FloatDatatypeValidator extends AbstractNumericFacetValidator {
         }
     }
 
-      
+    protected int getInvalidFacetMsg (){
+        return DatatypeMessageProvider.ILLEGAL_FLOAT_FACET;
+    }  
 
     private void enumCheck(float v, Float[] enumFloats) throws InvalidDatatypeValueException {
         for ( int i = 0; i < enumFloats.length; i++ ) {
             if ( v == ((Float)enumFloats[i]).floatValue() ) return;
         }
         throw new InvalidDatatypeValueException(
-                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
+                                               getErrorString(DatatypeMessageProvider.NOT_ENUM_VALUE,
                                                               DatatypeMessageProvider.MSG_NONE,
                                                               new Object [] { new Float(v)}));
     }

@@ -76,30 +76,102 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version $Id$
  */
 
-public class DecimalDatatypeValidator extends AbstractNumericFacetValidator {
-    
+public class DecimalDatatypeValidator extends AbstractNumericValidator {
+
+    protected int                 fTotalDigits;
+    protected int                 fFractionDigits;
+
     public DecimalDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
     }
 
     public DecimalDatatypeValidator ( DatatypeValidator base, Hashtable facets,
                                       boolean derivedByList ) throws InvalidDatatypeFacetException {
-         super (base, facets, derivedByList);
+        super (base, facets, derivedByList);
     }
 
-    public int compare( String value1, String value2){
+    public int compare( String value1, String value2) {
         try {
             BigDecimal d1 = new BigDecimal(stripPlusIfPresent(value1));
             BigDecimal d2 = new BigDecimal(stripPlusIfPresent(value2));
             return d1.compareTo(d2);
-        } catch (NumberFormatException e){
+        }
+        catch ( NumberFormatException e ) {
             //REVISIT: should we throw exception??
             return -1;
         }
     }
 
+    protected void inheritAdditionalFacets() {
+        
+        // inherit totalDigits
+        if ( (( ((DecimalDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) && 
+             !((fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) ) {
+            fFacetsDefined |= FACET_TOTALDIGITS;
+            fTotalDigits = ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits;
+        }
+        // inherit fractionDigits
+        if ( (( ((DecimalDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS) != 0) 
+             && !((fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS) != 0) ) {
+            fFacetsDefined |= FACET_FRACTIONDIGITS;
+            fFractionDigits = ((DecimalDatatypeValidator)fBaseValidator).fFractionDigits;
+        }
+    }
+
+    protected void checkFacetConstraints() throws InvalidDatatypeFacetException{
+        // check 4.3.12.c1 must: fractionDigits <= totalDigits
+        if ( ((fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS) != 0) && 
+             ((fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) ) {
+            if ( fFractionDigits > fTotalDigits )
+                throw new InvalidDatatypeFacetException( "fractionDigits value ='" + this.fFractionDigits + "'must be <= totalDigits value ='" +
+                                                         this.fTotalDigits + "'. " );
+        }
+    }
+
+    protected void checkBaseFacetConstraints() throws InvalidDatatypeFacetException{
+
+        // check 4.3.11.c1 error: totalDigits > base.totalDigits
+        if ( ((fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) ) {
+            if ( (( ((DecimalDatatypeValidator)fBaseValidator).fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS) != 0) &&
+                 fTotalDigits > ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits )
+                throw new InvalidDatatypeFacetException( "totalDigits value ='" + fTotalDigits + "' must be <= base.totalDigits value ='" +
+                                                         ((DecimalDatatypeValidator)fBaseValidator).fTotalDigits + "'." );
+        }
+    }
+
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+
+        String value = null;
+        try {
+            if ( key.equals(SchemaSymbols.ELT_TOTALDIGITS) ) {
+                value = ((String) facets.get(key ));
+                fFacetsDefined |= DatatypeValidator.FACET_TOTALDIGITS;
+                fTotalDigits      = Integer.parseInt(value );
+                // check 4.3.11.c0 must: totalDigits > 0
+                if ( fTotalDigits <= 0 )
+                    throw new InvalidDatatypeFacetException("totalDigits value '"+fTotalDigits+"' must be a positiveInteger.");
+            }
+            else if ( key.equals(SchemaSymbols.ELT_FRACTIONDIGITS) ) {
+                value = ((String) facets.get(key ));
+                fFacetsDefined |= DatatypeValidator.FACET_FRACTIONDIGITS;
+                fFractionDigits          = Integer.parseInt( value );
+                // check 4.3.12.c0 must: fractionDigits > 0
+                if ( fFractionDigits < 0 )
+                    throw new InvalidDatatypeFacetException("fractionDigits value '"+fFractionDigits+"' must be a positiveInteger.");
+            }
+            else {
+                throw new InvalidDatatypeFacetException( getErrorString( DatatypeMessageProvider.ILLEGAL_DECIMAL_FACET,
+                                                                         DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+            }
+        }
+        catch ( Exception ex ) {
+            throw new InvalidDatatypeFacetException( getErrorString( DatatypeMessageProvider.ILLEGAL_FACET_VALUE,
+                                                                     DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+        }
+    }
+
     protected int compareValues (Object value1, Object value2) {
-            return ((BigDecimal)value1).compareTo((BigDecimal)value2);
+        return((BigDecimal)value1).compareTo((BigDecimal)value2);
     }
 
     protected void setMaxInclusive (String value) {
@@ -122,12 +194,13 @@ public class DecimalDatatypeValidator extends AbstractNumericFacetValidator {
             fEnumeration = new BigDecimal[enumeration.size()];
             Object baseEnum=null;
             try {
-            
-            for ( int i = 0; i < enumeration.size(); i++ ){
+
+                for ( int i = 0; i < enumeration.size(); i++ ) {
                     fEnumeration[i] = new BigDecimal( stripPlusIfPresent(((String) enumeration.elementAt(i))));;
                     ((DecimalDatatypeValidator)fBaseValidator).validate((String)enumeration.elementAt(i), null);
+                }
             }
-            }catch (Exception e){
+            catch ( Exception e ) {
                 throw new InvalidDatatypeValueException(e.getMessage());
             }
         }
@@ -151,10 +224,10 @@ public class DecimalDatatypeValidator extends AbstractNumericFacetValidator {
         :((BigDecimal)fMinExclusive).toString();
     }
 
-    
+
 
     protected void checkContent(String content, Object state, Vector enumeration, boolean asBase)
-                   throws InvalidDatatypeValueException {
+    throws InvalidDatatypeValueException {
         // validate against parent type if any
         if ( this.fBaseValidator != null ) {
             // validate content as a base type
@@ -170,58 +243,59 @@ public class DecimalDatatypeValidator extends AbstractNumericFacetValidator {
 
         // if this is a base validator, we only need to check pattern facet
         // all other facet were inherited by the derived type
-        if (asBase)
+        if ( asBase )
             return;
 
         BigDecimal d = null; // Is content a Decimal
         try {
             d = new BigDecimal( stripPlusIfPresent( content));
-        } catch (Exception nfe) {
-            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NotDecimal,
+        }
+        catch ( Exception nfe ) {
+            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NOT_DECIMAL,
                                                                     DatatypeMessageProvider.MSG_NONE,
                                                                     new Object[] { "'" + content +"'"}));
         }
 
-        if (enumeration != null) { //the call was made from List or Union
+        if ( enumeration != null ) { //the call was made from List or Union
             int size= enumeration.size();
             BigDecimal[]     enumDecimal  = new BigDecimal[size];
             int i = 0;
             try {
-                for ( ; i < size; i++)
+                for ( ; i < size; i++ )
                     enumDecimal[i] = new BigDecimal( stripPlusIfPresent(((String) enumeration.elementAt(i))));
-            } catch (NumberFormatException nfe) {
-                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+            }
+            catch ( NumberFormatException nfe ) {
+                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.INVALID_ENUM_VALUE,
                                                                         DatatypeMessageProvider.MSG_NONE,
                                                                         new Object [] { enumeration.elementAt(i)}));
             }
             enumCheck(d, enumDecimal);
         }
 
-        if ((fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS)!=0 ) {
-            if (d.scale() > fFractionDigits)
+        if ( (fFacetsDefined & DatatypeValidator.FACET_FRACTIONDIGITS)!=0 ) {
+            if ( d.scale() > fFractionDigits )
                 throw new InvalidDatatypeValueException(
-                                                        getErrorString(DatatypeMessageProvider.FractionDigitsExceeded,
-                                                                        DatatypeMessageProvider.MSG_NONE,
-                                                                        new Object[] { content}));
+                                                       getErrorString(DatatypeMessageProvider.FRACTION_EXCEEDED,
+                                                                      DatatypeMessageProvider.MSG_NONE,
+                                                                      new Object[] { content}));
         }
         if ( (fFacetsDefined & DatatypeValidator.FACET_TOTALDIGITS)!=0 ) {
             int totalDigits = d.movePointRight(d.scale()).toString().length() -
-                            ((d.signum() < 0) ? 1 : 0); // account for minus sign
-            if (totalDigits > fTotalDigits)
+                              ((d.signum() < 0) ? 1 : 0); // account for minus sign
+            if ( totalDigits > fTotalDigits )
                 throw new InvalidDatatypeValueException(
-                                getErrorString(DatatypeMessageProvider.TotalDigitsExceeded,
-                                 DatatypeMessageProvider.MSG_NONE,
-                                 new Object[] { "'" + content + "'" + "with totalDigits = '"+ totalDigits +"'"
-                                              , "'" + fTotalDigits + "'" } ));
+                                                       getErrorString(DatatypeMessageProvider.TOTALDIGITS_EXCEEDED,
+                                                                      DatatypeMessageProvider.MSG_NONE,
+                                                                      new Object[] { "'" + content + "'" + " with totalDigits = '"+ totalDigits +"'"
+                                                                          , "'" + fTotalDigits + "'"} ));
         }
         boundsCheck(d);
-        if (  fEnumeration != null )
+        if ( fEnumeration != null )
             enumCheck(d, (BigDecimal[]) fEnumeration);
 
         return;
 
     }
-  
 
     /**
      * This class deals with a bug in BigDecimal class
@@ -238,7 +312,7 @@ public class DecimalDatatypeValidator extends AbstractNumericFacetValidator {
      * @param value
      * @return
      */
-    static private String stripPlusIfPresent( String value ){
+    static private String stripPlusIfPresent( String value ) {
         String strippedPlus = value;
 
         if ( value.length() >= 2 && value.charAt(0) == '+' && value.charAt(1) != '-' ) {
@@ -248,14 +322,13 @@ public class DecimalDatatypeValidator extends AbstractNumericFacetValidator {
     }
 
     private void enumCheck(BigDecimal v, BigDecimal[] enum) throws InvalidDatatypeValueException {
-        for (int i = 0; i < enum.length; i++) {
-            if (v.equals(enum[i] ))
-            {
+        for ( int i = 0; i < enum.length; i++ ) {
+            if ( v.equals(enum[i] ) ) {
                 return;
             }
         }
         throw new InvalidDatatypeValueException(
-                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
+                                               getErrorString(DatatypeMessageProvider.NOT_ENUM_VALUE,
                                                               DatatypeMessageProvider.MSG_NONE,
                                                               new Object [] { v}));
     }

@@ -60,7 +60,6 @@ package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.Locale;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
 
@@ -76,7 +75,6 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
     
-    private Locale     fLocale          = null;
     private int        fLength          = 0;
     private int        fMaxLength       = Integer.MAX_VALUE;
     private int        fMinLength       = 0;
@@ -160,7 +158,8 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
                     fEnumeration = (Vector)facets.get(key);
                     fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                 } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_NOTATION_FACET,
+                                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
                 }
             }
 
@@ -376,13 +375,6 @@ public class NOTATIONDatatypeValidator extends AbstractDatatypeValidator {
         } catch (InvalidDatatypeValueException idve) {
             throw new InvalidDatatypeValueException("Value '"+content+"' is not a valid NOTATION");
         }
-    }
-
-    /**
-    * set the locate to be used for error messages
-    */
-    public void setLocale(Locale locale){
-        fLocale = locale;
     }
 
   /**

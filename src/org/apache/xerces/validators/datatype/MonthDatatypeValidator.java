@@ -86,7 +86,7 @@ public class MonthDatatypeValidator extends DateTimeValidator {
      * @return normalized date representation
      * @exception Exception Invalid lexical representation
      */
-    protected int[] parse(String str, int[] date) throws Exception{
+    protected int[] parse(String str, int[] date) throws SchemaDateTimeException{
 
         resetBuffer(str);
 
@@ -105,7 +105,7 @@ public class MonthDatatypeValidator extends DateTimeValidator {
         if ( MONTH_SIZE<fEnd ) {
             int sign = findUTCSign(MONTH_SIZE, fEnd);
             if ( sign<0 ) {
-                throw new Exception ("Error in month parsing");
+                throw new SchemaDateTimeException ("Error in month parsing");
             }
             else {
                 getTimeZone(date, sign);
@@ -114,7 +114,7 @@ public class MonthDatatypeValidator extends DateTimeValidator {
         //validate and normalize
         if ( !validateDateTime(date) ) {
             //REVISIT: error message?
-            throw new Exception ();
+            throw new SchemaDateTimeException ();
         }
         else if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);

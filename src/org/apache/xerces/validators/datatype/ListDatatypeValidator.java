@@ -60,9 +60,6 @@ package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.Locale;
-import java.text.Collator;
-import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
@@ -77,15 +74,10 @@ import org.apache.xerces.utils.regex.RegularExpression;
  */
 public class ListDatatypeValidator extends AbstractDatatypeValidator{
     
-    private Locale     fLocale          = null;
     private int        fLength           = 0;
     private int        fMaxLength        = Integer.MAX_VALUE;
     private int        fMinLength        = 0;
     private Vector     fEnumeration      = null;
-    private boolean    fDerivedByList    = false; //false: derivation by restriction
-                                                  //true: list decl
-
-    
 
     public  ListDatatypeValidator () throws InvalidDatatypeFacetException{
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -96,8 +88,6 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     boolean derivedByList ) throws InvalidDatatypeFacetException {
 
         fBaseValidator = base; // Set base type 
-
-        fDerivedByList = derivedByList;
 
         if ( facets != null  ){
             for (Enumeration e = facets.keys(); e.hasMoreElements();) {
@@ -132,9 +122,11 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
                     fEnumeration    = (Vector)facets.get(key);
-                } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
-                }
+            }
+            else {
+                throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_LIST_FACET,
+                                                                        DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
+            }
             }
             if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                 if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
@@ -173,18 +165,10 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
         if ( content == null && state != null ) {
             this.fBaseValidator.validate( content, state );//Passthrough setup information
                                                           //for state validators
-        } else{
+        } else {
             checkContentEnum( content, state , null); 
         }
         return null;
-    }
-
-
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
     }
 
 
@@ -198,7 +182,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
     }
 
     public int compare( String value1, String value2 ){
-        if (!fDerivedByList) { //derived by restriction
+        if (fBaseValidator instanceof ListDatatypeValidator) { //derived by restriction
           return ((ListDatatypeValidator)this.fBaseValidator).compare( value1, value2 );
         }
         // <list> datatype
@@ -242,7 +226,6 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             newObj.fPattern          =  this.fPattern;
             newObj.fEnumeration      =  this.fEnumeration;
             newObj.fFacetsDefined    =  this.fFacetsDefined;
-            newObj.fDerivedByList    =  this.fDerivedByList;
         } catch ( InvalidDatatypeFacetException ex) {
             ex.printStackTrace();
         }
@@ -265,7 +248,7 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
             //a redesign of Datatypes might help to reduce complexity of this validation
         StringTokenizer parsedList = new StringTokenizer( content );
         int numberOfTokens = parsedList.countTokens();         
-        if (!this.fDerivedByList) { 
+        if (fBaseValidator instanceof ListDatatypeValidator) { 
             //<simpleType name="fRestriction"><restriction base="fList">...</restriction></simpleType>
             try {
                 if ( (fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH) != 0 ) {
@@ -292,8 +275,10 @@ public class ListDatatypeValidator extends AbstractDatatypeValidator{
                 }
                 if (enumeration!=null) {
                     if (!verifyEnum(enumeration)) {
-                        throw new InvalidDatatypeValueException("Enumeration '" +enumeration+"' for value '" +content+
-                        "' is based on enumeration '"+fEnumeration+"'");
+                        throw new InvalidDatatypeValueException(
+                                               getErrorString(DatatypeMessageProvider.NOT_ENUM_VALUE,
+                                                              DatatypeMessageProvider.MSG_NONE,
+                                                              new Object [] { enumeration}));
                     }
                 }else {
                     enumeration = (fEnumeration!=null) ? fEnumeration : null;

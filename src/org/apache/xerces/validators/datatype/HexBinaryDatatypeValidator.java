@@ -60,8 +60,6 @@ package org.apache.xerces.validators.datatype;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.Locale;
-import java.text.Collator;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.utils.regex.RegularExpression;
 import org.apache.xerces.utils.HexBin;
@@ -76,7 +74,6 @@ import org.apache.xerces.utils.HexBin;
  */
 public class HexBinaryDatatypeValidator extends AbstractDatatypeValidator{
     
-    private Locale     fLocale          = null;
     private int        fLength          = 0;
     private int        fMaxLength       = Integer.MAX_VALUE;
     private int        fMinLength       = 0;
@@ -147,8 +144,9 @@ public class HexBinaryDatatypeValidator extends AbstractDatatypeValidator{
                 } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                     fEnumeration = (Vector)facets.get(key);
                     fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                } else {
-                    throw new InvalidDatatypeFacetException("invalid facet tag : " + key);
+                } else {                        
+                    throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_HEXBINARY_FACET,
+                                                                                DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
                 }
             }
 
@@ -291,14 +289,6 @@ public class HexBinaryDatatypeValidator extends AbstractDatatypeValidator{
     public Object validate(String content, Object state)  throws InvalidDatatypeValueException {
         checkContent( content, state, false );
         return null;
-    }
-
-
-    /**
-     * set the locate to be used for error messages
-     */
-    public void setLocale(Locale locale) {
-        fLocale = locale;
     }
 
 

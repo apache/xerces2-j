@@ -71,7 +71,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @version $Id$
  */
 
-public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
+public class DoubleDatatypeValidator extends AbstractNumericValidator {
 
     public DoubleDatatypeValidator () throws InvalidDatatypeFacetException {
         this( null, null, false ); // Native, No Facets defined, Restriction
@@ -95,6 +95,10 @@ public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
 
     }
 
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_DOUBLE_FACET,
+                                                                DatatypeMessageProvider.MSG_NONE, new Object[] { key}));
+    }
     /**
      * Compares 2 double values.
      * 
@@ -202,7 +206,7 @@ public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
             d = dValueOf(content);
         }
         catch ( NumberFormatException nfe ) {
-            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NotDouble,
+            throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.NOT_DOUBLE,
                                                                     DatatypeMessageProvider.MSG_NONE,
                                                                     new Object [] { content}));
         }
@@ -216,7 +220,7 @@ public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
                     enumDoubles[i] = dValueOf((String) enumeration.elementAt(i));
             }
             catch ( NumberFormatException nfe ) {
-                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                throw new InvalidDatatypeValueException( getErrorString(DatatypeMessageProvider.INVALID_ENUM_VALUE,
                                                                         DatatypeMessageProvider.MSG_NONE,
                                                                         new Object [] { enumeration.elementAt(i)}));
             }
@@ -229,6 +233,10 @@ public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
         if ( ((fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 &&
               (fEnumeration != null) ) )
             enumCheck(d.doubleValue(), (Double[])fEnumeration);
+    }
+
+    protected int getInvalidFacetMsg (){
+        return DatatypeMessageProvider.ILLEGAL_DOUBLE_FACET;
     }
 
     //
@@ -261,7 +269,7 @@ public class DoubleDatatypeValidator extends AbstractNumericFacetValidator {
             if ( v == enumDoubles[i].doubleValue() ) return;
         }
         throw new InvalidDatatypeValueException(
-                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
+                                               getErrorString(DatatypeMessageProvider.NOT_ENUM_VALUE,
                                                               DatatypeMessageProvider.MSG_NONE,
                                                               new Object [] { new Double(v)}));
     }

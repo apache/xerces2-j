@@ -59,9 +59,9 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import org.apache.xerces.utils.regex.RegularExpression;
 import org.apache.xerces.validators.schema.SchemaSymbols;
-import java.util.Hashtable;
 
 
 /**
@@ -75,19 +75,11 @@ import java.util.Hashtable;
  * @version $Id$
  */
 
-public abstract class DateTimeValidator extends AbstractDatatypeValidator {
+public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
 
     //debugging    
     private static final boolean DEBUG=false;
-
-    //define facets allowed on schema date/time
-    protected int[]  fMaxInclusive = null;
-    protected int[]  fMaxExclusive = null;
-    protected int[]  fMinInclusive = null;
-    protected int[]  fMinExclusive = null;
-    protected int[][] fEnumeration  = null;
-    protected int  fEnumSize  = 0;
-
+    
     //define shared variables for date/time
 
     //define constants
@@ -117,23 +109,25 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     protected final static int DAY = 15;
 
     //obj to store timeZone for date/time object excluding duration
-    protected int[] timeZone = new int[2];
+    protected int[] timeZone;
 
+    //size of enumeration if any
+    protected int  fEnumSize;
 
     //size of string buffer
-    protected int fEnd = 30; 
-    protected int fStart = 0;
+    protected int fEnd; 
+    protected int fStart;
 
     //storage for string value of date/time object 
-    protected StringBuffer fBuffer = new StringBuffer(fEnd);     
+    protected StringBuffer fBuffer;     
 
     //obj to store all date/time objects with fields:
     // {CY, M, D, h, m, s, ms, utc}
-    protected int[] fDateValue = new int[TOTAL_SIZE];
-    private int[] fTempDate = new int[TOTAL_SIZE];
+    protected int[] fDateValue;
+    private int[] fTempDate;
 
     //error message buffer
-    protected StringBuffer message = new StringBuffer(TOTAL_SIZE);
+    protected StringBuffer message;
     //
     //REVISIT:  more error checking, general debuging/common code clean up
     //
@@ -142,152 +136,88 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
     //default constractor
 
     public  DateTimeValidator () throws InvalidDatatypeFacetException {
-        this( null, null, false ); // Native, No Facets defined, Restriction
+        super( null, null, false ); // Native, No Facets defined, Restriction
 
     }
 
     public DateTimeValidator (DatatypeValidator base, Hashtable facets, boolean derivedByList ) 
     throws InvalidDatatypeFacetException {
-        if ( base != null ) {
-            fBaseValidator = base; // Set base type 
-            fFacets = facets;
-        }
-
-        String value;
-        if ( facets != null ) {
-
-            for ( Enumeration e = facets.keys(); e.hasMoreElements(); ) {
-
-                String key = (String) e.nextElement();
-                if ( key.equals(SchemaSymbols.ELT_PATTERN) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_PATTERN;
-                    fPattern = (String)facets.get(key);
-                    if ( fPattern != null )
-                        fRegex = new RegularExpression(fPattern, "X" );
-                }
-                else if ( key.equals(SchemaSymbols.ELT_ENUMERATION) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_ENUMERATION;
-                    continue; //Treat the enumaration after this for loop
-                }
-                else if ( key.equals(SchemaSymbols.ELT_MAXINCLUSIVE) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MAXINCLUSIVE;
-                    value = ((String)facets.get(key));
-                    try {
-                        fMaxInclusive = parse(value, null);
-                    }
-                    catch ( Exception exc ) {
-                        reportError("fMaxInclusive", value);
-                        fMaxInclusive = null;
-                    }
-                }
-                else if ( key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MAXEXCLUSIVE;
-                    value  = ((String)facets.get(key));
-                    try {
-                        fMaxExclusive = parse(value, null);
-                    }
-                    catch ( Exception exc ) {
-                        reportError("fMaxExclusive", value);
-                        fMaxExclusive = null;
-                    }
-                }
-                else if ( key.equals(SchemaSymbols.ELT_MININCLUSIVE) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MININCLUSIVE;
-                    value  = ((String)facets.get(key));
-                    try {
-                        fMinInclusive = parse(value, null);
-                    }
-                    catch ( Exception exc ) {
-                        reportError("fMinInclusive", value);
-                        fMinInclusive = null;
-                    }
-                }
-                else if ( key.equals(SchemaSymbols.ELT_MINEXCLUSIVE) ) {
-                    fFacetsDefined |= DatatypeValidator.FACET_MINEXCLUSIVE;
-                    value  = ((String)facets.get(key));
-                    try {
-                        fMinExclusive = parse(value, null);
-                    }
-                    catch ( Exception exc ) {
-                        reportError("fMinExclusive", value);
-                        fMinExclusive = null;
-                    }
-                }
-                else {
-                    reportError("Invalid datatype facet", key);
-                }
-
-            }
-        }// End Facet definition
-        
-        // check 4.3.8.c1 error: maxInclusive + maxExclusive
-        if ( fMaxExclusive!=null && fMaxInclusive != null ) {
-            System.err.println( "[Error] It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." );
-        }
-        // check 4.3.9.c1 error: minInclusive + minExclusive
-        if ( fMinExclusive !=null && fMinInclusive !=null ) {
-            System.err.println("[Error] It is an error for both minInclusive and minExclusive to be specified for the same datatype." );
-        }
-
-        // check 4.3.7.c1 must: minInclusive <= maxInclusive
-        int compare;
-        
-        if ( fMaxInclusive != null && fMinInclusive !=null ) {
-            compare = compareDates(fMinInclusive, fMaxInclusive, false);
-            if ( compare == GREATER_THAN || compare == INDETERMINATE )
-                System.err.println("[Error] minInclusive value ='" + dateToString(fMinInclusive) 
-                                    + "'must be <= maxInclusive value ='" +
-                                    dateToString(fMaxInclusive) + "'. " );
-        }
-       
-        // check 4.3.8.c2 must: minExclusive <= maxExclusive ??? minExclusive < maxExclusive
-        if ( fMaxExclusive !=null && fMinExclusive !=null ) {
-            compare = compareDates(fMinExclusive,fMaxExclusive, false);
-            if ( compare == GREATER_THAN || compare == INDETERMINATE )
-                System.err.println( "[Error] minExclusive value ='" +dateToString(fMinExclusive)
-                                    + "'must be <= maxExclusive value ='" +
-                                    dateToString(fMaxExclusive) + "'. " );
-        }
-         
-        // check 4.3.9.c2 must: minExclusive < maxInclusive
-        if ( fMaxInclusive != null && fMinExclusive !=null ) {
-            compare = compareDates(fMinExclusive, fMaxInclusive, true);
-            if ( compare != LESS_THAN )
-                System.err.println( "[Error] minExclusive value ='" + dateToString(fMinExclusive) 
-                                    + "'must be < maxInclusive value ='" +
-                                    dateToString(fMaxInclusive) + "'. " );
-        }
-        // check 4.3.10.c1 must: minInclusive < maxExclusive
-        if ( fMaxExclusive !=null && fMinInclusive !=null ) {
-            compare = compareDates(fMinInclusive, fMaxExclusive, true); 
-            if ( compare != LESS_THAN )
-                System.err.println( "[Error] minInclusive value ='" + dateToString(fMinInclusive) 
-                                    + "'must be < maxExclusive value ='" +
-                                    dateToString(fMaxExclusive) + "'. " );
-        }
-        //
-        //REVISIT: Inherit facets from the base type
-        //
-
-        if ( (fFacetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) {
-            Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
-            if ( v != null ) {
-                fEnumSize = v.size();
-                fEnumeration = new int[fEnumSize][];
-                for ( int i=0; i<fEnumSize; i++ ) {
-                    try {
-                        fEnumeration[i] = parse((String)v.elementAt(i), null);
-                    }
-                    catch ( Exception exc ) {
-                        fEnumSize=i;
-                        reportError("enumeration", (String)v.elementAt(i));
-                        break;
-                    }
-                }
-            }
-        }
-        
+        super (base, facets, derivedByList);
     }
+
+    protected void initializeValues(){
+        fDateValue = new int[TOTAL_SIZE];
+        fTempDate = new int[TOTAL_SIZE];
+        fEnd = 30; 
+        fStart = 0;
+        message = new StringBuffer(TOTAL_SIZE);
+        fBuffer = new StringBuffer(fEnd);
+        timeZone = new int[2];
+    }
+
+    protected void assignAdditionalFacets(String key,  Hashtable facets ) throws InvalidDatatypeFacetException{        
+        throw new InvalidDatatypeFacetException( getErrorString(DatatypeMessageProvider.ILLEGAL_DATETIME_FACET,
+                                                                DatatypeMessageProvider.MSG_NONE, new Object[] { key }));
+    }
+    
+    protected int compareValues (Object value1, Object value2) {
+            return compareDates((int[])value1, (int[])value2, true);
+    }
+
+    protected void setMaxInclusive (String value) {
+        fMaxInclusive = parse(value, null);
+    }
+    protected void setMinInclusive (String value) {
+        fMinInclusive = parse(value, null);
+    }
+    
+    protected void setMaxExclusive (String value) {
+        fMaxExclusive = parse(value, null);
+
+    }
+    protected void setMinExclusive (String value) {
+        fMinExclusive = parse(value, null);
+
+    }
+    protected void setEnumeration (Vector enumeration) throws InvalidDatatypeValueException{
+   
+    if ( enumeration != null ) {
+         
+        fEnumSize = enumeration.size();
+        fEnumeration = new int[fEnumSize][];
+        for ( int i=0; i<fEnumSize; i++ ) {
+            try {
+                fEnumeration[i] = parse((String)enumeration.elementAt(i), null);
+            }
+            catch ( RuntimeException e ) {
+                throw new InvalidDatatypeValueException(e.getMessage());
+            }
+        }
+    }
+}
+
+
+    protected String getMaxInclusive (boolean isBase) {
+        return (isBase)?(dateToString((int[]) ((DateTimeValidator)fBaseValidator).fMaxInclusive))
+        :dateToString((int[])fMaxInclusive);
+    }
+    protected String getMinInclusive (boolean isBase) {
+        return (isBase)?(dateToString((int[]) ((DateTimeValidator)fBaseValidator).fMinInclusive))
+        :dateToString((int[])fMinInclusive);
+    }
+    protected String getMaxExclusive (boolean isBase) {
+        return (isBase)?(dateToString((int[]) ((DateTimeValidator)fBaseValidator).fMaxExclusive))
+        :dateToString((int[])fMaxExclusive);
+    }
+    protected String getMinExclusive (boolean isBase) {
+        return (isBase)?(dateToString((int[]) ((DateTimeValidator)fBaseValidator).fMinExclusive))
+        :dateToString((int[])fMinExclusive);
+    }
+
+    protected void checkContent( String content, Object State, Vector enum, boolean asBase)
+                                    throws InvalidDatatypeValueException{
+    }
+
     /**
      * Implemented by each subtype, calling appropriate function to parse
      * given date/time
@@ -299,7 +229,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @return updated date/time object
      * @exception Exception
      */
-    abstract protected int[] parse(String content, int[] date) throws Exception;
+    abstract protected int[] parse (String content, int[] date) throws SchemaDateTimeException;
 
     /**
      * Validate that a string is a W3C date/time type
@@ -315,7 +245,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             resetDateObj(fDateValue);
             parse(content, fDateValue);
         }
-        catch ( Exception e ) {
+        catch ( RuntimeException e ) {
             throw new InvalidDatatypeValueException("Value '"+content+
                                                     "' is not legal value for current datatype" );
         }
@@ -344,7 +274,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
                 int count=0;
                 boolean valid = false;
                 while ( count < fEnumSize ) {
-                    if ( compareDates(date, fEnumeration[count], false) == EQUAL ) {
+                    if ( compareDates(date, (int[])fEnumeration[count], false) == EQUAL ) {
                         valid = true;
                         break;
                     }
@@ -360,34 +290,34 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             short c;
             if ( fMinInclusive != null ) {
 
-                c = compareDates(date, fMinInclusive, false);
+                c = compareDates(date, (int[])fMinInclusive, false);
                 if ( c == LESS_THAN || c == INDETERMINATE ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' is less than minInclusive: " +dateToString(fMinInclusive) );
+                                                            "' is less than minInclusive: " +dateToString((int[])fMinInclusive) );
                 }
             }
             if ( fMinExclusive != null ) {
 
-                if ( compareDates(date, fMinExclusive, true) != GREATER_THAN ) {
+                if ( compareDates(date, (int[])fMinExclusive, true) != GREATER_THAN ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' is less than or equal to minExclusive: " +dateToString(fMinExclusive));
+                                                            "' is less than or equal to minExclusive: " +dateToString((int[])fMinExclusive));
                 }
             }
 
             if ( fMaxInclusive != null ) {
 
-                c = compareDates(date, fMaxInclusive, false );
+                c = compareDates(date, (int[])fMaxInclusive, false );
                 if ( c  == GREATER_THAN  || c == INDETERMINATE ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' is greater than maxInclusive: " +dateToString(fMaxInclusive) );
+                                                            "' is greater than maxInclusive: " +dateToString((int[])fMaxInclusive) );
                 }
             }
 
             if ( fMaxExclusive != null ) {
 
-                if ( compareDates(date, fMaxExclusive, true ) != LESS_THAN ) {
+                if ( compareDates(date, (int[])fMaxExclusive, true ) != LESS_THAN ) {
                     throw new InvalidDatatypeValueException("Value '"+content+
-                                                            "' is greater than or equal to maxExlusive: " +dateToString(fMaxExclusive) );
+                                                            "' is greater than or equal to maxExlusive: " +dateToString((int[])fMaxExclusive) );
                 }
             }
         }
@@ -522,7 +452,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @return 
      * @exception Exception
      */
-    protected  void getTime (int start, int end, int[] data) throws Exception{
+    protected  void getTime (int start, int end, int[] data) throws RuntimeException{
         //get hours (hh)
         data[h]=parseInt(start,start+2);
 
@@ -572,7 +502,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @return 
      * @exception Exception
      */
-    protected void getDate (int start, int end, int[] date) throws Exception{
+    protected void getDate (int start, int end, int[] date) throws RuntimeException{
 
         getYearMonth(start, end, date);
 
@@ -590,7 +520,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @return 
      * @exception Exception
      */
-    protected void getYearMonth (int start, int end, int[] date) throws Exception{
+    protected void getYearMonth (int start, int end, int[] date) throws RuntimeException{
 
         if ( fBuffer.charAt(0)=='-' ) {
             // REVISIT: date starts with preceding '-' sign
@@ -599,7 +529,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             start++;
         }
         int i = indexOf(start, end, '-');
-        if ( i==-1 ) throw new Exception("Year separator is missing or misplaced.");
+        if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced.");
         fStart=i; //position after the Year
         date[CY]=parseInt(start,i);
         start = ++i;
@@ -617,14 +547,14 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @return 
      * @exception Exception
      */
-    protected void parseTimeZone (int end, int[] date) throws Exception{
+    protected void parseTimeZone (int end, int[] date) throws RuntimeException{
 
         //fStart points to first '-' after the year
         int start = fStart+YEARMONTH_SIZE;
         if ( start<fEnd ) {
             int sign = findUTCSign(start, fEnd);
             if ( sign<0 ) {
-                throw new Exception ("Error in month parsing");
+                throw new RuntimeException ("Error in month parsing");
             }
             else {
                 getTimeZone(date, sign);
@@ -639,11 +569,11 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
      * @param sign
      * @return 
      */
-    protected void getTimeZone (int[] data, int sign) throws Exception{
+    protected void getTimeZone (int[] data, int sign) throws RuntimeException{
         data[utc]=fBuffer.charAt(sign);
         if ( fBuffer.charAt(sign) == 'Z' ) {
             if (fEnd>(++sign)) {
-                throw new Exception("Error in parsing time zone");
+                throw new RuntimeException("Error in parsing time zone");
             }
             return;
         }
@@ -668,7 +598,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
             }
         }
         else {
-            throw new Exception("Error in parsing time zone");
+            throw new RuntimeException("Error in parsing time zone");
         }
         if ( DEBUG ) {
             System.out.println("time[hh]="+timeZone[hh] + " time[mm]=" +timeZone[mm]);
@@ -872,6 +802,7 @@ public abstract class DateTimeValidator extends AbstractDatatypeValidator {
         timeZone[hh]=timeZone[mm]=0;
         fBuffer.append(str);
         fEnd = fBuffer.length();
+        
     }
 
 
