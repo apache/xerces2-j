@@ -136,8 +136,8 @@ extends StandardParserConfiguration {
     /** Default Xerces implementation of scanner */
     protected XMLDocumentScannerImpl fNonNSScanner;
 
-    /** DTD Validator that binds namespaces */
-    protected XMLNSDTDValidator fNSDTDValidator;
+    /** DTD Validator that does not bind namespaces */
+    protected XMLDTDValidator fNonNSDTDValidator;
     
     
     /** Configures the pipeline. */
@@ -171,14 +171,14 @@ extends StandardParserConfiguration {
                 }
 
             }
-            fProperties.put(DTD_VALIDATOR, fNSDTDValidator);
+            fProperties.put(DTD_VALIDATOR, fDTDValidator);
             fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
             fScanner = fNamespaceScanner;
-            fNamespaceScanner.setComponents(null, fNSDTDValidator, fSchemaValidator);
-            fNamespaceScanner.setDocumentHandler(fNSDTDValidator);
-            fNSDTDValidator.setDocumentSource(fNamespaceScanner);
-            fNSDTDValidator.setDocumentHandler(fSchemaValidator);
-            fSchemaValidator.setDocumentSource(fNSDTDValidator);
+            fNamespaceScanner.setComponents(null, fDTDValidator, fSchemaValidator);
+            fNamespaceScanner.setDocumentHandler(fDTDValidator);
+            fDTDValidator.setDocumentSource(fNamespaceScanner);
+            fDTDValidator.setDocumentHandler(fSchemaValidator);
+            fSchemaValidator.setDocumentSource(fDTDValidator);
             fSchemaValidator.setDocumentHandler(fDocumentHandler);
             fLastComponent = fSchemaValidator;
 
@@ -187,28 +187,33 @@ extends StandardParserConfiguration {
 
             if (fFeatures.get(NAMESPACES) == Boolean.TRUE) {
                 fScanner = fNamespaceScanner;
+                fProperties.put(DTD_VALIDATOR, fDTDValidator);
                 fProperties.put(DOCUMENT_SCANNER, fNamespaceScanner);
-                fNamespaceScanner.setComponents(null, fNSDTDValidator, fDocumentHandler);
-                fNamespaceScanner.setDocumentHandler(fNSDTDValidator);
-                fNSDTDValidator.setDocumentSource(fNamespaceScanner);
-                fNSDTDValidator.setDocumentHandler(fDocumentHandler);
-                fDocumentHandler.setDocumentSource(fNSDTDValidator);
-                fLastComponent = fNSDTDValidator;
+                fNamespaceScanner.setComponents(null, fDTDValidator, fDocumentHandler);
+                fNamespaceScanner.setDocumentHandler(fDTDValidator);
+                fDTDValidator.setDocumentSource(fNamespaceScanner);
+                fDTDValidator.setDocumentHandler(fDocumentHandler);
+                fDocumentHandler.setDocumentSource(fDTDValidator);
+                fLastComponent = fDTDValidator;
             } 
             else {
                 if (fNonNSScanner == null) {
                     fNonNSScanner = new XMLDocumentScannerImpl();
                     addComponent((XMLComponent)fNonNSScanner);
                 }
+                if (fNonNSDTDValidator == null) {
+                    fNonNSDTDValidator = new XMLDTDValidator();
+                    addComponent((XMLComponent)fNonNSDTDValidator);
+                }
 
                 fScanner = fNonNSScanner;
-                fProperties.put(DTD_VALIDATOR, fNSDTDValidator);
+                fProperties.put(DTD_VALIDATOR, fNonNSDTDValidator);
                 fProperties.put(DOCUMENT_SCANNER, fNonNSScanner);
-                fNonNSScanner.setDocumentHandler(fNSDTDValidator);
-                fNSDTDValidator.setDocumentSource(fNonNSScanner);
-                fNSDTDValidator.setDocumentHandler(fDocumentHandler);
-                fDocumentHandler.setDocumentSource(fNSDTDValidator);
-                fLastComponent = fNSDTDValidator;
+                fNonNSScanner.setDocumentHandler(fNonNSDTDValidator);
+                fNonNSDTDValidator.setDocumentSource(fNonNSScanner);
+                fNonNSDTDValidator.setDocumentHandler(fDocumentHandler);
+                fDocumentHandler.setDocumentSource(fNonNSDTDValidator);
+                fLastComponent = fNonNSDTDValidator;
             }
 
         }
@@ -228,8 +233,7 @@ extends StandardParserConfiguration {
     /** Create a DTD validator: this validator performs namespace binding.
       */
     protected XMLDTDValidator createDTDValidator() {
-        fNSDTDValidator = new XMLNSDTDValidator();
-        return fNSDTDValidator;
+        return new XMLNSDTDValidator();
     } // createDTDValidator():XMLDTDValidator
 
 } // class IntegratedParserConfiguration
