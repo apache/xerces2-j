@@ -316,7 +316,8 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                     throw new InvalidDatatypeValueException(
                              getErrorString(DatatypeMessageProvider.PrecisionExceeded,
                                  DatatypeMessageProvider.MSG_NONE,
-                                 new Object[] { "'" + content + "'" , "'" + precision + "'" } ));
+                                 new Object[] { "'" + content + "'" + "with precision = '"+ precision +"'" 
+                                              , "'" + fPrecision + "'" } ));
             }
             boundsCheck(d);
             if (  fEnumDecimal != null )
