@@ -62,6 +62,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
 import org.apache.xerces.validators.schema.SchemaSymbols;
+import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
  *
@@ -71,22 +72,24 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
  */
 
 public class FloatDatatypeValidator extends AbstractDatatypeValidator {
-    private Locale    fLocale              = null;
+    private Locale    fLocale               = null;
     private DatatypeValidator    fBaseValidator = null; // null means a native datatype
-    private float[]   fEnumFloats          = null;
-    private String    fPattern             = null;
-    private boolean   fDerivationByList    = false; // Default is restriction
-    private float     fMaxInclusive        = Float.MAX_VALUE;
-    private float     fMaxExclusive        = Float.MAX_VALUE;
-    private float     fMinInclusive        = Float.MIN_VALUE;
-    private float     fMinExclusive        = Float.MIN_VALUE;
-    private int       fFacetsDefined       = 0;
+    private float[]   fEnumFloats           = null;
+    private String    fPattern              = null;
+    private boolean   fDerivationByList     = false; // Default is restriction
+    private float     fMaxInclusive         = Float.MAX_VALUE;
+    private float     fMaxExclusive         = Float.MAX_VALUE;
+    private float     fMinInclusive         = Float.MIN_VALUE;
+    private float     fMinExclusive         = Float.MIN_VALUE;
+    private int       fFacetsDefined        = 0;
 
     private boolean   isMaxExclusiveDefined = false;
     private boolean   isMaxInclusiveDefined = false;
     private boolean   isMinExclusiveDefined = false;
     private boolean   isMinInclusiveDefined = false;
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    private RegularExpression      fRegex    = null;
+
 
 
     public FloatDatatypeValidator () throws InvalidDatatypeFacetException{
@@ -94,7 +97,7 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     }
 
     public FloatDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                 boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                    boolean derivedByList ) throws InvalidDatatypeFacetException {
         if ( base != null )
             setBasetype( base ); // Set base type 
 
@@ -108,6 +111,10 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                         fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                         fPattern = (String)facets.get(key);
+                        if ( fPattern != null )
+                            fRegex = new RegularExpression(fPattern, "X" );
+
+
                     } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                         fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         continue; //Treat the enumaration after this for loop
@@ -119,8 +126,8 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                             fMaxInclusive = Float.valueOf(value).floatValue();
                         } catch (NumberFormatException ex ) {
                             throw new InvalidDatatypeFacetException( getErrorString(
-                                             DatatypeMessageProvider.IllegalFacetValue, 
-                                             DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                                                                                   DatatypeMessageProvider.IllegalFacetValue, 
+                                                                                   DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
                         }
                     } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
                         fFacetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
@@ -157,8 +164,8 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
                         }
                     } else {
                         throw new InvalidDatatypeFacetException( getErrorString(  DatatypeMessageProvider.MSG_FORMAT_FAILURE,
-                                                                          DatatypeMessageProvider.MSG_NONE,
-                                                                          null));
+                                                                                  DatatypeMessageProvider.MSG_NONE,
+                                                                                  null));
                     }
                 }
                 isMaxExclusiveDefined = ((fFacetsDefined & 
@@ -173,11 +180,11 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
 
                 if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                       "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
                 }
                 if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
                     throw new InvalidDatatypeFacetException(
-                       "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+                                                           "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
                 }
 
 
@@ -217,6 +224,14 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     public Object validate(String content, Object state) 
     throws InvalidDatatypeValueException {
         if ( fDerivationByList == false  ) {
+            if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+                if ( fRegex == null || fRegex.matches( content) == false )
+                    throw new InvalidDatatypeValueException("Value'"+content+
+                                                            "does not match regular expression facet" + fPattern );
+            }
+
+
+
             float f = 0;
             try {
                 f = Float.valueOf(content).floatValue();
@@ -288,9 +303,9 @@ public class FloatDatatypeValidator extends AbstractDatatypeValidator {
     public Hashtable getFacets(){
         return null;
     }
-  /**
-     * Returns a copy of this object.
-     */
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }

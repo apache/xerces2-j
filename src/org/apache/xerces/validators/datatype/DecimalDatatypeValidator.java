@@ -63,7 +63,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
+import java.io.IOException;
 import org.apache.xerces.validators.schema.SchemaSymbols;
+import org.apache.xerces.utils.regex.RegularExpression;
 
 /**
  *
@@ -87,16 +89,15 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
     private int               fFacetsDefined    = 0;
     private int               fScale            = 0;
     private int               fPrecision        = 0;
-
     private boolean           isMaxExclusiveDefined = false;
     private boolean           isMaxInclusiveDefined = false;
     private boolean           isMinExclusiveDefined = false;
     private boolean           isMinInclusiveDefined = false;
-
-    private boolean           isScaleDefined     = false;
-    private boolean           isPrecisionDefined = false;
+    private boolean           isScaleDefined        = false;
+    private boolean           isPrecisionDefined    = false;
 
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+    private RegularExpression       fRegex           = null;
 
 
 
@@ -120,6 +121,8 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
                             value = ((String) facets.get(key ));
                             fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                             fPattern        = value;
+                            if( fPattern != null )
+                                fRegex = new RegularExpression(fPattern, "X" );
                         } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                             fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                             enumeration     = (Vector)facets.get(key);
@@ -219,15 +222,32 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
     public Object validate(String content, Object state) throws InvalidDatatypeValueException {
 
         if ( fDerivationByList == false ) { //derived by restriction
+
+            if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+              if ( fRegex == null || fRegex.matches( content) == false )
+                  throw new InvalidDatatypeValueException("Value'"+content+
+                                                      "does not match regular expression facet" + fPattern );
+            }
+
             BigDecimal d = null; // Is content a Decimal 
             try {
                 d = new BigDecimal(content);
-            } catch (Exception nfe) {
+            } 
+            catch (Exception nfe) {
                 throw new InvalidDatatypeValueException(
                    getErrorString(DatatypeMessageProvider.NotDecimal,
                   DatatypeMessageProvider.MSG_NONE,
                                       new Object[] { "'" + content +"'"}));
             }
+            //} 
+            //catch (IOException ex ) {
+              //  throw new InvalidDatatypeValueException(
+                //  getErrorString(DatatypeMessageProvider.NotDecimal,
+                // DatatypeMessageProvider.MSG_NONE,
+              //                       new Object[] { "'" + content +"'"}));
+            //}
+
+
             if( isScaleDefined == true ) {
                  if (d.scale() > fScale)
                       throw new InvalidDatatypeValueException(

@@ -63,6 +63,7 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
+import org.apache.xerces.utils.URI;
 import org.apache.xerces.validators.schema.SchemaSymbols;
 
 
@@ -86,16 +87,18 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
     private String    fPattern         = null;
     private Vector    fEnumeration     = null;
     private int       fFacetsDefined   = 0;
+    private RegularExpression    fRegex = null;
 
-    
+
+
     public URIReferenceDatatypeValidator () throws InvalidDatatypeFacetException{
-     this ( null, null, false ); // Native, No Facets defined, Restriction
+        this ( null, null, false ); // Native, No Facets defined, Restriction
     }
 
     public URIReferenceDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                     boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                           boolean derivedByList ) throws InvalidDatatypeFacetException {
 
-         setBasetype( base ); // Set base type 
+        setBasetype( base ); // Set base type 
 
         // Set Facets if any defined
         if ( facets != null  ){
@@ -133,6 +136,9 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                     } else if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                         fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                         fPattern = (String)facets.get(key);
+                        if ( fPattern != null )
+                            fRegex = new RegularExpression(fPattern, "X" );
+
                     } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
                         fFacetsDefined += DatatypeValidator.FACET_ENUMERATION;
                         fEnumeration = (Vector)facets.get(key);
@@ -144,10 +150,10 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -155,7 +161,7 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMaxLength +
-                                                      "must be greater that the value of minLength" + fMinLength );
+                                                                 "must be greater that the value of minLength" + fMinLength );
                     }
                 }
             } else { //derived by list
@@ -199,10 +205,10 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                 if (((fFacetsDefined & DatatypeValidator.FACET_LENGTH ) != 0 ) ) {
                     if (((fFacetsDefined & DatatypeValidator.FACET_MAXLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and maxLength to be members of facets." );  
+                                                               "It is an error for both length and maxLength to be members of facets." );  
                     } else if (((fFacetsDefined & DatatypeValidator.FACET_MINLENGTH ) != 0 ) ) {
                         throw new InvalidDatatypeFacetException(
-                                                    "It is an error for both length and minLength to be members of facets." );
+                                                               "It is an error for both length and minLength to be members of facets." );
                     }
                 }
 
@@ -210,7 +216,7 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
                     if ( fMinLength > fMaxLength ) {
                         throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMinLength +
-                                                      "must be greater that the value of minLength" + fMaxLength );
+                                                                 "must be greater that the value of minLength" + fMaxLength );
                     }
                 }
             }
@@ -218,7 +224,7 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
     }
 
-    
+
 
     /**
      * Validates content to conform to a URIReference
@@ -231,11 +237,14 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
      * @exception InvalidDatatypeValueException
      */
     public Object validate(String content, Object state) 
-                     throws InvalidDatatypeValueException
+    throws InvalidDatatypeValueException
     {
         StringTokenizer parsedList = null;
+        URI             uriContent = null
 
         if ( fDerivedByList == true  ) { //derived by list
+
+
             parsedList = new StringTokenizer( content );
             try {
                 while ( parsedList.hasMoreTokens() ) {
@@ -246,6 +255,22 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
             }
         } else { //derived by constraint
             // 
+            if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
+                if ( fRegex == null || fRegex.matches( content) == false )
+                    throw new InvalidDatatypeValueException("Value '"+content+
+                                                            "' does not match regular expression facet" + fPattern );
+            }
+
+           
+            try {
+                uriContent = new URI( content );
+                
+            } catch (  URI.MalformedURIException ex ) {
+                throw new InvalidDatatypeValueException("Value '"+content+
+                                                                           "' is a Malformed URI ");
+
+            }
+
 
             // checkContent( content ); TODO
         }
@@ -274,9 +299,9 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
         return null;
     }
 
-      /**
-     * Returns a copy of this object.
-     */
+    /**
+   * Returns a copy of this object.
+   */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }

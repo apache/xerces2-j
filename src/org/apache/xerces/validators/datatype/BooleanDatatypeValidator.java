@@ -81,6 +81,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
     private static  final String    fValueSpace[]    = { "false", "true", "0", "1"};
     private boolean                 fDerivedByList   = false;
+    private RegularExpression       fRegex           = null;
 
     public BooleanDatatypeValidator () throws InvalidDatatypeFacetException {
        this( null, null, false ); // Native, No Facets defined, Restriction
@@ -99,8 +100,12 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                     if (key.equals(SchemaSymbols.ELT_PATTERN)) {
                         fFacetsDefined += DatatypeValidator.FACET_PATTERN;
                         fPattern = (String)facets.get(key);
+                        if( fPattern != null )
+                           fRegex = new RegularExpression(fPattern, "X" );
                     } else {
-                        throw new InvalidDatatypeFacetException();
+                        throw new
+                           InvalidDatatypeFacetException( 
+                                "Only constraining facet in boolean datatype is PATTERN" );
                     }
                 }
             } else { // By List
@@ -199,8 +204,7 @@ public class BooleanDatatypeValidator extends AbstractDatatypeValidator {
                                                                   DatatypeMessageProvider.MSG_NONE,
                                                                   new Object[] { content}));
         if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
-            RegularExpression regex = new RegularExpression(fPattern, "X" );
-            if ( regex.matches( content) == false )
+            if ( fRegex == null || fRegex.matches( content) == false )
                 throw new InvalidDatatypeValueException("Value'"+content+
                                                         "does not match regular expression facet" + fPattern );
         }
