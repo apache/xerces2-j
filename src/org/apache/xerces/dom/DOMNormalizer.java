@@ -333,7 +333,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             //removeDefault(attr, attributes);
                             attr.normalize();
                             // XML 1.0 attribute value normalization
-                            normalizeAttributeValue(attr.getValue(), attr);                            
+                            //normalizeAttributeValue(attr.getValue(), attr);                            
                         }
                     }
                 }
@@ -596,7 +596,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         }
                     } else {
                         // XML 1.0 Attribute value normalization
-                        value = normalizeAttributeValue(value, attr);
+                        // value = normalizeAttributeValue(value, attr);
                         prefix = attr.getPrefix();
                         prefix = (prefix == null || 
                                   prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
@@ -744,7 +744,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     }
                     */
                     // XML 1.0 Attribute value normalization
-                    value = normalizeAttributeValue(value, attr);
+                    //value = normalizeAttributeValue(value, attr);
                     
                     // reset id-attributes
                     ((AttrImpl)attr).setIdAttribute(false);
@@ -801,7 +801,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     // data
                     int colon = name.indexOf(':');
                     // XML 1.0 Attribute value normalization
-                    value = normalizeAttributeValue(value, attr);
+                    //value = normalizeAttributeValue(value, attr);
                     // reset id-attributes
                     ((AttrImpl)attr).setIdAttribute(false);
 
@@ -904,7 +904,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         qname.uri =  (namespace != null)?fSymbolTable.addSymbol(namespace):null;
     }
 
-	/**
+	/* REVISIT: remove this method if DOM does not change spec.
 	 * Performs partial XML 1.0 attribute value normalization and replaces
      * attribute value if the value is changed after the normalization.
      * DOM defines that normalizeDocument acts as if the document was going 
