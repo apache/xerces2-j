@@ -105,5 +105,5 @@ class XSDUniqueOrKeyTraverser extends XSDAbstractIDConstraintTraverser {
 
         // and fix up attributeChecker
         fAttrChecker.returnAttrArray(attrValues, schemaDoc.fNamespaceSupport);
-    } // traverse(Element,int,XSDocumentInfo, SchemaGrammar)
+    } // traverse(Element,XSDElementDecl,XSDocumentInfo, SchemaGrammar)
 } // XSDUniqueOrKeyTraverser

@@ -641,38 +641,38 @@ class XSDHandler {
             sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
         }
 
-        Object retDecl = null;
-
+        Object retObj = null;
         switch (declType) {
         case ATTRIBUTE_TYPE :
-            retDecl = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
+            retObj = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
             break;
         case ATTRIBUTEGROUP_TYPE :
-            retDecl = sGrammar.getGlobalAttributeGroupDecl(declToTraverse.localpart);
+            retObj = sGrammar.getGlobalAttributeGroupDecl(declToTraverse.localpart);
             break;
         case ELEMENT_TYPE :
-            retDecl = sGrammar.getGlobalElementDecl(declToTraverse.localpart);
+            retObj = sGrammar.getGlobalElementDecl(declToTraverse.localpart);
             break;
         case GROUP_TYPE :
-            retDecl = sGrammar.getGlobalGroupDecl(declToTraverse.localpart);
+            retObj = sGrammar.getGlobalGroupDecl(declToTraverse.localpart);
             break;
         case IDENTITYCONSTRAINT_TYPE :
-            retDecl = null;
+            retObj = sGrammar.getIDConstraintDecl(declToTraverse.localpart);
             break;
         case NOTATION_TYPE :
-            retDecl = sGrammar.getGlobalNotationDecl(declToTraverse.localpart);
+            retObj = sGrammar.getNotationDecl(declToTraverse.localpart);
             break;
         case TYPEDECL_TYPE :
-            retDecl = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
+            retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
             break;
         }
 
-        if (retDecl != null)
-            return retDecl;
-
+        if (retObj != null)
+            return retObj;
+        
         if (decl != null) {
             if (DOMUtil.isHidden(decl)) {
                 //REVISIT: report an error: circular reference
+                fElementTraverser.reportGenericSchemaError("Circular reference detected in schema component named " + declToTraverse.prefix+":"+declToTraverse.localpart);
                 return null;
             }
 
@@ -684,31 +684,32 @@ class XSDHandler {
 
             switch (declType) {
             case ATTRIBUTE_TYPE :
-                retDecl = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                retObj = fAttributeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             case ATTRIBUTEGROUP_TYPE :
-                retDecl = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                retObj = fAttributeGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             case ELEMENT_TYPE :
-                retDecl = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                retObj = fElementTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             case GROUP_TYPE :
-                retDecl = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                retObj = fGroupTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             case IDENTITYCONSTRAINT_TYPE :
-                retDecl = null;
+                // identity constraints should have been parsed already...
+                retObj = null;
             case NOTATION_TYPE :
-                retDecl = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
+                retObj = fNotationTraverser.traverse(decl, schemaWithDecl, sGrammar);
             case TYPEDECL_TYPE :
                 if (DOMUtil.getLocalName(decl).equals(SchemaSymbols.ELT_COMPLEXTYPE))
-                    retDecl = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                    retObj = fComplexTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
                 else
-                    retDecl = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
+                    retObj = fSimpleTypeTraverser.traverseGlobal(decl, schemaWithDecl, sGrammar);
             }
 
             // restore the previous SchemaNamespaceSupport, so that the caller can get
             // proper namespace binding.
             schemaWithDecl.restoreNSSupport();
         }
-
-        return retDecl;
-    } // getGlobalDecl(XSDocumentInfo, int, QName): Object
+            
+        return retObj;
+    } // getGlobalDecl(XSDocumentInfo, int, QName):  Object
 
     // Since ID constraints can occur in local elements, unless we
     // wish to completely traverse all our DOM trees looking for ID

@@ -87,7 +87,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         // create identity constraint
         QName krName = (QName)attrValues[XSAttributeChecker.ATTIDX_NAME];
         String kName = (String)attrValues[XSAttributeChecker.ATTIDX_REF];
-        IdentityConstraint key = (IdentityConstraint)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, krName);
+        UniqueOrKey key = (UniqueOrKey)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.IDENTITYCONSTRAINT_TYPE, krName);
         // REVISIT:  make sure we come from the right grammar...
 
         if(key == null) {
@@ -97,7 +97,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
             return;
         }
 
-        KeyRef keyRef = new KeyRef(krName.localpart, key, grammar.getTargetNamespace());
+        KeyRef keyRef = new KeyRef(krName.localpart, key);
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem, schemaDoc);

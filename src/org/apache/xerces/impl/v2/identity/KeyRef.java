@@ -70,20 +70,17 @@ public class KeyRef
     // Data
     //
 
-    /** The index of the key (or unique) being referred to. */
-    protected IdentityConstraint fKey;
-    // the uri of the grammar from which the key is taken.
-    protected String fKeyUri;
+    /** The key (or unique) being referred to. */
+    protected UniqueOrKey fKey;
 
     //
     // Constructors
     //
 
     /** Constructs a keyref with the specified name. */
-    public KeyRef(String identityConstraintName, IdentityConstraint key, String keyUri) {
+    public KeyRef(String identityConstraintName, UniqueOrKey key) {
         super(identityConstraintName);
         fKey = key;
-        fKeyUri = keyUri;
         type = KEYREF;
     } // <init>(String,String,String)
 
@@ -92,13 +89,8 @@ public class KeyRef
     //
 
     /** Returns the key being referred to.  */
-    public IdentityConstraint getKey() {
+    public UniqueOrKey getKey() {
         return fKey;
     } // getKey(): int
-
-    // get grammar string
-    public String getKeyUri() {
-        return fKeyUri;
-    } // getKeyUri():  String
 
 } // class KeyRef

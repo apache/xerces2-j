@@ -360,7 +360,7 @@ public class SchemaGrammar {
     /**
      * get one global notation
      */
-    public final XSNotationDecl getGlobalNotationDecl(String declName) {
+    public final XSNotationDecl getNotationDecl(String declName) {
         return (XSNotationDecl)fGlobalNotationDecls.get(declName);
     }
 
