@@ -1,10 +1,9 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -64,6 +63,7 @@ import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 import org.xml.sax.SAXException;
 
@@ -101,12 +101,12 @@ public abstract class AbstractXMLDocumentParser
      * Constructs a document parser using the default symbol table
      * and grammar pool.
      */
-    protected AbstractXMLDocumentParser(ParserConfiguration config) {
+    protected AbstractXMLDocumentParser(XMLParserConfiguration config) {
         super(config);
         config.setDocumentHandler(this);
         config.setDTDHandler(this);
         config.setDTDContentModelHandler(this);
-    } // <init>(ParserConfiguration)
+    } // <init>(XMLParserConfiguration)
 
     //
     // XMLDocumentHandler methods
@@ -687,10 +687,7 @@ public abstract class AbstractXMLDocumentParser
      * reset all components before parsing
      */
     protected void reset() throws SAXException {
-        super.reset();
-
         fInDTD = false;
-
     } // reset()
 
 } // class AbstractXMLDocumentParser

@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,13 +58,16 @@
 package org.apache.xerces.parsers;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLDocumentScanner;
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.XMLDTDScanner;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLInputSource;
 import org.apache.xerces.impl.XMLValidator;
+import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.DatatypeValidatorFactory;
 import org.apache.xerces.impl.validation.GrammarPool;
 import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
@@ -72,25 +75,102 @@ import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.util.SymbolTable;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 /**
  * This is the "standard" parser configuration. It extends the basic
- * configuration with a document scanner, a dtd scanner, and a validator, as
- * well as a grammar pool.
+ * configuration with the standard set of parser components.
+ * <p>
+ * In addition to the features and properties recognized by the base
+ * parser configuration, this class recognizes these additional 
+ * features and properties:
+ * <ul>
+ * <li>Features
+ *  <ul>
+ *   <li>http://apache.org/xml/features/validation/warn-on-duplicate-attdef</li>
+ *   <li>http://apache.org/xml/features/validation/warn-on-undeclared-elemdef</li>
+ *   <li>http://apache.org/xml/features/allow-java-encodings</li>
+ *   <li>http://apache.org/xml/features/continue-after-fatal-error</li>
+ *   <li>http://apache.org/xml/features/load-external-dtd</li>
+ *  </ul>
+ * <li>Properties
+ *  <ul>
+ *   <li>http://apache.org/xml/properties/internal/error-reporter</li>
+ *   <li>http://apache.org/xml/properties/internal/entity-manager</li>
+ *   <li>http://apache.org/xml/properties/internal/document-scanner</li>
+ *   <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
+ *   <li>http://apache.org/xml/properties/internal/grammar-pool</li>
+ *   <li>http://apache.org/xml/properties/internal/validator</li>
+ *   <li>http://apache.org/xml/properties/internal/datatype-validator-factory</li>
+ *  </ul>
+ * </ul>
  *
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  *
- * @version $Id$ */
+ * @version $Id$
+ */
 public class StandardParserConfiguration
     extends BasicParserConfiguration {
 
     //
     // Constants
     //
+
+    // feature identifiers
+
+    /** Feature identifier: warn on duplicate attribute definition. */
+    protected static final String WARN_ON_DUPLICATE_ATTDEF =
+        Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_DUPLICATE_ATTDEF_FEATURE;
+    
+    /** Feature identifier: warn on undeclared element definition. */
+    protected static final String WARN_ON_UNDECLARED_ELEMDEF =
+        Constants.XERCES_FEATURE_PREFIX + Constants.WARN_ON_UNDECLARED_ELEMDEF_FEATURE;
+    
+    /** Feature identifier: allow Java encodings. */
+    protected static final String ALLOW_JAVA_ENCODINGS = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
+    
+    /** Feature identifier: continue after fatal error. */
+    protected static final String CONTINUE_AFTER_FATAL_ERROR = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.CONTINUE_AFTER_FATAL_ERROR_FEATURE;
+
+    /** Feature identifier: load external DTD. */
+    protected static final String LOAD_EXTERNAL_DTD =
+        Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+
+    // property identifiers
+
+    /** Property identifier: error reporter. */
+    protected static final String ERROR_REPORTER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
+
+    /** Property identifier: entity manager. */
+    protected static final String ENTITY_MANAGER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+    
+    /** Property identifier document scanner: */
+    protected static final String DOCUMENT_SCANNER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
+
+    /** Property identifier: DTD scanner. */
+    protected static final String DTD_SCANNER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
+
+    /** Property identifier: grammar pool. */
+    protected static final String GRAMMAR_POOL = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
+    
+    /** Property identifier: validator. */
+    protected static final String VALIDATOR = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
+
+    /** Property identifier: datatype validator factory. */
+    protected static final String DATATYPE_VALIDATOR_FACTORY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
 
     // debugging
 
@@ -111,6 +191,12 @@ public class StandardParserConfiguration
 
     // components (configurable)
 
+    /** Error reporter. */
+    protected XMLErrorReporter fErrorReporter;
+
+    /** Entity manager. */
+    protected XMLEntityManager fEntityManager;
+
     /** Document scanner. */
     protected XMLDocumentScanner fScanner;
 
@@ -121,6 +207,9 @@ public class StandardParserConfiguration
     protected XMLValidator fValidator;
 
     // state
+
+    /** Locator */
+    protected Locator fLocator;
 
     /** 
      * True if a parse is in progress. This state is needed because
@@ -138,13 +227,14 @@ public class StandardParserConfiguration
      * pool or the ones specified by the application (through the properties).
      */
     public StandardParserConfiguration() {
-    } // <init>
+        this(null, null);
+    } // <init>()
 
     /**
      * Constructs a document parser using the specified symbol table.
      */
     public StandardParserConfiguration(SymbolTable symbolTable) {
-        super(symbolTable);
+        this(symbolTable, null);
     } // <init>(SymbolTable)
 
     /**
@@ -152,107 +242,80 @@ public class StandardParserConfiguration
      * grammar pool.
      */
     public StandardParserConfiguration(SymbolTable symbolTable,
-                              GrammarPool grammarPool) {
+                                       GrammarPool grammarPool) {
         super(symbolTable);
 
-        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
-        fGrammarPool = new GrammarPool();
-        fProperties.put(GRAMMAR_POOL, fGrammarPool);
-    }
+        // add default recognized features
+        final String[] recognizedFeatures = {
+            WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
+            ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
+            LOAD_EXTERNAL_DTD,
+        };
+        addRecognizedFeatures(recognizedFeatures);
 
-    /**
-     * Initialize the parser with all the components specified via the
-     * properties plus any missing ones. This method MUST be called before
-     * parsing. It is not called from the constructor though, so that the
-     * application can pass in any components it wants by presetting the
-     * relevant property.
-     */
-    public void initialize() {
-        super.initialize();
+        // set state for default features
+        fFeatures.put(WARN_ON_DUPLICATE_ATTDEF, Boolean.FALSE);
+        fFeatures.put(WARN_ON_UNDECLARED_ELEMDEF, Boolean.FALSE);
+        fFeatures.put(ALLOW_JAVA_ENCODINGS, Boolean.FALSE);
+        fFeatures.put(CONTINUE_AFTER_FATAL_ERROR, Boolean.FALSE);
+        fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
 
-        // set default features
-        final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
-        fFeatures.put(NAMESPACES, Boolean.TRUE);
-        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
-        fFeatures.put(VALIDATION, Boolean.FALSE);
-        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
-        fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
-        final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
-        fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
+        // add default recognized properties
+        final String[] recognizedProperties = {
+            ERROR_REPORTER, ENTITY_MANAGER, 
+            GRAMMAR_POOL,   DATATYPE_VALIDATOR_FACTORY
+        };
+        addRecognizedProperties(recognizedProperties);
 
-        // create and register missing components
-        final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
-        fGrammarPool = (GrammarPool) fProperties.get(GRAMMAR_POOL);
-        if (fGrammarPool == null) {
-            fGrammarPool = new GrammarPool();
+        // create missing components
+        fGrammarPool = grammarPool;
+        if (fGrammarPool != null) {
             fProperties.put(GRAMMAR_POOL, fGrammarPool);
         }
 
-        final String DOCUMENT_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
-        fScanner = (XMLDocumentScanner) fProperties.get(DOCUMENT_SCANNER);
-        if (fScanner == null) {
-            fScanner = createDocumentScanner();
-            fProperties.put(DOCUMENT_SCANNER, fScanner);
+        // set locale
+        try {
+            setLocale(Locale.getDefault());
         }
-        fComponents.addElement(fScanner);
-
-        final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
-        fDTDScanner = (XMLDTDScanner) fProperties.get(DTD_SCANNER);
-        if (fDTDScanner == null) {
-            fDTDScanner = createDTDScanner();
-            fProperties.put(DTD_SCANNER, fDTDScanner);
-        }
-        fComponents.addElement(fDTDScanner);
-
-        final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
-        fValidator = (XMLValidator) fProperties.get(VALIDATOR);
-        if (fValidator == null) {
-            fValidator = createValidator();
-            fProperties.put(VALIDATOR, fValidator);
-        }
-        fComponents.addElement(fValidator);
-        
-        final String DATATYPE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
-        fDatatypeValidatorFactory = (DatatypeValidatorFactory)
-            fProperties.get(DATATYPE_VALIDATOR_FACTORY);
-        if (fDatatypeValidatorFactory == null) {
-            fDatatypeValidatorFactory = createDatatypeValidatorFactory();
-            fProperties.put(DATATYPE_VALIDATOR_FACTORY,
-                            fDatatypeValidatorFactory);
+        catch (SAXException e) {
+            // do nothing
+            // REVISIT: What is the right thing to do? -Ac
         }
 
-    } // initialize()
+    } // <init>(SymbolTable,GrammarPool)
 
     //
-    // XMLParser methods
+    // Public methods
     //
 
-    /** 
-     * Reset all components before parsing. 
+    /**
+     * Set the locale to use for messages.
      *
-     * @throws SAXException Thrown if an error occurs during initialization.
+     * @param locale The locale object to use for localization of messages.
+     *
+     * @exception SAXException An exception thrown if the parser does not
+     *                         support the specified locale.
+     *
+     * @see org.xml.sax.Parser
      */
-    protected void reset() throws SAXException {
-
-        // setup document pipeline
-        fScanner.setDocumentHandler(fValidator);
-        fValidator.setDocumentHandler(fDocumentHandler);
-
-        // setup dtd pipeline
-        fDTDScanner.setDTDHandler(fValidator);
-        fValidator.setDTDHandler(fDTDHandler);
-
-        // setup dtd content model pipeline
-        fDTDScanner.setDTDContentModelHandler(fValidator);
-        fValidator.setDTDContentModelHandler(fDTDContentModelHandler);
-
-        // the following will reset every component
-        super.reset();
-
-    } // reset(XMLParser)
+    public void setLocale(Locale locale) throws SAXException {
+        if (fErrorReporter == null) {
+            if (fEntityManager == null) {
+                fEntityManager = createEntityManager();
+                fProperties.put(ENTITY_MANAGER, fEntityManager);
+                addComponent(fEntityManager);
+                fLocator = (Locator)fEntityManager.getEntityScanner();
+            }
+            fErrorReporter =
+                createErrorReporter(fEntityManager.getEntityScanner());
+            fProperties.put(ERROR_REPORTER, fErrorReporter);
+            addComponent(fErrorReporter);
+        }
+        fErrorReporter.setLocale(locale);
+    } // setLocale(Locale)
 
     //
-    // XMLReader methods
+    // XMLParserConfiguration methods
     //
 
     /**
@@ -263,8 +326,7 @@ public class StandardParserConfiguration
      * @exception org.xml.sax.SAXException Throws exception on SAX error.
      * @exception java.io.IOException Throws exception on i/o error.
      */
-    public void parse(InputSource source)
-        throws SAXException, IOException {
+    public void parse(InputSource source) throws SAXException, IOException {
 
         if (fParseInProgress) {
             // REVISIT - need to add new error message
@@ -303,8 +365,99 @@ public class StandardParserConfiguration
     } // parse(InputSource)
 
     //
-    // XMLParser methods
+    // Protected methods
     //
+    
+    // initialization
+
+    /**
+     * Initialize the parser with all the components specified via the
+     * properties plus any missing ones. This method MUST be called before
+     * parsing. It is not called from the constructor though, so that the
+     * application can pass in any components it wants by presetting the
+     * relevant property.
+     */
+    protected void initialize() {
+        super.initialize();
+
+        // create and register missing components
+        if (fErrorReporter == null) {
+            fErrorReporter =
+                createErrorReporter(fEntityManager.getEntityScanner());
+            fProperties.put(ERROR_REPORTER, fErrorReporter);
+            addComponent(fErrorReporter);
+        }
+
+        if (fEntityManager == null) {
+            fEntityManager = createEntityManager();
+            fProperties.put(ENTITY_MANAGER, fEntityManager);
+            addComponent(fEntityManager);
+            fLocator = (Locator)fEntityManager.getEntityScanner();
+        }
+
+        if (fGrammarPool == null) {
+            fGrammarPool = new GrammarPool();
+            fProperties.put(GRAMMAR_POOL, fGrammarPool);
+        }
+
+        if (fScanner == null) {
+            fScanner = createDocumentScanner();
+            fProperties.put(DOCUMENT_SCANNER, fScanner);
+            addComponent(fScanner);
+        }
+
+        if (fDTDScanner == null) {
+            fDTDScanner = createDTDScanner();
+            fProperties.put(DTD_SCANNER, fDTDScanner);
+            addComponent(fDTDScanner);
+        }
+
+        if (fValidator == null) {
+            fValidator = createValidator();
+            fProperties.put(VALIDATOR, fValidator);
+            addComponent(fValidator);
+        }
+        
+        if (fDatatypeValidatorFactory == null) {
+            fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+            fProperties.put(DATATYPE_VALIDATOR_FACTORY,
+                            fDatatypeValidatorFactory);
+        }
+
+        // add message formatters
+        if (fErrorReporter.getMessageFormatter(XMLMessageFormatter.XML_DOMAIN) == null) {
+            XMLMessageFormatter xmft = new XMLMessageFormatter();
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XML_DOMAIN, xmft);
+            fErrorReporter.putMessageFormatter(XMLMessageFormatter.XMLNS_DOMAIN, xmft);
+        }
+
+    } // initialize()
+
+    /** 
+     * Reset all components before parsing. 
+     *
+     * @throws SAXException Thrown if an error occurs during initialization.
+     */
+    protected void reset() throws SAXException {
+
+        // setup document pipeline
+        fScanner.setDocumentHandler(fValidator);
+        fValidator.setDocumentHandler(fDocumentHandler);
+
+        // setup dtd pipeline
+        fDTDScanner.setDTDHandler(fValidator);
+        fValidator.setDTDHandler(fDTDHandler);
+
+        // setup dtd content model pipeline
+        fDTDScanner.setDTDContentModelHandler(fValidator);
+        fValidator.setDTDContentModelHandler(fDTDContentModelHandler);
+
+        // the following will reset every component
+        super.reset();
+
+    } // reset()
+
+    // features and properties
 
     /**
      * Check a feature. If feature is know and supported, this method simply
@@ -424,11 +577,17 @@ public class StandardParserConfiguration
 
     } // checkProperty(String)
 
-    //
-    // Protected methods
-    //
-
     // factory methods
+
+    /** Creates an entity manager. */
+    protected XMLEntityManager createEntityManager() {
+        return new XMLEntityManager();
+    } // createEntityManager():XMLEntityManager
+
+    /** Creates an error reporter. */
+    protected XMLErrorReporter createErrorReporter(Locator locator) {
+        return new XMLErrorReporter(locator);
+    } // createErrorReporter(Locator):XMLErrorReporter
 
     /** Create a document scanner. */
     protected XMLDocumentScanner createDocumentScanner() {
