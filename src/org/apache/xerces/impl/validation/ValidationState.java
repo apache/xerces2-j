@@ -174,13 +174,13 @@ public class ValidationState implements ValidationContext {
     // entity
     public boolean isEntityDeclared (String name) {
         if (fEntityState !=null) {
-            return fEntityState.isEntityDeclared(name);
+            return fEntityState.isEntityDeclared(getSymbol(name));
         }
         return false;
     }
     public boolean isEntityUnparsed (String name) {
         if (fEntityState !=null) {
-            return fEntityState.isEntityUnparsed(name);
+            return fEntityState.isEntityUnparsed(getSymbol(name));
         }
         return false;
     }

@@ -89,9 +89,9 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
  * the specific syntax (DTD, Schema, etc) into the data structures used
  * by this object.
  * <p>
- * <strong>Note:</strong> The AbstractDTDGrammar object is not useful as a generic 
- * grammar access or query object. In other words, you cannot round-trip 
- * specific grammar syntaxes with the compiled grammar information in 
+ * <strong>Note:</strong> The AbstractDTDGrammar object is not useful as a
+ * generic grammar access or query object. In other words, you cannot round-trip
+ * specific grammar syntaxes with the compiled grammar information in
  * the AbstractDTDGrammar object. You <em>can</em> create equivalent validation
  * rules in your choice of grammar syntax but there is no guarantee that
  * the input and output will be the same.
@@ -99,6 +99,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
  * Renamed from Grammar to AbstractDTDGrammar by neilg, 01/17/02, to
  * reflect the fact that this is anything but a general-purpose grammar.
  * REVISIT :  shouldn't this class and DTDGrammar be combined?
+ *
  *
  * @author Jeffrey Rodriguez, IBM
  * @author Eric Ye, IBM
@@ -253,8 +254,14 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
 
     // other information
 
-    /** Scope mapping table. */
-    private TupleHashtable fScopeMapping = new TupleHashtable();
+    /** Element index mapping table. */
+    private TupleHashtable fElementIndex = new TupleHashtable();
+
+    /** Entity index mapping table. */
+    private TupleHashtable fEntityIndex = new TupleHashtable();
+
+    /** Notation index mapping table. */
+    private TupleHashtable fNotationIndex = new TupleHashtable();
 
     // temporary variables
 
@@ -335,29 +342,28 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * getElementDeclIndex
      * 
      * @param elementDeclName 
-     * @param scope 
      * 
      * @return index of the elementDeclName in scope
      */
-    public int getElementDeclIndex(String elementDeclName, int scope) {
-        int mapping = fScopeMapping.get(scope, elementDeclName, null);
-        //System.out.println("getElementDeclIndex("+elementDeclName+','+scope+") -> "+mapping);
+    public int getElementDeclIndex(String elementDeclName) {
+        int mapping = fElementIndex.get(elementDeclName);
+        //System.out.println("getElementDeclIndex("+elementDeclName+") -> "+mapping);
         return mapping;
-    } // getElementDeclIndex(String,int):int
+    } // getElementDeclIndex(String):int
    
     /**
      * getElementDeclIndex
      * 
      * @param elementDeclQName 
-     * @param scope 
      * 
      * @return  index of elementDeclQName in scope
      */
-    public int getElementDeclIndex(QName elementDeclQName, int scope) {
-        int mapping = fScopeMapping.get(scope, elementDeclQName.localpart, elementDeclQName.uri);
-        //System.out.println("getElementDeclIndex("+elementDeclQName+','+scope+") -> "+mapping);
-        return mapping;
-    } // getElementDeclIndex(QName,int):int
+    public int getElementDeclIndex(QName elementDeclQName) {
+        throw new RuntimeException("This class no longer supports grammars other than DTD.");
+        //int mapping = fElementIndex.get(elementDeclQName.localpart, elementDeclQName.uri);
+        //System.out.println("getElementDeclIndex("+elementDeclQName+") -> "+mapping);
+        //return mapping;
+    } // getElementDeclIndex(QName):int
 
     /**
      * getElementDecl
@@ -492,7 +498,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @return true if the attribute is of type CDATA
      */
     public boolean isCDATAAttribute(QName elName, QName atName) {
-        int elDeclIdx = getElementDeclIndex(elName, -1);
+        int elDeclIdx = getElementDeclIndex(elName);
         int atDeclIdx = getAttributeDeclIndex(elDeclIdx, atName.rawname);
         if (getAttributeDecl(elDeclIdx, fAttributeDecl)
             && fAttributeDecl.simpleType.type != XMLSimpleType.TYPE_CDATA){
@@ -508,7 +514,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @return index of the first EntityDecl
      */
     public int getFirstEntityDeclIndex() {
-        throw new RuntimeException("implement Grammar#getFirstEntityDeclIndex():int");
+        throw new RuntimeException("implement AbstractDTDGrammar#getFirstEntityDeclIndex():int");
     } // getFirstEntityDeclIndex
 
     /**
@@ -519,7 +525,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @return index of the next EntityDecl
      */
     public int getNextEntityDeclIndex(int elementDeclIndex) {
-        throw new RuntimeException("implement Grammar#getNextEntityDeclIndex(int):int");
+        throw new RuntimeException("implement AbstractDTDGrammar#getNextEntityDeclIndex(int):int");
     } // getNextEntityDeclIndex
 
     /**
@@ -533,15 +539,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         if (entityDeclName == null) {
             return -1;
         }
-        for (int i=0; i<fEntityCount; i++) {
-            int chunk = i >> CHUNK_SHIFT;
-            int index = i & CHUNK_MASK;
-            if ( fEntityName[chunk][index] == entityDeclName || entityDeclName.equals(fEntityName[chunk][index]) ) {
-                return i;
-            }
-        }
-    
-        return -1;
+
+        return fEntityIndex.get(entityDeclName);
     } // getEntityDeclIndex
 
     /**
@@ -578,7 +577,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @return the index of the first notation declaration in the grammar
      */
     public int getFirstNotationDeclIndex() {
-        throw new RuntimeException("implement Grammar#getFirstNotationDeclIndex():int");
+        throw new RuntimeException("implement AbstractDTDGrammar#getFirstNotationDeclIndex():int");
     } // getFirstNotationDeclIndex
 
     /**
@@ -589,7 +588,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
      * @return index of the next notation declaration in the grammar
      */
     public int getNextNotationDeclIndex(int elementDeclIndex) {
-        throw new RuntimeException("implement Grammar#getNextNotationDeclIndex(int):int");
+        throw new RuntimeException("implement AbstractDTDGrammar#getNextNotationDeclIndex(int):int");
     } // getNextNotationDeclIndex
 
     /**
@@ -603,15 +602,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         if (notationDeclName == null) {
             return -1;
         }
-        for (int i=0; i<fNotationCount; i++) {
-            int chunk = i >> CHUNK_SHIFT;
-            int index = i & CHUNK_MASK;
-            if ( fNotationName[chunk][index] == notationDeclName || notationDeclName.equals(fNotationName[chunk][index]) ) {
-                return i;
-            }
-        }
 
-        return -1;
+        return fNotationIndex.get(notationDeclName);
     } // getNotationDeclIndex
 
     /**
@@ -967,11 +959,12 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
       }
 
       if (isDTD()) {
-          fScopeMapping.put(scope, elementDecl.name.rawname, null, elementDeclIndex);
+          fElementIndex.put(elementDecl.name.rawname, elementDeclIndex);
       }
       else {
-          fScopeMapping.put( scope, elementDecl.name.localpart, 
-                                             elementDecl.name.uri, elementDeclIndex);
+          throw new RuntimeException("This class no longer supports grammars other than DTD.");
+//          fElementIndex.put(elementDecl.name.localpart, elementDecl.name.uri,
+//                            elementDeclIndex);
       }
    }
 
@@ -1110,6 +1103,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
        fEntityNotation[chunk][index] = entityDecl.notation;
        fEntityIsPE[chunk][index] = entityDecl.isPE ? (byte)1 : (byte)0;
        fEntityInExternal[chunk][index] = entityDecl.inExternal ? (byte)1 : (byte)0;
+
+       fEntityIndex.put(entityDecl.name, entityDeclIndex);
    }
    
 
@@ -1130,13 +1125,15 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
        fNotationPublicId[chunk][index] = notationDecl.publicId;
        fNotationSystemId[chunk][index] = notationDecl.systemId;
        fNotationBaseSystemId[chunk][index] = notationDecl.baseSystemId;
+
+       fNotationIndex.put(notationDecl.name, notationDeclIndex);
    }
 
    protected void setTargetNamespace( String targetNamespace ){
       fTargetNamespace = targetNamespace;
    }
 
-   // subclass shoudl overwrite this method to return the right value.
+   // subclass should overwrite this method to return the right value.
    protected boolean isDTD() {
       return true;
    }
@@ -1439,12 +1436,12 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
                 nodeRet = new CMUniOp( contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
             } 
             else if (contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE
-                       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
-                       || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
+                  || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE
+                  || contentSpec.type == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE) {
                 nodeRet = new CMUniOp(contentSpec.type, buildSyntaxTree(leftNode, contentSpec));
             } 
             else {
-                        throw new RuntimeException("ImplementationMessages.VAL_CST");
+                throw new RuntimeException("ImplementationMessages.VAL_CST");
             }
         }
         // And return our new node for this level
@@ -1518,16 +1515,14 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         }
 
         // error
-        throw new RuntimeException("Invalid content spec type seen in contentSpecTree() method of Grammar class : "+contentSpec.type);
+        throw new RuntimeException("Invalid content spec type seen in contentSpecTree() method of AbstractDTDGrammar class : "+contentSpec.type);
 
     } // contentSpecTree(int,XMLContentSpec,ChildrenList)
 
     // ensure capacity
 
-    private boolean ensureElementDeclCapacity(int chunk) {
-        try {
-            return fElementDeclName[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureElementDeclCapacity(int chunk) {
+        if (chunk >= fElementDeclName.length) {
             fElementDeclName = resize(fElementDeclName, fElementDeclName.length * 2);
             fElementDeclType = resize(fElementDeclType, fElementDeclType.length * 2);
             fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
@@ -1537,9 +1532,11 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
             fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclLastAttributeDeclIndex.length * 2);
             fElementDeclDefaultValue = resize( fElementDeclDefaultValue, fElementDeclDefaultValue.length * 2 ); 
             fElementDeclDefaultType  = resize( fElementDeclDefaultType, fElementDeclDefaultType.length *2 );
-        } catch (NullPointerException ex) {
-            // ignore
         }
+        else if (fElementDeclName[chunk] != null) {
+            return;
+        }
+
         fElementDeclName[chunk] = new QName[CHUNK_SIZE];
         fElementDeclType[chunk] = new short[CHUNK_SIZE];
         fElementDeclDatatypeValidator[chunk] = new DatatypeValidator[CHUNK_SIZE];
@@ -1549,13 +1546,11 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         fElementDeclLastAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
         fElementDeclDefaultValue[chunk] = new String[CHUNK_SIZE]; 
         fElementDeclDefaultType[chunk]  = new short[CHUNK_SIZE]; 
-        return true;
+        return;
     }
 
-    private boolean ensureAttributeDeclCapacity(int chunk) {
-        try {
-            return fAttributeDeclName[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureAttributeDeclCapacity(int chunk) {
+        if (chunk >= fAttributeDeclName.length) {
             fAttributeDeclName = resize(fAttributeDeclName, fAttributeDeclName.length * 2);
             fAttributeDeclType = resize(fAttributeDeclType, fAttributeDeclType.length * 2);
             fAttributeDeclEnumeration = resize(fAttributeDeclEnumeration, fAttributeDeclEnumeration.length * 2);
@@ -1564,9 +1559,11 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
             fAttributeDeclDefaultValue = resize(fAttributeDeclDefaultValue, fAttributeDeclDefaultValue.length * 2);
             fAttributeDeclNonNormalizedDefaultValue = resize(fAttributeDeclNonNormalizedDefaultValue, fAttributeDeclNonNormalizedDefaultValue.length * 2);
             fAttributeDeclNextAttributeDeclIndex = resize(fAttributeDeclNextAttributeDeclIndex, fAttributeDeclNextAttributeDeclIndex.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
         }
+        else if (fAttributeDeclName[chunk] != null) {
+            return;
+        }
+
         fAttributeDeclName[chunk] = new QName[CHUNK_SIZE];
         fAttributeDeclType[chunk] = new short[CHUNK_SIZE];
         fAttributeDeclEnumeration[chunk] = new String[CHUNK_SIZE][];
@@ -1575,13 +1572,11 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         fAttributeDeclDefaultValue[chunk] = new String[CHUNK_SIZE];
         fAttributeDeclNonNormalizedDefaultValue[chunk] = new String[CHUNK_SIZE];
         fAttributeDeclNextAttributeDeclIndex[chunk] = new int[CHUNK_SIZE];
-        return true;
+        return;
     }
    
-    private boolean ensureEntityDeclCapacity(int chunk) {
-        try {
-            return fEntityName[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureEntityDeclCapacity(int chunk) {
+        if (chunk >= fEntityName.length) {
             fEntityName = resize(fEntityName, fEntityName.length * 2);
             fEntityValue = resize(fEntityValue, fEntityValue.length * 2);
             fEntityPublicId = resize(fEntityPublicId, fEntityPublicId.length * 2);
@@ -1590,9 +1585,11 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
             fEntityNotation = resize(fEntityNotation, fEntityNotation.length * 2);
             fEntityIsPE = resize(fEntityIsPE, fEntityIsPE.length * 2);
             fEntityInExternal = resize(fEntityInExternal, fEntityInExternal.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
         }
+        else if (fEntityName[chunk] != null) {
+            return;
+        }
+
         fEntityName[chunk] = new String[CHUNK_SIZE];
         fEntityValue[chunk] = new String[CHUNK_SIZE];
         fEntityPublicId[chunk] = new String[CHUNK_SIZE];
@@ -1601,41 +1598,41 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         fEntityNotation[chunk] = new String[CHUNK_SIZE];
         fEntityIsPE[chunk] = new byte[CHUNK_SIZE];
         fEntityInExternal[chunk] = new byte[CHUNK_SIZE];
-        return true;
+        return;
     }
       
-    private boolean ensureNotationDeclCapacity(int chunk) {
-        try {
-            return fNotationName[chunk][0] == null;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureNotationDeclCapacity(int chunk) {
+        if (chunk >= fNotationName.length) {
             fNotationName = resize(fNotationName, fNotationName.length * 2);
             fNotationPublicId = resize(fNotationPublicId, fNotationPublicId.length * 2);
             fNotationSystemId = resize(fNotationSystemId, fNotationSystemId.length * 2);
             fNotationBaseSystemId = resize(fNotationBaseSystemId, fNotationBaseSystemId.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
         }
+        else if (fNotationName[chunk] != null) {
+            return;
+        }
+
         fNotationName[chunk] = new String[CHUNK_SIZE];
         fNotationPublicId[chunk] = new String[CHUNK_SIZE];
         fNotationSystemId[chunk] = new String[CHUNK_SIZE];
         fNotationBaseSystemId[chunk] = new String[CHUNK_SIZE];
-        return true;
+        return;
     }
 
-    private boolean ensureContentSpecCapacity(int chunk) {
-        try {
-            return fContentSpecType[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    private void ensureContentSpecCapacity(int chunk) {
+        if (chunk >= fContentSpecType.length) {
             fContentSpecType = resize(fContentSpecType, fContentSpecType.length * 2);
             fContentSpecValue = resize(fContentSpecValue, fContentSpecValue.length * 2);
             fContentSpecOtherValue = resize(fContentSpecOtherValue, fContentSpecOtherValue.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
         }
+        else if (fContentSpecType[chunk] != null) {
+            return;
+        }
+
         fContentSpecType[chunk] = new short[CHUNK_SIZE];
         fContentSpecValue[chunk] = new Object[CHUNK_SIZE];
         fContentSpecOtherValue[chunk] = new Object[CHUNK_SIZE];
-        return true;
+        return;
     }
 
     //
@@ -1733,8 +1730,8 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
     //
 
     /**
-     * A simple Hashtable implementation that takes a tuple (int, String, 
-     * String) as the key and a int as value.
+     * A simple Hashtable implementation that takes a tuple (String, String)
+     * as the key and a int as value.
      *
      * @author Eric Ye, IBM
      * @author Andy Clark, IBM
@@ -1744,6 +1741,7 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         //
         // Constants
         //
+        public static final boolean UNIQUE_STRINGS = true;
     
         /** Initial bucket size (4). */
         private static final int INITIAL_BUCKET_SIZE = 4;
@@ -1756,34 +1754,30 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
         //
         // Data
         //
-
         private Object[][] fHashTable = new Object[HASHTABLE_SIZE][];
 
         //
         // Public methods
         //
-
         /** Associates the given value with the specified key tuple. */
-        public void put(int key1, String key2, String key3, int value) {
+        public void put(String key, int value) {
 
             // REVISIT: Why +2? -Ac
-            int hash = (key1+hash(key2)+hash(key3)+2) % HASHTABLE_SIZE;
+            int hash = (hash(key)+2) % HASHTABLE_SIZE;
             Object[] bucket = fHashTable[hash];
 
             if (bucket == null) {
-                bucket = new Object[1 + 4*INITIAL_BUCKET_SIZE];
+                bucket = new Object[1 + 2*INITIAL_BUCKET_SIZE];
                 bucket[0] = new int[]{1};
-                bucket[1] = new int[]{key1};
-                bucket[2] = key2;
-                bucket[3] = key3;
-                bucket[4] = new int[]{value};
+                bucket[1] = key;
+                bucket[2] = new int[]{value};
                 fHashTable[hash] = bucket;
             } else {
                 int count = ((int[])bucket[0])[0];
-                int offset = 1 + 4*count;
+                int offset = 1 + 2*count;
                 if (offset == bucket.length) {
                     int newSize = count + INITIAL_BUCKET_SIZE;
-                    Object[] newBucket = new Object[1 + 4*newSize];
+                    Object[] newBucket = new Object[1 + 2*newSize];
                     System.arraycopy(bucket, 0, newBucket, 0, offset);
                     bucket = newBucket;
                     fHashTable[hash] = bucket;
@@ -1791,32 +1785,28 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
                 boolean found = false;
                 int j=1;
                 for (int i=0; i<count; i++){
-                    if ( ((int[])bucket[j])[0] == key1 && (String)bucket[j+1] == key2
-                         && (String)bucket[j+2] == key3 ) {
-                        ((int[])bucket[j+3])[0] = value;
+                    if ((String)bucket[j] == key) {
+                        ((int[])bucket[j+1])[0] = value;
                         found = true;
                         break;
                     }
-                    j += 4;
+                    j += 2;
                 }
                 if (! found) {
-                    bucket[offset++] = new int[]{key1};
-                    bucket[offset++] = key2;
-                    bucket[offset++] = key3;
+                    bucket[offset++] = key;
                     bucket[offset]= new int[]{value};
                     ((int[])bucket[0])[0] = ++count;
                 }
 
             }
-            //System.out.println("put("+key1+','+key2+','+key3+" -> "+value+')');
-            //System.out.println("get("+key1+','+key2+','+key3+") -> "+get(key1,key2,key3));
+            //System.out.println("put("+key+" -> "+value+')');
+            //System.out.println("get("+key+") -> "+get(key));
 
         } // put(int,String,String,int)
 
         /** Returns the value associated with the specified key tuple. */
-        public int get(int key1, String key2, String key3) {
-
-            int hash = (key1+hash(key2)+hash(key3)+2) % HASHTABLE_SIZE;
+        public int get(String key) {
+            int hash = (hash(key)+2) % HASHTABLE_SIZE;
             Object[] bucket = fHashTable[hash];
 
             if (bucket == null) {
@@ -1826,11 +1816,10 @@ public abstract class AbstractDTDGrammar implements EntityState, Grammar {
 
             int j=1;
             for (int i=0; i<count; i++){
-                if ( ((int[])bucket[j])[0] == key1 && (String)bucket[j+1] == key2
-                     && (String)bucket[j+2] == key3) {
-                    return ((int[])bucket[j+3])[0];
+                if ((String)bucket[j] == key) {
+                    return ((int[])bucket[j+1])[0];
                 }
-                j += 4;
+                j += 2;
             }
             return -1;
 

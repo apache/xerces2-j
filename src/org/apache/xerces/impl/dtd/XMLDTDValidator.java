@@ -1377,21 +1377,21 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 boolean	duplicateAttributeDef = false ;
                                         
                 //Get Grammar index to grammar array
-                int elementIndex       = fDTDGrammar.getElementDeclIndex( elementName, -1 );        	
-                if (fDTDGrammar.getAttributeDeclIndex(elementIndex, attributeName) != -1) {        
-                        //more than one attribute definition is provided for the same attribute of a given element type.
-                        duplicateAttributeDef = true ;
-                                
-                        //this feature works only when valiation is true.
-                        if(fWarnDuplicateAttdef){
-                                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                         "MSG_DUPLICATE_ATTRIBUTE_DEFINITION", 
-                                                         new Object[]{ elementName, attributeName },
-                                                         XMLErrorReporter.SEVERITY_WARNING );
-                        }
+                int elementIndex       = fDTDGrammar.getElementDeclIndex( elementName);
+                if (fDTDGrammar.getAttributeDeclIndex(elementIndex, attributeName) != -1) {
+                    //more than one attribute definition is provided for the same attribute of a given element type.
+                    duplicateAttributeDef = true ;
+
+                    //this feature works only when validation is true.
+                    if(fWarnDuplicateAttdef){
+                        fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                 "MSG_DUPLICATE_ATTRIBUTE_DEFINITION",
+                                                 new Object[]{ elementName, attributeName },
+                                                 XMLErrorReporter.SEVERITY_WARNING );
+                    }
                 }
-                
-                
+
+
             //
             // a) VC: One ID per Element Type, If duplicate ID attribute
             // b) VC: ID attribute Default. if there is a declareared attribute
@@ -2890,7 +2890,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         }
         else {
             //  resolve the element
-            fCurrentElementIndex = fDTDGrammar.getElementDeclIndex(element, -1);
+            fCurrentElementIndex = fDTDGrammar.getElementDeclIndex(element);
 
             fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
             if (fCurrentContentSpecType == -1 && fPerformValidation) {

@@ -76,6 +76,15 @@
 	  declared for an undeclared element.</note>
 	<submitter name='Elena Litani'/>
       </fix>
+      <fix>
+        <note>Performance fixes:  replaced code that increases array sizes by catching ArrayIndexOutOfBoundsExceptions
+            with code that checks the sizes of the relevant arrays.  Also streamlined
+            several method calls in the DTD Grammar classes to account for the 
+            fact that scope is not relevant for this type of grammar.  Finally,
+            improved algorithm for recognizing entities and notations.
+        </note>
+        <submitter name="Henry Zongaro, Neil Graham"/>
+      </fix>
       <update>
 	<note>
 	  Compress jars by default.  We have not done so in the past,

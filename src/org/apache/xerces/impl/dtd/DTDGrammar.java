@@ -160,20 +160,8 @@ public class DTDGrammar
     /** Content spec node. */
     private XMLContentSpec fContentSpec = new XMLContentSpec();
 
-    /** table of XMLAttributeDecl */
-    Hashtable  fAttributeDeclTab   = new Hashtable();
-
     /** table of XMLElementDecl   */
     Hashtable   fElementDeclTab     = new Hashtable();
-
-    /** table of XMLNotationDecl  */
-    Hashtable  fNotationDeclTab    = new Hashtable();
-
-    /** table of XMLSimplType     */
-    Hashtable   fSimpleTypeTab     = new Hashtable();
-
-    /** table of XMLEntityDecl    */
-    Hashtable   fEntityDeclTab     = new Hashtable();
 
     /** Children content model operation stack. */
     private short[] fOpStack = null;
@@ -401,7 +389,7 @@ public class DTDGrammar
         // check if it is already defined
         if ( tmpElementDecl != null ) {
             if (tmpElementDecl.type == -1) {
-                fCurrentElementIndex = getElementDeclIndex(name, -1);
+                fCurrentElementIndex = getElementDeclIndex(name);
             }
             else {
                 // duplicate element, ignored.
@@ -522,8 +510,8 @@ public class DTDGrammar
         }
 
         //Get Grammar index to grammar array
-        int elementIndex       = getElementDeclIndex( elementName, -1 );
-
+        int elementIndex       = getElementDeclIndex(elementName);
+        
         //return, when more than one definition is provided for the same attribute of given element type
         //only the first declaration is binding and later declarations are ignored
         if (getAttributeDeclIndex(elementIndex, attributeName) != -1) {
@@ -1076,12 +1064,11 @@ public class DTDGrammar
 
     /** Returns the element decl index.
      * @param elementDeclQName qualilfied name of the element
-     * @param scope
      */
-    public int getElementDeclIndex(QName elementDeclQName, int scope) {
-        return getElementDeclIndex(elementDeclQName.rawname, scope);
-    } // getElementDeclIndex(QName,int):int
-
+    public int getElementDeclIndex(QName elementDeclQName) {
+        return getElementDeclIndex(elementDeclQName.rawname);
+    } // getElementDeclIndex(QName):int
+   
     //
     // Protected methods
     //
@@ -1182,31 +1169,27 @@ public class DTDGrammar
 
 
     /** Ensures storage for element declaration mappings. */
-    protected boolean ensureElementDeclCapacity(int chunk) {
-        try {
-            return fElementDeclIsExternal[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    protected void ensureElementDeclCapacity(int chunk) {
+        if (chunk >= fElementDeclIsExternal.length) {
             fElementDeclIsExternal = resize(fElementDeclIsExternal,
                                      fElementDeclIsExternal.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        }
+        else if (fElementDeclIsExternal[chunk] != null) {
+            return;
         }
         fElementDeclIsExternal[chunk] = new int[CHUNK_SIZE];
-        return true;
     }
 
     /** Ensures storage for attribute declaration mappings. */
-    protected boolean ensureAttributeDeclCapacity(int chunk) {
-        try {
-            return fAttributeDeclIsExternal[chunk][0] == 0;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    protected void ensureAttributeDeclCapacity(int chunk) {
+        if (chunk >= fAttributeDeclIsExternal.length) {
             fAttributeDeclIsExternal = resize(fAttributeDeclIsExternal,
                                        fAttributeDeclIsExternal.length * 2);
-        } catch (NullPointerException ex) {
-            // ignore
+        }
+        else if (fAttributeDeclIsExternal[chunk] != null) {
+            return;
         }
         fAttributeDeclIsExternal[chunk] = new int[CHUNK_SIZE];
-        return true;
     }
 
     /** Resizes chunked integer arrays. */
