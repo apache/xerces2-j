@@ -78,16 +78,8 @@ import java.lang.reflect.InvocationTargetException;
  * when bundled as part of the JDK.
  */
 class FactoryFinder {
-    /** Temp debug code - this will be removed after we test everything
-     */
-    private static boolean debug = false;
-    static {
-        // Use try/catch block to support applets
-        try {
-            debug = System.getProperty("jaxp.debug") != null;
-        } catch (Exception x) {
-        }
-    }
+    /** Set to true for debugging */
+    private static final boolean debug = false;
 
     private static void debugPrintln(String msg) {
         if (debug) {
@@ -102,21 +94,18 @@ class FactoryFinder {
     private static ClassLoader findClassLoader()
         throws ConfigurationError
     {
-        ClassLoader classLoader;
         Method m = null;
 
         try {
             m = Thread.class.getMethod("getContextClassLoader", null);
         } catch (NoSuchMethodException e) {
             // Assume that we are running JDK 1.1, use the current ClassLoader
-            if (debug) {
-                debugPrintln("assuming JDK 1.1");
-            }
-            classLoader = FactoryFinder.class.getClassLoader();
+            debugPrintln("assuming JDK 1.1");
+            return FactoryFinder.class.getClassLoader();
         }
 
         try {
-            classLoader = (ClassLoader) m.invoke(Thread.currentThread(), null);
+            return (ClassLoader) m.invoke(Thread.currentThread(), null);
         } catch (IllegalAccessException e) {
             // assert(false)
             throw new ConfigurationError("Unexpected IllegalAccessException",
@@ -126,8 +115,6 @@ class FactoryFinder {
             throw new ConfigurationError("Unexpected InvocationTargetException",
                                          e);
         }
-
-        return classLoader;
     }
 
     /**
@@ -172,6 +159,8 @@ class FactoryFinder {
     static Object find(String factoryId, String fallbackClassName)
         throws ConfigurationError
     {
+        debugPrintln("debug is on");
+
         ClassLoader classLoader = findClassLoader();
 
         // Use the system property first
