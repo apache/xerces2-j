@@ -407,9 +407,9 @@ public class XMLDocumentScanner
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
         // sax features
-        if (featureId.startsWith(SAX_FEATURE_PREFIX)) {
-            String feature = featureId.substring(SAX_FEATURE_PREFIX.length());
-            if (feature.equals(NAMESPACES_FEATURE)) {
+        if (featureId.startsWith(Constants.SAX_FEATURE_PREFIX)) {
+            String feature = featureId.substring(Constants.SAX_FEATURE_PREFIX.length());
+            if (feature.equals(Constants.NAMESPACES_FEATURE)) {
                 fNamespaces = state;
                 fAttributes.setNamespaces(fNamespaces);
             }
@@ -427,15 +427,15 @@ public class XMLDocumentScanner
         throws SAXNotRecognizedException, SAXNotSupportedException {
         
         // Xerces properties
-        if (propertyId.startsWith(XERCES_PROPERTY_PREFIX)) {
-            String property = propertyId.substring(XERCES_PROPERTY_PREFIX.length());
-            if (property.equals(SYMBOL_TABLE_PROPERTY)) {
+        if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
+            String property = propertyId.substring(Constants.XERCES_PROPERTY_PREFIX.length());
+            if (property.equals(Constants.SYMBOL_TABLE_PROPERTY)) {
                 fSymbolTable = (SymbolTable)value;
             }
-            else if (property.equals(ERROR_REPORTER_PROPERTY)) {
+            else if (property.equals(Constants.ERROR_REPORTER_PROPERTY)) {
                 fErrorReporter = (XMLErrorReporter)value;
             }
-            else if (property.equals(ENTITY_MANAGER_PROPERTY)) {
+            else if (property.equals(Constants.ENTITY_MANAGER_PROPERTY)) {
                 fEntityManager = (XMLEntityManager)value;
             }
             return;
