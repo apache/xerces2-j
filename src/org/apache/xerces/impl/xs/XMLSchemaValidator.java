@@ -1351,10 +1351,6 @@ public class XMLSchemaValidator
      */
     XMLString handleEndElement(QName element) {
 
-        // need to pop context so that the bindings for this element is
-        // discarded.
-        fNamespaceSupport.popContext();
-
         // if we are skipping, return
         if (fSkipValidationDepth >= 0) {
             // but if this is the top element that we are skipping,
@@ -1374,6 +1370,11 @@ public class XMLSchemaValidator
             else {
                 fElementDepth--;
             }
+
+            // need to pop context so that the bindings for this element is
+            // discarded.
+            fNamespaceSupport.popContext();
+
             return null;
         }
 
@@ -1441,6 +1442,10 @@ public class XMLSchemaValidator
             fCurrCMState = fCMStateStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
         }
+
+        // need to pop context so that the bindings for this element is
+        // discarded.
+        fNamespaceSupport.popContext();
 
         return defaultValue;
     } // handleEndElement(QName,boolean)*/
