@@ -65,175 +65,168 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 
 /**
  *
- * RealValidator validates that content satisfies the W3C XML Datatype for Real
- *
  * @author Ted Leung
+ * @author Jeffrey Rodriguez
  * @version
  */
 
 public class FloatValidator implements DatatypeValidator {
-	
-	double fMaxInclusive = 0;
-	boolean fIsMaxInclusive = false;
-	double fMaxExclusive = 0;
-	boolean fIsMaxExclusive = false;
-	double fMinInclusive = 0;
-	boolean fIsMinInclusive = false;
-	double fMinExclusive = 0;
-	boolean fIsMinExclusive = false;
-	float fEnumValues[] = null;
-	boolean fHasEnums = false;
-	//RealValidator fBaseValidator = null;
-	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
-	private Locale fLocale = null;
-	
-	/**
+   private Locale    fLocale        = null;
+   private String    fBaseValidator = "native";
+   private float[] _enumFloats      = null;
+   private String  _pattern         = null;
+   
+   private float   _maxInclusive    = Float.MAX_VALUE;
+   private float   _maxExclusive    = Float.MAX_VALUE;
+   private float   _minInclusive    = Float.MIN_VALUE;
+   private float   _minExclusive    = Float.MIN_VALUE;
+
+   private int     _facetsDefined   = 0;
+
+   private boolean isMaxExclusiveDefined = false;
+   private boolean isMaxInclusiveDefined = false;
+   private boolean isMinExclusiveDefined = false;
+   private boolean isMinInclusiveDefined = false;
+
+   private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
+
+    /**
      * validate that a string matches the real datatype
-     *
-     * validate returns true or false depending on whether the string content is a
-     * W3C real type.
-     * 
      * @param content A string containing the content to be validated
-     *
      * @exception throws InvalidDatatypeException if the content is
      *  is not a W3C real type
      */
 
-	public void validate(String content, boolean list) throws InvalidDatatypeValueException {
-	    float f = 0;
-        try {
-            f = Float.valueOf(content).floatValue();
-        } catch (NumberFormatException nfe) {
-            throw new InvalidDatatypeValueException(
-				getErrorString(DatatypeMessageProvider.NotReal,
-							   DatatypeMessageProvider.MSG_NONE,
-							   new Object [] { content }));
+    public void validate(String content, boolean derivedBylist) 
+                  throws InvalidDatatypeValueException {
+        if( ! derivedBylist  ){ 
+             float f = 0;
+             try {
+                 f = Float.valueOf(content).floatValue();
+             } catch (NumberFormatException nfe) {
+                 throw new InvalidDatatypeValueException(
+                                                       getErrorString(DatatypeMessageProvider.NotReal,
+                                                       DatatypeMessageProvider.MSG_NONE,
+                                                       new Object [] { content }));
+             }
+             boundsCheck(f);
+
+             if (((_facetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ) )
+                 enumCheck(f);
+
+             } 
+         else {
+             ;// TODO Derived by list 
+             }
+    }
+
+    public void setFacets(Hashtable facets) throws UnknownFacetException, 
+                           IllegalFacetException, IllegalFacetValueException, ConstrainException {
+
+         for (Enumeration e = facets.keys(); e.hasMoreElements();) {
+             String key = (String) e.nextElement();
+
+             if (key.equals(SchemaSymbols.ELT_PATTERN)) {
+                 _facetsDefined += DatatypeValidator.FACET_PATTERN;
+                 _pattern = (String)facets.get(key);
+             } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
+                 _facetsDefined += DatatypeValidator.FACET_ENUMERATION;
+                 continue; //Treat the enumaration after this for loop
+             } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
+                 _facetsDefined += DatatypeValidator.FACET_MAXINCLUSIVE;
+                 String value = null;
+                 try {
+                      value  = ((String)facets.get(key));
+                     _maxInclusive = Float.valueOf(value).floatValue();
+                 } catch (NumberFormatException ex ) {
+                     throw new IllegalFacetValueException( getErrorString(
+                        DatatypeMessageProvider.IllegalFacetValue, 
+                        DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                 }
+             } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
+                 _facetsDefined += DatatypeValidator.FACET_MAXEXCLUSIVE;
+                 String value = null;
+                 try  {
+                      value  = ((String)facets.get(key));
+                    _maxExclusive = Float.valueOf(value).floatValue();
+                 } catch (NumberFormatException ex ) {
+                     throw new IllegalFacetValueException( getErrorString(
+                        DatatypeMessageProvider.IllegalFacetValue, 
+                        DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                 }    
+             } else if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
+                 _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                 String value = null;
+                 try {
+                     value  = ((String)facets.get(key));
+                    _minInclusive  = Float.valueOf(value).floatValue();
+                 } catch (NumberFormatException ex ) {
+                     throw new IllegalFacetValueException( getErrorString(
+                        DatatypeMessageProvider.IllegalFacetValue, 
+                        DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                 }
+             } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
+                 _facetsDefined += DatatypeValidator.FACET_MININCLUSIVE;
+                 String value = null;
+                 try {
+                    value  = ((String)facets.get(key));
+                   _minExclusive  = Float.valueOf(value).floatValue();
+                 } catch (NumberFormatException ex ) {
+                    throw new IllegalFacetValueException( getErrorString(
+                       DatatypeMessageProvider.IllegalFacetValue, 
+                       DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                 }
+             } else {
+                 throw new IllegalFacetException( getErrorString(  DatatypeMessageProvider.MSG_FORMAT_FAILURE,
+                                                                   DatatypeMessageProvider.MSG_NONE,
+                                                                   null));
+             }
+         }
+        isMaxExclusiveDefined = ((_facetsDefined & 
+                                  DatatypeValidator.FACET_MAXEXCLUSIVE ) != 0 )?true:false;
+        isMaxInclusiveDefined = ((_facetsDefined & 
+                                  DatatypeValidator.FACET_MAXINCLUSIVE ) != 0 )?true:false;
+        isMinExclusiveDefined = ((_facetsDefined &
+                                  DatatypeValidator.FACET_MINEXCLUSIVE ) != 0 )?true:false;
+        isMinInclusiveDefined = ((_facetsDefined &
+                                  DatatypeValidator.FACET_MININCLUSIVE ) != 0 )?true:false;
+
+
+        if ( isMaxExclusiveDefined && isMaxInclusiveDefined ) {
+           throw new ConstrainException(
+                                       "It is an error for both maxInclusive and maxExclusive to be specified for the same datatype." ); 
         }
-        boundsCheck(f);
-        if (fHasEnums)
-            enumCheck(f);
-	}
-			
-	public void validate(int contentIndex) throws InvalidDatatypeValueException {
-	}
-	
-	//REVISIT: candidate for public API
-	boolean ensureFacetsAreConsistent(Hashtable facets) {
-	    boolean facetsAreConsistent = true;
-	    for (Enumeration e = facets.keys(); facetsAreConsistent && e.hasMoreElements();) {
-	        String key = (String) e.nextElement();
-	        String value = null;
-	        if (key.equals(SchemaSymbols.ELT_ENUMERATION)) 
-                continue;  // ENUM values passed as a vector & handled after bounds facets	    
-    	    value = (String) facets.get(key);   
-	        float realValue = 0;
-	        try {
-	            realValue = Float.valueOf(value).floatValue();
-	        } catch (NumberFormatException nfe) {
-                facetsAreConsistent = false;
-	        }
-	        if (key.equals(SchemaSymbols.ELT_MININCLUSIVE) && fIsMinInclusive) {
-                facetsAreConsistent = fMinInclusive <= realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE) && fIsMinExclusive) {
-	            facetsAreConsistent = fMinExclusive < realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE) && fIsMaxInclusive) {
-	            facetsAreConsistent = fMaxInclusive >= realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE) && fIsMaxExclusive) {
-	            facetsAreConsistent = fMaxExclusive > realValue;
-	        }
-	    }
-	    return facetsAreConsistent;
-	}
-	
-	public void setFacets(Hashtable facets) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException, ConstrainException {
-        //if (fBaseValidator != null)
-          //  if (!fBaseValidator.ensureFacetsAreConsistent(facets))
-            //    throw new IllegalFacetValueException(
-	      //  			getErrorString(DatatypeMessageProvider.FacetsInconsistent,
-		//						   DatatypeMessageProvider.MSG_NONE,
-		  //      					   null));
+        if ( isMinExclusiveDefined && isMinInclusiveDefined ) {
+           throw new ConstrainException(
+                                       "It is an error for both minInclusive and minExclusive to be specified for the same datatype." ); 
+        }
 
-	    fIsMinInclusive = fIsMinExclusive = fIsMaxInclusive = fIsMaxExclusive = fHasEnums = false;
-	    for (Enumeration e = facets.keys(); e.hasMoreElements();) {
-	        String key = (String) e.nextElement();
-	        String value = null;
-	        if (key.equals(SchemaSymbols.ELT_ENUMERATION)) 
-                continue;  // ENUM values passed as a vector & handled after bounds facets	    
-    	    value = (String) facets.get(key);   
-	        float realValue = 0;
-	        try {
-	            realValue = Float.valueOf(value).floatValue();
-	        } catch (NumberFormatException nfe) {
-	            throw new IllegalFacetValueException(
-					getErrorString(DatatypeMessageProvider.IllegalFacetValue,
-								   DatatypeMessageProvider.MSG_NONE,
-								   new Object [] { value, key }));
-	        }
-	        if (key.equals(SchemaSymbols.ELT_MININCLUSIVE)) {
-                fIsMinInclusive = true;
-	            fMinInclusive = realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_MINEXCLUSIVE)) {
-	            fIsMinExclusive = true;
-	            fMinExclusive = realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_MAXINCLUSIVE)) {
-	            fIsMaxInclusive = true;
-	            fMaxInclusive = realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_MAXEXCLUSIVE)) {
-	            fIsMaxExclusive = true;
-	            fMaxExclusive = realValue;
-	        } else if (key.equals(SchemaSymbols.ELT_ENUMERATION)) {
-	        } else if (key.equals(SchemaSymbols.ELT_PRECISION) ||
-                     key.equals(SchemaSymbols.ELT_SCALE) ||
-                     key.equals(SchemaSymbols.ELT_LENGTH) ||
-                     key.equals(SchemaSymbols.ELT_MINLENGTH) ||
-                     key.equals(SchemaSymbols.ELT_MAXLENGTH) ||
-                     key.equals(SchemaSymbols.ELT_ENCODING) ||
-                     key.equals(SchemaSymbols.ELT_PERIOD) ||
-                     key.equals(SchemaSymbols.ELT_PATTERN) )
-                throw new IllegalFacetException(
-					getErrorString(DatatypeMessageProvider.IllegalRealFacet,
-								   DatatypeMessageProvider.MSG_NONE,
-								   null));
-            else 
-                throw new UnknownFacetException(
-					getErrorString(DatatypeMessageProvider.UnknownFacet,
-								   DatatypeMessageProvider.MSG_NONE,
-								   new Object [] { key }));
-	    }
-	    
-        // check the enum values after any range constraints are in place
-        Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
-	    if (v != null) {
-	        fHasEnums = true;
-	        fEnumValues = new float[v.size()];
-	        for (int i = 0; i < v.size(); i++)
-	            try {
-	                fEnumValues[i] = Float.valueOf((String) v.elementAt(i)).floatValue();
-	                boundsCheck(fEnumValues[i]);
-	            } catch (InvalidDatatypeValueException idve) {
-	                throw new IllegalFacetValueException(
-						getErrorString(DatatypeMessageProvider.InvalidEnumValue,
-									   DatatypeMessageProvider.MSG_NONE,
-									   new Object [] { v.elementAt(i) }));
-	            } catch (NumberFormatException nfe) {
-	                System.out.println("Internal Error parsing enumerated values for real type");
-	            }
-	    }
 
-	}
-	
-	public void setFacets(int facets[]) throws UnknownFacetException, IllegalFacetException, IllegalFacetValueException {
-	}
 
-    public void setBasetype(String base) {
-	    //fBaseValidator = (RealValidator) base;
+        if( (_facetsDefined & DatatypeValidator.FACET_ENUMERATION ) != 0 ){
+            Vector v = (Vector) facets.get(SchemaSymbols.ELT_ENUMERATION);    
+            if (v != null) {
+                 _enumFloats = new float[v.size()];
+                 for (int i = 0; i < v.size(); i++)
+                     try {
+                         _enumFloats[i] = Float.valueOf((String) v.elementAt(i)).floatValue();
+                         boundsCheck(_enumFloats[i]); // Check against max,min Inclusive, Exclusives
+                 } catch (InvalidDatatypeValueException idve) {
+                    throw new IllegalFacetValueException(
+                                                        getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                                       DatatypeMessageProvider.MSG_NONE,
+                                                                       new Object [] { v.elementAt(i)}));
+                } catch (NumberFormatException nfe) {
+                    System.out.println("Internal Error parsing enumerated values for real type");
+                }
+            }
+        }
     }
 
 
-    public void setBasetype(DatatypeValidator base) {
-          //fBaseValidator = (RealValidator) base;
-  }
-
+    public void setBasetype(String base) {
+        fBaseValidator =  base;
+    }
 
 
 
@@ -241,36 +234,36 @@ public class FloatValidator implements DatatypeValidator {
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
      */
     private void boundsCheck(float f) throws InvalidDatatypeValueException {
-        boolean minOk = false;
-        boolean maxOk = false;
-        if (fIsMaxInclusive)
-            maxOk = (f <= fMaxInclusive);
-        else if (fIsMaxExclusive)
-            maxOk = (f < fMaxExclusive);
-        else 
-            maxOk = (!fIsMaxInclusive && !fIsMaxExclusive);
-        
-        if (fIsMinInclusive)
-            minOk = (f >= fMinInclusive);
-        else if (fIsMinExclusive) 
-            minOk = (f > fMinInclusive);
-        else 
-            minOk = (!fIsMinInclusive && !fIsMinExclusive);
-        if (!(minOk && maxOk))
-            throw new InvalidDatatypeValueException(
-				getErrorString(DatatypeMessageProvider.OutOfBounds,
-							   DatatypeMessageProvider.MSG_NONE,
-							   new Object [] { new Float(f) }));
-    }
-    
-    private void enumCheck(float v) throws InvalidDatatypeValueException {
-        for (int i = 0; i < fEnumValues.length; i++) {
-            if (v == fEnumValues[i]) return;
+        boolean inUpperBound = false;
+        boolean inLowerBound = false;
+
+        if( isMaxInclusiveDefined ){
+            inUpperBound = ( f <= _maxInclusive );
+        }else if( isMaxExclusiveDefined ){
+            inUpperBound = ( f <  _maxExclusive );
         }
-		throw new InvalidDatatypeValueException(
-			getErrorString(DatatypeMessageProvider.NotAnEnumValue,
-						   DatatypeMessageProvider.MSG_NONE,
-						   new Object [] { new Float(v) }));
+
+        if( isMinInclusiveDefined ){
+            inLowerBound = ( f >= _minInclusive );
+        }else if( isMinExclusiveDefined ){
+            inLowerBound = ( f >  _minExclusive );
+        }
+
+        if( inUpperBound == false  || inLowerBound == false ) { // within bounds ?
+            getErrorString(DatatypeMessageProvider.OutOfBounds,
+                           DatatypeMessageProvider.MSG_NONE,
+                           new Object [] { new Float(f)});
+        }
+    }
+
+    private void enumCheck(float v) throws InvalidDatatypeValueException {
+        for (int i = 0; i < _enumFloats.length; i++) {
+            if (v == _enumFloats[i]) return;
+        }
+        throw new InvalidDatatypeValueException(
+                                               getErrorString(DatatypeMessageProvider.NotAnEnumValue,
+                                                              DatatypeMessageProvider.MSG_NONE,
+                                                              new Object [] { new Float(v)}));
     }
 
     /**
@@ -280,15 +273,16 @@ public class FloatValidator implements DatatypeValidator {
         fLocale = locale;
     }
 
-    private String getErrorString(int major, int minor, Object args[]) {
-         try {
-             return fMessageProvider.createMessage(fLocale, major, minor, args);
-         } catch (Exception e) {
-             return "Illegal Errorcode "+minor;
-         }
-    }
-
     public int compare( DatatypeValidator o1, DatatypeValidator o2){
         return 0;
     }
+
+    private String getErrorString(int major, int minor, Object args[]) {
+        try {
+            return fMessageProvider.createMessage(fLocale, major, minor, args);
+        } catch (Exception e) {
+            return "Illegal Errorcode "+minor;
+        }
+    }
+
 }
