@@ -598,6 +598,33 @@ public class SchemaGrammar extends Grammar{
 
     }
 
+    // Create a new elementdecl at a new scope, based on an existing decl
+    protected int cloneElementDecl(int eltNdx, int scope) {
+
+        getElementDecl(eltNdx,fTempElementDecl);
+        TraverseSchema.ComplexTypeInfo typeInfo = getElementComplexTypeInfo(eltNdx);
+        int blockSet = getElementDeclBlockSet(eltNdx);
+        int finalSet = getElementDeclFinalSet(eltNdx);
+        int elementMiscFlags = getElementDeclMiscFlags(eltNdx);
+        String defaultStr = getElementDefaultValue(eltNdx);
+        String subGroupName = getElementDeclSubstitutionGroupElementFullName(eltNdx);
+        int attrListHead = getFirstAttributeDeclIndex(eltNdx);
+        String anotherSchema = getElementFromAnotherSchemaURI(eltNdx);
+
+        fTempElementDecl.enclosingScope = scope;
+        int newElt= addElementDecl(fTempElementDecl.name,scope,scope,
+                 fTempElementDecl.type,fTempElementDecl.contentSpecIndex,
+                 attrListHead,fTempElementDecl.datatypeValidator);
+
+        setElementComplexTypeInfo(newElt, typeInfo); 
+        setElementDeclBlockSet(newElt, blockSet);
+        setElementDeclFinalSet(newElt, finalSet);
+        setElementDeclMiscFlags(newElt, elementMiscFlags);
+        setElementDefault(newElt, defaultStr);
+        setElementFromAnotherSchemaURI(newElt, anotherSchema);
+        return newElt;
+
+    }
     /**
      *@return the new attribute List Head
      */

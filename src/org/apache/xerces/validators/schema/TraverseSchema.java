@@ -6357,11 +6357,38 @@ throws Exception {
                     //return new QName(-1,fStringPool.addSymbol(localpart), -1, fStringPool.addSymbol(uriString));
                 }
                 else {
-                    // do nothing here, other wise would cause infinite loop for
-                    //   <element name="recur"><complexType><element ref="recur"> ...
-                    //eltName= traverseElementDecl(targetElement);
+                    eltName= traverseElementDecl(targetElement);
+                    // Should be able to look up the element now
+                    elementIndex = fSchemaGrammar.getElementDeclIndex(eltName, TOP_LEVEL_SCOPE);
+
                 }
             }
+
+            
+            if (fCurrentScope != TOP_LEVEL_SCOPE &&
+                elementIndex > -1) {
+               // See if there is a declaration of this element at current scope and 
+               // check types. 
+               // This is required because any model group cannot have more than 1 
+               // element with the same name, but different types (even if some are 
+               // local, and others top-level)
+               fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
+               DatatypeValidator edv = fTempElementDecl.datatypeValidator;
+               ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(elementIndex);
+               int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltName.uri, 
+                                                 eltName.localpart,fCurrentScope);
+
+               if (existingEltNdx > -1) {
+                 if (!checkDuplicateElementTypes(existingEltNdx,eTypeInfo,edv)) {
+ 
+                    reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
+                                              fStringPool.toString(eltName.localpart));
+               }
+               else 
+                 fSchemaGrammar.cloneElementDecl(elementIndex,fCurrentScope);
+               }
+            }
+
             return eltName;
         } else if (nameAtt == null)
             // REVISIT: Localize
@@ -6762,23 +6789,23 @@ throws Exception {
 
             uriIndex = fTargetNSURI;
         }
-        //There can never be two elements with the same name and different type in the same scope.
-        int existSuchElementIndex = fSchemaGrammar.getElementDeclIndex(uriIndex, localpartIndex, enclosingScope);
-        if ( existSuchElementIndex > -1) {
-            fSchemaGrammar.getElementDecl(existSuchElementIndex, fTempElementDecl);
-            DatatypeValidator edv = fTempElementDecl.datatypeValidator;
-            ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(existSuchElementIndex);
-            if ( ((eTypeInfo != null)&&(eTypeInfo!=typeInfo))
-                 || ((edv != null)&&(edv != dv)) )  {
-                noErrorSoFar = false;
-                // REVISIT: Localize
-                reportGenericSchemaError("duplicate element decl in the same scope : " +
-                                         fStringPool.toString(localpartIndex));
-
-            }
-        }
 
         QName eltQName = new QName(-1,localpartIndex,elementNameIndex,uriIndex);
+
+        // Check if an element exists at this scope.
+        // If it does, check it against the type of the new element
+        int existingEltNdx = fSchemaGrammar.getElementDeclIndex(eltQName.uri, 
+                                                 eltQName.localpart,enclosingScope);
+
+        if (existingEltNdx > -1) {
+          if (!checkDuplicateElementTypes(existingEltNdx,typeInfo,dv)) {
+             noErrorSoFar = false;
+
+             reportGenericSchemaError("duplicate element decl in the same scope with different types : " +
+                                      fStringPool.toString(localpartIndex));
+
+          }
+        }
 
         // add element decl to pool
 
@@ -6840,6 +6867,21 @@ throws Exception {
         return eltQName;
 
     }// end of method traverseElementDecl(Element)
+
+    private boolean checkDuplicateElementTypes(int eltNdx, ComplexTypeInfo typeInfo,
+                                       DatatypeValidator dv) {
+
+     
+        fSchemaGrammar.getElementDecl(eltNdx, fTempElementDecl);
+        DatatypeValidator edv = fTempElementDecl.datatypeValidator;
+        ComplexTypeInfo eTypeInfo = fSchemaGrammar.getElementComplexTypeInfo(eltNdx);
+        if ( ((eTypeInfo != null)&&(eTypeInfo!=typeInfo))
+             || ((edv != null)&&(edv != dv)) )  
+            return false;
+        else
+            return true;
+        
+    }
 
     private void traverseIdentityNameConstraintsFor(int elementIndex,
                                                 Vector identityConstraints)
