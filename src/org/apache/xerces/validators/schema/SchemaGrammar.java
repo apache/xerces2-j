@@ -353,9 +353,9 @@ public class SchemaGrammar extends Grammar{
             // recursively get all elements that can substitute this element
             Vector subSubGroup = sGrammar.getElementDeclAllSubstitutionGroupQNamesBlock(subElementIndex, grammarResolver, stringPool);
             int bsize = subSubGroup == null ? 0 : subSubGroup.size();
-            for (i = 0; i < bsize; i++) {
+            for (int j = 0; j < bsize; j++) {
                 // and add them to the list too
-                SubGroupBlockQName name = (SubGroupBlockQName)subSubGroup.elementAt(i);
+                SubGroupBlockQName name = (SubGroupBlockQName)subSubGroup.elementAt(j);
                 oneName = new SubGroupBlockQName();
                 oneName.name = name.name;
                 // note that we need to append the dev/pdev method
