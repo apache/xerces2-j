@@ -1761,7 +1761,7 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
     * @return normalized attribute value
     */
     private String validateDTDattribute(QName element, String attValue, 
-                                        XMLAttributeDecl attributeDecl) {
+                                        XMLAttributeDecl attributeDecl) throws SAXException {
         //AttributeValidator av = null;
 
         switch (attributeDecl.simpleType.type) {
@@ -1845,11 +1845,12 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
                 try {
                     fValID.validate( value, null );
                 } catch (InvalidDatatypeValueException ex) {
-                    /*
-                    reportRecoverableXMLError(ex.getMajorCode(),
-                                              ex.getMinorCode(),
-                                              fStringPool.toString( attributeDecl.name.rawname), value );
-                                              */
+                    String  key = ex.getKeyIntoReporter();
+
+                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                key,
+                                                new Object[]{ ex.getMessage()},
+                                                XMLErrorReporter.SEVERITY_ERROR );
                 }
                 /*
                 if (fNormalizeAttributeValues && value != unTrimValue) {
@@ -2361,13 +2362,13 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
 
 
         //Initialize ID, IDREF, IDREFS validators
-        if( fTableOfIDs == null ){
+        if (fTableOfIDs == null) {
             fTableOfIDs = new Hashtable();//Initialize table of IDs
         }
         fValID.initialize(fTableOfIDs);
         fValIDRef.initialize(fTableOfIDs);
         fValIDRefs.initialize(fTableOfIDs);
-         }
+    }
 
     /** ensure element stack capacity */
     private void ensureStackCapacity ( int newElementDepth) {

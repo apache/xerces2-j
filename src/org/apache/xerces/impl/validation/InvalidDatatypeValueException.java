@@ -70,7 +70,7 @@ public class InvalidDatatypeValueException
     //
    private int majorCode = -1;
    private int minorCode  = -1;
-
+   private String keyIntoReporter;
       //
     // Constructors
     //
@@ -120,11 +120,19 @@ public  int getMajorCode(){
     return  majorCode;
 }
 
+public  String getKeyIntoReporter(){
+    return keyIntoReporter;
+}
+
 public  void setMinorCode(int code ){
     majorCode = code;
 }
 public  void setMajorCode(int code ){
     minorCode = code;
+}
+public void setKeyIntoReporter( String key ){
+    keyIntoReporter = key;
+
 }
 
 

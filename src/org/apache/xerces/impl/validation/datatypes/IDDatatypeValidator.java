@@ -167,14 +167,17 @@ implements StatefullDatatypeValidator {
      */
     public void validate(String content, Object state ) throws InvalidDatatypeValueException{
 
-        if (!XMLChar.isValidName(content) == true) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+        boolean status;
+        if ((status = XMLChar.isValidName(content) ) == false) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
             InvalidDatatypeValueException error =  new
-                                                   InvalidDatatypeValueException( "ID is not valid: " + content );
+                                                   InvalidDatatypeValueException( content );
+            error.setKeyIntoReporter( "IDInvalid" );
             throw error;
         }
         if (!addId( content)) { //It is OK to pass a null here
             InvalidDatatypeValueException error = 
-            new InvalidDatatypeValueException( "ID '" + content +"'  has to be unique" );
+            new InvalidDatatypeValueException( content );
+            error.setKeyIntoReporter( "IDNotUnique" );
             throw error;
         }
     }
