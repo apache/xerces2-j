@@ -1,12 +1,10 @@
-This is the first drop of the Xerces for Java code base. 
+This is the Status file for the Xerces for Java code base. 
 
 There are lots of things that need to be done: 
 
 Here are some things at the top of my list (in no particular order):
 
-* move documentation from xml-site to xml-xerces
-
-* Binary build for v1.0.1
+* Binary build for v1.0.2
 
 * Additional Support for W3C XML schema.  There's both the structures
   spec and the datatypes spec.  There's a lot of work to do in the
