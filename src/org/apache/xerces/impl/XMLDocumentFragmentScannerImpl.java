@@ -228,39 +228,37 @@ public class XMLDocumentFragmentScannerImpl
     // temporary variables
 
     /** Element QName. */
-    protected QName fElementQName = new QName();
+    protected final QName fElementQName = new QName();
 
     /** Attribute QName. */
-    protected QName fAttributeQName = new QName();
+    protected final QName fAttributeQName = new QName();
 
     /** Element attributes. */
-    protected XMLAttributesImpl fAttributes = new XMLAttributesImpl();
+    protected final XMLAttributesImpl fAttributes = new XMLAttributesImpl();
 
     /** String. */
-    protected XMLString fTempString = new XMLString();
+    protected final XMLString fTempString = new XMLString();
 
     /** String. */
-    protected XMLString fTempString2 = new XMLString();
+    protected final XMLString fTempString2 = new XMLString();
 
     /** Array of 3 strings. */
-    private String[] fStrings = new String[3];
+    private final String[] fStrings = new String[3];
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
-
+    private final XMLStringBuffer fStringBuffer2 = new XMLStringBuffer();
 
     /** Another QName. */
-    private QName fQName = new QName();
-
+    private final QName fQName = new QName();
 
     /** Single character array. */
     private final char[] fSingleChar = new char[1];
 
     /** External entity. */
-    private XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
+    private final XMLEntityManager.ExternalEntity fExternalEntity = new XMLEntityManager.ExternalEntity();
     
     /** 
      * Saw spaces after element name or between attributes.

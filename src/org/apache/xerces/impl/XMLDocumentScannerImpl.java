@@ -204,16 +204,19 @@ public class XMLDocumentScannerImpl
     // temporary variables
 
     /** Array of 3 strings. */
-    private String[] fStrings = new String[3];
+    private final String[] fStrings = new String[3];
 
     /** String. */
-    private XMLString fString = new XMLString();
+    private final XMLString fString = new XMLString();
 
     /** String buffer. */
-    private XMLStringBuffer fStringBuffer = new XMLStringBuffer();
+    private final XMLStringBuffer fStringBuffer = new XMLStringBuffer();
     
     /** External subset source. */
     private XMLInputSource fExternalSubsetSource = null;
+    
+    /** A DTD Description. */
+    private final XMLDTDDescription fDTDDescription = new XMLDTDDescription(null, null, null, null, null);
 
     //
     // Constructors
@@ -561,9 +564,9 @@ public class XMLDocumentScannerImpl
         
         // Attempt to locate an external subset with an external subset resolver.
         if (!fHasExternalDTD && fExternalSubsetResolver != null) {
-            XMLDTDDescription desc = new XMLDTDDescription(null, 
-                null, fEntityManager.getCurrentResourceIdentifier().getExpandedSystemId(), null, fDoctypeName);
-            fExternalSubsetSource = fExternalSubsetResolver.getExternalSubset(desc);
+            fDTDDescription.setValues(null, null, fEntityManager.getCurrentResourceIdentifier().getExpandedSystemId(), null);
+            fDTDDescription.setRootName(fDoctypeName);
+            fExternalSubsetSource = fExternalSubsetResolver.getExternalSubset(fDTDDescription);
             fHasExternalDTD = fExternalSubsetSource != null;
         }
 
@@ -924,7 +927,6 @@ public class XMLDocumentScannerImpl
             fEntityManager.setEntityHandler(null);
             try {
                 boolean again;
-                XMLEntityDescriptionImpl entityDescription = new XMLEntityDescriptionImpl();
                 do {
                     again = false;
                     switch (fScannerState) {
@@ -974,9 +976,10 @@ public class XMLDocumentScannerImpl
                             break;
                         }
                         case SCANNER_STATE_DTD_EXTERNAL: {
-                            entityDescription.setDescription("[dtd]", fDoctypePublicId, fDoctypeSystemId, null, null);
+                            fDTDDescription.setValues(fDoctypePublicId, fDoctypeSystemId, null, null);
+                            fDTDDescription.setRootName(fDoctypeName);
                             XMLInputSource xmlInputSource =
-                                fEntityManager.resolveEntity(entityDescription);
+                                fEntityManager.resolveEntity(fDTDDescription);
                             fDTDScanner.setInputSource(xmlInputSource);
                             setScannerState(SCANNER_STATE_DTD_EXTERNAL_DECLS);
                             again = true;
@@ -1144,9 +1147,11 @@ public class XMLDocumentScannerImpl
          */
         protected void resolveExternalSubsetAndRead()
             throws IOException, XNIException {
-            XMLDTDDescription desc = new XMLDTDDescription(null, 
-                null, fEntityManager.getCurrentResourceIdentifier().getExpandedSystemId(), null, fElementQName.rawname);
-            XMLInputSource src = fExternalSubsetResolver.getExternalSubset(desc);
+            
+            fDTDDescription.setValues(null, null, fEntityManager.getCurrentResourceIdentifier().getExpandedSystemId(), null);
+            fDTDDescription.setRootName(fElementQName.rawname);
+            XMLInputSource src = fExternalSubsetResolver.getExternalSubset(fDTDDescription);
+            
             if (src != null) {
                 fDoctypeName = fElementQName.rawname;
                 fDoctypePublicId = src.getPublicId();
