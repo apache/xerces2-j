@@ -1723,8 +1723,11 @@ public class XMLSchemaValidator
             // if the attribute is not specified, then apply the value constraint
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
-                //REVISIT: what's the proper attrType?
-                attributes.addAttribute(attName, null, (defaultValue !=null)?defaultValue.toString():"");
+                // REVISIT: fType on decl must be simpleType decl, using which we can find
+                // out the type. In the mean time, we must at least set CDATA, 
+                // and we really need to know what attributes are of type ID:
+                // DOM requires some special handling for those ones.
+                attributes.addAttribute(attName, "CDATA", (defaultValue !=null)?defaultValue.toString():"");
             }
 
 

@@ -145,6 +145,9 @@ public abstract class AbstractDOMParser
     /** Set to true and recompile to debug entity references. */
     private static final boolean DEBUG_ENTITY_REF = false;
 
+
+    // XMLNS namespace: XML-Infoset
+    public static final String XMLNS_URI ="http://www.w3.org/2000/xmlns/";
     //
     // Data
     //
@@ -549,10 +552,18 @@ public abstract class AbstractDOMParser
             }
             else {
                 el = fDocument.createElement(element.rawname);
-            }
+            } 
+            
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
                 attributes.getName(i, fAttrQName);
+                // DOM Level 2 wants all namespace declaration attributes
+                // to be bound to "http://www.w3.org/2000/xmlns/"
+                String attributeName = fAttrQName.rawname;
+                if (attributeName !=null && (attributeName.startsWith("xmlns:") ||
+                    attributeName.equals("xmlns"))) {
+                    fAttrQName.uri = XMLNS_URI;
+                }
                 Attr attr;
                 if (fNamespaceAware) {
                     attr = fDocument.createAttributeNS(fAttrQName.uri,
@@ -577,6 +588,14 @@ public abstract class AbstractDOMParser
             }
             fCurrentNode.appendChild(el);
             fCurrentNode = el;
+
+            // identifier registration
+            for (int i = 0; i < attrCount; i++) {
+                 if (attributes.getType(i).equals("ID")) {
+                        String identifier = attributes.getValue(i);
+                        fDocumentImpl.putIdentifier(identifier, el);
+                    }
+            }
         }
         else {
             int el = fDeferredDocumentImpl.
@@ -586,6 +605,17 @@ public abstract class AbstractDOMParser
 
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, el);
             fCurrentNodeIndex = el;
+
+            // identifier registration
+            int attrCount = attributes.getLength();
+            for (int i = 0; i < attrCount; i++) {
+                 if (attributes.getType(i).equals("ID")) {
+                        String identifier = attributes.getValue(i);
+                        fDeferredDocumentImpl.putIdentifier(identifier, el);
+                 }
+                   
+            }
+            
         }
     } // startElement(QName,XMLAttributes)
 
@@ -1154,7 +1184,7 @@ public abstract class AbstractDOMParser
                     // done here.
                     if (attributeName.startsWith("xmlns:") ||
                         attributeName.equals("xmlns")) {
-                        namespaceURI = NamespaceContext.XMLNS;
+                        namespaceURI = XMLNS_URI;
                     }
                     attr = (AttrImpl)fDocumentImpl.createAttributeNS(namespaceURI,
                                                                      attributeName);
