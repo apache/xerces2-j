@@ -71,6 +71,8 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM
  * @author Ralf Pfeiffer, IBM
+ *
+ * @version $Id$
  */
 public class AttrNSImpl
     extends AttrImpl {

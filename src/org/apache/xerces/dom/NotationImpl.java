@@ -77,7 +77,7 @@ import org.w3c.dom.*;
  * <P>
  * Level 1 of the DOM does not support editing Notation contents.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class NotationImpl 

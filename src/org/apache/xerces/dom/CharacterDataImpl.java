@@ -75,7 +75,7 @@ import org.w3c.dom.events.*;
  * setNodeValue method, this class isn't declared as implementing the interface
  * CharacterData. This is done by relevant subclasses (TexImpl, CommentImpl).
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public abstract class CharacterDataImpl

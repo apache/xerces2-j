@@ -86,6 +86,8 @@ import org.w3c.dom.events.*;
     ???? CONCERN: The hashtable should probably be a per-document object.
     Finer granularity would be even better, but would cost more cycles to
     resolve and might not save enough event traffic to be worth the investment.
+
+* @version $Id$
 */
 class LCount 
 { 

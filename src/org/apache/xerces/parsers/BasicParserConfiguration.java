@@ -78,8 +78,6 @@ import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
-//import org.xml.sax.Locator;
-
 /**
  * A very basic parser configuration. This configuration class can
  * be used as a base class for custom parser configurations. The
@@ -522,10 +520,11 @@ public abstract class BasicParserConfiguration
      * 
      * @param featureId The feature identifier.
      * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
      */
     public boolean getFeature(String featureId)
         throws XMLConfigurationException {
@@ -542,10 +541,11 @@ public abstract class BasicParserConfiguration
      * 
      * @param propertyId The property identifier.
      * 
-     * @throws SAXNotRecognizedException Thrown if the feature is not 
-     *                                   recognized.
-     * @throws SAXNotSupportedException Thrown if the feature is not
-     *                                  supported.
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
      */
     public Object getProperty(String propertyId)
         throws XMLConfigurationException {

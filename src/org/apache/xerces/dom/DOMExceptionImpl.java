@@ -103,7 +103,7 @@ import org.w3c.dom.DOMException;
  * that is already in use elsewhere.
  * </UL>
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DOMExceptionImpl 

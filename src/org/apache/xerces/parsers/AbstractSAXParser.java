@@ -357,7 +357,6 @@ public abstract class AbstractSAXParser
      * @param text The content.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void characters(XMLString text) throws XNIException {
 
@@ -587,7 +586,6 @@ public abstract class AbstractSAXParser
      * @param text The text in the comment.
      *
      * @throws XNIException Thrown by application to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void comment(XMLString text) throws XNIException {
 
@@ -695,7 +693,6 @@ public abstract class AbstractSAXParser
      *                      default value is specified.
      *
      * @throws XNIException Thrown by handler to signal an error.
-     * @throws SAXException Thrown by SAX handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, 
                               String type, String[] enumeration, 

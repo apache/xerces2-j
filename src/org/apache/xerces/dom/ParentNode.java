@@ -97,6 +97,8 @@ import org.apache.xerces.dom.events.*;
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
+ *
+ * @version $Id$
  */
 public abstract class ParentNode
     extends ChildNode {

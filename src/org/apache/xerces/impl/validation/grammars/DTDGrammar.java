@@ -284,6 +284,13 @@ public class DTDGrammar
     /**
      * The start of the DTD.
      *
+     * @param locator  The document locator, or null if the document
+     *                 location cannot be reported during the parsing of 
+     *                 the document DTD. However, it is <em>strongly</em>
+     *                 recommended that a locator be supplied that can 
+     *                 at least report the base system identifier of the
+     *                 DTD.
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void startDTD(XMLLocator locator) throws XNIException {
@@ -339,9 +346,30 @@ public class DTDGrammar
 
     } // startEntity(String,String,String,String)
 
-    public void textDecl(String version, String encoding) throws XNIException {}
-    public void comment(XMLString text) throws XNIException {}
-    public void processingInstruction(String target, XMLString data) throws XNIException {}
+    /**
+     * This method notifies the end of an entity. The DTD has the pseudo-name
+     * of "[dtd]; and parameter entity names start with '%'.
+     * <p>
+     * <strong>Note:</strong> Since the DTD is an entity, the handler
+     * will be notified of the end of the DTD entity by calling the
+     * endEntity method with the entity name "[dtd]" <em>after</em> calling
+     * the endDTD method.
+     * 
+     * @param name The name of the entity.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endEntity(String name) throws XNIException {
+
+        if (name.equals("[dtd]")) {
+            fReadingExternalDTD = false;
+        }
+        if (name.startsWith("%")) {
+            fPEDepth--;
+            fReadingExternalDTD = fPEntityStack[fPEDepth];
+        }
+
+    } // endEntity(String)
 
     /**
      * An element declaration.
@@ -428,18 +456,6 @@ public class DTDGrammar
         fElementDeclIsExternal[chunk][index] = fReadingExternalDTD? 1 : 0;
 
     } // elementDecl(String,String)
-
-    /**
-     * The start of an attribute list.
-     * 
-     * @param elementName The name of the element that this attribute
-     *                    list is associated with.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void startAttlist(String elementName) throws XNIException {
-        // no-op
-    } // startAttlist
 
     /**
      * An attribute declaration.
@@ -568,15 +584,6 @@ public class DTDGrammar
     } // attributeDecl(String,String,String,String[],String,XMLString)
 
     /**
-     * The end of an attribute list.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endAttlist() throws XNIException {
-        // no-op
-    } // endAttlist()
-
-    /**
      * An internal entity declaration.
      * 
      * @param name The name of the entity. Parameter entity names start with
@@ -689,39 +696,6 @@ public class DTDGrammar
     } // notationDecl(String,String,String)
 
     /**
-     * The start of a conditional section.
-     * 
-     * @param type The type of the conditional section. This value will
-     *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     *
-     * @see CONDITIONAL_INCLUDE
-     * @see CONDITIONAL_IGNORE
-     */
-    public void startConditional(short type) throws XNIException {
-        // no-op
-    } // startConditional(short)
-
-    /**
-     * Characters within an IGNORE conditional section.
-     *
-     * @param text The ignored text.
-     */
-    public void characters(XMLString text) throws XNIException {
-        // no-op
-    } // characters(XMLString)
-
-    /**
-     * The end of a conditional section.
-     *
-     * @throws XNIException Thrown by handler to signal an error.
-     */
-    public void endConditional() throws XNIException {
-        // no-op
-    } // endConditional()
-
-    /**
      * The end of the DTD.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -751,36 +725,106 @@ public class DTDGrammar
 
     } // endDTD()
 
+    // no-op methods
+
     /**
-     * This method notifies the end of an entity. The DTD has the pseudo-name
-     * of "[dtd]; and parameter entity names start with '%'.
+     * Notifies of the presence of a TextDecl line in an entity. If present,
+     * this method will be called immediately following the startEntity call.
      * <p>
-     * <strong>Note:</strong> Since the DTD is an entity, the handler
-     * will be notified of the end of the DTD entity by calling the
-     * endEntity method with the entity name "[dtd]" <em>after</em> calling
-     * the endDTD method.
+     * <strong>Note:</strong> This method is only called for external
+     * parameter entities referenced in the DTD.
      * 
-     * @param name The name of the entity.
+     * @param version  The XML version, or null if not specified.
+     * @param encoding The IANA encoding name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void endEntity(String name) throws XNIException {
+    public void textDecl(String version, String encoding) throws XNIException {}
 
-        if (name.equals("[dtd]")) {
-            fReadingExternalDTD = false;
-        }
-        if (name.startsWith("%")) {
-            fPEDepth--;
-            fReadingExternalDTD = fPEntityStack[fPEDepth];
-        }
+    /**
+     * A comment.
+     * 
+     * @param text The text in the comment.
+     *
+     * @throws XNIException Thrown by application to signal an error.
+     */
+    public void comment(XMLString text) throws XNIException {}
+    
+    /**
+     * A processing instruction. Processing instructions consist of a
+     * target name and, optionally, text data. The data is only meaningful
+     * to the application.
+     * <p>
+     * Typically, a processing instruction's data will contain a series
+     * of pseudo-attributes. These pseudo-attributes follow the form of
+     * element attributes but are <strong>not</strong> parsed or presented
+     * to the application as anything other than text. The application is
+     * responsible for parsing the data.
+     * 
+     * @param target The target.
+     * @param data   The data or null if none specified.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void processingInstruction(String target, XMLString data) throws XNIException {}
 
-    } // endEntity(String)
+    /**
+     * The start of an attribute list.
+     * 
+     * @param elementName The name of the element that this attribute
+     *                    list is associated with.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void startAttlist(String elementName) throws XNIException {}
+
+    /**
+     * The end of an attribute list.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endAttlist() throws XNIException {}
+
+    /**
+     * The start of a conditional section.
+     * 
+     * @param type The type of the conditional section. This value will
+     *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #CONDITIONAL_INCLUDE
+     * @see #CONDITIONAL_IGNORE
+     */
+    public void startConditional(short type) throws XNIException {}
+
+    /**
+     * Characters within an IGNORE conditional section.
+     *
+     * @param text The ignored text.
+     */
+    public void characters(XMLString text) throws XNIException {}
+
+    /**
+     * The end of a conditional section.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endConditional() throws XNIException {}
 
     //
     // XMLDTDContentModelHandler methods
     //
 
-    /** Start content model. */
+    /**
+     * The start of a content model. Depending on the type of the content
+     * model, specific methods may be called between the call to the
+     * startContentModel method and the call to the endContentModel method.
+     * 
+     * @param elementName The name of the element.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void startContentModel(String elementName)
         throws XNIException {
       
@@ -793,25 +837,43 @@ public class DTDGrammar
 
     } // startContentModel(String)
 
-    /** ANY. */
-    public void any() throws XNIException {}
-
-    /** EMPTY. */
-    public void empty() throws XNIException {}
-
-    /** Start group. */
+    /**
+     * A start of either a mixed or children content model. A mixed
+     * content model will immediately be followed by a call to the
+     * <code>pcdata()</code> method. A children content model will
+     * contain additional groups and/or elements.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #empty
+     */
     public void startGroup() throws XNIException {
         fDepth++;
         initializeContentModelStack();
         fMixed = false;
     } // startGroup()
 
-    /** #PCDATA. */
+    /**
+     * The appearance of "#PCDATA" within a group signifying a
+     * mixed content model. This method will be the first called
+     * following the content model's <code>startGroup()</code>.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #startGroup
+     */
     public void pcdata() throws XNIException {
         fMixed = true;
     } // pcdata()
 
-    /** Element. */
+    /**
+     * A referenced element in a mixed or children content model.
+     * 
+     * @param elementName The name of the referenced element.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void element(String elementName) throws XNIException {
         if (fMixed) {
             if (fNodeIndexStack[fDepth] == -1 ) {
@@ -828,7 +890,17 @@ public class DTDGrammar
         }
     } // element(String)
 
-    /** Separator. */
+    /**
+     * The separator between choices or sequences of a mixed or children
+     * content model.
+     * 
+     * @param separator The type of children separator.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #SEPARATOR_CHOICE
+     * @see #SEPARATOR_SEQUENCE
+     */
     public void separator(short separator) throws XNIException {
 
         if (!fMixed) {
@@ -849,7 +921,19 @@ public class DTDGrammar
 
     } // separator(short)
 
-    /** Occurrence. */
+    /**
+     * The occurrence count for a child in a children content model or
+     * for the mixed content model group.
+     * 
+     * @param occurrence The occurrence count for the last element
+     *                   or group.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #OCCURS_ZERO_OR_ONE
+     * @see #OCCURS_ZERO_OR_MORE
+     * @see #OCCURS_ONE_OR_MORE
+     */
     public void occurrence(short occurrence) throws XNIException {
 
         if (!fMixed) {
@@ -864,7 +948,11 @@ public class DTDGrammar
 
     } // occurrence(short)
 
-    /** End group. */
+    /**
+     * The end of a group for mixed or children content models.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
     public void endGroup() throws XNIException {
 
         if (!fMixed) {
@@ -877,10 +965,34 @@ public class DTDGrammar
 
     } // endGroup()
 
-    /** End content model. */
-    public void endContentModel() throws XNIException {
-        // no-op
-    } // endContentModel()
+    // no-op methods
+
+    /** 
+     * A content model of ANY. 
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #empty
+     * @see #startGroup
+     */
+    public void any() throws XNIException {}
+
+    /**
+     * A content model of EMPTY.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     *
+     * @see #any
+     * @see #startGroup
+     */
+    public void empty() throws XNIException {}
+
+    /**
+     * The end of a content model.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void endContentModel() throws XNIException {}
 
     //
     // Grammar methods
@@ -906,7 +1018,6 @@ public class DTDGrammar
      * @param nodeType the type of XMLContentSpec to create - from XMLContentSpec.CONTENTSPECNODE_*
      * @param nodeValue handle to an XMLContentSpec
      * @return handle to the newly create XMLContentSpec
-     * @exception java.lang.Exception
      */
     protected int addContentSpecNode(short nodeType, String nodeValue) {
 
@@ -927,7 +1038,6 @@ public class DTDGrammar
      *
      * @param   elementName  the name (Element) for the node
      * @return handle to the newly create XMLContentSpec
-     * @exception java.lang.Exception
      */
     protected int addUniqueLeafNode(String elementName) {
 
@@ -951,7 +1061,6 @@ public class DTDGrammar
      * @param leftNodeIndex handle to an XMLContentSpec
      * @param rightNodeIndex handle to an XMLContentSpec
      * @return handle to the newly create XMLContentSpec
-     * @exception java.lang.Exception
      */
     protected int addContentSpecNode(short nodeType, 
                                      int leftNodeIndex, int rightNodeIndex) {
@@ -973,6 +1082,7 @@ public class DTDGrammar
 
     } // addContentSpecNode(short,int,int):int
 
+    /** Initialize content model stack. */
     protected void initializeContentModelStack() {
 
         if (fOpStack == null) {

@@ -423,7 +423,7 @@ public class StandardParserConfiguration
     /** 
      * Reset all components before parsing. 
      *
-     * @throws SAXException Thrown if an error occurs during initialization.
+     * @throws XNIException Thrown if an error occurs during initialization.
      */
     protected void reset() throws XNIException {
 
@@ -471,13 +471,11 @@ public class StandardParserConfiguration
      *
      * @param featureId The unique identifier (URI) of the feature.
      *
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested feature is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested feature is known, but the requested
-     *            state is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
      */
     protected void checkFeature(String featureId)
         throws XMLConfigurationException {
@@ -556,13 +554,12 @@ public class StandardParserConfiguration
      *
      * @param propertyId The unique identifier (URI) of the property
      *                   being set.
-     * @exception org.xml.sax.SAXNotRecognizedException If the
-     *            requested property is not known.
-     * @exception org.xml.sax.SAXNotSupportedException If the
-     *            requested property is known, but the requested
-     *            value is not supported.
-     * @exception org.xml.sax.SAXException If there is any other
-     *            problem fulfilling the request.
+     *
+     * @throws XMLConfigurationException Thrown for configuration error.
+     *                                   In general, components should
+     *                                   only throw this exception if
+     *                                   it is <strong>really</strong>
+     *                                   a critical error.
      */
     protected void checkProperty(String propertyId)
         throws XMLConfigurationException {

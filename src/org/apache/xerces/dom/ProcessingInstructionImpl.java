@@ -66,7 +66,7 @@ import org.w3c.dom.*;
  *
  * This class inherits from CharacterDataImpl to reuse its setNodeValue method.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class ProcessingInstructionImpl

@@ -350,6 +350,16 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
         }
     }
 
+    /**
+     * Create datatype validator.
+     * 
+     * @param name Name of type.
+     * @param base The base type, or null if there is no base type.
+     * @param facets The facets.
+     * @param list True if this type is a list.
+     * 
+     * @return The new datatype validator.
+     */
     public DatatypeValidator createDatatypeValidator(String name, DatatypeValidator base, Hashtable facets, boolean list)
     throws InvalidDatatypeFacetException, InvalidDatatypeValueException {
 

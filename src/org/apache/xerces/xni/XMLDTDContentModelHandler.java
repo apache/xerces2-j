@@ -92,9 +92,9 @@ public interface XMLDTDContentModelHandler {
      * &lt;!ELEMENT elem (#PCDATA|foo|bar)*&gt;
      * </pre>
      *
-     * @see SEPARATOR_SEQUENCE
+     * @see #SEPARATOR_SEQUENCE
      */
-    public static final short SEPARATOR_CHOICE = 4;
+    public static final short SEPARATOR_CHOICE = 0;
 
     /**
      * A sequence separator for children content models. This separator 
@@ -107,9 +107,9 @@ public interface XMLDTDContentModelHandler {
      * &lt;!ELEMENT elem (foo,bar,baz)&gt;
      * </pre>
      *
-     * @see SEPARATOR_SEQUENCE
+     * @see #SEPARATOR_CHOICE
      */
-    public static final short SEPARATOR_SEQUENCE = 5;
+    public static final short SEPARATOR_SEQUENCE = 1;
 
     // occurrence counts
 
@@ -123,10 +123,10 @@ public interface XMLDTDContentModelHandler {
      * &lt;!ELEMENT elem (foo?)&gt;
      * </pre>
      *
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
+     * @see #OCCURS_ZERO_OR_MORE
+     * @see #OCCURS_ONE_OR_MORE
      */
-    public static final short OCCURS_ZERO_OR_ONE = 6;
+    public static final short OCCURS_ZERO_OR_ONE = 2;
 
     /** 
      * This occurrence count limits the element, choice, or sequence in a
@@ -140,10 +140,10 @@ public interface XMLDTDContentModelHandler {
      * &lt;!ELEMENT elem (#PCDATA|foo|bar)*&gt;
      * </pre>
      *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ONE_OR_MORE
+     * @see #OCCURS_ZERO_OR_ONE
+     * @see #OCCURS_ONE_OR_MORE
      */
-    public static final short OCCURS_ZERO_OR_MORE = 7;
+    public static final short OCCURS_ZERO_OR_MORE = 3;
 
     /** 
      * This occurrence count limits the element, choice, or sequence in a
@@ -156,10 +156,10 @@ public interface XMLDTDContentModelHandler {
      * &lt;!ELEMENT elem (foo+)&gt;
      * </pre>
      *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
+     * @see #OCCURS_ZERO_OR_ONE
+     * @see #OCCURS_ZERO_OR_MORE
      */
-    public static final short OCCURS_ONE_OR_MORE = 8;
+    public static final short OCCURS_ONE_OR_MORE = 4;
 
     //
     // XMLDTDContentModelHandler methods
@@ -238,8 +238,8 @@ public interface XMLDTDContentModelHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see SEPARATOR_CHOICE
-     * @see SEPARATOR_SEQUENCE
+     * @see #SEPARATOR_CHOICE
+     * @see #SEPARATOR_SEQUENCE
      */
     public void separator(short separator) throws XNIException;
 
@@ -252,9 +252,9 @@ public interface XMLDTDContentModelHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see OCCURS_ZERO_OR_ONE
-     * @see OCCURS_ZERO_OR_MORE
-     * @see OCCURS_ONE_OR_MORE
+     * @see #OCCURS_ZERO_OR_ONE
+     * @see #OCCURS_ZERO_OR_MORE
+     * @see #OCCURS_ONE_OR_MORE
      */
     public void occurrence(short occurrence) throws XNIException;
 

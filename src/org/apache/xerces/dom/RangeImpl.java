@@ -67,14 +67,11 @@ import java.util.Vector;
 /** The RangeImpl class implements the org.w3c.dom.range.Range interface.
  *  <p> Please see the API documentation for the interface classes  
  *  and use the interfaces in your client programs.
+ *
+ * @version $Id$
  */
 public class RangeImpl  implements Range {
     
-    //
-    // Constants
-    //
-    
-
     //
     // Data
     //

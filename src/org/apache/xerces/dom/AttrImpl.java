@@ -135,7 +135,7 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
  * @author Andy Clark, IBM
- * @version
+ * @version $Id$
  * @since PR-DOM-Level-1-19980818.
  *
  */

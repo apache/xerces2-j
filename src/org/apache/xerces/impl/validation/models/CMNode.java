@@ -58,8 +58,9 @@
 package org.apache.xerces.impl.validation.models;
 
 /**
+ * A content model node.
  *
- * @version
+ * @version $Id$
  */
 public abstract class CMNode
 {

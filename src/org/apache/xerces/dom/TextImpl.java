@@ -72,7 +72,7 @@ import org.w3c.dom.*;
  * valid, since they're really just two different ways of quoting
  * characters when they're written out as part of an XML stream.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class TextImpl 

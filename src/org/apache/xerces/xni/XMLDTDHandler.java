@@ -76,10 +76,18 @@ public interface XMLDTDHandler {
     // Constants
     //
 
-    /** Conditional section: INCLUDE. */
+    /**
+     * Conditional section: INCLUDE. 
+     *
+     * @see #CONDITIONAL_IGNORE
+     */
     public static final short CONDITIONAL_INCLUDE = 0;
 
-    /** Conditional section: IGNORE. */
+    /** 
+     * Conditional section: IGNORE.
+     *
+     * @see #CONDITIONAL_INCLUDE
+     */
     public static final short CONDITIONAL_IGNORE = 1;
 
     //
@@ -308,8 +316,8 @@ public interface XMLDTDHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      *
-     * @see CONDITIONAL_INCLUDE
-     * @see CONDITIONAL_IGNORE
+     * @see #CONDITIONAL_INCLUDE
+     * @see #CONDITIONAL_IGNORE
      */
     public void startConditional(short type) throws XNIException;
 

@@ -70,6 +70,8 @@ import org.apache.xerces.dom.DocumentImpl;
  *  on DOM remove. It is expected that the DOM implementation call removeNode
  *  right before the actual DOM transformation. If not called by the DOM,
  *  the client could call it before doing the removal.
+ *
+ * @version $Id$
  */
 public class NodeIteratorImpl implements NodeIterator {
     

@@ -64,7 +64,7 @@ import java.util.ListResourceBundle;
  * The messages are arranged in key and value tuples in a ListResourceBundle.
  *
  *
- * @version
+ * @version $Id$
  */
 public class DatatypeMessages extends ListResourceBundle {
     /** The list resource bundle contents. */

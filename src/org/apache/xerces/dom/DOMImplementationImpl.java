@@ -68,7 +68,7 @@ import org.w3c.dom.*;
  * methods. However, there's nothing that says it can't be a singleton,
  * so that's how I've implemented it.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DOMImplementationImpl  

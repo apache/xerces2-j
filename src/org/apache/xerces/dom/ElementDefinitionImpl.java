@@ -66,7 +66,7 @@ import org.w3c.dom.*;
  * I've included this in Level 1 purely as an anchor point for default
  * attributes. In Level 2 it should enable the ChildRule support.
  *
- * @version
+ * @version $Id$
  */
 public class ElementDefinitionImpl 
     extends ParentNode {

@@ -104,7 +104,7 @@ import java.util.Vector;
  * NOTE: Level 2 of the DOM will probably _not_ use NodeList for its
  * extended search mechanisms, partly for the reasons just discussed.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class DeepNodeListImpl 

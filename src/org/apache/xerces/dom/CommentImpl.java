@@ -62,7 +62,7 @@ import org.w3c.dom.*;
 /**
  * Represents an XML (or HTML) comment.
  *
- * @version
+ * @version $Id$
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CommentImpl 

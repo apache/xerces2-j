@@ -75,6 +75,7 @@ import org.w3c.dom.events.*;
  *  <li>firing mutation events
  * </ul>
  *
+ * @version $Id$
  */
 public class AttributeMap extends NamedNodeMapImpl {
 

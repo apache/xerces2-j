@@ -63,7 +63,7 @@ package org.apache.xerces.impl.msg;
  * Xerces parser. The messages are arranged in key and value
  * tuples in a ListResourceBundle.
  *
- * @version
+ * @version $Id$
  */
 public class ImplementationMessages
     extends java.util.ListResourceBundle
