@@ -139,6 +139,12 @@ public class ENTITYDatatypeValidator extends StringDatatypeValidator {
             strFacets.put(SchemaSymbols.ELT_PATTERN , "[\\i-[:]][\\c-[:]]*"  );
             fgStrValidator = new StringDatatypeValidator (null, strFacets, false);
         }
+
+        // inherit entity handler and string pool from base validator
+        if (base != null && base instanceof ENTITYDatatypeValidator) {
+            this.fEntityHandler = ((ENTITYDatatypeValidator)base).fEntityHandler;
+            this.fStringPool = ((ENTITYDatatypeValidator)base).fStringPool;
+        }
     }
 
     /**
