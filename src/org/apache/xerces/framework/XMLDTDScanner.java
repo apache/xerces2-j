@@ -58,6 +58,7 @@
 package org.apache.xerces.framework;
 
 import org.apache.xerces.readers.XMLEntityHandler;
+import org.apache.xerces.readers.DefaultEntityHandler;
 import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
@@ -1025,7 +1026,7 @@ public final class XMLDTDScanner {
         if (scanExternalSubset) {
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
         }
-	fGrammarResolver.putGrammar("", fDTDGrammar);
+        fGrammarResolver.putGrammar("", fDTDGrammar);
 
 
         return true;
@@ -2356,7 +2357,11 @@ public final class XMLDTDScanner {
                 }
                 decreaseMarkupDepth();
                 fDTDGrammar.endEntityDecl();
-                int entityIndex = fDTDGrammar.addInternalPEDecl(entityName, value);
+                // a hack by Eric
+                //REVISIT
+                fDTDGrammar.addInternalPEDecl(entityName, value);
+                int entityIndex = ((DefaultEntityHandler) fEntityHandler).addInternalPEDecl(entityName, value, false);
+
             } else {
                 if (!scanExternalID(false)) {
                     skipPastEndOfCurrentMarkup();
@@ -2394,7 +2399,11 @@ public final class XMLDTDScanner {
                 }
                 decreaseMarkupDepth();
                 fDTDGrammar.endEntityDecl();
-                int entityIndex = fDTDGrammar.addInternalEntityDecl(entityName, value);
+
+                //a hack by Eric
+                //REVISIT
+                fDTDGrammar.addInternalEntityDecl(entityName, value);
+                int entityIndex = ((DefaultEntityHandler) fEntityHandler).addInternalEntityDecl(entityName, value, false);
             } else {
                 if (!scanExternalID(false)) {
                     skipPastEndOfCurrentMarkup();
