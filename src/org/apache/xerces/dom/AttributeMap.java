@@ -78,6 +78,8 @@ import org.w3c.dom.events.*;
  */
 public class AttributeMap extends NamedNodeMapImpl {
 
+    final static boolean DEBUG = false;
+
     //
     // Constructors
     //
@@ -517,7 +519,12 @@ public class AttributeMap extends NamedNodeMapImpl {
      */
     protected void cloneContent(NamedNodeMapImpl srcmap) {
     	if (srcmap.nodes != null) {
-            nodes = new Vector(srcmap.nodes.size());
+            if (nodes == null) {
+                nodes = new Vector(srcmap.nodes.size());
+            }
+            else {
+                nodes.setSize(srcmap.nodes.size());
+            }
             for (int i = 0; i < srcmap.nodes.size(); ++i) {
                 NodeImpl n = (NodeImpl) srcmap.nodes.elementAt(i);
                 NodeImpl clone = (NodeImpl) n.cloneNode(true);
@@ -529,133 +536,48 @@ public class AttributeMap extends NamedNodeMapImpl {
         }
     } // cloneContent():AttributeMap
 
-    //
-    // Protected methods
-    //
 
     /**
-     * Subroutine: If this NamedNodeMap is backed by a "defaults" map (eg,
-     * if it's being used for Attributes of an XML file validated against
-     * a DTD), we need to deal with the risk that those defaults might
-     * have changed. Entries may have been added, changed, or removed, and
-     * if so we need to update our version of that information
-     * <P>
-     * Luckily, this currently applies _only_ to Attributes, which have a
-     * "specified" flag that allows us to distinguish which we set manually
-     * versus which were defaults... assuming that the defaults list is being
-     * maintained properly, of course.
-     * <P>
-     * Also luckily, The NameNodeMaps are maintained as 
-     * sorted lists. This should keep the cost of convolving the two lists
-     * managable... not wonderful, but at least more like 2N than N**2..
-     * <P>
-     * Finally, to avoid doing the convolution except when there are actually
-     * changes to be absorbed, I've made the Map aware of whether or not
-     * its defaults Map has changed. This is not 110% reliable, but it should
-     * work under normal circumstances, especially since the DTD is usually
-     * relatively static information.
-     * <P>
-     * Note: This is NON-DOM implementation, though used to support behavior
-     * that the DOM requires.
+     * Get this AttributeMap in sync with the given "defaults" map.
+     * @param defaults The default attributes map to sync with.
      */
-
-/** COMMENTED OUT!!!!!!! ********
-   Doing this dynamically is a killer, since editing the DTD isn't even
-   supported this is commented out at least for now. In the long run it seems
-   better to update the document on user's demand after the DTD has been
-   changed rather than doing this anyway.
-
-    protected void reconcileDefaults() {
+    protected void reconcileDefaults(NamedNodeMapImpl defaults) {
         
-        if (DEBUG) System.out.println("reconcileDefaults:");
-    	if (defaults != null && changed()) {
-
-    		int n = 0;
-            int d = 0;
-            int nsize = (nodes != null) ? nodes.size() : 0;
+        // remove any existing default
+        int nsize = (nodes != null) ? nodes.size() : 0;
+        for (int i = nsize - 1; i >= 0; i--) {
+            AttrImpl attr = (AttrImpl) nodes.elementAt(i);
+            if (!attr.isSpecified()) {
+                // remove owning element
+                attr.ownerNode = ownerNode.ownerDocument();
+                attr.isOwned(false);
+                // make sure it won't be mistaken in case it's reused
+                attr.isSpecified(true);
+                nodes.removeElementAt(i);
+            }
+        }
+        // add the new defaults
+    	if (defaults == null) {
+            return;
+        }
+        if (nodes == null || nodes.size() == 0) {
+            cloneContent(defaults);
+        }
+        else {
             int dsize = defaults.nodes.size();
-
-    		AttrImpl nnode = (nsize == 0) ? null : (AttrImpl) nodes.elementAt(0);
-    		AttrImpl dnode = (dsize == 0) ? null : (AttrImpl) defaults.nodes.elementAt(0);
-
-    		while (n < nsize && d < dsize) {
-    			nnode = (AttrImpl) nodes.elementAt(n);
-    			dnode = (AttrImpl) defaults.nodes.elementAt(d);
-    			if (DEBUG) {
-    			System.out.println("\n\nnnode="+nnode.getNodeName());
-    			System.out.println("dnode="+dnode.getNodeName());
-    			}
-    			
-    			
-    			int test = nnode.getNodeName().compareTo(dnode.getNodeName());
-
-                //REVIST: EACH CONDITION - HOW IT RESPONDS TO DUPLICATE KEYS!
-    			// Same name and a default -- make sure same value
-    			if (test == 0) {
-    			    if (!nnode.getSpecified()) {
-    			        if (DEBUG) System.out.println("reconcile (test==0, specified = false): clone default");
-                        NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                        clone.ownerNode = ownerNode;
-                        clone.isOwned(true);
-    				    nodes.setElementAt(clone, n);
-    				    // Advance over both, since names in sync
-    				    ++n;
-    				    ++d;
-    			    }
-    			    else { //REVIST: if same name, but specified, simply increment over it.
-    			        if (DEBUG)
-                                    System.out.println("reconcile (test==0, specified=true): just increment");
-    				    ++n;
-    				    ++d;
-    			    }
-    			}
-
-    			// Different name, new default in table; add it
-    			else if (test > 0) {
-    			    if (DEBUG) System.out.println("reconcile (test>0): insert new default");
-                    NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
+            for (int n = 0; n < dsize; n++) {
+                AttrImpl d = (AttrImpl) defaults.nodes.elementAt(n);
+                int i = findNamePoint(d.getNodeName(), 0);
+                if (i < 0) {
+                    NodeImpl clone = (NodeImpl) d.cloneNode(true);
                     clone.ownerNode = ownerNode;
                     clone.isOwned(true);
-    				nodes.insertElementAt(clone, n);
-    				// Now in sync, so advance over both
-    				++n;
-    				++d;
-    			}
-
-    			// Different name, old default here; remove it.
-    			else if (!nnode.getSpecified()) {
-    			    if (DEBUG) System.out.println("reconcile(!specified): remove old default:"
-    			    +nnode.getNodeName());
-                    // NOTE: We don't need to null out the parent
-                    //       because this is a node that we're
-                    //       throwing away (not returning). -Ac
-                    // REVISIT: [Q] Should we null it out anyway? -Ac
-    				nodes.removeElementAt(n);
-    				// n didn't advance but represents a different element
-    			}
-
-    			// Different name, specified; accept it
-                else {
-    			    if (DEBUG) System.out.println("reconcile: Different name else accept it.");
-    				++n;
-                }
-        	}
-
-    		// If we ran out of local before default, pick up defaults
-            if (d < dsize) {
-                if (nodes == null) nodes = new Vector();
-                while (d < dsize) {
-                    dnode = (AttrImpl)defaults.nodes.elementAt(d++);
-                    NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                    clone.ownerNode = ownerNode;
-                    clone.isOwned(true);
-    			    if (DEBUG) System.out.println("reconcile: adding"+clone);
-                    nodes.addElement(clone);
+                    clone.isSpecified(false);
+                    nodes.setElementAt(clone, i);
                 }
             }
-            changed(false);
-    	}
+        }
+
     } // reconcileDefaults()
-**/
 
 } // class AttributeMap

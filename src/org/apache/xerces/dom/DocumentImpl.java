@@ -1070,24 +1070,25 @@ public class DocumentImpl
      * Change the node's ownerDocument, and its subtree, to this Document
      *
      * @param source The node to adopt.
-     * @exception NOT_SUPPORTED_ERR DOMException, raised if the implementation
-     * cannot handle the request, such as when the source node comes from a
-     * different DOMImplementation
      * @see DocumentImpl.importNode
      **/
-    public void adoptNode(Node source) {
+    public Node adoptNode(Node source) {
         NodeImpl node;
         try {
             node = (NodeImpl) source;
         } catch (ClassCastException e) {
-	    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-		      "cannot adopt a node from another DOM implementation.");
+            // source node comes from a different DOMImplementation
+            return null;
         }
         switch (node.getNodeType()) {
             case ATTRIBUTE_NODE: {
                 AttrImpl attr = (AttrImpl) node;
+                // remove node from wherever it is
                 attr.getOwnerElement().removeAttributeNode(attr);
+                // mark it as specified
                 attr.isSpecified(true);
+                // change ownership
+                attr.setOwnerDocument(this);
                 break;
             }
             case DOCUMENT_NODE:
@@ -1095,14 +1096,59 @@ public class DocumentImpl
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
                                        "cannot adopt this type of node.");
             }
-            default: {
+            case ENTITY_REFERENCE_NODE: {
+                // remove node from wherever it is
                 Node parent = node.getParentNode();
                 if (parent != null) {
                     parent.removeChild(source);
                 }
+                // discard its replacement value
+                Node child;
+                while ((child = node.getFirstChild()) != null) {
+                    node.removeChild(child);
+                }
+                // change ownership
+                node.setOwnerDocument(this);
+                // set its new replacement value if any
+                if (docType == null) {
+                    break;
+                }
+                NamedNodeMap entities = docType.getEntities();
+                Node entityNode = entities.getNamedItem(node.getNodeName());
+                if (entityNode == null) {
+                    break;
+                }
+                EntityImpl entity = (EntityImpl) entityNode;
+                for (child = entityNode.getFirstChild();
+                     child != null; child = child.getNextSibling()) {
+                    Node childClone = child.cloneNode(true);
+                    node.appendChild(childClone);
+                }
+                break;
+            }
+            case ELEMENT_NODE: {
+                // remove node from wherever it is
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent.removeChild(source);
+                }
+                // change ownership
+                node.setOwnerDocument(this);
+                // reconcile default attributes
+                ((ElementImpl)node).reconcileDefaultAttributes();
+                break;
+            }
+            default: {
+                // remove node from wherever it is
+                Node parent = node.getParentNode();
+                if (parent != null) {
+                    parent.removeChild(source);
+                }
+                // change ownership
+                node.setOwnerDocument(this);
             }
         }
-	node.setOwnerDocument(this);
+        return node;
     }
 
     // identifier maintenence

@@ -804,6 +804,14 @@ public class ElementImpl
         }
     }
 
+    /** Reconcile default attributes. */
+    protected void reconcileDefaultAttributes() {
+        NamedNodeMapImpl defaults = getDefaultAttributes();
+        if (defaults != null) {
+            attributes.reconcileDefaults(defaults);
+        }
+    }
+
     /** Get the default attributes. */
     protected NamedNodeMapImpl getDefaultAttributes() {
 
