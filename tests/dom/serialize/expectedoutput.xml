@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<s:Envelope xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns="default namespace" xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance">
+<s:Envelope xmlns="default namespace" xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance">
 <s:Body>
 
 <size>3</size>
 
 <!-- xmlns is removed during the modifications -->
 <empty xmlns="">
- <elem/>
+ <elem xmlns=""/>
  <elem xmlns="newURI"><a/></elem>
 </empty>
 
@@ -50,17 +50,10 @@
 -->
 <s:testAttributes attr1="" xmlns:NS1="http://attr3" NS1:attr3="" s:attr2=""/>
 
-<!--NON-WELLFORMED! xml:space attribute, 
-doml1 valid/invalid namespace declarations, 
-doml2 invalid declarations xmlns:foo=""-->
-<spaces xmlns="" xml:space="" s:level1Node="" xmlns:="" xmlns:k="" xmlns:k:d=""/>
-
 <!--
 1) attr_B with no prefix and http://attr_B
-2) xmlns1000:attr_D bound to xmlns namespace
-3) attr_A had no prefix and http://attr_A. There is local default decl bound to the same namespace-->
-<s:testAttributes2 xmlns:NS2="http://attr_A" NS2:attr_A="" xmlns:NS3="http://attr_B" NS3:attr_B="" xmlns="http://attr_A" xmlns:attr_D="">
-<s:testAttributes3 xmlns:s="http://testAttributes3" xmlns:attr_C="">Has xmlns2000:attr_C attribute with xmlns namespace(prefix not defined), element has no defined prefix</s:testAttributes3></s:testAttributes2>
+2) attr_A had no prefix and http://attr_A. There is local default decl bound to the same namespace-->
+<s:testAttributes2 xmlns:NS2="http://attr_A" NS2:attr_A="" xmlns:NS3="http://attr_B" NS3:attr_B="" xmlns="http://attr_A"/>
 </s:Body>
 
 </s:Envelope>

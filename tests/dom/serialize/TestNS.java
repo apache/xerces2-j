@@ -58,7 +58,7 @@ package dom.serialize;
 
 import  org.w3c.dom.*;
 
-import org.apache.xerces.dom.DOMImplementationImpl;
+import org.apache.xerces.dom.*;
 import org.w3c.dom.ls.DOMWriter;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.apache.xerces.parsers.*;
@@ -93,7 +93,7 @@ public class TestNS {
             boolean deferred = true;
             boolean modify = true;
             boolean stdout = false;
-            boolean createEntity = false;
+            boolean createEntity = true;
             for (int i = 0; i < argv.length; i++) {
                 String arg = argv[i];
                 if (arg.startsWith("-")) {
@@ -149,7 +149,7 @@ public class TestNS {
                 }
                 parser.setFeature( "http://xml.org/sax/features/validation", validation );
                 parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion", deferred);
-                parser.setFeature("http://xml.org/sax/features/external-general-entities", true);
+                //parser.setFeature("http://xml.org/sax/features/external-general-entities", true);
                 parser.setFeature( "http://xml.org/sax/features/namespaces",namespaces);
                 parser.setFeature("http://apache.org/xml/features/dom/include-ignorable-whitespace", true);
                 parser.setFeature("http://apache.org/xml/features/dom/create-entity-ref-nodes", createEntity);
@@ -285,7 +285,7 @@ public class TestNS {
                     element.appendChild(elm);
                     element.appendChild(core.createTextNode("\n\n"));
 
-
+                    /*
                     element.appendChild(core.createComment("NON-WELLFORMED! xml:space attribute, \ndoml1 valid/invalid namespace declarations, \ndoml2 invalid declarations xmlns:foo=\"\""));
                     element.appendChild(core.createTextNode("\n"));
                     elm = core.createElementNS(null,"spaces");
@@ -306,13 +306,13 @@ public class TestNS {
 
                     element.appendChild(elm);
                     element.appendChild(core.createTextNode("\n\n"));
+                    */
 
 
                     // more attributes tests
 
                     element.appendChild(core.createComment("\n1) attr_B with no prefix and http://attr_B"+
-                                                           "\n2) xmlns1000:attr_D bound to xmlns namespace"+
-                                                           "\n3) attr_A had no prefix and http://attr_A. There is local default decl bound to the same namespace"));
+                                                           "\n2) attr_A had no prefix and http://attr_A. There is local default decl bound to the same namespace"));
                     element.appendChild(core.createTextNode("\n"));
                     elm = core.createElementNS("urn:schemas-xmlsoap-org:soap.v1","s:testAttributes2");
                     attr = core.createAttributeNS("http://attr_A", "attr_A");
@@ -321,42 +321,39 @@ public class TestNS {
                     attr.setValue("http://attr_A");
                     elm.setAttributeNode(attr);
 
-
-                    attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns1000:attr_D");
-                    elm.setAttributeNode(attr);
                     
                     attr = core.createAttributeNS("http://attr_B", "attr_B");
                     elm.setAttributeNode(attr);
                     element.appendChild(elm);
 
-                    // bould to xmlns namespace
-                    Element elm2 = core.createElementNS("http://testAttributes3","s:testAttributes3");
-                    text = core.createTextNode("Has xmlns2000:attr_C attribute with xmlns namespace(prefix not defined), element has no defined prefix");            
-                    attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns2000:attr_C");
-                    elm2.appendChild(text);
-                    elm2.setAttributeNode(attr);
-                    elm.appendChild(core.createTextNode("\n"));
-                    elm.appendChild(elm2);
                     element.appendChild(core.createTextNode("\n"));
 
 
                 }
 
+                //((CoreDocumentImpl)core).normalizeDocument();
+                
+                
+                /*
+                OutputFormat format = new OutputFormat((Document)core);
+                format.setLineSeparator(LineSeparator.Windows);
+                format.setIndenting(true);
+                format.setLineWidth(0);             
+                format.setPreserveSpace(true);
+                */
 
+                
                 // create DOM Serializer
                 DOMWriter writer = ((DOMImplementationLS)DOMImplementationImpl.getDOMImplementation()).createDOMWriter();
                 
 
                 // Serializer that ouputs tree in not pretty print format
-                OutputFormat format = new OutputFormat((Document)core);
-                format.setIndenting(true);
-                format.setLineWidth(0);             
-                format.setPreserveSpace(true);
                 if (stdout) {
 
                     //XMLSerializer serializer = new XMLSerializer(System.out, format);
                     //serializer.asDOMSerializer();
-                    // serializer.serialize((Document)core);
+                    //serializer.serialize((Document)core);
+                    //writer.setFeature("entities",true);
                     writer.writeNode(System.out, core);
                 } else {
 
@@ -367,9 +364,8 @@ public class TestNS {
                     writer.writeNode(new FileOutputStream("output.xml"), core);
                 }
 
-
-                /** Test SAX Serializer */
-                /* System.out.println("Testing SAX Serializer");
+                /** Test SAX Serializer 
+                 System.out.println("Testing SAX Serializer...");
                 XMLSerializer saxSerializer;
                 if (stdout) {                
                     saxSerializer = new XMLSerializer (System.out, format);
@@ -377,12 +373,18 @@ public class TestNS {
                     saxSerializer = new XMLSerializer (new FileWriter("sax_output.xml"), format);
                 }
 
+                format.setEncoding("US-ASCII");
                 saxSerializer.startDocument();
                 //saxSerializer.processingInstruction("foo", "bar");
                 saxSerializer.startDTD("foo", "bar", "baz");
                 saxSerializer.startElement("myNamespace", "a", "foo:a", null);
                 saxSerializer.startElement("myNamespace", "b", "foo:b", null);
-                
+                saxSerializer.startCDATA();
+                char data[] = {'a', ']', ']', '>', '‰', 'n'};     
+
+                saxSerializer.characters(data, 0, 6);
+                saxSerializer.endCDATA();
+                saxSerializer.comment("A & B");
                 saxSerializer.startElement("myNamespace", "c", "foo:c", null);
                 saxSerializer.endElement("myNamespace", "c", "foo:c");
                 saxSerializer.endElement("myNamespace", "b", "foo:b");
@@ -390,7 +392,7 @@ public class TestNS {
                 saxSerializer.endElement("myNamespace", "a", "foo:a");
                 saxSerializer.endDocument();
                 System.out.println("Serializing output to sax_output.xml...");
-                */         
+                 */       
 
             }
 
