@@ -58,6 +58,7 @@
 package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
 
@@ -649,19 +650,21 @@ final class StringReader extends XMLEntityReader {
     //
     //
     //
-    public int scanQName(char fastcheck) throws Exception {
-        // DEFECT !! no code for namespace support
+    public void scanQName(char fastcheck, QName qname) throws Exception {
         int ch = fMostRecentChar;
         if (ch == -1) {
-            return changeReaders().scanQName(fastcheck);
+            changeReaders().scanQName(fastcheck, qname);
+            return;
         }
         if (!fCalledCharPropInit) {
             XMLCharacterProperties.initCharFlags();
             fCalledCharPropInit = true;
         }
         int nameOffset = fCurrentOffset;
-        if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
-            return -1;
+        if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
+            qname.clear();
+            return;
+        }
         while (true) {
             ch = loadNextChar();
             if (fastcheck == ch)
@@ -671,9 +674,16 @@ final class StringReader extends XMLEntityReader {
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                 break;
         }
-        int nameIndex = fStringPool.addSymbol(fData.substring(nameOffset, fCurrentOffset));
-        return nameIndex;
-    }
+        qname.clear();
+        qname.rawname = fStringPool.addSymbol(fData.substring(nameOffset, fCurrentOffset));
+        int index = fData.indexOf(':', nameOffset);
+        if (index != -1) {
+            qname.prefix = fStringPool.addSymbol(fData.substring(nameOffset, index));
+        }
+        qname.localpart = fStringPool.addSymbol(fData.substring(index, fCurrentOffset));
+
+    } // scanQName(char,QName)
+
     //
     //
     //
@@ -780,10 +790,10 @@ final class StringReader extends XMLEntityReader {
             return XMLEntityHandler.CONTENT_RESULT_START_OF_ENTITYREF;
         }
     }
-    public int scanContent(int elementType) throws Exception {
+    public int scanContent(QName element) throws Exception {
         int ch = fMostRecentChar;
         if (ch == -1) {
-            return changeReaders().scanContent(elementType);
+            return changeReaders().scanContent(element);
         }
         int offset = fCurrentOffset;
         if (ch < 0x80) {
@@ -818,7 +828,7 @@ final class StringReader extends XMLEntityReader {
                     ch = loadNextChar();
                     if (ch == -1) {
                         callCharDataHandler(offset, fEndOffset, true);
-                        return changeReaders().scanContent(elementType);
+                        return changeReaders().scanContent(element);
                     }
                 } while (ch == 0x20 || ch == 0x0A || ch == 0x0D || ch == 0x09);
                 if (ch < 0x80) {
@@ -871,7 +881,7 @@ final class StringReader extends XMLEntityReader {
         while (true) {
             if (ch == -1) {
                 callCharDataHandler(offset, fEndOffset, false);
-                return changeReaders().scanContent(elementType);
+                return changeReaders().scanContent(element);
             }
             if (ch >= 0x80)
                 break;
@@ -921,7 +931,7 @@ final class StringReader extends XMLEntityReader {
             }
             if (ch == -1) {
                 callCharDataHandler(offset, fCurrentOffset, false);
-                return changeReaders().scanContent(elementType);
+                return changeReaders().scanContent(element);
             }
         }
     }

@@ -60,6 +60,7 @@ package org.apache.xerces.readers;
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.ChunkyByteArray;
 import org.apache.xerces.utils.ChunkyCharArray;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringHasher;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
@@ -656,16 +657,24 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
         // DEFECT !! check name against expected name
         return true;
     }
-    public int scanQName(char fastcheck) throws Exception {
-        // DEFECT !! no code
+
+    public void scanQName(char fastcheck, QName qname) throws Exception {
+
+        // DEFECT !! no code // Defect #126
         int nameOffset = fCurrentOffset;
         skipPastName(fastcheck);
         int nameLength = fCurrentOffset - nameOffset;
-        if (nameLength == 0)
-            return -1;
-        int nameIndex = addSymbol(nameOffset, nameLength);
-        return nameIndex;
-    }
+        if (nameLength == 0) {
+            qname.clear();
+            return;
+        }
+        qname.prefix = -1;
+        qname.localpart = -1;
+        qname.rawname = addSymbol(nameOffset, nameLength);
+        qname.uri = -1;
+
+    } // scanQName(char,QName)
+
     public int scanName(char fastcheck) throws Exception {
         int nameOffset = fCurrentOffset;
         skipPastName(fastcheck);
@@ -759,7 +768,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
             return XMLEntityHandler.CONTENT_RESULT_START_OF_ENTITYREF;
         }
     }
-    public int scanContent(int elementType) throws Exception {
+    public int scanContent(QName element) throws Exception {
         int offset = fCurrentOffset;
         int ch = getChar(fCurrentOffset);
         fCurrentOffset += fBytesPerChar;
@@ -771,7 +780,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
         if (ch < 0x80) {
             if (ch == -1) {
                 fCurrentOffset -= fBytesPerChar;
-                return changeReaders().scanContent(elementType); // REVISIT - not quite...
+                return changeReaders().scanContent(element); // REVISIT - not quite...
             }
             prop = XMLCharacterProperties.fgCharFlags[ch];
             if ((prop & XMLCharacterProperties.E_CharDataFlag) == 0 && ch != 0x0A && ch != 0x0D) {
@@ -813,7 +822,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
                     if (ch == -1) {
                         fCurrentOffset -= fBytesPerChar;
                         callCharDataHandler(offset, fCurrentOffset - offset, true);
-                        return changeReaders().scanContent(elementType); // REVISIT - not quite...
+                        return changeReaders().scanContent(element); // REVISIT - not quite...
                     }
                     prop = XMLCharacterProperties.fgCharFlags[ch];
                     if ((prop & XMLCharacterProperties.E_CharDataFlag) == 0) {
@@ -886,7 +895,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
                 if (ch == -1) {
                     fCurrentOffset -= fBytesPerChar;
                     callCharDataHandler(offset, fCurrentOffset - offset, false);
-                    return changeReaders().scanContent(elementType); // REVISIT - not quite...
+                    return changeReaders().scanContent(element); // REVISIT - not quite...
                 }
                 prop = XMLCharacterProperties.fgCharFlags[ch];
                 if ((prop & XMLCharacterProperties.E_CharDataFlag) == 0) {

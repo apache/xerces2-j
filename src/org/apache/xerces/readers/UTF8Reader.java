@@ -58,6 +58,7 @@
 package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.SymbolCache;
 import org.apache.xerces.utils.UTF8DataChunk;
@@ -1287,20 +1288,28 @@ final class UTF8Reader extends XMLEntityReader {
         skipPastNmtoken(fastcheck);
         return false;
     }
-    public int scanQName(char fastcheck) throws Exception {
+
+    public void scanQName(char fastcheck, QName qname) throws Exception {
+
         int ch = fMostRecentByte;
         if (ch < 0x80) {
-            if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
-                return -1;
-            if (ch == ':')
-                return -1;
+            if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0) {
+                qname.clear();
+                return;
+            }
+            if (ch == ':') {
+                qname.clear();
+                return;
+            }
         } else {
             if (!fCalledCharPropInit) {
                 XMLCharacterProperties.initCharFlags();
                 fCalledCharPropInit = true;
             }
-            if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
-                return -1;
+            if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
+                qname.clear();
+                return;
+            }
         }
         int offset = fCurrentOffset;
         int index = fCurrentIndex;
@@ -1373,12 +1382,13 @@ final class UTF8Reader extends XMLEntityReader {
         fCurrentIndex = index;
         fMostRecentByte = ch;
         int length = fCurrentOffset - offset;
-        int nameIndex = addSymbol(offset, length);
-        int prefixIndex = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
-        int localpartIndex = prefixend == -1 ? nameIndex : addSymbol(prefixend + 1, fCurrentOffset - (prefixend + 1));
-        nameIndex = fStringPool.addQName(nameIndex, prefixIndex, localpartIndex);
-        return nameIndex;
-    }
+        qname.rawname = addSymbol(offset, length);
+        qname.prefix = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
+        qname.localpart = prefixend == -1 ? qname.rawname : addSymbol(prefixend + 1, fCurrentOffset - (prefixend + 1));
+        qname.uri = -1;
+
+    } // scanQName(char,QName)
+
     private int getMultiByteSymbolChar(int b0) throws Exception {
         //
         // REVISIT - optimize this with in-buffer lookahead.
@@ -1804,7 +1814,7 @@ final class UTF8Reader extends XMLEntityReader {
     //
     // [14] CharData ::= [^<&]* - ([^<&]* ']]>' [^<&]*)
     //
-    private int recognizeMarkup(int b0, int elementType) throws Exception {
+    private int recognizeMarkup(int b0, QName element) throws Exception {
         switch (b0) {
         case 0:
             return XMLEntityHandler.CONTENT_RESULT_MARKUP_END_OF_INPUT;
@@ -1873,7 +1883,7 @@ final class UTF8Reader extends XMLEntityReader {
                         b0 = (fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
                 }
             }
-            int expectedName = elementType;
+            int expectedName = element.rawname;
             fStringPool.getCharArrayRange(expectedName, fCharArrayRange);
             char[] expected = fCharArrayRange.chars;
             int offset = fCharArrayRange.offset;
@@ -2027,7 +2037,7 @@ final class UTF8Reader extends XMLEntityReader {
             return XMLEntityHandler.CONTENT_RESULT_START_OF_ENTITYREF;
         }
     }
-    public int scanContent(int elementType) throws Exception {
+    public int scanContent(QName element) throws Exception {
         if (fCallClearPreviousChunk && fCurrentChunk.clearPreviousChunk())
             fCallClearPreviousChunk = false;
         fCharDataLength = 0;
@@ -2085,7 +2095,7 @@ final class UTF8Reader extends XMLEntityReader {
                     }
                 }
                 if (!fInCDSect) {
-                    return recognizeMarkup(ch, elementType);
+                    return recognizeMarkup(ch, element);
                 }
                 if (fSendCharDataAsCharArray)
                     appendCharData('<');
@@ -2238,7 +2248,7 @@ final class UTF8Reader extends XMLEntityReader {
                                         ch = (fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
                                 }
                             }
-                            return recognizeMarkup(ch, elementType);
+                            return recognizeMarkup(ch, element);
                         }
                         if (fSendCharDataAsCharArray)
                             appendCharData('<');
@@ -2367,7 +2377,7 @@ final class UTF8Reader extends XMLEntityReader {
                                     ch = (fMostRecentByte = fMostRecentData[fCurrentIndex] & 0xFF);
                             }
                         }
-                        return recognizeMarkup(ch, elementType);
+                        return recognizeMarkup(ch, element);
                     }
                     if (fSendCharDataAsCharArray)
                         appendCharData('<');

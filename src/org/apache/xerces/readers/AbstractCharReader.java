@@ -59,6 +59,7 @@ package org.apache.xerces.readers;
 
 import org.apache.xerces.framework.XMLErrorReporter;
 import org.apache.xerces.utils.CharDataChunk;
+import org.apache.xerces.utils.QName;
 import org.apache.xerces.utils.StringHasher;
 import org.apache.xerces.utils.StringPool;
 import org.apache.xerces.utils.XMLCharacterProperties;
@@ -771,20 +772,26 @@ abstract class AbstractCharReader extends XMLEntityReader {
     /**
      *
      */
-    public int scanQName(char fastcheck) throws Exception {
+    public void scanQName(char fastcheck, QName qname) throws Exception {
         int ch = fMostRecentChar;
         if (ch < 0x80) {
-            if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
-                return -1;
-            if (ch == ':')
-                return -1;
+            if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0) {
+                qname.clear();
+                return;
+            }
+            if (ch == ':') {
+                qname.clear();
+                return;
+            }
         } else {
             if (!fCalledCharPropInit) {
                 XMLCharacterProperties.initCharFlags();
                 fCalledCharPropInit = true;
             }
-            if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
-                return -1;
+            if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
+                qname.clear();
+                return;
+            }
         }
         int offset = fCurrentOffset;
         int index = fCurrentIndex;
@@ -864,11 +871,12 @@ abstract class AbstractCharReader extends XMLEntityReader {
         fMostRecentChar = ch;
         hashcode = StringHasher.finishHash(hashcode);
         int length = fCurrentOffset - offset;
-        int nameIndex = fCurrentChunk.addSymbol(offset, length, hashcode);
-        int prefixIndex = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
-        int localpartIndex = prefixend == -1 ? nameIndex : addSymbol(prefixend + 1, fCurrentOffset - (prefixend + 1));
-        return fStringPool.addQName(nameIndex, prefixIndex, localpartIndex);
-    }
+        qname.rawname = fCurrentChunk.addSymbol(offset, length, hashcode);
+        qname.prefix = prefixend == -1 ? -1 : addSymbol(offset, prefixend - offset);
+        qname.localpart = prefixend == -1 ? qname.rawname : addSymbol(prefixend + 1, fCurrentOffset - (prefixend + 1));
+        qname.uri = -1;
+
+    } // scanQName(char,QName)
 
     //
     // [14] CharData ::= [^<&]* - ([^<&]* ']]>' [^<&]*)
@@ -876,7 +884,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
     /**
      *
      */
-    public int scanContent(int elementType) throws Exception {
+    public int scanContent(QName element) throws Exception {
         if (fCallClearPreviousChunk && fCurrentChunk.clearPreviousChunk())
             fCallClearPreviousChunk = false;
         int charDataOffset = fCurrentOffset;
