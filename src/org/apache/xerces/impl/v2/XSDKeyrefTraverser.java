@@ -112,10 +112,16 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem, schemaDoc, attrValues);
 
-        // add key reference to element decl
-        // and stuff this in the grammar
-        // REVISIT: should we add IDC to element here?
-        grammar.addIDConstraintDecl(element, keyRef);
+        //Schema Component Constraint: Identity-constraint Definition Properties Correct
+        //2 If the {identity-constraint category} is keyref, the cardinality of the {fields} must equal that of the {fields} of the {referenced key}.
+        if(key.getFieldCount() != keyRef.getFieldCount()) {
+            reportSchemaError("c-props-correct.2" , new Object [] {krName,key.getIdentityConstraintName()});
+        } else {
+            // add key reference to element decl
+            // and stuff this in the grammar
+            grammar.addIDConstraintDecl(element, keyRef);
+        }
+
         // and put back attributes
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
     } // traverse(Element,int,XSDocumentInfo, SchemaGrammar)
