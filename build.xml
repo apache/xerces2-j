@@ -39,7 +39,6 @@ Copyright:
 
     <property name='deprecatedjar.parser' value='xerces.jar'/>
     <property name='jar.apis' value='xml-apis.jar'/>
-    <property name='deprecatedjar.apis' value='xmlParserAPIs.jar'/>
     <property name='jar.parser' value='xercesImpl.jar'/>
     <property name='jar.samples' value='xercesSamples.jar'/>
     <property name='jar.dv' value='xercesDV.jar'/>
@@ -596,7 +595,6 @@ Copyright:
     <copy file="${build.dir}/${jar.parser}" tofile="${distbin.dir}/${jar.parser}"/>
     <!-- support xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${distbin.dir}/${jar.apis}"/>
-    <copy file="${tools.dir}/${jar.apis}" tofile="${distbin.dir}/${deprecatedjar.apis}"/>
     <!-- support xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${distbin.dir}/${jar.resolver}"/>
 
@@ -806,7 +804,7 @@ Copyright:
   <target name="jars" depends="jar, sampjar">
     <!-- support xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
-    <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${deprecatedjar.apis}"/>
+
     <!-- support xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
   </target>
@@ -978,7 +976,6 @@ Copyright:
   <target name="dtdjars" depends="dtdjar, sampjar">
     <!-- support xml-commons APIs -->
     <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${jar.apis}"/>
-    <copy file="${tools.dir}/${jar.apis}" tofile="${build.dir}/${deprecatedjar.apis}"/>
     
     <!-- support xml-commons resolver -->
     <copy file="${tools.dir}/${jar.resolver}" tofile="${build.dir}/${jar.resolver}"/>
