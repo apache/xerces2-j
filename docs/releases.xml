@@ -3,7 +3,7 @@
 <releases>
  <release version='Xerces 2.0.0 (beta3)'>
   <desc>
-   This releases fixes a number of bugs, introduces some changes to
+   This release fixes a number of bugs, introduces some changes to
    the Xerces Native Interface, and is the first Xerces2 release to
    include XML Schema validation support. Please note that the XML
    Schema validation code was completely rewritten for Xerces2 and

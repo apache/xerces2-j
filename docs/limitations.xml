@@ -3,7 +3,9 @@
 <s1 title='Limitations'>
  <s2 title='Known Limitations'>
   <p>
-   This is a list of the limitations in this release of &ParserName;:
+   This is a list of the limitations in this release of &ParserName;.
+   There is also a list of <link idref='limitations-schema'>
+   XML Schema limitations</link>.
   </p>
   <ul>
    <li>

@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
+<faqs title='Parser Configuration, Features and Properties FAQs'>
+ <faq title='Validation Components'>
+  <q>What's the result of having a DTD validator or XML Schema validator in the pipeline?</q>
+  <a>
+   <p>
+    If a validator is included in the pipeline, assessment is
+    done, whether the validation feature is set to true or false.
+    Currently, validation only enables the reporting of error
+    messages.  This behaviour may be revisited/changed in the future.
+   </p>
+  </a>
+ </faq>
+ <faq title='Default Parser Configuration'>
+  <q>What vaidation behavior do I expect from the default parser configuration?</q>
+  <a>
+   <p>
+    The default configuration includes both DTD validator and XML
+    schema validator, so it's capable of validating an instance
+    against both kinds of grammars.  But this could bring some
+    performance hit for those applications that only process XML
+    documents with DTD.  If you cares about performance, and only
+    use DTD, please use DTD configuration instead.
+   </p>
+  </a>
+ </faq>
+ <faq title='Validation Features'>
+  <q>What happens if I set both validation and schema validation features on?</q>
+  <a>
+   <p>
+     If only one of DTD validation and XML Schema validator
+     is present in the pipeline, then we only consider the
+     feature corresponding to this validator, and ignore the
+     other one.
+   </p>
+   <p>
+     If both validators are present in the pipeline, then
+   </p>
+   <ul>
+    <li>if the instance document has only a DTD grammar
+        (DOCTYPE before the root element), then only DTD
+        validation errors are reported;</li>
+    <li>if the instance document has only XML Schema grammars,
+        then only XML Schema validation errors are reported
+        (we consider an instance document to have a XML Schema
+         grammar if either xsi:schemaLocation or
+         xsi:noNamespaceSchemaLocation attribute is present
+         on the root element. This might change after we
+         support grammar caching);</li>
+    <li>if the instance document has both DTD and XML Schema
+        grammars, validation errors for both DTD and XML
+        Schema are reported;</li>
+    <li>if no grammar can be found for the instance document,
+        then XML Schema validation errors are reported.</li>
+   </ul>
+   <p>
+     NOTE: The above is the current interpretation of the
+           validation features.  It may change in future
+           Xerces releases.
+   </p>
+  </a>
+ </faq>
+ <faq title='External Schema Location Properties'>
+  <q>Where are the two schema location properties introduced in Xerces 1?</q>
+  <a>
+   <p>
+     External schema location properties are not currently
+     supported in Xerces 2.  We're examining how to support
+     this for the next Schema release.
+    </p>
+  </a>
+ </faq>
+</faqs>

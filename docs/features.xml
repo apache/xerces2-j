@@ -96,16 +96,25 @@ catch (SAXException e) {
    <default value='false'/>
    <see idref='validation'/>
   </feature>
-  <!--
-    - REVISIT: Add these features back in once we have Schema
-    -          support in this version.
-    -
   <feature name='http://apache.org/xml/features/validation/schema'
            id='validation.schema'>
-   <true>Turn on XML Schema support.</true>
-   <false>Turn off XML Schema support.</false>
+   <true>Report XML Schema validation errors.</true>
+   <false>Do not report XML Schema validation errors.</false>
    <default value='true'/>
+   <access parsing='read-only' not-parsing='read-write'/>
+   <note>
+     The meaning of this feature is not finalized. Please refer
+     to FAQ <link idref='faq-pcfp'>Parser configuration, Features
+     and Properties FAQs</link>.
+   </note>
+   <see idref='validation'/>
+   <see idref='validation.dynamic'/>
+   <see idref='namespaces'/>
   </feature>
+  <!--
+    - REVISIT: Do we still need this feature in X2?
+    -          Or still use it to control whether we do UPA/PD checking?
+    -
   <feature name='http://apache.org/xml/features/validation/schema-full-checking'
            id='validation.schema-full-checking'>
    <true>
