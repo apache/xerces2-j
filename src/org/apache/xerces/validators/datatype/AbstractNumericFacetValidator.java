@@ -140,8 +140,14 @@ public abstract class AbstractNumericFacetValidator extends AbstractDatatypeVali
                     }
                 }
                 catch ( Exception ex ) {
-                    throw new InvalidDatatypeFacetException( getErrorString( DatatypeMessageProvider.ILLEGAL_FACET_VALUE,
-                                                                             DatatypeMessageProvider.MSG_NONE, new Object [] { value, key}));
+                    if (value == null) {
+                        //invalid facet error
+                        throw new InvalidDatatypeFacetException( ex.getMessage());
+                    }
+                    else{
+                        throw new InvalidDatatypeFacetException( (getErrorString (DatatypeMessageProvider.ILLEGAL_FACET_VALUE,
+                                                                                  DatatypeMessageProvider.MSG_NONE, new Object [] { value, key})));
+                    }
                 }
             }
              
