@@ -1765,7 +1765,8 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
             boolean cdata = attType == fCDATASymbol;
 
             if (!cdata || required || attValue != null) {
-                for (int i = 0; i< attributes.getLength(); i++) {
+                int attrCount = attributes.getLength();
+                for (int i = 0; i < attrCount; i++) {
                     if (attributes.getName(i) == attRawName) {
                         specified = true;
                         break;
@@ -1805,97 +1806,96 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
         // 1. if every attribute seen is declared in the DTD
         // 2. check if the VC: default_fixed holds
         // 3. validate every attribute.
-        if (fValidation)
-        for (int i = 0; i< attributes.getLength(); i++) {
-            String attrRawName = attributes.getName(i);
-            boolean declared = false;
+        if (fValidation) {
+            int attrCount = attributes.getLength();
+            for (int i = 0; i< attrCount; i++) {
+                String attrRawName = attributes.getName(i);
+                boolean declared = false;
 
-            if (fCurrentGrammar != null) {
-                // check VC: Standalone Document Declartion, entities references appear in the document.
-                // REVISIT: this can be combined to a single check in startEntity 
-                // if we add one more argument in startEnity, inAttrValue
-                if (fStandaloneIsYes) {
-                    for (int j=0;  j<attributes.getEntityCount(i); j++) {
-                        String entityName= attributes.getEntityName(i, j);
-                        int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
-                        if (entIndex > -1) {
-                            fCurrentGrammar.getEntityDecl(entIndex, fEntityDecl);
-                            if (fEntityDecl.inExternal) {
-                                fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
-                                                            "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
-                                                            new Object[]{entityName}, XMLErrorReporter.SEVERITY_ERROR);
+                if (fCurrentGrammar != null) {
+                    // check VC: Standalone Document Declartion, entities references appear in the document.
+                    // REVISIT: this can be combined to a single check in startEntity 
+                    // if we add one more argument in startEnity, inAttrValue
+                    if (fStandaloneIsYes) {
+                        for (int j=0;  j<attributes.getEntityCount(i); j++) {
+                            String entityName= attributes.getEntityName(i, j);
+                            int entIndex = fCurrentGrammar.getEntityDeclIndex(entityName);
+                            if (entIndex > -1) {
+                                fCurrentGrammar.getEntityDecl(entIndex, fEntityDecl);
+                                if (fEntityDecl.inExternal) {
+                                    fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                                "MSG_REFERENCE_TO_EXTERNALLY_DECLARED_ENTITY_WHEN_STANDALONE",
+                                                                new Object[]{entityName}, XMLErrorReporter.SEVERITY_ERROR);
+                                }
                             }
+
                         }
-
                     }
-                }
 
-                int attDefIndex = -1;
-                int position = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
-                while (position != -1) {
-                    fCurrentGrammar.getAttributeDecl(position, fTempAttDecl);
-                    if (fTempAttDecl.name.rawname == attrRawName 
-                        || fTempAttDecl.name.rawname.equals(attrRawName)) {
-                        // found the match att decl, 
-                        attDefIndex = position;
-                        declared = true;
-                        break;
+                    int attDefIndex = -1;
+                    int position = fCurrentGrammar.getFirstAttributeDeclIndex(elementIndex);
+                    while (position != -1) {
+                        fCurrentGrammar.getAttributeDecl(position, fTempAttDecl);
+                        if (fTempAttDecl.name.rawname == attrRawName 
+                            || fTempAttDecl.name.rawname.equals(attrRawName)) {
+                            // found the match att decl, 
+                            attDefIndex = position;
+                            declared = true;
+                            break;
+                        }
+                        position = fCurrentGrammar.getNextAttributeDeclIndex(position);
                     }
-                    position = fCurrentGrammar.getNextAttributeDeclIndex(position);
-                }
-                if (attDefIndex == -1) {
-                    // REVISIT - cache the elem/attr tuple so that we only give
-                    //  this error once for each unique occurrence
-                    Object[] args = { element.localpart,
-                        attrRawName};
+                    if (attDefIndex == -1) {
+                        // REVISIT - cache the elem/attr tuple so that we only give
+                        //  this error once for each unique occurrence
+                        Object[] args = { element.localpart,
+                            attrRawName};
 
-                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                               "MSG_ATTRIBUTE_NOT_DECLARED",
-                                               args,XMLErrorReporter.SEVERITY_ERROR);   
-                } else {
-
-                    // fTempAttDecl should have the right value set now, so the following is not needed
-                    // fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
-
-                    String attributeType = attributeTypeName(fTempAttDecl);
-                    attributes.setType(i, attributeType);
-                }
-            }
-
-            // REVISIT: this is done in XMLScanner, Just that entity ref positions not being moved accordingly
-            //normalizeAttrValue(attributes, i);
-
-            if (declared) {
-                String attrValue = attributes.getValue(i);
-                if (fTempAttDecl.simpleType.defaultType == XMLSimpleType.DEFAULT_TYPE_FIXED) {
-                    String defaultValue = fTempAttDecl.simpleType.defaultValue;
-
-                    if (!attrValue.equals(defaultValue)) {
-                        Object[] args = { 
-                            (element.localpart),
-                            (attrRawName),
-                            (attrValue),
-                            (defaultValue)};
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
-                                                   "MSG_FIXED_ATTVALUE_INVALID",
-                                                   args, XMLErrorReporter.SEVERITY_ERROR);
+                                                   "MSG_ATTRIBUTE_NOT_DECLARED",
+                                                   args,XMLErrorReporter.SEVERITY_ERROR);   
+                    } else {
+
+                        // fTempAttDecl should have the right value set now, so the following is not needed
+                        // fGrammar.getAttributeDecl(attDefIndex, fTempAttDecl); 
+
+                        String attributeType = attributeTypeName(fTempAttDecl);
+                        attributes.setType(i, attributeType);
                     }
                 }
 
-                if (fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENTITY ||
-                    fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENUMERATION ||
-                    fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ID ||
-                    fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_IDREF ||
-                    fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NMTOKEN ||
-                    fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NOTATION
-                   ) {
-                    validateDTDattribute(element, attrValue, fTempAttDecl);
+                // REVISIT: this is done in XMLScanner, Just that entity ref positions not being moved accordingly
+                //normalizeAttrValue(attributes, i);
+
+                if (declared) {
+                    String attrValue = attributes.getValue(i);
+                    if (fTempAttDecl.simpleType.defaultType == XMLSimpleType.DEFAULT_TYPE_FIXED) {
+                        String defaultValue = fTempAttDecl.simpleType.defaultValue;
+
+                        if (!attrValue.equals(defaultValue)) {
+                            Object[] args = { 
+                                (element.localpart),
+                                (attrRawName),
+                                (attrValue),
+                                (defaultValue)};
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "MSG_FIXED_ATTVALUE_INVALID",
+                                                       args, XMLErrorReporter.SEVERITY_ERROR);
+                        }
+                    }
+
+                    if (fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENTITY ||
+                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ENUMERATION ||
+                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_ID ||
+                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_IDREF ||
+                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NMTOKEN ||
+                        fTempAttDecl.simpleType.type == XMLSimpleType.TYPE_NOTATION
+                       ) {
+                        validateDTDattribute(element, attrValue, fTempAttDecl);
+                    }
                 }
-
-
-            }
-        }
-
+            } // for all attributes
+        } // if validation
 
         return;
 
