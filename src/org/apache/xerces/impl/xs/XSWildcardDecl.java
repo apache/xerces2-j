@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.impl.xs.util.EnumerationImpl;
+import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xni.QName;
 import java.util.Enumeration;
 
@@ -567,8 +567,8 @@ public class XSWildcardDecl implements XSWildcard {
      * <code>constraintType</code> NOT_NSCONSTRAINT, the list contains
      * disallowed namespaces.
      */
-    public Enumeration getNSConstraintList() {
-        return new EnumerationImpl(fNamespaceList, fNamespaceList.length);
+    public StringList getNSConstraintList() {
+        return new StringListImpl(fNamespaceList, fNamespaceList.length);
     }
 
     /**

@@ -265,7 +265,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     // if it's a union, expand it
                     if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
                         dvs = dv.getMemberTypes();
-                        for (int j = 0; j < dvs.getListLength(); j++)
+                        for (int j = 0; j < dvs.getLength(); j++)
                             dTValidators.addElement(dvs.getItem(j));
                     } else {
                         dTValidators.addElement(dv);
@@ -304,7 +304,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         // if it's a union, expand it
                         if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
                             dvs = dv.getMemberTypes();
-                            for (int j = 0; j < dvs.getListLength(); j++)
+                            for (int j = 0; j < dvs.getLength(); j++)
                                 dTValidators.addElement(dvs.getItem(j));
                         } else {
                             dTValidators.addElement(dv);
@@ -437,7 +437,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         if (validator.getVariety() == XSSimpleType.VARIETY_UNION) {
             XSObjectList temp = validator.getMemberTypes();
-            for (int i = 0; i < temp.getListLength(); i++) {
+            for (int i = 0; i < temp.getLength(); i++) {
                 if (((XSSimpleType)temp.getItem(i)).getVariety() == XSSimpleType.VARIETY_LIST) {
                     return true;
                 }

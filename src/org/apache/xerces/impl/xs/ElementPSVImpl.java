@@ -59,12 +59,10 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XSElementDecl;
-import org.apache.xerces.impl.xs.util.EnumerationImpl;
+import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.xni.psvi.ElementPSVI;
 import org.apache.xerces.impl.xs.psvi.*;
-
-import java.util.Enumeration;
 
 /**
  * Element PSV infoset augmentations implementation.
@@ -183,10 +181,10 @@ public class ElementPSVImpl implements ElementPSVI {
      *
      * @return Array of error codes
      */
-    public Enumeration getErrorCodes() {
+    public StringList getErrorCodes() {
         if (fErrorCodes == null)
             return null;
-        return new EnumerationImpl(fErrorCodes, fErrorCodes.length);
+        return new StringListImpl(fErrorCodes, fErrorCodes.length);
     }
 
 

@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.psvi;
 
-import java.util.Enumeration;
 
 /**
  * 3.15.1 The Schema Itself. A read-only interface that represents an XML
@@ -75,7 +74,7 @@ public interface XSModel {
      * included in this list.
      * @return A list of all namespaces that belong to this schema.
      */
-    public Enumeration getNamespaces();
+    public StringList getNamespaces();
 
     /**
      * Convenience method. Returns a list of all [namespace schema information
@@ -84,7 +83,7 @@ public interface XSModel {
      * XSNamespaceItem interface.
      * @return A list of namespace items that belong to this schema.
      */
-    public Enumeration getNamespaceItems();
+    public ObjectList getNamespaceItems();
 
     /**
      * Returns a list of top-level components, i.e. element declarations,

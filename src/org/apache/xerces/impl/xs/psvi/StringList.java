@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights
- * reserved.
+ * Copyright (c) 2002 The Apache Software Foundation.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,64 +49,34 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 2001, International
+ * originally based on software copyright (c) 2002, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.util;
+
+package org.apache.xerces.impl.xs.psvi;
 
 /**
- * Contains a list of Objects.
- *
- * @author Sandy Gao, IBM
- *
- * @version $Id$
+ *  The <code>StringList</code> is an ordered collection of strings. 
  */
-public class EnumerationImpl implements java.util.Enumeration {
-
-    // The array to hold all data
-    private Object[] fArray = null;
-    // Number of elements in this enumeration
-    private int fLength = 0;
-    // The current position
-    private int fCurPos = 0;
+public interface StringList {
+    /**
+     *  The number of <code>String</code> in the list. The range of valid 
+     * child object indices is 0 to <code>length-1</code> inclusive. 
+     */
+    public int getLength();
 
     /**
-     * Construct an enumeration implementation
-     * 
-     * @param array     the data array
-     * @param length    the number of elements
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>String</code>at the <code>index</code>th position 
+     *   in the <code>StringList</code>, or <code>null</code> if that is 
+     *   not a valid index. 
      */
-    public EnumerationImpl(Object[] array, int length) {
-        fArray = array;
-        fLength = length;
-    }
+    public String item(int index);
 
-    /**
-     * Tests if this enumeration contains more elements.
-     *
-     * @return  <code>true</code> if and only if this enumeration object
-     *           contains at least one more element to provide;
-     *          <code>false</code> otherwise.
-     */
-    public boolean hasMoreElements() {
-        return fCurPos < fLength;
-    }
-
-    /**
-     * Returns the next element of this enumeration if this enumeration
-     * object has at least one more element to provide.
-     *
-     * @return     the next element of this enumeration.
-     * @exception  NoSuchElementException  if no more elements exist.
-     */
-    public Object nextElement() {
-        if (hasMoreElements()) {
-            return fArray[fCurPos++];
-        }
-        throw new java.util.NoSuchElementException();
-    }
-
-} // class XSParticle
+}

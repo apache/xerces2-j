@@ -2456,7 +2456,7 @@ public class XMLSchemaValidator
         }
 
         XSObjectList attrUses = attrGrp.getAttributeUses();
-        int useCount = attrUses.getListLength();
+        int useCount = attrUses.getLength();
         XSWildcardDecl attrWildcard = attrGrp.fAttributeWC;
 
         // whether we have seen a Wildcard ID.
@@ -2674,7 +2674,7 @@ public class XMLSchemaValidator
             System.out.println("==>addDefaultAttributes: " + element);
         }
         XSObjectList attrUses = attrGrp.getAttributeUses();
-        int useCount = attrUses.getListLength();
+        int useCount = attrUses.getLength();
         XSAttributeUseImpl currUse;
         XSAttributeDecl currDecl;
         short constType;

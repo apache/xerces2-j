@@ -384,7 +384,7 @@ abstract class XSDAbstractTraverser {
         }
         else if (type.getVariety() == XSSimpleType.VARIETY_UNION) {
             XSObjectList members = type.getMemberTypes();
-            for (int i = 0; i < members.getListLength(); i++) {
+            for (int i = 0; i < members.getLength(); i++) {
                 if (containsQName((XSSimpleType)members.getItem(i)))
                     return true;
             }
@@ -437,7 +437,7 @@ abstract class XSDAbstractTraverser {
                 if(tempAttrGrp == null ) break;
                 XSObjectList attrUseS = tempAttrGrp.getAttributeUses();
                 XSAttributeUseImpl existingAttrUse = null, oneAttrUse;
-                int attrCount = attrUseS.getListLength();
+                int attrCount = attrUseS.getLength();
                 for (int i=0; i<attrCount; i++) {
                     oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
                     existingAttrUse = attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.fTargetNamespace,

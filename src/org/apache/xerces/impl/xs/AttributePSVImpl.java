@@ -61,10 +61,10 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.psvi.*;
 
 import java.util.Vector;
-import java.util.Enumeration;
 
 /**
  * Attribute PSV infoset augmentations implementation.
@@ -168,8 +168,9 @@ public class AttributePSVImpl implements AttributePSVI {
      *
      * @return list of error codes
      */
-    public Enumeration getErrorCodes() {
-        return fErrorCodes.elements();
+    public StringList getErrorCodes() {
+        // REVISIT: fErrorCodes should be of type StringList
+        return new StringListImpl(fErrorCodes);
     }
 
     // This is the only information we can provide in a pipeline.

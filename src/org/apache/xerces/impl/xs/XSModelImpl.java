@@ -59,11 +59,8 @@ package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.util.SymbolHash;
-import org.apache.xerces.impl.xs.util.EnumerationImpl;
-import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
-import org.apache.xerces.impl.xs.util.XSNamedMap4Types;
+import org.apache.xerces.impl.xs.util.*;
 import java.util.Vector;
-import java.util.Enumeration;
 
 /**
  * Implements XSModel:  a read-only interface that represents an XML Schema,
@@ -180,8 +177,9 @@ public class XSModelImpl implements XSModel {
      * @return A list of all namespaces that belong to this schema or
      *   <code>null</code> if all components don't have a targetNamespace.
      */
-    public Enumeration getNamespaces() {
-        return new EnumerationImpl(fNamespaces, fGrammarCount);
+    public StringList getNamespaces() {
+        // REVISIT: should the type of fNamespace be StringListImpl?
+        return new StringListImpl(fNamespaces, fGrammarCount);
     }
 
     /**
@@ -191,8 +189,10 @@ public class XSModelImpl implements XSModel {
      * XSNamespaceItem interface.
      * @return A list of namespace items that belong to this schema.
      */
-    public Enumeration getNamespaceItems() {
-        return new EnumerationImpl(fGrammarList, fGrammarCount);
+    public ObjectList getNamespaceItems() {
+
+        // REVISIT: should the type of fGrammarList be ObjectListImpl?
+        return new ObjectListImpl(fGrammarList, fGrammarCount);
     }
 
     /**

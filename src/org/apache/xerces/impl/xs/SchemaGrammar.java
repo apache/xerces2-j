@@ -70,7 +70,6 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.Enumeration;
 
 /**
  * This class is to hold all schema component declaration that are declared
@@ -567,6 +566,7 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
     private XSNamedMap[] fComponents = null;
 
     // store the documents and their locations contributing to this namespace
+    // REVISIT: use StringList and ObjectList for there fields.
     private Vector fDocuments = null;
     private Vector fLocations = null;
     
@@ -717,8 +717,8 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document">[document]</a>
      * @return a list of document information item
      */
-    public Enumeration getDocuments() {
-        return fDocuments.elements();
+    public ObjectList getDocuments() {
+        return new ObjectListImpl(fDocuments);
     }
 
     /**
@@ -726,8 +726,8 @@ public class SchemaGrammar implements Grammar, XSNamespaceItem {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document_location">[document location]</a>
      * @return a list of document information item
      */
-    public Enumeration getDocumentLocations() {
-        return fLocations.elements();
+    public StringList getDocumentLocations() {
+        return new StringListImpl(fLocations);
     }
     
 } // class SchemaGrammar

@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.xs.psvi;
 
-import java.util.Enumeration;
 
 /**
  * 4.1.1 The Simple Type Definition Schema Component (XML Schema Part 2).
@@ -192,12 +191,12 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
     /**
      * Returns a list of enumeration values, as <code>String</code>'s.
      */
-    public Enumeration getLexicalEnumerations();
+    public StringList getLexicalEnumerations();
 
     /**
      * Returns a list of pattern values, as <code>String</code>'s.
      */
-    public Enumeration getLexicalPatterns();
+    public StringList getLexicalPatterns();
 
     /**
      * Fundamental Facet: [Definition:] An order relation on a value space is

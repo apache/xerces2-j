@@ -2,8 +2,8 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.
- * All rights reserved.
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,71 +55,59 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.xs.psvi;
+package org.apache.xerces.impl.xs.util;
 
+import org.apache.xerces.impl.xs.psvi.ObjectList;
+import java.util.Vector;
 /**
- * 3.10.1 The Wildcard Schema Component.
+ * Containts a list of Object's.
  *
- * @author Elena Litani, IBM
+ * @author Sandy Gao, IBM
+ *
  * @version $Id$
  */
-public interface XSWildcard extends XSTerm {
+public class ObjectListImpl implements ObjectList {
+
+    // The array to hold all data
+    private Object[] fArray = null;
+    // Number of elements in this list
+    private int fLength = 0;
+
+    // REVISIT: this is temp solution. In general we need to use this class
+    //          instead of the Vector.
+    private Vector fVector;
+
+    public ObjectListImpl(Vector v) {
+        fVector = v;        
+        fLength = v.size();
+    }
 
     /**
-     * Process content strict. There must be a top-level declaration for
-     * the item available, or the item must have an xsi:type, and the item
-     * must be valid as appropriate.
+     * Construct an ObjectList implementation
+     * 
+     * @param array     the data array
+     * @param length    the number of elements
      */
-    public static final short PC_STRICT             = 1;
-    /**
-     * Process content skip. No constraints at all: the item must simply
-     * be well-formed XML.
-     */
-    public static final short PC_SKIP               = 2;
-    /**
-     * Process content lax. If the item, or any items among its [children] if
-     * it's an element information item, has a uniquely
-     * determined declaration available, it must be valid
-     * with respect to that definition, that is, validate
-     *  where you can, don't worry when you can't.
-     */
-    public static final short PC_LAX                = 3;
+    public ObjectListImpl(Object[] array, int length) {
+        fArray = array;
+        fLength = length;
+    }
 
     /**
-     * Namespace Constraint: any namespace is allowed
+     * The number of <code>Objects</code> in the list. The range of valid
+     * child node indices is 0 to <code>length-1</code> inclusive.
      */
-    public static final short NSCONSTRAINT_ANY      = 1;
-    /**
-     * Namespace Constraint: namespaces in the list are not allowed
-     */
-    public static final short NSCONSTRAINT_NOT      = 2;
-    /**
-     * Namespace Constraint: namespaces in the liast are allowed
-     */
-    public static final short NSCONSTRAINT_LIST     = 3;
+    public int getLength() {
+        return fLength;
+    }
 
-    /**
-     * Namespace constraint: A constraint type: any, not, list.
-     */
-    public short getConstraintType();
+    public Object item(int index) {
+        if (index < 0 || index >= fLength)
+            return null;
+        if (fVector != null) {
+            return fVector.elementAt(index);
+        }
+        return fArray[index];
+    }
 
-    /**
-     * Namespace constraint. For <code>constraintType</code>
-     * LIST_NSCONSTRAINT, the list contains allowed namespaces. For
-     * <code>constraintType</code> NOT_NSCONSTRAINT, the list contains
-     * disallowed namespaces.
-     */
-    public StringList getNSConstraintList();
-
-    /**
-     * {process contents} One of skip, lax or strict. Valid constants values
-     * are: SKIP_PROCESS, LAX_PROCESS, STRING_PROCESS.
-     */
-    public short getProcessContents();
-
-    /**
-     * Optional. Annotation.
-     */
-    public XSAnnotation getAnnotation();
-
-}
+} // class XSParticle

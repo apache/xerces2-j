@@ -89,7 +89,7 @@ public class XSObjectListImpl implements XSObjectList {
      * The number of <code>XSObjects</code> in the list. The range of valid
      * child node indices is 0 to <code>length-1</code> inclusive.
      */
-    public int getListLength() {
+    public int getLength() {
         return fLength;
     }
 

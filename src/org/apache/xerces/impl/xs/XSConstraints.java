@@ -190,7 +190,7 @@ public class XSConstraints {
         // 2.2.4 B's {variety} is union and D is validly derived from a type definition in B's {member type definitions} given the subset, as defined by this constraint.
         if (base.getVariety() == XSSimpleType.VARIETY_UNION) {
             XSObjectList subUnionMemberDV = base.getMemberTypes();
-            int subUnionSize = subUnionMemberDV.getListLength();
+            int subUnionSize = subUnionMemberDV.getLength();
             for (int i=0; i<subUnionSize; i++) {
                 base = (XSSimpleType)subUnionMemberDV.getItem(i);
                 if (checkSimpleDerivation(derived, base, block))

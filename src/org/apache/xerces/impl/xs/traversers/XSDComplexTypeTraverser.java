@@ -776,7 +776,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
         XSObjectList attrUseS = fromAttrGrp.getAttributeUses();
         XSAttributeUseImpl existingAttrUse, duplicateAttrUse =  null, oneAttrUse;
-        int attrCount = attrUseS.getListLength();
+        int attrCount = attrUseS.getLength();
         for (int i=0; i<attrCount; i++) {
             oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
             existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.fTargetNamespace,

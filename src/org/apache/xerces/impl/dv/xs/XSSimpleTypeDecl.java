@@ -68,13 +68,12 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.xs.util.EnumerationImpl;
+import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.xni.NamespaceContext;
 import java.util.Vector;
-import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 /**
@@ -1632,20 +1631,23 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         return null;
     }
 
-    public Enumeration getLexicalEnumerations() {
+    public StringList getLexicalEnumerations() {
+        // REVISIT: fEnumeration should be of type StringListImpl
         int size = fEnumeration.size();
         String[] strs = new String[size];
         for (int i = 0; i < size; i++)
             strs[i] = getStringValue(fEnumeration.elementAt(i));
-        return new EnumerationImpl(strs, size);
+        return new StringListImpl(strs, size);
     }
 
-    public Enumeration getLexicalPatterns() {
+    public StringList getLexicalPatterns() {
+
+        // REVISIT: fPattern should be of type StringListImpl
         int size = fPattern.size();
         String[] strs = new String[size];
         for (int i = 0; i < size; i++)
             strs[i] = ((RegularExpression)fPattern.elementAt(i)).toString();
-        return new EnumerationImpl(strs, size);
+        return new StringListImpl(strs, size);
     }
 
     public XSAnnotation getAnnotation() {

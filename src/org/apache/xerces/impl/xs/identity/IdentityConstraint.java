@@ -58,8 +58,7 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xs.psvi.*;
-import org.apache.xerces.impl.xs.util.EnumerationImpl;
-import java.util.Enumeration;
+import org.apache.xerces.impl.xs.util.StringListImpl;
 
 /**
  * Base class of Schema identity constraint.
@@ -228,11 +227,11 @@ public abstract class IdentityConstraint implements XSIDConstraintDefinition {
     /**
      * {fields} A non-empty list of restricted XPath ([XPath]) expressions.
      */
-    public Enumeration getFieldStrs() {
+    public StringList getFieldStrs() {
         String[] strs = new String[fFieldCount];
         for (int i = 0; i < fFieldCount; i++)
             strs[i] = fFields[i].toString();
-        return new EnumerationImpl(strs, fFieldCount);
+        return new StringListImpl(strs, fFieldCount);
     }
 
     /**

@@ -58,68 +58,24 @@
 package org.apache.xerces.impl.xs.psvi;
 
 /**
- * 3.10.1 The Wildcard Schema Component.
- *
- * @author Elena Litani, IBM
- * @version $Id$
+ *  The <code>ObjectList</code> is an ordered collection of generic objects. 
  */
-public interface XSWildcard extends XSTerm {
+public interface ObjectList {
+    /**
+     *  The number of <code>Object</code> in the list. The range of valid 
+     * child object indices is 0 to <code>length-1</code> inclusive. 
+     */
+    public int getLength();
 
     /**
-     * Process content strict. There must be a top-level declaration for
-     * the item available, or the item must have an xsi:type, and the item
-     * must be valid as appropriate.
+     *  Returns the <code>index</code>th item in the collection. The index 
+     * starts at 0. If <code>index</code> is greater than or equal to the 
+     * number of objects in the list, this returns <code>null</code>. 
+     * @param index  index into the collection. 
+     * @return  The <code>Object</code>at the <code>index</code>th position 
+     *   in the <code>ObjectList</code>, or <code>null</code> if that is 
+     *   not a valid index. 
      */
-    public static final short PC_STRICT             = 1;
-    /**
-     * Process content skip. No constraints at all: the item must simply
-     * be well-formed XML.
-     */
-    public static final short PC_SKIP               = 2;
-    /**
-     * Process content lax. If the item, or any items among its [children] if
-     * it's an element information item, has a uniquely
-     * determined declaration available, it must be valid
-     * with respect to that definition, that is, validate
-     *  where you can, don't worry when you can't.
-     */
-    public static final short PC_LAX                = 3;
-
-    /**
-     * Namespace Constraint: any namespace is allowed
-     */
-    public static final short NSCONSTRAINT_ANY      = 1;
-    /**
-     * Namespace Constraint: namespaces in the list are not allowed
-     */
-    public static final short NSCONSTRAINT_NOT      = 2;
-    /**
-     * Namespace Constraint: namespaces in the liast are allowed
-     */
-    public static final short NSCONSTRAINT_LIST     = 3;
-
-    /**
-     * Namespace constraint: A constraint type: any, not, list.
-     */
-    public short getConstraintType();
-
-    /**
-     * Namespace constraint. For <code>constraintType</code>
-     * LIST_NSCONSTRAINT, the list contains allowed namespaces. For
-     * <code>constraintType</code> NOT_NSCONSTRAINT, the list contains
-     * disallowed namespaces.
-     */
-    public StringList getNSConstraintList();
-
-    /**
-     * {process contents} One of skip, lax or strict. Valid constants values
-     * are: SKIP_PROCESS, LAX_PROCESS, STRING_PROCESS.
-     */
-    public short getProcessContents();
-
-    /**
-     * Optional. Annotation.
-     */
-    public XSAnnotation getAnnotation();
+    public Object item(int index);
 
 }

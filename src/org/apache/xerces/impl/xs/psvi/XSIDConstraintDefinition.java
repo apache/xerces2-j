@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.xs.psvi;
 
-import java.util.Enumeration;
-
 /**
  * 3.11.1 The Identity-constraint Definition Schema Component.
  *
@@ -95,7 +93,7 @@ public interface XSIDConstraintDefinition extends XSObject {
      * {fields} A non-empty list of restricted XPath ([XPath]) expressions,
      * as <code>String</code>'s.
      */
-    public Enumeration getFieldStrs();
+    public StringList getFieldStrs();
 
     /**
      * {referenced key} Required if {identity-constraint category} is keyref,

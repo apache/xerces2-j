@@ -57,8 +57,6 @@
 
 package org.apache.xerces.impl.xs.psvi;
 
-import java.util.Enumeration;
-
 /**
  * A read-only interface that represents a namespace schema information item.
  *
@@ -144,13 +142,13 @@ public interface XSNamespaceItem {
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document">[document]</a>
      * @return a list of document information item
      */
-    public Enumeration getDocuments();
+    public ObjectList getDocuments();
 
     /**
      * [document location]
      * @see <a href="http://www.w3.org/TR/xmlschema-1/#sd-document_location">[document location]</a>
      * @return a list of document information item
      */
-    public Enumeration getDocumentLocations();
+    public StringList getDocumentLocations();
     
 }

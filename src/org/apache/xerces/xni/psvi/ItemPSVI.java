@@ -58,7 +58,6 @@
 package org.apache.xerces.xni.psvi;
 
 import org.apache.xerces.impl.xs.psvi.*;
-import java.util.Enumeration;
 
 /**
  * Represent a PSVI item for one element or one attribute information item.
@@ -135,7 +134,7 @@ public interface ItemPSVI {
      * 
      * @return list of error codes
      */
-    public Enumeration getErrorCodes();
+    public StringList getErrorCodes();
     
     /**
      * [schema normalized value] 
