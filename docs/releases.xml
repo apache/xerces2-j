@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
@@ -7,18 +7,25 @@
         TBD
     </desc>
     <changes>
+      <update>
+       <note>
+        Modified XMLLocator interface to remove setter methods for move
+        towards finalizing XNI.
+       </note>
+       <submitter name='Andy Clark'/>
+      </update>
       <add>
           <note>Implemented several DOM Level 3 features, including DOMConfiguration, exposing type
           information via DOM, and allowing to set an ID attribute in the DOM.
           </note>
           <submitter name='Elena Litani'/>
         </add>      
-        <add>
+        <update>
           <note>Modified several XNI interfaces, i.e. NamespaceContext, XMLResourceIdentifier, and updated implementation
           accordingly.
           </note>
           <submitter name='Elena Litani'/>
-        </add>      
+        </update>      
       <fix>
         <note>
           Fix comment parsing bug that prevented Tomcat 4.1.12 from making

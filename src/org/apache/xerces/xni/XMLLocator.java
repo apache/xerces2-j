@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,27 +59,24 @@ package org.apache.xerces.xni;
 
 /**
  * Location information.
- * Since location information subsumes information on the physical location of the resource,
- * it makes eminent sense for this interface to extend XMLResourceIdentifier.
+ * <p>
+ * Since location information subsumes information on the physical 
+ * location of the resource, it makes eminent sense for this interface 
+ * to extend XMLResourceIdentifier.
  *
  * @author Andy Clark, IBM
  *
  * @version $Id$
  */
-public interface XMLLocator  extends XMLResourceIdentifier {
+public interface XMLLocator
+    extends XMLResourceIdentifier {
 
     //
     // XMLLocator methods
     //
     
-    /** Sets the line number. */
-    public void setLineNumber(int line);
-
     /** Returns the line number. */
     public int getLineNumber();
-  
-    /** Sets the column number. */
-    public void setColumnNumber(int col);
   
     /** Returns the column number. */
     public int getColumnNumber();
