@@ -2374,10 +2374,6 @@ public class TraverseSchema implements
                 addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
 
                 return -1;
-                // TO DO
-                // REVISIT: different NS, not supported yet.
-                // REVISIT: Localize
-                //reportGenericSchemaError("Feature not supported: see an attribute from different NS");
             }
 
             Element referredAttribute = getTopLevelComponentByName(SchemaSymbols.ELT_ATTRIBUTE,localpart);
@@ -2385,8 +2381,13 @@ public class TraverseSchema implements
                 traverseAttributeDecl(referredAttribute, typeInfo);
             }
             else {
-                // REVISIT: Localize
-                reportGenericSchemaError ( "Couldn't find top level attribute " + ref);
+
+                if (fAttributeDeclRegistry.get(localpart) != null) {
+                    addAttributeDeclFromAnotherSchema(localpart, uriStr, typeInfo);
+                }
+                else 
+                    // REVISIT: Localize
+                    reportGenericSchemaError ( "Couldn't find top level attribute " + ref);
             }
             return -1;
         }
