@@ -379,7 +379,7 @@ public class XMLDocumentFragmentScannerImpl
             fNotifyBuiltInRefs = componentManager.getFeature(NOTIFY_BUILTIN_REFS);
         }
         catch (XMLConfigurationException e) {
-            fNotifyBuiltInRefs = false;
+            fNotifyBuiltInRefs = true;
         }
 
         // initialize vars
@@ -431,7 +431,7 @@ public class XMLDocumentFragmentScannerImpl
         if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
             String feature = featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
             if (feature.equals(Constants.NOTIFY_BUILTIN_REFS_FEATURE)) {
-                fNotifyCharRefs = state;
+                fNotifyBuiltInRefs = state;
             }
         }
 
