@@ -106,6 +106,7 @@ import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
 import org.apache.xerces.validators.datatype.StateMessageDatatype;
 import org.apache.xerces.validators.datatype.IDREFDatatypeValidator;
 import org.apache.xerces.validators.datatype.IDDatatypeValidator;
+import org.apache.xerces.validators.datatype.ENTITYDatatypeValidator;
 
 /**
  * This class is the super all-in-one validator used by the parser.
@@ -178,6 +179,23 @@ public final class XMLValidator
       };
 
 
+   private  StateMessageDatatype fValidateENTITYMsg = new StateMessageDatatype() {
+             private  Object  packagedMessage = null;
+             public Object getDatatypeObject(){
+                 return packagedMessage;
+             }
+             public int    getDatatypeState(){
+                 return ENTITYDatatypeValidator.ENTITY_INITIALIZE;//No state
+             }
+             public void setDatatypeObject( Object data ){
+                 packagedMessage = data;// Set Entity Handler
+          }
+         };
+
+
+
+
+
 
     //
     // Data
@@ -195,8 +213,8 @@ public final class XMLValidator
     // attribute validators
 
     private AttributeValidator fAttValidatorCDATA = null;
-    private AttributeValidator fAttValidatorENTITY = new AttValidatorENTITY();
-    private AttributeValidator fAttValidatorENTITIES = new AttValidatorENTITIES();
+    //private AttributeValidator fAttValidatorENTITY = new AttValidatorENTITY();
+    //private AttributeValidator fAttValidatorENTITIES = new AttValidatorENTITIES();
     private AttributeValidator fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
     private AttributeValidator fAttValidatorNMTOKENS = new AttValidatorNMTOKENS();
     private AttributeValidator fAttValidatorNOTATION = new AttValidatorNOTATION();
@@ -331,8 +349,6 @@ public final class XMLValidator
     private DatatypeValidator fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
     private DatatypeValidator fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
     private DatatypeValidator fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
-
-
 
 
     //
@@ -1462,6 +1478,18 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fDATATYPESymbol = fStringPool.addSymbol("<<datatype>>");
         fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
         fXMLLang = fStringPool.addSymbol("xml:lang");
+
+        try{//Initialize ENTITIES and ENTITY Validators
+
+            Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
+                                                     (Object) this.fStringPool };
+            fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
+            fValENTITIES.validate( null, fValidateENTITYMsg );
+            fValENTITY.validate( null, fValidateENTITYMsg );
+        } catch ( InvalidDatatypeValueException ex ){
+            System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+        }
+
         
     } // init()
 
@@ -2915,14 +2943,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         switch (attributeDecl.type) {
         case XMLAttributeDecl.TYPE_ENTITY:
             {
-           /* WIP
             boolean isAlistAttribute = attributeDecl.list;//Caveat - Save this information because invalidStandaloneAttDef
-            String  unTrimValue = fStringPool.toString(attValue);
-            String  value       = unTrimValue.trim();
+            String  unTrimValue      = fStringPool.toString(attValue);
+            String  value            = unTrimValue.trim();
+            //System.out.println("value = " + value );
+
             try{
                 if ( isAlistAttribute ){
                     fValENTITIES.validate( value, null );
-                } else {
+                } else {                                           
                     fValENTITY.validate( value, null );
                 }
             } catch ( InvalidDatatypeValueException ex ){
@@ -2935,13 +2964,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
             }
 
-            */
-            if (attributeDecl.list) {
+            /*if (attributeDecl.list) {
                 av = fAttValidatorENTITIES;
             }
             else {
                 av = fAttValidatorENTITY;
-            }
+            }*/
+
             }
             break;
         case XMLAttributeDecl.TYPE_ENUMERATION:
@@ -3348,145 +3377,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     } // class AttValidatorCDATA
 
-      /**
-     * AttValidatorENTITY.
-     */
-    final class AttValidatorENTITY 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            String newAttValue = attValue.trim();
-            if (fValidating) {
-                // REVISIT - can we release the old string?
-                if (newAttValue != attValue) {
-                    if (invalidStandaloneAttDef(element, attribute)) {
-                        reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                                  XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                                  fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                    }
-                    attValueHandle = fStringPool.addSymbol(newAttValue);
-                } 
-                else {
-                    attValueHandle = fStringPool.addSymbol(attValueHandle);
-                }
-                //
-                // ENTITY - check that the value is an unparsed entity name (V_TAGa)
-                //
-                if (!fEntityHandler.isUnparsedEntity(attValueHandle)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_ENTITY_INVALID,
-                                              XMLMessages.VC_ENTITY_NAME,
-                                              fStringPool.toString(attribute.rawname), newAttValue);
-                }
-            } 
-            else if (newAttValue != attValue) {
-                // REVISIT - can we release the old string?
-                attValueHandle = fStringPool.addSymbol(newAttValue);
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if invalid standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorENTITY
-
-    /**
-     * AttValidatorENTITIES.
-     */
-    final class AttValidatorENTITIES 
-        implements AttributeValidator {
-
-        //
-        // AttributeValidator methods
-        //
-
-        /** Normalize. */
-        public int normalize(QName element, QName attribute, 
-                             int attValueHandle, int attType, 
-                             int enumHandle) throws Exception {
-            //
-            // Normalize attribute based upon attribute type...
-            //
-            String attValue = fStringPool.toString(attValueHandle);
-            StringTokenizer tokenizer = new StringTokenizer(attValue);
-            StringBuffer sb = new StringBuffer(attValue.length());
-            boolean ok = true;
-            if (tokenizer.hasMoreTokens()) {
-                while (true) {
-                    String entityName = tokenizer.nextToken();
-                    //
-                    // ENTITIES - check that each value is an unparsed entity name (V_TAGa)
-                    //
-                    if (fValidating && !fEntityHandler.isUnparsedEntity(fStringPool.addSymbol(entityName))) {
-                        ok = false;
-                    }
-                    sb.append(entityName);
-                    if (!tokenizer.hasMoreTokens()) {
-                        break;
-                    }
-                    sb.append(' ');
-                }
-            }
-            String newAttValue = sb.toString();
-            if (fValidating && (!ok || newAttValue.length() == 0)) {
-                reportRecoverableXMLError(XMLMessages.MSG_ENTITIES_INVALID,
-                                          XMLMessages.VC_ENTITY_NAME,
-                                          fStringPool.toString(attribute.rawname), newAttValue);
-            }
-            if (!newAttValue.equals(attValue)) {
-                attValueHandle = fStringPool.addString(newAttValue);
-                if (fValidating && invalidStandaloneAttDef(element, attribute)) {
-                    reportRecoverableXMLError(XMLMessages.MSG_ATTVALUE_CHANGED_DURING_NORMALIZATION_WHEN_STANDALONE,
-                                              XMLMessages.VC_STANDALONE_DOCUMENT_DECLARATION,
-                                              fStringPool.toString(attribute.rawname), attValue, newAttValue);
-                }
-            }
-            return attValueHandle;
-
-        } // normalize(QName,QName,int,int,int):int
-
-        //
-        // Package methods
-        //
-
-        /** Returns true if invalid standalone attribute definition. */
-        boolean invalidStandaloneAttDef(QName element, QName attribute) {
-            if (fStandaloneReader == -1) {
-                return false;
-            }
-            // we are normalizing a default att value...  this ok?
-            if (element.rawname == -1) {
-                return false;
-            }
-            return getAttDefIsExternal(element, attribute);
-        }
-
-    } // class AttValidatorENTITIES
 
     /**
      * AttValidatorNMTOKEN.
