@@ -423,17 +423,15 @@ public class XMLDocumentScanner
     public void startEntity(String name, String publicId, String systemId,
                             String encoding) throws SAXException {
 
-        //save the element depth before increase fEntityDepth
-        fEntityStack[fEntityDepth] = fElementDepth;
-
-        super.startEntity(name, publicId, systemId, encoding);
-
-        // keep track of this entity
-        if (fEntityDepth > fEntityStack.length) {
+        // keep track of this entity before fEntityDepth is increased
+        if (fEntityDepth == fEntityStack.length) {
             int[] entityarray = new int[fEntityStack.length * 2];
             System.arraycopy(fEntityStack, 0, entityarray, 0, fEntityStack.length);
             fEntityStack = entityarray;
         }
+        fEntityStack[fEntityDepth] = fElementDepth;
+
+        super.startEntity(name, publicId, systemId, encoding);
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
