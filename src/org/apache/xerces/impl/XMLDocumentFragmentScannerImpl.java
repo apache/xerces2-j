@@ -268,6 +268,9 @@ public class XMLDocumentFragmentScannerImpl
      * where a DTD external subset may be read after scanning the element name.
      */
     private boolean fSawSpace;
+    
+    /** Reusable Augmentations. */
+    private Augmentations fTempAugmentations = null;
 
     //
     // Constructors
@@ -1205,7 +1208,13 @@ public class XMLDocumentFragmentScannerImpl
                 }
                 Augmentations augs = null;
                 if (fValidation && ch <= 0x20) {
-                    augs = new AugmentationsImpl();
+                    if (fTempAugmentations != null) {
+                        fTempAugmentations.removeAllItems();
+                    }
+                    else {
+                        fTempAugmentations = new AugmentationsImpl();
+                    }
+                    augs = fTempAugmentations;
                     augs.putItem(Constants.CHAR_REF_PROBABLE_WS, Boolean.TRUE);
                 }
                 fDocumentHandler.characters(fStringBuffer2, augs);
