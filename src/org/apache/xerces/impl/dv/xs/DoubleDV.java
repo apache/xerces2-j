@@ -103,11 +103,15 @@ public class DoubleDV extends TypeValidator {
                 return true;
             }
             
-            Double d1 = new Double(value);
-            Double d2 = new Double(val.value);
+            if (value == val.value) {
+                return (value != 0.0d || 
+                    (Double.doubleToLongBits(value) == Double.doubleToLongBits(val.value)));
+            }
             
-            //Double values of 0.0 and -0.0 return false for Double#equals method
-            return d1.equals(d2); 
+            if (value != value && val.value != val.value)
+                return true;
+
+            return false; 
         }
 
         private int compareTo(XDouble val) {

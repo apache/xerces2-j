@@ -104,11 +104,15 @@ public class FloatDV extends TypeValidator {
                 return true;
             }
             
-            Float f1 = new Float(value);
-            Float f2 = new Float(val.value);
+            if (value == val.value) {
+                return (value != 0.0f || 
+                    (Float.floatToIntBits(value) == Float.floatToIntBits(val.value)));
+            }
             
-            //Float values of 0.0 and -0.0 return false for Float#equals method
-            return f1.equals(f2); 
+            if (value != value && val.value != val.value)
+                return true;
+
+            return false;
         }
 
         private int compareTo(XFloat val) {
