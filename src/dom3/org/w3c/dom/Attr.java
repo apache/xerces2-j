@@ -147,4 +147,13 @@ public interface Attr extends Node {
      */
     public Element getOwnerElement();
 
+    /**
+     * Returns whether this attribute is known to be of type ID or not. 
+     * When it is and its value is unique, the ownerElement of this attribute 
+     * can be retrieved using getElementById on Document. 
+     * 
+     * @since DOM Level 3 
+     */
+    public boolean getIsId();
+
 }

@@ -341,4 +341,47 @@ public interface Element extends Node {
     public boolean hasAttributeNS(String namespaceURI, 
                                   String localName);
 
+    /**
+     * Declares the attribute specified by node to be of type ID. 
+     * If the value of the specified attribute is unique then this 
+     * element node can later be retrieved using getElementById on Document. 
+     * Note, however, that this simply affects this node and does not change 
+     * any grammar that may be in use. 
+     * 
+     * @param at
+     * @since DOM Level 3
+     */
+    public void setIdAttributeNode(Attr at) throws DOMException;
+
+    /**
+     * Declares the attribute specified by name to be of type ID.
+     * If the value of the specified attribute is unique then this
+     * element node can later be retrieved using getElementById on Document.
+     * Note, however, that this simply affects this node and does not change
+     * any grammar that may be in use.
+     * To specify an attribute by local name and namespace URI, use the setIdAttributeNS method.
+     * 
+     * @param name
+     * @param makeId
+     * @exception DOMException
+     * @since DOM Level 3
+     */
+    public void setIdAttribute(String name, boolean makeId) throws DOMException;
+
+    /**
+     * Declares the attribute specified by local name and namespace URI 
+     * to be of type ID. If the value of the specified attribute is unique 
+     * then this element node can later be retrieved using getElementById on 
+     * Document. Note, however, that this simply affects this node and does 
+     * not change any grammar that may be in use. 
+     * 
+     * @param namespaceURI
+     * @param localName
+     * @param makeId
+     * @exception DOMException
+    * @since DOM Level 3
+     */
+    public void setIdAttributeNS(String namespaceURI, String localName,
+                                    boolean makeId) throws DOMException;
+
 }
