@@ -95,6 +95,7 @@ public class RangeImpl  implements Range {
     boolean fDetach = false;
     Node fInsertNode = null;
     Node fDeleteNode = null;
+    Node fSplitNode = null;
     
     
     /** The constructor. Clients must use DocumentRange.createRange(),
@@ -654,9 +655,9 @@ public class RangeImpl  implements Range {
         if (fStartContainer.getNodeType() == Node.TEXT_NODE) {
             if (newNode.getNodeType()!= Node.TEXT_NODE) { // result is 3 text nodes...
                 cloneCurrent = fStartContainer.cloneNode(false);
-                cloneCurrent.setNodeValue(
+                ((NodeImpl)cloneCurrent).setNodeValueInternal(
                     (cloneCurrent.getNodeValue()).substring(fStartOffset));
-                fStartContainer.setNodeValue(
+                ((NodeImpl)fStartContainer).setNodeValueInternal(
                     (fStartContainer.getNodeValue()).substring(0,fStartOffset));
                 Node next = fStartContainer.getNextSibling();
                 if (next != null) {
@@ -672,6 +673,9 @@ public class RangeImpl  implements Range {
                         parent.appendChild(cloneCurrent);
                     }
                 }
+                // signal other Ranges to update their start/end containers/offsets
+                signalSplitData(fStartContainer, cloneCurrent, fStartOffset);
+                
             } else { // result is 1 text node.
                 String value = fStartContainer.getNodeValue();
                 String newValue = newNode.getNodeValue();
@@ -795,6 +799,46 @@ public class RangeImpl  implements Range {
     // Mutation functions
     //
     
+    /** Signal other Ranges to update their start/end 
+     *  containers/offsets. The data has already been
+     *  into the two Nodes.
+     */
+    void signalSplitData(Node node, Node newNode, int offset) {
+        fSplitNode = node;
+        // fix-up other Ranges
+        Enumeration ranges = fDocument.getRanges();
+        if (ranges != null) {
+            while ( ranges.hasMoreElements()) {
+                ((RangeImpl)ranges.nextElement()).receiveSplitData(node, newNode, offset);
+            }
+        }
+        fSplitNode = null;
+    }
+    
+    /** Fix up this Range if another Range has split a Text Node
+     *  into 2 Nodes.
+     */
+    void receiveSplitData(Node node, Node newNode, int offset) {
+        if (node == null || newNode == null) return;
+        if (fSplitNode == node) return;
+        
+        if (node == fStartContainer 
+        && fStartContainer.getNodeType() == Node.TEXT_NODE) {
+            if (fStartOffset > offset) {
+                fStartOffset = fStartOffset - offset;
+                fStartContainer = newNode;
+            }
+        }
+        if (node == fEndContainer 
+        && fEndContainer.getNodeType() == Node.TEXT_NODE) {
+            if (fEndOffset > offset) {
+                fEndOffset = fEndOffset-offset;
+                fEndContainer = newNode;
+            }
+        }
+        
+    }
+   
     /** This function inserts text into a Node and invokes
      *  a method to fix-up all other Ranges.
      */
@@ -837,13 +881,9 @@ public class RangeImpl  implements Range {
      *  a method to fix-up all other Ranges.
      */
     void insertData(CharacterData node, int index, String insert) {
-        //node.setNodeValue(
-        //    node.getNodeValue().substring(0,index)
-        //    +insert+node.getNodeValue().substring(index));
         fInsertNode = node;
         node.insertData( index,  insert);
         fInsertNode = null;
-        //informInsertedText(node, index, insert.length());
     }
     
     
@@ -870,7 +910,7 @@ public class RangeImpl  implements Range {
     }
    
     /** This function is called from DOM.
-     *  The  text has already beeen inserted.
+     *  The  text has already beeen replaced.
      *  Fix-up any offsets.
      */
     void receiveReplacedText(Node node) {
