@@ -1944,7 +1944,12 @@ public abstract class XMLParser
             fCheckedForSchema = true;
             if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
                 fValidator = getSchemaValidator();
-                fSchemaValidator.loadSchema(fStringPool.toString(attValue));
+					 String fs = fEntityHandler.expandSystemId(fStringPool.toString(attValue));
+			       InputSource is = fResolver == null ? null : fResolver.resolveEntity(null, fs);
+		        		if (is == null) {
+            			is = new InputSource(fs);
+						}
+                fSchemaValidator.loadSchema(is);
             }
         }
         if (!fValidator.attributeSpecified(elementType, fAttrList, attrName, fAttrNameLocator, attValue)) {

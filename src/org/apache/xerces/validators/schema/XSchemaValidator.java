@@ -1651,17 +1651,7 @@ public class XSchemaValidator implements XMLValidator {
 
     private DOMParser fSchemaParser = null;
 
-    public void loadSchema(String uri) {
-
-        // get URI to schema file
-        //String uri = getSchemaURI(data);
-        //if (uri == null) {
-        //    System.err.println("error: malformed href pseudo-attribute ("+data+')');
-        //    return;
-        //}
-
-        // resolve schema file relative to *this* file
-        String systemId = fEntityHandler.expandSystemId(uri);
+    public void loadSchema(InputSource is) {
 
         // create parser for schema
         if (fSchemaParser == null) {
@@ -1678,7 +1668,7 @@ public class XSchemaValidator implements XMLValidator {
 
             fSchemaParser.setFeature("http://xml.org/sax/features/validation", true);
             fSchemaParser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
-            fSchemaParser.parse(systemId);
+            fSchemaParser.parse(is);
         }
         catch (SAXException se) {
             se.getException().printStackTrace();
@@ -2449,7 +2439,7 @@ public class XSchemaValidator implements XMLValidator {
 		// attribute default type
 		int attDefaultType = -1;
 		int attDefaultValue = -1;
-		boolean required = attrDecl.getAttribute("minoccurs").equals("1");
+		boolean required = attrDecl.getAttribute("minOccurs").equals("1");
 		if (required) {
 			attDefaultType = fStringPool.addSymbol("#REQUIRED");
 		} else {
