@@ -59,28 +59,75 @@ package org.apache.xerces.validators.datatype;
 
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.xerces.readers.DefaultEntityHandler;
+import org.apache.xerces.utils.XMLMessages;
+import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.validators.datatype.StateMessageDatatype;
+
+
 
 /**
- * ENTITYDatatypeValidator defines the interface that data type validators must obey.
+ * ENTITYDatatypeValidator implements the
+ * DatattypeValidator interface.
+ * This validator embodies the ENTITY attribute type
+ * from XML1.0 recommendation.
+ * The Value space of ENTITY is the set of all strings
+ * that match the NCName production and have been
+ * declared as an unparsed entity in a document
+ * type definition.
+ * The Lexical space of Entity is the set of all
+ * strings that match the NCName production.
+ * The value space of ENTITY is scoped to a specific
+ * instance document.
+ * 
+ * Some caveats:
+ * 
+ * Because of the Xerces Architecture, where all
+ * symbols are stored in a StringPool and Strings
+ * are referenced by int then this datatype needs
+ * to know about StringPool.
+ * The first time that this datatype is invoked
+ * we pass a message containing 2 references needed
+ * by this validator:
+ * - a reference to the DefaultEntityHandler  used
+ * by the XMLValidator.
+ * - a reference to the StringPool.
+ * 
+ * 
+ * This validator extends also the XML1.0 validation
+ * provided in DTD by providing "only on Schemas"
+ * facet validation.
+ * This validator also embodies the Derived datatype
+ * ENTITIES which is an ENTITY derived by list.
+ * 
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
  * 
  * @author Jeffrey Rodriguez-
  * @version $Id$
+ * @see org.apache.xerces.validators.datatype.DatatypeValidator
+ * @see org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl
+ * @see org.apache.xerces.validators.datatype.DatatypeValidatorFactory
+ * @see org.apache.xerces.validators.common.XMLValidator
  */
 public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
-    private DatatypeValidator fBaseValidator    = null;
-    private boolean           fDerivationByList = false;
+    private DatatypeValidator        fBaseValidator    = null;
+    private boolean                  fDerivedByList = false;
+    private DefaultEntityHandler     fEntityHandler    = null;
+    private StringPool               fStringPool       = null;
+
+    public  static final int         ENTITY_INITIALIZE = 0;
+
 
     public ENTITYDatatypeValidator () throws InvalidDatatypeFacetException {
-      this( null, null, false ); // Native, No Facets defined, Restriction
+        this( null, null, false ); // Native, No Facets defined, Restriction
     }
 
     public ENTITYDatatypeValidator ( DatatypeValidator base, Hashtable facets,
-              boolean derivedByList  ) throws InvalidDatatypeFacetException {
+                                     boolean derivedByList  ) throws InvalidDatatypeFacetException {
 
         setBasetype( base ); // Set base type
-        fDerivationByList = derivedByList;
+        fDerivedByList = derivedByList;
     }
 
 
@@ -101,6 +148,60 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
      * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException{
+
+        StateMessageDatatype message = (StateMessageDatatype) state;
+        int                  attValueHandle;
+
+
+        if ( message!= null && message.getDatatypeState() == ENTITYDatatypeValidator.ENTITY_INITIALIZE ){
+            Object[]   unpackMessage = (Object[] ) message.getDatatypeObject();
+
+            //System.out.println("unpackMessage = " + unpackMessage );
+
+            //System.out.println("obj1 = " + unpackMessage[0] );
+            //System.out.println("obj2 = " + unpackMessage[1] );
+
+
+            this.fEntityHandler      = (DefaultEntityHandler) unpackMessage[0];
+            this.fStringPool         = (StringPool) unpackMessage[1];
+        } else {
+
+
+            if ( this.fEntityHandler == null ) {
+                InvalidDatatypeValueException error = 
+                new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization DefaultEntityHandler is null" );//Need Message
+                throw error;
+            }
+            if ( this.fStringPool == null ) {
+                InvalidDatatypeValueException error = 
+                new InvalidDatatypeValueException( "ERROR: ENTITYDatatype Validator: Failed Initialization StrinPool is null" );//Need Message
+                throw error;
+            }
+
+
+            if ( this.fDerivedByList == false ){
+
+                attValueHandle = this.fStringPool.addSymbol( content );
+                if (!this.fEntityHandler.isUnparsedEntity( attValueHandle ) ) {
+                    InvalidDatatypeValueException error = 
+                    new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
+                    error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
+                    error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
+                    throw error;
+                }
+            } else {
+                /*
+                if (!this.fEntityHandler.isUnparsedEntity() ) {
+                    InvalidDatatypeValueException error = 
+                    new InvalidDatatypeValueException( "ENTITY '"+ content +"' is not valid" );//Need Message
+                    error.setMinorCode(XMLMessages.MSG_ENTITY_INVALID );
+                    error.setMajorCode(XMLMessages.VC_ENTITY_NAME);
+                    throw error;
+                }
+                */
+
+            }
+        }
         return null;
     }
 
@@ -120,9 +221,9 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
 
     // Private methods start here
 
-  /**
-     * Returns a copy of this object.
-     */
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }

@@ -111,16 +111,15 @@ public class IDDatatypeValidator extends AbstractDatatypeValidator {
         if (!XMLCharacterProperties.validName(content)) {//Check if is valid key-[81] EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
             InvalidDatatypeValueException error =  new
                             InvalidDatatypeValueException( "ID is not valid: " + content );
-            error.setMajorCode(XMLMessages.MSG_ID_INVALID);
-            error.setMinorCode(XMLMessages.VC_ID);
+            error.setMinorCode(XMLMessages.MSG_ID_INVALID);
+            error.setMajorCode(XMLMessages.VC_ID);
             throw error;
         }
         if(!addId( content, IDStorage) ){
-            //System.out.println("Should not be here" );
             InvalidDatatypeValueException error = 
                    new InvalidDatatypeValueException( "ID" + content +" has to be unique" );
-            error.setMajorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
-            error.setMinorCode(XMLMessages.VC_ID);
+            error.setMinorCode(XMLMessages.MSG_ID_NOT_UNIQUE);
+            error.setMajorCode(XMLMessages.VC_ID);
             throw error;
         }
         //System.out.println("IDStorage = " + IDStorage );
