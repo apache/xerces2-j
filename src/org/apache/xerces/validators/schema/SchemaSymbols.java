@@ -67,6 +67,9 @@ package org.apache.xerces.validators.schema;
  * @author jeffrey rodriguez
  */
 public final  class SchemaSymbols {
+    public static final String URI_XSI =  "http://www.w3.org/1999/XMLSchema-instance";
+    public static final String XSI_SCHEMALOCACTION =  "schemaLocation";
+
     public static final String ELT_ALL =  "all";
     public static final String ELT_ANNOTATION =  "annotation";
     public static final String ELT_ANY =  "any";
@@ -162,4 +165,5 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_UNQUALIFIED =  "unqualified";
     public static final String ATTVAL_URI =  "uri";
     public static final String ATTVAL_URIREFERENCE =  "uriReference";
+    public static final String ATTVAL_EQUIVCLASS = "equivclass";
 }
