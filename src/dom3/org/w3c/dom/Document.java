@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * The <code>Document</code> interface represents the entire HTML or XML 
  * document. Conceptually, it is the root of the document tree, and provides 
  * the primary access to the document's data.

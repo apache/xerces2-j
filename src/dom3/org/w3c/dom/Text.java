@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * The <code>Text</code> interface inherits from <code>CharacterData</code> 
  * and represents the textual content (termed character data in XML) of an 
  * <code>Element</code> or <code>Attr</code>. If there is no markup inside 

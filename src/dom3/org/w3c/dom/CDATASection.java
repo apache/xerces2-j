@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * CDATA sections are used to escape blocks of text containing characters that 
  * would otherwise be regarded as markup. The only delimiter that is 
  * recognized in a CDATA section is the "]]&gt;" string that ends the CDATA 

@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * This interface represents an entity, either parsed or unparsed, in an XML 
  * document. Note that this models the entity itself not the entity 
  * declaration. <code>Entity</code> declaration modeling has been left for a 

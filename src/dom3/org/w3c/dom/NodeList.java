@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * The <code>NodeList</code> interface provides the abstraction of an ordered 
  * collection of nodes, without defining or constraining how this collection 
  * is implemented. <code>NodeList</code> objects in the DOM are live.

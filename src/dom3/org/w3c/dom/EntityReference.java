@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * <code>EntityReference</code> objects may be inserted into the structure 
  * model when an entity reference is in the source document, or when the 
  * user wishes to insert an entity reference. Note that character references 

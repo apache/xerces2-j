@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * <code>DocumentFragment</code> is a "lightweight" or "minimal" 
  * <code>Document</code> object. It is very common to want to be able to 
  * extract a portion of a document's tree or to create a new fragment of a 

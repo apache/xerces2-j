@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * DOM operations only raise exceptions in "exceptional" circumstances, i.e., 
  * when an operation is impossible to perform (either for logical reasons, 
  * because data is lost, or because the implementation has become unstable). 

@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * This interface represents a notation declared in the DTD. A notation either 
  * declares, by name, the format of an unparsed entity (see section 4.7 of 
  * the XML 1.0 specification ), or is used for formal declaration of 

@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * This interface permits a DOM implementer to supply one or more 
  * implementations, based upon requested features. Each implemented 
  * <code>DOMImplementationSource</code> object is listed in the 

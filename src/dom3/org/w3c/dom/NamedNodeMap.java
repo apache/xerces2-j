@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * Objects implementing the <code>NamedNodeMap</code> interface are used to 
  * represent collections of nodes that can be accessed by name. Note that 
  * <code>NamedNodeMap</code> does not inherit from <code>NodeList</code>; 

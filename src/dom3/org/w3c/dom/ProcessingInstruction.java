@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * The <code>ProcessingInstruction</code> interface represents a "processing 
  * instruction", used in XML as a way to keep processor-specific information 
  * in the text of the document. The property [notation] defined in  is not 

@@ -13,6 +13,12 @@
 package org.w3c.dom;
 
 /**
+ * DOM Level 3 WD Experimental:
+ * The DOM Level 3 specification is at the stage 
+ * of Working Draft, which represents work in 
+ * progress and thus may be updated, replaced, 
+ * or obsoleted by other documents at any time. 
+ * <p>
  * Each <code>Document</code> has a <code>doctype</code> attribute whose value 
  * is either <code>null</code> or a <code>DocumentType</code> object. The 
  * <code>DocumentType</code> interface in the DOM Core provides an interface 
