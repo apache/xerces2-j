@@ -15,7 +15,7 @@
  * limitations under the License.
 -->
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
-<s1 title="Reporting Bugs in Bugzilla">
+<s1 title="Reporting Bugs in Jira">
 <s2 title="Before you report a bug">
 <p> Before you report a bug, please, <em>read</em> the following instructions:</p>
   <ul>
@@ -24,28 +24,28 @@
           xerces-j-user</jump> list for clarification.
          </li>
 	<li>To help to eliminate duplicate or invalid bug reports, such as the
-	    <jump href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16528">external-schemaLocation</jump> bug, 
-	    <em>please take a quick look at bugs in Bugzilla</em> opened against the version you're working 
+	    <jump href="http://nagoya.apache.org/jira/browse/XERCESJ-581">external-schemaLocation</jump> bug, 
+	    <em>please take a quick look at bugs in Jira</em> opened against the version you're working 
         with to see whether the bug has been already reported and/or fixed.
 	    You can also download the 
 	    <jump href='http://gump.covalent.net/jars/latest/xml-xerces2/'>latest code</jump> 
 	    in CVS and check if you can reproduce the bug.</li>
 	  <li>Report bugs against the newest release.</li>
-	  <li>Read <jump href="http://nagoya.apache.org/bugzilla/">Bugzilla Notes</jump></li>
+	  <li>Read <jump href="http://nagoya.apache.org/jira">Jira Notes</jump></li>
       </ul>
       <p>We strongly encourage you write patches for problems you find and submit 
-         them to xerces-j-dev@xml.apache.org. Being specific in the description of your bug report, and
-         providing enough information to reproduce the bug will improve the likelihood that the bug 
-         you found will be fixed in the foreseeable future. In the interest of fixing bugs, adding 
-         enhancements, and addressing outstanding design issues, we need your active participation in the 
-         ongoing development of Xerces2.</p>
+         them to <jump href="http://xml.apache.org/mail.html#xerces-j-dev">xerces-j-dev@xml.apache.org</jump>.
+         Being specific in the description of your bug report, and providing enough information to reproduce the 
+         bug will improve the likelihood that the bug you found will be fixed in the foreseeable future. In the 
+         interest of fixing bugs, adding enhancements, and addressing outstanding design issues, we need your 
+         active participation in the ongoing development of Xerces2.</p>
       <anchor name="bugzilla"/>
 
 </s2>
 
 <s2 title="Report a bug">
 <p> Have you read the instructions above?
-If yes, please click <jump href="http://nagoya.apache.org/bugzilla/enter_bug.cgi?product=Xerces2-J">here</jump>
+If yes, please click <jump href="http://nagoya.apache.org/jira/browse/XERCESJ">here</jump>
 to submit a bug report.  </p>
 </s2>
 </s1>
