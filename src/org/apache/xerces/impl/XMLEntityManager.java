@@ -1797,7 +1797,7 @@ public class XMLEntityManager
          * entity, or null if none is available.
          */
         public String getBaseSystemId() {
-            return (fCurrentEntity != null && fCurrentEntity.entityLocation != null) ? fCurrentEntity.entityLocation.getBaseSystemId() : null;
+            return (fCurrentEntity != null && fCurrentEntity.entityLocation != null) ? fCurrentEntity.entityLocation.getExpandedSystemId() : null;
         } // getBaseSystemId():String
 
         /**
