@@ -172,8 +172,7 @@ public final class Constants {
     public static final String DOM_VALIDATE_IF_SCHEMA = "validate-if-schema";
     public static final String DOM_VALIDATE = "validate";
     public static final String DOM_WHITESPACE_IN_ELEMENT_CONTENT =
-    "whitespace-in-element-content";
-
+	"element-content-whitespace";
     // DOM Level 3 features defined in Core:
     public static final String DOM_DISCARD_DEFAULT_CONTENT = "discard-default-content";
     public static final String DOM_NORMALIZE_CHARACTERS    = "normalize-characters";
