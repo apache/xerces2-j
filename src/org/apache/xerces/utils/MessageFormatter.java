@@ -85,7 +85,8 @@ public interface MessageFormatter {
      * @param locale    The locale of the message.
      * @param key       The message key.
      * @param arguments The message replacement text arguments. The order
-     *                  of the arguments must match the 
+     *                  of the arguments must match that of the placeholders
+     *                  in the actual message.
      * 
      * @return Returns the formatted message.
      *
