@@ -12,13 +12,12 @@
 
 package org.w3c.dom.ls;
 
-/** 
- * DOM Level 3 WD Experimental:
+/**
+  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
  * <code>DOMEntityResolver</code> Provides a way for applications to redirect 
  * references to external entities.
  * <p>Applications needing to implement customized handling for external 
@@ -31,9 +30,9 @@ package org.w3c.dom.ls;
  * <p>Many DOM applications will not need to implement this interface, but it 
  * will be especially useful for applications that build XML documents from 
  * databases or other specialized input sources, or for applications that 
- * use URNs. <code>DOMEtityResolver</code> is based on the SAX2  
+ * use URNs. <code>DOMEntityResolver</code> is based on the SAX2  
  * <code>EntityResolver</code> interface. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMEntityResolver {
@@ -64,13 +63,9 @@ public interface DOMEntityResolver {
      * @return A <code>DOMInputSource</code> object describing the new input 
      *   source, or <code>null</code> to request that the parser open a 
      *   regular URI connection to the system identifier. 
-     * @exception DOMSystemException
-     *   Any <code>DOMSystemException</code>, possibly wrapping another 
-     *   exception. 
      */
     public DOMInputSource resolveEntity(String publicId, 
                                         String systemId, 
-                                        String baseURI)
-                                        throws Exception;
+                                        String baseURI);
 
 }

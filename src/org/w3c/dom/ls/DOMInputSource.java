@@ -13,12 +13,11 @@
 package org.w3c.dom.ls;
 
 /**
- * DOM Level 3 WD Experimental:
+  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
  * This interface represents a single input source for an XML entity. 
  * <p> This interface allows an application to encapsulate information about 
  * an input source in a single object, which may include a public 
@@ -39,9 +38,9 @@ package org.w3c.dom.ls;
  * connection to the resource identified by the system identifier. 
  * <p> A <code>DOMInputSource</code> object belongs to the application: the 
  * parser shall never modify it in any way (it may modify a copy if 
- * necessary).  Eventhough all attributes in this interface are writable the 
- * DOM implementation is expected to never mutate a DOMInputSource. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
+ * necessary).  Even though all attributes in this interface are writable 
+ * the DOM implementation is expected to never mutate a DOMInputSource. 
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMInputSource {
@@ -113,7 +112,7 @@ public interface DOMInputSource {
      * <br>This attribute has no effect when the application provides a 
      * character stream. For other sources of input, an encoding specified 
      * by means of this attribute will override any encoding specified in 
-     * the XML claration or the Text Declaration, or an encoding obtained 
+     * the XML declaration or the Text declaration, or an encoding obtained 
      * from a higher level protocol, such as HTTP .
      */
     public String getEncoding();
@@ -124,7 +123,7 @@ public interface DOMInputSource {
      * <br>This attribute has no effect when the application provides a 
      * character stream. For other sources of input, an encoding specified 
      * by means of this attribute will override any encoding specified in 
-     * the XML claration or the Text Declaration, or an encoding obtained 
+     * the XML declaration or the Text declaration, or an encoding obtained 
      * from a higher level protocol, such as HTTP .
      */
     public void setEncoding(String encoding);

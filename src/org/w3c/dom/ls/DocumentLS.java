@@ -16,19 +16,21 @@ import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
 
 /**
- * DOM Level 3 WD Experimental:
+  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
- * The DocumentLS interface provides a mechanism by which the content of a 
- * document can be replaced with the DOM tree produced when loading a URI, 
- * or parsing a string. The expectation is that an instance of the 
- * DocumentLS interface can be obtained by using binding-specific casting 
- * methods on an instance of the Document interface. 
- * <p>uses the default features.
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
+ * The <code>DocumentLS</code> interface provides a mechanism by which the 
+ * content of a document can be replaced with the DOM tree produced when 
+ * loading a URI, or parsing a string. The expectation is that an instance 
+ * of the <code>DocumentLS</code> interface can be obtained by using 
+ * binding-specific casting methods on an instance of the 
+ * <code>Document</code> interface or, if the <code>Document</code> supports 
+ * the feature <code>"Core"</code> version <code>"3.0"</code> defined in , 
+ * by using the method <code>Node.getInterface</code> with parameter values 
+ * <code>"LS-Load"</code> and <code>"3.0"</code> (respectively). 
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DocumentLS {
@@ -80,6 +82,9 @@ public interface DocumentLS {
      * caller knows that the load failed (see <code>ParseErrorEvent</code>). 
      * If this method is called on a document that is currently loading, the 
      * current load is interrupted and the new URI load is initiated.
+     * <br>When invoking this method the features used in the 
+     * <code>DOMBuilder</code> interface are assumed to have their default 
+     * values with the exception that the feature "entities" is "false".
      * @param uri The URI reference for the XML file to be loaded. If this is 
      *   a relative URI, the base URI used by the implementation is 
      *   implementation dependent.
@@ -99,6 +104,8 @@ public interface DocumentLS {
      * input string, this method is always synchronous. This method always 
      * parses from a DOMString, which means the data is always UTF16. All 
      * other encoding information is ignored. 
+     * <br>The features used in the <code>DOMBuilder</code> interface are 
+     * assumed to have their default values when invoking this method.
      * @param source A string containing an XML document.
      * @return <code>true</code> if parsing the input string succeeded 
      *   without errors, otherwise <code>false</code>.
@@ -106,12 +113,15 @@ public interface DocumentLS {
     public boolean loadXML(String source);
 
     /**
-     * Save the document or the given node to a string (i.e. serialize the 
-     * document or node).
+     * Save the document or the given node and all its descendants to a string 
+     * (i.e. serialize the document or node). 
+     * <br>The features used in the <code>DOMWriter</code> interface are 
+     * assumed to have their default values when invoking this method. 
      * @param snode Specifies what to serialize, if this parameter is 
      *   <code>null</code> the whole document is serialized, if it's 
      *   non-null the given node is serialized.
-     * @return The serialized document or <code>null</code>.
+     * @return The serialized document or <code>null</code> in case an error 
+     *   occured.
      * @exception DOMException
      *   WRONG_DOCUMENT_ERR: Raised if the node passed in as the node 
      *   parameter is from an other document.

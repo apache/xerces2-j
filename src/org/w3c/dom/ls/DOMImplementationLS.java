@@ -14,22 +14,24 @@ package org.w3c.dom.ls;
 
 import org.w3c.dom.DOMException;
 
-/** 
- * DOM Level 3 WD Experimental:
+/**
+  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
  *  <code>DOMImplementationLS</code> contains the factory methods for creating 
  * objects that implement the <code>DOMBuilder</code> (parser) and 
  * <code>DOMWriter</code> (serializer) interfaces. 
- * <p> An object that implements DOMImplementationLS is obtained by doing a 
- * binding specific cast from DOMImplementation to DOMImplementationLS. 
- * Implementations supporting the Load and Save feature must implement the 
- * DOMImplementationLS interface on whatever object implements the 
- * DOMImplementation interface. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
+ * <p> The expectation is that an instance of the 
+ * <code>DOMImplementationLS</code> interface can be obtained by using 
+ * binding-specific casting methods on an instance of the 
+ * <code>DOMImplementation</code> interface or, if the <code>Document</code> 
+ * supports the feature <code>"Core"</code> version <code>"3.0"</code> 
+ * defined in , by using the method <code>Node.getInterface</code> with 
+ * parameter values <code>"LS-Load"</code> and <code>"3.0"</code> 
+ * (respectively). 
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMImplementationLS {
@@ -69,7 +71,15 @@ public interface DOMImplementationLS {
      *   absolute URI in order to use this method. 
      * @return  The newly created <code>DOMBuilder</code> object. This 
      *   <code>DOMBuilder</code> is either synchronous or asynchronous 
-     *   depending on the value of the <code>mode</code> argument.
+     *   depending on the value of the <code>mode</code> argument.  By 
+     *   default, the newly created <code>DOMBuilder</code> does not contain 
+     *   a <code>DOMErrorHandler</code>, i.e. the value of the 
+     *   <code>errorHandler</code> is <code>null</code>. However, 
+     *   implementations may provide a default error handler at creation 
+     *   time. In that case, the initial value of the 
+     *   <code>errorHandler</code> attribute on the new created 
+     *   <code>DOMBuilder</code> contains a reference to the default error 
+     *   handler. 
      * @exception DOMException
      *    NOT_SUPPORTED_ERR: Raised if the requested mode or schema type is 
      *   not supported. 
@@ -81,7 +91,15 @@ public interface DOMImplementationLS {
     /**
      * Create a new <code>DOMWriter</code> object. <code>DOMWriter</code>s are 
      * used to serialize a DOM tree back into an XML document. 
-     * @return The newly created <code>DOMWriter</code> object.
+     * @return The newly created <code>DOMWriter</code> object. By default, 
+     *   the newly created <code>DOMWriter</code> does not contain a 
+     *   <code>DOMErrorHandler</code>, i.e. the value of the 
+     *   <code>errorHandler</code> is <code>null</code>. However, 
+     *   implementations may provide a default error handler at creation 
+     *   time. In that case, the initial value of the 
+     *   <code>errorHandler</code> attribute on the new created 
+     *   <code>DOMWriter</code> contains a reference to the default error 
+     *   handler. 
      */
     public DOMWriter createDOMWriter();
 

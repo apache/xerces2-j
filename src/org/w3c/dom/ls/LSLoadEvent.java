@@ -16,15 +16,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.events.Event;
 
 /**
- * DOM Level 3 WD Experimental:
+  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
  *  This interface represents a load event object that signals the completion 
  * of a document load. 
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface LSLoadEvent extends Event {

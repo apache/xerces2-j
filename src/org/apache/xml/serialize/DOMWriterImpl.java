@@ -69,6 +69,7 @@ import org.w3c.dom.ls.DOMWriter;
 import org.w3c.dom.ls.DOMWriterFilter;
 import org.w3c.dom.traversal.NodeFilter;
 
+import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
@@ -267,14 +268,10 @@ public class DOMWriterImpl implements DOMWriter {
      * @return  Returns <code>true</code> if <code>node</code> was 
      *   successfully serialized and <code>false</code> in case a failure 
      *   occured and the failure wasn't canceled by the error handler. 
-     * @exception DOMSystemException
-     *   This exception will be raised in response to any sort of IO or system 
-     *   error that occurs while writing to the destination. It may wrap an 
-     *   underlying system exception.
+     * @exception none
      */
     public boolean writeNode(java.io.OutputStream destination, 
-                             Node wnode)
-    throws Exception {
+                             Node wnode) {
         checkAllFeatures();
         try {
             reset();
@@ -289,10 +286,15 @@ public class DOMWriterImpl implements DOMWriter {
                 serializer.serialize((Element)wnode);
             else
                 return false;
-        } catch (NullPointerException npe) {
-            throw npe;
-        } catch (IOException ioe) {
-            throw ioe;
+        } catch (Exception e) {
+            if (serializer.fDOMErrorHandler != null) {
+                  DOMErrorImpl error = new DOMErrorImpl();
+                  error.fException = e;
+                  error.fMessage = e.getMessage();
+                  error.fSeverity = error.SEVERITY_ERROR;
+                  serializer.fDOMErrorHandler.handleError(error);
+
+            }
         }
         return true;
     }

@@ -525,7 +525,7 @@ extends AbstractDOMParser implements DOMBuilder {
      * <code>DOMInputSource</code>.
      * 
      */
-    public Document parse(DOMInputSource is) throws Exception {
+    public Document parse(DOMInputSource is) {
 
         // need to wrap the DOMInputSource with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);

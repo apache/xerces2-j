@@ -18,12 +18,11 @@ import org.w3c.dom.DOMException;
 import org.apache.xerces.dom3.DOMErrorHandler;
 
 /**
- * DOM Level 3 WD Experimental:
+  * DOM Level 3 WD Experimental:
  * The DOM Level 3 specification is at the stage 
  * of Working Draft, which represents work in 
  * progress and thus may be updated, replaced, 
  * or obsoleted by other documents at any time. 
- * <p>
  * A interface to an object that is able to build a DOM tree from various 
  * input sources.
  * <p><code>DOMBuilder</code> provides an API for parsing XML documents and 
@@ -54,7 +53,7 @@ import org.apache.xerces.dom3.DOMErrorHandler;
  * to <code>true</code>.
  * <p> Asynchronous <code>DOMBuilder</code> objects are expected to also 
  * implement the <code>events::EventTarget</code> interface so that event 
- * listeners can be registerd on asynchronous <code>DOMBuilder</code> 
+ * listeners can be registered on asynchronous <code>DOMBuilder</code> 
  * objects. 
  * <p> Events supported by asynchronous <code>DOMBuilder</code> are: load: The 
  * document that's being loaded is completely parsed, see the definition of 
@@ -73,14 +72,26 @@ import org.apache.xerces.dom3.DOMErrorHandler;
  * <code>true</code> or <code>false</code> must be supported or is optional 
  * and, which state is the default one: 
  * <dl>
- * <dt><code>"cdata-sections"</code></dt>
+ * <dt><code>"canonical-form"</code></dt>
  * <dd> This 
  * feature is equivalent to the one provided on 
  * <code>Document.setNormalizationFeature</code> in . </dd>
- * <dt><code>"comments"</code></dt>
+ * <dt>
+ * <code>"cdata-sections"</code></dt>
+ * <dd> This feature is equivalent to the one 
+ * provided on <code>Document.setNormalizationFeature</code> in . </dd>
+ * <dt>
+ * <code>"certified"</code></dt>
  * <dd>
- *  This feature is equivalent to the one provided on 
- * <code>Document.setNormalizationFeature</code> in . </dd>
+ * <dl>
+ * <dt><code>true</code></dt>
+ * <dd>[optional] Assume, when XML 1.1 
+ * is supported, that the input is certified (see section 2.13 in ). </dd>
+ * <dt>
+ * <code>false</code></dt>
+ * <dd>[required] (default) Don't assume that the input is 
+ * certified (see section 2.13 in ). </dd>
+ * </dl></dd>
  * <dt>
  * <code>"charset-overrides-xml-encoding"</code></dt>
  * <dd>
@@ -98,26 +109,33 @@ import org.apache.xerces.dom3.DOMErrorHandler;
  * character set encoding information from higher level protocols is ignored 
  * by the parser. </dd>
  * </dl></dd>
- * <dt><code>"datatype-normalization"</code></dt>
- * <dd> This feature is 
- * equivalent to the one provided on 
- * <code>Document.setNormalizationFeature</code> in . </dd>
- * <dt><code>"entities"</code></dt>
- * <dd>
- *  This feature is equivalent to the one provided on 
- * <code>Document.setNormalizationFeature</code> in . </dd>
+ * <dt><code>"comments"</code></dt>
+ * <dd> This feature is equivalent to the 
+ * one provided on <code>Document.setNormalizationFeature</code> in . </dd>
  * <dt>
- * <code>"canonical-form"</code></dt>
- * <dd> This feature is equivalent to the one 
- * provided on <code>Document.setNormalizationFeature</code> in . </dd>
+ * <code>"datatype-normalization"</code></dt>
+ * <dd> This feature is equivalent to the 
+ * one provided on <code>Document.setNormalizationFeature</code> in . </dd>
  * <dt>
- * <code>"infoset"</code></dt>
+ * <code>"entities"</code></dt>
  * <dd> This feature is equivalent to the one provided on 
  * <code>Document.setNormalizationFeature</code> in . </dd>
+ * <dt><code>"infoset"</code></dt>
+ * <dd> 
+ * This feature is equivalent to the one provided on 
+ * <code>Document.setNormalizationFeature</code> in . Setting this feature 
+ * to <code>true</code> will also force the feature <code>namespaces</code> 
+ * to <code>true</code>. </dd>
+ * <dt><code>"namespaces"</code></dt>
+ * <dd>
+ * <dl>
+ * <dt><code>true</code></dt>
+ * <dd>[required
+ * ] (default) Perform the namespace processing as defined in . </dd>
  * <dt>
- * <code>"namespaces"</code></dt>
- * <dd> This feature is equivalent to the one provided 
- * on <code>Document.setNormalizationFeature</code> in . </dd>
+ * <code>false</code></dt>
+ * <dd>[optional] Do not perform the namespace processing. </dd>
+ * </dl></dd>
  * <dt>
  * <code>"namespace-declarations"</code></dt>
  * <dd> This feature is equivalent to the 
@@ -136,19 +154,34 @@ import org.apache.xerces.dom3.DOMErrorHandler;
  * default) Don't check the media type, accept any type of data. </dd>
  * </dl></dd>
  * <dt>
+ * <code>"unknown-characters"</code></dt>
+ * <dd>
+ * <dl>
+ * <dt><code>true</code></dt>
+ * <dd>[required] (default) 
+ * If, while verifying full normalization when XML 1.1 is supported, a 
+ * processor encounters characters for which it cannot determine the 
+ * normalization properties, then the processor will ignore any possible 
+ * denormalizations caused by these characters. </dd>
+ * <dt><code>false</code></dt>
+ * <dd>[optional] 
+ * Report an fatal error if a character is encountered for which the 
+ * processor can not determine the normalization properties. </dd>
+ * </dl></dd>
+ * <dt>
+ * <code>"validate"</code></dt>
+ * <dd> This feature is equivalent to the one provided on 
+ * <code>Document.setNormalizationFeature</code> in . </dd>
+ * <dt>
  * <code>"validate-if-schema"</code></dt>
  * <dd> This feature is equivalent to the one 
  * provided on <code>Document.setNormalizationFeature</code> in . </dd>
- * <dt>
- * <code>"validation"</code></dt>
- * <dd> This feature is equivalent to the one provided 
- * on <code>Document.setNormalizationFeature</code> in . </dd>
  * <dt>
  * <code>"whitespace-in-element-content"</code></dt>
  * <dd> This feature is equivalent 
  * to the one provided on <code>Document.setNormalizationFeature</code> in . </dd>
  * </dl>
- * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-ASLS-20020409'>Document Object Model (DOM) Level 3 Abstract Schemas and Load
+ * <p>See also the <a href='http://www.w3.org/TR/2002/WD-DOM-Level-3-LS-20020725'>Document Object Model (DOM) Level 3 Load
 and Save Specification</a>.
  */
 public interface DOMBuilder {
@@ -158,6 +191,8 @@ public interface DOMBuilder {
      * <code>DOMBuilder</code> will pass the public and system IDs to the 
      * entity resolver, which can then specify the actual source of the 
      * entity.
+     * <br> If this attribute is <code>null</code>, the resolution of entities 
+     * in the document is implementation dependent. 
      */
     public DOMEntityResolver getEntityResolver();
     /**
@@ -166,6 +201,8 @@ public interface DOMBuilder {
      * <code>DOMBuilder</code> will pass the public and system IDs to the 
      * entity resolver, which can then specify the actual source of the 
      * entity.
+     * <br> If this attribute is <code>null</code>, the resolution of entities 
+     * in the document is implementation dependent. 
      */
     public void setEntityResolver(DOMEntityResolver entityResolver);
 
@@ -181,7 +218,7 @@ public interface DOMBuilder {
      * should also pass any other valuable information to the error handler, 
      * such as file name, line number, and so on. Mutations to the document 
      * from within an error handler will result in implementation dependent 
-     * behavour. 
+     * behaviour. 
      */
     public DOMErrorHandler getErrorHandler();
     /**
@@ -196,7 +233,7 @@ public interface DOMBuilder {
      * should also pass any other valuable information to the error handler, 
      * such as file name, line number, and so on. Mutations to the document 
      * from within an error handler will result in implementation dependent 
-     * behavour. 
+     * behaviour. 
      */
     public void setErrorHandler(DOMErrorHandler errorHandler);
 
@@ -291,16 +328,8 @@ public interface DOMBuilder {
      *   <code>Document</code> is returned. If the <code>DOMBuilder</code> 
      *   is asynchronous then <code>null</code> is returned since the 
      *   document object is not yet parsed when this method returns.
-     * @exception DOMSystemException
-     *   Exceptions raised by <code>parse</code> originate with the installed 
-     *   ErrorHandler, and thus depend on the implementation of the 
-     *   <code>DOMErrorHandler</code> interfaces. The default ErrorHandlers 
-     *   will raise a <code>DOMSystemException</code> if any form I/O or 
-     *   other system error occurs during the parse, but application defined 
-     *   ErrorHandlers are not required to do so. 
      */
-    public Document parse(DOMInputSource is)
-                          throws Exception;
+    public Document parse(DOMInputSource is);
 
     // ACTION_TYPES
     /**
@@ -332,18 +361,22 @@ public interface DOMBuilder {
     public static final short ACTION_INSERT_BEFORE      = 4;
 
     /**
-     *  Parse an XML document or fragment from a resource identified by a 
+     *  Parse an XML fragment from a resource identified by a 
      * <code>DOMInputSource</code> and insert the content into an existing 
      * document at the position specified with the <code>contextNode</code> 
      * and <code>action</code> arguments. When parsing the input stream the 
-     * context node is used for resolving unbound namespace prefixes. 
+     * context node is used for resolving unbound namespace prefixes. The 
+     * <code>Document</code> node, attached to the context node, is used to 
+     * resolved default attributes and entity references. 
      * <br> As the new data is inserted into the document at least one 
-     * mutation event is fired per immidate child (or sibling) of context 
+     * mutation event is fired per immediate child (or sibling) of context 
      * node. 
      * <br> If an error occurs while parsing, the caller is notified through 
      * the error handler. 
      * @param is  The <code>DOMInputSource</code> from which the source 
-     *   document is to be read. 
+     *   document is to be read. The source document must be an XML 
+     *   fragment, i.e. anything except an XML Document, a DOCTYPE, entities 
+     *   declarations, notations declarations, or XML or text declarations. 
      * @param cnode  The node that is used as the context for the data that 
      *   is being parsed. This node must be a <code>Document</code> node, a 
      *   <code>DocumentFragment</code> node, or a node of a type that is 
