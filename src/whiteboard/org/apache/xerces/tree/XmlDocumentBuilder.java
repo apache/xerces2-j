@@ -149,7 +149,7 @@ public class XmlDocumentBuilder implements
     private Locale		locale = Locale.getDefault ();
 
     private ElementFactory	factory;
-    private Parser		parser;
+    private SAXParser		parser;
     private Vector		attrTmp = new Vector ();
     
     private ParentNode		elementStack [];
@@ -241,8 +241,8 @@ public class XmlDocumentBuilder implements
     public void setParser (org.xml.sax.Parser p)
     {
 	p.setDocumentHandler (this);
-	if (p instanceof Parser) {
-	    parser = (Parser) p;
+	if (p instanceof SAXParser) {
+	    parser = (SAXParser) p;
 	    parser.setDTDHandler (new DtdListener ());
 	} else
 	    parser = null;
@@ -251,7 +251,7 @@ public class XmlDocumentBuilder implements
     /**
      * Returns the parser used by this builder, if it is recorded.
      */
-    public Parser getParser ()
+    public SAXParser getParser ()
 	{ return parser; }
     
     
@@ -267,13 +267,13 @@ public class XmlDocumentBuilder implements
      * this builder, and by documents it produces.  This uses
      * the locale of any associated parser.
      */
-    public Locale	getLocale ()
+    /*public Locale	getLocale ()
     {
 	if (parser != null)
 	    return parser.getLocale ();
 	else
 	    return locale;
-    }
+    }*/
     
     /**
      * Assigns the locale to be used for diagnostic messages.
@@ -988,8 +988,11 @@ public class XmlDocumentBuilder implements
 	public ErrorHandler getErrorHandler ()
 	    { return (parser != null) ? parser.getErrorHandler () : null; }
 
-	public Locale getLocale ()
-	    { return XmlDocumentBuilder.this.getLocale (); }
+	public Locale getLocale () { 
+	    //return XmlDocumentBuilder.this.getLocale (); 
+	    // XXX need to change SAXParser for this
+	    return Locale.getDefault();
+	}
 
 	public Locator getLocator ()
 	    { return locator; }
@@ -1107,9 +1110,9 @@ public class XmlDocumentBuilder implements
      * after formatting it with the parameters passed to it.
      */
     String getMessage (String messageId, Object[] parameters) {
-   	if (locale == null) {
+   	/*if (locale == null) {
 		getLocale ();
-	}
+	}*/
 	return XmlDocument.catalog.getMessage (locale, messageId, parameters);
     }
 

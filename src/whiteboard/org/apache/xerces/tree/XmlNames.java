@@ -1,5 +1,5 @@
 /*
- * $Id$ 
+ * $Id$
  *
  * The Apache Software License, Version 1.1
  *
@@ -55,7 +55,6 @@
  * http://www.sun.com.  For more information on the Apache Software 
  * Foundation, please see <http://www.apache.org/>.
  */
-
 
 package org.apache.xerces.tree;
 
@@ -182,5 +181,42 @@ public class XmlNames
     public static boolean isNCNmtoken (String token)
     {
 	return isNmtoken (token) && token.indexOf (':') < 0;
+    }
+
+    /**
+     * Return the Prefix of qualifiedName.  Does not check that Prefix is a
+     * valid NCName.
+     *
+     * @param qualifiedName name to find the Prefix of
+     * @return prefix or null if it has none
+     */
+    public static String getPrefix(String qualifiedName) {
+        // [6] QName ::= (Prefix ':')? LocalPart
+        // [7] Prefix ::= NCName
+        int index = qualifiedName.indexOf(':');
+        return index <= 0 ? null : qualifiedName.substring(0, index);
+    }
+
+    /**
+     * Return the LocalPart of qualifiedName.  Does not check that Prefix is a
+     * valid NCName.
+     *
+     * @param qualifiedName name to find the LocalPart of
+     * @return LocalPart or null if it has none
+     */
+    public static String getLocalPart(String qualifiedName) {
+        // [6] QName ::= (Prefix ':')? LocalPart
+        // [8] LocalPart ::= NCName
+	int index = qualifiedName.indexOf(':');
+	if (index < 0) {
+	    return qualifiedName;
+        }
+
+        // ':' at end of qualifiedName
+        if (index == qualifiedName.length() - 1) {
+            return null;
+        }
+
+	return qualifiedName.substring(index + 1);
     }
 }

@@ -78,11 +78,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.XMLReader;
 
-//import org.apache.crimson.parser.Parser;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.tree.Resolver;
-// Need to set feature to get validation. 
-//import org.apache.crimson.parser.ValidatingParser;
 
 import org.apache.xerces.tree.MessageCatalog;
 import org.apache.xerces.tree.XmlNames;
@@ -229,47 +226,6 @@ public class XmlDocument extends ParentNode
 	return createXmlDocument (new InputSource (in), doValidate);
     }
 
-    /**
-     * Construct an XML document from the data in the specified input
-     * source, optionally validating.  This uses the validating parser
-     * if validation is requested, otherwise uses the non-validating
-     * parser.  XML Namespace conformance is not tested when parsing.
-     *
-     * @param in The input source of the document
-     * @param doValidate If true, validity errors are treated as fatal
-     *
-     * @exception IOException as appropriate
-     * @exception SAXException as appropriate
-     * @exception SAXParseException (with line number information)
-     *	for parsing errors
-     * @exception IllegalStateException at least when the parser
-     *	is configured incorrectly
-     */
-    /*public static XmlDocument createXmlDocument (
-	InputSource in,
-	boolean doValidate
-    ) throws IOException, SAXException
-    {
-	Parser			parser;
-	XmlDocumentBuilder	builder;
-
-	try {
-	    if (doValidate)
-		parser = new ValidatingParser (true);
-	    else
-		parser = new Parser ();
-	    parser.setEntityResolver (new Resolver ());
-	    builder = new XmlDocumentBuilder ();
-	    builder.setDisableNamespaces (true);
-
-	} catch (Exception e) {
-	    throw new SAXException (e);
-	}
-
-	builder.setParser (parser);
-	parser.parse (in);
-	return builder.getDocument ();
-    }*/
 
     /**
      * Construct an XML document from the data in the specified input
@@ -301,12 +257,6 @@ public class XmlDocument extends ParentNode
         String nsPrefixes = "http://xml.org/sax/features/namespace-prefixes";
         xmlReader.setFeature(nsPrefixes, true);
 
-//         boolean namespacesVal = xmlReader.getFeature(namespaces);
-//         System.out.println("namespaces=" + namespacesVal);
-
-//         boolean nsPrefixesVal = xmlReader.getFeature(nsPrefixes);
-//         System.out.println("namespace-prefixes=" + nsPrefixesVal);
-
         // Validation
 	if (validate) {
         	xmlReader.setFeature(
@@ -336,7 +286,7 @@ public class XmlDocument extends ParentNode
         // DTDHandler
         xmlReader.setDTDHandler(builder);
 
-	parser.setEntityResolver (new Resolver ());
+	xmlReader.setEntityResolver (new Resolver ());
 
         // Parse the input
         xmlReader.parse(in);
@@ -1248,6 +1198,13 @@ public class XmlDocument extends ParentNode
                                            String internalSubset)
     {
         return new Doctype(qualifiedName, publicId, systemId, internalSubset);
+    }
+
+    public DocumentType createDocumentType(String qualifiedName,
+                                           String publicId,
+                                           String systemId)
+    {
+        return createDocumentType (qualifiedName, publicId, systemId, null);
     }
 
     /**
