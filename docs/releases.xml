@@ -30,6 +30,12 @@
 	<submitter name='Elena Litani'/>
       </add>
       <add>
+        <note> 
+          Added implementation for compareTreePosition method of DOM L3.
+        </note>
+        <submitter name='Lisa Martin'/>
+      </add>
+      <add>
         <note>
           Reorganized the code in Xerces DOM implementation to expose DOM Level 3
           functionality via org.w3c.dom package.
