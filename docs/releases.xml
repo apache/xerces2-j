@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
- <release version='Xerces 2.0.0 (NOT YET RELEASED)'>
+ <release version='Xerces 2.0.0 Beta 4 (Dec. 17, 2001)'>
   <desc>
    This release fixes a number of bugs, introduces more changes to the Xerces
    Native Interface, provides partial experimental DOM Level 3 implementation,
@@ -73,7 +73,7 @@
    <add>
     <note>
      New schema simple type interface and implementation. It fixes various bugs
-     in the old implementation, and provides enough informatin for PSVI
+     in the old implementation, and provides enough information for PSVI
      support.
     </note>
     <submitter name='Sandy Gao, Neeraj Bajaj'/>
@@ -82,7 +82,7 @@
    <update>
     <note>
      Internalize all symbols in SymbolTable using
-     java.jang.String#intern(). Now applications can compare the symbols by
+     java.lang.String#intern(). Now applications can compare the symbols by
      reference.
     </note>
     <submitter name='Sandy Gao'/>
@@ -150,7 +150,7 @@
 
    <fix>
     <note>
-     Fixed getElementById() in the DOMParser. Binded namespace attributes to
+     Fixed getElementById() in the DOMParser. Bound namespace attributes to
      http://www.w3.org/2000/xmlns/ (DOM only).
     </note>
     <submitter name='Elena Litani'/>
@@ -171,6 +171,22 @@
     <submitter name='Arnaud Le Hors'/>
    </add>
 
+   <add>
+    <note>
+        Added ASBuilder sample to the DOM samples package to show how
+        to use the new DOM level 3 ASBuilder interface to implement a
+        form of grammar caching.
+    </note>
+    <submitter name='Sandy Gao'/>
+   </add>
+
+   <fix>
+    <note>
+        Enabled the parser to process documents encoded in EBCDIC and
+        UTF-16.
+    </note>
+    <submitter name='Neil Graham'/>
+   </fix>
   </changes>
  </release>
 
