@@ -1142,7 +1142,7 @@ public class XSAttributeChecker {
             int max = ((XInt)attrValues[ATTIDX_MAXOCCURS]).intValue();
             if (max != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
                 if (min > max) {
-                    reportSchemaError ("p-props-correct:2.1",
+                    reportSchemaError ("p-props-correct.2.1",
                                        new Object[] {elName, attrValues[ATTIDX_MINOCCURS], attrValues[ATTIDX_MAXOCCURS]});
                     attrValues[ATTIDX_MINOCCURS] = attrValues[ATTIDX_MAXOCCURS];
                 }
