@@ -17,8 +17,6 @@ TARGETS=\
 all: dirs compile
 
 dirs:
-	${MAKE} -C events
-	${MAKE} -C traversal
 
 compile: ${TARGETS}
 
@@ -33,6 +31,4 @@ compile: ${TARGETS}
 
 clean:
 	${RM} *.class
-	${MAKE} -C events clean
-	${MAKE} -C traversal clean
 

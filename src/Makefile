@@ -60,14 +60,6 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/xerces/domx
 	${CP}  ../src/org/apache/xerces/domx/*.class  		../class/org/apache/xerces/domx
 
-#-src/org/apache/xerces/domx/events
-	${MKDIR} ../class/org/apache/xerces/domx/events
-	${CP}  ../src/org/apache/xerces/domx/events/*.class  		../class/org/apache/xerces/domx/events
-
-#-src/org/apache/xerces/domx/traversal
-	${MKDIR} ../class/org/apache/xerces/domx/traversal
-	${CP}  ../src/org/apache/xerces/domx/traversal/*.class  		../class/org/apache/xerces/domx/traversal
-
 #-src/org/apache/xerces/framework
 	${MKDIR} ../class/org/apache/xerces/framework
 	${CP}  ../src/org/apache/xerces/framework/*.class		../class/org/apache/xerces/framework
