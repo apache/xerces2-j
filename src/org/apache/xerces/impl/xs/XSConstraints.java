@@ -161,18 +161,18 @@ public class XSConstraints {
         }
 
         // 2.2 One of the following must be true:
-        // 2.2.1 D's ·base type definition· is B.
+        // 2.2.1 D's base type definition is B.
         DatatypeValidator directBase = derived.getBaseValidator();
         if (directBase == base)
             return true;
 
-        // 2.2.2 D's ·base type definition· is not the ·simple ur-type definition· and is validly derived from B given the subset, as defined by this constraint.
+        // 2.2.2 D's base type definition is not the simple ur-type definition and is validly derived from B given the subset, as defined by this constraint.
         if (directBase != SchemaGrammar.fAnySimpleType &&
             checkSimpleDerivation(directBase, base, block)) {
             return true;
         }
 
-        // 2.2.3 D's {variety} is list or union and B is the ·simple ur-type definition·.
+        // 2.2.3 D's {variety} is list or union and B is the simple ur-type definition.
         if ((derived instanceof ListDatatypeValidator ||
              derived instanceof UnionDatatypeValidator) &&
             base == SchemaGrammar.fAnySimpleType) {
@@ -214,7 +214,7 @@ public class XSConstraints {
             return true;
 
         // 2.3 All of the following must be true:
-        // 2.3.1 D's {base type definition} must not be the ·ur-type definition·.
+        // 2.3.1 D's {base type definition} must not be the ur-type definition.
         if (directBase == SchemaGrammar.fAnyType ||
             directBase == SchemaGrammar.fAnySimpleType) {
             return false;
@@ -225,7 +225,7 @@ public class XSConstraints {
         if (directBase.getXSType() == XSTypeDecl.COMPLEX_TYPE)
             return checkComplexDerivation((XSComplexTypeDecl)directBase, base, block);
 
-        // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (§3.14.6).
+        // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (3.14.6).
         if (directBase.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             // if base is complex type
             if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
@@ -253,7 +253,7 @@ public class XSConstraints {
 
         // e-props-correct
         // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
-        // 1 If the type definition is a simple type definition, then the string must be ·valid· with respect to that definition as defined by String Valid (§3.14.4).
+        // 1 If the type definition is a simple type definition, then the string must be valid with respect to that definition as defined by String Valid (3.14.4).
         if (type.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
             dv = (DatatypeValidator)type;
         }
@@ -263,11 +263,11 @@ public class XSConstraints {
             // 2.1 its {content type} must be a simple type definition or mixed.
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
             // 2.2 The appropriate case among the following must be true:
-            // 2.2.1 If the {content type} is a simple type definition, then the string must be ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
+            // 2.2.1 If the {content type} is a simple type definition, then the string must be valid with respect to that simple type definition as defined by String Valid (3.14.4).
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                 dv = ctype.fDatatypeValidator;
             }
-            // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be ·emptiable· as defined by Particle Emptiable (§3.9.6).
+            // 2.2.2 If the {content type} is mixed, then the {content type}'s particle must be emptiable as defined by Particle Emptiable (3.9.6).
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                 if (!ctype.fParticle.emptiable())
                     return null;
@@ -338,11 +338,11 @@ public class XSConstraints {
                 if (types[j].fBaseType != null &&
                     types[j].fBaseType != SchemaGrammar.fAnyType &&
                     types[j].fDerivedBy == SchemaSymbols.RESTRICTION &&
-                    types[j].fParticle !=null && 
-                    (types[j].fBaseType instanceof XSComplexTypeDecl) && 
+                    types[j].fParticle !=null &&
+                    (types[j].fBaseType instanceof XSComplexTypeDecl) &&
                     ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle != null) {
                   try {
-                      particleValidRestriction(SGHandler, types[j].fParticle, 
+                      particleValidRestriction(SGHandler, types[j].fParticle,
                          ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle);
                   } catch (XMLSchemaException e) {
                       errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
@@ -350,8 +350,8 @@ public class XSConstraints {
                                                 e.getArgs(),
                                                 XMLErrorReporter.SEVERITY_ERROR);
                       errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                                "derivation-ok-restriction.5.3", 
-                                                new Object[]{types[j].fName}, 
+                                                "derivation-ok-restriction.5.3",
+                                                new Object[]{types[j].fName},
                                                 XMLErrorReporter.SEVERITY_ERROR);
                   }
                 }
@@ -400,44 +400,44 @@ public class XSConstraints {
     }
 
     /*
-       Check that a given particle is a valid restriction of a base particle. 
+       Check that a given particle is a valid restriction of a base particle.
     */
 
     public static void particleValidRestriction(SubstitutionGroupHandler sgHandler,
-                                     XSParticleDecl dParticle, 
-                                     XSParticleDecl bParticle) 
+                                     XSParticleDecl dParticle,
+                                     XSParticleDecl bParticle)
                                      throws XMLSchemaException {
 
-    // Invoke particleValidRestriction with a substitution group handler for each 
-    // particle.  
+    // Invoke particleValidRestriction with a substitution group handler for each
+    // particle.
 
        particleValidRestriction(dParticle, sgHandler, bParticle, sgHandler);
     }
-       
-    private static void particleValidRestriction(XSParticleDecl dParticle, 
+
+    private static void particleValidRestriction(XSParticleDecl dParticle,
                                      SubstitutionGroupHandler dSGHandler,
-                                     XSParticleDecl bParticle, 
-				     SubstitutionGroupHandler bSGHandler)              
+                                     XSParticleDecl bParticle,
+                                     SubstitutionGroupHandler bSGHandler)
                                      throws XMLSchemaException {
-       
+
        Vector dChildren = null;
        Vector bChildren = null;
        int dMinEffectiveTotalRange=OCCURRENCE_UNKNOWN;
-       int dMaxEffectiveTotalRange=OCCURRENCE_UNKNOWN; 
+       int dMaxEffectiveTotalRange=OCCURRENCE_UNKNOWN;
 
 
-       // Check for empty particles.   If either base or derived particle is empty, 
-       // (and the other isn't) it's an error. 
+       // Check for empty particles.   If either base or derived particle is empty,
+       // (and the other isn't) it's an error.
        if (! (dParticle.isEmpty() == bParticle.isEmpty())) {
          throw new XMLSchemaException("cos-particle-restrict", null);
        }
 
        //
-       // Do setup prior to invoking the Particle (Restriction) cases. 
-       // This involves: 
-       //   - removing pointless occurrences for groups, and retrieving a vector of 
+       // Do setup prior to invoking the Particle (Restriction) cases.
+       // This involves:
+       //   - removing pointless occurrences for groups, and retrieving a vector of
        //     non-pointless children
-       //   - turning top-level elements with substitution groups into CHOICE groups. 
+       //   - turning top-level elements with substitution groups into CHOICE groups.
        //
 
        int dType = dParticle.fType;
@@ -448,20 +448,20 @@ public class XSConstraints {
            dType == XSParticleDecl.PARTICLE_CHOICE ||
            dType == XSParticleDecl.PARTICLE_ALL) {
 
-         // Find a group, starting with this particle, with more than 1 child.   There 
-         // may be none, and the particle of interest trivially becomes an element or 
-         // wildcard. 
+         // Find a group, starting with this particle, with more than 1 child.   There
+         // may be none, and the particle of interest trivially becomes an element or
+         // wildcard.
          XSParticleDecl dtmp = getNonUnaryGroup(dParticle);
          if (dtmp != dParticle) {
             // Particle has been replaced.   Retrieve new type info.
-            dParticle = dtmp; 
+            dParticle = dtmp;
             dType = dParticle.fType;
          }
-       
-         // Fill in a vector with the children of the particle, removing any 
-         // pointless model groups in the process.   
+
+         // Fill in a vector with the children of the particle, removing any
+         // pointless model groups in the process.
          dChildren = removePointlessChildren(dParticle);
-       } 
+       }
 
        int dMinOccurs = dParticle.fMinOccurs;
        int dMaxOccurs = dParticle.fMaxOccurs;
@@ -473,55 +473,55 @@ public class XSConstraints {
            XSElementDecl dElement = (XSElementDecl)dParticle.fValue;
 
            if (dElement.isGlobal()) {
-             // Check for subsitution groups.   Treat any element that has a 
-             // subsitution group as a choice.   Fill in the children vector with the 
-             // members of the substitution group 
+             // Check for subsitution groups.   Treat any element that has a
+             // subsitution group as a choice.   Fill in the children vector with the
+             // members of the substitution group
              XSElementDecl[] subGroup = dSGHandler.getSubstitutionGroup(dElement);
              if (subGroup.length >0 ) {
-                // Now, set the type to be CHOICE.  The "group" will have the same 
+                // Now, set the type to be CHOICE.  The "group" will have the same
                 // occurrence information as the original particle.
                 dType = XSParticleDecl.PARTICLE_CHOICE;
                 dMinOccurs = dParticle.fMinOccurs;
                 dMaxOccurs = dParticle.fMaxOccurs;
                 dMinEffectiveTotalRange = dMinOccurs;
-                dMaxEffectiveTotalRange = dMaxOccurs; 
+                dMaxEffectiveTotalRange = dMaxOccurs;
 
-                // Fill in the vector of children                      
+                // Fill in the vector of children
                 dChildren = new Vector(subGroup.length+1);
                 for (int i = 0; i < subGroup.length; i++) {
                   addElementToParticleVector(dChildren, subGroup[i]);
                 }
-                addElementToParticleVector(dChildren, dElement);     
+                addElementToParticleVector(dChildren, dElement);
 
-                // Set the handler to null, to indicate that we've finished handling 
+                // Set the handler to null, to indicate that we've finished handling
                 // substitution groups for this particle.
                 dSGHandler = null;
              }
            }
        }
-        
+
        int bType = bParticle.fType;
        //
-       // Handle pointless groups for the base particle 
+       // Handle pointless groups for the base particle
        //
        if (bType == XSParticleDecl.PARTICLE_SEQUENCE ||
            bType == XSParticleDecl.PARTICLE_CHOICE ||
            bType == XSParticleDecl.PARTICLE_ALL) {
 
-         // Find a group, starting with this particle, with more than 1 child.   There 
-         // may be none, and the particle of interest trivially becomes an element or 
-         // wildcard. 
+         // Find a group, starting with this particle, with more than 1 child.   There
+         // may be none, and the particle of interest trivially becomes an element or
+         // wildcard.
          XSParticleDecl btmp = getNonUnaryGroup(bParticle);
          if (btmp != bParticle) {
             // Particle has been replaced.   Retrieve new type info.
-            bParticle = btmp; 
+            bParticle = btmp;
             bType = bParticle.fType;
          }
-       
-         // Fill in a vector with the children of the particle, removing any 
-         // pointless model groups in the process. 
+
+         // Fill in a vector with the children of the particle, removing any
+         // pointless model groups in the process.
          bChildren = removePointlessChildren(bParticle);
-       } 
+       }
 
        int bMinOccurs = bParticle.fMinOccurs;
        int bMaxOccurs = bParticle.fMaxOccurs;
@@ -530,30 +530,30 @@ public class XSConstraints {
            XSElementDecl bElement = (XSElementDecl)bParticle.fValue;
 
            if (bElement.isGlobal()) {
-             // Check for subsitution groups.   Treat any element that has a 
-             // subsitution group as a choice.   Fill in the children vector with the 
-             // members of the substitution group 
+             // Check for subsitution groups.   Treat any element that has a
+             // subsitution group as a choice.   Fill in the children vector with the
+             // members of the substitution group
              XSElementDecl[] bsubGroup = bSGHandler.getSubstitutionGroup(bElement);
              if (bsubGroup.length >0 ) {
-                // Now, set the type to be CHOICE                      
+                // Now, set the type to be CHOICE
                 bType = XSParticleDecl.PARTICLE_CHOICE;
                 bMinOccurs = bParticle.fMinOccurs;
                 bMaxOccurs = bParticle.fMaxOccurs;
 
                 bChildren = new Vector(bsubGroup.length+1);
                 for (int i = 0; i < bsubGroup.length; i++) {
-                  addElementToParticleVector(bChildren, bsubGroup[i]);     
+                  addElementToParticleVector(bChildren, bsubGroup[i]);
                 }
-                addElementToParticleVector(bChildren, bElement);     
-                // Set the handler to null, to indicate that we've finished handling 
+                addElementToParticleVector(bChildren, bElement);
+                // Set the handler to null, to indicate that we've finished handling
                 // substitution groups for this particle.
                 bSGHandler = null;
              }
            }
        }
-        
+
        //
-       // O.K. - Figure out which particle derivation rule applies and call it 
+       // O.K. - Figure out which particle derivation rule applies and call it
        //
        switch (dType) {
          case XSParticleDecl.PARTICLE_ELEMENT:
@@ -564,7 +564,7 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  checkNameAndTypeOK((XSElementDecl)dParticle.fValue,dMinOccurs,dMaxOccurs,
-                                    (XSElementDecl)bParticle.fValue,bMinOccurs,bMaxOccurs);  
+                                    (XSElementDecl)bParticle.fValue,bMinOccurs,bMaxOccurs);
                  return;
               }
 
@@ -572,15 +572,15 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
                  checkNSCompat((XSElementDecl)dParticle.fValue,dMinOccurs,dMaxOccurs,
-                               (XSWildcardDecl)bParticle.fValue,bMinOccurs,bMaxOccurs); 
+                               (XSWildcardDecl)bParticle.fValue,bMinOccurs,bMaxOccurs);
                  return;
               }
 
               // Elt:All RecurseAsIfGroup
               case XSParticleDecl.PARTICLE_CHOICE:
               {
-                 // Treat the element as if it were in a group of the same type 
-                 // as the base Particle 
+                 // Treat the element as if it were in a group of the same type
+                 // as the base Particle
                  dChildren = new Vector();
                  dChildren.addElement(dParticle);
 
@@ -591,8 +591,8 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_SEQUENCE:
               case XSParticleDecl.PARTICLE_ALL:
               {
-                 // Treat the element as if it were in a group of the same type 
-                 // as the base Particle 
+                 // Treat the element as if it were in a group of the same type
+                 // as the base Particle
                  dChildren = new Vector();
                  dChildren.addElement(dParticle);
 
@@ -603,7 +603,7 @@ public class XSConstraints {
 
               default:
               {
-           	throw new XMLSchemaException("Internal-Error", 
+                throw new XMLSchemaException("Internal-Error",
                                              new Object[]{"in particleValidRestriction"});
               }
             }
@@ -616,7 +616,7 @@ public class XSConstraints {
               // Any:Any NSSubset
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 checkNSSubset((XSWildcardDecl)dParticle.fValue, dMinOccurs, dMaxOccurs, 
+                 checkNSSubset((XSWildcardDecl)dParticle.fValue, dMinOccurs, dMaxOccurs,
                                (XSWildcardDecl)bParticle.fValue, bMinOccurs, bMaxOccurs);
                  return;
               }
@@ -626,13 +626,13 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_ALL:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
-                 throw new XMLSchemaException("cos-particle-restrict.2",  
+                 throw new XMLSchemaException("cos-particle-restrict.2",
                                         new Object[]{"any:choice,sequence,all,elt"});
               }
 
               default:
               {
-           	throw new XMLSchemaException("Internal-Error", 
+                throw new XMLSchemaException("Internal-Error",
                                              new Object[]{"in particleValidRestriction"});
               }
             }
@@ -645,16 +645,16 @@ public class XSConstraints {
               // All:Any NSRecurseCheckCardinality
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN) 
+                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN)
                     dMinEffectiveTotalRange = dParticle.minEffectiveTotalRange();
-                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN) 
+                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN)
                     dMaxEffectiveTotalRange = dParticle.maxEffectiveTotalRange();
 
-                 checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange, 
+                 checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
                                                 dMaxEffectiveTotalRange,
                                                 dSGHandler,
                                                 bParticle,bMinOccurs,bMaxOccurs);
-                                                
+
                  return;
               }
 
@@ -669,13 +669,13 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_SEQUENCE:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
-                 throw new XMLSchemaException("cos-particle-restrict.2",  
+                 throw new XMLSchemaException("cos-particle-restrict.2",
                                         new Object[]{"all:choice,sequence,elt"});
               }
 
               default:
               {
-           	throw new XMLSchemaException("Internal-Error", 
+                throw new XMLSchemaException("Internal-Error",
                                              new Object[]{"in particleValidRestriction"});
               }
             }
@@ -688,12 +688,12 @@ public class XSConstraints {
               // Choice:Any NSRecurseCheckCardinality
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN) 
+                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN)
                     dMinEffectiveTotalRange = dParticle.minEffectiveTotalRange();
-                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN) 
+                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN)
                     dMaxEffectiveTotalRange = dParticle.maxEffectiveTotalRange();
 
-                 checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange, 
+                 checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
                                                 dMaxEffectiveTotalRange,
                                                 dSGHandler,
                                                 bParticle,bMinOccurs,bMaxOccurs);
@@ -711,13 +711,13 @@ public class XSConstraints {
               case XSParticleDecl.PARTICLE_SEQUENCE:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
-                 throw new XMLSchemaException("cos-particle-restrict.2",  
+                 throw new XMLSchemaException("cos-particle-restrict.2",
                                         new Object[]{"choice:all,sequence,elt"});
               }
 
               default:
               {
-           	throw new XMLSchemaException("Internal-Error", 
+                throw new XMLSchemaException("Internal-Error",
                                              new Object[]{"in particleValidRestriction"});
               }
             }
@@ -731,12 +731,12 @@ public class XSConstraints {
               // Choice:Any NSRecurseCheckCardinality
               case XSParticleDecl.PARTICLE_WILDCARD:
               {
-                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN) 
+                 if (dMinEffectiveTotalRange != OCCURRENCE_UNKNOWN)
                     dMinEffectiveTotalRange = dParticle.minEffectiveTotalRange();
-                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN) 
+                 if (dMaxEffectiveTotalRange != OCCURRENCE_UNKNOWN)
                     dMaxEffectiveTotalRange = dParticle.maxEffectiveTotalRange();
 
-                 checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange, 
+                 checkNSRecurseCheckCardinality(dChildren, dMinEffectiveTotalRange,
                                                 dMaxEffectiveTotalRange,
                                                 dSGHandler,
                                                 bParticle,bMinOccurs,bMaxOccurs);
@@ -745,7 +745,7 @@ public class XSConstraints {
 
               case XSParticleDecl.PARTICLE_ALL:
               {
-                 checkRecurseUnordered(dChildren, dMinOccurs, dMaxOccurs, dSGHandler, 
+                 checkRecurseUnordered(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                        bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
@@ -759,9 +759,9 @@ public class XSConstraints {
 
               case XSParticleDecl.PARTICLE_CHOICE:
               {
-                 int min1 = dMinOccurs * dChildren.size(); 
-                 int max1 = (dMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)? 
-                             dMaxOccurs : dMaxOccurs * dChildren.size(); 
+                 int min1 = dMinOccurs * dChildren.size();
+                 int max1 = (dMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)?
+                             dMaxOccurs : dMaxOccurs * dChildren.size();
                  checkMapAndSum(dChildren, min1, max1, dSGHandler,
                                 bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
@@ -769,13 +769,13 @@ public class XSConstraints {
 
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
-                 throw new XMLSchemaException("cos-particle-restrict.2",  
+                 throw new XMLSchemaException("cos-particle-restrict.2",
                                         new Object[]{"seq:elt"});
               }
 
               default:
               {
-           	throw new XMLSchemaException("Internal-Error", 
+                throw new XMLSchemaException("Internal-Error",
                                              new Object[]{"in particleValidRestriction"});
               }
             }
@@ -795,12 +795,12 @@ public class XSConstraints {
 
     private static XSParticleDecl getNonUnaryGroup(XSParticleDecl p) {
 
-       if (p.fType == XSParticleDecl.PARTICLE_ELEMENT || 
-           p.fType == XSParticleDecl.PARTICLE_WILDCARD) 
+       if (p.fType == XSParticleDecl.PARTICLE_ELEMENT ||
+           p.fType == XSParticleDecl.PARTICLE_WILDCARD)
          return p;
 
-       if (p.fMinOccurs==1 && p.fMaxOccurs==1 && 
-           p.fValue!=null && p.fOtherValue==null)  
+       if (p.fMinOccurs==1 && p.fMaxOccurs==1 &&
+           p.fValue!=null && p.fOtherValue==null)
          return getNonUnaryGroup((XSParticleDecl)p.fValue);
        else
          return p;
@@ -809,29 +809,29 @@ public class XSConstraints {
     private static Vector removePointlessChildren(XSParticleDecl p)  {
 
 
-       if (p.fType == XSParticleDecl.PARTICLE_ELEMENT || 
+       if (p.fType == XSParticleDecl.PARTICLE_ELEMENT ||
            p.fType == XSParticleDecl.PARTICLE_WILDCARD ||
            p.fType == XSParticleDecl.PARTICLE_EMPTY)
          return null;
 
-       Vector children = new Vector(); 
+       Vector children = new Vector();
 
        gatherChildren(p.fType, (XSParticleDecl)p.fValue, children);
        if (p.fOtherValue != null) {
          gatherChildren(p.fType, (XSParticleDecl)p.fOtherValue, children);
        }
 
-       return children; 
+       return children;
     }
 
 
     private static void gatherChildren(int parentType, XSParticleDecl p, Vector children) {
 
-       int min = p.fMinOccurs; 
-       int max = p.fMaxOccurs; 
-       int type = p.fType; 
+       int min = p.fMinOccurs;
+       int max = p.fMaxOccurs;
+       int type = p.fType;
 
-       if (type == XSParticleDecl.PARTICLE_EMPTY) 
+       if (type == XSParticleDecl.PARTICLE_EMPTY)
           return;
 
        if (type == XSParticleDecl.PARTICLE_ELEMENT ||
@@ -840,8 +840,8 @@ public class XSConstraints {
           return;
        }
 
-       XSParticleDecl left = (XSParticleDecl)p.fValue; 
-       XSParticleDecl right = (XSParticleDecl)p.fOtherValue; 
+       XSParticleDecl left = (XSParticleDecl)p.fValue;
+       XSParticleDecl right = (XSParticleDecl)p.fOtherValue;
        if (! (min==1 && max==1)) {
           children.addElement(p);
        }
@@ -857,34 +857,34 @@ public class XSConstraints {
 
     }
 
-    private static void checkNameAndTypeOK(XSElementDecl dElement, int dMin, int dMax, 
-                                           XSElementDecl bElement, int bMin, int bMax)  
+    private static void checkNameAndTypeOK(XSElementDecl dElement, int dMin, int dMax,
+                                           XSElementDecl bElement, int bMin, int bMax)
                                    throws XMLSchemaException {
 
-      
+
       //
-      // Check that the names are the same 
+      // Check that the names are the same
       //
       if (dElement.fName != bElement.fName ||
           dElement.fTargetNamespace != bElement.fTargetNamespace) {
           throw new XMLSchemaException(
-              "rcase-NameAndTypeOK.1",new Object[]{dElement.fName,        
+              "rcase-NameAndTypeOK.1",new Object[]{dElement.fName,
                dElement.fTargetNamespace, bElement.fName, bElement.fTargetNamespace});
       }
 
       //
-      // Check nillable                   
+      // Check nillable
       //
       if (! (bElement.isNillable() || !dElement.isNillable())) {
-        throw new XMLSchemaException("rcase-NameAndTypeOK.2", 
+        throw new XMLSchemaException("rcase-NameAndTypeOK.2",
                                       new Object[]{dElement.fName});
       }
 
       //
-      // Check occurrence range                   
+      // Check occurrence range
       //
-      if (!checkOccurrenceRange(dMin, dMax, bMin, bMax)) { 
-        throw new XMLSchemaException("rcase-NameAndTypeOK.3", 
+      if (!checkOccurrenceRange(dMin, dMax, bMin, bMax)) {
+        throw new XMLSchemaException("rcase-NameAndTypeOK.3",
                                       new Object[]{dElement.fName});
       }
 
@@ -896,96 +896,96 @@ public class XSConstraints {
          // check the values are the same.  NB - this should not be a string
          // comparison REVISIT when we have new datatype design!
          String baseFixedValue=(String) bElement.fDefault;
-         String thisFixedValue=(String) dElement.fDefault; 
+         String thisFixedValue=(String) dElement.fDefault;
          if (dElement.getConstraintType() != XSElementDecl.FIXED_VALUE ||
             !baseFixedValue.equals(thisFixedValue)) {
-            throw new XMLSchemaException("rcase-NameAndTypeOK.4", 
+            throw new XMLSchemaException("rcase-NameAndTypeOK.4",
                                       new Object[]{dElement.fName});
-         
+
          }
       }
 
       //
       // Check identity constraints
       //
-      checkIDConstraintRestriction(dElement, bElement); 
+      checkIDConstraintRestriction(dElement, bElement);
 
       //
-      // Check for disallowed substitutions 
+      // Check for disallowed substitutions
       //
-      int blockSet1 = dElement.fBlock; 
-      int blockSet2 = bElement.fBlock; 
+      int blockSet1 = dElement.fBlock;
+      int blockSet2 = bElement.fBlock;
       if (((blockSet1 & blockSet2)!=blockSet2) ||
             (blockSet1==SchemaSymbols.EMPTY_SET && blockSet2!=SchemaSymbols.EMPTY_SET))
-	throw new XMLSchemaException("rcase-NameAndTypeOK.6", 
-				  new Object[]{dElement.fName});
+        throw new XMLSchemaException("rcase-NameAndTypeOK.6",
+                                  new Object[]{dElement.fName});
 
 
       //
-      // Check that the derived element's type is derived from the base's. 
+      // Check that the derived element's type is derived from the base's.
       //
       if (!checkTypeDerivationOk(dElement.fType, bElement.fType, bElement.fFinal)) {
-	  throw new XMLSchemaException("rcase-NameAndTypeOK.7", 
-				  new Object[]{dElement.fName});
+          throw new XMLSchemaException("rcase-NameAndTypeOK.7",
+                                  new Object[]{dElement.fName});
       }
 
     }
 
 
-    private static void checkIDConstraintRestriction(XSElementDecl derivedElemDecl, 
+    private static void checkIDConstraintRestriction(XSElementDecl derivedElemDecl,
                                                      XSElementDecl baseElemDecl)
                                              throws XMLSchemaException {
-        // TODO 
+        // TODO
     } // checkIDConstraintRestriction
 
 
     private static boolean checkOccurrenceRange(int min1, int max1, int min2, int max2) {
 
       if ((min1 >= min2) &&
-          ((max2==SchemaSymbols.OCCURRENCE_UNBOUNDED) || 
+          ((max2==SchemaSymbols.OCCURRENCE_UNBOUNDED) ||
            (max1!=SchemaSymbols.OCCURRENCE_UNBOUNDED && max1<=max2)))
         return true;
       else
         return false;
     }
 
-    private static void checkNSCompat(XSElementDecl elem, int min1, int max1, 
-                                      XSWildcardDecl wildcard, int min2, int max2) 
+    private static void checkNSCompat(XSElementDecl elem, int min1, int max1,
+                                      XSWildcardDecl wildcard, int min2, int max2)
                               throws XMLSchemaException {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-	throw new XMLSchemaException("rcase-NSCompat.2", 
-				  new Object[]{elem.fName});
+        throw new XMLSchemaException("rcase-NSCompat.2",
+                                  new Object[]{elem.fName});
       }
 
       // check wildcard allows namespace of element
       if (!wildcard.allowNamespace(elem.fTargetNamespace))  {
-	throw new XMLSchemaException("rcase-NSCompat.1", 
-				  new Object[]{elem.fName,elem.fTargetNamespace});
+        throw new XMLSchemaException("rcase-NSCompat.1",
+                                  new Object[]{elem.fName,elem.fTargetNamespace});
       }
 
     }
 
-    private static void checkNSSubset(XSWildcardDecl dWildcard, int min1, int max1, 
-                                      XSWildcardDecl bWildcard, int min2, int max2) 
+    private static void checkNSSubset(XSWildcardDecl dWildcard, int min1, int max1,
+                                      XSWildcardDecl bWildcard, int min2, int max2)
                               throws XMLSchemaException {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-	throw new XMLSchemaException("rcase-NSSubset.2",null);
+        throw new XMLSchemaException("rcase-NSSubset.2",null);
       }
 
       // check wildcard subset
       if (!dWildcard.isSubsetOf(bWildcard)) {
-	 throw new XMLSchemaException("rcase-NSSubset.1",null);
+         throw new XMLSchemaException("rcase-NSSubset.1",null);
       }
 
 
     }
 
 
-    private static void checkNSRecurseCheckCardinality(Vector children, int min1, int max1, 
+    private static void checkNSRecurseCheckCardinality(Vector children, int min1, int max1,
                                           SubstitutionGroupHandler dSGHandler,
                                           XSParticleDecl wildcard, int min2, int max2)
                                           throws XMLSchemaException {
@@ -993,7 +993,7 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-         throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.2", null); 
+         throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.2", null);
       }
 
       // Check that each member of the group is a valid restriction of the wildcard
@@ -1002,24 +1002,24 @@ public class XSConstraints {
         for (int i = 0; i < count; i++) {
            XSParticleDecl particle1 = (XSParticleDecl)children.elementAt(i);
            particleValidRestriction(particle1, dSGHandler, wildcard, null);
-       
+
         }
       }
       catch (XMLSchemaException e) {
-         throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.1", null); 
+         throw new XMLSchemaException("rcase-NSRecurseCheckCardinality.1", null);
       }
 
     }
 
-    private static void checkRecurse(Vector dChildren, int min1, int max1, 
-                                     SubstitutionGroupHandler dSGHandler, 
-                                     Vector bChildren, int min2, int max2, 
-                                     SubstitutionGroupHandler bSGHandler) 
+    private static void checkRecurse(Vector dChildren, int min1, int max1,
+                                     SubstitutionGroupHandler dSGHandler,
+                                     Vector bChildren, int min2, int max2,
+                                     SubstitutionGroupHandler bSGHandler)
                                      throws XMLSchemaException {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-Recurse.1", null); 
+        throw new XMLSchemaException("rcase-Recurse.1", null);
       }
 
       int count1= dChildren.size();
@@ -1038,32 +1038,32 @@ public class XSConstraints {
            }
            catch (XMLSchemaException e) {
              if (!particle2.emptiable())
-                throw new XMLSchemaException("rcase-Recurse.2", null); 
+                throw new XMLSchemaException("rcase-Recurse.2", null);
            }
         }
-        throw new XMLSchemaException("rcase-Recurse.2", null); 
+        throw new XMLSchemaException("rcase-Recurse.2", null);
       }
 
       // Now, see if there are some elements in the base we didn't match up
       for (int j=current; j < count2; j++) {
         XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
         if (!particle2.emptiable()) {
-          throw new XMLSchemaException("rcase-Recurse.2", null); 
+          throw new XMLSchemaException("rcase-Recurse.2", null);
         }
       }
 
     }
 
-    private static void checkRecurseUnordered(Vector dChildren, int min1, int max1, 
+    private static void checkRecurseUnordered(Vector dChildren, int min1, int max1,
                                        SubstitutionGroupHandler dSGHandler,
-                                       Vector bChildren, int min2, int max2, 
+                                       Vector bChildren, int min2, int max2,
                                        SubstitutionGroupHandler bSGHandler)
                                        throws XMLSchemaException {
 
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-RecurseUnordered.1", null); 
+        throw new XMLSchemaException("rcase-RecurseUnordered.1", null);
       }
 
       int count1= dChildren.size();
@@ -1079,7 +1079,7 @@ public class XSConstraints {
            try {
              particleValidRestriction(particle1, dSGHandler, particle2, bSGHandler);
              if (foundIt[j])
-                throw new XMLSchemaException("rcase-RecurseUnordered.2", null); 
+                throw new XMLSchemaException("rcase-RecurseUnordered.2", null);
              else
                 foundIt[j]=true;
 
@@ -1089,28 +1089,28 @@ public class XSConstraints {
            }
         }
         // didn't find a match.  Detect an error
-        throw new XMLSchemaException("rcase-RecurseUnordered.2", null); 
+        throw new XMLSchemaException("rcase-RecurseUnordered.2", null);
       }
 
       // Now, see if there are some elements in the base we didn't match up
       for (int j=0; j < count2; j++) {
         XSParticleDecl particle2 = (XSParticleDecl)bChildren.elementAt(j);
         if (!foundIt[j] && !particle2.emptiable()) {
-          throw new XMLSchemaException("rcase-RecurseUnordered.2", null); 
+          throw new XMLSchemaException("rcase-RecurseUnordered.2", null);
         }
       }
 
     }
 
-    private static void checkRecurseLax(Vector dChildren, int min1, int max1, 
+    private static void checkRecurseLax(Vector dChildren, int min1, int max1,
                                        SubstitutionGroupHandler dSGHandler,
-                                       Vector bChildren, int min2, int max2, 
+                                       Vector bChildren, int min2, int max2,
                                        SubstitutionGroupHandler  bSGHandler)
                                        throws XMLSchemaException {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-RecurseLax.1", null); 
+        throw new XMLSchemaException("rcase-RecurseLax.1", null);
       }
 
       int count1= dChildren.size();
@@ -1131,15 +1131,15 @@ public class XSConstraints {
            }
         }
         // didn't find a match.  Detect an error
-        throw new XMLSchemaException("rcase-RecurseLax.2", null); 
+        throw new XMLSchemaException("rcase-RecurseLax.2", null);
 
       }
 
     }
 
-    private static void checkMapAndSum(Vector dChildren, int min1, int max1, 
+    private static void checkMapAndSum(Vector dChildren, int min1, int max1,
                                        SubstitutionGroupHandler dSGHandler,
-                                       Vector bChildren, int min2, int max2, 
+                                       Vector bChildren, int min2, int max2,
                                        SubstitutionGroupHandler bSGHandler)
                                        throws XMLSchemaException {
 
@@ -1159,7 +1159,7 @@ public class XSConstraints {
 
       // check Occurrence ranges
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
-        throw new XMLSchemaException("rcase-MapAndSum.2", null); 
+        throw new XMLSchemaException("rcase-MapAndSum.2", null);
       }
 
       int count1 = dChildren.size();
@@ -1178,7 +1178,7 @@ public class XSConstraints {
            }
         }
         // didn't find a match.  Detect an error
-        throw new XMLSchemaException("rcase-MapAndSum.1", null); 
+        throw new XMLSchemaException("rcase-MapAndSum.1", null);
       }
     }
     // to check whether two element overlap, as defined in constraint UPA

@@ -159,7 +159,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             reportSchemaError("src-attribute.1", new Object[]{nameAtt});
         }
 
-        // 2 If default and use are both present, use must have the ·actual value· optional.
+        // 2 If default and use are both present, use must have the actual value optional.
         if (consType == XSAttributeDecl.DEFAULT_VALUE &&
             useAtt != null && useAtt.intValue() != SchemaSymbols.USE_OPTIONAL) {
             reportSchemaError("src-attribute.2", new Object[]{nameAtt});
@@ -168,7 +168,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // a-props-correct
 
         if (defaultAtt != null && attrUse != null) {
-            // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
+            // 2 if there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in String Valid (3.14.4).
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (!checkDefaultValid(attrUse)) {
                 reportSchemaError ("a-props-correct.2", new Object[]{nameAtt, defaultAtt});
@@ -335,7 +335,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             reportSchemaError("src-attribute.1", new Object[]{nameAtt});
         }
 
-        // 2 If default and use are both present, use must have the ·actual value· optional.
+        // 2 If default and use are both present, use must have the actual value optional.
         // This is checked in "traverse" method
 
         // 3 If the item's parent is not <schema>, then all of the following must be true:
@@ -356,7 +356,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // a-props-correct
 
-        // 2 if there is a {value constraint}, the canonical lexical representation of its value must be ·valid· with respect to the {type definition} as defined in String Valid (§3.14.4).
+        // 2 if there is a {value constraint}, the canonical lexical representation of its value must be valid with respect to the {type definition} as defined in String Valid (3.14.4).
         if (attribute.fDefault != null) {
             fValidationState.setNamespaceSupport(schemaDoc.fNamespaceSupport);
             if (!checkDefaultValid(attribute)) {

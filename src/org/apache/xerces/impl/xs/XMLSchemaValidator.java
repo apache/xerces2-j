@@ -1383,7 +1383,7 @@ public class XMLSchemaValidator
         XMLString defaultValue = processElementContent(element);
 
         // Element Locally Valid (Element)
-        // 6 The element information item must be ·valid· with respect to each of the {identity-constraint definitions} as per Identity-constraint Satisfied (§3.11.4).
+        // 6 The element information item must be valid with respect to each of the {identity-constraint definitions} as per Identity-constraint Satisfied (3.11.4).
 
         // call matchers and de-activate context
         int oldCount = fMatcherStack.getMatcherCount();
@@ -1423,7 +1423,7 @@ public class XMLSchemaValidator
         fElementDepth--;
         if (fElementDepth == -1) {
             if (fDoValidation) {
-                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (§3.3.4).
+                // 7 If the element information item is the validation root, it must be valid per Validation Root Valid (ID/IDREF) (3.3.4).
                 if (!fValidationState.checkIDRefID()) {
                     reportSchemaError("ValidationRoot",null);
                 }
@@ -1488,7 +1488,7 @@ public class XMLSchemaValidator
 
         // Element Locally Valid (Element)
         // 4 If there is an attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is type, then all of the following must be true:
-        // 4.1 The ·normalized value· of that attribute information item must be ·valid· with respect to the built-in QName simple type, as defined by String Valid (§3.14.4);
+        // 4.1 The normalized value of that attribute information item must be valid with respect to the built-in QName simple type, as defined by String Valid (3.14.4);
         QName typeName = null;
         try {
             // REVISIT: have QNameDV to return QName
@@ -1509,7 +1509,7 @@ public class XMLSchemaValidator
             return;
         }
 
-        // 4.2 The ·local name· and ·namespace name· (as defined in QName Interpretation (§3.15.3)), of the ·actual value· of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (§3.15.4)
+        // 4.2 The local name and namespace name (as defined in QName Interpretation (3.15.3)), of the actual value of that attribute information item must resolve to a type definition, as defined in QName resolution (Instance) (3.15.4)
         XSTypeDecl type = null;
         SchemaGrammar grammar = fGrammarResolver.getGrammar(typeName.uri);
         if (grammar != null)
@@ -1522,7 +1522,7 @@ public class XMLSchemaValidator
         // if there is no current type, set this one as current.
         // and we don't need to do extra checking
         if (fCurrentType != null) {
-            // 4.3 The ·local type definition· must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (§3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (§3.14.6) (if it is a simple type definition).
+            // 4.3 The local type definition must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (3.14.6) (if it is a simple type definition).
             int block = fCurrentElemDecl.fBlock;
             if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE)
                 block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
@@ -1540,7 +1540,7 @@ public class XMLSchemaValidator
         if (fCurrentElemDecl != null && !fCurrentElemDecl.isNillable()) {
             reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
         }
-        // 3.2 If {nillable} is true and there is such an attribute information item and its ·actual value· is true , then all of the following must be true:
+        // 3.2 If {nillable} is true and there is such an attribute information item and its actual value is true , then all of the following must be true:
         // 3.2.2 There must be no fixed {value constraint}.
         else {
             String value = xsiNil.trim();
@@ -1631,7 +1631,7 @@ public class XMLSchemaValidator
 
             // 3.2 otherwise all of the following must be true:
             // 3.2.1 There must be an {attribute wildcard}.
-            // 3.2.2 The attribute information item must be ·valid· with respect to it as defined in Item Valid (Wildcard) (§3.10.4).
+            // 3.2.2 The attribute information item must be valid with respect to it as defined in Item Valid (Wildcard) (3.10.4).
 
             // if failed, get it from wildcard
             if (currUse == null) {
@@ -1667,8 +1667,8 @@ public class XMLSchemaValidator
                     continue;
                 }
                 else {
-                    // 5 Let [Definition:]  the wild IDs be the set of all attribute information item to which clause 3.2 applied and whose ·validation· resulted in a ·context-determined declaration· of mustFind or no ·context-determined declaration· at all, and whose [local name] and [namespace name] resolve (as defined by QName resolution (Instance) (§3.15.4)) to an attribute declaration whose {type definition} is or is derived from ID. Then all of the following must be true:
-                    // 5.1 There must be no more than one item in ·wild IDs·.
+                    // 5 Let [Definition:]  the wild IDs be the set of all attribute information item to which clause 3.2 applied and whose validation resulted in a context-determined declaration of mustFind or no context-determined declaration at all, and whose [local name] and [namespace name] resolve (as defined by QName resolution (Instance) (3.15.4)) to an attribute declaration whose {type definition} is or is derived from ID. Then all of the following must be true:
+                    // 5.1 There must be no more than one item in wild IDs.
                     if (currDecl.fType instanceof IDDatatypeValidator) {
                         if (wildcardIDName != null)
                             reportSchemaError("cvc-complex-type.5.1", new Object[]{element.rawname, currDecl.fName, wildcardIDName});
@@ -1679,10 +1679,10 @@ public class XMLSchemaValidator
             }
 
             // Attribute Locally Valid
-            // For an attribute information item to be locally ·valid· with respect to an attribute declaration all of the following must be true:
-            // 1 The declaration must not be ·absent· (see Missing Sub-components (§5.3) for how this can fail to be the case).
+            // For an attribute information item to be locally valid with respect to an attribute declaration all of the following must be true:
+            // 1 The declaration must not be absent (see Missing Sub-components (5.3) for how this can fail to be the case).
             // 2 Its {type definition} must not be absent.
-            // 3 The item's ·normalized value· must be locally ·valid· with respect to that {type definition} as per String Valid (§3.14.4).
+            // 3 The item's normalized value must be locally valid with respect to that {type definition} as per String Valid (3.14.4).
             // get simple type
             DatatypeValidator attDV = currDecl.fType;
             // get attribute value
@@ -1699,7 +1699,7 @@ public class XMLSchemaValidator
             }
 
             // get the value constraint from use or decl
-            // 4 The item's ·actual value· must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
+            // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
             if (currDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
@@ -1708,7 +1708,7 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-attribute.4", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
 
-            // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an ·absent· {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be ·valid· with respect to that attribute use as per Attribute Locally Valid (Use) (§3.5.4). In this case the {attribute declaration} of that attribute use is the ·context-determined declaration· for the attribute information item with respect to Schema-Validity Assessment (Attribute) (§3.2.4) and Assessment Outcome (Attribute) (§3.2.5).
+            // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an absent {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be valid with respect to that attribute use as per Attribute Locally Valid (Use) (3.5.4). In this case the {attribute declaration} of that attribute use is the context-determined declaration for the attribute information item with respect to Schema-Validity Assessment (Attribute) (3.2.4) and Assessment Outcome (Attribute) (3.2.5).
             if (currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
@@ -1718,7 +1718,7 @@ public class XMLSchemaValidator
             }
         } // end of for (all attributes)
 
-        // 5.2 If ·wild IDs· is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
+        // 5.2 If wild IDs is non-empty, there must not be any attribute uses among the {attribute uses} whose {attribute declaration}'s {type definition} is or is derived from ID.
         if (attrGrp.fIDAttrName != null && wildcardIDName != null)
             reportSchemaError("cvc-complex-type.5.2", new Object[]{element.rawname, wildcardIDName, attrGrp.fIDAttrName});
 
@@ -1825,12 +1825,12 @@ public class XMLSchemaValidator
             if (fCurrentElemDecl != null &&
                 fCurrentElemDecl.getConstraintType() != XSElementDecl.NO_CONSTRAINT &&
                 fChildCount == 0 && content.length() == 0 && !fNil) {
-                // 5.1.1 If the ·actual type definition· is a ·local type definition· then the canonical lexical representation of the {value constraint} value must be a valid default for the ·actual type definition· as defined in Element Default Valid (Immediate) (§3.3.6).
+                // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
                 if (fCurrentType != fCurrentElemDecl.fType) {
                     if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault.toString(), fState4XsiType) == null)
                         reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getXSTypeName(), fCurrentElemDecl.fDefault.toString()});
                 }
-                // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its ·normalized value· must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).
+                // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its normalized value must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
                 // REVISIT: don't use toString, but validateActualValue instead
                 //          use the fState4ApplyDefault
                 elementLocallyValidType(element, fCurrentElemDecl.fDefault.toString());
@@ -1840,7 +1840,7 @@ public class XMLSchemaValidator
                 // Validation Rule: Schema-Validity Assessment (Element)
 
                 // 5.2 If the declaration has no {value constraint} or the item has either element or character [children] or clause 3.2 has applied, then all of the following must be true:
-                // 5.2.1 The element information item must be ·valid· with respect to the ·actual type definition· as defined by Element Locally Valid (Type) (§3.3.4).
+                // 5.2.1 The element information item must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
                 Object actualValue = elementLocallyValidType(element, content);
                 // 5.2.2 If there is a fixed {value constraint} and clause 3.2 has not applied, all of the following must be true:
                 if (fCurrentElemDecl != null &&
@@ -1852,13 +1852,13 @@ public class XMLSchemaValidator
                     // 5.2.2.2 The appropriate case among the following must be true:
                     if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
                         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                        // 5.2.2.2.1 If the {content type} of the ·actual type definition· is mixed, then the ·initial value· of the item must match the canonical lexical representation of the {value constraint} value.
+                        // 5.2.2.2.1 If the {content type} of the actual type definition is mixed, then the initial value of the item must match the canonical lexical representation of the {value constraint} value.
                         if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                             // REVISIT: how to get the initial value, does whiteSpace count?
                             if (!fCurrentElemDecl.fDefault.toString().equals(content))
                                 reportSchemaError("cvc-elt.5.2.2.2.1", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.toString()});
                         }
-                        // 5.2.2.2.2 If the {content type} of the ·actual type definition· is a simple type definition, then the ·actual value· of the item must match the canonical lexical representation of the {value constraint} value.
+                        // 5.2.2.2.2 If the {content type} of the actual type definition is a simple type definition, then the actual value of the item must match the canonical lexical representation of the {value constraint} value.
                         else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                             // REVISIT: compare should be equal, and takes object, instead of string
                             //          do it in the new datatype design
@@ -1892,7 +1892,7 @@ public class XMLSchemaValidator
             // 3.1.2 The element information item must have no element information item [children].
             if (fChildCount != 0)
                 reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});
-            // 3.1.3 If clause 3.2 of Element Locally Valid (Element) (§3.3.4) did not apply, then the ·normalized value· must be ·valid· with respect to the type definition as defined by String Valid (§3.14.4).
+            // 3.1.3 If clause 3.2 of Element Locally Valid (Element) (3.3.4) did not apply, then the normalized value must be valid with respect to the type definition as defined by String Valid (3.14.4).
             if (!fNil) {
                 DatatypeValidator dv = (DatatypeValidator)fCurrentType;
                 // REVISIT: or should the normalize() be called within validate()?
@@ -1910,7 +1910,7 @@ public class XMLSchemaValidator
             }
         }
         else {
-            // 3.2 If the type definition is a complex type definition, then the element information item must be ·valid· with respect to the type definition as per Element Locally Valid (Complex Type) (§3.4.4);
+            // 3.2 If the type definition is a complex type definition, then the element information item must be valid with respect to the type definition as per Element Locally Valid (Complex Type) (3.4.4);
             retValue = elementLocallyValidComplexType(element, textContent);
         }
 
@@ -1922,16 +1922,16 @@ public class XMLSchemaValidator
         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
 
         // Element Locally Valid (Complex Type)
-        // For an element information item to be locally ·valid· with respect to a complex type definition all of the following must be true:
+        // For an element information item to be locally valid with respect to a complex type definition all of the following must be true:
         // 1 {abstract} is false.
-        // 2 If clause 3.2 of Element Locally Valid (Element) (§3.3.4) did not apply, then the appropriate case among the following must be true:
+        // 2 If clause 3.2 of Element Locally Valid (Element) (3.3.4) did not apply, then the appropriate case among the following must be true:
         if (!fNil) {
             // 2.1 If the {content type} is empty, then the element information item has no character or element information item [children].
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_EMPTY &&
                 (fChildCount != 0 || textContent.length() != 0)) {
                 reportSchemaError("cvc-complex-type.2.1", new Object[]{element.rawname});
             }
-            // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the ·normalized value· of the element information item is ·valid· with respect to that simple type definition as defined by String Valid (§3.14.4).
+            // 2.2 If the {content type} is a simple type definition, then the element information item has no element information item [children], and the normalized value of the element information item is valid with respect to that simple type definition as defined by String Valid (3.14.4).
             else if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
                 if (fChildCount != 0)
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
@@ -1956,7 +1956,7 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-complex-type.2.3", new Object[]{element.rawname});
                 }
             }
-            // 2.4 If the {content type} is element-only or mixed, then the sequence of the element information item's element information item [children], if any, taken in order, is ·valid· with respect to the {content type}'s particle, as defined in Element Sequence Locally Valid (Particle) (§3.9.4).
+            // 2.4 If the {content type} is element-only or mixed, then the sequence of the element information item's element information item [children], if any, taken in order, is valid with respect to the {content type}'s particle, as defined in Element Sequence Locally Valid (Particle) (3.9.4).
             if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT ||
                 ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                 // if the current state is a valid state, check whether

@@ -120,16 +120,16 @@ public class XSWildcardDecl  {
      * Validation Rule: Wildcard allows Namespace Name
      */
     public boolean allowNamespace(String namespace) {
-        // For a value which is either a namespace name or ·absent· to be ·valid· with respect to a wildcard constraint (the value of a {namespace constraint}) one of the following must be true:
+        // For a value which is either a namespace name or absent to be valid with respect to a wildcard constraint (the value of a {namespace constraint}) one of the following must be true:
 
         // 1 The constraint must be any.
         if (fType == WILDCARD_ANY)
             return true;
 
         // 2 All of the following must be true:
-        // 2.1 The constraint is a pair of not and a namespace name or ·absent· ([Definition:]  call this the namespace test).
-        // 2.2 The value must not be identical to the ·namespace test·.
-        // 2.3 The value must not be ·absent·.
+        // 2.1 The constraint is a pair of not and a namespace name or absent ([Definition:]  call this the namespace test).
+        // 2.2 The value must not be identical to the namespace test.
+        // 2.3 The value must not be absent.
         // / we store ##other as not(list), so our actual rule is
         // / 2 The constraint is a pair of not and a set, and the value is not in such set.
         if (fType == WILDCARD_OTHER) {
@@ -174,7 +174,7 @@ public class XSWildcardDecl  {
         }
 
         // 2 All of the following must be true:
-        //   2.1 sub must be a pair of not and a namespace name or ·absent·.
+        //   2.1 sub must be a pair of not and a namespace name or absent.
         //   2.2 super must be a pair of not and the same value.
         //   * we can't just compare whether the namespace are the same value
         //     since we store other as not(list)
@@ -186,13 +186,13 @@ public class XSWildcardDecl  {
         }
 
         // 3 All of the following must be true:
-        //   3.1 sub must be a set whose members are either namespace names or ·absent·.
+        //   3.1 sub must be a set whose members are either namespace names or absent.
         //   3.2 One of the following must be true:
         //       3.2.1 super must be the same set or a superset thereof.
-        //       -3.2.2 super must be a pair of not and a namespace name or ·absent· and
+        //       -3.2.2 super must be a pair of not and a namespace name or absent and
         //              that value must not be in sub's set.
-        //       +3.2.2 super must be a pair of not and a namespace name or ·absent· and
-        //              either that value or ·absent· must not be in sub's set.
+        //       +3.2.2 super must be a pair of not and a namespace name or absent and
+        //              either that value or absent must not be in sub's set.
         //       * since we store ##other as not(list), we acturally need to make sure
         //         that none of the namespaces in super.list is in sub.list.
         if (fType == WILDCARD_LIST) {
@@ -240,7 +240,7 @@ public class XSWildcardDecl  {
             unionWildcard.fType = WILDCARD_ANY;
         }
 
-        // 3 If both O1 and O2 are sets of (namespace names or ·absent·), then the union of
+        // 3 If both O1 and O2 are sets of (namespace names or absent), then the union of
         //   those sets must be the value.
         else if ( (fType == WILDCARD_LIST) && (wildcard.fType == WILDCARD_LIST) ) {
             unionWildcard.fType = WILDCARD_LIST;
@@ -249,8 +249,8 @@ public class XSWildcardDecl  {
 
         // -4 If the two are negations of different namespace names, then the intersection
         //    is not expressible.
-        // +4 If the two are negations of different namespace names or ·absent·, then
-        //    a pair of not and ·absent· must be the value.
+        // +4 If the two are negations of different namespace names or absent, then
+        //    a pair of not and absent must be the value.
         // * now we store ##other as not(list), the result should be
         //   not(intersection of two lists).
         else if (fType == WILDCARD_OTHER && wildcard.fType == WILDCARD_OTHER) {
@@ -261,25 +261,25 @@ public class XSWildcardDecl  {
         }
 
         // 5 If either O1 or O2 is a pair of not and a namespace name and the other is a set of
-        //   (namespace names or ·absent·), then The appropriate case among the following must be true:
+        //   (namespace names or absent), then The appropriate case among the following must be true:
         //      -5.1 If the set includes the negated namespace name, then any must be the value.
         //      -5.2 If the set does not include the negated namespace name, then whichever of O1 or O2
         //           is a pair of not and a namespace name must be the value.
         //    +5.1 If the negated value is a namespace name, then The appropriate case
         //         among the following must be true:
-        //        +5.1.1 If the set includes both the namespace name and ·absent·, then any
+        //        +5.1.1 If the set includes both the namespace name and absent, then any
         //               must be the value.
         //        +5.1.2 If the set includes the namespace name but does not include
-        //               ·absent·, then a pair of not and ·absent· must be the value.
+        //               absent, then a pair of not and absent must be the value.
         //        +5.1.3 If the set does not include the namespace name but includes
-        //               ·absent·, then the union is not expressible.
-        //        +5.1.4 If the set does not include either the namespace name or ·absent·,
+        //               absent, then the union is not expressible.
+        //        +5.1.4 If the set does not include either the namespace name or absent,
         //               then whichever of O1 or O2 is a pair of not and a namespace name must be
         //               the value.
-        //    +5.2 If the negated value is ·absent·, then The appropriate case among the
+        //    +5.2 If the negated value is absent, then The appropriate case among the
         //         following must be true:
-        //        +5.2.1 If the set includes ·absent·, then any must be the value.
-        //        +5.2.2 If the set does not include ·absent·, then whichever of O1 or O2 is
+        //        +5.2.1 If the set includes absent, then any must be the value.
+        //        +5.2.2 If the set does not include absent, then whichever of O1 or O2 is
         //               a pair of not and a namespace name must be the value.
         // * when we have not(list), the operation is just not(otherlist-list)
         else if ( ((fType == WILDCARD_OTHER) && (wildcard.fType == WILDCARD_LIST)) ||
@@ -362,11 +362,11 @@ public class XSWildcardDecl  {
         }
 
         // -3 If either O1 or O2 is a pair of not and a namespace name and the other is a set of
-        //    (namespace names or ·absent·), then that set, minus the negated namespace name if
+        //    (namespace names or absent), then that set, minus the negated namespace name if
         //    it was in the set, must be the value.
         // +3 If either O1 or O2 is a pair of not and a namespace name and the other
-        //    is a set of (namespace names or ·absent·), then that set, minus the negated
-        //    namespace name if it was in the set, then minus ·absent· if it was in the
+        //    is a set of (namespace names or absent), then that set, minus the negated
+        //    namespace name if it was in the set, then minus absent if it was in the
         //    set, must be the value.
         // * when we have not(list), the operation is just list-otherlist
         else if ( ((fType == WILDCARD_OTHER) && (wildcard.fType == WILDCARD_LIST)) ||
@@ -396,7 +396,7 @@ public class XSWildcardDecl  {
             System.arraycopy(intersect, 0, intersectWildcard.fNamespaceList, 0, newSize);
         }
 
-        // 4 If both O1 and O2 are sets of (namespace names or ·absent·), then the intersection of those
+        // 4 If both O1 and O2 are sets of (namespace names or absent), then the intersection of those
         //   sets must be the value.
         else if ( (fType == WILDCARD_LIST) && (wildcard.fType == WILDCARD_LIST) ) {
             intersectWildcard.fType = WILDCARD_LIST;
@@ -404,11 +404,11 @@ public class XSWildcardDecl  {
         }
 
         // -5 If the two are negations of different namespace names, then the intersection is not expressible.
-        // +5 If the two are negations of namespace names or ·absent·, then The
+        // +5 If the two are negations of namespace names or absent, then The
         //    appropriate case among the following must be true:
         //    +5.1 If the two are negations of different namespace names, then the
         //         intersection is not expressible.
-        //    +5.2 If one of the two is a pair of not and ·absent·, the other must be
+        //    +5.2 If one of the two is a pair of not and absent, the other must be
         //         the value.
         // * when we have not(list), the operation is just not(onelist+otherlist)
         else if (fType == WILDCARD_OTHER && wildcard.fType == WILDCARD_OTHER) {
