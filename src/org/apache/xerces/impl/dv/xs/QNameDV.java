@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -133,19 +133,8 @@ public class QNameDV extends TypeValidator {
             return false;
         } // equals(Object):boolean
 
-        // canonical representation of the data
-        private String canonical;
         public synchronized String toString() {
-            // REVISIT: what's the canonical form for QName?
-            if (canonical == null) {
-                if (prefix == null) {
-                    canonical = localpart;
-                }
-                else {
-                    canonical = prefix + ':' + localpart;
-                }
-            }
-            return canonical;
+            return rawname;
         }
     }
 } // class QNameDVDV
