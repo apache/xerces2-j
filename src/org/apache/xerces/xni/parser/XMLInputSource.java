@@ -57,6 +57,8 @@
 
 package org.apache.xerces.xni.parser;
 
+import org.apache.xerces.xni.XMLResourceIdentifier;
+
 import java.io.InputStream;
 import java.io.Reader;
 
@@ -123,6 +125,20 @@ public class XMLInputSource {
         fSystemId = systemId;
         fBaseSystemId = baseSystemId;
     } // <init>(String,String,String)
+
+    /** 
+     * Constructs an input source from a XMLResourceIdentifier
+     * object, leaving resolution of the entity and opening of
+     * the input stream up to the caller.
+     *
+     * @param resourceIdentifier    the XMLResourceIdentifier containing the information
+     */
+    public XMLInputSource(XMLResourceIdentifier resourceIdentifier) {
+
+        fPublicId = resourceIdentifier.getPublicId();
+        fSystemId = resourceIdentifier.getLiteralSystemId();
+        fBaseSystemId = resourceIdentifier.getBaseSystemId();
+    } // <init>(XMLResourceIdentifier)
 
     /**
      * Constructs an input source from a byte stream.
