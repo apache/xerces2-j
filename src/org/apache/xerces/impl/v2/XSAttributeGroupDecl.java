@@ -112,6 +112,10 @@ public class XSAttributeGroupDecl {
         return fAttributeUses;
     }
 
+   public boolean validRestrictionOf(XSAttributeGroupDecl baseGroup) {
+        return true;
+
+   }
     static final XSAttributeUse[] resize(XSAttributeUse[] oldArray, int newSize) {
         XSAttributeUse[] newArray = new XSAttributeUse[newSize];
         System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
