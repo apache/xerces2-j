@@ -2500,23 +2500,6 @@ public final class XMLDTDScanner {
                                     attribute.rawname);
                 continue;
             }
-            //
-            // REVISIT - HACK !!!  code added to pass incorrect OASIS test 'valid-sa-094'
-            //  Remove this next section to conform to the spec...
-            //
-            if (!getReadingExternalEntity() && fEntityReader.lookingAtChar('%', true)) {
-                int nameOffset = fEntityReader.currentOffset();
-                fEntityReader.skipPastName(';');
-                int nameLength = fEntityReader.currentOffset() - nameOffset;
-                if (nameLength != 0 && fEntityReader.lookingAtChar(';', true)) {
-                    reportFatalXMLError(XMLMessages.MSG_PEREFERENCE_WITHIN_MARKUP,
-                                        XMLMessages.WFC_PES_IN_INTERNAL_SUBSET,
-                                        fEntityReader.addString(nameOffset, nameLength));
-                }
-            }
-            //
-            // END HACK !!!
-            //
             if (!fEntityReader.lookingAtValidChar(true)) {
                 if (fDefaultAttValueOffset - fDefaultAttValueMark > 0)
                     fEntityReader.append(fLiteralData, fDefaultAttValueMark, fDefaultAttValueOffset - fDefaultAttValueMark);
