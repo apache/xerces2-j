@@ -74,15 +74,6 @@ public interface GrammarResolver {
      * grammars such as DTD - Schema
      */
 
-     /**
-     * 
-     * @return           Only instance of Grammar pool ( Singleton
-     *         pattern).
-     */
-    public GrammarResolver instanceGrammarResolver();
-
-
-
     /**
      * 
      * @param nameSpaceKey
