@@ -948,7 +948,7 @@ public abstract class BaseMarkupSerializer
                     startDTD( docType.getName(), docType.getPublicId(), docType.getSystemId() );
                     internal = docType.getInternalSubset();
                     if ( internal != null && internal.length() > 0 )
-                        printText( internal, true );
+                        _printer.printText( internal );
                     endDTD();
                 }
                 // DOM Level 1 -- does implementation have methods?
