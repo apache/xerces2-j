@@ -88,6 +88,7 @@ public class DatatypeMessages extends ListResourceBundle {
         { "ScaleLargerThanPrecision", "Scale Facet must be less than or equal to Precision Facet" },
         { "PrecisionExceeded", "{0} has exceeded the precision Facet {1}"},
         { "ScaleExceeded", "{0} has execeed the scale Facet {1}"},
+        { "NotFloat", "{0} is not a float." },
     };
 
     /** Returns the list resource bundle contents. */
