@@ -65,7 +65,7 @@ import org.w3c.dom.html.*;
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
  * @see org.w3c.dom.html.HTMLDivElement
- * @see ElementImpl
+ * @see org.apache.xerces.dom.ElementImpl
  */
 public class HTMLDivElementImpl
     extends HTMLElementImpl

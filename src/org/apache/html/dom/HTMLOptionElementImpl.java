@@ -65,7 +65,7 @@ import org.w3c.dom.html.*;
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
  * @see org.w3c.dom.html.HTMLOptionElement
- * @see ElementImpl
+ * @see org.apache.xerces.dom.ElementImpl
  */
 public class HTMLOptionElementImpl
     extends HTMLElementImpl
