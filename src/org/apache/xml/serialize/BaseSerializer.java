@@ -117,7 +117,7 @@ import org.xml.sax.misc.DeclHandler;
  * @see Serializer
  * @see XMLSerializer
  */
-abstract class BaseSerializer
+public abstract class BaseSerializer
     extends Serializer
     implements DocumentHandler, LexicalHandler, DTDHandler, DeclHandler
 {
