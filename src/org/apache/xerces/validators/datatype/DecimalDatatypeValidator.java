@@ -280,7 +280,7 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             if ( (fFacetsDefined & DatatypeValidator.FACET_PATTERN ) != 0 ) {
                 if ( fRegex == null || fRegex.matches( content) == false )
                     throw new InvalidDatatypeValueException("Value'"+content+
-                                                            "does not match regular expression facet" + fPattern );
+                       "' does not match regular expression facet " + fRegex.getPattern() );
             }
 
             BigDecimal d = null; // Is content a Decimal 
