@@ -550,6 +550,7 @@ public class XMLDocumentScanner
         standalone = fPseudoAttributeValues[2];
 
         fStandalone = standalone != null && standalone.equals("yes");
+        fEntityManager.setStandalone(fStandalone);
 
         // call handler
         if (fDocumentHandler != null) {

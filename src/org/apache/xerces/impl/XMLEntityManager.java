@@ -191,6 +191,14 @@ public class XMLEntityManager
      */
     protected boolean fExternalParameterEntities;
 
+    // settings
+
+    /** 
+     * True if the document entity is standalone. This should really
+     * only be set by the document source (e.g. XMLDocumentScanner).
+     */
+    protected boolean fStandalone;
+
     // handlers
 
     /** Entity handler. */
@@ -224,6 +232,20 @@ public class XMLEntityManager
     //
     // Public methods
     //
+
+    /**
+     * Sets whether the document entity is standalone.
+     *
+     * @param standalone True if document entity is standalone.
+     */
+    public void setStandalone(boolean standalone) {
+        fStandalone = standalone;
+    } // setStandalone(boolean)
+
+    /** Returns true if the document entity is standalone. */
+    public boolean isStandalone() {
+        return fStandalone;
+    } // isStandalone():boolean
 
     /**
      * setEntityHandler
@@ -291,44 +313,6 @@ public class XMLEntityManager
         }
     } // addUnparsedEntity(String,String,String,String)
 
-    /** Returns the values for an external entity. */
-    /***
-    public boolean getExternalEntity(String name, ExternalEntity externalEntity) {
-        Entity entity = (Entity)fEntities.get(name);
-        if (entity != null && entity.isExternal()) {
-            externalEntity.setValues((ExternalEntity)entity);
-            return true;
-        }
-        return false;
-    } // getExternalEntity(String,ExternalEntity):boolean
-    /***/
-
-    /** Returns the values for an internal entity. */
-    /***
-    public boolean getInternalEntity(String name, InternalEntity internalEntity) {
-        Entity entity = (Entity)fEntities.get(name);
-        if (entity != null && !entity.isExternal()) {
-            internalEntity.setValues((InternalEntity)entity);
-            return true;
-        }
-        return false;
-    } // getInternalEntity(String,InternalEntity):boolean
-    /***/
-
-    /** Returns true if the specified entity is declared. */
-    /***
-    public boolean isEntityDeclared(String name) {
-        return fEntities.get(name) != null;
-    } // isEntityDeclared(String):boolean
-    /***/
-
-    /** Returns true if the specified entity is internal. */
-    /***
-    public boolean isEntityExternal(String name) {
-        return ((Entity)fEntities.get(name)).isExternal();
-    } // isEntityExternal(String):boolean
-    /***/
-
     /**
      * resolveEntity
      * 
@@ -387,7 +371,13 @@ public class XMLEntityManager
         Entity entity = (Entity)fEntities.get(entityName);
         boolean external = entity.isExternal();
         if (entity == null) {
-            if (fValidation) {
+            if (fStandalone && entityName.startsWith("%")) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "EntityNotDeclared",
+                                           new Object[] { entityName },
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            else if (fValidation) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                            "EntityNotDeclared",
                                            new Object[] { entityName },
@@ -538,6 +528,7 @@ public class XMLEntityManager
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
 
         // initialize state
+        fStandalone = false;
         fEntities.clear();
         fEntityStack.removeAllElements();
 
