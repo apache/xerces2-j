@@ -35,7 +35,7 @@
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code
 		and precompiled binary (JAR files) form. Both &javaparsername; 
-                packages are made available under the <jump href='../../License.html'>Apache
+                packages are made available under the <jump href='../../LICENSE'>Apache
                 Software License</jump>.
                 </p>
 	</s2>
