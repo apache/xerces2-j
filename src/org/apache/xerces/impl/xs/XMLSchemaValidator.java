@@ -88,15 +88,13 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDTDHandler;
-import org.apache.xerces.xni.XMLDTDContentModelHandler;
+import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
-import org.apache.xerces.xni.parser.XMLDocumentFilter;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
