@@ -83,6 +83,8 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.io.StringWriter;
 import java.util.Hashtable;
+import java.util.Enumeration;
+import java.lang.reflect.Method;
 
 
 /**
@@ -104,6 +106,9 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     // serializer
     private XMLSerializer serializer;
 
+    // XML 1.1 serializer
+    private XML11Serializer xml11Serializer;
+
     /**
      * Constructs a new DOMWriter.
      * The constructor turns on the namespace support in <code>XMLSerializer</code> and
@@ -112,22 +117,7 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
      */
     public DOMWriterImpl() {
         serializer = new XMLSerializer();
-        serializer.fNamespaces = true;
-        serializer.fNSBinder = new NamespaceSupport();
-        serializer.fLocalNSBinder = new NamespaceSupport();
-        serializer.fSymbolTable = new SymbolTable();
-        serializer.fFeatures = new Hashtable();
-        serializer.fFeatures.put(Constants.NAMESPACES_FEATURE, Boolean.TRUE);
-        serializer.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
-        serializer.fFeatures.put(Constants.DOM_SPLIT_CDATA, Boolean.TRUE);
-        serializer.fFeatures.put(Constants.DOM_VALIDATE, Boolean.FALSE);
-        serializer.fFeatures.put(Constants.DOM_ENTITIES, Boolean.FALSE);
-        serializer.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
-        serializer.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, Boolean.TRUE);
-        serializer.fFeatures.put(Constants.DOM_CANONICAL_FORM, Boolean.FALSE);
-        serializer.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.FALSE);
-        serializer.fFeatures.put(Constants.DOM_XMLDECL, Boolean.TRUE);
-        serializer.fFeatures.put(Constants.DOM_UNKNOWNCHARS, Boolean.TRUE);
+        initSerializer(serializer);
     }
 
 
@@ -340,27 +330,53 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
      */
     public boolean writeNode(java.io.OutputStream destination, 
                              Node wnode) {
-        checkAllFeatures();
+        // determine which serializer to use:
+        Document doc = (wnode instanceof Document)?(Document)wnode:wnode.getOwnerDocument();
+        Method getVersion = null;
+        XMLSerializer ser = null;
+        String ver = null;
+        // this should run under JDK 1.1.8...
         try {
-            reset();
-            serializer.setOutputByteStream(destination);
+            getVersion = doc.getClass().getMethod("getVersion", new Class[]{});
+            if(getVersion != null ) {
+                ver = (String)getVersion.invoke(doc, null);
+            }
+        } catch (Exception e) {
+            // no way to test the version...
+            // ignore the exception
+        }
+        if(ver != null && ver.equals("1.1")) {
+            if(xml11Serializer == null) {
+                xml11Serializer = new XML11Serializer();
+                initSerializer(xml11Serializer);
+            }
+            // copy setting from "main" serializer to XML 1.1 serializer
+            copySettings(serializer, xml11Serializer);
+            ser = xml11Serializer;
+        } else {
+            ser = serializer;
+        }
+        checkAllFeatures(ser);
+        try {
+            reset(ser);
+            ser.setOutputByteStream(destination);
             if (wnode == null)
                 return false;
-            else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
-                serializer.serialize((Document)wnode);
+            else if (wnode.getNodeType() == Node.DOCUMENT_NODE) 
+                ser.serialize((Document)wnode);
             else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-                serializer.serialize((DocumentFragment)wnode);
+                ser.serialize((DocumentFragment)wnode);
             else if (wnode.getNodeType() == Node.ELEMENT_NODE)
-                serializer.serialize((Element)wnode);
+                ser.serialize((Element)wnode);
             else
                 return false;
         } catch (Exception e) {
-            if (serializer.fDOMErrorHandler != null) {
+            if (ser.fDOMErrorHandler != null) {
                   DOMErrorImpl error = new DOMErrorImpl();
                   error.fException = e;
                   error.fMessage = e.getMessage();
                   error.fSeverity = error.SEVERITY_ERROR;
-                  serializer.fDOMErrorHandler.handleError(error);
+                  ser.fDOMErrorHandler.handleError(error);
 
             }
         }
@@ -386,23 +402,53 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
      */
     public String writeToString(Node wnode)
     throws DOMException {
-        checkAllFeatures();
+        // determine which serializer to use:
+        Document doc = (wnode instanceof Document)?(Document)wnode:wnode.getOwnerDocument();
+        Method getVersion = null;
+        XMLSerializer ser = null;
+        String ver = null;
+        // this should run under JDK 1.1.8...
+        try {
+            getVersion = doc.getClass().getMethod("getVersion", new Class[]{});
+            if(getVersion != null ) {
+                ver = (String)getVersion.invoke(doc, null);
+            }
+        } catch (Exception e) {
+            // no way to test the version...
+            // ignore the exception
+        }
+        if(ver != null && ver.equals("1.1")) {
+            if(xml11Serializer == null) {
+                xml11Serializer = new XML11Serializer();
+                initSerializer(xml11Serializer);
+            }
+            // copy setting from "main" serializer to XML 1.1 serializer
+            copySettings(serializer, xml11Serializer);
+            ser = xml11Serializer;
+        } else {
+            ser = serializer;
+        }
+        checkAllFeatures(ser);
         StringWriter destination = new StringWriter();
         try {
-            reset();
-            serializer.setOutputCharStream(destination);
+            reset(ser);
+            ser.setOutputCharStream(destination);
             if (wnode == null)
                 return null;
             else if (wnode.getNodeType() == Node.DOCUMENT_NODE)
-                serializer.serialize((Document)wnode);
+                ser.serialize((Document)wnode);
             else if (wnode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)
-                serializer.serialize((DocumentFragment)wnode);
+                ser.serialize((DocumentFragment)wnode);
             else if (wnode.getNodeType() == Node.ELEMENT_NODE)
-                serializer.serialize((Element)wnode);
+                ser.serialize((Element)wnode);
             else
                 return null;
         } catch (IOException ioe) {
-            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR,"The resulting string is too long to fit in a DOMString: "+ioe.getMessage());
+	        String msg = DOMMessageFormatter.formatMessage(
+			    DOMMessageFormatter.DOM_DOMAIN,
+				"STRING_TOO_LONG",
+				new Object[] { ioe.getMessage()});
+            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR,msg);
         }
         return destination.toString();
     }
@@ -483,25 +529,64 @@ public class DOMWriterImpl implements DOMWriter, DOMConfiguration {
     }
 
 
-    private boolean reset() {
-        serializer.reset();
-        serializer.fNSBinder.reset();
+    private void reset(XMLSerializer ser) {
+        ser.reset();
+        ser.fNSBinder.reset();
         // during serialization always have a mapping to empty string
         // so we assume there is a declaration.
-        serializer.fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-        serializer.fNamespaceCounter = 1;
-        return true;
+        ser.fNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+        ser.fNamespaceCounter = 1;
 
     }
 
 
-    private void checkAllFeatures() {
+    private void checkAllFeatures(XMLSerializer ser) {
         if (getParameter(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT) == Boolean.TRUE)
-            serializer._format.setPreserveSpace(true);
+            ser._format.setPreserveSpace(true);
         else
-            serializer._format.setPreserveSpace(false);
+            ser._format.setPreserveSpace(false);
     }
 
+    // this initializes a newly-created serializer
+    private void initSerializer(XMLSerializer ser) {
+        ser.fNamespaces = true;
+        ser.fNSBinder = new NamespaceSupport();
+        ser.fLocalNSBinder = new NamespaceSupport();
+        ser.fSymbolTable = new SymbolTable();
+        ser.fFeatures = new Hashtable();
+        ser.fFeatures.put(Constants.NAMESPACES_FEATURE, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, Boolean.FALSE);
+        ser.fFeatures.put(Constants.DOM_SPLIT_CDATA, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_VALIDATE, Boolean.FALSE);
+        ser.fFeatures.put(Constants.DOM_ENTITIES, Boolean.FALSE);
+        ser.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_CANONICAL_FORM, Boolean.FALSE);
+        ser.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.FALSE);
+        ser.fFeatures.put(Constants.DOM_XMLDECL, Boolean.TRUE);
+        ser.fFeatures.put(Constants.DOM_UNKNOWNCHARS, Boolean.TRUE);
+    }
+
+    // copies all settings that could have been modified
+    // by calls to DOMWriter methods from one serializer to another.
+    // IMPORTANT:  if new methods are implemented or more settings of
+    // the serializer are made alterable, this must be
+    // reflected in this method!
+    private void copySettings(XMLSerializer src, XMLSerializer dest) {
+        dest._format.setOmitXMLDeclaration(src._format.getOmitXMLDeclaration());
+        dest.fNamespaces = src.fNamespaces;
+        dest.fDOMErrorHandler = src.fDOMErrorHandler;
+        dest._format.setEncoding(src._format.getEncoding());
+        dest._format.setLineSeparator(src._format.getLineSeparator());
+        dest.fDOMFilter = src.fDOMFilter;
+        // and copy over all the entries in fFeatures:
+        Enumeration keys = src.fFeatures.keys();
+        while(keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object val = src.fFeatures.get(key);
+            dest.fFeatures.put(key,val);
+        }
+    }
 
 }
 
