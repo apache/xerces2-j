@@ -137,6 +137,10 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/javax/xml/parsers
 	${CP}  ../src/javax/xml/parsers/*.class                  ../class/javax/xml/parsers
 
+#-src/org/apache/xerces/jaxp
+	${MKDIR} ../class/org/apache/xerces/jaxp
+	${CP}  ../src/org/apache/xerces/jaxp/*.class                  ../class/org/apache/xerces/jaxp
+
 
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
@@ -310,6 +314,10 @@ package_src:
 	${MKDIR} ../source/src/javax/xml/parsers
 	${CP}  ../src/javax/xml/parsers/*.java                  ../source/src/javax/xml/parsers
 
+#-src/org/apache/xerces/jaxp
+	${MKDIR} ../source/src/org/apache/xerces/jaxp
+	${CP}  ../src/org/apache/xerces/jaxp/*.java                  ../source/src/org/apache/xerces/jaxp
+
 ###################################
 #copy the .java and .dtd files unser samples
 
@@ -478,6 +486,8 @@ package_src:
 #-src/javax
 	${CP}  ../src/javax/Makefile    ../source/src/javax
 
+#-src/org/apache/xerces/jaxp
+	${CP}  ../src/org/apache/xerces/jaxp/Makefile    ../source/src/org/apache/xerces/jaxp
 
 ###################################
 #copy the Makefiles under samples

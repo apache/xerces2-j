@@ -2,7 +2,7 @@
 
 TARGETS =
 
-DIRS =  dom domx framework msg parsers readers utils validators
+DIRS =  dom domx framework msg parsers readers utils validators jaxp
 
 TOP = ../../../..
 include $(TOP)/src/Makefile.incl
