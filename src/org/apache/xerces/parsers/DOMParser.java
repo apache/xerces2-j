@@ -1012,11 +1012,9 @@ public class DOMParser
 
             String elementName = fStringPool.toString(elementTypeIndex);
             AttributeList attrList = xmlAttrList.getAttributeList(attrListIndex);
-            // Until DOM2 is REC, the DOM2 methods are in XXXImpl
             Element e;
             if (nsEnabled) {
-                e = (ElementImpl)
-                    ((DocumentImpl)fDocument).createElementNS(
+                e = fDocument.createElementNS(
                         fStringPool.toString(fStringPool.getURIForQName(elementTypeIndex)),
                         fStringPool.toString(elementTypeIndex)
                     );
@@ -1027,15 +1025,31 @@ public class DOMParser
             for (int i = 0; i < attrListLength; i++) {
                 if (nsEnabled) {
                     int attName = xmlAttrList.getAttrName(i);
-                    ((ElementImpl)e).setAttributeNS(
-                        fStringPool.toString(fStringPool.getURIForQName(attName)),
-                        fStringPool.toString(attName),
-                        attrList.getValue(i));
+		    String attNameStr = fStringPool.toString(attName);
+		    int nsURIIndex = fStringPool.getURIForQName(attName);
+		    String namespaceURI = fStringPool.toString(nsURIIndex);
+		    // DOM Level 2 wants all namespace declaration attributes
+		    // to be bound to "http://www.w3.org/2000/xmlns/"
+		    // So as long as the XML parser doesn't do it, it needs to
+		    // done here.
+		    int prefixIndex = fStringPool.getPrefixForQName(attName);
+		    String prefix = fStringPool.toString(prefixIndex);
+		    if (namespaceURI == null) {
+			if (prefix != null) {
+			    if (prefix.equals("xmlns")) {
+				namespaceURI = "http://www.w3.org/2000/xmlns/";
+			    }
+			} else if (attNameStr.equals("xmlns")) {
+			    namespaceURI = "http://www.w3.org/2000/xmlns/";
+			}
+		    }
+                    e.setAttributeNS(namespaceURI,
+				     attNameStr,
+				     attrList.getValue(i));
                 } else {
                     String attrName = attrList.getName(i);
                     String attrValue = attrList.getValue(i);
                     e.setAttribute(attrName, attrValue);
-                    // REVISIT: Does this also apply to namespace attributes? -Ac
                     if (fDocumentImpl != null && !xmlAttrList.isSpecified(i)) {
                         ((AttrImpl)e.getAttributeNode(attrName)).setSpecified(false);
                     }
