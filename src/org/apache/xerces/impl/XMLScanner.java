@@ -223,6 +223,9 @@ public abstract class XMLScanner
      * @param pseudoAttributeValues An array of size 3 to return the version,
      *                         encoding and standalone pseudo attribute values
      *                         (in that order).
+     *
+     * <strong>Note:</strong> This method uses fString, anything in it
+     * at the time of calling is lost.
      */
     protected void scanXMLDeclOrTextDecl(boolean scanningTextDecl,
                                          String[] pseudoAttributeValues) 
@@ -351,6 +354,12 @@ public abstract class XMLScanner
 
     /**
      * Scans a pseudo attribute.
+     *
+     * @param value The string to fill in with the attribute value
+     * @return The name of the attribute
+     *
+     * <strong>Note:</strong> This method uses fString, anything in it
+     * at the time of calling is lost.
      */
     public String scanPseudoAttribute(XMLString value) 
         throws IOException, SAXException {
@@ -391,6 +400,8 @@ public abstract class XMLScanner
      * [16] PI ::= '&lt;?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
      * [17] PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
      * </pre>
+     * <strong>Note:</strong> This method uses fString, anything in it
+     * at the time of calling is lost.
      */
     protected void scanPI() throws IOException, SAXException {
 
@@ -410,6 +421,9 @@ public abstract class XMLScanner
      * Scans a processing data. This is needed to handle the situation
      * where a document starts with a processing instruction whose 
      * target name <em>starts with</em> "xml". (e.g. xmlfoo)
+     *
+     * <strong>Note:</strong> This method uses fStringBuffer, anything in it
+     * at the time of calling is lost.
      *
      * @param target The PI target
      * @param data The string to fill in with the data
@@ -449,6 +463,8 @@ public abstract class XMLScanner
      * </pre>
      * <p>
      * <strong>Note:</strong> Called after scanning past '&lt;!--'
+     * <strong>Note:</strong> This method uses fString, anything in it
+     * at the time of calling is lost.
      *
      * @param text The buffer to fill in with the text.
      */
@@ -476,6 +492,9 @@ public abstract class XMLScanner
      * <pre>
      * [66] CharRef ::= '&#' [0-9]+ ';' | '&#x' [0-9a-fA-F]+ ';'
      * </pre>
+     *
+     * <strong>Note:</strong> This method uses fStringBuffer, anything in it
+     * at the time of calling is lost.
      *
      * @return the character value
      */
