@@ -170,6 +170,16 @@ and xni.parser.PSVIConfiguration.
    inaccessible on the network, preventing documents hosted by the server from being accessed.
    </p>
   </a>
- </faq> 
+ </faq>
+ 
+ <faq title='JDK Compatibility'>
+  <q>What JDK level is required for Xerces?</q>
+  <a>
+   <p>
+    As of version 2.6.2, Xerces requires JDK 1.2 or later to run 
+    and also requires JDK 1.2 or later to build the source code.
+   </p>
+  </a>
+ </faq>
 
 </faqs>
