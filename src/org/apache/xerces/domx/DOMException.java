@@ -74,9 +74,6 @@ package org.apache.xerces.domx;
  * descriptions.
  */
 public abstract class DOMException extends org.w3c.dom.DOMException {
-  // DOM Level 2 additions
-  public static final short           INVALID_STATE_ERR = 11;
-
   // DOM has named these but hasn't values yet. Stopgap:
   public static final short           UNSPECIFIED_EVENT_TYPE= 100;
   public static final short           UNSUPPORTED_EVENT_TYPE= 101;

@@ -152,7 +152,7 @@ public class DocumentTypeImpl
      * Return the public identifier of this Document type.
      * @since WD-DOM-Level-2-19990923
      */
-    public String getPublicID() {
+    public String getPublicId() {
         if (syncData) {
             synchronizeData();
         }
@@ -164,7 +164,7 @@ public class DocumentTypeImpl
      * Return the system identifier of this Document type.
      * @since WD-DOM-Level-2-19990923
      */
-    public String getSystemID() {
+    public String getSystemId() {
         if (syncData) {
             synchronizeData();
         }

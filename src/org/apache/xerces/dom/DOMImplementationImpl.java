@@ -105,9 +105,15 @@ public class DOMImplementationImpl
     public boolean hasFeature(String feature, String version) {
 
         // Currently, we support only XML Level 1 version 1.0
-        return feature.equalsIgnoreCase("XML") 
+        return 
+            (feature.equalsIgnoreCase("XML") 
             && version.equals("1.0")
-            || version.equals("2.0");
+            || version.equals("2.0"))
+         || (feature.equalsIgnoreCase("Events") 
+            && version.equals("2.0"))
+         || (feature.equalsIgnoreCase("Traversal") 
+            && version.equals("2.0"))
+            ;
 
     } // hasFeature(String,String):boolean
 

@@ -374,6 +374,27 @@ public class AttrImpl
         return (Element)parentNode;
     }
     
+    public void normalize() {
+
+    	Node kid, next;
+    	for (kid = getFirstChild(); kid != null; kid = next) {
+    		next = kid.getNextSibling();
+
+    		// If kid and next are both Text nodes (but _not_ CDATASection,
+    		// which is a subclass of Text), they can be merged.
+    		if (next != null
+			 && kid.getNodeType() == Node.TEXT_NODE
+			 && next.getNodeType() == Node.TEXT_NODE)
+    	    {
+    			((Text)kid).appendData(next.getNodeValue());
+    			removeChild(next);
+    			next = kid; // Don't advance; there might be another.
+    		}
+
+        }
+
+    } // normalize()
+  
     //
     // DOM2: Namespace methods
     //

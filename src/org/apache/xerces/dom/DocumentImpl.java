@@ -727,8 +727,8 @@ public class DocumentImpl
     			DocumentTypeImpl newdoctype =
     			    (DocumentTypeImpl)createDocumentType(
     			        doctype.getNodeName(),
-    			        doctype.getPublicID(), 
-    			        doctype.getSystemID(),
+    			        doctype.getPublicId(), 
+    			        doctype.getSystemId(),
     			        doctype.getInternalSubset()
     			        );
     			// Values are on NamedNodeMaps

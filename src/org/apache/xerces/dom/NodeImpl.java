@@ -1023,6 +1023,32 @@ public abstract class NodeImpl
     //
 
     /**
+     * Puts all <code>Text</code> nodes in the full depth of the sub-tree 
+     * underneath this <code>Node</code>, including attribute nodes, into a 
+     * "normal" form where only markup (e.g., tags, comments, processing 
+     * instructions, CDATA sections, and entity references) separates 
+     * <code>Text</code> nodes, i.e., there are no adjacent <code>Text</code> 
+     * nodes.  This can be used to ensure that the DOM view of a document is 
+     * the same as if it were saved and re-loaded, and is useful when 
+     * operations (such as XPointer lookups) that depend on a particular 
+     * document tree structure are to be used.In cases where the document 
+     * contains <code>CDATASections</code>, the normalize operation alone may 
+     * not be sufficient, since XPointers do not differentiate between 
+     * <code>Text</code> nodes and <code>CDATASection</code> nodes.
+     * <p>
+     * Note that this implementation simply calls normalize() on this Node's
+     * children. It is up to implementors or Node to override normalize()
+     * to take action.
+     */
+    public void normalize() {
+
+    	Node kid;
+    	for (kid = getFirstChild(); kid != null; kid = kid.getNextSibling()) {
+    	    kid.normalize();
+    	}
+    }
+
+    /**
      * Introduced in DOM Level 2. <p>
      * Tests whether the DOM implementation implements a specific feature and that
      * feature is supported by this node.
