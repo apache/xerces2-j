@@ -456,6 +456,9 @@ public class XIncludeHandler
 
             if (value != null && value.intValue() > 0) {
                 fBufferSize = value.intValue();
+                if (fChildConfig != null) {
+                    fChildConfig.setProperty(BUFFER_SIZE, value);
+                }
             }
             else {
             	fBufferSize = ((Integer)getPropertyDefault(BUFFER_SIZE)).intValue();
@@ -583,6 +586,9 @@ public class XIncludeHandler
         }
         if (propertyId.equals(BUFFER_SIZE)) {
             Integer bufferSize = (Integer) value;
+            if (fChildConfig != null) {
+                fChildConfig.setProperty(propertyId, value);
+            }
             if (bufferSize != null && bufferSize.intValue() > 0) {
                 fBufferSize = bufferSize.intValue();
                 // Reset XML 1.0 text reader.
@@ -1398,11 +1404,12 @@ public class XIncludeHandler
                         ObjectFactory.findClassLoader(),
                         true);
 
-                // use the same symbol table, error reporter, entity resolver, and security manager.
+                // use the same symbol table, error reporter, entity resolver, security manager and buffer size.
                 if (fSymbolTable != null) fChildConfig.setProperty(SYMBOL_TABLE, fSymbolTable);
                 if (fErrorReporter != null) fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 if (fEntityResolver != null) fChildConfig.setProperty(ENTITY_RESOLVER, fEntityResolver);
                 if (fSecurityManager != null) fChildConfig.setProperty(SECURITY_MANAGER, fSecurityManager);
+                fChildConfig.setProperty(BUFFER_SIZE, new Integer(fBufferSize));
 
                 // use the same namespace context
                 fChildConfig.setProperty(
