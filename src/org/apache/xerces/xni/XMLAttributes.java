@@ -328,6 +328,20 @@ public interface XMLAttributes
     public String getType(int index);
 
     /**
+     * Look up an attribute's type by XML 1.0 qualified name.
+     * <p>
+     * See {@link #getType(int) getType(int)} for a description
+     * of the possible types.
+     *
+     * @param qName The XML 1.0 qualified name.
+     *
+     * @return The attribute type as a string, or null if the
+     *         attribute is not in the list or if qualified names
+     *         are not available.
+     */
+    public String getType(String qName);
+
+    /**
      * Look up an attribute's value by index.
      * <p>
      * If the attribute value is a list of tokens (IDREFS,
@@ -343,5 +357,19 @@ public interface XMLAttributes
      * @see #getLength
      */
     public String getValue(int index);
+
+    /**
+     * Look up an attribute's value by XML 1.0 qualified name.
+     * <p>
+     * See {@link #getValue(int) getValue(int)} for a description
+     * of the possible values.
+     *
+     * @param qName The XML 1.0 qualified name.
+     *
+     * @return The attribute value as a string, or null if the
+     *         attribute is not in the list or if qualified names
+     *         are not available.
+     */
+    public String getValue(String qName);
 
 } // interface XMLAttributes
