@@ -261,8 +261,8 @@ public class SimpleContentModel
                     return 0;
 
                 // If the zeroth element isn't one of our choices, error at 0
-                if ((children[offset].uri != fFirstChild.uri && children[offset].localpart != fFirstChild.localpart) &&
-                    (children[offset].uri != fSecondChild.uri && children[offset].localpart != fSecondChild.localpart))
+                if ((children[offset].uri != fFirstChild.uri || children[offset].localpart != fFirstChild.localpart) &&
+                    (children[offset].uri != fSecondChild.uri || children[offset].localpart != fSecondChild.localpart))
                     return 0;
 
                 // If there is more than one element, then an error at 1
