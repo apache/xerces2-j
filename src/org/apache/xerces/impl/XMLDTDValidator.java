@@ -108,6 +108,7 @@ import java.util.StringTokenizer;
  * This component requires the following features and properties from the
  * component manager that uses it:
  * <ul>
+ *  <li>http://xml.org/sax/features/namespaces</li>
  *  <li>http://xml.org/sax/features/validation</li>
  *  <li>http://apache.org/xml/features/validation/dynamic</li>
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
@@ -136,6 +137,10 @@ public class XMLDTDValidator
     private static final int TOP_LEVEL_SCOPE = -1;
     
     // feature identifiers
+
+    /** Feature identifier: namespaces. */
+    protected static final String NAMESPACES =
+        Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
     /** Feature identifier: validation. */
     protected static final String VALIDATION =
@@ -167,6 +172,7 @@ public class XMLDTDValidator
 
     /** Recognized features. */
     protected static final String[] RECOGNIZED_FEATURES = {
+        NAMESPACES,
         VALIDATION,
         DYNAMIC_VALIDATION,
     };
@@ -192,6 +198,9 @@ public class XMLDTDValidator
     //
 
     // features
+
+    /** Namespaces. */
+    protected boolean fNamespaces;
 
     /** Validation. */
     protected boolean fValidation;
@@ -510,6 +519,12 @@ public class XMLDTDValidator
         fNDataDeclNotations.clear();
 
         // sax features
+        try {
+            fNamespaces = componentManager.getFeature(NAMESPACES);
+        }
+        catch (XMLConfigurationException e) {
+            fNamespaces = true;
+        }
         try {
             fValidation = componentManager.getFeature(VALIDATION);
         }
@@ -1744,8 +1759,8 @@ public class XMLDTDValidator
                 }
             }
             String attPrefix = fTempAttDecl.name.prefix;
-            String attRawName = fTempAttDecl.name.rawname;
             String attLocalpart = fTempAttDecl.name.localpart;
+            String attRawName = fTempAttDecl.name.rawname;
             String attType = getAttributeTypeName(fTempAttDecl);
             int attDefaultType =fTempAttDecl.simpleType.defaultType;
             String attValue = null;
@@ -1775,8 +1790,9 @@ public class XMLDTDValidator
                                                    "MSG_REQUIRED_ATTRIBUTE_NOT_SPECIFIED", args,
                                                    XMLErrorReporter.SEVERITY_ERROR);
                     }
-                } else if (attValue != null) {
-                    if (fPerformValidation && fStandaloneIsYes)
+                } 
+                else if (attValue != null) {
+                    if (fPerformValidation && fStandaloneIsYes) {
                         if (fDTDGrammar.getAttributeDeclIsExternal(attlistIndex)) {
 
                             Object[] args = { element.localpart, attRawName};
@@ -1784,7 +1800,20 @@ public class XMLDTDValidator
                                                        "MSG_DEFAULTED_ATTRIBUTE_NOT_SPECIFIED", args,
                                                        XMLErrorReporter.SEVERITY_ERROR);
                         }
+                    }
 
+                    // add namespace information
+                    if (fNamespaces) {
+                        int index = attRawName.indexOf(':');
+                        if (index != -1) {
+                            attPrefix = attRawName.substring(0, index);
+                            attPrefix = fSymbolTable.addSymbol(attPrefix);
+                            attLocalpart = attRawName.substring(index + 1);
+                            attLocalpart = fSymbolTable.addSymbol(attLocalpart);
+                        }
+                    }
+
+                    // add attribute
                     fTempQName.setValues(attPrefix, attLocalpart, attRawName, fTempAttDecl.name.uri);
                     int newAttr = attributes.addAttribute(fTempQName, attType, attValue);
                 }
@@ -2494,12 +2523,12 @@ public class XMLDTDValidator
             fCurrentContentSpecType = -1;
             fInElementContent = false;
             }
-            if (fPerformValidation ) {
+            if (fPerformValidation) {
+                fSkipValidation = true;
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN, 
                                            "MSG_GRAMMAR_NOT_FOUND",
                                            new Object[]{ element.rawname},
                                            XMLErrorReporter.SEVERITY_ERROR);
-                fSkipValidation = true;
             }
         } 
         else {

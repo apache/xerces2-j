@@ -6,6 +6,13 @@
   <changes>
    <fix>
     <note>
+     Fixed bug for when namespace bindings were added as default
+     attributes from the DTD.
+    </note>
+    <submitter name='Andy Clark'/>
+   </fix>
+   <fix>
+    <note>
      Fixed Xerces2 standard components to properly recognize and use
      the features and properties that they are documented to accept.
     </note>
