@@ -132,11 +132,20 @@ public class EntityResolverWrapper
     public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier)
         throws XNIException, IOException {
 
+        // When both pubId and sysId are null, the user's entity resolver
+        // can do nothing about it. We'd better not bother calling it.
+        // This happens when the resourceIdentifier is a GrammarDescription,
+        // which describes a schema grammar of some namespace, but without
+        // any schema location hint. -Sg
+        String pubId = resourceIdentifier.getPublicId();
+        String sysId = resourceIdentifier.getExpandedSystemId();
+        if (pubId == null && sysId == null)
+            return null;
+
         // resolve entity using SAX entity resolver
         if (fEntityResolver != null && resourceIdentifier != null) {
             try {
-                InputSource inputSource = 
-                    fEntityResolver.resolveEntity(resourceIdentifier.getPublicId(), resourceIdentifier.getExpandedSystemId());
+                InputSource inputSource = fEntityResolver.resolveEntity(pubId, sysId);
                 if (inputSource != null) {
                     String publicId = inputSource.getPublicId();
                     String systemId = inputSource.getSystemId();
@@ -167,4 +176,4 @@ public class EntityResolverWrapper
         return null;
 
     } // resolveEntity(String,String,String):XMLInputSource
-    }
+}
