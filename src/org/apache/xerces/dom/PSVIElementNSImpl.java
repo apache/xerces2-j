@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2002-2004 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,9 @@ import org.apache.xerces.xs.*;
  */
 public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
 
+    /** Serialization version. */
+    static final long serialVersionUID = 6815489624636016068L;
+    
     /**
      * Construct an element node.
      */

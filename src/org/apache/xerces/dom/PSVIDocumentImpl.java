@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,6 +72,8 @@ import org.w3c.dom.*;
  */
 public class PSVIDocumentImpl extends DocumentImpl {
    
+    /** Serialization version. */
+    static final long serialVersionUID = -8822220250676434522L;
 
     /**
      * Create a document.

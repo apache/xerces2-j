@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2002-2004 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,9 @@ import org.apache.xerces.xs.*;
  * @version $Id$
  */
 public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
+
+    /** Serialization version. */
+    static final long serialVersionUID = -3241738699421018889L;
 
     /**
      * Construct an attribute node.
