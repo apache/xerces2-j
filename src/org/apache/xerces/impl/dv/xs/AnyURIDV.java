@@ -59,7 +59,7 @@ package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.util.URI;
-import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * Represent the schema type "anyURI"

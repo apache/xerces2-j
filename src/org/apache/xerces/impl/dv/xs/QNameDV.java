@@ -60,7 +60,7 @@ package org.apache.xerces.impl.dv.xs;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
-import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * Represent the schema type "QName" and "NOTATION"

@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
-import org.apache.xerces.impl.validation.ValidationContext;
+import org.apache.xerces.impl.dv.ValidationContext;
 
 /**
  * All primitive types plus ID/IDREF/ENTITY are derived from this abstract

@@ -57,7 +57,6 @@
 
 package org.apache.xerces.impl.dv.dtd;
 
-import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.dv.*;
 import java.util.StringTokenizer;
 

@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.validation;
+package org.apache.xerces.impl.dv;
 
 /**
  * ValidationContext has all the information required for the

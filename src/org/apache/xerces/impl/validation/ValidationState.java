@@ -59,6 +59,7 @@ package org.apache.xerces.impl.validation;
 
 import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.impl.dv.ValidationContext;
 
 import java.util.Hashtable;
 import java.util.Enumeration;

@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.dv;
 
 import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
-import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 
 /**
