@@ -820,6 +820,9 @@ XMLDocumentFilter, XMLDTDFilter, XMLDTDContentModelFilter {
      */
     public void startCDATA() throws SAXException {
 
+        if (fValidation && fInElementContent) {
+            charDataInContent();
+        }
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startCDATA();
