@@ -135,7 +135,7 @@ import java.text.CharacterIterator;
  *      <li>Supports subtraction, union, and intersection operations for character classes.
  *      <li>Not supported: <kbd>\</kbd><var>ooo</var> (Octal character representations),
  *          <Kbd>\G</kbd>, <kbd>\C</kbd>, <kbd>\l</kbd><var>c</var>,
- *          <kbd>\u005cu</kbd><var>c</var>, <kbd>\L</kbd>, <kbd>\U</kbd>,
+ *          <kbd>\u005c u</kbd><var>c</var>, <kbd>\L</kbd>, <kbd>\U</kbd>,
  *          <kbd>\E</kbd>, <kbd>\Q</kbd>, <kbd>\N{</kbd><var>name</var><kbd>}</kbd>,
  *          <Kbd>(?{<kbd><var>code</var><kbd>})</kbd>, <Kbd>(??{<kbd><var>code</var><kbd>})</kbd>
  *     </ul>
@@ -180,7 +180,7 @@ import java.text.CharacterIterator;
  *           variable length digits for <kbd>\u005cx{</kbd><var>HHHH</var><kbd>}</kbd>.
  *
  *       <!--
- *       <dt class="REGEX"><kbd>\u005cu</kbd><var>HHHH</var>
+ *       <dt class="REGEX"><kbd>\u005c u</kbd><var>HHHH</var>
  *       <dd>Matches a character of which code point is <var>HHHH</var> (Hexadecimal) in Unicode.
  *       -->
  *
@@ -204,7 +204,7 @@ import java.text.CharacterIterator;
  *       <dd>Positive character class.  It matches a character in ranges.
  *       <dd><var>R<sub>n</sub></var>:
  *       <ul>
- *         <li class="REGEX">A character (including <Kbd>\e \f \n \r \t</kbd> <kbd>\u005cx</kbd><var>HH</var> <kbd>\u005cx{</kbd><var>HHHH</var><kbd>}</kbd> <!--kbd>\u005cu</kbd><var>HHHH</var--> <kbd>\u005cv</kbd><var>HHHHHH</var>)
+ *         <li class="REGEX">A character (including <Kbd>\e \f \n \r \t</kbd> <kbd>\u005cx</kbd><var>HH</var> <kbd>\u005cx{</kbd><var>HHHH</var><kbd>}</kbd> <!--kbd>\u005c u</kbd><var>HHHH</var--> <kbd>\u005cv</kbd><var>HHHHHH</var>)
  *             <p>This range matches the character.
  *         <li class="REGEX"><var>C<sub>1</sub></var><kbd>-</kbd><var>C<sub>2</sub></var>
  *             <p>This range matches a character which has a code point that is >= <var>C<sub>1</sub></var>'s code point and &lt;= <var>C<sub>2</sub></var>'s code point.
@@ -497,7 +497,7 @@ import java.text.CharacterIterator;
  * range-char ::= '\[' | '\]' | '\\' | '\' [,-efnrtv] | code-point | character-2
  * code-point ::= '\x' hex-char hex-char
  *                | '\x{' hex-char+ '}'
- * <!--               | '\u005cu' hex-char hex-char hex-char hex-char
+ * <!--               | '\u005c u' hex-char hex-char hex-char hex-char
  * -->               | '\v' hex-char hex-char hex-char hex-char hex-char hex-char
  * hex-char ::= [0-9a-fA-F]
  * character-2 ::= (any character except \[]-,)
