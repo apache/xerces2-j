@@ -71,6 +71,7 @@ public final  class SchemaSymbols {
     public static final String URI_SCHEMAFORSCHEMA =  "http://www.w3.org/1999/XMLSchema";
     public static final String XSI_SCHEMALOCACTION =  "schemaLocation";
     public static final String XSI_NONAMESPACESCHEMALOCACTION =  "noNamespaceSchemaLocation";
+    public static final String XSI_TYPE =  "type";
 
     public static final String ELT_ALL =  "all";
     public static final String ELT_ANNOTATION =  "annotation";

@@ -1756,6 +1756,9 @@ public class TraverseSchema implements
             checkRecursingComplexType();
         }
 
+        //set template element's typeInfo
+        fSchemaGrammar.setElementComplexTypeInfo(typeInfo.templateElementIndex, typeInfo);
+
         typeNameIndex = fStringPool.addSymbol(typeName);
         return typeNameIndex;
 

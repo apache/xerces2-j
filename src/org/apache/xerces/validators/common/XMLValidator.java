@@ -221,6 +221,7 @@ public final class XMLValidator
     private int fEmptyURI = - 1; 
     private int fXsiPrefix = - 1;
     private int fXsiURI = -2; 
+    private int fXsiTypeAttValue = -1;
 
     private Grammar fGrammar = null;
     private int fGrammarNameSpaceIndex = -1;
@@ -248,7 +249,6 @@ public final class XMLValidator
     private QName fTempQName = new QName();
     private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
-    //REVISIT: ericye, use this temp QName whenever we can!!
     
     private boolean fGrammarIsDTDGrammar = false;
     private boolean fGrammarIsSchemaGrammar = false;
@@ -1884,7 +1884,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             // if validating, walk through the list again to deal with "xsi:...."
             if (fValidating && fSchemaValidation) {
-
+                fXsiTypeAttValue = -1;
                 index = attrList.getFirstAttr(fAttrListHandle);
                 while (index != -1) {
                     
@@ -1900,7 +1900,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                             System.out.println("before find XSI: "+fStringPool.toString(attPrefix)
                                                +","+fStringPool.toString(fXsiPrefix) );
                         }
-                        if (attPrefix == fXsiPrefix && fXsiPrefix != -1 ) {
+                        if ( fXsiPrefix != -1 && attPrefix == fXsiPrefix ) {
 
                             if (DEBUG_SCHEMA_VALIDATION) {
                                 System.out.println("find XSI: "+fStringPool.toString(attPrefix)
@@ -1925,6 +1925,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                     fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""), 
                                                                             fStringPool.addSymbol(""));
                                 }
+                            }
+                            else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_TYPE)) {
+                                fXsiTypeAttValue = attrList.getAttValue(index);
                             }
                             // REVISIT: should we break here? 
                             //break;
@@ -2056,6 +2059,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }catch( IOException e ) {
                 e.printStackTrace();
             }catch( SAXException e ) {
+                //System.out.println("loc = "+loc);
                 //e.printStackTrace();
                 reportRecoverableXMLError(167, 144, e.getMessage() );
             }
@@ -2324,6 +2328,56 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         //       this element actually is of a type in another Schema.
         if (fGrammarIsSchemaGrammar && elementIndex != -1) {
 
+            // handle "xsi:type" right here
+            if (fXsiTypeAttValue > -1) {
+                String xsiType = fStringPool.toString(fXsiTypeAttValue);
+                int colonP = xsiType.indexOf(":");
+                String prefix = "";
+                String localpart = xsiType;
+                if (colonP > -1) {
+                    prefix = xsiType.substring(0,colonP);
+                    localpart = xsiType.substring(colonP+1);
+                }
+
+                String uri = "";
+                int uriIndex = -1;
+                if (fNamespacesScope != null) {
+                    uriIndex = fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix));
+                    if (uriIndex > -1) {
+                        uri = fStringPool.toString(uriIndex);
+                        if (uriIndex != fGrammarNameSpaceIndex) {
+                            fGrammarNameSpaceIndex = fCurrentSchemaURI = uriIndex;
+                            switchGrammar(fCurrentSchemaURI);
+                        }
+                    }
+                }
+
+
+                Hashtable complexRegistry = ((SchemaGrammar)fGrammar).getComplexTypeRegistry();
+                if (complexRegistry==null) {
+                    //TO DO: consistent error reporting is needed here
+                    System.out.println("[Schema Error]"+fErrorReporter.getLocator().getSystemId()
+                                       +" line"+fErrorReporter.getLocator().getLineNumber()
+                                       +", canot resolve xsi:type = " + xsiType+"  ---2");
+                }
+                else {
+                    TraverseSchema.ComplexTypeInfo typeInfo = 
+                        (TraverseSchema.ComplexTypeInfo) complexRegistry.get(uri+","+localpart);
+                    //TO DO:
+                    //      here need to check if this substitution is legal based on the current active grammar,
+                    //      this should be easy, cause we already saved final, block and base type information in 
+                    //      the SchemaGrammar.
+
+                    if (typeInfo==null) {
+                        System.out.println("[Schema Error] unsupported case in xsi:type handling");
+                    }
+                    else 
+                        elementIndex = typeInfo.templateElementIndex;
+                }
+
+                fXsiTypeAttValue = -1;
+            }
+
             //Change the current scope to be the one defined by this element.
             fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
 
@@ -2341,7 +2395,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                       element.rawname);
         }
         if (fGrammar != null && elementIndex != -1) {
-            //REVISIT: broken
             fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
         }
         if (fAttrListHandle != -1) {
