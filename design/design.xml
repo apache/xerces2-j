@@ -1707,9 +1707,6 @@
    <field name='type' visibility='public'>
     <primitive type='short'/>
    </field>
-   <field name='contentSpec' visibility='public'>
-    <primitive type='int'/>
-   </field>
    <field name='contentModelValidator' visibility='public'>
     <reference idref='content-model'/>
    </field>
@@ -1726,8 +1723,8 @@
     <param name='type'>
      <primitive type='short'/>
     </param>
-    <param name='contentSpec'>
-     <primitive type='int'/>
+    <param name='contentModelValidator'>
+     <reference idref='content-model'/>
     </param>
     <param name='simpleType'>
      <reference idref='simple-type'/>
