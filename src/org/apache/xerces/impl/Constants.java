@@ -273,6 +273,9 @@ public final class Constants {
     /** Input buffer size property ("input-buffer-size"). */
     public static final String BUFFER_SIZE_PROPERTY = "input-buffer-size";
 
+    /** ENTITY EXPANSION LIMIT */
+    public static final String ENTITY_EXPANSION_LIMIT = "entity-expansion-limit";
+    
     /** Entity resolver property ("internal/entity-resolver"). */
     public static final String ENTITY_RESOLVER_PROPERTY = "internal/entity-resolver";
 
