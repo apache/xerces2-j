@@ -10,7 +10,7 @@
  <!-- Milestones -->
  <milestone id='M1' date='Friday, 29 Sep 2000'>
   <title>Parser without DTD support</title>
-  <task driver='andyc'>
+  <task driver='andyc' status='done'>
    <title>Document design based on Xerces community feedback</title>
   </task>
   <task driver='ericye' status='verify'>
@@ -20,26 +20,26 @@
     XMLString, XMLStringBuffer, XMLChar, EncodingMap, SymbolTable, QName.
    </detail>
   </task>
-  <task driver='jeffreyr'>
+  <task driver='jeffreyr' status='done'>
    <title>Basic entity managment</title>
    <detail>
     This affects the following classes: XMLEntityManager, XMLEntityScanner.
    </detail>
   </task>
-  <task driver='ericye'>
+  <task driver='ericye' status='done'>
    <title>Basic error handling</title>
    <detail>
     This affects the following interfaces &amp; classes:
     XMLErrorReporter, some MessageFormatter.
    </detail>
   </task>
-  <task driver='andyc'>
+  <task driver='andyc' status='done'>
    <title>Parsing of elements and attributes using internal interface</title>
    <detail>
     This affects the following classes: XMLAttributes, XMLDocumentScanner.
    </detail>
   </task>
-  <task driver='lehors'>
+  <task driver='lehors' status='done'>
    <title>Implement a SAX2 parser from internal callbacks</title>
    <detail>
     This affects the following classes: 
@@ -47,13 +47,42 @@
    </detail>
   </task>
  </milestone>
- <milestone id='M2'>
+ <milestone id='M2' date='Friday, 6 October 2000'>
   <title>Parser with DTD scanning without validation</title>
   <depends idref='M1'/>
-  <task>
+  <task driver='jeffreyr'>
+   <title>More documentation</title>
+   <detail>
+    Parser initialization and the validation system needs to be
+    documented.
+   </detail>
+   <contributor idref='lehors'/>
+  </task>
+  <task driver='andyc' status='done'>
+   <title>
+    Re-organize package structure to separate core interfaces and
+    classes from implementation
+   </title>
+   <contributor idref='lehors'/>
+  </task>
+  <task driver='andyc'>
+   <title>Improve entity manager and scanner</title>
+   <detail>
+    Must support external entities, including the DTD entity and
+    pre-defined general entities (e.g. &amp;amp;).
+   </detail>
+  </task>
+  <task driver='ericye'>
+   <title>Improve document scanner</title>
+   <detail>
+    Handle trailing miscellaneous section; premature end of file; use
+    the error reporter; etc.
+   </detail>
+  </task>
+  <task driver='lehors'>
    <title>Parsing of DOCTYPE line and DTD markup declarations</title>
   </task>
-  <task>
+  <task driver='jeffreyr'>
    <title>Storing basic DTD grammar information</title>
   </task>
   <!-- REVISIT: re-group
