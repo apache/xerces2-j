@@ -171,7 +171,6 @@ public class ParserConfigurationSettings
      * @exception org.apache.xerces.xni.parser.XMLConfigurationException If the
      *            requested feature is not known.
      */
-    static int counter = 1;
     public void setFeature(String featureId, boolean state)
         throws XMLConfigurationException {
 
