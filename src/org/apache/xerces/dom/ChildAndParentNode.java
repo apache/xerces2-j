@@ -885,7 +885,10 @@ public abstract class ChildAndParentNode
      * Override this method in subclass to hook in efficient
      * internal data structure.
      */
-    protected void synchronizeChildren() {}
+    protected void synchronizeChildren() {
+        // By default just change the flag to avoid calling this method again
+        syncChildren(false);
+    }
 
     /**
      * Synchronizes the node's children with the internal structure.

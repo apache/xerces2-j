@@ -140,6 +140,7 @@ public abstract class NodeImpl
     protected final static short SPECIFIED    = 0x1<<5;
     protected final static short IGNORABLEWS  = 0x1<<6;
     protected final static short SETVALUE     = 0x1<<7;
+    protected final static short HASDEFAULT   = 0x1<<8;
 
     //
     // Constructors
@@ -1261,7 +1262,10 @@ public abstract class NodeImpl
      * Override this method in subclass to hook in efficient
      * internal data structure.
      */
-    protected void synchronizeData() {}
+    protected void synchronizeData() {
+        // By default just change the flag to avoid calling this method again
+        syncData(false);
+    }
 
 
     /*
@@ -1330,6 +1334,14 @@ public abstract class NodeImpl
 
     final void setValue(boolean value) {
         flags = (short) (value ? flags | SETVALUE : flags & ~SETVALUE);
+    }
+
+    final boolean hasDefault() {
+        return (flags & HASDEFAULT) != 0;
+    }
+
+    final void hasDefault(boolean value) {
+        flags = (short) (value ? flags | HASDEFAULT : flags & ~HASDEFAULT);
     }
 
     //
