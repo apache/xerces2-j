@@ -73,6 +73,10 @@ import org.apache.xerces.dom.NotationImpl;
 import java.lang.reflect.*;
 import dom.util.Assertion;
 
+import org.apache.xerces.dom3.UserDataHandler;
+import org.apache.xerces.dom3.Node3;
+
+
 public class Test {
 
     /**
@@ -1187,7 +1191,7 @@ public class Test {
     }
 
 
-   //
+    //
     // Attributes and NamedNodeMaps.
     //
     {
@@ -1243,5 +1247,86 @@ public class Test {
         Assertion.assert(nnm.getNamedItemNS(null, "attra") == null);
         Assertion.assert(nnm.getNamedItemNS("http://nsa", "attrb") == null);
     }
+
+
+
+    //
+    // Text Content and User Data
+    //
+
+    {
+        DOMImplementation impl = DOMImplementationImpl.getDOMImplementation();
+        DocumentType dt = impl.createDocumentType("foo", "PubId", "SysId");
+
+        Document doc = impl.createDocument(null, "foo", dt);
+        Assertion.assert(((Node3) doc).getTextContent() == null);
+        Assertion.assert(((Node3) dt).getTextContent() == null);
+        // no-ops:
+        ((Node3) doc).setTextContent("foo");
+        ((Node3) dt).setTextContent("foo");
+
+        Node3 el = (Node3) doc.getDocumentElement();
+        Assertion.equals(((Node3) el).getTextContent(), "");
+        el.setTextContent("yo!");
+        Node t = el.getFirstChild();
+        Assertion.assert(t != null && t.getNodeType() == Node.TEXT_NODE &&
+                         t.getNodeValue().equals("yo!"));
+        Assertion.equals(el.getTextContent(), "yo!");
+
+        Comment c = doc.createComment("dummy");
+        el.appendChild(c);
+        
+        Node3 el2 = (Node3) doc.createElement("bar");
+        el2.setTextContent("bye now");
+        el.appendChild(el2);
+        Assertion.equals(el.getTextContent(), "yo!bye now");
+
+
+        class MyHandler implements UserDataHandler {
+            boolean fCalled;
+            Node fNode;
+            String fKey;
+            Object fData;
+
+            MyHandler(String key, Object data, Node node) {
+                fCalled = false;
+                fKey = key;
+                fData = data;
+                fNode = node;
+            }
+            public void handle(short operation, String key,
+                               Object data, Node src, Node dst) {
+                Assertion.assert(operation == UserDataHandler.NODE_CLONED);
+                Assertion.assert(key == fKey && data == fData && src == fNode);
+                Assertion.assert(dst != null &&
+                                 dst.getNodeType() == fNode.getNodeType());
+                fCalled = true;
+            }
+        }
+
+        el.setUserData("mykey", c, null);
+        el.setUserData("mykey2", el2, null);
+        Assertion.assert(el.getUserData("mykey") == c);
+        Assertion.assert(el.getUserData("mykey2") == el2);
+        el.setUserData("mykey", null, null);
+        Assertion.assert(el.getUserData("mykey") == null);
+        el.setUserData("mykey2", null, null);
+        Assertion.assert(el.getUserData("mykey2") == null);
+
+        MyHandler h = new MyHandler("mykey", c, el);
+        el.setUserData("mykey", c, h);
+        MyHandler h2 = new MyHandler("mykey2", el2, el);
+        el.setUserData("mykey2", el2, h2);
+        Node cl = el.cloneNode(false);
+        Assertion.assert(h.fCalled == true);
+        Assertion.assert(h2.fCalled == true);
+
+
+        el.setTextContent("zapped!");
+        Node t2 = el.getFirstChild();
+        Assertion.assert(t2.getNodeValue().equals("zapped!"));
+        Assertion.assert(t2.getNextSibling() == null);
+    }
+
     };
 }    
