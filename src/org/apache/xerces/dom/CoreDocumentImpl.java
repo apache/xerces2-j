@@ -435,12 +435,12 @@ extends ParentNode implements Document  {
             ((DocumentTypeImpl) newChild).ownerDocument = this;
         }
 
-        if ((docType != null &&
+        if (errorChecking &&((docType != null &&
             oldChild.getNodeType() != Node.DOCUMENT_TYPE_NODE && 
             newChild.getNodeType() == Node.DOCUMENT_TYPE_NODE) 
             || (docElement != null && 
             oldChild.getNodeType() != Node.ELEMENT_NODE && 
-            newChild.getNodeType() == Node.ELEMENT_NODE)) {
+            newChild.getNodeType() == Node.ELEMENT_NODE))) {
             	
             throw new DOMException(
                 DOMException.HIERARCHY_REQUEST_ERR,
