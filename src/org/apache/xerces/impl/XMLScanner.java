@@ -653,8 +653,8 @@ public abstract class XMLScanner
                     }
                 }
             } while (fEntityScanner.scanData("?>", fStringBuffer));
-            data.setValues(fStringBuffer);
         }
+        data.setValues(fStringBuffer);
 
     } // scanPIData(String,XMLString)
 
