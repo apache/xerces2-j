@@ -2,7 +2,7 @@
 
 TARGETS=
 
-DIRS = datatype dtd schema
+DIRS = datatype dtd schema common
 
 TOP = ../../../../..
 include $(TOP)/src/Makefile.incl
