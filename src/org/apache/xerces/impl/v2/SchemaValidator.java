@@ -1542,7 +1542,8 @@ public class SchemaValidator
             if (currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
                 // REVISIT: compare should be equal, and takes object, instead of string
                 //          do it in the new datatype design
-                if (attDV.compare((String)actualValue, (String)currUse.fDefault) != 0)
+                //if (attDV.compare((String)actualValue, (String)currUse.fDefault) != 0)
+                if (attDV.compare(attrValue, (String)currUse.fDefault) != 0)
                     reportSchemaError("cvc-complex-type.3.1", new Object[]{element.rawname, fTempQName.rawname, attrValue});
             }
         } // end of for (all attributes)
