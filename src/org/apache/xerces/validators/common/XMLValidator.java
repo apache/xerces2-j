@@ -1828,7 +1828,6 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         throws Exception {
 
         fNamespacesScope.increaseDepth();
-        int prefix = element.prefix;
 
         Vector schemaCandidateURIs = null;
         Hashtable locationUriPairs = null;
@@ -1914,7 +1913,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                 }
                             }
                             // REVISIT: should we break here? 
-                            break;
+                            //break;
                         }
                     }
                     index = attrList.getNextAttr(index);
@@ -1943,23 +1942,13 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
         }
 
-        int elementURI;
-        if (prefix == -1) {
-            // REVISIT, is this only valid for Schema Validation
-            if (fGrammar != null && fValidating && fGrammar.getElementDeclIndex(element.localpart, fCurrentScope) > -1) {
-                element.uri = -1;
-            }
-            else {
-                elementURI = fNamespacesScope.getNamespaceForPrefix(StringPool.EMPTY_STRING);
-                if (elementURI != -1) {
-                    element.uri = elementURI;
-                }
-            }
-        } 
-        else {
-            elementURI = fNamespacesScope.getNamespaceForPrefix(prefix);
-            if (elementURI == -1) {
-                Object[] args = { fStringPool.toString(prefix) };
+        // bind element to URI
+        int prefix = element.prefix != -1 ? element.prefix : 0;
+        int uri    = fNamespacesScope.getNamespaceForPrefix(prefix);
+        if (element.prefix != -1 || uri != -1) {
+            element.uri = uri;
+            if (element.uri == -1) {
+                Object[] args = { fStringPool.toString(element.prefix) };
                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                            XMLMessages.XMLNS_DOMAIN,
                                            XMLMessages.MSG_PREFIX_DECLARED,
@@ -1967,9 +1956,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                            args,
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
             }
-            element.uri = elementURI;
         }
-
 
         //REVISIT: is this the right place to check on if the Schema has changed?
 
@@ -1986,8 +1973,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     int attPrefix = attrList.getAttrPrefix(index);
                     if (attPrefix != fNamespacesPrefix) {
                         if (attPrefix != -1) {
-                            int uri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
-                            if (uri == -1) {
+                            int attrUri = fNamespacesScope.getNamespaceForPrefix(attPrefix);
+                            if (attrUri == -1) {
                                 Object[] args = { fStringPool.toString(attPrefix) };
                                 fErrorReporter.reportError(fErrorReporter.getLocator(),
                                                            XMLMessages.XMLNS_DOMAIN,
@@ -1996,7 +1983,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                            args,
                                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
                             }
-                            attrList.setAttrURI(index, uri);
+                            attrList.setAttrURI(index, attrUri);
                         }
                     }
                 }
