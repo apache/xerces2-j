@@ -1104,22 +1104,22 @@ public class XML11Configuration extends ParserConfigurationSettings
 
         // setup DTD pipeline
         if (fCurrentDTDScanner != fDTDScanner) {
-			fCurrentDTDScanner = fDTDScanner;
+            fCurrentDTDScanner = fDTDScanner;
             setProperty(DTD_SCANNER, fCurrentDTDScanner);
             setProperty(DTD_PROCESSOR, fDTDProcessor);
-            fDTDScanner.setDTDHandler(fDTDProcessor);
-            fDTDProcessor.setDTDSource(fDTDScanner);
-            fDTDProcessor.setDTDHandler(fDTDHandler);
-            if (fDTDHandler != null) {
-                 fDTDHandler.setDTDSource(fDTDProcessor);
-            }
+        }
+        fDTDScanner.setDTDHandler(fDTDProcessor);
+        fDTDProcessor.setDTDSource(fDTDScanner);
+        fDTDProcessor.setDTDHandler(fDTDHandler);
+        if (fDTDHandler != null) {
+            fDTDHandler.setDTDSource(fDTDProcessor);
+        }
 
-            fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
-            fDTDProcessor.setDTDContentModelSource(fDTDScanner);
-            fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
-            if (fDTDContentModelHandler != null) {
-                fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
-            }            
+        fDTDScanner.setDTDContentModelHandler(fDTDProcessor);
+        fDTDProcessor.setDTDContentModelSource(fDTDScanner);
+        fDTDProcessor.setDTDContentModelHandler(fDTDContentModelHandler);
+        if (fDTDContentModelHandler != null) {
+            fDTDContentModelHandler.setDTDContentModelSource(fDTDProcessor);
         }
 
         // setup document pipeline
@@ -1169,7 +1169,7 @@ public class XML11Configuration extends ParserConfigurationSettings
                 // add schema component
                 setProperty(SCHEMA_VALIDATOR, fSchemaValidator);
                 addCommonComponent(fSchemaValidator);
-				fSchemaValidator.reset(this);
+                fSchemaValidator.reset(this);
                 // add schema message formatter
                 if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
                     XSMessageFormatter xmft = new XSMessageFormatter();
@@ -1375,7 +1375,6 @@ public class XML11Configuration extends ParserConfigurationSettings
 	 * @param component The component to add.
 	 */
 	protected void addComponent(XMLComponent component) {
-		//System.out.println("==>Adding XML 1.0: "+component);
 		// don't add a component more than once
 		if (fComponents.contains(component)) {
 			return;
@@ -1464,7 +1463,6 @@ public class XML11Configuration extends ParserConfigurationSettings
 	 * @param component The component to add.
 	 */
 	protected void addXML11Component(XMLComponent component) {
-		//System.out.println("Adding XML 1.1: " + component);
 		// don't add a component more than once
 		if (fXML11Components.contains(component)) {
 			return;
