@@ -72,7 +72,8 @@ package org.apache.xerces.xni;
  *
  * @version $Id$
  */
-public class QName {
+public class QName 
+    implements Cloneable {
 
     //
     // Data
@@ -162,8 +163,31 @@ public class QName {
     } // clear()
 
     //
+    // Cloneable methods
+    //
+
+    /** Returns a clone of this object. */
+    public Object clone() {
+        return new QName(this);
+    } // clone():Object
+
+    //
     // Object methods
     //
+
+    /** Returns the hashcode for this object. */
+    public int hashCode() {
+        return toString().hashCode();
+    } // hashCode():int
+
+    /** Returns true if the two objects are equal. */
+    public boolean equals(Object object) {
+        if (object instanceof QName) {
+            QName qname = (QName)object;
+            return qname.toString().equals(toString());
+        }
+        return false;
+    } // equals(Object):boolean
 
     /** Returns a string representation of this object. */
     public String toString() {
