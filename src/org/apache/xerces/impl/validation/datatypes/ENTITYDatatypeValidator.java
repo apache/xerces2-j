@@ -139,9 +139,9 @@ implements StatefullDatatypeValidator {
 
         entityDeclIndex = fGrammar.getEntityDeclIndex( content );
 
-        if (entityDeclIndex == -1) {
+        if (entityDeclIndex > -1) {
             fGrammar.getEntityDecl( entityDeclIndex, fEntityDecl );
-            if (fEntityDecl.notation != null) {// not unparsed entity
+            if (fEntityDecl.notation == null) {// not unparsed entity
                 InvalidDatatypeValueException error = 
                 new InvalidDatatypeValueException( content );
                 error.setKeyIntoReporter( "ENTITYNotUnparsed" );
