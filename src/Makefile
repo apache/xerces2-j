@@ -559,4 +559,4 @@ package_src:
 	${CP}  ../samples/Makefile  ../source/samples
 
 # copy the license, ANT build file, Status file, and READMEs
-	${CP}  ../README ../Readme.html ../STATUS ../source
+	${CP}  ../README ../Readme.html ../STATUS ../build.xml ../build.sh ../build.bat ../source
