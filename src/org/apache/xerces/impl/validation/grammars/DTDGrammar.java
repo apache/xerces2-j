@@ -61,11 +61,13 @@ import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.impl.validation.Grammar;
+import org.apache.xerces.impl.validation.ContentModelValidator;
 import org.apache.xerces.impl.validation.XMLElementDecl;
 import org.apache.xerces.impl.validation.XMLAttributeDecl;
 import org.apache.xerces.impl.validation.XMLNotationDecl;
 import org.apache.xerces.impl.validation.XMLEntityDecl;
 import org.apache.xerces.impl.validation.XMLSimpleType;
+import org.apache.xerces.impl.validation.datatypes.DatatypeValidatorFactoryImpl;
 import org.apache.xerces.xni.QName;
 import org.xml.sax.SAXException;
 
@@ -74,8 +76,8 @@ import org.xml.sax.SAXException;
  * @version $Id$
  */
 public class DTDGrammar
-    extends Grammar
-    implements XMLDTDHandler, XMLDTDContentModelHandler {
+extends Grammar
+implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     //
     // Data
@@ -107,6 +109,10 @@ public class DTDGrammar
 
     /** Simple Type. */
     private XMLSimpleType     fSimpleType         = new XMLSimpleType();
+
+    /** ContentValidator.  */
+    private ContentModelValidator fContentModelValidator;
+
 
     // debugging
 
@@ -211,7 +217,7 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void processingInstruction(String target, XMLString data)
-        throws SAXException {
+    throws SAXException {
     } // processingInstruction
 
     /**
@@ -239,12 +245,12 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void elementDecl(String name, String contentModel)
-        throws SAXException {
+    throws SAXException {
         fCurrentElementIndex = createElementDecl();//create element decl
-        //set element decl
-        fElementDecl.clear();
-        fElementDecl.name.setValues( null, null, name, null );
-
+        
+        System.out.println(  "name = " + fElementDecl.name.localpart );
+        System.out.println(  "Type = " + fElementDecl.type );
+        
         setElementDecl(fCurrentElementIndex, fElementDecl );//set internal structure
     } // elementDecl
 
@@ -281,32 +287,34 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue)
-        throws SAXException {
+    throws SAXException {
 
         fCurrentAttributeIndex = createAttributeDecl();// Create current Attribute Decl
-        fAttributeDecl.clear();
-        fAttributeDecl.name.setValues(null,null,elementName,null);
 
         fSimpleType.clear();
-        if( defaultType.equals( "DEFAULT" ) ){
-            fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_DEFAULT;
-        } else if( defaultType.equals( "FIXED") ) {
-            fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_FIXED;
-        } else if( defaultType.equals( "IMPLIED") ) {
-           fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_IMPLIED;
-        } else if( defaultType.equals( "REQUIRED") ) {
-           fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_REQUIRED;
+        if ( defaultType != null ) {
+            if ( defaultType.equals( "FIXED") ) {
+                fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_FIXED;
+            } else if ( defaultType.equals( "IMPLIED") ) {
+                fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_IMPLIED;
+            } else if ( defaultType.equals( "REQUIRED") ) {
+                fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_REQUIRED;
+            }
         }
         fSimpleType.defaultValue      = defaultValue.toString();
-
         fSimpleType.enumeration       = enumeration;
-        /*   todo when we implement datatypes
         fSimpleType.datatypeValidator = DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(type);
-        */
 
-        fAttributeDecl.simpleType = fSimpleType;
+        fQName.clear();
+        fQName.setValues(null, null, attributeName, null);
+
+
+        fAttributeDecl.clear();
+        fAttributeDecl.simpleType     = fSimpleType;
+        fAttributeDecl.setValues( fQName, fSimpleType, false );
+
         setAttributeDecl( fCurrentElementIndex, fCurrentAttributeIndex,
-                                                               fAttributeDecl );
+                          fAttributeDecl );
 
     } // attributeDecl
 
@@ -329,7 +337,7 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void internalEntityDecl(String name, XMLString text)
-        throws SAXException {
+    throws SAXException {
     } // internalEntityDecl
 
     /**
@@ -345,7 +353,7 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, String publicId, String systemId)
-        throws SAXException {
+    throws SAXException {
     } // externalEntityDecl
 
     /**
@@ -361,7 +369,7 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void unparsedEntityDecl(String name, String publicId, String systemId, String notation)
-        throws SAXException {
+    throws SAXException {
     } // unparsedEntityDecl
 
     /**
@@ -376,7 +384,7 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void notationDecl(String name, String publicId, String systemId)
-        throws SAXException {
+    throws SAXException {
     } // notationDecl
 
     /**
@@ -445,7 +453,16 @@ public class DTDGrammar
      * @see TYPE_CHILDREN
      */
     public void startContentModel(String elementName, short type)
-        throws SAXException {
+    throws SAXException {
+
+        fQName.clear();
+        fQName.setValues(null, null, elementName, null);
+
+        fElementDecl.clear();
+        fElementDecl.type = type;
+
+        fSimpleType.clear();
+
     } // startContentModel
 
     /**
@@ -464,6 +481,9 @@ public class DTDGrammar
      * @see TYPE_MIXED
      */
     public void mixedElement(String elementName) throws SAXException {
+        //System.out.println("mixedElement = " + elementName);
+        //fSimpleType.
+       
     } // mixedElement
 
     /**
@@ -480,6 +500,7 @@ public class DTDGrammar
      * @see TYPE_CHILDREN
      */
     public void childrenStartGroup() throws SAXException {
+        //System.out.println("group = " );
     } // childrenStartGroup
 
     /**
@@ -492,6 +513,7 @@ public class DTDGrammar
      * @see TYPE_CHILDREN
      */
     public void childrenElement(String elementName) throws SAXException {
+        //System.out.println("chil elem = " + elementName );
     } // childrenElement
 
     /**
@@ -548,6 +570,7 @@ public class DTDGrammar
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void endContentModel() throws SAXException {
+         fElementDecl.setValues( fQName, 0, fElementDecl.type,  fContentModelValidator, fSimpleType );
     } // endContentModel
 
 } // class DTDGrammar

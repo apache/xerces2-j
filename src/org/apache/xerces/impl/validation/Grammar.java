@@ -223,21 +223,22 @@ public class Grammar {
         }
         else {
             elementDecl.type                    = (short) (fElementDeclType[chunk][index] & LIST_MASK);
-            elementDecl.simpleType.list = (fElementDeclType[chunk][index] & LIST_FLAG) != 0;
+            //elementDecl.simpleType.list = (fElementDeclType[chunk][index] & LIST_FLAG) != 0;
         }
 
         /* Validators are null until we add that code */
-        /*elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index]; */
-        elementDecl.contentModelValidator = getElementContentModelValidator(elementDeclIndex);
+        elementDecl.contentModelValidator = fElementDeclContentModelValidator[chunk][index];
+        //elementDecl.contentModelValidator = getElementContentModelValidator(elementDeclIndex);
 
         elementDecl.contentModelValidator = null;
 
-        /* elementDecl.simpleType.datatypeValidator = fElementDeclDatatypeValidator[chunk][index]; */      
+        /*
+        elementDecl.simpleType.datatypeValidator = fElementDeclDatatypeValidator[chunk][index];      
         elementDecl.simpleType.datatypeValidator = null;
 
         elementDecl.simpleType.defaultType = fElementDeclDefaultType[chunk][index];
         elementDecl.simpleType.defaultValue = fElementDeclDefaultValue[chunk][index];
-
+        */
         return true;
     } // getElementDecl
     
@@ -369,19 +370,19 @@ public class Grammar {
         short attributeType;
         boolean isList;
 
-        //if (fAttributeDeclType[chunk][index] == -1) {
+        if (fAttributeDeclType[chunk][index] == -1) {
             
-          //  attributeType = -1;
-            //isList = false;
-      //  }
-       // else {
-         //   attributeType = (short) (fAttributeDeclType[chunk][index] & LIST_MASK);
-        //    isList = (fAttributeDeclType[chunk][index] & LIST_FLAG) != 0;
-        //}
-        //attributeDecl.simpleType.setValues(attributeType,"",fAttributeDeclEnumeration[chunk][index],
-          //                                 isList, fAttributeDeclDefaultType[chunk][index],
-            //                               fAttributeDeclDefaultValue[chunk][index], 
-              //                             fAttributeDeclDatatypeValidator[chunk][index]);
+           attributeType = -1;
+            isList = false;
+        }
+        else {
+            attributeType = (short) (fAttributeDeclType[chunk][index] & LIST_MASK);
+             isList = (fAttributeDeclType[chunk][index] & LIST_FLAG) != 0;
+        }
+        attributeDecl.simpleType.setValues(attributeType,"",fAttributeDeclEnumeration[chunk][index],
+                                          isList, fAttributeDeclDefaultType[chunk][index],
+                                          fAttributeDeclDefaultValue[chunk][index], 
+                                        fAttributeDeclDatatypeValidator[chunk][index]);
         return true;
     } // getAttributeDecl
 
@@ -524,18 +525,12 @@ public class Grammar {
         
         fElementDeclType[chunk][index]              = elementDecl.type; 
 
-        /*
+        
         fElementDeclDatatypeValidator[chunk][index] =
                                         elementDecl.simpleType.datatypeValidator;
         fElementDeclContentModelValidator[chunk][index] =
                                         elementDecl.contentModelValidator;
-                                        */
-        fElementDeclDatatypeValidator[chunk][index] = null;
-                                       
-       fElementDeclContentModelValidator[chunk][index] = null;
-                                       
-
-
+                                        
         //if (elementDecl.simpleType.list  == true ) {
           //  fElementDeclType[chunk][index] |= LIST_FLAG;
         //}
@@ -619,9 +614,12 @@ public class Grammar {
         int elementDeclIndex = 0;
         XMLElementDecl elementDecl = new XMLElementDecl();
         while (getElementDecl(elementDeclIndex++, elementDecl)) {
+            System.out.println("element decl: " +elementDecl.name );
+            /**
             System.out.println("element decl: "+elementDecl.name+
                                ", "+ elementDecl.name.rawname+
                                ", "+ elementDecl.contentModelValidator.toString());
+           */
             
         }
     }
