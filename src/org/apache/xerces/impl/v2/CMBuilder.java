@@ -70,7 +70,12 @@ public class CMBuilder {
     private final QName fQName1 = new QName();
     private final QName fQName2 = new QName();
 
+    private XSDeclarationPool fDeclPool = null;
     //REVISIT: add substitution comparator!!
+
+    public CMBuilder (XSDeclarationPool pool){
+        fDeclPool = pool;
+    }
 
     /**
      * Get content model for the a given type
@@ -97,10 +102,12 @@ public class CMBuilder {
             return cmValidator;
 
         XSParticleDecl particle = typeDecl.fParticle;
-        particle = expandParticleTree(particle);
+        particle = expandParticleTree( (XSParticleDecl)particle);
+        // REVISIT: should we expand?? or throw away the expanded tree??
+        //typeDecl.fParticle
 
         // And create the content model according to the spec type
-        if ( contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED ) {
+        if (contentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
             //
             //  Just create a mixel content model object. This type of
             //  content model is optimized for mixed content validation.
@@ -111,17 +118,19 @@ public class CMBuilder {
             //                                     children.type,
             //                                     0, children.length,
             //                                     false, isDTD());
-        } else if (contentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
+        }
+        else if (contentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
             //  This method will create an optimal model for the complexity
             //  of the element's defined model. If its simple, it will create
             //  a SimpleContentModel object. If its a simple list, it will
             //  create a SimpleListContentModel object. If its complex, it
             //  will create a DFAContentModel object.
             //
-             cmValidator = createChildModel(particle);
-        } else {
+            cmValidator = createChildModel(particle);
+        }
+        else {
             throw new RuntimeException("Unknown content type for a element decl "
-                                     + "in getElementContentModelValidator() in Grammar class");
+                                       + "in getElementContentModelValidator() in Grammar class");
         }
 
         // Add the new model to the content model for this element
@@ -147,21 +156,19 @@ public class CMBuilder {
         //  This will tell us what kind of node it is, which tells us what
         //  kind of model we will try to create.
         //
-        fTempParticle.clear();
-        fParticleRight.clear();
         //XMLContentSpec fParticle = new XMLContentSpec();
-        short fParticleType = fParticle.type;
-        if (fParticleType == XSParticleDecl.PARTICLE_WILDCARD) {
+        short type = particle.fType;
+        if (type == XSParticleDecl.PARTICLE_WILDCARD) {
             // let fall through to build a DFAContentModel
         }
 
-        else if (fParticleType == XSParticleDecl.PARTICLE_ELEMENT) {
+        else if (type == XSParticleDecl.PARTICLE_ELEMENT) {
             //
             //  Check that the left value is not null, since any content model
             //  with PCDATA should be MIXED, so we should not have gotten here.
             //
-            if (fParticle.value == null &&
-                fParticle.otherValue == null)
+            if (particle.fValue == null &&
+                particle.fOtherValue == null)
                 throw new RuntimeException("ImplementationMessages.VAL_NPCD");
 
             //
@@ -169,58 +176,47 @@ public class CMBuilder {
             //  just one instance of one element. That one is definitely a
             //  simple content model.
             //
-            // fParticle otherUri holds local name of the element.
-            fQName1.setValues(null, fParticle.otherUri, null, fParticle.uri );
-            return new XSSimpleCM(fParticleType, fQName1, fParticle.value,
-                                  null, null);
+            // pass element declaration 
+            return new XSSimpleCM(type, (XSElementDecl)particle.fValue);
         }
-        else if ((fParticleType == XSParticleDecl.PARTICLE_CHOICE)
-                 ||  (fParticleType == XSParticleDecl.PARTICLE_SEQUENCE)) {
+        else if ((type == XSParticleDecl.PARTICLE_CHOICE)
+                 ||  (type == XSParticleDecl.PARTICLE_SEQUENCE)) {
             //
             //  Lets see if both of the children are leafs. If so, then it
             //  it has to be a simple content model
             //
+            XSParticleDecl right = (XSParticleDecl)particle.fValue;
+            XSParticleDecl left = (XSParticleDecl)particle.fOtherValue;
 
-            fTempParticle = grammar.getParticleDecl(fParticle.value, fTempParticle);
-            fParticleRight = grammar.getParticleDecl(fParticle.otherValue, fParticleRight);
-
-
-            if ((fTempParticle.type == XSParticleDecl.PARTICLE_ELEMENT)
-                &&  (fParticleRight.type == XSParticleDecl.PARTICLE_ELEMENT)) {
+            if ((right.fType == XSParticleDecl.PARTICLE_ELEMENT)
+                &&  (left.fType == XSParticleDecl.PARTICLE_ELEMENT)) {
                 //
                 //  Its a simple choice or sequence, so we can do a simple
                 //  content model for it.
                 //
-                // otherUri - stores local name of the element.
-                fQName1.setValues(null, fTempParticle.otherUri, null, fTempParticle.uri );
-
-                fQName1.setValues(null, fParticleRight.otherUri, null, fParticleRight.uri );
-
-                return new XSSimpleCM(fParticleType, fQName1, fTempParticle.value,
-                                      fQName2, fParticleRight.value);
+                // pass both element decls
+                return new XSSimpleCM(type, (XSElementDecl)left.fValue, (XSElementDecl)right.fValue);
             }
 
         }
-        else if ((fParticleType == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
-                 ||  (fParticleType == XSParticleDecl.PARTICLE_ZERO_OR_MORE)
-                 ||  (fParticleType == XSParticleDecl.PARTICLE_ONE_OR_MORE)) {
+        else if ((type == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
+                 ||  (type == XSParticleDecl.PARTICLE_ZERO_OR_MORE)
+                 ||  (type == XSParticleDecl.PARTICLE_ONE_OR_MORE)) {
             //
             //  Its a repetition, so see if its one child is a leaf. If so
             //  its a repetition of a single element, so we can do a simple
             //  content model for that.
-            fTempParticle = grammar.getParticleDecl(fParticle.value, fTempParticle);
+            XSParticleDecl left = (XSParticleDecl) particle.fValue;
 
-            if (fTempParticle.type == XSParticleDecl.PARTICLE_ELEMENT) {
+            if (left.fType == XSParticleDecl.PARTICLE_ELEMENT) {
                 //
                 //  It is, so we can create a simple content model here that
                 //  will check for this repetition. We pass -1 for the unused
                 //  right node.
                 //
-                fQName1.setValues(null, fTempParticle.otherUri, null, fTempParticle.uri );
-                return new XSSimpleCM(fParticleType, fQName1, fParticle.value,
-                                      null, null);
+                return new XSSimpleCM(type, (XSElementDecl)left.fValue);
             }
-            else if (fTempParticle.type==XSParticleDecl.PARTICLE_ALL) {
+            else if (left.fType==XSParticleDecl.PARTICLE_ALL) {
                 // REVISIT: add ALL content model
             }
 
@@ -241,110 +237,93 @@ public class CMBuilder {
     }
 
 
-    public XSParticleDecl expandParticleTree(XSParticleDecl particle) {
+    public XSParticleDecl expandParticleTree( XSParticleDecl particle) {
 
         // We may want to consider trying to combine this with buildSyntaxTree at some
         // point (if possible)
-        if (!grammar.fDeferParticleExpantion) {
-            return particle;
-        }
-        fTempParticle = grammar.getParticleDecl(particle, fTempParticle);
-        int maxOccurs = fTempParticle.maxOccurs;
-        int minOccurs = fTempParticle.minOccurs;
-        short fParticleType = fTempParticle.type;
 
-        if (((fParticleType & 0x0f) == XSParticleDecl.PARTICLE_ANY) ||
-            ((fParticleType & 0x0f) == XSParticleDecl.PARTICLE_ANY_OTHER) ||
-            ((fParticleType & 0x0f) == XSParticleDecl.PARTICLE_ANY_LIST) ||
-            (fParticleType == XSParticleDecl.PARTICLE_ELEMENT)) {
+        //REVISIT: need access to grammar object
+        //if (!grammar.fDeferParticleExpantion) {
+        //    return particle;
+        //}
+        int maxOccurs = particle.fMaxOccurs;
+        int minOccurs = particle.fMinOccurs;
+        short type = particle.fType;
 
-          // When checking Unique Particle Attribution, rename leaf elements
-          if (grammar.fUPAChecking) {
+        if ((type == XSParticleDecl.PARTICLE_WILDCARD) ||
+            (type == XSParticleDecl.PARTICLE_ELEMENT)) {
+
+            // When checking Unique Particle Attribution, rename leaf elements
+            //if (grammar.fUPAChecking) {
             // REVISIT: implement
-          }
+            //}
 
-          return expandContentModel(grammar, particle, minOccurs, maxOccurs);
+            return expandContentModel(particle, minOccurs, maxOccurs);
         }
-        else if (fParticleType == XSParticleDecl.PARTICLE_CHOICE ||
-                 fParticleType == XSParticleDecl.PARTICLE_ALL ||
-                 fParticleType == XSParticleDecl.PARTICLE_SEQUENCE) {
+        else if (type == XSParticleDecl.PARTICLE_CHOICE ||
+                 type == XSParticleDecl.PARTICLE_ALL ||
+                 type == XSParticleDecl.PARTICLE_SEQUENCE) {
 
-          int left = fTempParticle.value;
-          int right = fTempParticle.otherValue;
+            Object left = particle.fValue;
+            Object right = particle.fOtherValue;
 
-          //REVISIT: look at uri and switch grammar if necessary
-          left =  expandParticleTree(grammar, left);
+            //REVISIT: look at uri and switch grammar if necessary
+            left =  expandParticleTree( (XSParticleDecl)left);
 
-          if (right == null)
-             return expandContentModel(grammar, left, minOccurs, maxOccurs);
+            if (right == null)
+                return expandContentModel((XSParticleDecl)left, minOccurs, maxOccurs);
 
-          right =  expandParticleTree(grammar, right);
+            right =  expandParticleTree( (XSParticleDecl)right);
 
-          // When checking Unique Particle Attribution, we always create new
-          // new node to store different name for different groups
-          if (grammar.fUPAChecking) {
-              //REVISIT:
-              //contentSpecIndex = addContentSpecNode (type, left, right, false);
-          } else {
-            fTempParticle.value = left;
-            fTempParticle.otherValue = right;
-            grammar.setParticleDecl(particle, fTempParticle);
+            // When checking Unique Particle Attribution, we always create new
+            // new node to store different name for different groups
+            //if (grammar.fUPAChecking) {
+            //REVISIT:
+            //contentSpecIndex = addContentSpecNode (type, left, right, false);
+            //}
 
-          }
-          return expandContentModel(grammar, particle, minOccurs, maxOccurs);
+            particle.fValue = left;
+            particle.fOtherValue = right;          
+            return expandContentModel((XSParticleDecl)particle, minOccurs, maxOccurs);
         }
         else {
-          // When checking Unique Particle Attribution, we have to rename
-          // uri even on zero_or_one, zero_or_more and one_or_more
-          if (grammar.fUPAChecking) {
-              //REVISIT:
-              //return addContentSpecNode (fParticleType,
-              //                           convertContentSpecTree(fTempParticle.value),
-              //                           convertContentSpecTree(fTempParticle.otherValue),
-              //                           false);
-          } else {
-              return particle;
-          }
+            // When checking Unique Particle Attribution, we have to rename
+            // uri even on zero_or_one, zero_or_more and one_or_more
+            //if (grammar.fUPAChecking) 
+            //REVISIT:
+            //return addContentSpecNode (type,
+            //                           convertContentSpecTree(particle.fValue),
+            //                           convertContentSpecTree(particle.fOtherValue),
+            //                           false);
         }
         return particle;
     }
 
 
 
-    private int expandContentModel(SchemaGrammar grammar, int index,
-                                   int minOccurs, int maxOccurs) {
+    private XSParticleDecl expandContentModel(XSParticleDecl particle,
+                                              int minOccurs, int maxOccurs) {
 
-        int leafIndex = index;
-
-        //REVISIT: add uri/other uri to fParticle creation methods
-        //String uri = fParticle.uri;
-        //String otherUri = fParticle.otherUri;
 
         // REVISIT: should we handle (maxOccurs - minOccurs) = {1,2} as
         //          separate case?
 
+        XSParticleDecl leafParticle = particle;
+        XSParticleDecl optional = null;
         if (minOccurs==1 && maxOccurs==1) {
-            return index;
+            return particle;
         }
         else if (minOccurs==0 && maxOccurs==1) {
             //zero or one
-            index = grammar.addParticleDecl( XSParticleDecl.PARTICLE_ZERO_OR_ONE,
-                                             index,
-                                             null);
-            //index = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ZERO_OR_ONE,
-            //                                index, uri, null, null);
+            return createParticle ( XSParticleDecl.PARTICLE_ZERO_OR_ONE,particle,null);
         }
         else if (minOccurs == 0 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
             //zero or more
-            index = grammar.addParticleDecl( XSParticleDecl.PARTICLE_ZERO_OR_MORE,
-                                             index,
-                                             null);
+            return createParticle (XSParticleDecl.PARTICLE_ZERO_OR_MORE, particle, null);
         }
         else if (minOccurs == 1 && maxOccurs==SchemaSymbols.OCCURRENCE_UNBOUNDED) {
             //one or more
-            index = grammar.addParticleDecl( XSParticleDecl.PARTICLE_ONE_OR_MORE,
-                                             index,
-                                             null);
+            return createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE, particle, null);
         }
         else if (maxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED) {
             if (minOccurs<2) {
@@ -352,15 +331,13 @@ public class CMBuilder {
             }
 
             // => a,a,..,a+
-            index = grammar.addParticleDecl( XSParticleDecl.PARTICLE_ONE_OR_MORE,
-                                             index,
-                                             null);
+            particle = createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE, 
+                                       particle, null);
 
             for (int i=0; i < (minOccurs-1); i++) {
-                index = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE,
-                                                leafIndex,
-                                                index);
+                particle = createParticle (XSParticleDecl.PARTICLE_SEQUENCE, leafParticle, particle);
             }
+            return particle;
 
         }
         else {
@@ -368,35 +345,47 @@ public class CMBuilder {
 
 
             if (minOccurs==0) {
-                int optional = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ZERO_OR_ONE,
-                                                       leafIndex,
-                                                       null);
-                index = optional;
+                optional = createParticle (XSParticleDecl.PARTICLE_ZERO_OR_ONE,
+                                           leafParticle,
+                                           null);
+                particle = optional;
                 for (int i=0; i < (maxOccurs-minOccurs-1); i++) {
-                    index = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE,
-                                                    index,
-                                                    optional);
+                    particle = createParticle (XSParticleDecl.PARTICLE_SEQUENCE,
+                                               particle,
+                                               optional);
                 }
             }
             else {
                 for (int i=0; i<(minOccurs-1); i++) {
-                    index = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE,
-                                                    index,
-                                                    leafIndex);
+                    particle = createParticle (XSParticleDecl.PARTICLE_SEQUENCE,
+                                               particle,
+                                               leafParticle);
                 }
 
-                int optional = grammar.addParticleDecl(XSParticleDecl.PARTICLE_ZERO_OR_ONE,
-                                                       leafIndex,
-                                                       null);
+                optional = createParticle(XSParticleDecl.PARTICLE_ZERO_OR_ONE,
+                                          leafParticle,
+                                          null);
+
                 for (int i=0; i < (maxOccurs-minOccurs); i++) {
-                    index = grammar.addParticleDecl(XSParticleDecl.PARTICLE_SEQUENCE,
-                                                    index,
-                                                    optional);
+                    particle = createParticle(XSParticleDecl.PARTICLE_SEQUENCE,
+                                              particle,
+                                              optional);
                 }
             }
         }
 
-        return index;
+        return particle;
+    }
+
+    private XSParticleDecl createParticle (short type, 
+                                           XSParticleDecl left, 
+                                           XSParticleDecl right) {
+
+        XSParticleDecl newParticle = new XSParticleDecl();
+        newParticle.fType = type;
+        newParticle.fValue = (Object) left;
+        newParticle.fOtherValue = (Object)right;
+        return newParticle;
     }
 
 }

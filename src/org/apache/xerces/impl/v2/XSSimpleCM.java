@@ -95,31 +95,16 @@ implements XSCMValidator {
     // seen first child
     private static final short STATE_FIRST = 1;
     private static final short STATE_VALID = 2;
-    private static final short STATE_ERROR = 3;
 
     //
     // Data
     //
-    private short[] fState = {STATE_START};
+    private int[] fState = {STATE_START};
 
 
-    /**
-     * The element decl pool indices of the first (and optional second)
-     * child node. The operation code tells us whether the second child
-     * is used or not.
-     */
-    private final QName fFirstChild = new QName();
-
-    /**
-     * The element decl pool indices of the first (and optional second)
-     * child node. The operation code tells us whether the second child
-     * is used or not.
-     */
-    private final QName fSecondChild = new QName();
-
-    // element declaration index in the XML Schema grammar.
-    private int fFirstIndex = -1;
-    private int fSecondIndex = -1;
+    // element declaration in the XML Schema grammar.
+    private XSElementDecl fFirstElement = null;
+    private XSElementDecl fSecondElement = null;
 
     /**
      * The operation that this object represents. Since this class only
@@ -127,41 +112,37 @@ implements XSCMValidator {
      * involved (i.e. the children of the operation are always one or
      * two leafs.)
      */
-    private int fOperator;
+    private short fOperator;
 
 
     //
     // Constructors
     //
 
+     /**
+     * Constructs a simple content model.
+     *
+     *
+     */
+    public XSSimpleCM(short operator, XSElementDecl elem) {
+        fFirstElement = elem;
+        fOperator = operator;
+        
+    }
+
     /**
      * Constructs a simple content model.
      *
-     * @param operator The content model operator.
-     * @param firstChild The first child index.
-     * @param secondChild The second child index.
-     * @param dtd if it is for a DTDGrammar.
      *
      */
-    public XSSimpleCM(short operator, QName firstChild, int index1,
-                      QName secondChild, int index2) {
-        //
-        //  Store away the children and operation. This is all we need to
-        //  do the content model check.
-        //
-        //  The operation is one of the ContentSpecNode.NODE_XXX values!
-        //
-        fFirstChild.setValues(firstChild);
-        if (secondChild != null) {
-            fSecondChild.setValues(secondChild);
-        }
-        else {
-            fSecondChild.clear();
-        }
+    public XSSimpleCM(short operator, XSElementDecl elem1, XSElementDecl elem2) {
+        fFirstElement = elem1;
+        fSecondElement = elem2;
         fOperator = operator;
-        fFirstIndex = index1;
-        fSecondIndex = index2;
+        
     }
+
+    
 
     //
     // XSCMValidator methods
@@ -173,7 +154,7 @@ implements XSCMValidator {
      *
      * @return Start state of the content model
      */
-    public Object startContentModel(){
+    public int[] startContentModel(){
         return fState;
     }
 
@@ -185,20 +166,21 @@ implements XSCMValidator {
      * @param state  Current state
      * @return element index corresponding to the element from the Schema grammar
      */
-    public int oneTransition (QName elementName, Object currentState){
+    public Object oneTransition (QName elementName, int[] currentState){
 
-        short state = ((short[])((short[])currentState))[0];
-        if (state == STATE_ERROR) {
+        int state = currentState[0];
+        // error state
+        if (state < 0 ) {
             return null;
         }
         switch (fOperator) {
         case XSParticleDecl.PARTICLE_ELEMENT :
         case XSParticleDecl.PARTICLE_ZERO_OR_ONE :
             if (state == STATE_START) {
-                if (fFirstChild.uri == elementName.uri &&
-                    fFirstChild.localpart == elementName.localpart) {
-                    ((short[])currentState)[0] = STATE_VALID;
-                    return fFirstIndex;
+                if (fFirstElement.fTargetNamespace == elementName.uri &&
+                    fFirstElement.fName == elementName.localpart) {
+                    currentState[0] = STATE_VALID;
+                    return fFirstElement;
                 }
                 //error
             }
@@ -206,25 +188,25 @@ implements XSCMValidator {
 
         case XSParticleDecl.PARTICLE_ZERO_OR_MORE :
         case XSParticleDecl.PARTICLE_ONE_OR_MORE :
-            if (fFirstChild.uri == elementName.uri &&
-                fFirstChild.localpart == elementName.localpart) {
-                ((short[])currentState)[0] = STATE_VALID;
-                return fFirstIndex;
+            if (fFirstElement.fTargetNamespace == elementName.uri &&
+                fFirstElement.fName == elementName.localpart) {
+                currentState[0] = STATE_VALID;
+                return fFirstElement;
             }
             break;
 
         case XSParticleDecl.PARTICLE_CHOICE :
             if (state == STATE_START) {
-                if (fFirstChild.uri == elementName.uri &&
-                    fFirstChild.localpart == elementName.localpart) {
-                    ((short[])currentState)[0] = STATE_VALID;
-                    return fFirstIndex;
+                if (fFirstElement.fTargetNamespace == elementName.uri &&
+                    fFirstElement.fName == elementName.localpart) {
+                    currentState[0] = STATE_VALID;
+                    return fFirstElement;
 
                 }
-                else if (fSecondChild.uri == elementName.uri &&
-                         fSecondChild.localpart == elementName.localpart) {
-                    ((short[])currentState)[0] = STATE_VALID;
-                    return fSecondIndex;
+                else if (fSecondElement.fTargetNamespace == elementName.uri &&
+                         fSecondElement.fName == elementName.localpart) {
+                    currentState[0] = STATE_VALID;
+                    return fSecondElement;
                 }
                 //error
             }
@@ -237,18 +219,18 @@ implements XSCMValidator {
             //  we stored, in the stored order.
             //
             if (state == STATE_START) {
-                if (fFirstChild.uri == elementName.uri &&
-                    fFirstChild.localpart == elementName.localpart) {
-                    ((short[])currentState)[0] = STATE_FIRST;
-                    return fFirstIndex;
+                if (fFirstElement.fTargetNamespace == elementName.uri &&
+                    fFirstElement.fName == elementName.localpart) {
+                    currentState[0] = STATE_FIRST;
+                    return fFirstElement;
                 }
                 //error
             }
             else if (state == STATE_FIRST) {
-                if (fSecondChild.uri == elementName.uri &&
-                    fSecondChild.localpart == elementName.localpart) {
-                    ((short[])currentState)[0] = STATE_VALID;
-                    return fSecondIndex;
+                if (fSecondElement.fTargetNamespace == elementName.uri &&
+                    fSecondElement.fName == elementName.localpart) {
+                    currentState[0] = STATE_VALID;
+                    return fSecondElement;
                 }
                 //error
             }
@@ -258,7 +240,7 @@ implements XSCMValidator {
             throw new RuntimeException("ImplementationMessages.VAL_CST");
         }
         //if we reach here there was an error
-        ((short[])currentState)[0] = STATE_ERROR;
+        currentState[0] = XSCMValidator.FIRST_ERROR;
         return null;
     }
 
@@ -269,9 +251,13 @@ implements XSCMValidator {
      * @param state  Current state of the content model
      * @return true if the last state was a valid final state
      */
-    public boolean endContentModel (Object currentState){
+    public boolean endContentModel (int[] currentState){
         boolean isFinal =  false;
-        short state = ((short[])currentState)[0];
+        int state = currentState[0];
+        // error
+        if (state < 0) {
+            return false;
+        }
 
         switch (fOperator) {
         case XSParticleDecl.PARTICLE_ELEMENT :
