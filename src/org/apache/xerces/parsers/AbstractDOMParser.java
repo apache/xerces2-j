@@ -714,9 +714,12 @@ public abstract class AbstractDOMParser
                 Attr attr = createAttrNode(fAttrQName);
 
                 String attrValue = attributes.getValue(i);
+                // REVISIT: Should this happen here ? Why not in schema validator?
                 if (fNormalizeData) {
                     AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
-                    if (attrPSVI != null) {
+                    // If validation is not attempted, the SchemaNormalizedValue will be null. 
+                    // We shouldn't take the normalized value in this case.
+                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
                         attrValue = attrPSVI.getSchemaNormalizedValue();
                     }
 
@@ -749,9 +752,12 @@ public abstract class AbstractDOMParser
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
                 String attrValue = attributes.getValue(i);
+                // REVISIT: Should this happen here ? Why not in schema validator?
                 if (fNormalizeData) {
                     AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
-                    if (attrPSVI != null) {
+                    // If validation is not attempted, the SchemaNormalizedValue will be null. 
+                    // We shouldn't take the normalized value in this case.
+                    if (attrPSVI != null && attrPSVI.getValidationAttempted() == AttributePSVI.FULL_VALIDATION) {
                         attrValue = attrPSVI.getSchemaNormalizedValue();
                     }
 
