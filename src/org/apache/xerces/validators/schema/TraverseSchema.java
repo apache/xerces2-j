@@ -5300,7 +5300,7 @@ public class TraverseSchema implements
             else if (CR_IMPL) {
                 reportGenericSchemaError("Content of all group is restricted to elements only.  '" +  
                
-                childName + "' was seen");
+                childName + "' was seen and is being ignored");
                 break;
                 
             }
@@ -5350,6 +5350,11 @@ public class TraverseSchema implements
             }
             allChildCount++;
         }
+
+        // if there were no children, or only invalid children, return...
+        if (allChildCount==0) 
+          return left;
+
         try {
            left = allCalcWrapper(allChildren, allChildCount);
         } catch (java.lang.OutOfMemoryError e) {
