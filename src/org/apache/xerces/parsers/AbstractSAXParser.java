@@ -637,6 +637,7 @@ public abstract class AbstractSAXParser
      */
     public void endDTD() throws SAXException {
 
+        super.endDTD();
         // SAX2 extension
         if (fLexicalHandler != null) {
             fLexicalHandler.endDTD();
