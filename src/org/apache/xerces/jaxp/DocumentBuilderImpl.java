@@ -128,7 +128,7 @@ public class DocumentBuilderImpl extends DocumentBuilder {
                 // Set various parameters obtained from DocumentBuilderFactory
                 domParser.setFeature(XERCES_FEATURE_PREFIX +
                                      INCLUDE_IGNORABLE_WHITESPACE,
-                                     !dbf.isIgnoreElementContentWhitespace());
+                                     !dbf.isIgnoringElementContentWhitespace());
                 domParser.setFeature(XERCES_FEATURE_PREFIX +
                                      CREATE_ENTITY_REF_NODES_FEATURE,
                                      !dbf.isExpandEntityReferences());
