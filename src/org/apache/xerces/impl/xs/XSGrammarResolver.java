@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 /**
  * A class used to hold the internal schema grammar set for the current instance
@@ -115,15 +116,23 @@ public class XSGrammarResolver {
     }
 
     /**
-     * Check if a grammar for the specified namespace is in the registry
+     * get all grammars in the registry
      *
-     * @param namespace
-     * @return boolean true if contains
+     * @return an array of SchemaGrammars.
      */
-    public boolean contains(String namespace) {
-        if (namespace == null)
-            return (fNoNSGrammar != null);
-        return fGrammarRegistry.containsKey(namespace);
+    public SchemaGrammar[] getGrammars() {
+        // get the number of grammars
+        int count = fGrammarRegistry.size() + (fNoNSGrammar==null ? 0 : 1);
+        SchemaGrammar[] grammars = new SchemaGrammar[count];
+        // get grammars with target namespace
+        Enumeration enum = fGrammarRegistry.elements();
+        int i = 0;
+        while (enum.hasMoreElements())
+            grammars[i++] = (SchemaGrammar)enum.nextElement();
+        // add the grammar without target namespace, if any
+        if (fNoNSGrammar != null)
+            grammars[count-1] = fNoNSGrammar;
+        return grammars;
     }
 
     /**

@@ -60,6 +60,8 @@ package org.apache.xerces.impl.xs.models;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
+import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.XSConstraints;
 
 /**
  * XSAllCM implements XSCMValidator and handles <all>
@@ -235,6 +237,27 @@ public class XSAllCM implements XSCMValidator {
 
         if (fNumRequired == numRequiredSeen ) {
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * check whether this content violates UPA constraint.
+     *
+     * @param errors to hold the UPA errors
+     * @return true if this content model contains other or list wildcard
+     */
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {
+        // check whether there is conflict between any two leaves
+        for (int i = 0; i < fNumElements; i++) {
+            for (int j = i+1; j < fNumElements; j++) {
+                if (XSConstraints.overlapUPA(fAllElements[i], fAllElements[j], subGroupHandler)) {
+                    // REVISIT: do we want to report all errors? or just one?
+                    throw new XMLSchemaException("cos-nonambig", new Object[]{fAllElements[i].toString(),
+                                                                              fAllElements[j].toString()});
+                }
+            }
         }
 
         return false;

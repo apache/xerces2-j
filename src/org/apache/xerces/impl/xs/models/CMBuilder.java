@@ -471,7 +471,7 @@ public class CMBuilder {
         // We will build a node at this level for the new tree
         CMNode nodeRet = null;
         if (startNode.fType == XSParticleDecl.PARTICLE_WILDCARD) {
-            nodeRet = new XSCMLeaf(XSParticleDecl.PARTICLE_WILDCARD, startNode.fValue, fLeafCount++);
+            nodeRet = new XSCMLeaf(startNode, fLeafCount++);
         }
         //
         //  If this node is a leaf, then its an easy one. We just add it
@@ -484,7 +484,7 @@ public class CMBuilder {
             //  storing it. This makes the positions zero based since we
             //  store first and then increment.
             //
-            nodeRet = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, startNode.fValue, fLeafCount++);
+            nodeRet = new XSCMLeaf(startNode, fLeafCount++);
         }
         else {
             //

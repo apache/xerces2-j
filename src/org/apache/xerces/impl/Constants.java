@@ -121,6 +121,9 @@ public final class Constants {
     /** Schema validation feature ("validation/schema"). */
     public static final String SCHEMA_VALIDATION_FEATURE = "validation/schema";
 
+    /** Schema full constraint checking ("validation/schema-full-checking"). */
+    public static final String SCHEMA_FULL_CHECKING = "validation/schema-full-checking";
+
     /** Dynamic validation feature ("validation/dynamic"). */
     public static final String DYNAMIC_VALIDATION_FEATURE = "validation/dynamic";
 

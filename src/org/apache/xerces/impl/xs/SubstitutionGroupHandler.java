@@ -58,6 +58,8 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.xni.QName;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * To store and validate information about substitutionGroup
@@ -76,29 +78,6 @@ public class SubstitutionGroupHandler {
      */
     public SubstitutionGroupHandler(XSGrammarResolver grammarResolver) {
         fGrammarResolver = grammarResolver;
-    }
-
-    /**
-     * clear the internal registry of substitutionGroup information
-     */
-    public void reset() {
-        // REVISIT: to implement
-    }
-
-    /**
-     * add one substitution group pair
-     */
-    public void addSubstitutionGroup(XSElementDecl element) {
-        // REVISIT: to implement
-    }
-
-    /**
-     * get all elements that can substitute the given element,
-     * according to the spec, we shouldn't consider the {block} constraints.
-     */
-    public XSElementDecl[] getSubstitutionGroup(String elementUri, String elementName) {
-        // REVISIT: to implement
-        return null;
     }
 
     // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
@@ -193,6 +172,81 @@ public class SubstitutionGroupHandler {
             element = element.fSubGroup;
         }
         return (element != null);
+    }
+
+    // to store substitution group information
+    // the key to the hashtable is an element decl, and the value is
+    // - a Vector, which contains all elements that has this element as their
+    //   substitution group affilication
+    // - an array, which contains its substitution group.
+    Hashtable fSubGroups = new Hashtable();
+    private static XSElementDecl[] EMPTY_VECTOR = new XSElementDecl[0];
+
+    /**
+     * clear the internal registry of substitutionGroup information
+     */
+    public void reset() {
+        fSubGroups.clear();
+    }
+
+    /**
+     * add a list of substitution group information.
+     */
+    public void addSubstitutionGroup(XSElementDecl[] elements) {
+        XSElementDecl subHead, element;
+        Vector subGroup;
+        // for all elements with substitution group affiliation
+        for (int i = elements.length-1; i >= 0; i--) {
+            element = elements[i];
+            subHead = element.fSubGroup;
+            // check whether this an entry for this element
+            subGroup = (Vector)fSubGroups.get(subHead);
+            if (subGroup == null) {
+                // if not, create a new one
+                subGroup = new Vector();
+                fSubGroups.put(subHead, subGroup);
+            }
+            // add to the vactor
+            subGroup.add(element);
+        }
+    }
+
+    /**
+     * get all elements that can substitute the given element,
+     * according to the spec, we shouldn't consider the {block} constraints.
+     *
+     * from the spec, substitution group of a given element decl also contains
+     * the element itself. but the array returned from this method doesn't
+     * containt this element.
+     */
+    public XSElementDecl[] getSubstitutionGroup(XSElementDecl element) {
+        XSElementDecl[] ret;
+        Object subGroup = fSubGroups.get(element);
+        if (subGroup == null) {
+            // substitution group for this one is empty
+            ret = EMPTY_VECTOR;
+            fSubGroups.put(element, ret);
+        } else if (subGroup instanceof XSElementDecl[]) {
+            // we've already calculated the element, just return.
+            ret = (XSElementDecl[])subGroup;
+        } else {
+            // we only have the *direct* substitutions
+            Vector group = (Vector)subGroup;
+            XSElementDecl[] group1;
+            // then for each of the direct substitutions, get its substitution
+            // group, and combine the groups together.
+            for (int i = group.size()-1, j; i >= 0; i--) {
+                group1 = getSubstitutionGroup((XSElementDecl)group.get(i));
+                for (j = group1.length-1; j >= 0; j--)
+                    group.add(group1[j]);
+            }
+            ret = new XSElementDecl[group.size()];
+            for (int i = group.size()-1; i >= 0; i--)
+                ret[i] = (XSElementDecl)group.elementAt(i);
+            fSubGroups.put(element, ret);
+        }
+
+        return ret;
     }
 
 } // class SubstitutionGroupHandler

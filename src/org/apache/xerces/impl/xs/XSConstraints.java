@@ -57,7 +57,10 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.dv.xs.*;
+import org.apache.xerces.impl.xs.models.CMBuilder;
+import org.apache.xerces.impl.xs.models.XSCMValidator;
 import java.util.Vector;
 
 /**
@@ -287,4 +290,180 @@ public class XSConstraints {
         return actualValue;
     }
 
+    /**
+     * used to check the 3 constraints against each complex type
+     * (should be each model group):
+     * Unique Particle Attribution, Particle Derivation (Restriction),
+     * Element Declrations Consistent.
+     */
+    public static void fullSchemaChecking(XSGrammarResolver grammarResolver,
+                                          SubstitutionGroupHandler SGHandler,
+                                          CMBuilder cmBuilder,
+                                          XMLErrorReporter errorReporter) {
+        // get all grammars, and put all substitution group information
+        // in the substitution group handler
+        SchemaGrammar[] grammars = grammarResolver.getGrammars();
+        for (int i = grammars.length-1; i >= 0; i--) {
+            SGHandler.addSubstitutionGroup(grammars[i].getSubstitutionGroups());
+        }
+
+        // for each complex type, check the 3 constraints.
+        // types need to be checked
+        XSComplexTypeDecl[] types;
+        // to hold the errors
+        // REVISIT: do we want to report all errors? or just one?
+        //XMLSchemaError1D errors = new XMLSchemaError1D();
+        // whether need to check this type again;
+        // whether only do UPA checking
+        boolean further, fullChecked;
+        // if do all checkings, how many need to be checked again.
+        int keepType;
+        // i: grammar; j: type; k: error
+        // for all grammars
+        for (int i = grammars.length-1, j, k; i >= 0; i--) {
+            // get whether only check UPA, and types need to be checked
+            keepType = 0;
+            fullChecked = grammars[i].fFullChecked;
+            types = grammars[i].getUncheckedComplexTypeDecls();
+            // for each type
+            for (j = types.length-1; j >= 0; j--) {
+                // if only do UPA checking, skip the other two constraints
+                if (!fullChecked) {
+                // 1. Element Decl Consistent
+                }
+
+                // 2. Particle Derivation
+
+                // 3. UPA
+                // get the content model and check UPA
+                XSCMValidator cm = types[j].getContentModel(cmBuilder);
+                further = false;
+                if (cm != null) {
+                    try {
+                        further = cm.checkUniqueParticleAttribution(SGHandler);
+                    } catch (XMLSchemaException e) {
+                        errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                  e.getKey(),
+                                                  e.getArgs(),
+                                                  XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+                // now report all errors
+                // REVISIT: do we want to report all errors? or just one?
+                /*for (k = errors.getErrorCodeNum()-1; k >= 0; k--) {
+                    errorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                              errors.getErrorCode(k),
+                                              errors.getArgs(k),
+                                              XMLErrorReporter.SEVERITY_ERROR);
+                }*/
+
+                // if we are doing all checkings, and this one needs further
+                // checking, store it in the type array.
+                if (!fullChecked && further)
+                    types[keepType++] = types[j];
+
+                // clear errors for the next type.
+                // REVISIT: do we want to report all errors? or just one?
+                //errors.clear();
+            }
+            // we've done with the types in this grammar. if we are checking
+            // all constraints, need to trim type array to a proper size:
+            // only contain those need further checking.
+            // and mark this grammar that it only needs UPA checking.
+            if (!fullChecked) {
+                grammars[i].setUncheckedTypeNum(keepType);
+                grammars[i].fFullChecked = true;
+            }
+        }
+    }
+
+    // to check whether two element overlap, as defined in constraint UPA
+    public static boolean overlapUPA(XSElementDecl element1,
+                                     XSElementDecl element2,
+                                     SubstitutionGroupHandler sgHandler) {
+        // if the two element have the same name and namespace,
+        if (element1.fName == element2.fName &&
+            element1.fTargetNamespace == element2.fTargetNamespace) {
+            return true;
+        }
+
+        // or if there is an element decl in element1's substitution group,
+        // who has the same name/namespace with element2
+        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element1);
+        for (int i = subGroup.length-1; i >= 0; i--) {
+            if (subGroup[i].fName == element2.fName &&
+                subGroup[i].fTargetNamespace == element2.fTargetNamespace) {
+                return true;
+            }
+        }
+
+        // or if there is an element decl in element2's substitution group,
+        // who has the same name/namespace with element1
+        subGroup = sgHandler.getSubstitutionGroup(element2);
+        for (int i = subGroup.length-1; i >= 0; i--) {
+            if (subGroup[i].fName == element1.fName &&
+                subGroup[i].fTargetNamespace == element1.fTargetNamespace) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // to check whether an element overlaps with a wildcard,
+    // as defined in constraint UPA
+    public static boolean overlapUPA(XSElementDecl element,
+                                     XSWildcardDecl wildcard,
+                                     SubstitutionGroupHandler sgHandler) {
+        // if the wildcard allows the element
+        if (wildcard.allowNamespace(element.fTargetNamespace))
+            return true;
+
+        // or if the wildcard allows any element in the substitution group
+        XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(element);
+        for (int i = subGroup.length-1; i >= 0; i--) {
+            if (wildcard.allowNamespace(subGroup[i].fTargetNamespace))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static boolean overlapUPA(XSWildcardDecl wildcard1,
+                                     XSWildcardDecl wildcard2) {
+        // if the intersection of the two wildcard is not empty list
+        XSWildcardDecl intersect = wildcard1.performIntersectionWith(wildcard2, wildcard1.fProcessContents);
+        if (intersect == null ||
+            intersect.fType != XSWildcardDecl.WILDCARD_LIST ||
+            intersect.fNamespaceList.length != 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // call one of the above methods according to the type of decls
+    public static boolean overlapUPA(Object decl1, Object decl2,
+                                     SubstitutionGroupHandler sgHandler) {
+        if (decl1 instanceof XSElementDecl) {
+            if (decl2 instanceof XSElementDecl) {
+                return overlapUPA((XSElementDecl)decl1,
+                                  (XSElementDecl)decl2,
+                                  sgHandler);
+            } else {
+                return overlapUPA((XSElementDecl)decl1,
+                                  (XSWildcardDecl)decl2,
+                                  sgHandler);
+            }
+        } else {
+            if (decl2 instanceof XSElementDecl) {
+                return overlapUPA((XSElementDecl)decl2,
+                                  (XSWildcardDecl)decl1,
+                                  sgHandler);
+            } else {
+                return overlapUPA((XSWildcardDecl)decl1,
+                                  (XSWildcardDecl)decl2);
+            }
+        }
+    }
 } // class XSContraints

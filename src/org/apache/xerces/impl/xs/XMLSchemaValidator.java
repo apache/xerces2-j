@@ -141,6 +141,10 @@ public class XMLSchemaValidator
     protected static final String SCHEMA_VALIDATION =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
 
+    /** Feature identifier: schema full checking*/
+    protected static final String SCHEMA_FULL_CHECKING =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
+
     /** Feature identifier: dynamic validation. */
     protected static final String DYNAMIC_VALIDATION =
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
@@ -174,6 +178,7 @@ public class XMLSchemaValidator
         NAMESPACES,
         SCHEMA_VALIDATION,
         DYNAMIC_VALIDATION,
+        SCHEMA_FULL_CHECKING,
     };
 
     /** Recognized properties. */
@@ -197,6 +202,7 @@ public class XMLSchemaValidator
     protected boolean fValidation = false;
     protected boolean fDynamicValidation = false;
     protected boolean fDoValidation = false;
+    protected boolean fFullChecking = false;
 
     // properties
 
@@ -878,6 +884,7 @@ public class XMLSchemaValidator
         catch (XMLConfigurationException e) {
             fValidation = false;
         }
+
         try {
             // REVISIT: should schema validation depend on validation?
             // NOTE: YES! That's the way it's documented and has worked
@@ -888,6 +895,13 @@ public class XMLSchemaValidator
         }
         catch (XMLConfigurationException e) {
             fValidation = false;
+        }
+
+        try {
+            fFullChecking = componentManager.getFeature(SCHEMA_FULL_CHECKING);
+        }
+        catch (XMLConfigurationException e) {
+            fFullChecking = false;
         }
 
         // Xerces features
@@ -1422,7 +1436,9 @@ public class XMLSchemaValidator
                 if (!fValidationState.checkIDRefID()) {
                     reportSchemaError("ValidationRoot",null);
                 }
-                // REVISIT: is this the right place to check the 3 contraints?
+                // check extra schema constraints
+                if (fFullChecking)
+                    XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fErrorReporter);
             }
         }
         else {
@@ -1724,7 +1740,7 @@ public class XMLSchemaValidator
             if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
                 // REVISIT: fType on decl must be simpleType decl, using which we can find
-                // out the type. In the mean time, we must at least set CDATA, 
+                // out the type. In the mean time, we must at least set CDATA,
                 // and we really need to know what attributes are of type ID:
                 // DOM requires some special handling for those ones.
                 attributes.addAttribute(attName, "CDATA", (defaultValue !=null)?defaultValue.toString():"");

@@ -65,6 +65,8 @@ import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
+import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.XSConstraints;
 
 /**
  * DFAContentModel is the implementation of XSCMValidator that does
@@ -85,12 +87,6 @@ public class XSDFACM
 
     // special strings
 
-    /** Epsilon string. */
-    private static final int EPSILON = -2;
-
-    /** End-of-content string. */
-    private static final int EOC     = -3;
-
     // debugging
 
     /** Set to true to debug content model validation. */
@@ -107,7 +103,7 @@ public class XSDFACM
      * actual validation.  Note tat since either XSElementDecl or XSParticleDecl object
      * can live here, we've got to use an Object.
      */
-    private Object fElemMap[] = null;
+    private XSParticleDecl fElemMap[] = null;
 
     /**
      * This is a map of whether the element map contains information
@@ -126,20 +122,16 @@ public class XSDFACM
      * the string pool. This is used as the special name of an element
      * that represents the end of the syntax tree.
      */
-    private static String fEOCString = "<<CMNODE_EOC>>";
+    private static final XSParticleDecl fEOCParticle = new XSParticleDecl();
+    static {
+        fEOCParticle.fType = XSParticleDecl.PARTICLE_ELEMENT;
+    }
 
     /**
      * The NFA position of the special EOC (end of content) node. This
      * is saved away since it's used during the DFA build.
      */
     private int fEOCPos = 0;
-
-    /**
-     * The string index for the 'epsilon' string that we add to the
-     * string pool. This represents epsilon node transitions in the
-     * syntax tree.
-     */
-    private static String fEpsilonString = "<<CMNODE_EPSILON>>";
 
     /**
      * This is an array of booleans, one per state (there are
@@ -209,15 +201,6 @@ public class XSDFACM
     private boolean fEmptyContentIsValid = false;
 
     // temp variables
-
-    /** Temporary element declaration. */
-    private Object fElementDecl = new Object();
-
-    /** initializing static members **/
-    static {
-        fEpsilonString = fEpsilonString.intern();
-        fEOCString = fEOCString.intern();
-    }
 
     //
     // Constructors
@@ -335,7 +318,7 @@ public class XSDFACM
         for (; elemIndex < fElemMapSize; elemIndex++) {
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex].fValue);
 
                 if (matchingDecl != null) {
                     nextState = fTransTable[curState][elemIndex];
@@ -344,8 +327,8 @@ public class XSDFACM
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) {
-                    matchingDecl = fElemMap[elemIndex];
+                if(((XSWildcardDecl)fElemMap[elemIndex].fValue).allowNamespace(curElem.uri)) {
+                    matchingDecl = fElemMap[elemIndex].fValue;
                     nextState = fTransTable[curState][elemIndex];
                     if (nextState != -1)
                       break;
@@ -370,14 +353,14 @@ public class XSDFACM
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
-                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex]);
+                matchingDecl = subGroupHandler.getMatchingElemDecl(curElem, (XSElementDecl)fElemMap[elemIndex].fValue);
                 if (matchingDecl != null) {
                     return matchingDecl;
                 }
             }
             else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri))
-                    return fElemMap[elemIndex];
+                if(((XSWildcardDecl)fElemMap[elemIndex].fValue).allowNamespace(curElem.uri))
+                    return fElemMap[elemIndex].fValue;
             }
         }
 
@@ -398,52 +381,6 @@ public class XSDFACM
 
     // Killed off whatCanGoHere; we may need it for DOM canInsert(...) etc.,
     // but we can put it back later.
-
-    // Unique Particle Attribution
-    // REVISIT:  implement UPA!
-    // store the conflict results between any two elements in fElemMap
-    // -1: not compared; 0: no conflict; 1: conflict
-    /******
-    private byte fConflictTable[][];
-
-    // check UPA after build the DFA
-    public void checkUniqueParticleAttribution(SchemaGrammar gram) {
-        // rename back
-        for (int i = 0; i < fElemMapSize; i++)
-            fElemMap[i].uri = gram.getContentSpecOrgUri(fElemMap[i].uri);
-
-        // initialize the conflict table
-        fConflictTable = new byte[fElemMapSize][fElemMapSize];
-        for (int j = 0; j < fElemMapSize; j++) {
-            for (int k = j+1; k < fElemMapSize; k++)
-                fConflictTable[j][k] = -1;
-        }
-
-        // for each state, check whether it has overlap transitions
-        for (int i = 0; i < fTransTable.length && fTransTable[i] != null; i++) {
-            for (int j = 0; j < fElemMapSize; j++) {
-                for (int k = j+1; k < fElemMapSize; k++) {
-                    if (fTransTable[i][j] != -1 &&
-                        fTransTable[i][k] != -1) {
-                        if (fConflictTable[j][k] == -1) {
-                            fConflictTable[j][k] = ElementWildcard.conflict
-                                                   (fElemMapType[j],
-                                                    fElemMap[j].localpart,
-                                                    fElemMap[j].uri,
-                                                    fElemMapType[k],
-                                                    fElemMap[k].localpart,
-                                                    fElemMap[k].uri,
-                                                    comparator) ? (byte)1 : (byte)0;
-                        }
-                    }
-                }
-            }
-        }
-
-        fConflictTable = null;
-    }
-    // Unique Particle Attribution
-    ******** End commented-out code *****/
 
     //
     // Private methods
@@ -498,9 +435,7 @@ public class XSDFACM
          * "(a, (b, a+, (c, (b, a+)+, a+, (d,  (c, (b, a+)+, a+)+, (b, a+)+, a+)+)+)+)+"
          */
 
-        fElementDecl = new XSElementDecl();
-        ((XSElementDecl)fElementDecl).fName = fEOCString;
-        XSCMLeaf nodeEOC = new XSCMLeaf((XSElementDecl)fElementDecl);
+        XSCMLeaf nodeEOC = new XSCMLeaf(fEOCParticle);
         fHeadNode = new XSCMBinOp(
         XSParticleDecl.PARTICLE_SEQUENCE
             , syntaxTree
@@ -555,7 +490,7 @@ public class XSDFACM
         //  input element. So we need to a zero based range of indexes that
         //  map to element types. This element map provides that mapping.
         //
-        fElemMap = new Object [fLeafCount];
+        fElemMap = new XSParticleDecl[fLeafCount];
         fElemMapType = new int[fLeafCount];
         fElemMapSize = 0;
         for (int outIndex = 0; outIndex < fLeafCount; outIndex++) {
@@ -564,35 +499,10 @@ public class XSDFACM
             fElemMap[outIndex] = null;
 
             int inIndex = 0;
-            final Object decl = fLeafList[outIndex].getDecl();
-            // REVISIT: shouldn't we always compare the decls by reference?
-            //          if we ever combine two different element decls with
-            //          the same name and namespace, then this content model
-            //          violates UPA.
-            //          Comparing by name/namespace was inherited from Xerces1,
-            //          where we only store name and uri, and couldn't compare
-            //          whether two decls are the same.
-            //          After we support UPA, change the following big "if"
-            //          to the following 4 lines.
-            //for (; inIndex < fElemMapSize; inIndex++) {
-            //    if (decl == fElemMap[inIndex])
-            //        break;
-            //}
-            if (fLeafListType[outIndex] == XSParticleDecl.PARTICLE_WILDCARD) {
-                for (; inIndex < fElemMapSize; inIndex++) {
-                    if (decl == fElemMap[inIndex])
-                        break;
-                }
-            } else {
-                // Get the current leaf's element
-                final XSElementDecl element = (XSElementDecl)decl;
-                // See if the current leaf node's element index is in the list
-                for (; inIndex < fElemMapSize; inIndex++) {
-                    if (fElemMapType[inIndex] == fLeafListType[outIndex] &&
-                        ((XSElementDecl)fElemMap[inIndex]).fTargetNamespace == element.fTargetNamespace &&
-                        ((XSElementDecl)fElemMap[inIndex]).fName == element.fName)
-                        break;
-                }
+            final XSParticleDecl decl = fLeafList[outIndex].getLeaf();
+            for (; inIndex < fElemMapSize; inIndex++) {
+                if (decl == fElemMap[inIndex])
+                    break;
             }
 
             // If it was not in the list, then add it, if not the EOC node
@@ -606,17 +516,10 @@ public class XSDFACM
         // the last entry in the element map must be the EOC element.
         // remove it from the map.
         if (DEBUG) {
-            if (((XSElementDecl)fElemMap[fElemMapSize-1]).fName != fEOCString)
+            if (fElemMap[fElemMapSize-1] != fEOCParticle)
                 System.err.println("interal error in DFA: last element is not EOC.");
         }
         fElemMapSize--;
-
-        // set up the fLeafNameTypeVector object if there is one.
-        /**** but apparently there never will be since this was commented out for some reason...
-        if (fLeafNameTypeVector != null) {
-            fLeafNameTypeVector.setValues(fElemMap, fElemMapType, fElemMapSize);
-        }
-        ******/
 
         /***
          * Optimization(Jan, 2001); We sort fLeafList according to
@@ -628,33 +531,10 @@ public class XSDFACM
         int fSortCount = 0;
 
         for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-            final Object decl = fElemMap[elemIndex];
+            final XSParticleDecl decl = fElemMap[elemIndex];
             for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
-                // REVISIT: shouldn't we always compare the decls by reference?
-                //          if we ever combine two different element decls with
-                //          the same name and namespace, then this content model
-                //          violates UPA.
-                //          Comparing by name/namespace was inherited from Xerces1,
-                //          where we only store name and uri, and couldn't compare
-                //          whether two decls are the same.
-                //          After we support UPA, change the following 2 "if"s
-                //          to the following 2 lines.
-                //if (decl == fLeafList[leafIndex].getDecl())
-                //    fLeafSorter[fSortCount++] = leafIndex;
-                if (fElemMapType[elemIndex] != fLeafListType[leafIndex])
-                    continue;
-
-                if (fLeafListType[leafIndex] == XSParticleDecl.PARTICLE_WILDCARD) {
-                    if (decl == fLeafList[leafIndex].getDecl())
-                        fLeafSorter[fSortCount++] = leafIndex;
-                } else {
-                    final XSElementDecl leaf = (XSElementDecl)fLeafList[leafIndex].getDecl();
-                    final XSElementDecl element = (XSElementDecl)decl;
-                    if (leaf.fTargetNamespace == element.fTargetNamespace &&
-                        leaf.fName == element.fName ) {
-                        fLeafSorter[fSortCount++] = leafIndex;
-                    }
-                }
+                if (decl == fLeafList[leafIndex].getLeaf())
+                    fLeafSorter[fSortCount++] = leafIndex;
             }
             fLeafSorter[fSortCount++] = -1;
         }
@@ -983,9 +863,9 @@ public class XSDFACM
                 "Leaf: (pos="
                 + ((XSCMLeaf)nodeCur).getPosition()
                 + "), "
-                + ((XSCMLeaf)nodeCur).getDecl()
+                + ((XSCMLeaf)nodeCur).getLeaf().fValue
                 + "(elemIndex="
-                + ((XSCMLeaf)nodeCur).getDecl()
+                + ((XSCMLeaf)nodeCur).getLeaf().fValue
                 + ") "
             );
 
@@ -1034,7 +914,6 @@ public class XSDFACM
 
         // Recurse as required
         if (nodeCur.type() == XSParticleDecl.PARTICLE_WILDCARD) {
-            fElementDecl = ((XSCMLeaf)nodeCur).getDecl();
             fLeafList[curIndex] = (XSCMLeaf)nodeCur;
             fLeafListType[curIndex] = XSParticleDecl.PARTICLE_WILDCARD;
             curIndex++;
@@ -1056,12 +935,9 @@ public class XSDFACM
             //  Put this node in the leaf list at the current index if its
             //  a non-epsilon leaf.
             //
-            final XSElementDecl elementDecl = (XSElementDecl)((XSCMLeaf)nodeCur).getDecl();
-            if (elementDecl.fName != fEpsilonString) {
-                fLeafList[curIndex] = (XSCMLeaf)nodeCur;
-                fLeafListType[curIndex] = XSParticleDecl.PARTICLE_ELEMENT;
-                curIndex++;
-            }
+            fLeafList[curIndex] = (XSCMLeaf)nodeCur;
+            fLeafListType[curIndex] = XSParticleDecl.PARTICLE_ELEMENT;
+            curIndex++;
         }
          else
         {
@@ -1070,5 +946,62 @@ public class XSDFACM
         return curIndex;
     }
 
+    /**
+     * check whether this content violates UPA constraint.
+     *
+     * @param errors to hold the UPA errors
+     * @return true if this content model contains other or list wildcard
+     */
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {
+        // Unique Particle Attribution
+        // store the conflict results between any two elements in fElemMap
+        // 0: not compared; -1: no conflict; 1: conflict
+        // initialize the conflict table (all 0 initially)
+        byte conflictTable[][] = new byte[fElemMapSize][fElemMapSize];
+
+        // for each state, check whether it has overlap transitions
+        for (int i = 0; i < fTransTable.length && fTransTable[i] != null; i++) {
+            for (int j = 0; j < fElemMapSize; j++) {
+                for (int k = j+1; k < fElemMapSize; k++) {
+                    if (fTransTable[i][j] != -1 &&
+                        fTransTable[i][k] != -1) {
+                        if (conflictTable[j][k] == 0) {
+                            conflictTable[j][k] = XSConstraints.overlapUPA
+                                                   (fElemMap[j].fValue,fElemMap[k].fValue,
+                                                   subGroupHandler) ?
+                                                   (byte)1 : (byte)-1;
+                        }
+                    }
+                }
+            }
+        }
+
+        // report all errors
+        for (int i = 0; i < fElemMapSize; i++) {
+            for (int j = 0; j < fElemMapSize; j++) {
+                if (conflictTable[i][j] == 1) {
+                    //errors.newError("cos-nonambig", new Object[]{fElemMap[i].toString(),
+                    //                                             fElemMap[j].toString()});
+                    // REVISIT: do we want to report all errors? or just one?
+                    throw new XMLSchemaException("cos-nonambig", new Object[]{fElemMap[i].toString(),
+                                                                              fElemMap[j].toString()});
+                }
+            }
+        }
+
+        // if there is a other or list wildcard, we need to check this CM
+        // again, if this grammar is cached.
+        for (int i = 0; i < fElemMapSize; i++) {
+            if (fElemMapType[i] == XSParticleDecl.PARTICLE_WILDCARD) {
+                XSWildcardDecl wildcard = (XSWildcardDecl)fElemMap[i].fValue;
+                if (wildcard.fType == XSWildcardDecl.WILDCARD_LIST ||
+                    wildcard.fType == XSWildcardDecl.WILDCARD_OTHER) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
 } // class DFAContentModel

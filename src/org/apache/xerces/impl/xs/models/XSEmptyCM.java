@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.models;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
+import org.apache.xerces.impl.xs.XMLSchemaException;
 
 /**
  * XSEmptyCM is a derivative of the abstract content model base class that
@@ -138,5 +139,14 @@ public class XSEmptyCM  implements XSCMValidator {
         return true;
     }
 
+    /**
+     * check whether this content violates UPA constraint.
+     *
+     * @param errors to hold the UPA errors
+     * @return true if this content model contains other or list wildcard
+     */
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException {
+        return false;
+    }
 
 } // class XSEmptyCM

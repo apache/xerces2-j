@@ -924,12 +924,12 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
         }
         // inherit pattern //???
         if ( (fBase.fFacetsDefined & FACET_PATTERN) != 0 ) {
-            if ((fFacetsDefined & FACET_PATTERN) == 0)
+            if ((fFacetsDefined & FACET_PATTERN) == 0) {
                 fPattern = new Vector();
-            fFacetsDefined |= FACET_PATTERN;
+                fFacetsDefined |= FACET_PATTERN;
+            }
             for (int i = fBase.fPattern.size()-1; i >= 0; i--)
                 fPattern.addElement(fBase.fPattern.elementAt(i));
-            fEnumeration = fBase.fEnumeration;
         }
         // inherit whiteSpace
         if ( (fFacetsDefined & FACET_WHITESPACE) == 0 &&  (fBase.fFacetsDefined & FACET_WHITESPACE) != 0 ) {
@@ -1252,7 +1252,7 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
     }//isEqual()
 
     // normalize the string according to the whiteSpace facet
-    public static String normalize(String content, short ws) {
+    static String normalize(String content, short ws) {
         int len = content == null ? 0 : content.length();
         if (len == 0 || ws == WS_PRESERVE)
             return content;

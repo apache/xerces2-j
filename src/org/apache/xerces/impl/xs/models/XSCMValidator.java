@@ -59,6 +59,7 @@ package org.apache.xerces.impl.xs.models;
 
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
+import org.apache.xerces.impl.xs.XMLSchemaException;
 
 /**
  * Note: State of the content model is stored in the validator
@@ -104,5 +105,13 @@ public interface XSCMValidator {
      * @return true if the last state was a valid final state
      */
     public boolean endContentModel (int[] state);
+
+    /**
+     * check whether this content violates UPA constraint.
+     *
+     * @param errors to hold the UPA errors
+     * @return true if this content model contains other or list wildcard
+     */
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException;
 
 } // XSCMValidator

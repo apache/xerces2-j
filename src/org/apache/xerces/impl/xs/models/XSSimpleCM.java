@@ -61,6 +61,8 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
+import org.apache.xerces.impl.xs.XMLSchemaException;
+import org.apache.xerces.impl.xs.XSConstraints;
 
 /**
  * XSSimpleCM is a derivative of the abstract content model base
@@ -285,5 +287,23 @@ implements XSCMValidator {
         return isFinal;
     }
 
+    /**
+     * check whether this content violates UPA constraint.
+     *
+     * @param errors to hold the UPA errors
+     * @return true if this content model contains other or list wildcard
+     */
+    public boolean checkUniqueParticleAttribution(SubstitutionGroupHandler subGroupHandler) throws XMLSchemaException{
+        if (fOperator == XSParticleDecl.PARTICLE_CHOICE) {
+            // only when it's a choice, and the two elements overlap,
+            // is it a UPA violation.
+            if (XSConstraints.overlapUPA(fFirstElement, fSecondElement, subGroupHandler)) {
+                throw new XMLSchemaException("cos-nonambig", new Object[]{fFirstElement.toString(),
+                                                                          fSecondElement.toString()});
+            }
+        }
+
+        return false;
+    }
 
 } // class XSSimpleCM

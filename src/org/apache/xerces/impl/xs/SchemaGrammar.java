@@ -400,9 +400,9 @@ public class SchemaGrammar {
     private int fCTCount = 0;
     private XSComplexTypeDecl[] fComplexTypeDecls = new XSComplexTypeDecl[INITIAL_SIZE];
 
-    // a flag to indicate whether we need to check 3 constraints against each
-    // complex type, or only need to check UPA.
-    boolean fOnlyCheckUPA = false;
+    // a flag to indicate whether we have checked the 3 constraints on this
+    // grammar.
+    boolean fFullChecked = false;
 
     /**
      * add one complex type decl: for later constraint checking

@@ -76,8 +76,8 @@ public class XSCMLeaf
     // Data
     //
 
-    /** This is the element that this leaf represents. */
-    private Object fElement = null;
+    /** This is the leaf particle. */
+    private XSParticleDecl fLeaf = null;
 
     /**
      * Part of the algorithm to convert a regex directly to a DFA
@@ -91,28 +91,25 @@ public class XSCMLeaf
     //
 
     /** Constructs a content model leaf. */
-    public XSCMLeaf(int type, Object element, int position)  {
-        super(type);
+    public XSCMLeaf(XSParticleDecl leaf, int position)  {
+        super(leaf.fType);
 
         // Store the element index and position
-        fElement = element;
+        fLeaf = leaf;
         fPosition = position;
     }
 
     /** Constructs a content model leaf. */
-    public XSCMLeaf(XSElementDecl element)  {
-        super(XSParticleDecl.PARTICLE_ELEMENT);
-
-        // Store the element index and position
-        fElement = element;
+    public XSCMLeaf(XSParticleDecl leaf)  {
+        this(leaf, -1);
     }
 
     //
     // Package methods
     //
 
-    final Object getDecl() {
-        return fElement;
+    final XSParticleDecl getLeaf() {
+        return fLeaf;
     }
 
     final int getPosition() {
@@ -135,17 +132,7 @@ public class XSCMLeaf
     }
 
     public String toString() {
-        StringBuffer strRet = new StringBuffer(fElement.toString());
-        strRet.append(" (");
-        if(this.type() == XSParticleDecl.PARTICLE_ELEMENT) {
-            strRet.append(((XSElementDecl)fElement).fTargetNamespace);
-            strRet.append(',');
-            strRet.append(((XSElementDecl)fElement).fName);
-        } else {
-            strRet.append("##any:uri=");
-            strRet.append(((XSWildcardDecl)fElement).fNamespaceList[0]);
-        }
-        strRet.append(')');
+        StringBuffer strRet = new StringBuffer(fLeaf.fValue.toString());
         if (fPosition >= 0) {
             strRet.append
             (
