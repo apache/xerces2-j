@@ -128,15 +128,6 @@ public abstract class AbstractSAXParser
     protected AbstractSAXParser() {
     } // <init>()
 
-    /**
-     * Constructs a SAX parser specifying the symbol table.
-     * 
-     * @param symbolTable The symbol table.
-     */
-    protected AbstractSAXParser(SymbolTable symbolTable) {
-        super(symbolTable);
-    } // <init>(SymbolTable)
-
     //
     // XMLDocumentHandler methods
     //

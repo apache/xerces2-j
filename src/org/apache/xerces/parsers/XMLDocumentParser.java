@@ -1,3 +1,4 @@
+
 /*
  * The Apache Software License, Version 1.1
  *
@@ -118,16 +119,7 @@ public abstract class XMLDocumentParser
      * and grammar pool.
      */
     protected XMLDocumentParser() {
-        this(new SymbolTable());
     } // <init>()
-
-    /** 
-     * Constructs a document parser using the specified symbol table
-     * and a default grammar pool.
-     */
-    protected XMLDocumentParser(SymbolTable symbolTable) {
-        super(symbolTable);
-    } // <init>(SymbolTable)
 
     //
     // XMLDocumentHandler methods

@@ -60,13 +60,16 @@ package org.apache.xerces.parsers;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Vector;
 
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
 
 import org.xml.sax.EntityResolver;
@@ -76,8 +79,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-
-import java.util.Hashtable;
 
 /**
  * Base class of all XML-related parsers.
@@ -139,23 +140,22 @@ public abstract class XMLParser
     /** Features. */
     protected Hashtable fFeatures;
 
+    /** Components. */
+    protected Vector fComponents;
+
+    protected boolean fNeedInitialize;
+
     //
     // Constructors
     //
 
     /**
-     * Default Constructor. Creates a parser with its own SymbolTable.
+     * Default Constructor.
      */
     protected XMLParser() {
-        this(new SymbolTable());
-    } // <init>()
 
-    /**
-     * Constructor allowing the SymbolTable to be specified.
-     * 
-     * @param symbolTable 
-     */
-    protected XMLParser(SymbolTable symbolTable) {
+        // create a vector to hold all the components in use
+        fComponents = new Vector();
 
         // create table for features and properties
         fFeatures = new Hashtable();
@@ -181,18 +181,43 @@ public abstract class XMLParser
         final String LOAD_EXTERNAL_DTD = Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
         fFeatures.put(LOAD_EXTERNAL_DTD, Boolean.TRUE);
 
-        // create and register components
-        fSymbolTable = symbolTable;
+        fNeedInitialize = true;
+
+    } // <init>
+
+    /**
+     * Initialize the parser with all the components specified via the
+     * properties plus any missing ones. This method MUST be called before
+     * parsing. It is not called from the constructor though, so that the
+     * application can pass in any components it wants by presetting the
+     * relevant property.
+     */
+    protected void initialize() {
+
+        // create and register missing components
         final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-        fProperties.put(SYMBOL_TABLE, fSymbolTable);
+        fSymbolTable = (SymbolTable) fProperties.get(SYMBOL_TABLE);
+        if (fSymbolTable == null) {
+            fSymbolTable = new SymbolTable();
+            fProperties.put(SYMBOL_TABLE, fSymbolTable);
+        }
 
-        fEntityManager = createEntityManager();
         final String ENTITY_MANAGER = Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
-        fProperties.put(ENTITY_MANAGER, fEntityManager);
+        fEntityManager = (XMLEntityManager) fProperties.get(ENTITY_MANAGER);
+        if (fEntityManager == null) {
+            fEntityManager = createEntityManager();
+            fProperties.put(ENTITY_MANAGER, fEntityManager);
+        }
+        fComponents.add(fEntityManager);
 
-        fErrorReporter = createErrorReporter( fEntityManager.getEntityScanner() );
         final String ERROR_REPORTER = Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
-        fProperties.put(ERROR_REPORTER, fErrorReporter);
+        fErrorReporter = (XMLErrorReporter) fProperties.get(ERROR_REPORTER);
+        if (fErrorReporter == null) {
+            fErrorReporter =
+                createErrorReporter(fEntityManager.getEntityScanner());
+            fProperties.put(ERROR_REPORTER, fErrorReporter);
+        }
+        fComponents.add(fErrorReporter);
 
         fLocator = (Locator) fEntityManager.getEntityScanner();
 
@@ -207,8 +232,9 @@ public abstract class XMLParser
         catch (SAXException e) {
             // ignore
         }
+        fNeedInitialize = false;
 
-    } // <init>(SymbolTable)
+    } // initialize()
 
     //
     // Public methods
@@ -344,8 +370,11 @@ public abstract class XMLParser
         checkFeature(featureId);
 
         // forward to every component
-        fEntityManager.setFeature(featureId, state);
-        fErrorReporter.setFeature(featureId, state);
+        int count = fComponents.size();
+        for (int i = 0; i < count; i++) {
+            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            c.setFeature(featureId, state);
+        }
         // then store the information
         fFeatures.put(featureId, state ? Boolean.TRUE : Boolean.FALSE);
 
@@ -363,8 +392,11 @@ public abstract class XMLParser
         checkProperty(propertyId);
 
         // forward to every component
-        fEntityManager.setProperty(propertyId, value);
-        fErrorReporter.setProperty(propertyId, value);
+        int count = fComponents.size();
+        for (int i = 0; i < count; i++) {
+            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            c.setProperty(propertyId, value);
+        }
         // then store the information
         fProperties.put(propertyId, value);
 
@@ -439,8 +471,11 @@ public abstract class XMLParser
     protected void reset() throws SAXException {
 
         // reset every component
-        fEntityManager.reset(this);
-        fErrorReporter.reset(this);
+        int count = fComponents.size();
+        for (int i = 0; i < count; i++) {
+            XMLComponent c = (XMLComponent) fComponents.elementAt(i);
+            c.reset(this);
+        }
 
     } // reset()
 

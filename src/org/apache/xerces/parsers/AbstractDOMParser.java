@@ -134,15 +134,6 @@ public abstract class AbstractDOMParser
     protected AbstractDOMParser() {
     } // <init>()
 
-    /**
-     * 
-     * 
-     * @param symbolTable 
-     */
-    protected AbstractDOMParser(SymbolTable symbolTable) {
-        super(symbolTable);
-    } // <init>(SymbolTable)
-
     //
     // Public methods
     //
@@ -271,6 +262,8 @@ public abstract class AbstractDOMParser
         fDocument = new DocumentImpl();
         fDocumentImpl = (DocumentImpl)fDocument;
         fCurrentNode = fDocument;
+        // set DOM error checking off
+        fDocumentImpl.setErrorChecking(false);
 
     } // startDocument()
 
@@ -446,6 +439,10 @@ public abstract class AbstractDOMParser
      */
     public void endDocument() throws SAXException {
 
+        // set DOM error checking back on
+        if (fDocumentImpl != null) {
+            fDocumentImpl.setErrorChecking(true);
+        }
         fInDocument = false;
         fCurrentNode = null;
 

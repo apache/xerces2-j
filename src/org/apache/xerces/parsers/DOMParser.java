@@ -126,32 +126,20 @@ public class DOMParser
     //
 
     /**
-     * Constructs a document parser using the default symbol table
-     * and grammar pool.
+     * Constructs a DOM parser.
      */
     public DOMParser() {
-        this(new SymbolTable(), new GrammarPool());
-    } // <init>()
-
-    /** 
-     * Constructs a document parser using the specified symbol table
-     * and a default grammar pool.
-     */
-    public DOMParser(SymbolTable symbolTable) {
-        this(symbolTable, new GrammarPool());
-    } // <init>(SymbolTable)
+    } // <init>
 
     /**
-     * Constructor allowing to specify the symbol table and grammar pool 
-     * to use. The symbol table and grammar pool are specified together
-     * because the grammars contained in the grammar pool must use the
-     * symbols from the specified symbol table.
-     * 
-     * @param symbolTable The symbol table.
-     * @param grammarPool The grammar pool.
+     * Initialize the parser with all the components specified via the
+     * properties plus any missing ones. This method MUST be called before
+     * parsing. It is not called from the constructor though, so that the
+     * application can pass in any components it wants by presetting the
+     * relevant property.
      */
-    public DOMParser(SymbolTable symbolTable, GrammarPool grammarPool) {
-        super(symbolTable);
+    public void initialize() {
+        super.initialize();
 
         // set default features
         final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
@@ -163,31 +151,48 @@ public class DOMParser
         final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
         fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
 
-        // create and register components
-        final String SYMBOL_TABLE = Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-        fProperties.put(SYMBOL_TABLE, fSymbolTable);
-
-        fGrammarPool = grammarPool;
+        // create and register missing components
         final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
-        fProperties.put(GRAMMAR_POOL, fGrammarPool);
+        fGrammarPool = (GrammarPool) fProperties.get(GRAMMAR_POOL);
+        if (fGrammarPool == null) {
+            fGrammarPool = new GrammarPool();
+            fProperties.put(GRAMMAR_POOL, fGrammarPool);
+        }
 
-        fScanner = createDocumentScanner();
         final String DOCUMENT_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DOCUMENT_SCANNER_PROPERTY;
-        fProperties.put(DOCUMENT_SCANNER, fScanner);
+        fScanner = (XMLDocumentScanner) fProperties.get(DOCUMENT_SCANNER);
+        if (fScanner == null) {
+            fScanner = createDocumentScanner();
+            fProperties.put(DOCUMENT_SCANNER, fScanner);
+        }
+        fComponents.add(fScanner);
 
-        fDTDScanner = createDTDScanner();
         final String DTD_SCANNER = Constants.XERCES_PROPERTY_PREFIX + Constants.DTD_SCANNER_PROPERTY;
-        fProperties.put(DTD_SCANNER, fDTDScanner);
+        fDTDScanner = (XMLDTDScanner) fProperties.get(DTD_SCANNER);
+        if (fDTDScanner == null) {
+            fDTDScanner = createDTDScanner();
+            fProperties.put(DTD_SCANNER, fDTDScanner);
+        }
+        fComponents.add(fDTDScanner);
 
-        fValidator = createValidator();
         final String VALIDATOR = Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATOR_PROPERTY;
-        fProperties.put(VALIDATOR, fValidator);
+        fValidator = (XMLValidator) fProperties.get(VALIDATOR);
+        if (fValidator == null) {
+            fValidator = createValidator();
+            fProperties.put(VALIDATOR, fValidator);
+        }
+        fComponents.add(fValidator);
         
-        fDatatypeValidatorFactory = createDatatypeValidatorFactory();
         final String DATATYPE_VALIDATOR_FACTORY = Constants.XERCES_PROPERTY_PREFIX + Constants.DATATYPE_VALIDATOR_FACTORY_PROPERTY;
-        fProperties.put(DATATYPE_VALIDATOR_FACTORY, fDatatypeValidatorFactory);
+        fDatatypeValidatorFactory = (DatatypeValidatorFactory)
+            fProperties.get(DATATYPE_VALIDATOR_FACTORY);
+        if (fDatatypeValidatorFactory == null) {
+            fDatatypeValidatorFactory = createDatatypeValidatorFactory();
+            fProperties.put(DATATYPE_VALIDATOR_FACTORY,
+                            fDatatypeValidatorFactory);
+        }
 
-    } // <init>(SymbolTable,GrammarPool)
+    } // initialize()
 
     //
     // XMLParser methods
@@ -199,8 +204,6 @@ public class DOMParser
      * @throws SAXException Thrown if an error occurs during initialization.
      */
     protected void reset() throws SAXException {
-        super.reset();
-
 
         // setup document pipeline
         fScanner.setDocumentHandler(fValidator);
@@ -211,96 +214,17 @@ public class DOMParser
         fValidator.setDTDHandler(this);
 
         // setup dtd content model pipeline
-        /***/
         fDTDScanner.setDTDContentModelHandler(fValidator);
         fValidator.setDTDContentModelHandler(this);
 
-        // reset every component
-        fScanner.reset(this);
-        fDTDScanner.reset(this);
-        fValidator.reset(this);
+        // the following will reset every component
+        super.reset();
 
     } // reset()
 
     //
     // XMLReader methods
     //
-
-    /**
-     * Set the state of a feature.
-     * <p>
-     * The feature name is any fully-qualified URI.  It is
-     * possible for an XMLReader to recognize a feature name but
-     * to be unable to set its value; this is especially true
-     * in the case of an adapter for a SAX1 {@link org.xml.sax.Parser Parser},
-     * which has no way of affecting whether the underlying parser is
-     * validating, for example.
-     * <p>
-     * Some feature values may be immutable or mutable only 
-     * in specific contexts, such as before, during, or after 
-     * a parse.
-     *
-     * @param name The feature name, which is a fully-qualified URI.
-     * @param state The requested state of the feature (true or false).
-     *
-     * @exception org.xml.sax.SAXNotRecognizedException When the
-     *            XMLReader does not recognize the feature name.
-     * @exception org.xml.sax.SAXNotSupportedException When the
-     *            XMLReader recognizes the feature name but 
-     *            cannot set the requested value.
-     *
-     * @see #getFeature
-     */
-    public void setFeature(String featureId, boolean state)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        super.setFeature(featureId, state);
-
-        // forward to every component
-        fScanner.setFeature(featureId, state);
-        fDTDScanner.setFeature(featureId, state);
-        fValidator.setFeature(featureId, state);
-
-    } // setFeature(String,boolean)
-
-    /**
-     * Set the value of a property.
-     * <p>
-     * The property name is any fully-qualified URI.  It is
-     * possible for an XMLReader to recognize a property name but
-     * to be unable to set its value; this is especially true
-     * in the case of an adapter for a SAX1 {@link org.xml.sax.Parser
-     * Parser}.
-     * <p>
-     * Some property values may be immutable or mutable only 
-     * in specific contexts, such as before, during, or after 
-     * a parse.
-     * <p>
-     * This method is also the standard mechanism for setting
-     * extended handlers.
-     *
-     * @param name The property name, which is a fully-qualified URI.
-     * @param state The requested value for the property.
-     *
-     * @exception org.xml.sax.SAXNotRecognizedException When the
-     *            XMLReader does not recognize the property name.
-     * @exception org.xml.sax.SAXNotSupportedException When the
-     *            XMLReader recognizes the property name but 
-     *            cannot set the requested value.
-     *
-     * @see #getProperty
-     */
-    public void setProperty(String propertyId, Object value)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        super.setProperty(propertyId, value);
-
-        // forward to every component
-        fScanner.setProperty(propertyId, value);
-        fDTDScanner.setProperty(propertyId, value);
-        fValidator.setProperty(propertyId, value);
-
-    } // setProperty(String,Object)
 
     /**
      * Parses the specified input source.
@@ -316,6 +240,9 @@ public class DOMParser
         if (fParseInProgress) {
             // REVISIT - need to add new error message
             throw new SAXException("FWK005 parse may not be called while parsing.");
+        }
+        else if (fNeedInitialize) {
+            initialize();
         }
 
         try {
