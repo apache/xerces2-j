@@ -657,7 +657,7 @@ public class DOMMemTest {
         Assertion.equals(elb.getTagName(), "elb");
 
         Assertion.equals(elc.getNodeName(), "elc");
-        Assertion.equals(elc.getNamespaceURI(), "");
+        Assertion.equals(elc.getNamespaceURI(), null);
         Assertion.assert(elc.getPrefix() ==  null);
         Assertion.equals(elc.getLocalName(), "elc");
         Assertion.equals(elc.getTagName(), "elc");
@@ -728,7 +728,7 @@ public class DOMMemTest {
         Assertion.equals(attrb.getName(), "attrb");
 
         Assertion.equals(attrc.getNodeName(), "attrc");
-        Assertion.equals(attrc.getNamespaceURI(), "");
+        Assertion.equals(attrc.getNamespaceURI(), null);
         Assertion.equals(attrc.getPrefix(), null);
         Assertion.equals(attrc.getLocalName(), "attrc");
         Assertion.equals(attrc.getName(), "attrc");
@@ -763,7 +763,7 @@ public class DOMMemTest {
         rootEl.appendChild(ela);
         Element elb = doc.createElementNS("http://nsb", "elb");   
         rootEl.appendChild(elb);
-        Element elc = doc.createElementNS("",           "elc");  
+        Element elc = doc.createElementNS(null,           "elc");  
         rootEl.appendChild(elc);
         Element eld = doc.createElementNS("http://nsa", "d:ela");
         rootEl.appendChild(eld);
