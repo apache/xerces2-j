@@ -1090,6 +1090,7 @@ public class XMLEntityManager
                 fXML10EntityScanner.reset(fSymbolTable, this);
             }
             fEntityScanner = fXML10EntityScanner;
+            fEntityScanner.setCurrentEntity(fCurrentEntity);
         } else {
             if(fXML11EntityScanner == null) {
                 fXML11EntityScanner = new XML11EntityScanner();
