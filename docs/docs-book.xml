@@ -33,6 +33,7 @@
          id='xni-core' source='xni-core.xml'/>
  <hidden title='XNI Parser Configuration'
          id='xni-config' source='xni-config.xml'/>
+ <hidden title='Xerces2 Components' id='xni-xerces2' source='xni-xerces2.xml'/>
  <faqs label='FAQs' title='Frequently Asked Questions' id='faqs'>
   <faq title='Common FAQs' id='faq-common' source='faq-common.xml'/>
   <faq title='General FAQs' id='faq-general' source='faq-general.xml'/>

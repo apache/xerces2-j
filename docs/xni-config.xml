@@ -261,18 +261,25 @@
   <p>
    <img alt='Parser Configuration' src='xni-parser-configuration.gif'/>
   </p>
-  <note>
-   At the time of this writing, the initiation of the scanning of
-   the XML document is parser configuration dependent. In other
-   words, the parser configuration must know how to connect specific
-   instances of components together to form the parsing pipeline
-   and then also use proprietary (internal) API to initiate a scan
-   that starts the pipeline. However, it is inteded that a future 
-   release of XNI and the Xerces2 reference implementation will define 
-   interfaces to allow dynamic generation of parsing pipelines and 
-   also define interfaces to allow document and DTD scanners to be 
-   swapped generically.
-  </note>
+  <p>
+   There are two parser configuration interfaces defined in XNI:
+   the <code>XMLParserConfiguration</code> and the
+   <code>XMLPullParserConfiguration</code>. For most purposes, the
+   standard parser configuration will suffice. Document and DTD
+   handler interfaces will be registered on the parser configuration
+   and the document will be parsed completely by calling the
+   <code>parse(XMLInputSource)</code> method. In this situation,
+   the application is driven by the output of the configuration.
+  </p>
+  <p>
+   However, the <code>XMLPullParserConfiguration</code> interface
+   extends the <code>XMLParserConfiguration</code> interface to
+   provide methods that allow the application to drive the
+   configuration. Any configuration class that implements this
+   interface guarantees that it can be driven in a pull parsing
+   fashion but does not make any statement as to how much or how
+   little pull parsing will be performed at each step.
+  </p>
   <anchor name='parser-configuration'/>
   <s3 title='Interface XMLParserConfiguration'>
    <p>
@@ -371,11 +378,45 @@
       <code>
        public void parse(
            <link anchor='input-source'>XMLInputSource</link> source
-	   ) throws java.io.IOException, <link anchor='parse-exception'>XMLParseException</link>;
+	   ) throws java.io.IOException, <link anchor='exception'>XNIException</link>;
       </code>
      </td>
     </tr>
     <tr><td><code>public void setLocale(java.util.Locale);</code></td></tr>
+   </table>
+  </s3>
+  <anchor name='pull-parser-configuration'/>
+  <s3 title='Interface XMLPullParserConfiguration'>
+   <p>
+    Parser configurations that implement this interface state that they
+    can be driven by the application in a pull parser fashion.
+   </p>
+   <table>
+    <tr>
+     <th>
+      Extends <link anchor='component-manager'>XMLComponentManager</link>
+     </th>
+    </tr>
+    <tr><th>Methods</th></tr>
+    <tr>
+     <td>
+      <code>
+       public void setInputSource(
+           <link anchor='input-source'>XMLInputSource</link> source
+	   ) throws java.io.IOException, 
+                    <link anchor='configuration-exception'>XMLConfigurationException</link>;
+      </code>
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <code>
+       public boolean parse(boolean complete)
+	   throws java.io.IOException, 
+                  <link anchor='exception'>XNIException</link>;
+      </code>
+     </td>
+    </tr>
    </table>
   </s3>
   <anchor name='entity-resolver'/>

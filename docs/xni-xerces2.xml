@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE s1 SYSTEM 'dtd/document.dtd'>
+<s1 title='Xerces2 Components'>
+ <s2 title='Reusing Xerces2 Parser Components'>
+  <p>
+   The Xerces Native Interface (XNI) defines a general way to build
+   parser components and configurations. The Xerces2 reference
+   implementation is written using this framework so that the parser
+   components can be reused to create new parser configurations. In
+   order to reuse the Xerces2 parser components, however, the
+   developer must know the dependencies of each standard component.
+   This document provides an overview of the Xerces2 parser components
+   and lists the relevent dependencies.
+  </p>
+  <p>
+   An overview of the general dependencies and the dependicies for
+   each standard component are detailed below:
+  </p>
+  <ul>
+   <li><link anchor='overview'>Overview</link></li>
+   <li><strong>TODO</strong></li>
+  </ul>
+ </s2>
+ <anchor name='overview'/>
+ <s2 title='Overview'>
+  <p>
+   <strong>TODO</strong>
+  </p>
+ </s2>
+</s1>

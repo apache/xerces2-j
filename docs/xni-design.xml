@@ -68,7 +68,8 @@
   <note>
    The diagram shows what we <em>want</em> the Xerces2 pipeline
    implementation to be. As of this writing, the actual configuration
-   may not match that shown in the diagram.
+   is missing the Schema Validator component because XML Schema is not
+   yet supported in the Xerces2 reference implementation.
   </note>
   <p>
    As the diagram shows, the "Document Scanner" is the source for
