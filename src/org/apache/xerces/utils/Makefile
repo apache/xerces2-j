@@ -9,6 +9,7 @@ TARGETS=\
 	ImplementationMessages.class\
 	ISO8601Format.class\
 	NamespacesScope.class\
+	QName.class\
 	StringHasher.class\
 	StringPool.class\
 	SymbolCache.class\
