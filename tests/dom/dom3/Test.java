@@ -246,6 +246,7 @@ public class Test implements DOMErrorHandler, DOMEntityResolver{
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 config.setParameter("psvi", Boolean.TRUE);
+                config.setParameter("discard-default-content", Boolean.FALSE);
                 DocumentImpl core = (DocumentImpl)builder.parseURI("data/personal-schema.xml");
                 Assertion.assert(errorCounter == 0, "No errors should be reported");
 
