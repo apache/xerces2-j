@@ -4407,7 +4407,8 @@ public class TraverseSchema implements
                 int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
                 if ( temp > -1) {
                   if (typeInfo.derivedBy==SchemaSymbols.EXTENSION) {
-                    reportGenericSchemaError("Attribute that appeared in the base should nnot appear in a derivation by extension");
+                    throw new ComplexTypeRecoverableError("Attribute " + fStringPool.toString(fTempAttributeDecl.name.localpart) + " that appeared in the base should not appear in a derivation by extension");
+
 
                   }
                   else {
