@@ -653,6 +653,8 @@ class Token implements java.io.Serializable {
     static final int CHAR_OTHER = 35;
     static final int CHAR_PUNCTUATION = 36;
     static final int CHAR_SYMBOL = 37;
+    
+    //blockNames in UNICODE 3.1 that supported by XML Schema REC             
     static final String[] blockNames = {
         /*0000..007F;*/ "Basic Latin",
         /*0080..00FF;*/ "Latin-1 Supplement",
@@ -858,15 +860,16 @@ class Token implements java.io.Serializable {
                                               Token.complementRanges(ranges[i]));
                     }
                 }
-                //REVISIT: is anybody other than Xerces refering to block name by their name?
-                //         or we can just create all the names in IsBLOCKNAME format?
+                //REVISIT: do we really need to support block names as in Unicode 3.1
+                //         or we can just create all the names in IsBLOCKNAME format (XML Schema REC)?
                 //
                 StringBuffer buffer = new StringBuffer(50);
+                int location = 0;
                 for (int i = 0;  i < Token.blockNames.length;  i ++) {
                     Token r1 = Token.createRange();
-                    
-                    int rstart = Token.blockRanges.charAt(i*2);
-                    int rend = Token.blockRanges.charAt(i*2+1);
+                    location = i*2;
+                    int rstart = Token.blockRanges.charAt(location);
+                    int rend = Token.blockRanges.charAt(location+1);
                     String n = Token.blockNames[i];
                     //DEBUGING
                     //System.out.println(n+" " +Integer.toHexString(rstart)
