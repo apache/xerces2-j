@@ -302,7 +302,7 @@ public class Counter
     /** Fatal error. */
     public void fatalError(SAXParseException ex) throws SAXException {
         printError("Fatal Error", ex);
-        throw ex;
+        //throw ex;
     } // fatalError(SAXParseException)
 
     //
@@ -315,6 +315,9 @@ public class Counter
         System.err.print("[");
         System.err.print(type);
         System.err.print("] ");
+        if (ex== null) {
+            System.out.println("!!!");
+        }
         String systemId = ex.getSystemId();
         if (systemId != null) {
             int index = systemId.lastIndexOf('/');
@@ -513,10 +516,15 @@ public class Counter
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
+                Exception se = e;
                 if (e instanceof SAXException) {
-                    e = ((SAXException)e).getException();
+                    se = ((SAXException)e).getException();
                 }
-                e.printStackTrace(System.err);
+                if (se != null)
+                  se.printStackTrace(System.err);
+                else
+                  e.printStackTrace(System.err);
+                
             }
         }
 

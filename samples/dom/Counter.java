@@ -394,10 +394,14 @@ public class Counter {
             }
             catch (Exception e) {
                 System.err.println("error: Parse error occurred - "+e.getMessage());
+                Exception se = e;
                 if (e instanceof SAXException) {
-                    e = ((SAXException)e).getException();
+                    se = ((SAXException)e).getException();
                 }
-                e.printStackTrace(System.err);
+                if (se != null)
+                  se.printStackTrace(System.err);
+                else
+                  e.printStackTrace(System.err);            
             }
         }
 
