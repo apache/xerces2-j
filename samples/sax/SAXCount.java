@@ -57,6 +57,7 @@
 
 package sax;                    
                     
+import util.Arguments;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -88,6 +89,12 @@ public class SAXCount
     /** Default parser name. */
     private static final String 
         DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
+
+
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+
 
     //
     // Data
@@ -121,13 +128,23 @@ public class SAXCount
             parser.setDocumentHandler(counter);
             parser.setErrorHandler(counter);
             try {
-                if (validate && parser instanceof XMLReader)
-                    ((XMLReader)parser).setFeature("http://xml.org/sax/features/validation", true);
-            } catch (Exception ex) {}
+                //if (validate && parser instanceof XMLReader)
+                if ( parser instanceof XMLReader ){
+                    ((XMLReader)parser).setFeature( "http://xml.org/sax/features/validation", 
+                                                    validate);
+                    ((XMLReader)parser).setFeature( "http://xml.org/sax/features/namespaces",
+                                                    setNameSpaces );
+                    ((XMLReader)parser).setFeature( "http://apache.org/xml/features/validation/schema",
+                                                    setSchemaSupport );
+
+                }
+            } catch (Exception ex) {
+            }
 
             if (warmup) {
                 if (parser instanceof XMLReader)
                     ((XMLReader)parser).setFeature("http://apache.org/xml/features/continue-after-fatal-error", true);
+
                 parser.parse(uri);
                 warmup = false;
             }
@@ -286,65 +303,78 @@ public class SAXCount
     /** Main program entry point. */
     public static void main(String argv[]) {
 
+        Arguments argopt = new Arguments();
+        argopt.setUsage( new String[] 
+                         { "usage: java sax.SAXCount (options) uri ...","",
+                             "options:",
+                             "  -p name  Specify SAX parser by name.",
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -d | -D  Turn on/off deferred DOM [default=on]",
+                             "  -w       Warmup the parser before timing.",
+                             "  -h       This help screen."}  );
+
+
         // is there anything to do?
         if (argv.length == 0) {
-            printUsage();
+            argopt.printUsage();
             System.exit(1);
         }
 
         // vars
         String  parserName = DEFAULT_PARSER_NAME;
-        boolean validate = false;
 
-        // check parameters
-        for (int i = 0; i < argv.length; i++) {
-            String arg = argv[i];
+        argopt.parseArgumentTokens(argv, new char[]  { 'p'} );
 
-            // options
-            if (arg.startsWith("-")) {
-                if (arg.equals("-p")) {
-                    if (i == argv.length - 1) {
-                        System.err.println("error: missing parser name");
-                        System.exit(1);
-                    }
-                    parserName = argv[++i];
-                    continue;
-                }
-
-                if (arg.equals("-w")) {
-                    warmup = true;
-                    continue;
-                }
-
-                if (arg.equals("-v")) {
-                    validate = true;
-                    continue;
-                }
-
-                if (arg.equals("-h")) {
-                    printUsage();
+        int   c;
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+            outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName = argopt.getStringParameter();
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
                     System.exit(1);
+                    break;
+                case 'w':
+                    warmup = true;
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
                 }
+
             }
-
+            
             // print uri
-            print(parserName, arg, validate);
+            print(parserName, arg,  setValidation);
+            ///
         }
-
     } // main(String[])
-
-    /** Prints the usage. */
-    private static void printUsage() {
-
-        System.err.println("usage: java sax.SAXCount (options) uri ...");
-        System.err.println();
-        System.err.println("options:");
-        System.err.println("  -p name  Specify SAX parser by name.");
-        System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-        System.err.println("  -v       Turn on validation.");
-        System.err.println("  -w       Warmup the parser before timing.");
-        System.err.println("  -h       This help screen.");
-
-    } // printUsage()
 
 } // class SAXCount

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@
 
 package dom;
 
+import util.Arguments;
 
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -85,6 +86,14 @@ public class DOMWriter {
    /** Default parser name. */
    private static final String 
    DEFAULT_PARSER_NAME = "dom.wrappers.DOMParser";
+
+
+    private static boolean setValidation    = false; //defaults
+    private static boolean setNameSpaces    = true;
+    private static boolean setSchemaSupport = true;
+    private static boolean setDeferredDOM   = true;
+
+
 
    //
    // Data
@@ -179,49 +188,64 @@ public class DOMWriter {
 
 
 
-   /** Prints the resulting document tree. */
-   public static void print(String parserWrapperName, String uri, 
-                            boolean canonical ) {
-      try {
-         DOMParserWrapper parser = 
-         (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
-         Document document = parser.parse(uri);
-         DOMWriter writer = new DOMWriter(canonical);
-         writer.print(document);
-      } catch ( Exception e ) {
-         //e.printStackTrace(System.err);
-      }
+    /** Prints the resulting document tree. */
+    public static void print(String parserWrapperName, String uri, 
+                             boolean canonical ) {
+        try {
+            DOMParserWrapper parser = 
+            (DOMParserWrapper)Class.forName(parserWrapperName).newInstance();
 
-   } // print(String,String,boolean)
+            parser.setFeature( "http://apache.org/xml/features/dom/defer-node-expansion",
+                               setDeferredDOM );
+            parser.setFeature( "http://xml.org/sax/features/validation", 
+                               setValidation );
+            parser.setFeature( "http://xml.org/sax/features/namespaces",
+                               setNameSpaces );
+            parser.setFeature( "http://apache.org/xml/features/validation/schema",
+                               setSchemaSupport );
+
+            Document document = parser.parse(uri);
+            DOMWriter writer = new DOMWriter(canonical);
+            writer.print(document);
+        } catch ( Exception e ) {
+            //e.printStackTrace(System.err);
+        }
+
+    } // print(String,String,boolean)
 
 
-   /** Prints the specified node, recursively. */
-   public void print(Node node) {
+    /** Prints the specified node, recursively. */
+    public void print(Node node) {
 
-      // is there anything to do?
-      if ( node == null ) {
-         return;
-      }
+        // is there anything to do?
+        if ( node == null ) {
+            return;
+        }
 
-      int type = node.getNodeType();
-      switch ( type ) {
-         // print document
-         case Node.DOCUMENT_NODE: {
-               if ( !canonical ) {
-                  String  Encoding = this.getWriterEncoding();
-                  if( Encoding.equalsIgnoreCase( "DEFAULT" ) )
-                     Encoding = "UTF-8";
-                  else if( Encoding.equalsIgnoreCase( "Unicode" ) )
-                     Encoding = "UTF-16";
-                  else 
+        int type = node.getNodeType();
+        switch ( type ) {
+        // print document
+        case Node.DOCUMENT_NODE: {
+                if ( !canonical ) {
+                    String  Encoding = this.getWriterEncoding();
+                    if ( Encoding.equalsIgnoreCase( "DEFAULT" ) )
+                        Encoding = "UTF-8";
+                    else if ( Encoding.equalsIgnoreCase( "Unicode" ) )
+                        Encoding = "UTF-16";
+                    else
                      Encoding = EncodingMap.getJava2IANAMapping( Encoding );
 
-                  out.println("<?xml version=\"1.0\" encoding=\""+
-                           Encoding + "\"?>");
-               }
-               print(((Document)node).getDocumentElement());
-               out.flush();
-               break;
+                    out.println("<?xml version=\"1.0\" encoding=\""+
+                                Encoding + "\"?>");
+                }
+                //print(((Document)node).getDocumentElement());
+                
+                NodeList children = node.getChildNodes(); 
+                for ( int iChild = 0; iChild < children.getLength(); iChild++ ) { 
+                    print(children.item(iChild)); 
+                } 
+                out.flush();
+                break;
             }
 
             // print element with attributes
@@ -352,81 +376,111 @@ public class DOMWriter {
    // Main
    //
 
-   /** Main program entry point. */
-   public static void main(String argv[]) {
+    /** Main program entry point. */
+    public static void main(String argv[]) {
+        Arguments argopt = new Arguments();
+        argopt.setUsage( new String[] {
+                             "usage: java dom.DOMWriter (options) uri ...","",
+                             "options:",
+                             "  -n | -N  Turn on/off namespace [default=on]",
+                             "  -v | -V  Turn on/off validation [default=off]",
+                             "  -s | -S  Turn on/off Schema support [default=on]",
+                             "  -d | -D  Turn on/off deferred DOM [default=on]",
+                             "  -c       Canonical XML output.",
+                             "  -h       This help screen.",
+                             "  -e       Output Java Encoding.",
+                             "           Default encoding: UTF-8"} );
 
-      // is there anything to do?
-      if ( argv.length == 0 ) {
-         printUsage();
-         System.exit(1);
-      }
 
-      // vars
-      String  parserName = DEFAULT_PARSER_NAME;
-      boolean canonical  = false;
-      String  encoding   = "UTF8"; // default encoding
 
-      // check parameters
-      for ( int i = 0; i < argv.length; i++ ) {
-         String arg = argv[i];
+        // is there anything to do?
+        if ( argv.length == 0 ) {
+            argopt.printUsage();
+            System.exit(1);
+        }
 
-         // options
-         if ( arg.startsWith("-") ) {
-            if ( arg.equals("-p") ) {
-               if ( i == argv.length - 1 ) {
-                  System.err.println("error: missing parser name");
-                  System.exit(1);
-               }
-               parserName = argv[++i];
-               continue;
+        // vars
+        String  parserName = DEFAULT_PARSER_NAME;
+        boolean canonical  = false;
+        String  encoding   = "UTF8"; // default encoding
+
+        argopt.parseArgumentTokens(argv, new char[] { 'p', 'e'} );
+
+        int   c;
+        String arg = null; 
+        while ( ( arg =  argopt.getlistFiles() ) != null ) {
+
+            outer:
+            while ( (c =  argopt.getArguments()) != -1 ){
+                switch (c) {
+                case 'c':
+                    canonical = true;
+                    break;
+                case 'e':
+                    encoding      = argopt.getStringParameter();
+                    if ( encoding != null && isValidJavaEncoding( encoding ) )
+                        setWriterEncoding( encoding );
+                    else {
+                        printValidJavaEncoding();
+                        System.exit( 1 );
+                    }
+                    break;
+                case 'v':
+                    setValidation = true;
+                    break;
+                case 'V':
+                    setValidation = false;
+                    break;
+                case 'N':
+                    setNameSpaces = false;
+                    break;
+                case 'n':
+                    setNameSpaces = true;
+                    break;
+                case 'p':
+                    parserName    = argopt.getStringParameter();
+                    break;
+                case 'd':
+                    setDeferredDOM = true;
+                    break;
+                case 'D':
+                    setDeferredDOM = false;
+                    break;
+                case 's':
+                    setSchemaSupport = true;
+                    break;
+                case 'S':
+                    setSchemaSupport = false;
+                    break;
+                case '?':
+                case 'h':
+                case '-':
+                    argopt.printUsage();
+                    System.exit(1);
+                    break;
+                case -1:
+                    break outer;
+                default:
+                    break;
+                }
             }
-
-            if ( arg.equals("-c") ) {
-               canonical = true;
-               continue;
-            }
-
-            if ( arg.equals("-h") ) {
-               printUsage();
-               System.exit(1);
-            }
-
-            if ( arg.equals("-e") ) {
-               if ( i == argv.length - 1 ) {
-                  System.err.println("error: missing encoding name");
-                  printValidJavaEncoding();
-                  System.exit(1);
-               } else {
-                  encoding = argv[++i];
-                  if ( isValidJavaEncoding( encoding ) )
-                     setWriterEncoding( encoding );
-                  else {
-                     printValidJavaEncoding();
-                     System.exit( 1 );
-                  }
-               }
-               continue;
-            }
-
-         }
-
-         // print uri
-         System.err.println(arg+':');
-         print(parserName, arg, canonical );
-         System.err.println();
-      }
-
-   } // main(String[])
+            // print uri
+             // print uri
+            System.err.println(arg+':');
+            print(parserName, arg, canonical );
+            System.err.println();
+        }
+    } // main(String[])
 
 
-   /** Normalizes the given string. */
-   protected String normalize(String s) {
-      StringBuffer str = new StringBuffer();
+    /** Normalizes the given string. */
+    protected String normalize(String s) {
+        StringBuffer str = new StringBuffer();
 
-      int len = (s != null) ? s.length() : 0;
-      for ( int i = 0; i < len; i++ ) {
-         char ch = s.charAt(i);
-         switch ( ch ) {
+        int len = (s != null) ? s.length() : 0;
+        for ( int i = 0; i < len; i++ ) {
+            char ch = s.charAt(i);
+            switch ( ch ) {
             case '<': {
                   str.append("&lt;");
                   break;
@@ -462,21 +516,6 @@ public class DOMWriter {
       return (str.toString());
 
    } // normalize(String):String
-
-   /** Prints the usage. */
-   private static void printUsage() {
-
-      System.err.println("usage: java dom.DOMWriter (options) uri ...");
-      System.err.println();
-      System.err.println("options:");
-      System.err.println("  -p name  Specify DOM parser wrapper by name.");
-      System.err.println("           Default parser: "+DEFAULT_PARSER_NAME);
-      System.err.println("  -c       Canonical XML output.");
-      System.err.println("  -h       This help screen.");
-      System.err.println("  -e       Output Java Encoding.");
-      System.err.println("           Default encoding: UTF-8");
-
-   } // printUsage()
 
    private static void printValidJavaEncoding() {
       System.err.println( "    ENCODINGS:" );

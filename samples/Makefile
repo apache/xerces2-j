@@ -3,7 +3,7 @@
 TARGETS=
 
 #DIRS = dom sax ui
-DIRS = dom sax
+DIRS = util dom sax  util xni
 
 TOP = ..
 include $(TOP)/src/Makefile.incl
