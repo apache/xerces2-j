@@ -351,7 +351,7 @@ Copyright:
         />
     </copy>
 
-    <copy file="Makefile" tofile="${distsrc.dir}/Makefile"/>
+    <!--<copy file="Makefile" tofile="${distsrc.dir}/Makefile"/>-->
     <copy file="LICENSE" tofile="${distsrc.dir}/LICENSE"/>
     <copy file="README" tofile="${distsrc.dir}/README"/>
     <copy file="Readme.html" tofile="${distsrc.dir}/Readme.html"/>
@@ -363,11 +363,13 @@ Copyright:
     <chmod file="${distsrc.dir}/build.sh" perm="ugo+rx" />
     <copy file="${basedir}/build.bat" tofile="${distsrc.dir}/build.bat" />
 
-    <zip zipfile="${build.dir}/${parser.Name}-src.${parser.version}.zip" basedir="${build.dir}"
-         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
+    <zip zipfile="${build.dir}/${parser.Name}-src.${parser.version}.zip" 
+         basedir="${build.dir}"
+         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
 
-    <tar tarfile="${build.dir}/${parser.Name}-src.${parser.version}.tar" basedir="${build.dir}"
-         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
+    <tar tarfile="${build.dir}/${parser.Name}-src.${parser.version}.tar" 
+         basedir="${build.dir}"
+         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${parser.Name}-src.${parser.version}.tar.gz"
           src="${build.dir}/${parser.Name}-src.${parser.version}.tar" />
     <!-- and why not get rid of the un-gzip'd tarball and save ourselves 15 Mb? -->
@@ -383,10 +385,12 @@ Copyright:
     <copy todir="${distbin.dir}/tools" >
         <fileset dir="tools"/>
     </copy>
-    <zip zipfile="${build.dir}/${parser.Name}-tools.${parser.version}.zip" basedir="${build.dir}"
-         includes="${parser.name}-${parser_version}/**"/>
-    <tar tarfile="${build.dir}/${parser.Name}-tools.${parser.version}.tar" basedir="${build.dir}"
-         includes="${parser.name}-${parser_version}/**"/>
+    <zip zipfile="${build.dir}/${parser.Name}-tools.${parser.version}.zip" 
+         basedir="${build.dir}"
+         includes="${parser.shortname}-${parser_version}/**"/>
+    <tar tarfile="${build.dir}/${parser.Name}-tools.${parser.version}.tar" 
+         basedir="${build.dir}"
+         includes="${parser.shortname}-${parser_version}/**"/>
     <gzip zipfile="${build.dir}/${parser.Name}-tools.${parser.version}.tar.gz"
           src="${build.dir}/${parser.Name}-tools.${parser.version}.tar" />
   </target>
@@ -444,10 +448,12 @@ Copyright:
     <copydir src="${samples.dir}" dest="${distsrc.dir}/samples" excludes="**/CVS*, **/*.#*"/>
 
 
-    <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" basedir="${build.dir}"
-         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
-    <tar tarfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar" basedir="${build.dir}"
-         includes="${parser.name}-${parser_version}/**" excludes="*.class"/>
+    <zip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.zip" 
+         basedir="${build.dir}"
+         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
+    <tar tarfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar" 
+         basedir="${build.dir}"
+         includes="${parser.shortname}-${parser_version}/**" excludes="*.class"/>
     <gzip zipfile="${build.dir}/${parser.Name}-bin.${parser.version}.tar.gz"
           src="${build.dir}/${parser.Name}-bin.${parser.version}.tar" />
     <!-- as before, let's kill of the ungzip'd tarball! -->
