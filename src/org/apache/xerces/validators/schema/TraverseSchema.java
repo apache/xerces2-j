@@ -794,177 +794,11 @@ public class TraverseSchema implements
         return ;
     }
 
-    /**
-     * Traverse SimpleType declaration:
-     * <simpleType
-     *         abstract = boolean 
-     *         base = QName 
-     *         derivedBy = | list | restriction  : restriction
-     *         id = ID 
-     *         name = NCName>
-     *         Content: ( annotation? , ( minExclusive | minInclusive | maxExclusive | maxInclusive | precision | scale | length | minLength | maxLength | encoding | period | duration | enumeration | pattern )* )
-     *       </simpleType>
-     * 
-     * @param simpleTypeDecl
-     * @return 
-     */
-    private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
-        
-		if ( CR_IMPL ) {
-			return traverseSimpleType(simpleTypeDecl);
-		}
-        String varietyProperty       =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_DERIVEDBY );
-        if (varietyProperty.length() == 0) {
-            varietyProperty = SchemaSymbols.ATTVAL_RESTRICTION;
-        }
-        String nameProperty          =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME );
-        String baseTypeQNameProperty =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE );
-        String abstractProperty      =  simpleTypeDecl.getAttribute( SchemaSymbols.ATT_ABSTRACT );
-
-        int     newSimpleTypeName    = -1;
-
-
-        if ( nameProperty.equals("")) { // anonymous simpleType
-            newSimpleTypeName = fStringPool.addSymbol(
-                "#S#"+fSimpleTypeAnonCount++ );   
-                               //"http://www.apache.org/xml/xerces/internalDatatype"+fSimpleTypeAnonCount++ );   
-            } else 
-            newSimpleTypeName       = fStringPool.addSymbol( nameProperty );
-
-
-        int               basetype;
-        DatatypeValidator baseValidator = null;
-
-        if( baseTypeQNameProperty!= null ) {
-            basetype      = fStringPool.addSymbol( baseTypeQNameProperty );
-            String prefix = "";
-            String localpart = baseTypeQNameProperty;
-            int colonptr = baseTypeQNameProperty.indexOf(":");
-            if ( colonptr > 0) {
-                prefix = baseTypeQNameProperty.substring(0,colonptr);
-                localpart = baseTypeQNameProperty.substring(colonptr+1);
-            }
-            String uri = resolvePrefixToURI(prefix);
-
-            baseValidator = getDatatypeValidator(uri, localpart);
-
-            if (baseValidator == null) {
-                Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
-                if (baseTypeNode != null) {
-                    traverseSimpleTypeDecl( baseTypeNode );
-                    
-                    baseValidator = getDatatypeValidator(uri, localpart);
-                    
-                    if (baseValidator == null) {
-                        reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                        new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
-                                                          simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME) });
-                        return -1;
-                        //reportGenericSchemaError("Base type could not be found : " + baseTypeQNameProperty);
-                    }
-
-                }
-                else {
-                    reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                    new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
-                                                      simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME) });
-                    return -1;
-                    //reportGenericSchemaError("Base type could not be found : " + baseTypeQNameProperty);
-                }
-                
-            }
-        }
-        // Any Children if so then check Content otherwise bail out
-
-        Element   content   = XUtil.getFirstChildElement( simpleTypeDecl );
-        int       numFacets = 0; 
-        Hashtable facetData = null;
-
-        if( content != null ) {
-
-            //Content follows: ( annotation? , facets* )
-
-            //annotation ? ( 0 or 1 )
-            if( content.getLocalName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
-                traverseAnnotationDecl( content );   
-                content                    = XUtil.getNextSiblingElement(content);
-            } 
-
-            //TODO: If content is annotation again should raise validation error
-            // if( content.getLocalName().equal( SchemaSymbols.ELT_ANNOTATION ) {
-            //   throw ValidationException(); }
-            //
-
-            //facets    * ( 0 or more )
-
-            
-            int numEnumerationLiterals = 0;
-            facetData        = new Hashtable();
-            Vector enumData            = new Vector();
-
-            while (content != null) {
-                if (content.getNodeType() == Node.ELEMENT_NODE) {
-                    Element facetElt = (Element) content;
-                    numFacets++;
-                    if (facetElt.getLocalName().equals(SchemaSymbols.ELT_ENUMERATION)) {
-                        numEnumerationLiterals++;
-                        String enumVal = facetElt.getAttribute(SchemaSymbols.ATT_VALUE);
-                        enumData.addElement(enumVal);
-                        //Enumerations can have annotations ? ( 0 | 1 )
-                        Element enumContent =  XUtil.getFirstChildElement( facetElt );
-                        if( enumContent != null && enumContent != null && enumContent.getLocalName().equals( SchemaSymbols.ELT_ANNOTATION ) ){
-                            traverseAnnotationDecl( content );   
-                         } 
-                        //TODO: If enumContent is encounter  again should raise validation error
-                        //  enumContent.getNextSibling();
-                        // if( enumContent.getLocalName().equal( SchemaSymbols.ELT_ANNOTATIO ) {
-                        //   throw ValidationException(); }
-                        //
-                    } else {
-                    facetData.put(facetElt.getLocalName(),facetElt.getAttribute( SchemaSymbols.ATT_VALUE ));
-                    }
-                }
-                //content = (Element) content.getNextSibling();
-                content = XUtil.getNextSiblingElement(content);
-            }
-            if (numEnumerationLiterals > 0) {
-               facetData.put(SchemaSymbols.ELT_ENUMERATION, enumData);
-            }
-        }
-
-        // create & register validator for "generated" type if it doesn't exist
-        
-        String nameOfType = fStringPool.toString( newSimpleTypeName);
-        if (fTargetNSURIString.length () != 0) {
-            nameOfType = fTargetNSURIString+","+nameOfType;
-        }
-                 
-
-        try {
-
-           DatatypeValidator newValidator =
-                 fDatatypeRegistry.getDatatypeValidator( nameOfType );
-
-           if( newValidator == null ) { // not previously registered
-               boolean  derivedByList = 
-                    varietyProperty.equals( SchemaSymbols.ATTVAL_LIST ) ? true:false;
-               fDatatypeRegistry.createDatatypeValidator( nameOfType, baseValidator,
-                              facetData, derivedByList ); 
-              
-               }
-            
-           } catch (Exception e) {
-               reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage() });
-           }
-        return fStringPool.addSymbol(nameOfType);
-    }
-
     //@param: elm - top element
     //@param: content - content must be annotation? or some other simple content
     //@param: isEmpty: -- true if (annotation?, smth_else), false if (annotation?) 
     //check for Annotation if it is present
-    
-	//REVISIT: this function should be used in all traverse* methods!
+    //REVISIT: this function should be used in all traverse* methods!
    private Element checkContent( Element elm, Element content, boolean isEmpty ) throws Exception {
        //isEmpty = true-> means content can be null!
        if ( content == null) {
@@ -1039,7 +873,7 @@ public class TraverseSchema implements
      * @param simpleTypeDecl
      * @return 
      */
-    private int traverseSimpleType( Element simpleTypeDecl ) throws Exception {
+    private int traverseSimpleTypeDecl( Element simpleTypeDecl ) throws Exception {
         
         //REVISIT: remove all DEBUG_UNION.
         if (DEBUG_UNION) {
@@ -1077,16 +911,15 @@ public class TraverseSchema implements
             System.out.println("[varietyProperty]:"+   varietyProperty );
         }
 
-        //REVISIT: change symbols from ATTVAL_ to ELM_. 
-        if (varietyProperty.equals(SchemaSymbols.ATTVAL_LIST)) { //traverse List
+        if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) { //traverse List
            baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_ITEMTYPE );
            list = true;
         }
-        else if (varietyProperty.equals(SchemaSymbols.ATTVAL_RESTRICTION)) { //traverse Restriction
+        else if (varietyProperty.equals(SchemaSymbols.ELT_RESTRICTION)) { //traverse Restriction
             baseTypeQNameProperty =  content.getAttribute( SchemaSymbols.ATT_BASE );
             restriction= true;
         }
-        else if (varietyProperty.equals(SchemaSymbols.ATTVAL_UNION)) { //traverse union
+        else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) { //traverse union
             union = true;
             baseTypeQNameProperty = content.getAttribute( SchemaSymbols.ATT_MEMBERTYPES);
             if (baseTypeQNameProperty != "" ) {
@@ -5811,23 +5644,9 @@ public class TraverseSchema implements
                     return Integer.parseInt (intString);
             }
     }
-
-    private int parseSimpleDerivedBy (String derivedByString) throws Exception
-    {
-            if ( derivedByString.equals (SchemaSymbols.ATTVAL_LIST) ) {
-                    return SchemaSymbols.LIST;
-            } 
-            else if ( derivedByString.equals (SchemaSymbols.ATTVAL_RESTRICTION) ) {
-                    return SchemaSymbols.RESTRICTION;
-            }  
-            else {
-                // REVISIT: Localize
-                    reportGenericSchemaError ("SimpleType: Invalid value for 'derivedBy'");
-                    return -1;
-            }
-    }
-
-    private int parseComplexDerivedBy (String derivedByString)  throws Exception
+    
+   //REVISIT: should remove after switching to CR!
+   private int parseComplexDerivedBy (String derivedByString)  throws Exception
     {
             if ( derivedByString.equals (SchemaSymbols.ATTVAL_EXTENSION) ) {
                     return SchemaSymbols.EXTENSION;
@@ -5841,7 +5660,7 @@ public class TraverseSchema implements
                     return -1;
             }
     }
-
+    
     private int parseSimpleFinal (String finalString) throws Exception
     {
             if ( finalString.equals (SchemaSymbols.ATTVAL_POUNDALL) ) {
@@ -5863,7 +5682,7 @@ public class TraverseSchema implements
                                         // REVISIT: Localize
                                             reportGenericSchemaError ("restriction in set twice");
                                     }
-                            } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
+                            } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
                                     if ( list == 0 ) {
                                             list = SchemaSymbols.LIST;
                                     } else {
@@ -5964,7 +5783,7 @@ public class TraverseSchema implements
                                         // REVISIT: Localize
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
-                            } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
+                            } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.LIST;
                                     } else {
@@ -6015,7 +5834,7 @@ public class TraverseSchema implements
                                         // REVISIT: Localize
                                             reportGenericSchemaError ( "extension already in set" );
                                     }
-                            } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
+                            } else if ( token.equals (SchemaSymbols.ELT_LIST) ) {
                                     if ( extend == 0 ) {
                                             extend = SchemaSymbols.LIST;
                                     } else {

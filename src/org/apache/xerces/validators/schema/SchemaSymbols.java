@@ -111,6 +111,8 @@ public final  class SchemaSymbols {
     public static final String ELT_SELECTOR =  "selector";
     public static final String ELT_SEQUENCE =  "sequence";
     public static final String ELT_SIMPLETYPE =  "simpleType";
+    public static final String ELT_UNION =  "union";
+    public static final String ELT_LIST =  "list";
     public static final String ELT_UNIQUE = "unique";
     public static final String ELT_COMPLEXCONTENT = "complexContent";
     public static final String ELT_SIMPLECONTENT = "simpleContent";
@@ -163,8 +165,6 @@ public final  class SchemaSymbols {
     public static final String ATTVAL_HEX =  "hex";
     public static final String ATTVAL_ID =  "ID";
     public static final String ATTVAL_LAX =  "lax";
-    public static final String ATTVAL_UNION =  "union";
-    public static final String ATTVAL_LIST =  "list";
     public static final String ATTVAL_MAXLENGTH =  "maxLength";
     public static final String ATTVAL_MINLENGTH =  "minLength";
     public static final String ATTVAL_MIXED =  "mixed";
