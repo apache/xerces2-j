@@ -205,7 +205,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
               // set the base to the anyType
               complexType.fBaseType = SchemaGrammar.fAnyType;
-              processComplexContent(child, complexType, mixedAtt.booleanValue(),
+              processComplexContent(child, complexType, mixedAtt.booleanValue(), false,
                                     schemaDoc, grammar);
             }
             else if (DOMUtil.getLocalName(child).equals
@@ -222,7 +222,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (DOMUtil.getLocalName(child).equals
                     (SchemaSymbols.ELT_COMPLEXCONTENT)) {
-              traverseComplexContent(child, complexType, mixedAtt.booleanValue(),
+              traverseComplexContent(child, complexType, mixedAtt.booleanValue(), 
                                      schemaDoc, grammar);
               if (DOMUtil.getNextSiblingElement(child)!=null) {
                  String siblingName = DOMUtil.getLocalName(DOMUtil.getNextSiblingElement(child));
@@ -239,7 +239,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
               // set the base to the anyType
               complexType.fBaseType = SchemaGrammar.fAnyType;
-              processComplexContent(child, complexType, mixedAtt.booleanValue(),
+              processComplexContent(child, complexType, mixedAtt.booleanValue(), false, 
                                     schemaDoc, grammar);
             }
 
@@ -453,6 +453,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           }
 
           mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, false);
+          // Prohibited uses must be removed after merge for RESTRICTION
+          typeInfo.fAttrGrp.removeProhibitedAttrs();
+
           String error = typeInfo.fAttrGrp.validRestrictionOf(baseComplexType.fAttrGrp);
           if (error != null) {
             reportGenericSchemaError("ComplexType " + typeName + ": " + error);
@@ -476,10 +479,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
                                      schemaDoc,grammar);
+
             if (node!=null) {
                  throw new ComplexTypeRecoverableError("src-ct",
                   new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
             }
+            // Remove prohibited uses.   Should be done prior to any merge.
+            typeInfo.fAttrGrp.removeProhibitedAttrs();
+
             if (baseComplexType != null) {
               mergeAttributes(baseComplexType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
             }
@@ -614,7 +621,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // Process the content.  Note:  should I try to catch any complexType errors
        // here in order to return the attr array?
        // -----------------------------------------------------------------------
-       processComplexContent(complexContent, typeInfo, mixedContent, schemaDoc,
+       processComplexContent(complexContent, typeInfo, mixedContent, true, schemaDoc,  
                              grammar);
 
        // -----------------------------------------------------------------------
@@ -643,6 +650,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             reportGenericSchemaError("ComplexType " + typeName + ": " + error);
             throw new ComplexTypeRecoverableError();
           }
+          // Remove prohibited uses.   Must be done after merge for RESTRICTION.
+          typeInfo.fAttrGrp.removeProhibitedAttrs();
 
        }
        else {
@@ -695,6 +704,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           else
              typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_ELEMENT;
 
+          // Remove prohibited uses.   Must be done before merge for EXTENSION. 
+          typeInfo.fAttrGrp.removeProhibitedAttrs();
           mergeAttributes(baseType.fAttrGrp, typeInfo.fAttrGrp, typeName, true);
 
        }
@@ -727,7 +738,6 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
          else {
            if (extension) {
               //REVISIT - should create a msg in properties file
-              // REVISIT: what if one of the attribute uses is "prohibited"
               reportGenericSchemaError("ComplexType " + typeName + ": " +
                 "Duplicate attribute use " + existingAttrUse.fAttrDecl.fName );
               throw new ComplexTypeRecoverableError();
@@ -754,7 +764,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
 
     private void processComplexContent(Element complexContentChild,
                                  XSComplexTypeDecl typeInfo,
-                                 boolean isMixed,
+                                 boolean isMixed, boolean isDerivation, 
                                  XSDocumentInfo schemaDoc, SchemaGrammar grammar)
                                  throws ComplexTypeRecoverableError {
 
@@ -826,6 +836,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
            if (node!=null) {
                  throw new ComplexTypeRecoverableError("src-ct",
                   new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)});
+           }
+           // Only remove prohibited attribute uses if this isn't a derived type
+           // Derivation-specific code worries about this elsewhere
+           if (!isDerivation) {
+              typeInfo.fAttrGrp.removeProhibitedAttrs();
            }
        }
 

@@ -176,6 +176,9 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
                                       args,
                                       XMLErrorReporter.SEVERITY_ERROR);
         } 
+ 
+        // Remove prohibited attributes from the set
+        attrGrp.removeProhibitedAttrs();
 
         // make an entry in global declarations.
         grammar.addGlobalAttributeGroupDecl(attrGrp);

@@ -485,9 +485,6 @@ abstract class XSDAbstractTraverser {
             }
         }
 
-        // remove prohibited attribute uses
-        attrGrp.removeProhibitedAttrs();
-
         // Success
         return child;
 
