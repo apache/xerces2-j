@@ -111,16 +111,19 @@ public class ENTITYDatatypeValidator extends AbstractDatatypeValidator {
 
 
    /**
-    * Checks that "content" string is valid 
+    * <P>Checks that "content" string is valid
     * datatype.
-    * If invalid a Datatype validation exception is thrown.
+    * If invalid a Datatype validation exception is thrown.</P>
+    * <P>The following constrain is checked:
+    * ENTITY values must match an unparsed entity 
+    * name that is declared in the schema.</P> 
     * 
     * @param content A string containing the content to be validated
-    *                
+    * @param state
     * @exception throws InvalidDatatypeException if the content is
     *                   invalid according to the rules for the validators
     * @exception InvalidDatatypeValueException
-    * @see         org.apache.xerces.validators.datatype.InvalidDatatypeValueException
+    * @see org.apache.xerces.validators.datatype.InvalidDatatypeValueException
     */
    public void validate(String content, Object state ) throws InvalidDatatypeValueException{
       int entityDeclIndex = -1;
