@@ -60,7 +60,6 @@ package org.apache.xerces.impl.xs.dom;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.StandardParserConfiguration;
 import org.apache.xerces.impl.xs.SchemaSymbols;
-import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.Augmentations;
@@ -116,18 +115,6 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
     } // <init>()
 
     /**
-     * Resets the parser state.
-     *
-     * @throws SAXException Thrown on initialization error.
-     */
-    public void reset() throws XNIException {
-        super.reset();
-        // get entity manager, then the locator
-        XMLEntityManager entityManager = (XMLEntityManager)fConfiguration.getProperty(ENTITY_MANAGER);
-        fLocator = entityManager.getEntityScanner();
-    }
-    
-    /**
      * The start of the document.
      *
      * @param locator The system identifier of the entity if the entity
@@ -147,6 +134,7 @@ public class DOMParser extends org.apache.xerces.parsers.DOMParser {
         super.startDocument(locator, encoding, augs);
         // get a handle to the document created
         fDocumentImpl = (DocumentImpl)super.fDocumentImpl;
+        fLocator = locator;
 
     } // startDocument(XMLLocator,String,Augmentations)
     
