@@ -37,6 +37,23 @@
      </note>
      <submitter name='Sandy Gao, Elena Litani'/>
     </update>
+    
+    <add>
+     <note>
+      Added the support of 'well-formed' feature in DOM. Now application can 
+      check the DOM created in memory or after doing any modifications for well-formedness 
+      as per the XML version of the document by calling Document.normalizeDocument()
+     </note>
+     <submitter name='Neeraj Bajaj'/>
+    </add>
+    
+    <update>
+     <note>
+     XML 1.1 support in DOM L3.
+     </note>
+     <submitter name='K.Venugopal'/>
+    </update>
+    
     <fix>
      <note>
       Fixed various bugs related to PSVI.
@@ -143,7 +160,7 @@
      <note>
       Fixed various bugs.
      </note>
-     <submitter name="Neil Delima, Sandy Gao, Neil Graham, Michael Glavassevich, Elena Litani, Lisa Martin, Peter McCracken, Gareth Reakes"/>
+     <submitter name="Neil Delima, Sandy Gao, Neil Graham, Michael Glavassevich, Elena Litani, Lisa Martin, Peter McCracken, Gareth Reakes, Neeraj Bajaj, K.Venugopal, Ramesh Mandava, Kohsuke Kawaguchi, Gopal Sharma"/>
     </fix>
    </changes>
   </release>
