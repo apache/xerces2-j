@@ -172,11 +172,13 @@ public class XMLSchemaValidator
     protected static final String NORMALIZE_DATA =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
-
     /** Feature identifier: send element default value via characters() */
     protected static final String SCHEMA_ELEMENT_DEFAULT =
     Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
 
+    /** Feature identifier: whether to recognize java encoding names */
+    protected static final String ALLOW_JAVA_ENCODING =
+    Constants.XERCES_FEATURE_PREFIX + Constants.ALLOW_JAVA_ENCODINGS_FEATURE;
 
     // property identifiers
 
@@ -1306,6 +1308,15 @@ public class XMLSchemaValidator
             fGrammarPool = null;
         }
         fSchemaLoader.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
+
+        // Copy the allow-java-encoding feature to the grammar loader.
+        // REVISIT: what other fetures/properties do we want to copy?
+        try {
+            boolean jencoding = componentManager.getFeature(ALLOW_JAVA_ENCODING);
+            fSchemaLoader.setFeature(ALLOW_JAVA_ENCODING, jencoding);
+        }
+        catch (XMLConfigurationException e){
+        }
 
         // clear grammars, and put the one for schema namespace there
         // logic for resetting grammar-related components moved
