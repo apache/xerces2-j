@@ -37,23 +37,49 @@
      </note>
      <submitter name='Sandy Gao, Elena Litani'/>
     </update>
-    
+    <update>
+     <note>
+      Moved Xerces' SAX support up to SAX 2.0.1.
+     </note>
+     <submitter name='Elena Litani'/>
+    </update>
+    <update>
+     <note>
+      Implemented the DOM Level 3 
+      <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/">Core</jump> and 
+      <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/">Load and Save</jump> Candidate Recommendations.
+     </note>
+     <submitter name='Neil Delima, Neeraj Bajaj, Michael Glavassevich, Elena Litani, Ramesh Mandava, Gopal Sharma, K.Venugopal'/>
+    </update>
     <add>
      <note>
-      Added the support of 'well-formed' feature in DOM. Now application can 
+      Added support for the 'well-formed' feature in DOM Level 3. Now an application can 
       check the DOM created in memory or after doing any modifications for well-formedness 
       as per the XML version of the document by calling Document.normalizeDocument()
      </note>
      <submitter name='Neeraj Bajaj'/>
     </add>
-    
-    <update>
+    <add>
      <note>
-     XML 1.1 support in DOM L3.
+      Added XML 1.1 support to DOM Level 3.
      </note>
      <submitter name='K.Venugopal'/>
-    </update>
-    
+    </add>
+    <fix>
+     <note>
+      Fixed various bugs in the DOM normalizer.
+     </note>
+     <submitter name='Kohsuke Kawaguchi'/>
+    </fix>
+    <fix>
+     <note>
+      Fixed the serializer so that TAB (0x9), LF (0xA), CR (0xD) are
+      escaped where appropriate in order to allow these characters
+      to be roundtripped. For XML 1.1 serialization, NEL (0x85) and
+      LSEP (0x2028) are also escaped so that may be roundtripped.
+     </note>
+     <submitter name='Neil Delima, Elena Litani'/>
+    </fix>
     <fix>
      <note>
       Fixed various bugs related to PSVI.
@@ -68,6 +94,14 @@
      </note>
      <submitter name='Michael Glavassevich'/>
     </update>
+    <fix>
+     <note>
+      Fixed a bug which could cause the parser to run out of
+      memory (or other resources) while parsing documents
+      containing many entity references.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
     <fix>
      <note>
       Implemented missing support for Registry-based 
