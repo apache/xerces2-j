@@ -191,8 +191,11 @@ public class SchemaValidator
     /** Schema grammar. */
     private SchemaGrammar fSchemaGrammar;
 
-    /** Schema grammar. */
+    /** Schema grammar resolver. */
     private XSGrammarResolver fGrammarResolver;
+    
+    /** Schema handler */
+    private XSDHandler fSchemaHandler;
 
     /** Perform validation. */
     private boolean fPerformValidation;
@@ -279,9 +282,6 @@ public class SchemaValidator
 
     /** Temporary qualified name. */
     private QName fTempQName = new QName();
-
-    /** Temporary string buffer for buffering datatype value. */
-    //private StringBuffer fDatatypeBuffer = new StringBuffer();
 
     /** Notation declaration hash. */
     private Hashtable fNDataDeclNotations = new Hashtable();
@@ -392,6 +392,11 @@ public class SchemaValidator
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
         fSymbolTable = (SymbolTable)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SYMBOL_TABLE_PROPERTY);
 
+        fGrammarResolver = new XSGrammarResolver();
+        fSchemaHandler = new XSDHandler(fGrammarResolver, fErrorReporter,
+                                        null,//fEntityResolver,
+                                        fSymbolTable);
+        
         fElementDepth = -1;
         init();
 
@@ -588,6 +593,7 @@ public class SchemaValidator
 
         //???handleStartElement(element, attributes, false);
         System.out.println("startElement: " + element.rawname);
+        doStart (element, attributes);
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes);
         }
@@ -608,6 +614,7 @@ public class SchemaValidator
         //???handleStartElement(element, attributes, true);
         //???handleEndElement(element, true);
         System.out.println("start/endElement: " + element.rawname);
+        doStart (element, attributes);
         if (fDocumentHandler != null) {
             fDocumentHandler.emptyElement(element, attributes);
         }
@@ -644,6 +651,7 @@ public class SchemaValidator
         }
 
         // validate
+        fBuffer.append(text.toString());
 
         // call handlers
         if (callNextCharacters && fDocumentHandler != null) {
@@ -684,6 +692,12 @@ public class SchemaValidator
 
         //???handleEndElement(element, false);
         System.out.println("endElement: " + element.rawname);
+        
+        SchemaGrammar grammar = fGrammarResolver.getGrammar(fTempElementDecl.fTypeNS);
+        XSType elemType = grammar.getTypeDecl(fTempElementDecl.fXSTypeDecl, fTempTypeDecl);
+        if (elemType.getXSType() == XSType.SIMPLE_TYPE)
+            ((DatatypeValidator)elemType).validate(fBuffer.toString(), null);
+        
         if (fDocumentHandler != null) {
             fDocumentHandler.endElement(element);
         }
@@ -1182,5 +1196,31 @@ public class SchemaValidator
         fInElementContent = fCurrentContentModel.childrenCount() > 0;
 
     } // handleEndElement(QName,boolean)*/
+
+    void doStart (QName element, XMLAttributes attrs) {
+        String sLocation = attrs.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_SCHEMALOCACTION);
+        String nsLocation = attrs.getValue(SchemaSymbols.URI_XSI, SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION);
+        if (sLocation != null) {
+            StringTokenizer t = new StringTokenizer(sLocation, " ");
+            String namespace, location;
+            while (t.hasMoreTokens()) {
+                namespace = t.nextToken ();
+                if (!t.hasMoreTokens())
+                    break;
+                location = t.nextToken();
+                if (fGrammarResolver.getGrammar(namespace) == null)
+                    fSchemaHandler.parseSchema(namespace, location);
+            }
+        }
+        if (nsLocation != null) {
+            if (fGrammarResolver.getGrammar("") == null)
+                fSchemaHandler.parseSchema("", nsLocation);
+        }
+        
+        fSchemaGrammar = fGrammarResolver.getGrammar(element.uri);
+        fTempElementDecl = fSchemaGrammar.getElementDecl(element.localpart, fTempElementDecl);
+
+        fBuffer.setLength(0);
+    }
 
 } // class XMLDTDValidator

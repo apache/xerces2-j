@@ -292,7 +292,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
         // type specified as an attribute and no child is type decl.
         else if (!haveAnonType && typeAtt != null) {
-            elementType = fSchemaHandler.getTypeDecl(typeAtt.uri, typeAtt.localpart);
+            elementType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPE_TYPE, typeAtt);
             if (elementType == -1) {
                 noErrorSoFar = false;
                 reportGenericSchemaError("type not found: "+typeAtt.uri+":"+typeAtt.localpart);
@@ -415,7 +415,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }*/
 
         if (elementType == -1 && noErrorSoFar) {
-            elementType = fSchemaHandler.getTypeDecl(ANY_TYPE.uri, ANY_TYPE.localpart);
+            elementType = fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPE_TYPE, ANY_TYPE);
         }
 
         // Now we can handle validation etc. of default and fixed attributes,
@@ -471,6 +471,7 @@ class XSDElementTraverser extends XSDAbstractTraverser{
         }
 
         // add element decl to the registry
+        fTempElementDecl.clear();
         fTempElementDecl.fQName.setValues(null, nameAtt, nameAtt, namespace);
         fTempElementDecl.fTypeNS = typeAtt == null ? schemaDoc.fTargetNamespace : typeAtt.uri;
         fTempElementDecl.fXSTypeDecl = elementType;

@@ -1083,12 +1083,10 @@ public class XSAttributeChecker {
         for (int i = 0; i < reqAttrs.length; i++) {
             OneAttr oneAttr = reqAttrs[i];
 
-            // if the attribute appreared, skip to the next one
-            if (DOMUtil.getAttr(element, oneAttr.name) != null)
-                continue;
-
+            // if the attribute didn't apprear, and
             // if the attribute is optional with default value, apply it
-            else if (oneAttr.dfltValue != null) {
+            if (oneAttr.dfltValue != null &&
+                DOMUtil.getAttr(element, oneAttr.name) != null) {
                 attrValues.put(oneAttr.name, oneAttr.dfltValue);
             }
         }
@@ -1319,11 +1317,10 @@ public class XSAttributeChecker {
             }
         }
         else {
-            //REVISIT: how to report schema errors?
-            //fErrorReporter.reportError(SomeMessageProvider.SCHEMA_DOMAIN,
-            //                           key,
-            //                           args,
-            //                           XMLErrorReporter.SEVERITY_ERROR);
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                       key,
+                                       args,
+                                       XMLErrorReporter.SEVERITY_ERROR);
         }
     }
 

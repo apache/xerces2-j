@@ -115,7 +115,7 @@ abstract class XSDAbstractTraverser {
             // "appinfo" and "documentation"
             if(!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
                  (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
-                reportSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements", null);
+                reportGenericSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements");
             }
 
             // General Attribute Checking
