@@ -4,8 +4,13 @@
 <releases>
  <release version='Xerces 2.0.0 (NOT YET RELEASED)'>
   <desc>
+   This is primarily a bug fix release.
   </desc>
   <changes>
+   <fix>
+    <note>Added missing default attribute values in the DOM.</note>
+    <submitter name='Andy Clark'/>
+   </fix>
    <fix>
     <note>
      Changed XML Schema validation behavior back to validate only if

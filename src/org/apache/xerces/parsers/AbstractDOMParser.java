@@ -57,16 +57,19 @@
 
 package org.apache.xerces.parsers;
 
+import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
+import org.apache.xerces.dom.ElementDefinitionImpl;
 import org.apache.xerces.dom.EntityImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
 import org.apache.xerces.dom.TextImpl;
-
 import org.apache.xerces.impl.Constants;
+
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLLocator;
@@ -107,10 +110,13 @@ public abstract class AbstractDOMParser
     // Constants
     //
 
+    // feature ids
+
     /** Feature id: create entity ref nodes. */
     protected static final String CREATE_ENTITY_REF_NODES =
         "http://apache.org/xml/features/dom/create-entity-ref-nodes";
 
+    /** Feature id: namespace. */
     protected static final String NAMESPACES =
         Constants.SAX_FEATURE_PREFIX+Constants.NAMESPACES_FEATURE;
 
@@ -122,13 +128,21 @@ public abstract class AbstractDOMParser
     protected static final String DEFER_NODE_EXPANSION =
         "http://apache.org/xml/features/dom/defer-node-expansion";
 
+    // property ids
+
     /** Property id: document class name. */
     protected static final String DOCUMENT_CLASS_NAME =
         "http://apache.org/xml/properties/dom/document-class-name";
 
+    // other
+
+    /** Default document class name. */
     protected static final String DEFAULT_DOCUMENT_CLASS_NAME =
         "org.apache.xerces.dom.DocumentImpl";
 
+    // debugging
+
+    /** Set to true and recompile to debug entity references. */
     private static final boolean DEBUG_ENTITY_REF = false;
 
     //
@@ -1052,5 +1066,105 @@ public abstract class AbstractDOMParser
         }
 
     } // notationDecl(String,String,String)
+
+    /**
+     * An attribute declaration.
+     * 
+     * @param elementName   The name of the element that this attribute
+     *                      is associated with.
+     * @param attributeName The name of the attribute.
+     * @param type          The attribute type. This value will be one of
+     *                      the following: "CDATA", "ENTITY", "ENTITIES",
+     *                      "ENUMERATION", "ID", "IDREF", "IDREFS", 
+     *                      "NMTOKEN", "NMTOKENS", or "NOTATION".
+     * @param enumeration   If the type has the value "ENUMERATION" or
+     *                      "NOTATION", this array holds the allowed attribute
+     *                      values; otherwise, this array is null.
+     * @param defaultType   The attribute default type. This value will be
+     *                      one of the following: "#FIXED", "#IMPLIED",
+     *                      "#REQUIRED", or null.
+     * @param defaultValue  The attribute default value, or null if no
+     *                      default value is specified.
+     *
+     * @throws XNIException Thrown by handler to signal an error.
+     */
+    public void attributeDecl(String elementName, String attributeName, 
+                              String type, String[] enumeration, 
+                              String defaultType, XMLString defaultValue)
+        throws XNIException {
+
+        // deferred expansion
+        if (fDeferredDocumentImpl != null) {
+
+            // get the default value
+            if (defaultValue != null) {
+
+                // get element definition
+                int elementDefIndex  = fDeferredDocumentImpl.lookupElementDefinition(elementName);
+
+                // create element definition if not already there
+                if (elementDefIndex == -1) {
+                    elementDefIndex = fDeferredDocumentImpl.createDeferredElementDefinition(elementName);
+                    fDeferredDocumentImpl.appendChild(fDocumentTypeIndex, elementDefIndex);
+                }
+
+                // add default attribute
+                int attrIndex = fDeferredDocumentImpl.createDeferredAttribute(
+                                    attributeName, defaultValue.toString(), false);
+                fDeferredDocumentImpl.appendChild(elementDefIndex, attrIndex);
+            }
+
+        } // if deferred
+
+        // full expansion
+        else if (fDocumentImpl != null) {
+
+            // get the default value
+            if (defaultValue != null) {
+
+                // get element definition node
+                NamedNodeMap elements = ((DocumentTypeImpl)fDocumentType).getElements();
+                ElementDefinitionImpl elementDef = (ElementDefinitionImpl)elements.getNamedItem(elementName);
+                if (elementDef == null) {
+                    elementDef = fDocumentImpl.createElementDefinition(elementName);
+                    ((DocumentTypeImpl)fDocumentType).getElements().setNamedItem(elementDef);
+                }
+
+                // REVISIT: Check for uniqueness of element name? -Ac
+
+                // create attribute and set properties
+                boolean nsEnabled = fNamespaceAware;
+                AttrImpl attr;
+                if (nsEnabled) {
+                    String namespaceURI = null;
+                    // DOM Level 2 wants all namespace declaration attributes
+                    // to be bound to "http://www.w3.org/2000/xmlns/"
+                    // So as long as the XML parser doesn't do it, it needs to
+                    // done here.
+                    if (attributeName.startsWith("xmlns:") ||
+                        attributeName.equals("xmlns")) {
+                        namespaceURI = NamespaceContext.XMLNS;
+                    }
+                    attr = (AttrImpl)fDocumentImpl.createAttributeNS(namespaceURI,
+                                                                     attributeName);
+                }
+                else {
+                    attr = (AttrImpl)fDocumentImpl.createAttribute(attributeName);
+                }
+                attr.setValue(defaultValue.toString());
+                attr.setSpecified(false);
+
+                // add default attribute to element definition
+                if (nsEnabled){
+                    elementDef.getAttributes().setNamedItemNS(attr);
+                }
+                else {
+                    elementDef.getAttributes().setNamedItem(attr);
+                }
+            }
+
+        } // if NOT defer-node-expansion
+
+    } // attributeDecl(String,String,String,String[],String,XMLString)
 
 } // class AbstractDOMParser
