@@ -891,6 +891,8 @@ public class DOMParser
 
     /** Report the end of the scope of a namespace declaration. */
     public void endNamespaceDeclScope(int prefix) throws Exception {}
+    
+    
 
     /** Start element. */
     public void startElement(int elementTypeIndex,
@@ -1023,7 +1025,9 @@ public class DOMParser
                             String rootName = elementName;
                             String systemId = ""; // REVISIT: How do we get this value? -Ac
                             String publicId = ""; // REVISIT: How do we get this value? -Ac
-                            fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, systemId);
+                            String internalSubset = ""; // This value is set later. -rip
+                            fDocumentType = fDocumentImpl.createDocumentType(rootName, publicId, 
+                                systemId, internalSubset);
                             fDocument.appendChild(fDocumentType);
                         }
 
@@ -1364,8 +1368,9 @@ public class DOMParser
             String rootElementName = fStringPool.toString(rootElementType);
             String publicString = fStringPool.toString(publicId);
             String systemString = fStringPool.toString(systemId);
+            String internalSubset = ""; //REVIST: this value is set later -rip
             fDocumentType = fDocumentImpl.
-                createDocumentType(rootElementName, publicString, systemString);
+                createDocumentType(rootElementName, publicString, systemString, internalSubset);
             fDocumentImpl.appendChild(fDocumentType);
 
             if (fGrammarAccess) {
@@ -1408,6 +1413,27 @@ public class DOMParser
         }
 
     } // startDTD(int,int,int)
+    
+    /**
+     * Supports DOM Level 2 internalSubset additions.
+     * Called when the internal subset is completely scanned.
+     */
+    public  void internalSubset(int internalSubset) {
+        
+        //System.out.println("internalSubset callback:"+fStringPool.toString(internalSubset));
+        
+        // full expansion
+        if (fDocumentImpl != null && fDocumentType != null) {
+            ((DocumentTypeImpl)fDocumentType).setInternalSubset(fStringPool.toString(internalSubset));
+        }
+
+        // deferred expansion
+        else if (fDeferredDocumentImpl != null) {
+            fDeferredDocumentImpl.setInternalSubset(fDocumentTypeIndex, internalSubset);
+        }
+        
+    }
+    
 
     /**
      *  This function will be called at the end of the DTD.

@@ -1089,6 +1089,10 @@ public class SAXParser
         }
 
     }
+    
+    /** New callback from DOM Level 2. There is no corresponding SAX callout for this yet. */
+    public void internalSubset(int internalSubset) {
+    }
 
     /** Start element */
     public void startElement(int elementType, XMLAttrList attrList, int attrListIndex)
