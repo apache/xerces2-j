@@ -1113,6 +1113,7 @@ public class XMLDocumentFragmentScannerImpl
         String name = fEntityScanner.scanName();
         if (name == null) {
             reportFatalError("NameRequiredInReference", null);
+            return;
         }
 
         // end
@@ -1696,7 +1697,6 @@ public class XMLDocumentFragmentScannerImpl
             //       in the middle of scanning some markup. -Ac
             if (fMarkupDepth != 0) {
                 reportFatalError("PrematureEOF", null);
-                throw e;
             }
 
         } // endOfFileHook()

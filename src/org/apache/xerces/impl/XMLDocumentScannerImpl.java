@@ -1033,7 +1033,8 @@ public class XMLDocumentScannerImpl
             throws IOException, XNIException {
 
             reportFatalError("PrematureEOF", null);
-            throw e;
+            // in case continue-after-fatal-error set, should not do this...
+            //throw e;
 
         } // endOfFileHook()
 
