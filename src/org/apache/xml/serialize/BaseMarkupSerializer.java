@@ -110,6 +110,10 @@ import org.w3c.dom.DOMLocator;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
 
+import org.w3c.dom.ls.DOMWriterFilter;
+import org.w3c.dom.traversal.NodeFilter;
+
+
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.Locator;
@@ -177,6 +181,7 @@ public abstract class BaseMarkupSerializer
     protected Hashtable fFeatures;
     protected DOMErrorHandler fDOMErrorHandler;
     protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
+    protected DOMWriterFilter fDOMFilter;
 
     private EncodingInfo _encodingInfo;
 
@@ -1001,7 +1006,6 @@ public abstract class BaseMarkupSerializer
     protected void serializeNode( Node node )
         throws IOException
     {
-
         fCurrentNode = node;
 
         // Based on the node type call the suitable SAX handler.
@@ -1012,10 +1016,30 @@ public abstract class BaseMarkupSerializer
             String text;
 
             text = node.getNodeValue();
-            if ( text != null )
-                if ( !_indenting || getElementState().preserveSpace
+            if ( text != null ) {
+                if (fDOMFilter !=null && 
+                    (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_TEXT)!= 0) {
+                    short code = fDOMFilter.acceptNode(node);
+                    switch (code) {
+                        case NodeFilter.FILTER_REJECT:
+                        case NodeFilter.FILTER_SKIP: { 
+                            // REVISIT: the constant FILTER_SKIP should be changed when new
+                            // DOM LS specs gets published
+
+                            // skip the text node
+                            break;
+                        }
+
+                        default: {
+                            characters(text);
+                        }
+                    }
+                }
+                else if ( !_indenting || getElementState().preserveSpace
                      || (text.replace('\n',' ').trim().length() != 0))
                     characters( text );
+            
+            }                
             break;
         }
 
@@ -1024,6 +1048,24 @@ public abstract class BaseMarkupSerializer
 
             text = node.getNodeValue();
             if ( text != null ) {
+              if (fDOMFilter !=null && 
+                    (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_CDATA_SECTION)!= 0) {
+                    short code = fDOMFilter.acceptNode(node);
+                    switch (code) {
+                        case NodeFilter.FILTER_REJECT:
+                        case NodeFilter.FILTER_SKIP: { 
+                            // REVISIT: the constant FILTER_SKIP should be changed when new
+                            // DOM LS specs gets published
+
+                            // skip the CDATA node
+                            return;
+                        }
+
+                        default: {
+                            //fall through..
+                        }
+                    }
+                }
                 startCDATA();
                 characters( text );
                 endCDATA();
@@ -1036,8 +1078,27 @@ public abstract class BaseMarkupSerializer
 
             if ( ! _format.getOmitComments() ) {
                 text = node.getNodeValue();
-                if ( text != null )
+                if ( text != null ) {
+                
+                    if (fDOMFilter !=null && 
+                          (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_COMMENT)!= 0) {
+                          short code = fDOMFilter.acceptNode(node);
+                          switch (code) {
+                              case NodeFilter.FILTER_REJECT:
+                              case NodeFilter.FILTER_SKIP: { 
+                                  // REVISIT: the constant FILTER_SKIP should be changed when new
+                                  // DOM LS specs gets published
+
+                                  // skip the comment node
+                                  return;
+                              }
+                              default: {
+                                   // fall through
+                              }
+                          }                      
+                    }
                     comment( text );
+                }                    
             }
             break;
         }
@@ -1047,30 +1108,102 @@ public abstract class BaseMarkupSerializer
 
             endCDATA();
             content();
+
+            if (fDOMFilter !=null && 
+                  (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_ENTITY_REFERENCE)!= 0) {
+                  short code = fDOMFilter.acceptNode(node);
+                  switch (code) {
+                    case NodeFilter.FILTER_REJECT:{
+                        return; // remove the node
+                      }
+                      case NodeFilter.FILTER_SKIP: { 
+                          // REVISIT: the constant FILTER_SKIP should be changed when new
+                          // DOM LS specs gets published
+
+                          child = node.getFirstChild();
+                          while ( child != null ) {
+                              serializeNode( child );
+                              child = child.getNextSibling();
+                          }
+                          return;
+                      }
+
+                      default: {
+                          child = node.getFirstChild();
+                          if (child !=null) {
+                              _printer.printText("&");
+                              _printer.printText(node.getNodeName());
+                              _printer.printText(";");
+                          }
+                          return;
+                      }
+                  }
+              }
+
             child = node.getFirstChild();
             if ( child == null || (fFeatures !=null && 
-                 !((Boolean)fFeatures.get("expand-entity-references")).booleanValue() )) {
+                 !((Boolean)fFeatures.get("entities")).booleanValue() )) {
                 _printer.printText("&");
                 _printer.printText(node.getNodeName());
                 _printer.printText(";");
             }
             else {
-            while ( child != null ) {
-                serializeNode( child );
-                child = child.getNextSibling();
+                while ( child != null ) {
+                    serializeNode( child );
+                    child = child.getNextSibling();
                 }
             }
             break;
         }
 
-        case Node.PROCESSING_INSTRUCTION_NODE :
+        case Node.PROCESSING_INSTRUCTION_NODE : {
+        
+            if (fDOMFilter !=null && 
+                  (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_PROCESSING_INSTRUCTION)!= 0) {
+                  short code = fDOMFilter.acceptNode(node);
+                  switch (code) {
+                    case NodeFilter.FILTER_REJECT:                      
+                    case NodeFilter.FILTER_SKIP: { 
+                          // REVISIT: the constant FILTER_SKIP should be changed when new
+                          // DOM LS specs gets published
+                          return;  // skip this node                      
+                    }
+
+                    default: { // fall through
+                    }
+                  }
+            }
             processingInstructionIO( node.getNodeName(), node.getNodeValue() );
             break;
+        }
+        case Node.ELEMENT_NODE :  {
 
-        case Node.ELEMENT_NODE :
+            if (fDOMFilter !=null && 
+                  (fDOMFilter.getWhatToShow() & NodeFilter.SHOW_PROCESSING_INSTRUCTION)!= 0) {
+                  short code = fDOMFilter.acceptNode(node);
+                  switch (code) {
+                    case NodeFilter.FILTER_REJECT: {
+                        return;                     
+                    }
+                    case NodeFilter.FILTER_SKIP: { 
+                        // REVISIT: the constant FILTER_SKIP should be changed when new
+                        // DOM LS specs gets published
+
+                        Node child = node.getFirstChild();
+                        while ( child != null ) {
+                            serializeNode( child );
+                            child = child.getNextSibling();
+                        }
+                        return;  // skip this node                      
+                    }
+
+                    default: { // fall through
+                    }
+                  }
+            }
             serializeElement( (Element) node );
             break;
-
+        }
         case Node.DOCUMENT_NODE : {
             DocumentType      docType;
             DOMImplementation domImpl;

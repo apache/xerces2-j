@@ -170,6 +170,9 @@ public final class Constants {
     public static final String DOM_NORMALIZE_CHARACTERS    = "normalize-characters";
     public static final String DOM_SPLIT_CDATA = "split-cdata-sections";
 
+    // Load and Save
+    public static final String DOM_FORMAT_PRETTY_PRINT = "format-pretty-print";
+
     // xerces features
 
     /** Xerces features prefix ("http://apache.org/xml/features/"). */

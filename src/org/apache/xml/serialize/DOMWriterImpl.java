@@ -63,14 +63,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.NamespaceSupport;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.ls.DOMWriter;
 import org.w3c.dom.ls.DOMWriterFilter;
-import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.traversal.NodeFilter;
+
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.NamespaceSupport;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -111,14 +113,14 @@ public class DOMWriterImpl implements DOMWriter {
         serializer.fLocalNSBinder = new NamespaceSupport();
         serializer.fSymbolTable = new SymbolTable();
         serializer.fFeatures = new Hashtable();
-        serializer.fFeatures.put("normalize-characters",new Boolean(false));
-        serializer.fFeatures.put("split-cdata-sections",new Boolean(true));
-        serializer.fFeatures.put("validation",new Boolean(false));
-        serializer.fFeatures.put("expand-entity-references",new Boolean(false));
-        serializer.fFeatures.put("whitespace-in-element-content",new Boolean(true));
-        serializer.fFeatures.put("discard-default-content",new Boolean(true));
-        serializer.fFeatures.put("format-canonical",new Boolean(false));
-        serializer.fFeatures.put("format-pretty-print",new Boolean(false));
+        serializer.fFeatures.put(Constants.DOM_NORMALIZE_CHARACTERS, new Boolean(false));
+        serializer.fFeatures.put(Constants.DOM_SPLIT_CDATA, new Boolean(true));
+        serializer.fFeatures.put(Constants.DOM_VALIDATE, new Boolean(false));
+        serializer.fFeatures.put(Constants.DOM_ENTITIES, new Boolean(false));
+        serializer.fFeatures.put(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT, new Boolean(true));
+        serializer.fFeatures.put(Constants.DOM_DISCARD_DEFAULT_CONTENT, new Boolean(true));
+        serializer.fFeatures.put(Constants.DOM_CANONICAL_FORM, new Boolean(false));
+        serializer.fFeatures.put(Constants.DOM_FORMAT_PRETTY_PRINT, new Boolean(false));
     }
 
 
@@ -164,15 +166,15 @@ public class DOMWriterImpl implements DOMWriter {
      *   the feature itself is not changed.
      */
     public boolean canSetFeature(String name, boolean state) {
-        if (name.equals("normalize-characters") && state)
+        if (name.equals(Constants.DOM_NORMALIZE_CHARACTERS) && state)
+            return false;     
+        else if (name.equals(Constants.DOM_VALIDATE) && state)
             return false;
-        else if (name.equals("validation") && state)
+        else if (name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT) && !state)
             return false;
-        else if (name.equals("whitespace-in-element-content") && !state)
+        else if (name.equals(Constants.DOM_CANONICAL_FORM) && state)
             return false;
-        else if (name.equals("format-canonical") && state)
-            return false;
-        else if (name.equals("format-pretty-print") && state)
+        else if (name.equals(Constants.DOM_FORMAT_PRETTY_PRINT) && state)
             return false;
         else
             return true;
@@ -407,7 +409,7 @@ public class DOMWriterImpl implements DOMWriter {
      * the node from the stream or to terminate the serialization early. 
      */
     public void setFilter(DOMWriterFilter filter){
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"setDOMFilter is not implemented..");
+        serializer.fDOMFilter = filter;
     }
 
 
