@@ -4,11 +4,14 @@ TARGETS=\
 	AbstractDOMParser.class\
 	AbstractSAXParser.class\
 	AbstractXMLDocumentParser.class\
+	BasicParserConfiguration.class\
 	CachingParserPool.class\
         DOMParser.class\
         DTDParser.class\
+	ParserConfiguration.class\
         SAXParser.class\
         SchemaParser.class\
+	StandardParserConfiguration.class\
         XMLDocumentParser.class\
         XMLGrammarParser.class\
         XMLParser.class

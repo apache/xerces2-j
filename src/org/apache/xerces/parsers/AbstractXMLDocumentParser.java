@@ -1,10 +1,9 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
- * reserved.
+ * Copyright (c) 2001 The Apache Software Foundation.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,8 +57,6 @@
 
 package org.apache.xerces.parsers;
 
-import java.io.IOException;
-
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -68,10 +65,7 @@ import org.apache.xerces.xni.XMLDTDContentModelHandler;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXNotRecognizedException;
 
 /**
  * This is the base class for all XML document parsers. XMLDocumentParser
@@ -96,13 +90,6 @@ public abstract class AbstractXMLDocumentParser
 
     // state
 
-    /** 
-     * True if a parse is in progress. This state is needed because
-     * some features/properties cannot be set while parsing (e.g.
-     * validation and namespaces).
-     */
-    protected boolean fParseInProgress = false;
-
     /** True if inside DTD. */
     protected boolean fInDTD;
 
@@ -120,40 +107,6 @@ public abstract class AbstractXMLDocumentParser
         config.setDTDHandler(this);
         config.setDTDContentModelHandler(this);
     } // <init>(XMLParserConfiguration)
-
-    //
-    // Public methods
-    //
-
-    /**
-     * parse
-     *
-     * @param inputSource
-     *
-     * @exception org.xml.sax.SAXException
-     * @exception java.io.IOException
-     */
-    public void parse(InputSource inputSource) 
-        throws SAXException, IOException {
-
-        try {
-            reset();
-            fConfiguration.parse(inputSource);
-        }
-        catch (SAXException e) {
-            reset();
-            throw e;
-        }
-        catch (IOException e) {
-            reset();
-            throw e;
-        }
-        catch (Exception e) {
-            reset();
-            throw new SAXException(e);
-        }
-
-    } // parse(InputSource) 
 
     //
     // XMLDocumentHandler methods
@@ -731,10 +684,9 @@ public abstract class AbstractXMLDocumentParser
     //
 
     /**
-     * reset state
+     * reset all components before parsing
      */
     protected void reset() throws SAXException {
-        fParseInProgress = true;
         fInDTD = false;
     } // reset()
 
