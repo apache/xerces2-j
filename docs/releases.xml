@@ -22,7 +22,8 @@
     <update>
        <note>
         Modified XMLLocator interface to remove setter methods for move
-        towards finalizing XNI.
+        towards finalizing XNI; this change also implied removing XMLLocator's dependence
+        upon XMLResourceIdentifier.
        </note>
        <submitter name='Andy Clark'/>
     </update>
