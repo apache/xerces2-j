@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  
+ * Copyright (c) 2001, 2002 The Apache Software Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -97,6 +97,7 @@ import org.w3c.dom.ls.DOMResourceResolver;
  * Xerces implementation of DOMConfiguration that maintains a table of recognized parameters.
  *
  * @author Elena Litani, IBM
+ * @author Neeraj Bajaj, Sun Microsystems.
  * @version $Id$
  */
 public class DOMConfigurationImpl extends ParserConfigurationSettings
@@ -111,55 +112,55 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     /** Feature identifier: validation. */
     protected static final String XERCES_VALIDATION =
         Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
-    
+
     /** Feature identifier: namespaces. */
     protected static final String XERCES_NAMESPACES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
 
-    protected static final String SCHEMA = 
+    protected static final String SCHEMA =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_VALIDATION_FEATURE;
-    
+
     protected static final String DYNAMIC_VALIDATION =
         Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
-    protected static final String NORMALIZE_DATA = 
+    protected static final String NORMALIZE_DATA =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
-        
+
     /** sending psvi in the pipeline */
-    protected static final String SEND_PSVI = 
+    protected static final String SEND_PSVI =
         Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_AUGMENT_PSVI;
 
-    
+
     // property identifiers
 
     /** Property identifier: entity manager. */
-    protected static final String ENTITY_MANAGER = 
+    protected static final String ENTITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
 
     /** Property identifier: error reporter. */
-    protected static final String ERROR_REPORTER = 
+    protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
 
     /** Property identifier: xml string. */
-    protected static final String XML_STRING = 
+    protected static final String XML_STRING =
         Constants.SAX_PROPERTY_PREFIX + Constants.XML_STRING_PROPERTY;
 
     /** Property identifier: symbol table. */
-    protected static final String SYMBOL_TABLE = 
+    protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
 
     /** Property id: Grammar pool*/
-    protected static final String GRAMMAR_POOL = 
+    protected static final String GRAMMAR_POOL =
     Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
 
     /** Property identifier: error handler. */
-    protected static final String ERROR_HANDLER = 
+    protected static final String ERROR_HANDLER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_HANDLER_PROPERTY;
 
     /** Property identifier: entity resolver. */
-    protected static final String ENTITY_RESOLVER = 
+    protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
-    
+
     /** Property identifier: JAXP schema language / DOM schema-type. */
     protected static final String JAXP_SCHEMA_LANGUAGE =
     Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
@@ -174,10 +175,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     // Data
     //
     XMLDocumentHandler fDocumentHandler;
-    
+
     /** Normalization features*/
     protected short features = 0;
-    
+
     protected final static short NAMESPACES          = 0x1<<0;
     protected final static short DTNORMALIZATION     = 0x1<<1;
     protected final static short ENTITIES            = 0x1<<2;
@@ -199,11 +200,11 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /** Locale. */
     protected Locale fLocale;
-    
+
     /** Error reporter */
     protected XMLErrorReporter fErrorReporter;
-    
-    protected final DOMErrorHandlerWrapper fErrorHandlerWrapper = 
+
+    protected final DOMErrorHandlerWrapper fErrorHandlerWrapper =
                 new DOMErrorHandlerWrapper();
 
 
@@ -216,8 +217,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         this(null, null);
     } // <init>()
 
-    /** 
-     * Constructs a parser configuration using the specified symbol table. 
+    /**
+     * Constructs a parser configuration using the specified symbol table.
      *
      * @param symbolTable The symbol table to use.
      */
@@ -225,7 +226,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         this(symbolTable, null);
     } // <init>(SymbolTable)
 
-    /** 
+    /**
      * Constructs a parser configuration using the specified symbol table
      * and parent settings.
      *
@@ -246,7 +247,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         // add default recognized features
         final String[] recognizedFeatures = {
-            XERCES_VALIDATION,                 
+            XERCES_VALIDATION,
             XERCES_NAMESPACES,
             SCHEMA,
             DYNAMIC_VALIDATION,
@@ -265,9 +266,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         // add default recognized properties
         final String[] recognizedProperties = {
-            XML_STRING,     
+            XML_STRING,
             SYMBOL_TABLE,
-            ERROR_HANDLER,  
+            ERROR_HANDLER,
             ENTITY_RESOLVER,
             ERROR_REPORTER,
             ENTITY_MANAGER,
@@ -278,7 +279,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         };
         addRecognizedProperties(recognizedProperties);
 
-        // set default values for normalization features        
+        // set default values for normalization features
         features |= NAMESPACES;
         features |= ENTITIES;
         features |= COMMENTS;
@@ -300,7 +301,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         XMLEntityManager manager =  new XMLEntityManager();
         setProperty(ENTITY_MANAGER, manager);
         addComponent(manager);
-        
+
         fValidationManager = createValidationManager();
         setProperty(VALIDATION_MANAGER, fValidationManager);
 
@@ -314,17 +315,17 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
         // REVISIT: try to include XML Schema formatter.
         //          This is a hack to allow DTD configuration to be build.
-        //          
+        //
         if (fErrorReporter.getMessageFormatter("http://www.w3.org/TR/xml-schema-1") == null) {
             MessageFormatter xmft = null;
-            try {            
+            try {
                xmft = (MessageFormatter)(
-                    ObjectFactory.newInstance("org.apache.xerces.impl.xs.XSMessageFormatter", 
+                    ObjectFactory.newInstance("org.apache.xerces.impl.xs.XSMessageFormatter",
                     ObjectFactory.findClassLoader(), true));
             } catch (Exception exception){
             }
 
-             if (xmft !=  null) {  
+             if (xmft !=  null) {
                  fErrorReporter.putMessageFormatter("http://www.w3.org/TR/xml-schema-1", xmft);
              }
         }
@@ -359,19 +360,19 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      * document.
      * <p>
      * This method is synchronous: it will not return until parsing
-     * has ended.  If a client application wants to terminate 
+     * has ended.  If a client application wants to terminate
      * parsing early, it should throw an exception.
      *
      * @param source The input source for the top-level of the
      *               XML document.
      *
-     * @exception XNIException Any XNI exception, possibly wrapping 
+     * @exception XNIException Any XNI exception, possibly wrapping
      *                         another exception.
      * @exception IOException  An IO exception from the parser, possibly
      *                         from a byte stream or character stream
      *                         supplied by the parser.
      */
-    public void parse(XMLInputSource inputSource) 
+    public void parse(XMLInputSource inputSource)
         throws XNIException, IOException{
         // no-op
     }
@@ -379,7 +380,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     /**
      * Sets the document handler on the last component in the pipeline
      * to receive information about the document.
-     * 
+     *
      * @param documentHandler   The document handler.
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
@@ -393,7 +394,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /**
      * Sets the DTD handler.
-     * 
+     *
      * @param dtdHandler The DTD handler.
      */
     public void setDTDHandler(XMLDTDHandler dtdHandler) {
@@ -407,7 +408,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /**
      * Sets the DTD content model handler.
-     * 
+     *
      * @param handler The DTD content model handler.
      */
     public void setDTDContentModelHandler(XMLDTDContentModelHandler handler) {
@@ -458,12 +459,12 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
      * handler immediately.</p>
      *
      * @param errorHandler The error handler.
-     * @exception java.lang.NullPointerException If the handler 
+     * @exception java.lang.NullPointerException If the handler
      *            argument is null.
      * @see #getErrorHandler
      */
     public void setErrorHandler(XMLErrorHandler errorHandler) {
-        if (errorHandler != null) {        
+        if (errorHandler != null) {
             fProperties.put(ERROR_HANDLER, errorHandler);
         }
     } // setErrorHandler(XMLErrorHandler)
@@ -503,9 +504,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /**
      * setProperty
-     * 
-     * @param propertyId 
-     * @param value 
+     *
+     * @param propertyId
+     * @param value
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
@@ -628,9 +629,9 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             if (name.equals(Constants.DOM_ERROR_HANDLER)) {
                 if (value instanceof DOMErrorHandler) {
                     fErrorHandlerWrapper.setErrorHandler((DOMErrorHandler)value);
-                    setErrorHandler(fErrorHandlerWrapper);                    
+                    setErrorHandler(fErrorHandlerWrapper);
                 }
-            
+
                 else {
                     // REVISIT: type mismatch
                     String msg =
@@ -640,7 +641,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-            }       
+            }
             else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
                 if (value instanceof DOMResourceResolver) {
                     try {
@@ -705,7 +706,7 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                                 Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE,
                                 Constants.NS_XMLSCHEMA);
                         }
-                        else if (value.equals(Constants.NS_DTD)) {                            
+                        else if (value.equals(Constants.NS_DTD)) {
                             // REVISIT: revalidation against DTDs is not supported
                              String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN,
@@ -754,10 +755,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                             new Object[] { name });
                     throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
                 }
-                
+
             }
             else {
-                // REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.       
+                // REVISIT: check if this is a boolean parameter -- type mismatch should be thrown.
                 //parameter is not recognized
                 String msg =
                     DOMMessageFormatter.formatMessage(
@@ -821,8 +822,8 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		else if (
 			name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
 				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)) {
-			return Boolean.TRUE;    
-		}        
+			return Boolean.TRUE;
+		}
 		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
             return fErrorHandlerWrapper.getErrorHandler();
 		}
@@ -858,53 +859,88 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 
     /**
      * DOM Level 3 WD - Experimental.
-     * canSetParameter
+     * Check if setting a parameter to a specific value is supported.
+     *
+     * @param name The name of the parameter to check.
+     *
+     * @param value An object. if null, the returned value is true.
+     *
+     * @return true if the parameter could be successfully set to the
+     * specified value, or false if the parameter is not recognized or
+     * the requested value is not supported. This does not change the
+     * current value of the parameter itself.
      */
-	public boolean canSetParameter(String name, Object state) {
-        //features whose parameter value can be set either 'true' or 'false'
-		if (name.equals(Constants.DOM_COMMENTS)
-			|| name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
-			|| name.equals(Constants.DOM_CDATA_SECTIONS)
-			|| name.equals(Constants.DOM_ENTITIES)
-			|| name.equals(Constants.DOM_SPLIT_CDATA)
-			|| name.equals(Constants.DOM_NAMESPACES)
-			|| name.equals(Constants.DOM_VALIDATE)) {
-			return (state instanceof Boolean) ? true : false;
-		}//features whose parameter value can not be set to 'true'
-		else if (
-			name.equals(Constants.DOM_INFOSET)
-				|| name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
-				|| name.equals(Constants.DOM_CANONICAL_FORM)
-				|| name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)                
-                //REVISIT: we need to support true value
-                || name.equals(Constants.DOM_WELLFORMED)
-                ) {
-			if (state instanceof Boolean) {
-				return (state.equals(Boolean.TRUE)) ? false : true;
-			}
-			return false;
-		}//features whose parameter value can not be set to 'true'
-		else if ( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
-				|| name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
-                || name.equals(SEND_PSVI)
-                //Xerces has no way to avoid well formed ness checks
-                || name.equals(Constants.DOM_WELLFORMED)
-                ) {
-			if (state instanceof Boolean) {
-				return (state.equals(Boolean.TRUE)) ? true : false;
-			}
-			return false;
+	public boolean canSetParameter(String name, Object value) {
 
-		}
-		else {
-			String msg =
-				DOMMessageFormatter.formatMessage(
-					DOMMessageFormatter.DOM_DOMAIN,
-					"FEATURE_NOT_FOUND",
-					new Object[] { name });
-			throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
-		}
-	}
+        if (value == null){
+            //if null, the returned value is true.
+            //REVISIT: I dont like this --- even for unrecognized parameter it would
+            //return 'true'. I think it should return false in that case.
+            // Application will be surprised to find that setParameter throws not
+            //recognized exception when canSetParameter returns 'true' Then what is the use
+            //of having canSetParameter ??? - nb.
+            return true ;
+        }
+        if( value instanceof Boolean ){
+            //features whose parameter value can be set either 'true' or 'false'
+            // or they accept any boolean value -- so we just need to check that
+            // its a boolean value..
+            if (name.equals(Constants.DOM_COMMENTS)
+                || name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
+                || name.equals(Constants.DOM_CDATA_SECTIONS)
+                || name.equals(Constants.DOM_ENTITIES)
+                || name.equals(Constants.DOM_SPLIT_CDATA)
+                || name.equals(Constants.DOM_NAMESPACES)
+                || name.equals(Constants.DOM_VALIDATE)) {
+                return true ;
+            }//features whose parameter value can not be set to 'true'
+            else if (
+                name.equals(Constants.DOM_INFOSET)
+                    || name.equals(Constants.DOM_NORMALIZE_CHARACTERS)
+                    || name.equals(Constants.DOM_CANONICAL_FORM)
+                    || name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)
+                    //REVISIT: we need to support true value
+                    || name.equals(Constants.DOM_WELLFORMED)
+                    ) {
+                    return (value.equals(Boolean.TRUE)) ? false : true;
+            }//features whose parameter value can not be set to 'false'
+            else if( name.equals(Constants.DOM_NAMESPACE_DECLARATIONS)
+                    || name.equals(Constants.DOM_WHITESPACE_IN_ELEMENT_CONTENT)
+                    || name.equals(SEND_PSVI)
+                    ) {
+                    return (value.equals(Boolean.TRUE)) ? true : false;
+            }// if name is not among the above listed above -- its not recognized. return false
+            else {
+                return false ;
+            }
+        }
+		else if (name.equals(Constants.DOM_ERROR_HANDLER)) {
+            return (value instanceof DOMErrorHandler) ? true : false ;
+        }
+        else if (name.equals(Constants.DOM_ENTITY_RESOLVER)) {
+            return (value instanceof DOMResourceResolver) ? true : false ;
+        }
+        else if (name.equals(Constants.DOM_SCHEMA_LOCATION)) {
+            return (value instanceof String) ? true : false ;
+        }
+        else if (name.equals(Constants.DOM_SCHEMA_TYPE)) {
+            // REVISIT: should null value be supported?
+            //as of now we are only supporting W3C XML Schema
+            return ( (value instanceof String) && value.equals(Constants.NS_XMLSCHEMA) ) ? true : false ;
+        }
+        else if (name.equals(SYMBOL_TABLE)){
+            // Xerces Symbol Table
+            return (value instanceof SymbolTable) ? true : false ;
+        }
+        else if (name.equals (GRAMMAR_POOL)){
+            return (value instanceof XMLGrammarPool) ? true : false ;
+        }
+        else {
+            //false if the parameter is not recognized or the requested value is not supported.
+            return false ;
+        }
+
+	} //canSetParameter
 
     //
     // Protected methods
