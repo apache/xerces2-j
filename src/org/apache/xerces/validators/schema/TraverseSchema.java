@@ -222,7 +222,7 @@ public class TraverseSchema implements
     private int fSimpleTypeAnonCount = 0;
     private Stack fCurrentTypeNameStack = new Stack();
     private Stack fCurrentGroupNameStack = new Stack();
-    private Hashtable fElementRecurseComplex = new Hashtable();
+    private Vector fElementRecurseComplex = new Vector();
 
     private boolean fElementDefaultQualified = false;
     private boolean fAttributeDefaultQualified = false;
@@ -309,6 +309,16 @@ public class TraverseSchema implements
 
     private class ParticleRecoverableError extends Exception {
         ParticleRecoverableError(String s) {super(s);}
+    }
+
+    private class ElementInfo {
+        int elementIndex;
+        String typeName;
+
+        private ElementInfo(int i, String name) {
+           elementIndex = i;
+           typeName = name;
+        }
     }
 
     //REVISIT: verify the URI.
@@ -3263,7 +3273,8 @@ public class TraverseSchema implements
                                " derivedBy=" + typeInfo.derivedBy +
                              " contentType=" + typeInfo.contentType +
                                " contentSpecHandle=" + typeInfo.contentSpecHandle +
-                               " datatypeValidator=" + typeInfo.datatypeValidator);
+                               " datatypeValidator=" + typeInfo.datatypeValidator + 
+                               " scopeDefined=" + typeInfo.scopeDefined);
 
         fComplexTypeRegistry.put(typeName,typeInfo);
 
@@ -4435,31 +4446,37 @@ public class TraverseSchema implements
     private void checkRecursingComplexType() throws Exception {
         if ( fCurrentTypeNameStack.empty() ) {
             if (! fElementRecurseComplex.isEmpty() ) {
-                Enumeration e = fElementRecurseComplex.keys();
-                while( e.hasMoreElements() ) {
-                    QName nameThenScope = (QName) e.nextElement();
-                    String typeName = (String) fElementRecurseComplex.get(nameThenScope);
 
-                    int eltUriIndex = nameThenScope.uri;
-                    int eltNameIndex = nameThenScope.localpart;
-                    int enclosingScope = nameThenScope.prefix;
-                    ComplexTypeInfo typeInfo =
-                        (ComplexTypeInfo) fComplexTypeRegistry.get(fTargetNSURIString+","+typeName);
-                    if (typeInfo==null) {
-                        throw new Exception ( "Internal Error in void checkRecursingComplexType(). " );
-                    }
-                    else {
-                        int elementIndex = fSchemaGrammar.addElementDecl(new QName(-1, eltNameIndex, eltNameIndex, eltUriIndex),
-                                                                         enclosingScope, typeInfo.scopeDefined,
-                                                                         typeInfo.contentType,
-                                                                         typeInfo.contentSpecHandle,
-                                                                         typeInfo.attlistHead,
-                                                                         typeInfo.datatypeValidator);
-                        fSchemaGrammar.setElementComplexTypeInfo(elementIndex, typeInfo);
-                    }
+               int count= fElementRecurseComplex.size();
 
-                }
-                fElementRecurseComplex.clear();
+               for (int i = 0; i<count; i++) {
+
+                 ElementInfo eobj = (ElementInfo)fElementRecurseComplex.elementAt(i);
+                 int elementIndex = eobj.elementIndex;
+                 String typeName = eobj.typeName;
+
+
+                 ComplexTypeInfo typeInfo =
+                     (ComplexTypeInfo) fComplexTypeRegistry.get(fTargetNSURIString+","+typeName);
+                 if (typeInfo==null) {
+                    throw new Exception ( "Internal Error in void checkRecursingComplexType(). " );
+                 }
+                 else {
+                   // update the element decl with info from the type
+                
+                   fSchemaGrammar.getElementDecl(elementIndex, fTempElementDecl);
+                   fTempElementDecl.type = typeInfo.contentType;
+                   fTempElementDecl.contentSpecIndex = typeInfo.contentSpecHandle;
+                   fTempElementDecl.datatypeValidator = typeInfo.datatypeValidator; 
+                   fSchemaGrammar.setElementDecl(elementIndex, fTempElementDecl);
+
+                   fSchemaGrammar.setFirstAttributeDeclIndex(elementIndex, 
+                        typeInfo.attlistHead);
+                   fSchemaGrammar.setElementComplexTypeInfo(elementIndex,typeInfo);
+
+                 }
+               }
+               fElementRecurseComplex.clear();
             }
         }
     }
@@ -6479,9 +6496,11 @@ throws Exception {
                              uriInd = fTargetNSURI;
                         }
                         int nameIndex = fStringPool.addSymbol(nameStr);
-                        QName tempQName = new QName(fCurrentScope, nameIndex, nameIndex, uriInd);
-                        fElementRecurseComplex.put(tempQName, anonTypeName);
-                        return new QName(-1, nameIndex, nameIndex, uriInd);
+                        QName tempQName = new QName(-1, nameIndex, nameIndex, uriInd);
+                        int eltIndex = fSchemaGrammar.addElementDecl(tempQName,
+                              fCurrentScope, fCurrentScope, -1, -1, -1, null);
+                        fElementRecurseComplex.addElement(new ElementInfo(eltIndex,anonTypeName));
+                        return tempQName; 
 
                     }
                     else {
@@ -6603,9 +6622,11 @@ throws Exception {
                                     uriInd = fTargetNSURI;
                                 }
                                 int nameIndex = fStringPool.addSymbol(nameStr);
-                                QName tempQName = new QName(fCurrentScope, nameIndex, nameIndex, uriInd);
-                                fElementRecurseComplex.put(tempQName, localpart);
-                                return new QName(-1, nameIndex, nameIndex, uriInd);
+                                QName tempQName = new QName(-1, nameIndex, nameIndex, uriInd);
+                                int eltIndex = fSchemaGrammar.addElementDecl(tempQName,
+                                        fCurrentScope, fCurrentScope, -1, -1, -1, null);
+                                fElementRecurseComplex.addElement(new ElementInfo(eltIndex,localpart));
+                                return tempQName;
                             }
                             else {
                                 typeNameIndex = traverseComplexTypeDecl( topleveltype, true );

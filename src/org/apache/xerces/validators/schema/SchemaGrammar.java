@@ -641,6 +641,13 @@ public class SchemaGrammar extends Grammar{
      }
 
     /**
+      set the attribute decl index
+     */
+    protected void setFirstAttributeDeclIndex(int eltNdx, int attListHead) {
+      super.setFirstAttributeDeclIndex(eltNdx, attListHead);
+    }
+
+    /**
      *@return the new contentSpec Index
      */
     protected int addContentSpecNode(int contentSpecType, int value, int otherValue, boolean mustBeUnique) {
