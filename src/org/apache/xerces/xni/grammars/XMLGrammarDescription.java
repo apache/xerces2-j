@@ -73,8 +73,8 @@ public interface XMLGrammarDescription
     // components which create and/or recognize other types of grammars may
     // certainly use their own constants in place of these (so long as
     // their Grammar objects implement this interface).
-    public static final String XML_SCHEMA = "XSD";
-    public static final String XML_DTD = "DTD";
+    public static final String XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String XML_DTD = "http://www.w3.org/TR/REC-xml";
 
     // return the type of this grammar
     public String getGrammarType();
