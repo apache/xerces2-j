@@ -263,13 +263,16 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // get 'target namespace'
         String tnsAtt = null;
         XSComplexTypeDecl enclCT = null;
-        short scope = 0;
+        short scope = XSAttributeDecl.SCOPE_ABSENT;
         if (isGlobal) {
             tnsAtt = schemaDoc.fTargetNamespace;
             scope = XSAttributeDecl.SCOPE_GLOBAL;
         }
         else {
-            enclCT = enclosingCT;
+            if (enclosingCT != null) {
+                enclCT = enclosingCT;
+                scope = XSAttributeDecl.SCOPE_LOCAL;
+            }
             if (formAtt != null) {
                 if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
                     tnsAtt = schemaDoc.fTargetNamespace;

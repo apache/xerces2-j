@@ -225,10 +225,18 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         fName = complexTypeName;
         fComplexTypeDecl.setName(fName);
         fTargetNamespace = schemaDoc.fTargetNamespace;
-        fBlock = blockAtt == null ?
-                             schemaDoc.fBlockDefault : blockAtt.shortValue();
-        fFinal = finalAtt == null ?
-                             schemaDoc.fFinalDefault : finalAtt.shortValue();
+        if (blockAtt == null) {
+            fBlock = (short)(schemaDoc.fBlockDefault&(XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION));
+        }
+        else {
+            fBlock = blockAtt.shortValue();
+        }
+        if (finalAtt == null) {
+            fFinal = (short)(schemaDoc.fFinalDefault&(XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION));
+        }
+        else {
+            fFinal = finalAtt.shortValue();
+        }
         if (abstractAtt != null && abstractAtt.booleanValue())
             fIsAbstract = true;
 
