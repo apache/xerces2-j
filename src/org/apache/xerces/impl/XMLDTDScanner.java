@@ -154,8 +154,6 @@ public class XMLDTDScanner
 
     private boolean fStartDTDCalled;
 
-    private String[] fPseudoAttributeValues = new String[3];
-
     /** Default attribute */
     private XMLAttributesImpl fAttributes = new XMLAttributesImpl();
 
@@ -573,11 +571,11 @@ public class XMLDTDScanner
                 String version = null;
                 String encoding = null;
 
-                scanXMLDeclOrTextDecl(true, fPseudoAttributeValues);
+                scanXMLDeclOrTextDecl(true, fStrings);
                 fMarkUpDepth--;
 
-                version = fPseudoAttributeValues[0];
-                encoding = fPseudoAttributeValues[1];
+                version = fStrings[0];
+                encoding = fStrings[1];
 
                 fEntityScanner.setEncoding(encoding);
 
@@ -1290,55 +1288,31 @@ public class XMLDTDScanner
                              new Object[]{name});
         }
 
-        // public id
-        String publicId = null;
-        if (fEntityScanner.skipString("PUBLIC")) {
-            // spaces
-            if (!skipSeparator(true, !scanningInternalSubset())) {
-                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_PUBIDLITERAL_IN_EXTERNALID",
-                                 null);
-            }
-            scanPubidLiteral(fLiteral);
-            publicId = fLiteral.toString();
-            if (!skipSeparator(true, !scanningInternalSubset())) {
-                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
-                                 null);
-            }
-        }
+        // external id
+        scanExternalID(fStrings, false);
+        String systemId = fStrings[0];
+        String publicId = fStrings[1];
 
-        // system id
-        String systemId = null;
         String notation = null;
-        if (publicId != null || fEntityScanner.skipString("SYSTEM")) {
+        // NDATA
+        if (skipSeparator(false, !scanningInternalSubset())
+            && !isPEDecl && fEntityScanner.skipString("NDATA")) {
             // spaces
-            if (publicId == null
-                && !skipSeparator(true, !scanningInternalSubset())) {
-                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
-                                 null);
+            if (!skipSeparator(true, !scanningInternalSubset())) {
+                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
+                                 new Object[]{name});
             }
-            scanLiteral(fLiteral, false);
-            systemId = fLiteral.toString();
-
-            // NDATA
-            if (skipSeparator(false, !scanningInternalSubset())
-                && !isPEDecl && fEntityScanner.skipString("NDATA")) {
-                // spaces
-                if (!skipSeparator(true, !scanningInternalSubset())) {
-                    reportFatalError("MSG_SPACE_REQUIRED_BEFORE_NOTATION_NAME_IN_UNPARSED_ENTITYDECL",
-                                     new Object[]{name});
-                }
-                notation = fEntityScanner.scanName();
-                if (notation == null) {
-                    reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
-                                     new Object[]{name});
-                }
+            notation = fEntityScanner.scanName();
+            if (notation == null) {
+                reportFatalError("MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL",
+                                 new Object[]{name});
             }
         }
 
         // internal entity
         String text = null;
         if (systemId == null) {
-            scanLiteral(fLiteral, true);
+            scanEntityValue(fLiteral);
             text = fLiteral.toString();
         }
 
@@ -1384,6 +1358,95 @@ public class XMLDTDScanner
     } // scanEntityDecl()
 
     /**
+     * Scans an entity value.
+     *
+     * @param value The string to fill in with the value.
+     *
+     * <strong>Note:</strong> This method uses fString, fStringBuffer (through
+     * the use of scanCharReferenceValue), and fStringBuffer2, anything in them
+     * at the time of calling is lost.
+     */
+    protected final void scanEntityValue(XMLString value)
+        throws IOException, SAXException
+    {
+        int quote = fEntityScanner.scanChar();
+        if (quote != '\'' && quote != '"') {
+            reportFatalError("OpenQuoteMissingInDecl", null);
+        }
+        XMLString literal = fString;
+        if (fEntityScanner.scanLiteral(quote, fString) != quote) {
+            fStringBuffer2.clear();
+            do {
+                fStringBuffer2.append(fString);
+                if (fEntityScanner.skipChar('&')) {
+                    if (fEntityScanner.skipChar('#')) {
+                        scanCharReferenceValue(fStringBuffer2);
+                    }
+                    else {
+                        fStringBuffer2.append('&');
+                        String eName = fEntityScanner.scanName();
+                        if (eName == null) {
+                            reportFatalError("NameRequiredInReference",
+                                             null);
+                        }
+                        else {
+                            fStringBuffer2.append(eName);
+                        }
+                        if (!fEntityScanner.skipChar(';')) {
+                            reportFatalError("SemicolonRequiredInReference",
+                                             new Object[]{eName});
+                        }
+                        else {
+                            fStringBuffer2.append(';');
+                        }
+                    }
+                }
+                else if (fEntityScanner.skipChar('%')) {
+                    while (true) {
+                        String peName = fEntityScanner.scanName();
+                        if (peName == null) {
+                            reportFatalError("NameRequiredInPEReference",
+                                             null);
+                        }
+                        else if (!fEntityScanner.skipChar(';')) {
+                            reportFatalError("SemicolonRequiredInPEReference",
+                                             new Object[]{peName});
+                        }
+                        else if (scanningInternalSubset()) {
+                            reportFatalError("PEReferenceWithinMarkup",
+                                             new Object[]{peName});
+                        }
+                        startPE(peName, true);
+                        fEntityScanner.skipSpaces();
+                        if (!fEntityScanner.skipChar('%'))
+                            break;
+                    }
+                }
+                else {
+                    int c = fEntityScanner.peekChar();
+                    if (XMLChar.isHighSurrogate(c)) {
+                        scanSurrogates(fStringBuffer2);
+                    }
+                    else if (XMLChar.isInvalid(c)) {
+                        reportFatalError("InvalidCharInLiteral",
+                                         new Object[]{Integer.toHexString(c)});
+                        fEntityScanner.scanChar();
+                    }
+                    else if (c != quote) {
+                        fStringBuffer2.append((char)fEntityScanner.scanChar());
+                    }
+                }
+            } while (fEntityScanner.scanLiteral(quote, fString) != quote);
+            fStringBuffer2.append(fString);
+            literal = fStringBuffer2;
+        }
+        value.setValues(literal);
+        if (!fEntityScanner.skipChar(quote)) {
+            reportFatalError("CloseQuoteMissingInDecl", null);
+        }
+    } // scanEntityValue(XMLString):void
+
+    /**
      * Scans a notation declaration
      * <p>
      * <pre>
@@ -1415,34 +1478,9 @@ public class XMLDTDScanner
         }
 
         // external id
-        String systemId = null;
-        String publicId = null;
-        if (fEntityScanner.skipString("SYSTEM")) {
-            if (!skipSeparator(true, !scanningInternalSubset())) {
-                reportFatalError("MSG_SPACE_REQUIRED_BEFORE_SYSTEMLITERAL_IN_EXTERNALID",
-                                 null);
-            }
-            scanLiteral(fLiteral, false);
-            systemId = fLiteral.toString();
-        }
-        else if (fEntityScanner.skipString("PUBLIC")) {
-            if (!skipSeparator(true, !scanningInternalSubset())) {
-                reportFatalError("MSG_SPACE_REQUIRED_AFTER_PUBIDLITERAL_IN_EXTERNALID",
-                                 null);
-            }
-            scanPubidLiteral(fLiteral);
-            publicId = fLiteral.toString();
-
-            // skip possible space
-            skipSeparator(false, !scanningInternalSubset());
-
-            // do we have a system id as well?
-            int c = fEntityScanner.peekChar();
-            if (c != '>') {
-                scanLiteral(fLiteral, false);
-                systemId = fLiteral.toString();
-            }
-        }
+        scanExternalID(fStrings, true);
+        String systemId = fStrings[0];
+        String publicId = fStrings[1];
 
         // skip possible trailing space
         skipSeparator(false, !scanningInternalSubset());
@@ -1672,75 +1710,6 @@ public class XMLDTDScanner
             fEntityScanner.skipSpaces();
             if (!fEntityScanner.skipChar('%'))
                 return true;
-        }
-    }
-
-    protected final void scanLiteral(XMLString literal, boolean lookForPERefs)
-        throws IOException, SAXException
-    {
-        int quote = fEntityScanner.scanChar();
-        if (quote != '\'' && quote != '"') {
-            reportFatalError("OpenQuoteMissingInDecl", null);
-        }
-        XMLString value = fString;
-        if (fEntityScanner.scanLiteral(quote, fString) != quote) {
-            fStringBuffer2.clear();
-            do {
-                fStringBuffer2.append(fString);
-                if (fEntityScanner.skipChar('&')) {
-                    if (fEntityScanner.skipChar('#')) {
-                        scanCharReferenceValue(fStringBuffer2);
-                    }
-                    else {
-                        fStringBuffer2.append('&');
-                    }
-                }
-                else if (fEntityScanner.skipChar('%')) {
-                    if (!lookForPERefs) {
-                        fStringBuffer2.append('%');
-                        continue;
-                    }
-                    while (true) {
-                        String peName = fEntityScanner.scanName();
-                        if (peName == null) {
-                            reportFatalError("NameRequiredInPEReference",
-                                             null);
-                        }
-                        else if (!fEntityScanner.skipChar(';')) {
-                            reportFatalError("SemicolonRequiredInPEReference",
-                                             new Object[]{peName});
-                        }
-                        else if (scanningInternalSubset()) {
-                            reportFatalError("PEReferenceWithinMarkup",
-                                             new Object[]{peName});
-                        }
-                        startPE(peName, true);
-                        fEntityScanner.skipSpaces();
-                        if (!fEntityScanner.skipChar('%'))
-                            break;
-                    }
-                }
-                else {
-                    int c = fEntityScanner.peekChar();
-                    if (XMLChar.isHighSurrogate(c)) {
-                        scanSurrogates(fStringBuffer2);
-                    }
-                    else if (XMLChar.isInvalid(c)) {
-                        reportFatalError("InvalidCharInLiteral",
-                                         new Object[]{Integer.toHexString(c)});
-                        fEntityScanner.scanChar();
-                    }
-                    else if (c != quote) {
-                        fStringBuffer2.append((char)fEntityScanner.scanChar());
-                    }
-                }
-            } while (fEntityScanner.scanLiteral(quote, fString) != quote);
-            fStringBuffer2.append(fString);
-            value = fStringBuffer2;
-        }
-        literal.setValues(value);
-        if (!fEntityScanner.skipChar(quote)) {
-            reportFatalError("CloseQuoteMissingInDecl", null);
         }
     }
 
