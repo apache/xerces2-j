@@ -93,11 +93,20 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Notation;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Entity;
 
-import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.dom3.DOMError;
-import org.apache.xerces.dom3.DOMLocator;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMLocator;
 import org.apache.xerces.dom.DOMErrorImpl;
 import org.apache.xerces.dom.DOMLocatorImpl;
 

@@ -63,8 +63,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import org.apache.xerces.dom3.ls.DOMEntityResolver;
-import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMEntityResolver;
+import org.w3c.dom.ls.DOMInputSource;
 
 import java.io.InputStream;
 import java.io.IOException;

@@ -12,7 +12,7 @@
 
 package org.apache.xerces.dom3.as;
 
-import org.apache.xerces.dom3.ls.DOMWriter;
+import org.w3c.dom.ls.DOMWriter;
 
 /**
  *  A Abstract Schema serialization interface. 

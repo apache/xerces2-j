@@ -65,8 +65,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import org.apache.xerces.dom3.Node3;
-
 /**
  * Elements represent most of the "markup" and structure of the
  * document.  They contain both the data for the element itself
@@ -809,11 +807,12 @@ public class ElementImpl
     }
 
     /**
+     * DOM Level 3 WD- Experimental.
      * Override inherited behavior from NodeImpl and ParentNode to check on
      * attributes
      */
-    public boolean isEqualNode(Node arg, boolean deep) {
-        if (!super.isEqualNode(arg, deep)) {
+    public boolean isEqualNode(Node arg) {
+        if (!super.isEqualNode(arg)) {
             return false;
         }
         boolean hasAttrs = hasAttributes();
@@ -831,17 +830,14 @@ public class ElementImpl
                 Node n1 = map1.item(i);
                 if (n1.getLocalName() == null) { // DOM Level 1 Node
                     Node n2 = map2.getNamedItem(n1.getNodeName());
-                    // Attr.isEqualNode is always deep
-                    if (n2 == null || !((Node3) n1).isEqualNode(n2, true)) {
+                    if (n2 == null || !((NodeImpl) n1).isEqualNode(n2)) {
                         return false;
                     }
                 }
                 else {
                     Node n2 = map2.getNamedItemNS(n1.getNamespaceURI(),
                                                   n1.getLocalName());
-                    // REVISIT: as of 01/18/02 the spec doesn't say whether
-                    // this should be deep
-                    if (n2 == null || !((Node3) n1).isEqualNode(n2, deep)) {
+                    if (n2 == null || !((NodeImpl) n1).isEqualNode(n2)) {
                         return false;
                     }
                 }

@@ -1006,11 +1006,12 @@ public class AttrImpl
     //
 
     /**
+     * DOM Level 3 WD- Experimental.
      * Override inherited behavior from ParentNode to support deep equal.
      * isEqualNode is always deep on Attr nodes.
      */
-    public boolean isEqualNode(Node arg, boolean deep) {
-        return super.isEqualNode(arg, true);
+    public boolean isEqualNode(Node arg) {
+        return super.isEqualNode(arg);
     }
 
     //

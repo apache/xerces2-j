@@ -145,6 +145,40 @@ public class TextImpl
     } // setIgnorableWhitespace(boolean)
     
 
+    /**    
+    * DOM Level 3 WD - Experimental.
+     * Returns whether this text node contains whitespace in element content, 
+     * often abusively called "ignorable whitespace".     
+     */
+    public boolean getIsWhitespaceInElementContent(){
+        // REVISIT: is this implemenation correct?
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+        return internalIsIgnorableWhitespace();
+    }
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Returns all text of <code>Text</code> nodes logically-adjacent text 
+     * nodes to this node, concatenated in document order.
+     * @since DOM Level 3
+     */
+    public String getWholeText(){
+
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                               "getWholeText() not implemented.");
+    }
+    /**
+    * DOM Level 3 WD - Experimental.
+    */
+    public Text replaceWholeText(String content)
+                                 throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                       "replaceWholeText() not implemented.");
+
+    }
+
     /**
      * NON-DOM: Returns whether this Text is ignorable whitespace.
      */

@@ -62,6 +62,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Vector;
 
+
+import org.w3c.dom.UserDataHandler;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -71,9 +73,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
-
-import org.apache.xerces.dom3.Node3;
-import org.apache.xerces.dom3.UserDataHandler;
 
 /**
  * NodeImpl provides the basic structure of a DOM tree. It is never used
@@ -119,7 +118,7 @@ import org.apache.xerces.dom3.UserDataHandler;
  * @since  PR-DOM-Level-1-19980818.
  */
 public abstract class NodeImpl
-    implements Node, NodeList, EventTarget, Cloneable, Serializable, Node3 {
+    implements Node, NodeList, EventTarget, Cloneable, Serializable{
 
     //
     // Constants
@@ -730,10 +729,7 @@ public abstract class NodeImpl
      * @since DOM Level 3
      */
     public String getBaseURI() {
-        // REVISIT: Implementation needed! :)
-        //        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-        //                               "not implemented yet!");
-        return null;            // to allow isEqualNode to work
+        return null;
     }
 
     /**
@@ -877,7 +873,22 @@ public abstract class NodeImpl
         return this == other;
     }
 
-     public String lookupNamespacePrefix(String namespaceURI, 
+
+    /**
+     *  This method checks if the specified <code>namespaceURI</code> is the 
+     * default namespace or not. 
+     * @param namespaceURI The namespace URI to look for.
+     * @return  <code>true</code> if the specified <code>namespaceURI</code> 
+     *   is the default namespace, <code>false</code> otherwise. 
+     * @since DOM Level 3
+     */
+    public boolean isDefaultNamespace(String namespaceURI){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                                      "not implemented yet!");
+
+    }
+
+    public String lookupNamespacePrefix(String namespaceURI, 
                                         boolean useDefault){
          short type = this.getNodeType();
          // REVISIT: When Namespaces 1.1 comes out this may not be true
@@ -1080,7 +1091,7 @@ public abstract class NodeImpl
      *   <code>true</code> otherwise <code>false</code>.
      * @since DOM Level 3
      */
-    public boolean isEqualNode(Node arg, boolean deep) {
+    public boolean isEqualNode(Node arg) {
         if (arg == this) {
             return true;
         }
@@ -1135,11 +1146,11 @@ public abstract class NodeImpl
         }
 
         if (getBaseURI() == null) {
-            if (((Node3) arg).getBaseURI() != null) {
+            if (((NodeImpl) arg).getBaseURI() != null) {
                 return false;
             }
         }
-        else if (!getBaseURI().equals(((Node3) arg).getBaseURI())) {
+        else if (!getBaseURI().equals(((NodeImpl) arg).getBaseURI())) {
             return false;
         }
 

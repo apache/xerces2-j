@@ -57,7 +57,7 @@
 
 package org.apache.xerces.parsers;
 
-import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMInputSource;
 import org.apache.xerces.dom3.as.ASModel;
 import org.apache.xerces.dom3.as.DOMASBuilder;
 import org.apache.xerces.dom3.as.DOMASException;

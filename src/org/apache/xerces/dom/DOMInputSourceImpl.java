@@ -57,7 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMInputSource;
 
 import java.io.Reader;
 import java.io.InputStream;

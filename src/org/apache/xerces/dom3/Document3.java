@@ -16,6 +16,7 @@ package org.apache.xerces.dom3;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.DOMErrorHandler;
 
 /**
  * The <code>Document3</code> interface is an extension to the DOM Level 2

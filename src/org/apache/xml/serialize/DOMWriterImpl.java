@@ -67,8 +67,10 @@ import org.w3c.dom.Element;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
 import org.w3c.dom.DOMException;
-import org.apache.xerces.dom3.ls.DOMWriter;
-import org.apache.xerces.dom3.DOMErrorHandler;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMWriterFilter;
+import org.w3c.dom.DOMErrorHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -386,6 +388,26 @@ public class DOMWriterImpl implements DOMWriter {
      */
     public String getNewLine() {
         return serializer._format.getLineSeparator();
+    }
+
+
+    /**
+     *  When the application provides a filter, the serializer will call out 
+     * to the filter before serializing each Node. Attribute nodes are never 
+     * passed to the filter. The filter implementation can choose to remove 
+     * the node from the stream or to terminate the serialization early. 
+     */
+    public DOMWriterFilter getFilter(){
+        return null;
+    }
+    /**
+     *  When the application provides a filter, the serializer will call out 
+     * to the filter before serializing each Node. Attribute nodes are never 
+     * passed to the filter. The filter implementation can choose to remove 
+     * the node from the stream or to terminate the serialization early. 
+     */
+    public void setFilter(DOMWriterFilter filter){
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"setDOMFilter is not implemented..");
     }
 
 

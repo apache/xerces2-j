@@ -65,10 +65,12 @@ import org.w3c.dom.Element;
 
 
 // DOM L3 LS
-import org.apache.xerces.dom3.ls.DOMImplementationLS;
-import org.apache.xerces.dom3.ls.DOMBuilder;
-import org.apache.xerces.dom3.ls.DOMWriter;
-import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMWriter;
+import org.w3c.dom.ls.DOMInputSource;
+
+
 import org.apache.xerces.parsers.DOMBuilderImpl;
 import org.apache.xml.serialize.DOMWriterImpl;
 
@@ -221,17 +223,47 @@ implements DOMImplementation, DOMImplementationLS {
         return doc;
     }
 
+
+
+    /**
+     * DOM Level 3 WD - Experimental.
+     * This method makes available a <code>DOMImplementation</code>'s 
+     * specialized interface (see ).
+     * @param feature The name of the feature requested (case-insensitive).
+     * @return Returns an alternate <code>DOMImplementation</code> which 
+     *   implements the specialized APIs of the specified feature, if any, 
+     *   or <code>null</code> if there is no alternate 
+     *   <code>DOMImplementation</code> object which implements interfaces 
+     *   associated with that feature. Any alternate 
+     *   <code>DOMImplementation</code> returned by this method must 
+     *   delegate to the primary core <code>DOMImplementation</code> and not 
+     *   return results inconsistent with the primary 
+     *   <code>DOMImplementation</code>
+     */
+    public DOMImplementation getInterface(String feature){
+
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                               "getInterface() is not implemented");
+        
+    }
+
     // DOM L3 LS
     /**
      * DOM Level 3 WD - Experimental.
      */
-    public DOMBuilder createDOMBuilder(short mode)
-    throws DOMException {
+    public DOMBuilder createDOMBuilder(short mode, 
+                                       String schemaType)
+                                       throws DOMException{        
         if (mode == DOMImplementationLS.MODE_ASYNCHRONOUS) {
             throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
                                    "Asynchronous mode is not supported");
         }
-        return new DOMBuilderImpl();
+        if (schemaType.equals("http://www.w3.org/TR/REC-xml")) {
+            return new DOMBuilderImpl("org.apache.xerces.parsers.DTDConfiguration", schemaType);
+        } else {
+            // create default parser configuration validating against XMLSchemas
+            return new DOMBuilderImpl("org.apache.xerces.parsers.StandardParserConfiguration", schemaType);
+        }
     }
     /**
      * DOM Level 3 WD - Experimental.

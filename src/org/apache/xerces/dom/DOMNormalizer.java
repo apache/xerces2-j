@@ -57,8 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.dom3.DOMError;
-import org.apache.xerces.dom3.DOMErrorHandler;
+
+import org.w3c.dom.DOMErrorHandler;
+
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.RevalidationHandler;
 import org.apache.xerces.util.AugmentationsImpl;

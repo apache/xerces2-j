@@ -12,8 +12,8 @@
 
 package org.apache.xerces.dom3.as;
 
-import org.apache.xerces.dom3.ls.DOMInputSource;
-import org.apache.xerces.dom3.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMInputSource;
+import org.w3c.dom.ls.DOMBuilder;
 
 /**
  * An Abstract Schema parser interface.

@@ -70,11 +70,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import org.apache.xerces.dom.CoreDocumentImpl;
-import org.apache.xerces.dom3.DOMErrorHandler;
-import org.apache.xerces.dom3.ls.DOMBuilder;
-import org.apache.xerces.dom3.ls.DOMEntityResolver;
-import org.apache.xerces.dom3.ls.DOMBuilderFilter;
-import org.apache.xerces.dom3.ls.DOMInputSource;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.DOMEntityResolver;
+import org.w3c.dom.ls.DOMBuilderFilter;
+import org.w3c.dom.ls.DOMInputSource;
 
 
 import org.apache.xerces.impl.Constants;
@@ -147,11 +147,11 @@ extends AbstractDOMParser implements DOMBuilder {
     /**
      * Constructs a DOM Builder using the standard parser configuration.
      */
-    public DOMBuilderImpl() {
-        this( (XMLParserConfiguration)ObjectFactory.createObject(
-                                                                "org.apache.xerces.xni.parser.XMLParserConfiguration",
-                                                                "org.apache.xerces.parsers.StandardParserConfiguration"
-                                                                ));
+    public DOMBuilderImpl(String configuration, String schemaType) {
+          this( (XMLParserConfiguration)ObjectFactory.createObject( 
+              "org.apache.xerces.xni.parser.XMLParserConfiguration",
+              configuration));
+          fSchemaType = schemaType;
     } // <init>
 
     /**
@@ -159,7 +159,7 @@ extends AbstractDOMParser implements DOMBuilder {
      */
     public DOMBuilderImpl(XMLParserConfiguration config) {
         super(config);
-
+        
         // add recognized features
         final String[] domRecognizedFeatures = {
             Constants.DOM_CANONICAL_FORM,
@@ -183,6 +183,13 @@ extends AbstractDOMParser implements DOMBuilder {
 
         // Xerces datatype-normalization feature is on by default
         fConfiguration.setFeature( NORMALIZE_DATA, false ); 
+
+
+        // REVISIT: we need to be able to validate against XMLSchema ONLY if
+        //          schemaType equal XML Schema namespace, even if
+        //          DOCTYPE is present.
+        //          This is similar to JAXP schemaLanguage property.         
+
 
     } // <init>(XMLParserConfiguration)
 
@@ -376,7 +383,7 @@ extends AbstractDOMParser implements DOMBuilder {
                 fConfiguration.setFeature(VALIDATION_FEATURE, state);
 
                 // REVISIT: user can speficy schemaType
-                if (fSchemaType == XML_SCHEMA_VALIDATION) {
+                if (fSchemaType==null || fSchemaType.equals(XML_SCHEMA_VALIDATION)) {
                     fConfiguration.setFeature(XMLSCHEMA, state);
                 }
             } else if (name.equals(Constants.DOM_VALIDATE_IF_SCHEMA)) {
@@ -472,7 +479,7 @@ extends AbstractDOMParser implements DOMBuilder {
      * behavior is not defined by this specification.
      *  
      */
-    public Document parseURI(String uri) throws Exception {
+    public Document parseURI(String uri)  {
         XMLInputSource source = new XMLInputSource(null, uri, null);
 
         // initialize grammar pool
@@ -557,18 +564,6 @@ extends AbstractDOMParser implements DOMBuilder {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Not supported");
     }
 
-    /**
-     * NON-DOM: set language type against which validation should
-     * occur.
-     * 
-     * @param schemaType For W3C XML Schema [XML Schema Part 1],
-     *                   applications must use the value "http://www.w3.org/2001/XMLSchema".
-     *                   For XML DTD [XML 1.0], applications must use the value
-     *                   "http://www.w3.org/TR/REC-xml".
-     */
-    public void setSchemaType (String schemaType){
-        fSchemaType = schemaType;
-    }
 
     /**
      * NON-DOM: convert DOMInputSource to XNIInputSource

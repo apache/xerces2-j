@@ -61,6 +61,16 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.io.Serializable;
 
+// REVISIT: This is a HACK! DO NOT MODIFY THIS import.
+//          It allows us to expose DOM L3 implemenation via org.w3c.dom packages
+import org.w3c.dom.*;
+
+import org.w3c.dom.ls.DocumentLS;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.DOMWriter;
+
+/* REVISIT: include those imports when DOM L3 becomes recommendataion
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -78,18 +88,16 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Notation;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
+*/
 
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
-
-import org.apache.xerces.dom3.UserDataHandler;
-import org.apache.xerces.dom3.DOMErrorHandler;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
@@ -124,7 +132,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
  * @since  PR-DOM-Level-1-19980818.
  */
 public class CoreDocumentImpl
-    extends ParentNode implements Document {
+    extends ParentNode implements Document, DocumentLS {
 
     //
     // Constants
@@ -162,6 +170,9 @@ public class CoreDocumentImpl
 
     /**Experimental DOM Level 3 feature: documentURI */
     protected String fDocumentURI;
+
+    /**Experimental DOM Level 3 feature: errorHandler */
+    protected DOMErrorHandler fErrorHandler;
 
     /** Table for user data attached to this document nodes. */
     protected Hashtable userData;
@@ -853,17 +864,7 @@ public class CoreDocumentImpl
      * Retrieve error handler.      
      */
     public DOMErrorHandler getErrorHandler(){
-        DOMErrorHandler domErrorHandler = null;
-        try {
-            XMLErrorHandler errorHandler = fConfiguration.getErrorHandler();
-            if (errorHandler != null && 
-                errorHandler instanceof DOMErrorHandlerWrapper) {
-                domErrorHandler = ((DOMErrorHandlerWrapper)domErrorHandler).getErrorHandler();
-            }
-        } catch (Exception e) {
-
-        }
-        return domErrorHandler;
+        return fErrorHandler;
     }
     /**
      * DOM Level 3 WD - Experimental.
@@ -871,46 +872,20 @@ public class CoreDocumentImpl
      * is encountered while performing an operation on a document.
      */
     public void setErrorHandler(DOMErrorHandler errorHandler) {
-        try {
-            // REVISIT: we probably should not use configuration here.
-            if (fConfiguration == null) {
-                // if symbol table is not available                
-                // it will be created by the configuration
-                fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
-            }
-            fConfiguration.setErrorHandler(new DOMErrorHandlerWrapper(errorHandler));
-        } catch (Exception e) {
-
-        }
+        fErrorHandler = errorHandler;
     }
 
 
     /**
-      * NON-DOM: copy configuration properties from the parsing configuration.
-      * This method is called after the parsing is done 
-      */
-    public void copyConfigurationProperties(XMLParserConfiguration config){
-        // REVISIT: how should we copy symbol table?
-        //          it usually grows with the parser, do we need to carry all data per document?
-        fSymbolTable = new ShadowedSymbolTable((SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE));
-        fEntityResolver =  config.getEntityResolver();
-        
-        // REVISIT: store one grammar per document is not efficient and might not be enough
-        //          need to implement some grammar cashing possibly on DOM Implementation
+     * DOM Level 3 WD - Experimental.
+     * Renaming node
+     */
+    public Node renameNode(Node n, 
+                           String namespaceURI, 
+                           String name)
+                           throws DOMException{
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,"not implemented.");
 
-        XMLGrammarPool pool = (XMLGrammarPool)config.getProperty(DOMValidationConfiguration.GRAMMAR_POOL);
-        if (pool != null) {
-            // retrieve either a DTD or XML Schema grammar
-
-            if (docType != null) {
-                // retrieve DTD grammar
-                // pool.retrieveGrammar();
-            } else {
-                // retrieve XML Schema grammar based on teh namespace of the root element
-                String targetNamespace = this.docElement.getNamespaceURI();
-                // pool.retrieveGrammar();
-            }
-        }
     }
 
 
@@ -936,6 +911,9 @@ public class CoreDocumentImpl
                 // if symbol table is not available                
                 // it will be created by the configuration
                 fConfiguration =  new DOMValidationConfiguration(fSymbolTable);
+            }
+            if (fErrorHandler != null) {
+                fConfiguration.setErrorHandler(new DOMErrorHandlerWrapper(fErrorHandler));
             }
             fConfiguration.reset();
             // REVISIT: validation is performed only against one type of grammar
@@ -1112,6 +1090,119 @@ public class CoreDocumentImpl
      */
     public void setDocumentURI(String documentURI){
         fDocumentURI = documentURI;
+    }
+
+
+    //
+    // DOM L3 LS
+    //
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Indicates whether the method load should be synchronous or 
+     * asynchronous. When the async attribute is set to <code>true</code> 
+     * the load method returns control to the caller before the document has 
+     * completed loading. The default value of this property is 
+     * <code>false</code>.
+     * <br>Setting the value of this attribute might throw NOT_SUPPORTED_ERR 
+     * if the implementation doesn't support the mode the attribute is being 
+     * set to. Should the DOM spec define the default value of this 
+     * property? What if implementing both async and sync IO is impractical 
+     * in some systems?  2001-09-14. default is <code>false</code> but we 
+     * need to check with Mozilla and IE. 
+     */
+    public boolean getAsync() {
+        return false;
+    }
+    
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Indicates whether the method load should be synchronous or 
+     * asynchronous. When the async attribute is set to <code>true</code> 
+     * the load method returns control to the caller before the document has 
+     * completed loading. The default value of this property is 
+     * <code>false</code>.
+     * <br>Setting the value of this attribute might throw NOT_SUPPORTED_ERR 
+     * if the implementation doesn't support the mode the attribute is being 
+     * set to. Should the DOM spec define the default value of this 
+     * property? What if implementing both async and sync IO is impractical 
+     * in some systems?  2001-09-14. default is <code>false</code> but we 
+     * need to check with Mozilla and IE. 
+     */
+    public void setAsync(boolean async) {
+        if (async) {
+            // NOT SUPPORTED
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+                                   "Asynchronous mode is not supported");
+        }
+    }
+    /**
+     * DOM Level 3 WD - Experimental.
+     * If the document is currently being loaded as a result of the method 
+     * <code>load</code> being invoked the loading and parsing is 
+     * immediately aborted. The possibly partial result of parsing the 
+     * document is discarded and the document is cleared.
+     */
+
+    public void abort() {
+    }
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Replaces the content of the document with the result of parsing the 
+     * given URI. Invoking this method will either block the caller or 
+     * return to the caller immediately depending on the value of the async 
+     * attribute. Once the document is fully loaded the document will fire a 
+     * "load" event that the caller can register as a listener for. If an 
+     * error occurs the document will fire an "error" event so that the 
+     * caller knows that the load failed (see <code>ParseErrorEvent</code>).
+     * @param uri The URI reference for the XML file to be loaded. If this is 
+     *   a relative URI...
+     * @return If async is set to <code>true</code> <code>load</code> returns 
+     *   <code>true</code> if the document load was successfully initiated. 
+     *   If an error occurred when initiating the document load 
+     *   <code>load</code> returns <code>false</code>.If async is set to 
+     *   <code>false</code> <code>load</code> returns <code>true</code> if 
+     *   the document was successfully loaded and parsed. If an error 
+     *   occurred when either loading or parsing the URI <code>load</code> 
+     *   returns <code>false</code>.
+     */
+    public boolean load(String uri) {
+        return false;
+    }
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Replace the content of the document with the result of parsing the 
+     * input string, this method is always synchronous.
+     * @param source A string containing an XML document.
+     * @return <code>true</code> if parsing the input string succeeded 
+     *   without errors, otherwise <code>false</code>.
+     */
+    public boolean loadXML(String source) {
+        return false;
+    }
+    
+    /**
+     * DOM Level 3 WD - Experimental.
+     * Save the document or the given node to a string (i.e. serialize the 
+     * document or node).
+     * @param snode Specifies what to serialize, if this parameter is 
+     *   <code>null</code> the whole document is serialized, if it's 
+     *   non-null the given node is serialized.
+     * @return The serialized document or <code>null</code>.
+     * @exception DOMException
+     *   WRONG_DOCUMENT_ERR: Raised if the node passed in as the node 
+     *   parameter is from an other document.
+     */
+    public String saveXML(Node snode)
+                          throws DOMException {
+        if ( snode != null &&
+             getOwnerDocument() != snode.getOwnerDocument() )
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"Node "+snode.getNodeName()+" does not belongs to this Document.");
+        DOMImplementationLS domImplLS = (DOMImplementationLS)DOMImplementationImpl.getDOMImplementation();
+        DOMWriter xmlWriter = domImplLS.createDOMWriter();
+        if (snode == null) {
+            snode = this;
+        }
+        return xmlWriter.writeToString(snode);
     }
 
 
@@ -1708,7 +1799,7 @@ public class CoreDocumentImpl
     }
 
     /**
-     * Xerces-specific constructor. "localName" is passed in, so we don't need
+     * NON-DOM: Xerces-specific constructor. "localName" is passed in, so we don't need
      * to create a new String for it.
      * 
      * @param namespaceURI The namespace URI of the element to
@@ -2034,6 +2125,34 @@ public class CoreDocumentImpl
                                           key, r.fData, null, null);
                     }
                 }
+            }
+        }
+    }
+
+    /**
+      * NON-DOM: copy configuration properties from the parsing configuration.
+      * This method is called after the parsing is done 
+      */
+    public void copyConfigurationProperties(XMLParserConfiguration config){
+        // REVISIT: how should we copy symbol table?
+        //          it usually grows with the parser, do we need to carry all data per document?
+        fSymbolTable = new ShadowedSymbolTable((SymbolTable)config.getProperty(DOMValidationConfiguration.SYMBOL_TABLE));
+        fEntityResolver =  config.getEntityResolver();
+        
+        // REVISIT: store one grammar per document is not efficient and might not be enough
+        //          need to implement some grammar cashing possibly on DOM Implementation
+
+        XMLGrammarPool pool = (XMLGrammarPool)config.getProperty(DOMValidationConfiguration.GRAMMAR_POOL);
+        if (pool != null) {
+            // retrieve either a DTD or XML Schema grammar
+
+            if (docType != null) {
+                // retrieve DTD grammar
+                // pool.retrieveGrammar();
+            } else {
+                // retrieve XML Schema grammar based on teh namespace of the root element
+                String targetNamespace = this.docElement.getNamespaceURI();
+                // pool.retrieveGrammar();
             }
         }
     }

@@ -58,9 +58,9 @@
 package org.apache.xerces.dom;
 
 import org.apache.xerces.xni.parser.XMLParseException;
-
-import org.apache.xerces.dom3.DOMError;
-import org.apache.xerces.dom3.DOMLocator;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMLocator;
+import org.w3c.dom.Node;
 
 
 /**
@@ -126,18 +126,6 @@ public class DOMErrorImpl implements DOMError {
     }
 
     /**
-     * The byte or character offset into the input source, if we're parsing a 
-     * file or a byte stream then this will be the byte offset into that 
-     * stream, but if a character media is parsed then the offset will be 
-     * the character offset.exception is a reserved word, we need to rename 
-     * it.
-     */
-
-    public Object getException() {
-        return fException;
-    } 
-
-    /**
      * The location of the error.
      */
 
@@ -173,6 +161,15 @@ public class DOMErrorImpl implements DOMError {
 
     public void setException(Exception ex){
         fException = ex;
+    }
+
+    /**
+     * The related platform dependent exception if any.exception is a reserved 
+     * word, we need to rename it.Change to "relatedException". (F2F 26 Sep 
+     * 2001)
+     */
+    public Object getRelatedException(){
+        return fException;
     }
 
     public void reset(){

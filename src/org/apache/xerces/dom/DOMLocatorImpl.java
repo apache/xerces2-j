@@ -57,7 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import org.apache.xerces.dom3.DOMLocator;
+import org.w3c.dom.DOMLocator;
 import org.w3c.dom.Node;
 
 
