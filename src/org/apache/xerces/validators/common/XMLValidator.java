@@ -405,6 +405,7 @@ NamespacesScope.NamespacesHandler {
 
    public void setGrammarResolver(GrammarResolver grammarResolver){
       fGrammarResolver = grammarResolver;
+      initDataTypeValidators();
    }
 
    //
@@ -1514,37 +1515,41 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
       fEpsilonIndex = fStringPool.addSymbol("<<CMNODE_EPSILON>>");
       fXMLLang = fStringPool.addSymbol("xml:lang");
 
-      try {
-         //Initialize Validators
-         //Datatype Registry
-
-         fDataTypeReg = 
-         DatatypeValidatorFactoryImpl.getDatatypeRegistry();
-         fDataTypeReg.resetRegistry();
-         //fDatatypeReg.resetRegistry();
-
-         fValID       = this.fDataTypeReg.getDatatypeValidator("ID" );
-         fValIDRef    = this.fDataTypeReg.getDatatypeValidator("IDREF" );
-         fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
-         fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
-         fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
-         fValNMTOKEN  = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
-         fValNMTOKENS = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
-         fValNOTATION = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
-
-
-         //Initialize ENTITY & ENTITIES Validatorh
-         Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
-            (Object) this.fStringPool};
-         fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
-         fValENTITY.validate( null, fValidateENTITYMsg );
-         fValENTITIES.validate( null, fValidateENTITYMsg );
-      } catch ( InvalidDatatypeValueException ex ) {
-         System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
-      }
-
+      initDataTypeValidators();
 
    } // init()
+
+   private void initDataTypeValidators() {
+       try {
+           //Initialize Validators
+           //Datatype Registry
+           if ( fGrammarResolver != null ) {
+               fDataTypeReg = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
+           }
+           if ( fDataTypeReg != null ) {
+               fDataTypeReg.resetRegistry();
+
+               fValID       = this.fDataTypeReg.getDatatypeValidator("ID" );
+               fValIDRef    = this.fDataTypeReg.getDatatypeValidator("IDREF" );
+               fValIDRefs   = this.fDataTypeReg.getDatatypeValidator("IDREFS" );
+               fValENTITY   = this.fDataTypeReg.getDatatypeValidator("ENTITY" );
+               fValENTITIES = this.fDataTypeReg.getDatatypeValidator("ENTITIES" );
+               fValNMTOKEN  = this.fDataTypeReg.getDatatypeValidator("NMTOKEN");
+               fValNMTOKENS = this.fDataTypeReg.getDatatypeValidator("NMTOKENS");
+               fValNOTATION = this.fDataTypeReg.getDatatypeValidator("NOTATION" );
+
+
+               //Initialize ENTITY & ENTITIES Validatorh
+               Object[] packageArgsEntityVal = { (Object) this.fEntityHandler,
+                   (Object) this.fStringPool};
+                   fValidateENTITYMsg.setDatatypeObject( (Object ) packageArgsEntityVal);
+                   fValENTITY.validate( null, fValidateENTITYMsg );
+                   fValENTITIES.validate( null, fValidateENTITYMsg );
+           }
+       } catch ( InvalidDatatypeValueException ex ) {
+           System.err.println("Error: " + ex.getLocalizedMessage() );//Should not happen
+       }
+   }
 
    // other
 
@@ -2781,14 +2786,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
                            if (fValidating) {
 
-                              if (fGrammarIsDTDGrammar && 
-                                  (fTempAttDecl.type == XMLAttributeDecl.TYPE_ENTITY ||
-                                   fTempAttDecl.type == XMLAttributeDecl.TYPE_ENUMERATION ||
-                                   fTempAttDecl.type == XMLAttributeDecl.TYPE_ID ||
-                                   fTempAttDecl.type == XMLAttributeDecl.TYPE_IDREF ||
-                                   fTempAttDecl.type == XMLAttributeDecl.TYPE_NMTOKEN ||
-                                   fTempAttDecl.type == XMLAttributeDecl.TYPE_NOTATION)
-                                 ) {
+                              if (fGrammarIsDTDGrammar) {
                                   int normalizedValue = validateDTDattribute(element, attrList.getAttValue(index), fTempAttDecl);
                                   attrList.setAttValue(index, normalizedValue);
                                  

@@ -831,9 +831,9 @@ public abstract class XMLParser
         fValidator.resetOrCopy(fStringPool);
         fNeedReset = false;
         fGrammarResolver = new GrammarResolverImpl();
+        fGrammarResolver.clearGrammarResolver();
         fScanner.setGrammarResolver(fGrammarResolver);
         fValidator.setGrammarResolver(fGrammarResolver);
-        DatatypeValidatorFactoryImpl.getDatatypeRegistry().resetRegistry();
     }
 
     //

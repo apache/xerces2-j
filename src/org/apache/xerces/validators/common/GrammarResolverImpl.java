@@ -61,6 +61,8 @@ package org.apache.xerces.validators.common;
 import java.util.*;
 import org.apache.xerces.validators.common.Grammar;
 import org.apache.xerces.validators.common.GrammarResolver;
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactoryImpl;
 
 
 /**
@@ -84,6 +86,8 @@ public class GrammarResolverImpl implements GrammarResolver {
      */
     private Hashtable fGrammarRegistry    = new Hashtable();//This class keeps a hashtable of references to Grammar structures
 
+    private DatatypeValidatorFactoryImpl fDataTypeReg = new DatatypeValidatorFactoryImpl();
+
     //
     // Constructors
     //
@@ -105,6 +109,10 @@ public class GrammarResolverImpl implements GrammarResolver {
      */
     public Grammar getGrammar( String nameSpaceKey ) {
         return(Grammar) ( fGrammarRegistry.get( nameSpaceKey ) ); 
+    }
+
+    public DatatypeValidatorFactory getDatatypeRegistry(){
+        return fDataTypeReg;
     }
 
     /**
@@ -194,6 +202,7 @@ public class GrammarResolverImpl implements GrammarResolver {
      */
     public void clearGrammarResolver() { 
         fGrammarRegistry.clear();
+        fDataTypeReg.resetRegistry();
     }
 
 

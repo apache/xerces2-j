@@ -398,8 +398,7 @@ public class TraverseSchema implements
 
     private Element fSchemaRootElement;
 
-    private DatatypeValidatorFactoryImpl fDatatypeRegistry =  
-                          DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+    private DatatypeValidatorFactoryImpl fDatatypeRegistry = null;
 
     private Hashtable fComplexTypeRegistry = new Hashtable();
     private Hashtable fAttributeDeclRegistry = new Hashtable();
@@ -529,6 +528,7 @@ public class TraverseSchema implements
         fStringPool = stringPool;
         fSchemaGrammar = schemaGrammar;
         fGrammarResolver = grammarResolver;
+        fDatatypeRegistry = (DatatypeValidatorFactoryImpl) fGrammarResolver.getDatatypeRegistry();
 
         if (root == null) { 
             // REVISIT: Anything to do?
@@ -785,27 +785,24 @@ public class TraverseSchema implements
 
     private void traverseInclude(Element includeDecl) throws Exception {
 
-        //TO DO: !!!!! location needs to be resolved first.
-
- 
-    String location = includeDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        String location = includeDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
         
-         // expand it before passing it to the parser
-         InputSource source = null;
-         if (fEntityResolver != null) {
+        // expand it before passing it to the parser
+        InputSource source = null;
+        if (fEntityResolver != null) {
             source = fEntityResolver.resolveEntity("", location);
-         }
-         if (source == null) {
+        }
+        if (source == null) {
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
-         }
-         else {
+        }
+        else {
             // create a string for uniqueness of this included schema in fIncludeLocations
             if (source.getPublicId () != null)
                 location = source.getPublicId ();
-            
+
             location += (',' + source.getSystemId ());
-         }
+        }
 
         if (fIncludeLocations.contains((Object)location)) {
             return;
@@ -952,87 +949,87 @@ public class TraverseSchema implements
     }
 
     private void traverseImport(Element importDecl)  throws Exception {
-    String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        String location = importDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
         // expand it before passing it to the parser
-         InputSource source = null;
-         if (fEntityResolver != null) {
+        InputSource source = null;
+        if (fEntityResolver != null) {
             source = fEntityResolver.resolveEntity("", location);
-         }
-         if (source == null) {
+        }
+        if (source == null) {
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
-         }
+        }
          else {
-            // create a string for uniqueness of this imported schema in fImportLocations
-            if (source.getPublicId () != null)
-                location = source.getPublicId ();
-            
-            location += (',' + source.getSystemId ());
+             // create a string for uniqueness of this imported schema in fImportLocations
+             if (source.getPublicId () != null)
+                 location = source.getPublicId ();
+
+             location += (',' + source.getSystemId ());
          }
 
          if (fImportLocations.contains((Object)location)) {
-            return;
-        }
-        fImportLocations.addElement((Object)location);
+             return;
+         }
+         fImportLocations.addElement((Object)location);
 
-    String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
-    SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
-        
-    if (importedGrammar == null) {
-        importedGrammar = new SchemaGrammar();
+         String namespaceString = importDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE);
+         SchemaGrammar importedGrammar = (SchemaGrammar) fGrammarResolver.getGrammar(namespaceString);
+
+         if (importedGrammar == null) {
+             importedGrammar = new SchemaGrammar();
+         }
+
+         DOMParser parser = new DOMParser() {
+                public void ignorableWhitespace(char ch[], int start, int length) {}
+                public void ignorableWhitespace(int dataIdx) {}
+         };
+         parser.setEntityResolver( new Resolver() );
+         parser.setErrorHandler(  new ErrorHandler() );
+
+         try {
+             parser.setFeature("http://xml.org/sax/features/validation", false);
+             parser.setFeature("http://xml.org/sax/features/namespaces", true);
+             parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
+         }catch(  org.xml.sax.SAXNotRecognizedException e ) {
+             e.printStackTrace();
+         }catch( org.xml.sax.SAXNotSupportedException e ) {
+             e.printStackTrace();
+         }
+
+         try {
+             parser.parse( source );
+         }catch( IOException e ) {
+             e.printStackTrace();
+         }catch( SAXException e ) {
+             e.printStackTrace();
+         }
+
+         Document     document   = parser.getDocument(); //Our Grammar
+         Element root = null;
+         if (document != null) {
+             root = document.getDocumentElement();
+         }
+
+         if (root != null) {
+             String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
+             if (!targetNSURI.equals(namespaceString) ) {
+                 // REVISIT: Localize
+                 reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
+                                          +targetNSURI+"' from what is declared '"+namespaceString+"'.");
+             }
+             else
+                 new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location);
+         }
+         else {
+             reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
+         }
     }
 
-        DOMParser parser = new DOMParser() {
-            public void ignorableWhitespace(char ch[], int start, int length) {}
-            public void ignorableWhitespace(int dataIdx) {}
-        };
-        parser.setEntityResolver( new Resolver() );
-        parser.setErrorHandler(  new ErrorHandler() );
-
-        try {
-            parser.setFeature("http://xml.org/sax/features/validation", false);
-            parser.setFeature("http://xml.org/sax/features/namespaces", true);
-            parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
-        }catch(  org.xml.sax.SAXNotRecognizedException e ) {
-            e.printStackTrace();
-        }catch( org.xml.sax.SAXNotSupportedException e ) {
-            e.printStackTrace();
-        }
-
-        try {
-            parser.parse( source );
-        }catch( IOException e ) {
-            e.printStackTrace();
-        }catch( SAXException e ) {
-            e.printStackTrace();
-        }
-
-        Document     document   = parser.getDocument(); //Our Grammar
-        Element root = null;
-        if (document != null) {
-            root = document.getDocumentElement();
-        }
-
-        if (root != null) {
-            String targetNSURI = root.getAttribute(SchemaSymbols.ATT_TARGETNAMESPACE);
-            if (!targetNSURI.equals(namespaceString) ) {
-                // REVISIT: Localize
-                reportGenericSchemaError("imported schema '"+location+"' has a different targetNameSpace '"
-                                         +targetNSURI+"' from what is declared '"+namespaceString+"'.");
-            }
-            else
-                new TraverseSchema(root, fStringPool, importedGrammar, fGrammarResolver, fErrorReporter, location);
-        }
-        else {
-            reportGenericSchemaError("Could not get the doc root for imported Schema file: "+location);
-        }
-    }
-
-/**
-     * No-op - Traverse Annotation Declaration
-     * 
-     * @param comment
-     */
+    /**
+    * No-op - Traverse Annotation Declaration
+    * 
+    * @param comment
+    */
     private void traverseAnnotationDecl(Element comment) {
         //TO DO
         return ;

@@ -496,9 +496,10 @@ public class DTDGrammar
         fAttributeDecl.type = attType;
         fAttributeDecl.list = attList;
         fAttributeDecl.enumeration = enumeration;
+        /***
         fAttributeDecl.datatypeValidator = 
             DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(attTypeString);
-        // REVISIT: Don't forget the enumeration
+        ****/
         fAttributeDecl.defaultType = attDefaultType;
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);
 

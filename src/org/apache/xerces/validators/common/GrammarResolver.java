@@ -58,6 +58,7 @@
 package org.apache.xerces.validators.common;
 import java.util.*;
 import org.apache.xerces.validators.common.Grammar;
+import org.apache.xerces.validators.datatype.DatatypeValidatorFactory;
 
 /**
  * This class embodies the representation of a Grammar
@@ -82,6 +83,8 @@ public interface GrammarResolver {
      *         with NameSpace key.
      */
     public Grammar getGrammar( String nameSpaceKey );
+
+    public DatatypeValidatorFactory getDatatypeRegistry();
 
     /**
      * 
