@@ -130,4 +130,15 @@ public abstract class TypeValidator {
         return -1;
     }
 
+    // check whether the character is in the range 0x30 ~ 0x39
+    public static final boolean isDigit(char ch) {
+        return ch >= '0' && ch <= '9';
+    }
+    
+    // if the character is in the range 0x30 ~ 0x39, return its int value (0~9),
+    // otherwise, return -1
+    public static final int getDigit(char ch) {
+        return isDigit(ch) ? ch - '0' : -1;
+    }
+    
 } // interface TypeValidator

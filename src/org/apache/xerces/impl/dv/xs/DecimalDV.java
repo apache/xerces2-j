@@ -60,6 +60,7 @@ package org.apache.xerces.impl.dv.xs;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.validation.ValidationContext;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Represent the schema type "decimal"
@@ -76,12 +77,87 @@ public class DecimalDV extends TypeValidator {
     }
 
     public Object getActualValue(String content, ValidationContext context) throws InvalidDatatypeValueException {
+
+        int len = content.length();
+        if (len == 0)
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
+        
+        // these 4 variables are used to indicate where the integre/fraction
+        // parts start/end.
+        int intStart = 0, intEnd = 0, fracStart = 0, fracEnd = 0;
+
+        // Deal with leading sign symbol if present
+        if (content.charAt(0) == '+') {
+            // skip '+', so intStart should be 1
+            intStart = intEnd = 1;
+        }
+        else if (content.charAt(0) == '-') {
+            // keep '-', so intStart is stil 0
+            intEnd = 1;
+        }
+
+        // Find the ending position of the integer part
+        while (intEnd < len && isDigit(content.charAt(intEnd)))
+            intEnd++;
+        
+        // Not reached the end yet
+        if (intEnd < len) {
+            // the remaining part is not ".DDD", error
+            if (content.charAt(intEnd) != '.')
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
+
+            // fraction part starts after '.', and ends at the end of the input
+            fracStart = intEnd + 1;
+            fracEnd = len;
+        }
+        
+        // no integer part, no fraction part, error.
+        if (intStart == intEnd && fracStart == fracEnd)
+            throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
+
+        // count leading zeroes in integer part
+        int actualIntStart = content.charAt(intStart) == '-' ? intStart + 1 : intStart;
+        while (actualIntStart < intEnd && content.charAt(actualIntStart) == '0') {
+            actualIntStart++;
+        }
+        
+        // ignore trailing zeroes in fraction part
+        while (fracEnd > fracStart && content.charAt(fracEnd-1) == '0') {
+            fracEnd--;
+        }
+        
+        // check whether there is non-digit characters in the fraction part
+        for (int fracPos = fracStart; fracPos < fracEnd; fracPos++) {
+            if (!isDigit(content.charAt(fracPos)))
+                throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
+        }
+        
+        int fracNum = fracEnd - fracStart;
+        
+        // concatenate the two parts to one integer string
+        String intString = null;
+        if (intEnd > intStart) {
+            intString = content.substring(intStart, intEnd);
+            if (fracNum > 0)
+                intString += content.substring(fracStart, fracEnd);
+        }
+        else {
+            if (fracNum > 0)
+                intString = content.substring(fracStart, fracEnd);
+            else
+                // ".00", treat it as "0"
+                intString = "0";
+        }
+        
         try {
-            return new BigDecimal( stripPlusIfPresent( content));
+            // create a BigInteger using the integer string
+            BigInteger intVal = new BigInteger(intString);
+            // carete a MyDecimal using the BigInteger and scale
+            return new XDecimal(intVal, intEnd - actualIntStart, fracNum);
         } catch (Exception nfe) {
             throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.1", new Object[]{content, "decimal"});
         }
-    } //getActualValue()
+    }
 
     public boolean isEqual(Object value1, Object value2) {
         if (!(value1 instanceof BigDecimal) || !(value2 instanceof BigDecimal))
@@ -94,36 +170,22 @@ public class DecimalDV extends TypeValidator {
     }
 
     public int getTotalDigits(Object value){
-        return ((BigDecimal)value).movePointRight(((BigDecimal)value).scale()).toString().length() -
-                ((((BigDecimal)value).signum() < 0) ? 1 : 0); // account for minus sign
+        return ((XDecimal)value).totalDigits;
     }
 
     public int getFractionDigits(Object value){
         return ((BigDecimal)value).scale();
     }
-
-    /**
-     * This class deals with a bug in BigDecimal class
-     * present up to version 1.1.2. 1.1.3 knows how
-     * to deal with the + sign.
-     *
-     * This method strips the first '+' if it found
-     * alone such as.
-     * +33434.344
-     *
-     * If we find +- then nothing happens we just
-     * return the string passed
-     *
-     * @param value
-     * @return
-     */
-    static private String stripPlusIfPresent(String value) {
-        String strippedPlus = value;
-
-        if (value.length() >= 2 && value.charAt(0) == '+' && value.charAt(1) != '-') {
-            strippedPlus = value.substring(1);
-        }
-        return strippedPlus;
-    }//getStripPlusIfPresent()
-
+    
 } // class DecimalDV
+
+// store total digits in this class
+class XDecimal extends java.math.BigDecimal {
+    int totalDigits = 0;
+    XDecimal(BigInteger intVal, int intNum, int fracNum) {
+        super(intVal, fracNum);
+        // the canonical form of decimal requires at least one digit
+        // on both sides of the decimal point
+        totalDigits = (intNum == 0 ? 1 : intNum) + fracNum;
+    }
+}
