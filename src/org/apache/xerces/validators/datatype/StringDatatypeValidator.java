@@ -367,7 +367,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
             int comparisonResult;
             comparisonResult  = compare( content, fMinExclusive );
 
-            System.out.println( "exclusive = " + comparisonResult );
+            //System.out.println( "exclusive = " + comparisonResult );
 
             if ( comparisonResult <= 0 )
                 throw new InvalidDatatypeValueException( "MinExclusive:Value '"+content+ "' must be " +
@@ -376,7 +376,7 @@ public class StringDatatypeValidator extends AbstractDatatypeValidator{
         if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult = compare( content, fMinInclusive );
-            System.out.println( "inclusive = " + comparisonResult );
+            //System.out.println( "inclusive = " + comparisonResult );
             if ( comparisonResult < 0 )
                 throw new InvalidDatatypeValueException( "MinInclusive:Value '"+content+ "' must be " +
                        "lexicographically greater or equal than '" + fMinInclusive  + "'." );

@@ -325,7 +325,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         if ( isMaxExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMaxExclusive );
-            System.out.println( "maxExc = " + comparisonResult );
+            //System.out.println( "maxExc = " + comparisonResult );
 
             if ( comparisonResult >= 0 ) {
                 throw new InvalidDatatypeValueException( "Value '"+content+ "'  must be " +
@@ -345,7 +345,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         if ( isMinExclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult  = compare( content, fMinExclusive );
-            System.out.println( "minExc = " + comparisonResult );
+            //System.out.println( "minExc = " + comparisonResult );
 
             if ( comparisonResult <= 0 )
                 throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
@@ -354,7 +354,7 @@ public class QNameDatatypeValidator extends  AbstractDatatypeValidator {
         if ( isMinInclusiveDefined == true ) {
             int comparisonResult;
             comparisonResult = compare( content, fMinInclusive );
-            System.out.println( "minInc = " + comparisonResult );
+            //System.out.println( "minInc = " + comparisonResult );
             if ( comparisonResult < 0 )
                 throw new InvalidDatatypeValueException( "Value '"+content+ "' must be " +
                                                          "lexicographically greater or equal than '" + fMinInclusive  + "'." );
