@@ -2246,7 +2246,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                }
                grammar = new SchemaGrammar();
                grammar.setGrammarDocument(document);
-               tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId());
+  
+         	   // pass parser's entity resolver (local Resolver), which also has reference to user's 
+         	   // entity resolver, and also can fall-back to entityhandler's expandSystemId()
+         	   
+               tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, source.getSystemId(), currentER);
                fGrammarResolver.putGrammar(document.getDocumentElement().getAttribute("targetNamespace"), grammar);
             }
          } catch (Exception e) {
