@@ -672,7 +672,12 @@ public class HTMLSerializer
                 // HTML: If public identifier specified, print it with
                 //  system identifier, if specified.
                 if ( _docTypePublicId != null && ( ! _xhtml || _docTypeSystemId != null )  ) {
-                    _printer.printText( "<!DOCTYPE HTML PUBLIC " );
+                    if (_xhtml) {
+                        _printer.printText( "<!DOCTYPE html PUBLIC " );
+                    }
+                    else {
+                        _printer.printText( "<!DOCTYPE HTML PUBLIC " );
+                    }
                     printDoctypeURL( _docTypePublicId );
                     if ( _docTypeSystemId != null ) {
                         if ( _indenting ) {
@@ -685,7 +690,12 @@ public class HTMLSerializer
                     _printer.printText( '>' );
                     _printer.breakLine();
                 } else if ( _docTypeSystemId != null ) {
-                    _printer.printText( "<!DOCTYPE HTML SYSTEM " );
+                    if (_xhtml) {
+                        _printer.printText( "<!DOCTYPE html SYSTEM " );
+                    }
+                    else {
+                        _printer.printText( "<!DOCTYPE HTML SYSTEM " );
+                    }
                     printDoctypeURL( _docTypeSystemId );
                     _printer.printText( '>' );
                     _printer.breakLine();
