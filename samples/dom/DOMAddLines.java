@@ -61,9 +61,14 @@ import java.io.*;
 
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.parsers.DOMParser;
+import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
+import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
+import org.apache.xerces.xni.XNIException;
+
+import org.apache.xerces.dom3.Node3;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -92,7 +97,8 @@ public class DOMAddLines extends DOMParser  {
 
    /** Print writer. */
    private PrintWriter out;
-   static private boolean NotIncludeIgnorableWhiteSpaces = false; 
+   static private boolean NotIncludeIgnorableWhiteSpaces = false;
+   private XMLLocator locator; 
 
 
    public DOMAddLines( String inputName ) {
@@ -116,7 +122,7 @@ public class DOMAddLines extends DOMParser  {
          return;
       }
 
-      String lineRowColumn = (String ) ((NodeImpl) node).getUserData();
+      String lineRowColumn = (String ) ((NodeImpl) node).getUserData("startLine");
 
       int type = node.getNodeType();
       switch ( type ) {
@@ -232,9 +238,9 @@ public class DOMAddLines extends DOMParser  {
 
    /*   We override startElement callback  from DocumentHandler */
 
-   public void startElement(QName elementQName, XMLAttributes attrList) 
-    throws SAXException {
-      super.startElement(elementQName, attrList);
+   public void startElement(QName elementQName, XMLAttributes attrList, Augmentations augs) 
+    throws XNIException {
+      super.startElement(elementQName, attrList, augs);
 
       NodeImpl node = null;
       try {
@@ -247,18 +253,19 @@ public class DOMAddLines extends DOMParser  {
       }
       //NodeImpl node = (NodeImpl)getCurrentNode();       // Get current node
       if( node != null )
-          node.setUserData(  String.valueOf( fEntityManager.getEntityScanner().getLineNumber() ) ); // Save location String into node
+          node.setUserData( "startLine", String.valueOf( locator.getLineNumber() ), null ); // Save location String into node
    } //startElement 
 
    /* We override startDocument callback from DocumentHandler */
 
-   public void startDocument() throws SAXException {
+   public void startDocument(XMLLocator locator, String encoding, Augmentations augs) throws XNIException {
      //super.startDocument( versionIndex, encodingIndex,
      //                               standAloneIndex);
-     super.startDocument();
-     NodeImpl node = null ;
+     super.startDocument(locator, encoding, augs);
+     this.locator = locator;
+     Node3 node = null ;
       try {
-      node = (NodeImpl) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
+      node = (Node3) this.getProperty( "http://apache.org/xml/properties/dom/current-element-node" );
       //System.out.println( "The node = " + node );
       }
      catch( org.xml.sax.SAXException ex )
@@ -268,14 +275,14 @@ public class DOMAddLines extends DOMParser  {
      
 //     NodeImpl node = (NodeImpl)getCurrentNode();       // Get current node
      if( node != null )
-          node.setUserData(  String.valueOf( fEntityManager.getEntityScanner().getLineNumber() ) ); // Save location String into node
+          node.setUserData( "startLine", String.valueOf( locator.getLineNumber() ), null ); // Save location String into node
   } //startDocument 
    
 
-   public void ignorableWhitespace(XMLString text) throws SAXException
+   public void ignorableWhitespace(XMLString text, Augmentations augs) throws XNIException
     {
     if(! NotIncludeIgnorableWhiteSpaces )
-       super.ignorableWhitespace( text);
+       super.ignorableWhitespace( text, augs);
     else
        ;// Ignore ignorable white spaces
     }// ignorableWhitespace
