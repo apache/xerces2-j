@@ -73,6 +73,7 @@ import org.apache.xerces.util.DOMUtil;
  * a unified way to initialize these data.
  *
  * @author Elena Litani, IBM
+ * @author Rahul Srivastava, Sun Microsystems Inc.
  *
  * @version $Id$
  */
@@ -175,15 +176,42 @@ abstract class XSDAbstractTraverser {
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
                               schemaDoc, grammar);
-                attrGrp.addAttributeUse(tempAttrUse);
+             	if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
+                                            tempAttrUse.fAttrDecl.fName)==null) {
+                   attrGrp.addAttributeUse(tempAttrUse);
+                }
+                else {
+		    reportGenericSchemaError("Duplicate attribute " + 
+                                tempAttrUse.fAttrDecl.fName + " found ");
+                }
             }
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //REVISIT: do we need to save some state at this point??
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
                               child, schemaDoc, grammar);
                 XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
+                XSAttributeUse existingAttrUse = null;
                 for (int i=0; i<attrUseS.length; i++) {
-                    attrGrp.addAttributeUse(attrUseS[i]);
+                	existingAttrUse = attrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
+                	                                          attrUseS[i].fAttrDecl.fName);
+                	if (existingAttrUse == null) {
+				attrGrp.addAttributeUse(attrUseS[i]);
+			}
+			else {
+				reportGenericSchemaError("Duplicate attribute " + 
+                                existingAttrUse.fAttrDecl.fName + " found ");
+			}
+                }
+                
+                if (tempAttrGrp.fAttributeWC != null) {
+                	if (attrGrp.fAttributeWC == null) {
+                		attrGrp.fAttributeWC = tempAttrGrp.fAttributeWC;
+                	}
+                	// perform intersection of attribute wildcard
+                	else {
+                		attrGrp.fAttributeWC = attrGrp.fAttributeWC.
+                				       performIntersectionWith(tempAttrGrp.fAttributeWC);
+                	}
                 }
             }
             else
@@ -193,8 +221,16 @@ abstract class XSDAbstractTraverser {
         if (child != null) {
             childName = child.getLocalName();
             if (childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE)) {
-                XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.traverseAnyAttribute(child, schemaDoc, grammar);
-                attrGrp.fAttributeWC = tempAttrWC;
+                XSWildcardDecl tempAttrWC = fSchemaHandler.fWildCardTraverser.
+                			    traverseAnyAttribute(child, schemaDoc, grammar);
+                if (attrGrp.fAttributeWC == null) {
+                	attrGrp.fAttributeWC = tempAttrWC;
+                }
+                // perform intersection of attribute wildcard
+                else {
+                	attrGrp.fAttributeWC = attrGrp.fAttributeWC.
+                			       performIntersectionWith(tempAttrWC);
+                }
                 child = DOMUtil.getNextSiblingElement(child);
             }
 
