@@ -546,6 +546,11 @@ public class XMLEntityManager
         return fEntityScanner;
     } // getEntityScanner():XMLEntityScanner
 
+    /** Returns the currently active entity. */
+    public XMLEntity getCurrentEntity() {
+        return fCurrentEntity;
+    } // getCurrentEntity():XMLEntity
+
     //
     // XMLComponent methods
     //
@@ -1109,7 +1114,8 @@ public class XMLEntityManager
      *
      * @author Andy Clark, IBM
      */
-    protected static abstract class Entity {
+    protected static abstract class Entity 
+        implements XMLEntity {
 
         //
         // Data
@@ -1148,6 +1154,15 @@ public class XMLEntityManager
         public void setValues(Entity entity) {
             name = entity.name;
         } // setValues(Entity)
+
+        //
+        // XMLEntity methods
+        //
+
+        /** Returns the name of the entity. */
+        public String getName() {
+            return name;
+        } // getName():String
 
     } // class Entity
 
