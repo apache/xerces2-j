@@ -482,6 +482,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             }
         }
 
+        // Element without a name. Return null.
+        if (element.fName == null)
+            return null;
+
         return element;
     }
 

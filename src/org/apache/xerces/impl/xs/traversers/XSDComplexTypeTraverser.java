@@ -742,6 +742,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // Create the particle
             if (fParticle == null) {
                 fContentType = baseType.getContentType();
+                fXSSimpleType = (XSSimpleType)baseType.getSimpleType();
                 fParticle = baseContent;
             }
             else if (baseType.getContentType() == XSComplexTypeDecl.CONTENTTYPE_EMPTY) {
@@ -1018,6 +1019,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         //  Mock up the typeInfo structure so that there won't be problems during
         //  validation
         //
+        fBaseType = SchemaGrammar.fAnyType;
         fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
         fParticle = getErrorContent();
         // REVISIT: do we need to remove all attribute uses already added into

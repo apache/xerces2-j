@@ -404,6 +404,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             reportSchemaError("no-xsi", new Object[]{SchemaSymbols.URI_XSI}, attrDecl);
         }
 
+        // Attribute without a name. Return null.
+        if (attribute.getName() == null)
+            return null;
+
         return attribute;
     }
 
