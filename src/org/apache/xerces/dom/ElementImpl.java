@@ -689,6 +689,9 @@ public class ElementImpl
      * Introduced in DOM Level 2.
      */
     public boolean hasAttributes() {
+        if (needsSyncData()) {
+            synchronizeData();
+        }
         return (attributes != null && attributes.getLength() != 0);
     }
 
