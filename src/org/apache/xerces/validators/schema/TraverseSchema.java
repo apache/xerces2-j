@@ -1870,7 +1870,7 @@ public class TraverseSchema implements
             } //end looping through the children
 
             if ( ! ( seeOtherParticle || seeAll ) && (elementContent || mixedContent)
-                 &&  (base.length() == 0 || ( base.length() > 0 && derivedByRestriction))  ) {
+                 &&  (base.length() == 0 || ( base.length() > 0 && derivedByRestriction && !baseIsComplexSimple))  ) {
                 contentSpecType = XMLElementDecl.TYPE_SIMPLE;
                 simpleTypeValidator = getDatatypeValidator("", SchemaSymbols.ATTVAL_STRING);
                 // REVISIT: Localize
