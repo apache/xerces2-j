@@ -70,6 +70,9 @@ public interface ValidationContext {
     // whether to do extra id/idref/entity checking
     public boolean needExtraChecking();
 
+    // whether we need to normalize the value that is passed!
+    public boolean needToNormalize();
+
     // entity
     public boolean isEntityDeclared (String name);
     public boolean isEntityUnparsed (String name);

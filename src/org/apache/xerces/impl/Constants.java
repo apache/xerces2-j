@@ -123,6 +123,9 @@ public final class Constants {
     /** Create cdata nodes feature ("create-cdata-nodes"). */
     public static final String CREATE_CDATA_NODES_FEATURE = "create-cdata-nodes";
 
+    /** Feature id: load as infoset. */
+    public static final String LOAD_AS_INFOSET = "load-as-infoset";
+
     // xerces features
 
     /** Xerces features prefix ("http://apache.org/xml/features/"). */
@@ -130,6 +133,12 @@ public final class Constants {
 
     /** Schema validation feature ("validation/schema"). */
     public static final String SCHEMA_VALIDATION_FEATURE = "validation/schema";
+
+    /** Expose schema normalized values */
+    public static final String SCHEMA_NORMALIZED_VALUE = "validation/schema/normalized-value";
+
+    /** Send schema default value via characters() */
+    public static final String SCHEMA_ELEMENT_DEFAULT = "validation/schema/element-default";
 
     /** Schema full constraint checking ("validation/schema-full-checking"). */
     public static final String SCHEMA_FULL_CHECKING = "validation/schema-full-checking";
@@ -237,6 +246,16 @@ public final class Constants {
 
     /** Validation manager property ("internal/validation-manager"). */
     public static final String VALIDATION_MANAGER_PROPERTY = "internal/validation-manager";
+
+
+    // general constants
+    
+    /** Element PSVI is stored in augmentations using string "ELEMENT_PSVI" */    
+    public final static String ELEMENT_PSVI = "ELEMENT_PSVI";
+
+    /* Attribute PSVI is stored in augmentations using string "ATTRIBUTE_PSVI" */
+    public final static String ATTRIBUTE_PSVI = "ATTRIBUTE_PSVI";
+
 
     // private
 

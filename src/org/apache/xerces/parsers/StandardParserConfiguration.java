@@ -162,6 +162,16 @@ public class StandardParserConfiguration
     protected static final String NOTIFY_CHAR_REFS =
         Constants.XERCES_FEATURE_PREFIX + Constants.NOTIFY_CHAR_REFS_FEATURE;
     
+
+    /** Feature identifier: expose schema normalized value */
+    protected static final String NORMALIZE_DATA =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+
+
+    /** Feature identifier: send element default value via characters() */
+    protected static final String SCHEMA_ELEMENT_DEFAULT =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
+
     // property identifiers
 
     /** Property identifier: error reporter. */
@@ -316,7 +326,8 @@ public class StandardParserConfiguration
             WARN_ON_DUPLICATE_ATTDEF,   WARN_ON_UNDECLARED_ELEMDEF,
             ALLOW_JAVA_ENCODINGS,       CONTINUE_AFTER_FATAL_ERROR,
             LOAD_EXTERNAL_DTD,          NOTIFY_BUILTIN_REFS,
-            NOTIFY_CHAR_REFS,
+            NOTIFY_CHAR_REFS,           NORMALIZE_DATA,
+            SCHEMA_ELEMENT_DEFAULT
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -328,6 +339,8 @@ public class StandardParserConfiguration
         setFeature(LOAD_EXTERNAL_DTD, true);
         setFeature(NOTIFY_BUILTIN_REFS, false);
         setFeature(NOTIFY_CHAR_REFS, false);
+        setFeature(SCHEMA_ELEMENT_DEFAULT, true);
+        setFeature(NORMALIZE_DATA, true);
 
         // add default recognized properties
         final String[] recognizedProperties = {

@@ -78,6 +78,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.psvi.AttributePSVI;
+import org.apache.xerces.xni.psvi.ElementPSVI;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -135,6 +137,10 @@ public abstract class AbstractDOMParser
     /** Feature id: defer node expansion. */
     protected static final String DEFER_NODE_EXPANSION =
         "http://apache.org/xml/features/dom/defer-node-expansion";
+    
+    /** Expose XML Schema normalize value */
+    protected static final String NORMALIZE_DATA = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
 
     // property ids
 
@@ -151,10 +157,12 @@ public abstract class AbstractDOMParser
     protected static final String  CURRENT_ELEMENT_NODE=  
         Constants.XERCES_FEATURE_PREFIX + Constants.CURRENT_ELEMENT_NODE_PROPERTY;
 
+
     // debugging
 
     /** Set to true and recompile to debug entity references. */
     private static final boolean DEBUG_ENTITY_REF = false;
+    private static final boolean DEBUG_EVENTS = false;
 
 
     //
@@ -174,6 +182,9 @@ public abstract class AbstractDOMParser
 
     /** Create cdata nodes. */
     protected boolean fCreateCDATANodes;
+
+    /** Expose XML Schema schema_normalize_values via DOM*/
+    protected boolean fNormalizeData = true;
 
     // dom information
 
@@ -347,6 +358,9 @@ public abstract class AbstractDOMParser
 
         fCreateCDATANodes = fConfiguration.getFeature(CREATE_CDATA_NODES_FEATURE);
 
+        fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
+        
+
         // get property
         setDocumentClassName((String)
                              fConfiguration.getProperty(DOCUMENT_CLASS_NAME));
@@ -394,11 +408,9 @@ public abstract class AbstractDOMParser
                                    XMLResourceIdentifier identifier,
                                    String encoding, Augmentations augs) 
         throws XNIException {
-
-        // REVISIT: investigate fInDTD & fInDocument flags
-        // this method now only called by DocumentHandler
-        // comment(), endEntity(), processingInstruction(), textDecl()
-        // REVISIT: need to set the Entity.actualEncoding somehow
+        if (DEBUG_EVENTS) {        
+            System.out.println("==>startGeneralEntity ("+name+")");
+        }
         if (fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
                 EntityReference er = fDocument.createEntityReference(name);
@@ -416,7 +428,7 @@ public abstract class AbstractDOMParser
             }
         }
 
-    } // startEntity(String,String,String,String)
+    } // startGeneralEntity(String,XMLResourceIdentifier, Augmentations)
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -674,6 +686,9 @@ public abstract class AbstractDOMParser
      */
     public void startElement(QName element, XMLAttributes attributes, Augmentations augs)
         throws XNIException {
+        if (DEBUG_EVENTS) {
+            System.out.println("==>startElement ("+element.rawname+")");
+        }
         if (!fDeferNodeExpansion) {
             Element el;
             if (fNamespaceAware) {
@@ -701,7 +716,15 @@ public abstract class AbstractDOMParser
                 else {
                     attr = fDocument.createAttribute(fAttrQName.rawname);
                 }
+
                 String attrValue = attributes.getValue(i);
+                if (fNormalizeData) {
+                    AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                    if (attrPSVI != null) {
+                        attrValue = attrPSVI.schemaNormalizedValue();
+                    }
+
+                }
                 attr.setValue(attrValue);
                 el.setAttributeNode(attr);
                 // NOTE: The specified value MUST be set after you set
@@ -730,6 +753,13 @@ public abstract class AbstractDOMParser
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
 		String attrValue = attributes.getValue(i);
+                if (fNormalizeData) {
+                    AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                    if (attrPSVI != null) {
+                        attrValue = attrPSVI.schemaNormalizedValue();
+                    }
+
+                }
 		fDeferredDocumentImpl.setDeferredAttribute(el,
 						    attributes.getQName(i),
 						    attributes.getURI(i),
@@ -754,6 +784,10 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
+        
+        if (DEBUG_EVENTS) {
+            System.out.println("==>characters(): "+text.toString());
+        }
         if (!fDeferNodeExpansion) {
             if (fInCDATASection && fCreateCDATANodes) {
                 if (fCurrentCDATASection == null) {
@@ -767,13 +801,31 @@ public abstract class AbstractDOMParser
                 }
             }
             else if (!fInDTD) {
+                // if type is union (XML Schema) it is possible that we receive
+                // character call with empty data
+                if (text.length == 0) {
+                    return;
+                }
+
+                String value = null;
+                // normalized value for element is stored in schema_normalize_value property
+                // of PSVI element.
+                if (fNormalizeData && augs != null) {
+                    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                    if (elemPSVI != null) {
+                        value = elemPSVI.schemaNormalizedValue();
+                    } 
+                } 
+                if (value == null) {
+                     value = text.toString();
+                }
                 Node child = fCurrentNode.getLastChild();
                 if (child != null && child.getNodeType() == Node.TEXT_NODE) {
                     Text textNode = (Text)child;
-                    textNode.appendData(text.toString());
+                    textNode.appendData(value);
                 }
                 else {
-                    Text textNode = fDocument.createTextNode(text.toString());
+                    Text textNode = fDocument.createTextNode(value);
                     fCurrentNode.appendChild(textNode);
                 }
             }
@@ -796,9 +848,33 @@ public abstract class AbstractDOMParser
                     fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, txt);
                 }
             } else if (!fInDTD) {
+                if (DEBUG_EVENTS) {                    
+                   System.out.println("==>currentNode: type="+fDeferredDocumentImpl.getNodeType(fCurrentNodeIndex)+
+                                      "; name="+fDeferredDocumentImpl.getNodeName(fCurrentNodeIndex));
+                }
+                // if type is union (XML Schema) it is possible that we receive
+                // character call with empty data
+                if (text.length == 0) {
+                    return;
+                }
+
+                String value = null;
+                // normalized value for element is stored in schema_normalize_value property
+                // of PSVI element.
+                if (fNormalizeData && augs != null) {
+                    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                    if (elemPSVI != null) {
+                        value = elemPSVI.schemaNormalizedValue();
+                    } 
+                } 
+
+                if (value == null) {
+                     value = text.toString();
+                }
                 int txt = fDeferredDocumentImpl.
-                    createDeferredTextNode(text.toString(), false);
+                    createDeferredTextNode(value, false);
                 fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, txt);
+
             }
         }
     } // characters(XMLString)
@@ -856,6 +932,9 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endElement(QName element, Augmentations augs) throws XNIException {
+        if (DEBUG_EVENTS) {
+            System.out.println("==>endElement ("+element.rawname+")");
+        }
         if (!fDeferNodeExpansion) {
             fCurrentNode = fCurrentNode.getParentNode();
         }
@@ -952,7 +1031,9 @@ public abstract class AbstractDOMParser
      *                   Thrown by handler to signal an error.
      */
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
-
+        if (DEBUG_EVENTS || DEBUG_ENTITY_REF) {
+            System.out.println("==>endGeneralEntity: ("+name+")");
+        }
         if (fCreateEntityRefNodes) {
             if (!fDeferNodeExpansion) {
                 if (fDocumentType != null) {
@@ -1000,13 +1081,17 @@ public abstract class AbstractDOMParser
                         childIndex = fDeferredDocumentImpl.getRealPrevSibling(childIndex, false);
                     }
                 }
+                if (DEBUG_ENTITY_REF) {
+                    System.out.println("==>currentNode type="+fDeferredDocumentImpl.getNodeType(fCurrentNodeIndex)+
+                                       "; name="+fDeferredDocumentImpl.getNodeName(fCurrentNodeIndex));
+                }
                 fCurrentNodeIndex =
                     fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex,
                                                         false);
             }
         }
 
-    } // endEntity(String)
+    } // endGeneralEntity(String, Augmentations)
 
     //
     // XMLDTDHandler methods

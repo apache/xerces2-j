@@ -77,6 +77,7 @@ public class ValidationState implements ValidationContext {
     //
     private boolean fExtraChecking              = true;
     private boolean fFacetChecking              = true;
+    private boolean fNormalize                  = true;
 
     private EntityState fEntityState            = null;
     private NamespaceSupport fNamespaceSupport  = null;
@@ -96,6 +97,10 @@ public class ValidationState implements ValidationContext {
 
     public void setFacetChecking(boolean newValue) {
         fFacetChecking = newValue;
+    }
+
+    public void setNormalizationRequired (boolean newValue) {
+          fNormalize = newValue;
     }
 
     public void setEntityState(EntityState state) {
@@ -156,6 +161,10 @@ public class ValidationState implements ValidationContext {
     // whether to validate against facets
     public boolean needFacetChecking() {
         return fFacetChecking;
+    }
+
+    public boolean needToNormalize (){
+        return fNormalize;
     }
 
     // entity

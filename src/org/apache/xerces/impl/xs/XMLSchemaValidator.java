@@ -60,6 +60,7 @@ package org.apache.xerces.impl.xs;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.dv.XSAtomicSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
+import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.identity.*;
 import org.apache.xerces.impl.Constants;
@@ -160,6 +161,16 @@ public class XMLSchemaValidator
     protected static final String DYNAMIC_VALIDATION =
     Constants.XERCES_FEATURE_PREFIX + Constants.DYNAMIC_VALIDATION_FEATURE;
 
+    /** Feature identifier: expose schema normalized value */
+    protected static final String NORMALIZE_DATA =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+
+
+    /** Feature identifier: send element default value via characters() */
+    protected static final String SCHEMA_ELEMENT_DEFAULT =
+    Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_ELEMENT_DEFAULT;
+
+
     // property identifiers
 
     /** Property identifier: symbol table. */
@@ -230,9 +241,6 @@ public class XMLSchemaValidator
     /** current PSVI element info */
     protected ElementPSVImpl fCurrentPSVI = null;
 
-    // REVISIT: define constant here?
-    protected final static String ELEM_PSVI = "ELEM_PSVI";
-    protected final static String ATTR_PSVI = "ATTR_PSVI";
 
     // since it is the responsibility of each component to an
     // Augmentations parameter if one is null, to save ourselves from
@@ -249,6 +257,10 @@ public class XMLSchemaValidator
     protected boolean fDynamicValidation = false;
     protected boolean fDoValidation = false;
     protected boolean fFullChecking = false;
+    protected boolean fNormalizeData = true;
+    protected boolean fSchemaElementDefault = true;
+    protected boolean fEntityRef = false;
+    protected boolean fInCDATA = false;
 
     // properties
 
@@ -547,26 +559,31 @@ public class XMLSchemaValidator
     throws XNIException {
 
         Augmentations modifiedAugs = handleStartElement(element, attributes, augs);
+
+        // we need to save PSVI information: because it will be reset in the
+        // handleEndElement(): type, notation, validation context        
+        XSTypeDecl type = fCurrentPSVI.fTypeDecl;
+        XSNotationDecl notation = fCurrentPSVI.fNotation;
+        String vContext = fCurrentPSVI.fValidationContext;
+
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, change emptyElement call to
         // start + characters + end
         modifiedAugs = handleEndElement(element, modifiedAugs);
-        XMLString defaultValue = fDefaultValue;
+        
         // call handlers
         if (fDocumentHandler != null) {
-
-            fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
-
-            // REVISIT: should we send default element value?
-            /*if (defaultValue == null) {
-                fDocumentHandler.emptyElement(element, attributes);
+            fCurrentPSVI.fTypeDecl = type;
+            fCurrentPSVI.fNotation = notation;
+            fCurrentPSVI.fValidationContext = vContext;
+            if (!fSchemaElementDefault || fDefaultValue == null) {
+                fDocumentHandler.emptyElement(element, attributes, modifiedAugs);
             } else {
-                fDocumentHandler.startElement(element, attributes);
-                fDocumentHandler.characters(defaultValue);
-                fDocumentHandler.endElement(element);
-            }
-            */
-        }
+                fDocumentHandler.startElement(element, attributes, modifiedAugs);
+                fDocumentHandler.characters(fDefaultValue, modifiedAugs);
+                fDocumentHandler.endElement(element, modifiedAugs);
+            }            
+       }
 
     } // emptyElement(QName,XMLAttributes, Augmentations)
 
@@ -579,11 +596,34 @@ public class XMLSchemaValidator
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
+        
+        if (augs == null) {
+            augs = fAugmentations;
+            augs.clear();
+        }
+        // get PSVI object
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
+        if (fCurrentPSVI == null) {
+            fCurrentPSVI = fElemPSVI;
+            fCurrentPSVI.reset();
+            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+        }
+
 
         handleCharacters(text);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.characters(text, augs);
+            if (fUnionType) {
+                // for union types we can't normalize data
+                // thus we only need to send augs information if any;
+                // the normalized data for union will be send
+                // after normalization is performed (at the endElement())
+                if (augs != null) {
+                    fDocumentHandler.characters(fEmptyXMLStr, augs);
+                }
+            } else {            
+                fDocumentHandler.characters(text, augs);
+            }
         }
 
     } // characters(XMLString)
@@ -624,13 +664,21 @@ public class XMLSchemaValidator
         // in the case where there is a {value constraint}, and the element
         // doesn't have any text content, add a characters call.
         Augmentations modifiedAugs = handleEndElement(element, augs);
-        XMLString defaultValue  = fDefaultValue;
         // call handlers
         if (fDocumentHandler != null) {
-            // REVISIT: should we send default element values??
-            //if (defaultValue != null)
-            //    fDocumentHandler.characters(defaultValue);
-            fDocumentHandler.endElement(element, modifiedAugs);
+            if (fSchemaElementDefault || fDefaultValue == null) {
+                   fDocumentHandler.endElement(element, modifiedAugs);
+            } else {
+                fDocumentHandler.characters(fDefaultValue, modifiedAugs);
+                fDocumentHandler.endElement(element, modifiedAugs);
+            }            
+        }
+        // reset normalization values
+        if (fNormalizeData) {
+            fTrailing = false;
+            fUnionType = false;
+            fWhiteSpace = -1;
+        
         }
 
     } // endElement(QName, Augmentations)
@@ -662,6 +710,9 @@ public class XMLSchemaValidator
      */
     public void startCDATA(Augmentations augs) throws XNIException {
 
+
+        // REVISIT: what should we do here if schema normalization is on?? 
+        fInCDATA = true;
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startCDATA(augs);
@@ -679,6 +730,7 @@ public class XMLSchemaValidator
     public void endCDATA(Augmentations augs) throws XNIException {
 
         // call handlers
+        fInCDATA = false;
         if (fDocumentHandler != null) {
             fDocumentHandler.endCDATA(augs);
         }
@@ -727,7 +779,9 @@ public class XMLSchemaValidator
                                    XMLResourceIdentifier identifier,
                                    String encoding,
                                    Augmentations augs) throws XNIException {
-
+        
+        // REVISIT: what should happen if normalize_data_ is on?? 
+        fEntityRef = true;
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startGeneralEntity(name, identifier, encoding, augs);
@@ -826,6 +880,7 @@ public class XMLSchemaValidator
     public void endGeneralEntity(String name, Augmentations augs) throws XNIException {
 
         // call handlers
+        fEntityRef = false;
         if (fDocumentHandler != null) {
             fDocumentHandler.endGeneralEntity(name, augs);
         }
@@ -849,6 +904,23 @@ public class XMLSchemaValidator
     //
     // Data
     //
+
+
+    // Schema Normalization
+    
+    private static final boolean DEBUG_NORMALIZATION = false;
+    // temporary empty string buffer.
+    private final XMLString fEmptyXMLStr = new XMLString(null, 0, -1);
+    // temporary character buffer, and empty string buffer.
+    private static final int BUFFER_SIZE = 20;
+    private char[] fCharBuffer =  new char[BUFFER_SIZE];
+    private final StringBuffer fNormalizedStr = new StringBuffer();    
+    private final XMLString fXMLString = new XMLString(fCharBuffer, 0, -1);
+    private boolean fFirstChunk = true; // got first chunk in characters() (SAX)
+    private boolean fTrailing = false;  // Previous chunk had a trailing space
+    private short fWhiteSpace = -1;  //whiteSpace: preserve/replace/collapse
+    private boolean fUnionType = false;
+    
 
     /** Schema grammar resolver. */
     final XSGrammarBucket fGrammarBucket;
@@ -1036,13 +1108,9 @@ public class XMLSchemaValidator
             fValidation = false;
         }
 
+        // Xerces features
         try {
-            // REVISIT: should schema validation depend on validation?
-            // NOTE: YES! That's the way it's documented and has worked
-            //       in the past. Therefore, it must keep the same value
-            //       to retain the same behavior. -Ac
             fValidation = fValidation && componentManager.getFeature(SCHEMA_VALIDATION);
-            //fValidation =  componentManager.getFeature(SCHEMA_VALIDATION);
         }
         catch (XMLConfigurationException e) {
             fValidation = false;
@@ -1055,12 +1123,25 @@ public class XMLSchemaValidator
             fFullChecking = false;
         }
 
-        // Xerces features
         try {
             fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
         }
         catch (XMLConfigurationException e) {
             fDynamicValidation = false;
+        }
+
+        try {
+           fNormalizeData = componentManager.getFeature(NORMALIZE_DATA);
+        }
+        catch (XMLConfigurationException e) {
+            fNormalizeData = false;
+        }
+
+        try {
+           fSchemaElementDefault = componentManager.getFeature(SCHEMA_ELEMENT_DEFAULT);
+        }
+        catch (XMLConfigurationException e) {
+            fSchemaElementDefault = false;
         }
 
         // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution
@@ -1111,6 +1192,17 @@ public class XMLSchemaValidator
         fPartialValidationDepth = -1;
         fElementDepth = -1;
         fChildCount = 0;
+
+        // datatype normalization
+        fFirstChunk = true;
+        fTrailing = false;
+        fNormalizedStr.setLength(0);
+        fWhiteSpace = -1;
+        fUnionType = false;
+        fWhiteSpace = -1;
+        fAugmentations.clear();
+        fEntityRef = false;
+        fInCDATA = false;
 
         fMatcherStack.clear();
 
@@ -1251,18 +1343,85 @@ public class XMLSchemaValidator
     // handle character contents
     void handleCharacters(XMLString text) {
 
+        //System.out.println('\n'+"===>Characters("+text.toString()+")");
+        fCurrentPSVI.fNormalizedValue = null;
         if (fSkipValidationDepth >= 0)
             return;
 
+        String normalizedStr = null;
         boolean allWhiteSpace = true;
-        for (int i=text.offset; i< text.offset+text.length; i++) {
-            if (!XMLChar.isSpace(text.ch[i])) {
-                allWhiteSpace = false;
-                break;
+
+        // find out if type is union, what is whitespace,
+        // determine if there is a need to do normalization
+        if (fNormalizeData && !fEntityRef && !fInCDATA) {
+            // if whitespace == -1 skip normalization, because it is a complexType
+            if (fWhiteSpace != -1 && !fUnionType && fWhiteSpace != XSSimpleType.WS_PRESERVE) {
+                // normalize data
+                int spaces = normalizeWhitespace(text, fWhiteSpace == XSSimpleType.WS_COLLAPSE);
+                int length = fNormalizedStr.length();
+                if (length > 0) {
+                    //System.out.println("firstchunk="+fFirstChunk+"; trailing="+fTrailing);
+                    if (!fFirstChunk && (fWhiteSpace==XSSimpleType.WS_COLLAPSE) ) {
+                        if (fTrailing) { 
+                            // previous chunk ended on whitespace 
+                            // insert whitespace
+                         fNormalizedStr.insert(0, ' ');
+                        } else if (spaces == 1 || spaces == 3) {
+                            // previous chunk ended on character,
+                            // this chunk starts with whitespace
+                            fNormalizedStr.insert(0, ' ');
+                        }
+                    }
+                }
+                normalizedStr = fNormalizedStr.toString();
+                fCurrentPSVI.fNormalizedValue = normalizedStr;
+                fTrailing = (spaces > 1)?true:false;
             }
         }
 
-        fBuffer.append(text.toString());
+        boolean mixed = false;
+        if (fCurrentType != null && fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+              XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+              if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
+                    mixed = true;
+              }
+        }
+
+        if (DEBUG) {        
+         System.out.println("==>characters()"+fCurrentType.getTypeName()+":"+mixed);
+        }
+
+        if (mixed || fWhiteSpace !=-1 || fUnionType) {
+            // don't check characters: since it is either 
+            // a) mixed content model - we don't care if there were some characters
+            // b) simpleType/simpleContent - in which case it is data in ELEMENT content
+        }
+        else  {
+
+            if (DEBUG) {        
+             System.out.println("==>check for whitespace");
+            }
+            // data outside of element content
+            for (int i=text.offset; i< text.offset+text.length; i++) {
+                if (!XMLChar.isSpace(text.ch[i])) {
+                    allWhiteSpace = false;
+                    break;
+                }
+            }
+        } 
+
+
+        // we saw first chunk of characters
+        fFirstChunk = false;
+        
+        // we need to save normalized value so that we can perform
+        // validation at the end element after all data was received
+        if (normalizedStr != null) { 
+            fBuffer.append(normalizedStr);
+        } else {
+            fBuffer.append(text.toString());
+        }
+        
         if (!allWhiteSpace) {
             fSawCharacters = true;
         }
@@ -1274,6 +1433,61 @@ public class XMLSchemaValidator
             matcher.characters(text);
         }
     } // handleCharacters(XMLString)
+
+    /**
+     * Normalize whitespace in an XMLString according to the rules defined
+     * in XML Schema specifications.     
+     * @param value    The string to normalize.
+     * @param collapse replace or collapse
+     * @returns 0 if no triming is done or if there is neither leading nor
+     *            trailing whitespace,
+     *          1 if there is only leading whitespace,
+     *          2 if there is only trailing whitespace,
+     *          3 if there is both leading and trailing whitespace.
+     */
+    private int normalizeWhitespace( XMLString value, boolean collapse) {
+        boolean skipSpace = collapse;
+        boolean sawNonWS = false;
+        int leading = 0;
+        int trailing = 0;
+        int c;
+        int size = value.offset+value.length;
+        fNormalizedStr.setLength(0);
+        for (int i = value.offset; i < size; i++) {
+            c = value.ch[i];
+            if (c == 0x20 || c == 0x0D || c == 0x0A || c == 0x09) {
+                if (!skipSpace) {
+                    // take the first whitespace as a space and skip the others
+                    fNormalizedStr.append(' ');
+                    skipSpace = collapse;
+                }
+                if (!sawNonWS) {
+                    // this is a leading whitespace, record it
+                    leading = 1;
+                }
+            }
+            else {
+                fNormalizedStr.append((char)c);
+                skipSpace = false;
+                sawNonWS = true;
+            }
+        }
+        if (skipSpace) {
+            c = fNormalizedStr.length();
+            if ( c != 0) {
+                // if we finished on a space trim it but also record it
+                fNormalizedStr.setLength (--c);
+                trailing = 2;
+            }
+            else if (leading != 0 && !sawNonWS) {
+                // if all we had was whitespace we skipped record it as
+                // trailing whitespace as well
+                trailing = 2;
+            }
+        }
+        return collapse ? leading + trailing : 0;
+    }
+
 
     // handle ignorable whitespace
     void handleIgnorableWhitespace(XMLString text) {
@@ -1302,6 +1516,13 @@ public class XMLSchemaValidator
         }
         if (DEBUG) {
             System.out.println("handleStartElement: " +element);
+        }
+
+        if (fNormalizeData) {
+            // reset values
+            fFirstChunk = true;
+            fUnionType  = false;
+            fWhiteSpace = -1;
         }
 
         // if we are not skipping this element, and there is a content model,
@@ -1355,10 +1576,10 @@ public class XMLSchemaValidator
             parseSchemas(fExternalSchemas, fExternalNoNamespaceSchema);
         }
 
-        fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
         if (fCurrentPSVI == null) {
             fCurrentPSVI = fElemPSVI;
-            augs.putItem(ELEM_PSVI, fCurrentPSVI);
+            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
         }
         fCurrentPSVI.reset();
 
@@ -1494,6 +1715,7 @@ public class XMLSchemaValidator
         // PSVI: add element type
         fCurrentPSVI.fTypeDecl = fCurrentType;
 
+
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
         if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
@@ -1501,8 +1723,37 @@ public class XMLSchemaValidator
             if (ctype.isAbstractType()) {
                 reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
             }
+            if (fNormalizeData) {        
+                // find out if the content type is simple and if variety is union
+                // to be able to do character normalization
+                if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) { 
+                        if (ctype.fXSSimpleType.getVariety() == XSSimpleType.VARIETY_UNION) {
+                            fUnionType = true;
+                        } else {
+                            try {                            
+                                fWhiteSpace = ctype.fXSSimpleType.getWhitespace();
+                            } catch (DatatypeException e){
+                                // do nothing
+                            }
+                        }
+                }
+            }
         }
-
+        // normalization
+        if (fNormalizeData && fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+            // if !union type
+             XSSimpleType dv = (XSSimpleType)fCurrentType;
+             if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
+                    fUnionType = true;
+             } else {
+                 try {
+                    fWhiteSpace = dv.getWhitespace();
+                 } catch (DatatypeException e){
+                     // do nothing
+                 }
+             }
+        }
+    
         // then try to get the content model
         fCurrentCM = null;
         if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
@@ -1577,10 +1828,10 @@ public class XMLSchemaValidator
             augs.clear();
         }
 
-        fCurrentPSVI = (ElementPSVImpl)augs.getItem(ELEM_PSVI);
+        fCurrentPSVI = (ElementPSVImpl)augs.getItem(Constants.ELEMENT_PSVI);
         if (fCurrentPSVI == null) {
             fCurrentPSVI = fElemPSVI;
-            augs.putItem(ELEM_PSVI, fCurrentPSVI);
+            augs.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
         }
         fCurrentPSVI.reset();
 
@@ -1860,12 +2111,12 @@ public class XMLSchemaValidator
         AttributePSVImpl attrPSVI = null;
         for (int k=0;k<attributes.getLength();k++) {
             augs = attributes.getAugmentations(k);
-            attrPSVI = (AttributePSVImpl) augs.getItem(ATTR_PSVI);
+            attrPSVI = (AttributePSVImpl) augs.getItem(Constants.ATTRIBUTE_PSVI);
             if (attrPSVI != null) {
                 attrPSVI.reset();
             } else {
                 attrPSVI= new AttributePSVImpl();
-                augs.putItem(ATTR_PSVI, attrPSVI);
+                augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
             }
             // PSVI attribute: validation context
             attrPSVI.fValidationContext = element.rawname;
@@ -1894,7 +2145,7 @@ public class XMLSchemaValidator
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
                 // get attribute PSVI
-                attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(ATTR_PSVI);
+                attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
                 // PSVI: validation attempted, validity
                 attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
                 attrPSVI.fValidity = AttributePSVI.VALID_VALIDITY;
@@ -1938,7 +2189,7 @@ public class XMLSchemaValidator
         for (int index = 0; index < attCount; index++) {
 
             // get attribute PSVI
-            attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(ATTR_PSVI);
+            attrPSVI = (AttributePSVImpl)attributes.getAugmentations(index).getItem(Constants.ATTRIBUTE_PSVI);
             // PSVI: set Attribute valid and attempted validation to full.
             attrPSVI.fValidationAttempted = AttributePSVI.FULL_VALIDATION;
             attrPSVI.fValidity = AttributePSVI.VALID_VALIDITY;
@@ -2170,7 +2421,7 @@ public class XMLSchemaValidator
                 // PSVI: attribute is "schema" specified
                 Augmentations augs = attributes.getAugmentations(attrIndex);
 
-                AttributePSVImpl attrPSVI = (AttributePSVImpl)augs.getItem(ATTR_PSVI);
+                AttributePSVImpl attrPSVI = (AttributePSVImpl)augs.getItem(Constants.ATTRIBUTE_PSVI);
 
                 // check if PSVIAttribute was added to Augmentations.
                 // it is possible that we just created new chunck of attributes
@@ -2179,7 +2430,7 @@ public class XMLSchemaValidator
                     attrPSVI.reset();
                 } else {
                     attrPSVI = new AttributePSVImpl();
-                    augs.putItem(ATTR_PSVI, attrPSVI);
+                    augs.putItem(Constants.ATTRIBUTE_PSVI, attrPSVI);
                 }
 
                 attrPSVI.fSpecified = false;
@@ -2204,7 +2455,7 @@ public class XMLSchemaValidator
 
             // PSVI: specified
             fCurrentPSVI.fSpecified = false;
-
+            
             int bufLen = fCurrentElemDecl.fDefault.normalizedValue.length();
             char [] chars = new char[bufLen];
             fCurrentElemDecl.fDefault.normalizedValue.getChars(0, bufLen, chars, 0);
@@ -2304,6 +2555,19 @@ public class XMLSchemaValidator
         if (fCurrentType == null)
             return null;
 
+        if (fUnionType) {
+            // for union types we need to send data because we delayed sending this data
+            // when we received it in the characters() call.
+            // XMLString will inlude non-normalized value, PSVIElement will include 
+            // normalized value
+            int bufLen = textContent.length();
+            if (bufLen >= BUFFER_SIZE) {
+                fCharBuffer = new char[bufLen*2];
+            }
+            textContent.getChars(0, bufLen, fCharBuffer, 0);
+            fXMLString.setValues(fCharBuffer, 0, bufLen);
+        }
+
         Object retValue = null;
         // Element Locally Valid (Type)
         // 3 The appropriate case among the following must be true:
@@ -2316,14 +2580,32 @@ public class XMLSchemaValidator
             if (!fNil) {
                 XSSimpleType dv = (XSSimpleType)fCurrentType;
                 try {
+                
+                    if (!fNormalizeData || fUnionType) {
+                        fValidationState.setNormalizationRequired(true);
+                    }
                     retValue = dv.validate(textContent, fValidationState, fValidatedInfo);
                     // PSVI: schema normalized value
                     //
                     fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
+                    
+                    if (fDocumentHandler != null && fUnionType) {
+                        // send normalized values
+                        // at this point we should only rely on normalized value
+                        // available via PSVI
+                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+                        fDocumentHandler.characters(fXMLString, fAugmentations);
+                    }
                 }
                 catch (InvalidDatatypeValueException e) {
+                    if (fDocumentHandler != null && fUnionType) {
+                        fCurrentPSVI.fNormalizedValue = null;
+                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+                        fDocumentHandler.characters(fXMLString, fAugmentations);
+
+                    }
                     reportSchemaError("cvc-type.3.1.3", new Object[]{element.rawname, textContent});
                 }
             }
@@ -2356,6 +2638,10 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 XSSimpleType dv = ctype.fXSSimpleType;
                 try {
+                    
+                    if (!fNormalizeData || fUnionType) {
+                        fValidationState.setNormalizationRequired(true);
+                    }
                     actualValue = dv.validate(textContent, fValidationState, fValidatedInfo);
 
                     // PSVI: schema normalized value
@@ -2363,8 +2649,19 @@ public class XMLSchemaValidator
                     fCurrentPSVI.fNormalizedValue = fValidatedInfo.normalizedValue;
                     // PSVI: memberType
                     fCurrentPSVI.fMemberType = fValidatedInfo.memberType;
+                    
+                    if (fDocumentHandler != null && fUnionType) {
+                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+                        fDocumentHandler.characters(fXMLString, fAugmentations);
+                    }
                 }
                 catch (InvalidDatatypeValueException e) {
+                    if (fDocumentHandler != null && fUnionType) {
+                        fCurrentPSVI.fNormalizedValue = null;
+                        fAugmentations.putItem(Constants.ELEMENT_PSVI, fCurrentPSVI);
+                        fDocumentHandler.characters(fXMLString, fAugmentations);
+
+                    }
                     reportSchemaError("cvc-complex-type.2.2", new Object[]{element.rawname});
                 }
                 // REVISIT: eventually, this method should return the same actualValue as elementLocallyValidType...

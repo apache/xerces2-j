@@ -82,6 +82,8 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import org.apache.xerces.xni.psvi.ElementPSVI;
+import org.apache.xerces.xni.psvi.AttributePSVI;
 
 import org.xml.sax.AttributeList;
 import org.xml.sax.Attributes;
@@ -132,6 +134,10 @@ public abstract class AbstractSAXParser
     protected static final String NAMESPACE_PREFIXES =
         Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACE_PREFIXES_FEATURE;
 
+    /** Expose XML Schema normalize value */
+    protected static final String NORMALIZE_DATA = 
+        Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_NORMALIZED_VALUE;
+
     // NOTE: The symbol table properties is for internal use. -Ac
 
     /** Property identifier: symbol table. */
@@ -149,6 +155,9 @@ public abstract class AbstractSAXParser
 
     /** Namespace prefixes. */
     protected boolean fNamespacePrefixes = false;
+
+    /** Expose XML Schema schema_normalize_values via DOM*/
+    protected boolean fNormalizeData = true;
 
     // parser handlers
 
@@ -186,6 +195,11 @@ public abstract class AbstractSAXParser
 
     // temp vars
     private final AttributesProxy fAttributesProxy = new AttributesProxy();
+
+    // temporary buffer for sending normalized values
+    // REVISIT: what should be the size of the buffer?
+    private static final int BUFFER_SIZE = 20;
+    private char[] fCharBuffer =  new char[BUFFER_SIZE];
 
     //
     // Constructors
@@ -387,6 +401,8 @@ public abstract class AbstractSAXParser
         try {
             // SAX1
             if (fDocumentHandler != null) {
+                // REVISIT: should we support schema-normalized-value for SAX1 events
+                // 
                 fAttributesProxy.setAttributes(attributes);
                 fDocumentHandler.startElement(element.rawname, fAttributesProxy);
             }
@@ -397,20 +413,30 @@ public abstract class AbstractSAXParser
                 int len = attributes.getLength();
                 for (int i = len - 1; i >= 0; i--) {
                     attributes.getName(i, fQName);
+                    // change attribute value to normalized value
+                    if (fNormalizeData) {
+                        AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                        if (attrPSVI != null) {
+                            attributes.setValue(i, attrPSVI.schemaNormalizedValue());
+                        }
+                    }
+
                     if (fQName.prefix == fXmlnsSymbol || 
                         fQName.rawname == fXmlnsSymbol) {
                         if (!fNamespacePrefixes) {
                             // remove namespace declaration attributes
                             attributes.removeAttributeAt(i);
                         }
-                        else if (fNamespaces && fNamespacePrefixes) {
+                        if (fNamespaces && fNamespacePrefixes) {
                             // localpart should be empty string as per SAX documentation:
                             // http://www.saxproject.org/?selected=namespaces
                             fQName.prefix = fEmptySymbol;
                             fQName.localpart = fEmptySymbol;
                             attributes.setName(i, fQName);
                         }
-                    }
+                    } 
+                    
+
                   
                 }
                 
@@ -436,17 +462,49 @@ public abstract class AbstractSAXParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text, Augmentations augs) throws XNIException {
+        
+        // if type is union (XML Schema) it is possible that we receive
+        // character call with empty data
+        if (text.length == 0) {
+            return;
+        }
 
 
         try {
             // SAX1
             if (fDocumentHandler != null) {
+                // REVISIT: should we support schema-normalized-value for SAX1 events
+                // 
                 fDocumentHandler.characters(text.ch, text.offset, text.length);
             }
 
             // SAX2
             if (fContentHandler != null) {
-                fContentHandler.characters(text.ch, text.offset, text.length);
+                String value = null;
+                // normalized value for element is stored in schema_normalize_value property
+                // of PSVI element.
+                if (fNormalizeData && augs != null) {
+                    ElementPSVI elemPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                    if (elemPSVI != null) {
+                        value = elemPSVI.schemaNormalizedValue();
+                    }
+                }
+
+                int length = 0;
+                if (value != null) {
+                     // if normalized value is available copy it into a temp buffer
+                     length = value.length();
+                     if (length >= BUFFER_SIZE) {
+                        fCharBuffer = new char[length*2];
+                     }
+                     value.getChars(0, length, fCharBuffer, 0);
+                }
+                if (value == null) {                
+                    fContentHandler.characters(text.ch, text.offset, text.length);
+                }
+                else {
+                    fContentHandler.characters(fCharBuffer, 0, length);
+                }
             }
         }
         catch (SAXException e) {
@@ -1854,9 +1912,10 @@ public abstract class AbstractSAXParser
         fInDTD = false;
 
         // features
-        fNamespaces = fConfiguration.getFeature(NAMESPACES);
+        fNamespaces = fConfiguration.getFeature(NAMESPACES);           
         fNamespacePrefixes = fConfiguration.getFeature(NAMESPACE_PREFIXES);
-
+        fNormalizeData = fConfiguration.getFeature(NORMALIZE_DATA);
+        
         // save needed symbols
         SymbolTable symbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
         if (symbolTable != null) {

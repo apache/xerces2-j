@@ -62,6 +62,7 @@ import org.apache.xerces.impl.dv.XSAtomicSimpleType;
 import org.apache.xerces.impl.dv.XSListSimpleType;
 import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
+import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
@@ -321,6 +322,13 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
     public boolean isIDType(){
         return (fValidationDV == DV_ID);
+    }
+
+    public short getWhitespace() throws DatatypeException{
+        if (fVariety == VARIETY_UNION) {
+            throw new DatatypeException("dt-whitespace", new Object[]{fTypeName});
+        }
+        return fWhiteSpace;
     }
 
     public short getPrimitiveKind() {
@@ -1171,7 +1179,12 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
         if (fVariety == VARIETY_ATOMIC) {
 
-            String nvalue = normalize(content, fWhiteSpace);
+            String nvalue; 
+            if (context==null ||context.needToNormalize()) {
+                nvalue = normalize(content, fWhiteSpace);
+            } else {
+                nvalue = content;
+            }
 
             // validate special kinds of token, in place of old pattern matching
             if (fTokenType != SPECIAL_TOKEN_NONE) {
@@ -1216,7 +1229,12 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
         } else if (fVariety == VARIETY_LIST) {
 
-            String nvalue = normalize(content, fWhiteSpace);
+            String nvalue; 
+            if (context==null ||context.needToNormalize()) {
+                nvalue = normalize(content, fWhiteSpace);
+            } else {
+                nvalue = content;
+            }
             StringTokenizer parsedList = new StringTokenizer(nvalue);
             int countOfTokens = parsedList.countTokens() ;
             Object[] avalue = new Object[countOfTokens];
@@ -1592,6 +1610,9 @@ class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionS
 
         public boolean needExtraChecking() {
             return fExternal.needExtraChecking();
+        }
+        public boolean needToNormalize() {
+            return fExternal.needToNormalize();
         }
 
         public boolean isEntityDeclared (String name) {

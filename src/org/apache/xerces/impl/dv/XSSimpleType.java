@@ -274,4 +274,14 @@ public interface XSSimpleType extends XSTypeDecl {
      * @return  a constant corresponding to the "cardinality" facet.
      */
     public short getCardinalityFacet();
+
+    
+    /**
+     * Return the whitespace corresponding to this datatype.
+     * 
+     * @return valid values are WS_PRESERVE, WS_REPLACE, WS_COLLAPSE.
+     * @exception DatatypeException
+     *                   union datatypes don't have whitespace facet associated with them
+     */
+    public short getWhitespace () throws DatatypeException;
 }
