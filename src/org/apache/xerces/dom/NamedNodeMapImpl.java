@@ -511,13 +511,17 @@ public class NamedNodeMapImpl
             NodeImpl a = (NodeImpl)nodes.elementAt(i);
             String aNamespaceURI = a.getNamespaceURI();
             String aLocalName = a.getLocalName();
-            if (((namespaceURI == null && aNamespaceURI == null)
-                 ||
-                 namespaceURI.equals(aNamespaceURI))
-                &&
-                (name.equals(aLocalName)
-                 ||
-                 (aLocalName == null && name.equals(a.getNodeName())))) {
+            if (namespaceURI == null) {
+              if (aNamespaceURI == null
+                  &&
+                  (name.equals(aLocalName)
+                   ||
+                   (aLocalName == null && name.equals(a.getNodeName()))))
+                return i;
+            } else {
+              if (namespaceURI.equals(aNamespaceURI)
+                  &&
+                  name.equals(aLocalName))
                 return i;
             }
         }
