@@ -63,7 +63,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
-import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.validation.XMLGrammarPoolImpl;
 import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.models.CMBuilder;
@@ -74,6 +73,7 @@ import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSConstraints;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
+import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.apache.xerces.xni.XNIException;
@@ -235,10 +235,45 @@ public class XMLGrammarCachingConfiguration
     public boolean lockGrammarPool() {
         if(fGrammarPool instanceof org.apache.xerces.impl.validation.XMLGrammarPoolImpl) {
             // call appropriate method on class
+            ((org.apache.xerces.impl.validation.XMLGrammarPoolImpl)fGrammarPool).lockPool();
             return true;
         }
         return false;
     } // lockGrammarPool()
+
+    /*
+     * clear the XMLGrammarPoolImpl object so that it does not
+     * contain any more grammars.  This isn't
+     * a part of the XMLGrammarPool interface, so this method
+     * returns true if the operation succeeded, false otherwise
+     * (i.e., the grammar pool isn't our XMLGrammarPoolImpl or descended from it)
+     * @return:  true on success, false on failure
+     */
+    public boolean clearGrammarPool() {
+        if(fGrammarPool instanceof org.apache.xerces.impl.validation.XMLGrammarPoolImpl) {
+            // call appropriate method on class
+            ((org.apache.xerces.impl.validation.XMLGrammarPoolImpl)fGrammarPool).clear();
+            return true;
+        }
+        return false;
+    } // clearGrammarPool()
+
+    /*
+     * unlock the XMLGrammarPoolImpl object so that it  
+     * accepts more grammars from the validators.  This isn't
+     * a part of the XMLGrammarPool interface, so this method
+     * returns true if the operation succeeded, false otherwise
+     * (i.e., the grammar pool isn't our XMLGrammarPoolImpl)
+     * @return:  true on success, false on failure
+     */
+    public boolean unlockGrammarPool() {
+        if(fGrammarPool instanceof org.apache.xerces.impl.validation.XMLGrammarPoolImpl) {
+            // call appropriate method on class
+            ((org.apache.xerces.impl.validation.XMLGrammarPoolImpl)fGrammarPool).unlockPool();
+            return true;
+        }
+        return false;
+    } // unlockGrammarPool()
 
     /**
      * Parse a grammar from a location identified by an URI.
@@ -279,57 +314,21 @@ public class XMLGrammarCachingConfiguration
      */
     public Grammar parseGrammar(String type, XMLInputSource
                 is) throws XNIException, IOException {
-       // REVISIT:  for now, don't know what to do with DTD's...
-       if(!type.equals(XMLGrammarDescription.XML_SCHEMA))
+        // REVISIT:  for now, don't know what to do with DTD's...
+        if(!type.equals(XMLGrammarDescription.XML_SCHEMA))
             return null;
-       if (fSchemaHandler == null) {
-           fXSGrammarBucket = new XSGrammarBucket();
-           fSubGroupHandler = new SubstitutionGroupHandler(fXSGrammarBucket);
-           fSchemaHandler = new XSDHandler(fXSGrammarBucket);
-           fCMBuilder = new CMBuilder(new XSDeclarationPool());
-       }
-
-       // we already have an error reporter, entityManager, entity resolver, etc.
-
-       String externalSchemas =
-            (String)(getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_LOCATION));
-       String noNamespaceExternalSchemas =
-            (String)(getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_NONS_LOCATION));
-
-       fXSGrammarBucket.reset();
-       // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
-       Grammar[] grammars = (Grammar[])(fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
-       for(int i=0; i<grammars.length; i++ )
-            fXSGrammarBucket.putGrammar((SchemaGrammar)grammars[i]);
-       fSubGroupHandler.reset();
-       fSchemaHandler.reset(fErrorReporter, fEntityManager, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, fGrammarPool);
-
-       // Should check whether the grammar with this namespace is already in
-       // the grammar resolver. But since we don't know the target namespace
-       // of the document here, we leave such check to XSDHandler
-       fXSDDescription.reset();
-       fXSDDescription.setContextType(XSDDescription.CONTEXT_PREPARSE);
-       String sid = is.getSystemId();
-       if (sid != null) {
-           fXSDDescription.setLiteralSystemId(sid);
-           fXSDDescription.setExpandedSystemId(sid);
-           fXSDDescription.setLocationHints(new String[]{sid});
-       }
-       SchemaGrammar grammar = fSchemaHandler.parseSchema(is, fXSDDescription);
-
-       if (getFeature(SCHEMA_FULL_CHECKING)) {
-           XSConstraints.fullSchemaChecking(fXSGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
-       }
-       
-       // by default, hand it off to the grammar pool
-       if (grammar != null) {
-           fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA,
-                                      new Grammar[]{grammar});
+        if (fSchemaHandler == null) {
+            fXSGrammarBucket = new XSGrammarBucket();
+            fSubGroupHandler = new SubstitutionGroupHandler(fXSGrammarBucket);
+            fSchemaHandler = new XSDHandler(fXSGrammarBucket);
         }
-        
-       return grammar;
-
-    }
+        fXSGrammarBucket.reset();
+        // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
+        Grammar[] grammars = (Grammar[])(fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
+        for(int i=0; i<grammars.length; i++ )
+            fXSGrammarBucket.putGrammar((SchemaGrammar)grammars[i]);
+        return parseXMLSchema(is, fXSGrammarBucket, fSchemaHandler, fSubGroupHandler);
+    } // parseGrammar(String, XMLInputSource):  Grammar
 
     //
     // Protected methods
@@ -375,4 +374,64 @@ public class XMLGrammarCachingConfiguration
 
     } // checkProperty(String)
 
-} // class StandardParserConfiguration
+    // package-protected methods
+
+    /* This method parses an XML Schema document.  
+     * It requires a GrammarBucket parameter so that DOMASBuilder can
+     * extract the info it needs.
+     * Therefore, bucket must not be null!
+     */
+    SchemaGrammar parseXMLSchema(XMLInputSource is, XSGrammarBucket bucket,
+            XSDHandler schemaHandler, SubstitutionGroupHandler subGroupHandler) {
+
+        // don't need to parametrize this since, as of 03/27/02, this
+        // has no dependencies on any of the other (changeable) classes
+        if(fCMBuilder == null) {
+            fCMBuilder = new CMBuilder(new XSDeclarationPool());
+        }
+
+        // we already have an error reporter, entityManager, entity resolver, etc.
+        // but if we're doing schemas, we'd better make sure
+        // we have the right MessageFormatter!
+        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
+            XSMessageFormatter xmft = new XSMessageFormatter();
+            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
+        }
+
+        String externalSchemas =
+            (String)(getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_LOCATION));
+        String noNamespaceExternalSchemas =
+            (String)(getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_NONS_LOCATION));
+
+        subGroupHandler.reset();
+        schemaHandler.reset(fErrorReporter, fEntityManager, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, fGrammarPool);
+
+        // Should check whether the grammar with this namespace is already in
+        // the grammar resolver. But since we don't know the target namespace
+        // of the document here, we leave such check to XSDHandler
+        fXSDDescription.reset();
+        fXSDDescription.setContextType(XSDDescription.CONTEXT_PREPARSE);
+        String sid = is.getSystemId();
+        if (sid != null) {
+            fXSDDescription.setLiteralSystemId(sid);
+            fXSDDescription.setExpandedSystemId(sid);
+            fXSDDescription.setLocationHints(new String[]{sid});
+        }
+        SchemaGrammar grammar = schemaHandler.parseSchema(is, fXSDDescription);
+
+        if (getFeature(SCHEMA_FULL_CHECKING)) {
+            XSConstraints.fullSchemaChecking(bucket, subGroupHandler, fCMBuilder, fErrorReporter);
+        }
+       
+        // by default, hand it off to the grammar pool
+        if (grammar != null) {
+            fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA,
+                                      new Grammar[]{grammar});
+        }
+        
+        return grammar;
+
+    } // parseXMLSchema(XMLInputSource, XSGrammarBucket, XSDHandler, SubstitutionGroupHandler):  SchemaGrammar
+
+
+} // class XMLGrammarCachingConfiguration

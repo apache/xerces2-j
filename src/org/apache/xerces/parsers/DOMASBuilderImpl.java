@@ -127,13 +127,7 @@ public class DOMASBuilderImpl
 
     protected XSGrammarBucket fGrammarBucket;
     protected SubstitutionGroupHandler fSubGroupHandler;
-    protected CMBuilder fCMBuilder;
     protected XSDHandler fSchemaHandler;
-    protected XMLErrorReporter fErrorReporter;
-    protected XMLEntityResolver fEntityResolver;
-    protected SymbolTable fSymbolTable;
-    protected final XSDDescription fXSDDescription = new XSDDescription() ;
-    protected XMLGrammarPool fGrammarPool = null;
 
     protected ASModelImpl fAbstractSchema;
 
@@ -150,8 +144,10 @@ public class DOMASBuilderImpl
 
     /**
      * Constructs a DOM Builder using the specified parser configuration.
+     * We must demand that the configuration extend XMLGrammarCachingConfiguration to make
+     * sure all relevant methods/features are available.
      */
-    public DOMASBuilderImpl(XMLParserConfiguration config) {
+    public DOMASBuilderImpl(XMLGrammarCachingConfiguration config) {
         super(config);
     } // <init>(XMLParserConfiguration)
 
@@ -166,10 +162,12 @@ public class DOMASBuilderImpl
     /**
      * Constructs a DOM Builder using the specified symbol table and
      * grammar pool.
+     * The grammarPool implementation should extent the default
+     * implementation; otherwise, correct functioning of this class may
+     * not occur.
      */
     public DOMASBuilderImpl(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
         super(new XMLGrammarCachingConfiguration(symbolTable, grammarPool));
-        fGrammarPool = grammarPool;
     }
 
     //
@@ -199,21 +197,22 @@ public class DOMASBuilderImpl
         // since the ASModel associated with this object is an attribute
         // according to the DOM IDL, we must obliterate anything
         // that was set before, rather than adding to it.
+        // REVISIT:  so shouldn't we attempt to clear the
+        // grammarPool before adding stuff to it?  - NG
         fAbstractSchema = (ASModelImpl)abstractSchema;
 
         // make sure the GrammarPool is properly initialized.
-        if (fGrammarPool == null) {
-            fGrammarPool = (XMLGrammarPool)fConfiguration.getProperty(StandardParserConfiguration.XMLGRAMMAR_POOL);
-        }
+        XMLGrammarPool grammarPool = (XMLGrammarPool)fConfiguration.getProperty(StandardParserConfiguration.XMLGRAMMAR_POOL);
         // if there is no grammar pool, create one
         // REVISIT: ASBuilder should always create one.
-        if (fGrammarPool == null) {
-            fGrammarPool = new XMLGrammarPoolImpl();
+        if (grammarPool == null) {
+            // something's not right in this situation...
+            grammarPool = new XMLGrammarPoolImpl();
             fConfiguration.setProperty(StandardParserConfiguration.XMLGRAMMAR_POOL,
-                                       fGrammarPool);
+                                       grammarPool);
         }
         if (fAbstractSchema != null) {
-            initGrammarPool(fAbstractSchema);
+            initGrammarPool(fAbstractSchema, grammarPool);
         }
     }
 
@@ -295,43 +294,22 @@ public class DOMASBuilderImpl
 
     ASModel parseASInputSource(XMLInputSource is) throws Exception {
                                       
-       if (fSchemaHandler == null) {
-           fGrammarBucket = new XSGrammarBucket();
-           fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
-           fSchemaHandler = new XSDHandler(fGrammarBucket);
-           fCMBuilder = new CMBuilder(new XSDeclarationPool());
-       }
-
-       fErrorReporter = (XMLErrorReporter)fConfiguration.getProperty(ERROR_REPORTER);
-       fEntityResolver = (XMLEntityResolver)fConfiguration.getProperty(ENTITY_MANAGER);
-
-       fSymbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
-       String externalSchemas =
-            (String)(fConfiguration.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_LOCATION));
-       String noNamespaceExternalSchemas =
-            (String)(fConfiguration.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_NONS_LOCATION));
-
-       initGrammarBucket();
-       fSubGroupHandler.reset();
-       fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, fGrammarPool);
-
-       // Should check whether the grammar with this namespace is already in
-       // the grammar resolver. But since we don't know the target namespace
-       // of the document here, we leave such check to XSDHandler
-        fXSDDescription.reset();
-        fXSDDescription.setContextType(XSDDescription.CONTEXT_PREPARSE);
-        String sid = is.getSystemId();
-        if (sid != null) {
-            fXSDDescription.setLiteralSystemId(sid);
-            fXSDDescription.setExpandedSystemId(sid);
-            fXSDDescription.setLocationHints(new String[]{sid});
+        if (fSchemaHandler == null) {
+            fGrammarBucket = new XSGrammarBucket();
+            fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
+            fSchemaHandler = new XSDHandler(fGrammarBucket);
         }
-        SchemaGrammar grammar = fSchemaHandler.parseSchema(is, fXSDDescription);
 
-        if (getFeature(SCHEMA_FULL_CHECKING)) {
-            XSConstraints.fullSchemaChecking(fGrammarBucket, fSubGroupHandler, fCMBuilder, fErrorReporter);
-        }
- 
+        initGrammarBucket();
+
+        // actually do the parse:
+        // save some casting
+        XMLGrammarCachingConfiguration gramConfig = (XMLGrammarCachingConfiguration)fConfiguration;
+        // ensure grammarPool doesn't absorb grammars while it's parsing
+        gramConfig.lockGrammarPool();
+        SchemaGrammar grammar = gramConfig.parseXMLSchema(is, fGrammarBucket, fSchemaHandler, fSubGroupHandler);
+        gramConfig.unlockGrammarPool();
+
         ASModelImpl newAsModel = new ASModelImpl();
         addGrammars(newAsModel, fGrammarBucket);
         return newAsModel;
@@ -362,17 +340,16 @@ public class DOMASBuilderImpl
         }
     } // addGrammars
 
-    private void initGrammarPool(ASModelImpl currModel) {
+    private void initGrammarPool(ASModelImpl currModel, XMLGrammarPool grammarPool) {
         // put all the grammars in fAbstractSchema into the grammar pool.
-        if (fGrammarPool != null) {
-            Grammar[] grammars = new Grammar[1];
-            if ((grammars[0] = (Grammar)currModel.getGrammar()) != null) {
-                fGrammarPool.cacheGrammars(grammars[0].getGrammarDescription().getGrammarType(), grammars);
-            }
-            Vector modelStore = currModel.getInternalASModels();
-            for (int i = 0; i < modelStore.size(); i++) {
-                initGrammarPool((ASModelImpl)modelStore.elementAt(i));
-            }
+        // grammarPool must never be null!
+        Grammar[] grammars = new Grammar[1];
+        if ((grammars[0] = (Grammar)currModel.getGrammar()) != null) {
+            grammarPool.cacheGrammars(grammars[0].getGrammarDescription().getGrammarType(), grammars);
+        }
+        Vector modelStore = currModel.getInternalASModels();
+        for (int i = 0; i < modelStore.size(); i++) {
+            initGrammarPool((ASModelImpl)modelStore.elementAt(i), grammarPool);
         }
     }
 } // class DOMASBuilderImpl

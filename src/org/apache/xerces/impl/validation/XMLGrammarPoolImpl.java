@@ -99,6 +99,9 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     /** Grammars. */
     protected Entry[] fGrammars = null;
     
+    // whether this pool is locked
+    protected boolean fPoolIsLocked;
+
     private static final boolean DEBUG = false ;
 	
     //
@@ -108,11 +111,13 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     /** Constructs a grammar pool with a default number of buckets. */
     public XMLGrammarPoolImpl() {
     	fGrammars = new Entry[TABLE_SIZE];
+        fPoolIsLocked = false;
     } // <init>()
     
     /** Constructs a grammar pool with a specified number of buckets. */
     public XMLGrammarPoolImpl(int initialCapacity) {
         fGrammars = new Entry[initialCapacity];
+        fPoolIsLocked = false;
     }
 
     //
@@ -150,19 +155,24 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     /* <p> Return the final set of grammars that the validator ended up
      * with. This method is called after the validation finishes. The 
      * application may then choose to cache some of the returned grammars.</p>
+     * <p>In this implementation, we make our choice based on whether this object
+     * is "locked"--that is, whether the application has instructed
+     * us not to accept any new grammars.</p>
      *
      * @param grammarType The type of the grammars being returned;
      * @param grammars 	  An array containing the set of grammars being
      *  		  returned; order is not significant.
      */
     public void cacheGrammars(String grammarType, Grammar[] grammars) {
-    	for (int i = 0; i < grammars.length; i++) {
-            if(DEBUG) {
-    	        System.out.println("CACHED GRAMMAR " + (i+1) ) ;
-    	        Grammar temp = grammars[i] ;
-    	        print(temp.getGrammarDescription());
+        if(!fPoolIsLocked) {
+    	    for (int i = 0; i < grammars.length; i++) {
+                if(DEBUG) {
+    	            System.out.println("CACHED GRAMMAR " + (i+1) ) ;
+    	            Grammar temp = grammars[i] ;
+    	            print(temp.getGrammarDescription());
+                }
+    	        putGrammar(grammars[i]);
             }
-    	    putGrammar(grammars[i]);
     	}
     } // cacheGrammars(String, Grammar[]);
     
@@ -199,19 +209,21 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      * @param grammar The Grammar.
      */
     public void putGrammar(Grammar grammar) {
-        synchronized (fGrammars) {
-            XMLGrammarDescription desc = grammar.getGrammarDescription();
-            int hash = hashCode(desc);
-            int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-            for (Entry entry = fGrammars[index]; entry != null; entry = entry.next) {
-                if (entry.hash == hash && equals(entry.desc, desc)) {
-                    entry.grammar = grammar;
-                    return;
+        if(!fPoolIsLocked) {
+            synchronized (fGrammars) {
+                XMLGrammarDescription desc = grammar.getGrammarDescription();
+                int hash = hashCode(desc);
+                int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+                for (Entry entry = fGrammars[index]; entry != null; entry = entry.next) {
+                    if (entry.hash == hash && equals(entry.desc, desc)) {
+                        entry.grammar = grammar;
+                        return;
+                    }
                 }
+                // create a new entry
+                Entry entry = new Entry(hash, desc, grammar, fGrammars[index]);
+                fGrammars[index] = entry;
             }
-            // create a new entry
-            Entry entry = new Entry(hash, desc, grammar, fGrammars[index]);
-            fGrammars[index] = entry;
         }
     } // putGrammar(Grammar)
 
@@ -286,6 +298,34 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
 	}
     } // containsGrammar(XMLGrammarDescription):boolean
 
+    /* <p> Sets this grammar pool to a "locked" state--i.e.,
+     * no new grammars will be added until it is "unlocked".
+     */
+    public void lockPool() {
+        fPoolIsLocked = true;
+    } // lockPool()
+
+    /* <p> Sets this grammar pool to an "unlocked" state--i.e.,
+     * new grammars will be added when putGrammar or cacheGrammars 
+     * are called.
+     */
+    public void unlockPool() {
+        fPoolIsLocked = false;
+    } // unlockPool()
+
+    /* 
+     * <p>This method clears the pool-i.e., removes references
+     * to all the grammars in it.</p>
+     */
+    public void clear() {
+        for (int i=0; i<fGrammars.length; i++) {
+            if(fGrammars[i] != null) {
+                fGrammars[i].clear();
+                fGrammars[i] = null;
+            }
+        }
+    } // clear()
+
     /**
      * This method checks whether two grammars are the same. Currently, we compare 
      * the root element names for DTD grammars and the target namespaces for Schema grammars.
@@ -325,7 +365,18 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
             this.grammar = grammar;
             this.next = next;
         }
-    }
+
+        // clear this entry; useful to promote garbage collection
+        // since reduces reference count of objects to be destroyed
+        protected void clear () {
+            desc = null;
+            grammar = null;
+            if(next != null) {
+                next.clear();
+                next = null;
+            }
+        } // clear()
+    } // class Entry
     
     /* This is just for testing */
     public void print(XMLGrammarDescription description){
