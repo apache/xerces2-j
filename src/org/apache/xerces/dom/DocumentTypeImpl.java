@@ -170,6 +170,18 @@ public class DocumentTypeImpl
     }
     
     /**
+     * NON-DOM. <p>
+     *
+     * Set the internalSubset given as a string.
+     */
+    public void setInternalSubset(String internalSubset) {
+        if (syncData) {
+            synchronizeData();
+        }
+        this.internalSubset = internalSubset;
+    }
+
+    /**
      * Introduced in DOM Level 2. <p>
      * 
      * Return the internalSubset given as a string.
