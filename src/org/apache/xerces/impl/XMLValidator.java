@@ -298,6 +298,8 @@ public class XMLValidator
         fBufferDatatype = false;
         fInElementContent = false;
 
+        fRootElement.clear();
+
         fNDataDeclNotations.clear();
 
         fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
