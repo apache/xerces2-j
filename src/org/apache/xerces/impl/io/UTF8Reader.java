@@ -77,6 +77,14 @@ public class UTF8Reader
     /** Default byte buffer size (2048). */
     public static final int DEFAULT_BUFFER_SIZE = 2048;
 
+    // debugging
+
+    /** Debug read. */
+    private static final boolean DEBUG_READ = false;
+
+    /** Debug buffer boundary. */
+    private static final boolean DEBUG_BUFFER_BOUNDARY = false;
+
     //
     // Data
     //
@@ -87,11 +95,11 @@ public class UTF8Reader
     /** Byte buffer. */
     protected byte[] fBuffer;
 
+    /** Offset into buffer. */
+    protected int fOffset;
+
     /** Surrogate character. */
     private int fSurrogate = -1;
-
-    /** Buffer offset to start reading from. */
-    private int fOffset;
 
     //
     // Constructors
@@ -138,9 +146,16 @@ public class UTF8Reader
      */
     public int read() throws IOException {
 
+        // decode character
         int c = fSurrogate;
         if (fSurrogate == -1) {
-            int b0 = fInputStream.read();
+            // NOTE: We use the index into the buffer if there are remaining
+            //       bytes from the last block read. -Ac
+            int index = 0;
+
+            // get first byte
+            int b0 = index == fOffset 
+                   ? fInputStream.read() : fBuffer[index++] & 0x00FF;
             if (b0 == -1) {
                 return -1;
             }
@@ -154,12 +169,13 @@ public class UTF8Reader
             // UTF-8:   [110y yyyy] [10xx xxxx]
             // Unicode: [0000 0yyy] [yyxx xxxx]
             else if ((b0 & 0xE0) == 0xC0) {
-                int b1 = fInputStream.read();
+                int b1 = index == fOffset 
+                       ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b1 == -1) {
-                    expectedByte(2, 2);
+                    expectedByte(2, 2, index != fOffset ? 0 : index - 1);
                 }
                 if ((b1 & 0xC0) != 0x80) {
-                    invalidByte(2, 2, b1);
+                    invalidByte(2, 2, b1, index != fOffset ? 0 : index - 1);
                 }
                 c = ((b0 << 6) & 0x07C0) | (b1 & 0x003F);
             }
@@ -167,19 +183,21 @@ public class UTF8Reader
             // UTF-8:   [1110 zzzz] [10yy yyyy] [10xx xxxx]
             // Unicode: [zzzz yyyy] [yyxx xxxx]
             else if ((b0 & 0xF0) == 0xE0) {
-                int b1 = fInputStream.read();
+                int b1 = index == fOffset
+                       ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b1 == -1) {
-                    expectedByte(2, 3);
+                    expectedByte(2, 3, index != fOffset ? 0 : index - 1);
                 }
                 if ((b1 & 0xC0) != 0x80) {
-                    invalidByte(2, 3, b1);
+                    invalidByte(2, 3, b1, index != fOffset ? 0 : index - 1);
                 }
-                int b2 = fInputStream.read();
+                int b2 = index == fOffset 
+                       ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b2 == -1) {
-                    expectedByte(3, 3);
+                    expectedByte(3, 3, index != fOffset ? 0 : index - 1);
                 }
                 if ((b2 & 0xC0) != 0x80) {
-                    invalidByte(3, 3, b2);
+                    invalidByte(3, 3, b2, index != fOffset ? 0 : index - 1);
                 }
                 c = ((b0 << 12) & 0xF000) | ((b1 << 6) & 0x0FC0) |
                     (b2 & 0x003F);
@@ -190,26 +208,29 @@ public class UTF8Reader
             //          [1101 11yy] [yyxx xxxx] (low surrogate)
             //          * uuuuu = wwww + 1
             else if ((b0 & 0xF8) == 0xF0) {
-                int b1 = fInputStream.read();
+                int b1 = index == fOffset 
+                       ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b1 == -1) {
-                    expectedByte(2, 4);
+                    expectedByte(2, 4, index != fOffset ? 0 : index - 1);
                 }
                 if ((b1 & 0xC0) != 0x80) {
-                    invalidByte(2, 3, b1);
+                    invalidByte(2, 3, b1, index != fOffset ? 0 : index - 1);
                 }
-                int b2 = fInputStream.read();
+                int b2 = index == fOffset 
+                       ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b2 == -1) {
-                    expectedByte(3, 4);
+                    expectedByte(3, 4, index != fOffset ? 0 : index - 1);
                 }
                 if ((b2 & 0xC0) != 0x80) {
-                    invalidByte(3, 3, b2);
+                    invalidByte(3, 3, b2, index != fOffset ? 0 : index - 1);
                 }
-                int b3 = fInputStream.read();
+                int b3 = index == fOffset 
+                       ? fInputStream.read() : fBuffer[index++] & 0x00FF;
                 if (b3 == -1) {
-                    expectedByte(4, 4);
+                    expectedByte(4, 4, index != fOffset ? 0 : index - 1);
                 }
                 if ((b3 & 0xC0) != 0x80) {
-                    invalidByte(4, 4, b3);
+                    invalidByte(4, 4, b3, index != fOffset ? 0 : index - 1);
                 }
                 int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
                 int wwww = uuuuu - 1;
@@ -223,11 +244,18 @@ public class UTF8Reader
 
             // error
             else {
-                invalidByte(1, 1, b0);
+                invalidByte(1, 1, b0, index != fOffset ? 0 : index - 1);
             }
         }
+
+        // use surrogate
         else {
             fSurrogate = -1;
+        }
+
+        // return character
+        if (DEBUG_READ) {
+            System.out.println("read(): 0x"+Integer.toHexString(c));
         }
         return c;
 
@@ -265,16 +293,17 @@ public class UTF8Reader
         int count = fInputStream.read(fBuffer, fOffset, length);
         if (count == -1) {
             if (fOffset > 0) {
-                expectedByte(fOffset, 4 - fOffset);
+                expectedByte(fOffset, 4 - fOffset, 0);
             }
             return -1;
         }
+        count += fOffset;
         fOffset = 0;
 
         // convert bytes to characters
         final int total = count;
         for (int in = 0, out = offset; in < total; in++) {
-            int b0 = fBuffer[in];
+            int b0 = fBuffer[in] & 0x00FF;
 
             // UTF-8:   [0xxx xxxx]
             // Unicode: [0000 0000] [0xxx xxxx]
@@ -287,14 +316,17 @@ public class UTF8Reader
             // Unicode: [0000 0yyy] [yyxx xxxx]
             if ((b0 & 0xE0) == 0xC0) {
                 if (++in == total) {
+                    if (DEBUG_BUFFER_BOUNDARY) {
+                        System.out.println("*** buffer boundary (1,2) 0x"+Integer.toHexString(b0));
+                    }
                     fBuffer[0] = (byte)b0;
                     fOffset = 1;
                     count -= fOffset;
                     break;
                 }
-                int b1 = fBuffer[in];
+                int b1 = fBuffer[in] & 0x00FF;
                 if ((b1 & 0xC0) != 0x80) {
-                    invalidByte(2, 2, b1);
+                    invalidByte(2, 2, b1, in);
                 }
                 int c = ((b0 << 6) & 0x07C0) | (b1 & 0x003F);
                 ch[out++] = (char)c;
@@ -306,25 +338,31 @@ public class UTF8Reader
             // Unicode: [zzzz yyyy] [yyxx xxxx]
             if ((b0 & 0xF0) == 0xE0) {
                 if (++in == total) {
+                    if (DEBUG_BUFFER_BOUNDARY) {
+                        System.out.println("*** buffer boundary (1,3) 0x"+Integer.toHexString(b0));
+                    }
                     fBuffer[0] = (byte)b0;
                     fOffset = 1;
                     count -= fOffset;
                     break;
                 }
-                int b1 = fBuffer[in];
+                int b1 = fBuffer[in] & 0x00FF;
                 if ((b1 & 0xC0) != 0x80) {
-                    invalidByte(2, 3, b1);
+                    invalidByte(2, 3, b1, in);
                 }
                 if (++in == total) {
+                    if (DEBUG_BUFFER_BOUNDARY) {
+                        System.out.println("*** buffer boundary (2,3) 0x"+Integer.toHexString(b0)+" 0x"+Integer.toHexString(b1));
+                    }
                     fBuffer[0] = (byte)b0;
                     fBuffer[1] = (byte)b1;
                     fOffset = 2;
                     count -= fOffset;
                     break;
                 }
-                int b2 = fBuffer[in];
+                int b2 = fBuffer[in] & 0x00FF;
                 if ((b2 & 0xC0) != 0x80) {
-                    invalidByte(3, 3, b2);
+                    invalidByte(3, 3, b2, in);
                 }
                 int c = ((b0 << 12) & 0xF000) | ((b1 << 6) & 0x0FC0) |
                         (b2 & 0x003F);
@@ -339,27 +377,36 @@ public class UTF8Reader
             //          * uuuuu = wwww + 1
             if ((b0 & 0xF8) == 0xF0) {
                 if (++in == total) {
+                    if (DEBUG_BUFFER_BOUNDARY) {
+                        System.out.println("*** buffer boundary (1,4) 0x"+Integer.toHexString(b0));
+                    }
                     fBuffer[0] = (byte)b0;
                     fOffset = 1;
                     count -= fOffset;
                     break;
                 }
-                int b1 = fBuffer[in];
+                int b1 = fBuffer[in] & 0x00FF;
                 if ((b1 & 0xC0) != 0x80) {
-                    invalidByte(2, 4, b1);
+                    invalidByte(2, 4, b1, in);
                 }
                 if (++in == total) {
+                    if (DEBUG_BUFFER_BOUNDARY) {
+                        System.out.println("*** buffer boundary (2,4) 0x"+Integer.toHexString(b0)+" 0x"+Integer.toHexString(b1));
+                    }
                     fBuffer[0] = (byte)b0;
                     fBuffer[1] = (byte)b1;
                     fOffset = 2;
                     count -= fOffset;
                     break;
                 }
-                int b2 = fBuffer[in];
+                int b2 = fBuffer[in] & 0x00FF;
                 if ((b2 & 0xC0) != 0x80) {
-                    invalidByte(3, 4, b2);
+                    invalidByte(3, 4, b2, in);
                 }
                 if (++in == total) {
+                    if (DEBUG_BUFFER_BOUNDARY) {
+                        System.out.println("*** buffer boundary (3,4) 0x"+Integer.toHexString(b0)+" 0x"+Integer.toHexString(b1)+" 0x"+Integer.toHexString(2));
+                    }
                     fBuffer[0] = (byte)b0;
                     fBuffer[1] = (byte)b1;
                     fBuffer[2] = (byte)b2;
@@ -367,25 +414,20 @@ public class UTF8Reader
                     count -= fOffset;
                     break;
                 }
-                int b3 = fBuffer[in];
+                int b3 = fBuffer[in] & 0x00FF;
                 if ((b3 & 0xC0) != 0x80) {
-                    invalidByte(4, 4, b3);
+                    invalidByte(4, 4, b3, in);
                 }
-                if (out + 2 >= offset + length) {
-                    fBuffer[0] = (byte)b0;
-                    fBuffer[1] = (byte)b1;
-                    fBuffer[2] = (byte)b2;
-                    fBuffer[3] = (byte)b3;
-                    fOffset = 4;
-                    count -= fOffset;
-                    break;
-                }
+
+                // decode bytes into surrogate characters
                 int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
                 int wwww = uuuuu - 1;
                 int hs = 0xD800 | 
                          ((wwww << 6) & 0x03C0) | ((b1 << 2) & 0x003C) | 
                          ((b2 >> 4) & 0x0003);
                 int ls = 0xDC00 | ((b2 << 6) & 0x03C0) | (b3 & 0x003F);
+
+                // set characters; save low surrogate if doesn't fit
                 ch[out++] = (char)hs;
                 if (out < offset + length) {
                     ch[out++] = (char)ls;
@@ -398,10 +440,13 @@ public class UTF8Reader
             }
 
             // error
-            invalidByte(1, 1, b0);
+            invalidByte(1, 1, b0, in);
         }
 
         // return number of characters converted
+        if (DEBUG_READ) {
+            System.out.println("read(char[],"+offset+','+length+"): count="+count);
+        }
         return count;
 
     } // read(char[],int,int)
@@ -507,7 +552,7 @@ public class UTF8Reader
     //
 
     /** Throws an exception for expected byte. */
-    private void expectedByte(int position, int count)
+    private void expectedByte(int position, int count, int bufferPos)
         throws UTFDataFormatException {
 
         StringBuffer str = new StringBuffer();
@@ -516,14 +561,19 @@ public class UTF8Reader
         str.append(" of ");
         str.append(count);
         str.append("-byte UTF-8 sequence");
+        if (DEBUG_BUFFER_BOUNDARY) {
+            str.append(" [");
+            str.append(bufferPos);
+            str.append(']');
+        }
 
         String message = str.toString();
         throw new UTFDataFormatException(message);
 
-    } // expectedByte(int,int)
+    } // expectedByte(int,int,int)
 
     /** Throws an exception for invalid byte. */
-    private void invalidByte(int position, int count, int c) 
+    private void invalidByte(int position, int count, int c, int bufferPos) 
         throws UTFDataFormatException {
 
         StringBuffer str = new StringBuffer();
@@ -534,10 +584,15 @@ public class UTF8Reader
         str.append("-byte UTF-8 sequence (0x");
         str.append(Integer.toHexString(c));
         str.append(')');
+        if (DEBUG_BUFFER_BOUNDARY) {
+            str.append(" [");
+            str.append(bufferPos);
+            str.append(']');
+        }
 
         String message = str.toString();
         throw new UTFDataFormatException(message);
 
-    } // invalidByte(int,int,int)
+    } // invalidByte(int,int,int,int)
 
 } // class UTF8Reader
