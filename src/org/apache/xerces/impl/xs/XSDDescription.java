@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.xni.QName;
@@ -71,7 +72,7 @@ import org.apache.xerces.xni.XMLAttributes;
  * @version $Id$
  */
 public class XSDDescription extends XMLResourceIdentifierImpl 
-                implements XMLGrammarDescription {
+                implements XMLSchemaDescription {
     // used to indicate what triggered the call
     /**
      * Indicate that this description was just initialized. 
@@ -224,18 +225,12 @@ public class XSDDescription extends XMLResourceIdentifierImpl
      * @return     True if they are equal, else false
      */
     public boolean equals(Object descObj) {
-        if(!(descObj instanceof XMLGrammarDescription)) return false;
-        XMLGrammarDescription desc = (XMLGrammarDescription)descObj;
-        if (!getGrammarType().equals(desc.getGrammarType())) {
-            return false;
-        }
-        if (fTargetNamespace != null && fTargetNamespace.equals(((XSDDescription)desc).getTargetNamespace())) {
-            return true;
-        }
-        else if (fTargetNamespace == null && ((XSDDescription)desc).getTargetNamespace() == null) {
-            return true;
-        }
-        return false;
+        if(!(descObj instanceof XMLSchemaDescription)) return false;
+        XMLSchemaDescription desc = (XMLSchemaDescription)descObj;
+        if (fTargetNamespace != null)
+            return fTargetNamespace.equals(desc.getTargetNamespace());
+        else // fTargetNamespace == null
+            return desc.getTargetNamespace() == null;
     }
     
     /**
