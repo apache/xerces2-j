@@ -42,6 +42,10 @@
    <li><link anchor='PSVIConfiguration'>xni.parser.PSVIConfiguration</link></li>
    <li><link anchor='PSVIParser'>xni.parser.PSVIParser</link></li>
   </ul>
+  <p>Sample xerces.properties</p>
+  <ul>
+   <li><link anchor='xercesProperties'>xni/xerces.properties</link></li>
+  </ul>
   <p>
    Most of the XNI samples have a command line option that allows the
    user to specify a different XNI parser configuration to use. In
@@ -408,5 +412,43 @@
   </p>
   <source>java sax.Counter -v -s -p xni.parser.PSVIParser personal-schema.xml</source>
   <note><link idref='features' anchor="validation">Validation</link> and <link idref='features' anchor="validation.schema">schema validation</link> features must be set to true to receive the correct PSVI output.</note>
+ </s2>
+<anchor name='xercesProperties'/>
+ <s2 title='Sample xni/xerces.properties'>
+    <p> When you create a Xerces parser, either directly using a native
+    class like org.apache.xerces.parsers.DOMParser, or via a
+    standard API like JAXP, Xerces provides a dynamic means of
+    dynamically selecting a "configuration" for that parser.
+    Configurations are the basic mechanism Xerces uses to decide
+    exactly how it will treat an XML document (e.g., whether it
+    needs to know about Schema validation, whether it needs to be
+    cognizant of potential denial-of-service attacks launched via
+    malicious XML documents, etc.)  The steps are fourfold:
+    </p>
+    <ol>
+      <li> * first, Xerces will examine the system property
+            org.apache.xerces.xni.parser.XMLParserConfiguration;
+      </li>
+      <li> next, it will try and find a file called xerces.properties in
+            the lib subdirectory of your JRE installation;
+      </li>
+      <li> next, it will examine all the jars on your classpath to try
+            and find one with the appropriate entry in its
+            META-INF/services directory.
+       </li>
+       <li>if all else fails, it will use a hardcoded default.
+       </li>
+     </ol>
+     <p> The third step can be quite time-consuming, especially if you
+    have a lot of jars on your classpath and run applications which
+    require the creation of lots of parsers.  If you know you're
+    only using applications which require "standard" API's (that
+    is, don't need some special Xerces property), or you want to
+    try and force applications to use only certain Xerces
+    configurations, then you may wish to copy this file into your
+    JRE's lib directory.  We try and ensure that this file contains
+    the currently-recommended default configuration; if you know
+    which configuration you want, you may substitute that class
+    name for what we've provided here.</p> 
  </s2>
 </s1>
