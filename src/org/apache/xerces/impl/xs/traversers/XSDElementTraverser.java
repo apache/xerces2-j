@@ -129,18 +129,19 @@ class XSDElementTraverser extends XSDAbstractTraverser {
     XSParticleDecl traverseLocal(Element elmDecl,
                                  XSDocumentInfo schemaDoc,
                                  SchemaGrammar grammar,
-                                 int allContextFlags) {
+                                 int allContextFlags,
+                                 XSComplexTypeDecl enclosingCT) {
 
         XSParticleDecl particle = null;
         if (fSchemaHandler.fDeclPool !=null) {
-            particle = fSchemaHandler.fDeclPool.getParticleDecl();            
-        } else {        
+            particle = fSchemaHandler.fDeclPool.getParticleDecl();
+        } else {
             particle = new XSParticleDecl();
         }
         if(fDeferTraversingLocalElements) {
-            fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, particle);
+            fSchemaHandler.fillInLocalElemInfo(elmDecl, schemaDoc, allContextFlags, enclosingCT, particle);
         } else {
-            traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags);
+            traverseLocal(particle, elmDecl, schemaDoc, grammar, allContextFlags, enclosingCT);
         }
 
         return particle;
@@ -154,10 +155,12 @@ class XSDElementTraverser extends XSDAbstractTraverser {
      *
      * @param  index
      */
-    protected void traverseLocal(XSParticleDecl particle, Element elmDecl,
-                               XSDocumentInfo schemaDoc,
-                               SchemaGrammar grammar,
-                               int allContextFlags) {
+    protected void traverseLocal(XSParticleDecl particle,
+                                 Element elmDecl,
+                                 XSDocumentInfo schemaDoc,
+                                 SchemaGrammar grammar,
+                                 int allContextFlags,
+                                 XSComplexTypeDecl enclosingCT) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, false, schemaDoc);
@@ -188,7 +191,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                 element = null;
             }
         } else {
-            element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
+            element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false, enclosingCT);
         }
 
         particle.fMinOccurs = minAtt.intValue();
@@ -219,14 +222,10 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(elmDecl, true, schemaDoc);
-        XSElementDecl element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true);
+        XSElementDecl element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, true, null);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
-        // set the scope of the element as global
-        if (element != null)
-            element.setIsGlobal();
-
         return element;
+
     }
 
     /**
@@ -243,7 +242,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
                                        Object[] attrValues,
                                        XSDocumentInfo schemaDoc,
                                        SchemaGrammar grammar,
-                                       boolean isGlobal) {
+                                       boolean isGlobal,
+                                       XSComplexTypeDecl enclosingCT) {
 
         Boolean abstractAtt  = (Boolean) attrValues[XSAttributeChecker.ATTIDX_ABSTRACT];
         XInt    blockAtt     = (XInt)    attrValues[XSAttributeChecker.ATTIDX_BLOCK];
@@ -257,11 +257,11 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         QName   typeAtt      = (QName)   attrValues[XSAttributeChecker.ATTIDX_TYPE];
 
         // Step 1: get declaration information
-        
+
         XSElementDecl element = null;
         if (fSchemaHandler.fDeclPool !=null) {
             element = fSchemaHandler.fDeclPool.getElementDecl();
-        } else {        
+        } else {
             element = new XSElementDecl();
         }
         // get 'name'
@@ -271,16 +271,22 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         // get 'target namespace'
         if (isGlobal) {
             element.fTargetNamespace = schemaDoc.fTargetNamespace;
+            element.setIsGlobal();
         }
-        else if (formAtt != null) {
-            if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
+        else {
+            if (enclosingCT != null)
+                element.setIsLocal(enclosingCT);
+
+            if (formAtt != null) {
+                if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
+                    element.fTargetNamespace = schemaDoc.fTargetNamespace;
+                else
+                    element.fTargetNamespace = null;
+            } else if (schemaDoc.fAreLocalElementsQualified) {
                 element.fTargetNamespace = schemaDoc.fTargetNamespace;
-            else
+            } else {
                 element.fTargetNamespace = null;
-        } else if (schemaDoc.fAreLocalElementsQualified) {
-            element.fTargetNamespace = schemaDoc.fTargetNamespace;
-        } else {
-            element.fTargetNamespace = null;
+            }
         }
 
         // get 'block', 'final', 'nillable', 'abstract'

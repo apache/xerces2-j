@@ -75,6 +75,11 @@ public class XSAttributeDecl {
     public final static short     DEFAULT_VALUE       = 1;
     public final static short     FIXED_VALUE         = 2;
 
+    // scopes
+    public final static short     SCOPE_ABSENT        = 0;
+    public final static short     SCOPE_GLOBAL        = 1;
+    public final static short     SCOPE_LOCAL         = 2;
+
     // the name of the attribute
     public String fName = null;
     // the target namespace of the attribute
@@ -83,29 +88,31 @@ public class XSAttributeDecl {
     public XSSimpleType fType = null;
     // value constraint type: default, fixed or !specified
     short fMiscFlags = 0;
+    // scope
+    short fScope = SCOPE_ABSENT;
+    // enclosing complex type, when the scope is local
+    XSComplexTypeDecl fEnclosingCT = null;
     // value constraint value
     public ValidatedInfo fDefault = null;
-
-    private static final short CONSTRAINT_MASK = 3;
-    private static final short GLOBAL          = 4;
 
     // methods to get/set misc flag
 
     public short getConstraintType() {
-        return(short)(fMiscFlags & CONSTRAINT_MASK);
+        return  fMiscFlags;
     }
     public boolean isGlobal() {
-        return((fMiscFlags & GLOBAL) != 0);
+        return fScope == SCOPE_GLOBAL;
     }
 
     public void setConstraintType(short constraintType) {
-        // first clear the bits
-        fMiscFlags ^= (fMiscFlags & CONSTRAINT_MASK);
-        // then set the proper one
-        fMiscFlags |= (constraintType & CONSTRAINT_MASK);
+        fMiscFlags = constraintType;
     }
     public void setIsGlobal() {
-        fMiscFlags |= GLOBAL;
+        fScope = SCOPE_GLOBAL;
+    }
+    public void setIsLocal(XSComplexTypeDecl enclosingCT) {
+        fScope = SCOPE_LOCAL;
+        fEnclosingCT = enclosingCT;
     }
 
     public void reset(){

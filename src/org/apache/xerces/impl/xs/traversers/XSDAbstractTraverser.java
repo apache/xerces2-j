@@ -72,6 +72,7 @@ import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSAttributeUse;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.SymbolTable;
@@ -399,7 +400,8 @@ abstract class XSDAbstractTraverser {
     // This method will return the first non-attribute/attrgrp found
     //
     Element traverseAttrsAndAttrGrps(Element firstAttr, XSAttributeGroupDecl attrGrp,
-                                     XSDocumentInfo schemaDoc, SchemaGrammar grammar ) {
+                                     XSDocumentInfo schemaDoc, SchemaGrammar grammar,
+                                     XSComplexTypeDecl enclosingCT) {
 
         Element child=null;
         XSAttributeGroupDecl tempAttrGrp = null;
@@ -410,7 +412,9 @@ abstract class XSDAbstractTraverser {
             childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
                 tempAttrUse = fSchemaHandler.fAttributeTraverser.traverseLocal(child,
-                                                                               schemaDoc, grammar);
+                                                                               schemaDoc,
+                                                                               grammar,
+                                                                               enclosingCT);
                 if (tempAttrUse == null) break;
                 if (attrGrp.getAttributeUse(tempAttrUse.fAttrDecl.fTargetNamespace,
                                             tempAttrUse.fAttrDecl.fName)==null) {

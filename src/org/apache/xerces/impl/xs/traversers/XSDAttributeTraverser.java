@@ -68,6 +68,7 @@ import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSAttributeUse;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
@@ -104,7 +105,8 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
     protected XSAttributeUse traverseLocal(Element attrDecl,
                                            XSDocumentInfo schemaDoc,
-                                           SchemaGrammar grammar) {
+                                           SchemaGrammar grammar,
+                                           XSComplexTypeDecl enclosingCT) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc);
@@ -136,7 +138,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                 attribute = null;
             }
         } else {
-            attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false);
+            attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, false, enclosingCT);
         }
 
         // get 'value constraint'
@@ -152,7 +154,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         XSAttributeUse attrUse = null;
         if (attribute != null) {
             if (fSchemaHandler.fDeclPool !=null) {
-                attrUse = fSchemaHandler.fDeclPool.getAttributeUse();            
+                attrUse = fSchemaHandler.fDeclPool.getAttributeUse();
             } else {
                 attrUse = new XSAttributeUse();
             }
@@ -215,14 +217,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, true, schemaDoc);
-
-        XSAttributeDecl attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true);
+        XSAttributeDecl attribute = traverseNamedAttr(attrDecl, attrValues, schemaDoc, grammar, true, null);
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
-
-        if (attribute != null)
-            attribute.setIsGlobal();
-
         return attribute;
+
     }
 
     /**
@@ -239,7 +237,8 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
                                       Object[] attrValues,
                                       XSDocumentInfo schemaDoc,
                                       SchemaGrammar grammar,
-                                      boolean isGlobal) {
+                                      boolean isGlobal,
+                                      XSComplexTypeDecl enclosingCT) {
 
         String  defaultAtt = (String) attrValues[XSAttributeChecker.ATTIDX_DEFAULT];
         String  fixedAtt   = (String) attrValues[XSAttributeChecker.ATTIDX_FIXED];
@@ -250,7 +249,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // Step 1: get declaration information
         XSAttributeDecl attribute = null;
         if (fSchemaHandler.fDeclPool !=null) {
-            attribute = fSchemaHandler.fDeclPool.getAttributeDecl();            
+            attribute = fSchemaHandler.fDeclPool.getAttributeDecl();
         } else {
             attribute = new XSAttributeDecl();
         }
@@ -262,16 +261,23 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // get 'target namespace'
         if (isGlobal) {
             attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
-        } else if (formAtt != null) {
-            if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
-                attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
-            else
-                attribute.fTargetNamespace = null;
-        } else if (schemaDoc.fAreLocalAttributesQualified) {
-            attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
-        } else {
-            attribute.fTargetNamespace = null;
+            attribute.setIsGlobal();
         }
+        else {
+            if (enclosingCT != null)
+                attribute.setIsLocal(enclosingCT);
+            if (formAtt != null) {
+                if (formAtt.intValue() == SchemaSymbols.FORM_QUALIFIED)
+                    attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
+                else
+                    attribute.fTargetNamespace = null;
+            } else if (schemaDoc.fAreLocalAttributesQualified) {
+                attribute.fTargetNamespace = schemaDoc.fTargetNamespace;
+            } else {
+                attribute.fTargetNamespace = null;
+            }
+        }
+
         // get 'value constraint'
         // for local named attribute, value constraint is absent
         if (isGlobal) {

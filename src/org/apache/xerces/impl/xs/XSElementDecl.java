@@ -75,6 +75,11 @@ public class XSElementDecl {
     public final static short     DEFAULT_VALUE       = 1;
     public final static short     FIXED_VALUE         = 2;
 
+    // scopes
+    public final static short     SCOPE_ABSENT        = 0;
+    public final static short     SCOPE_GLOBAL        = 1;
+    public final static short     SCOPE_LOCAL         = 2;
+
     // name of the element
     public String fName = null;
     // target namespace of the element
@@ -83,6 +88,10 @@ public class XSElementDecl {
     public XSTypeDecl fType = null;
     // misc flag of the element: nillable/abstract/fixed
     short fMiscFlags = 0;
+    // scope
+    short fScope = SCOPE_ABSENT;
+    // enclosing complex type, when the scope is local
+    XSComplexTypeDecl fEnclosingCT = null;
     // block set (disallowed substitutions) of the element
     public short fBlock = SchemaSymbols.EMPTY_SET;
     // final set (substitution group exclusions) of the element
@@ -99,7 +108,6 @@ public class XSElementDecl {
     private static final short CONSTRAINT_MASK = 3;
     private static final short NILLABLE        = 4;
     private static final short ABSTRACT        = 8;
-    private static final short GLOBAL          = 16;
 
     // methods to get/set misc flag
 
@@ -113,7 +121,7 @@ public class XSElementDecl {
         return ((fMiscFlags & ABSTRACT) != 0);
     }
     public boolean isGlobal() {
-        return ((fMiscFlags & GLOBAL) != 0);
+        return fScope == SCOPE_GLOBAL;
     }
 
     public void setConstraintType(short constraintType) {
@@ -129,7 +137,11 @@ public class XSElementDecl {
         fMiscFlags |= ABSTRACT;
     }
     public void setIsGlobal() {
-        fMiscFlags |= GLOBAL;
+        fScope = SCOPE_GLOBAL;
+    }
+    public void setIsLocal(XSComplexTypeDecl enclosingCT) {
+        fScope = SCOPE_LOCAL;
+        fEnclosingCT = enclosingCT;
     }
 
     public void addIDConstaint(IdentityConstraint idc) {

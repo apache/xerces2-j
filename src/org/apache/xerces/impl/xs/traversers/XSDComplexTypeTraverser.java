@@ -486,7 +486,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                              attrNode);
                 }
                 Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
-                                                      schemaDoc,grammar);
+                                                      schemaDoc,grammar,typeInfo);
                 if (node!=null) {
                     throw new ComplexTypeRecoverableError("src-ct.0.1",
                              new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)},
@@ -521,7 +521,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                                           attrNode);
                 }
                 Element node=traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,
-                                                      schemaDoc,grammar);
+                                                      schemaDoc,grammar,typeInfo);
 
                 if (node!=null) {
                     throw new ComplexTypeRecoverableError("src-ct.0.1",
@@ -836,17 +836,17 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
                 particle = traverseSequence(complexContentChild,schemaDoc,grammar,
-                                            NOT_ALL_CONTEXT);
+                                            NOT_ALL_CONTEXT,typeInfo);
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
                 particle = traverseChoice(complexContentChild,schemaDoc,grammar,
-                                          NOT_ALL_CONTEXT);
+                                          NOT_ALL_CONTEXT,typeInfo);
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else if (childName.equals(SchemaSymbols.ELT_ALL)) {
                 particle = traverseAll(complexContentChild,schemaDoc,grammar,
-                                       PROCESSING_ALL_GP);
+                                       PROCESSING_ALL_GP,typeInfo);
                 attrNode = DOMUtil.getNextSiblingElement(complexContentChild);
             }
             else {
@@ -880,7 +880,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                                       attrNode);
             }
             Element node =
-            traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,schemaDoc,grammar);
+            traverseAttrsAndAttrGrps(attrNode,typeInfo.fAttrGrp,schemaDoc,grammar,typeInfo);
             if (node!=null) {
                 throw new ComplexTypeRecoverableError("src-ct.0.1",
                                                       new Object[]{typeInfo.fName,DOMUtil.getLocalName(node)},

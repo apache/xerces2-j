@@ -61,6 +61,7 @@ import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
 import org.apache.xerces.impl.xs.XSModelGroup;
+import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.w3c.dom.Element;
@@ -91,7 +92,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     XSParticleDecl traverseAll(Element allDecl,
                                XSDocumentInfo schemaDoc,
                                SchemaGrammar grammar,
-                               int allContextFlags) {
+                               int allContextFlags,
+                               XSComplexTypeDecl enclosingCT) {
 
         // General Attribute Checking
 
@@ -117,7 +119,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             // Only elements are allowed in <all>
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL);
+                particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, PROCESSING_ALL_EL, enclosingCT);
             }
             else {
                 Object[] args = {"all", "(annotation?, element*)"};
@@ -180,9 +182,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     XSParticleDecl traverseSequence(Element seqDecl,
                                     XSDocumentInfo schemaDoc,
                                     SchemaGrammar grammar,
-                                    int allContextFlags) {
+                                    int allContextFlags,
+                                    XSComplexTypeDecl enclosingCT) {
 
-        return traverseSeqChoice(seqDecl, schemaDoc, grammar, allContextFlags, false);
+        return traverseSeqChoice(seqDecl, schemaDoc, grammar, allContextFlags, false, enclosingCT);
     }
 
     /**
@@ -203,9 +206,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     XSParticleDecl traverseChoice(Element choiceDecl,
                                   XSDocumentInfo schemaDoc,
                                   SchemaGrammar grammar,
-                                  int allContextFlags) {
+                                  int allContextFlags,
+                                  XSComplexTypeDecl enclosingCT) {
 
-        return traverseSeqChoice (choiceDecl, schemaDoc, grammar, allContextFlags, true);
+        return traverseSeqChoice (choiceDecl, schemaDoc, grammar, allContextFlags, true, enclosingCT);
     }
 
     /**
@@ -221,7 +225,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
                                              XSDocumentInfo schemaDoc,
                                              SchemaGrammar grammar,
                                              int allContextFlags,
-                                             boolean choice) {
+                                             boolean choice,
+                                             XSComplexTypeDecl enclosingCT) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(decl, false, schemaDoc);
@@ -245,7 +250,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
-                particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT, enclosingCT);
             }
             else if (childName.equals(SchemaSymbols.ELT_GROUP)) {
                 particle = fSchemaHandler.fGroupTraverser.traverseLocal(child, schemaDoc, grammar);
@@ -261,10 +266,10 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             }
             else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                particle = traverseChoice(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = traverseChoice(child, schemaDoc, grammar, NOT_ALL_CONTEXT, enclosingCT);
             }
             else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                particle = traverseSequence(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
+                particle = traverseSequence(child, schemaDoc, grammar, NOT_ALL_CONTEXT, enclosingCT);
             }
             else if (childName.equals(SchemaSymbols.ELT_ANY)) {
                 particle = fSchemaHandler.fWildCardTraverser.traverseAny(child, schemaDoc, grammar);

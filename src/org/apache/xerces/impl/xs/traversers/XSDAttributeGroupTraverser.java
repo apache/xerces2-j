@@ -165,7 +165,7 @@ class XSDAttributeGroupTraverser extends XSDAbstractTraverser {
         // Traverse the attribute and attribute group elements and fill in the 
         // attributeGroup structure
 
-        Element nextNode = traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar);
+        Element nextNode = traverseAttrsAndAttrGrps(child, attrGrp, schemaDoc, grammar, null);
         if (nextNode!=null) {
             // An invalid element was found...
             Object[] args = new Object [] {nameAttr, DOMUtil.getLocalName(nextNode)};

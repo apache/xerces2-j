@@ -178,11 +178,11 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                                   new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},
                                   elmNode);
             } else if (childName.equals(SchemaSymbols.ELT_ALL)) {
-                particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
+                particle = traverseAll(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
             } else if (childName.equals(SchemaSymbols.ELT_CHOICE)) {
-                particle = traverseChoice(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
+                particle = traverseChoice(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
             } else if (childName.equals(SchemaSymbols.ELT_SEQUENCE)) {
-                particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP);
+                particle = traverseSequence(l_elmChild, schemaDoc, grammar, CHILD_OF_GROUP, null);
             } else {
                 reportSchemaError("s4s-elt-must-match",
                                   new Object[]{"group (global)", "(annotation?, (all | choice | sequence))"},

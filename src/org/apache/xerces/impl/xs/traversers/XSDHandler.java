@@ -357,6 +357,7 @@ public class XSDHandler {
     private XSParticleDecl[] fParticle = new XSParticleDecl[INIT_STACK_SIZE];
     private Element[] fLocalElementDecl = new Element[INIT_STACK_SIZE];
     private int[] fAllContext = new int[INIT_STACK_SIZE];
+    private XSComplexTypeDecl[] fEnclosingCT = new XSComplexTypeDecl[INIT_STACK_SIZE];
     private String [][] fLocalElemNamespaceContext = new String [INIT_STACK_SIZE][1];
 
     // these data members are needed for the deferred traversal
@@ -1524,7 +1525,7 @@ public class XSDHandler {
             Element currElem = fLocalElementDecl[i];
             XSDocumentInfo currSchema = (XSDocumentInfo)fDoc2XSDocumentMap.get(DOMUtil.getDocument(currElem));
             SchemaGrammar currGrammar = fGrammarBucket.getGrammar(currSchema.fTargetNamespace);
-            fElementTraverser.traverseLocal (fParticle[i], currElem, currSchema, currGrammar, fAllContext[i]);
+            fElementTraverser.traverseLocal (fParticle[i], currElem, currSchema, currGrammar, fAllContext[i], fEnclosingCT[i]);
         }
     }
 
@@ -1533,6 +1534,7 @@ public class XSDHandler {
     void fillInLocalElemInfo(Element elmDecl,
                              XSDocumentInfo schemaDoc,
                              int allContextFlags,
+                             XSComplexTypeDecl enclosingCT,
                              XSParticleDecl particle) {
 
         // if the stack is full, increase the size
@@ -1547,6 +1549,9 @@ public class XSDHandler {
             int[] newStackI = new int[fLocalElemStackPos+INC_STACK_SIZE];
             System.arraycopy(fAllContext, 0, newStackI, 0, fLocalElemStackPos);
             fAllContext = newStackI;
+            XSComplexTypeDecl[] newStackC = new XSComplexTypeDecl[fLocalElemStackPos+INC_STACK_SIZE];
+            System.arraycopy(fEnclosingCT, 0, newStackC, 0, fLocalElemStackPos);
+            fEnclosingCT = newStackC;
             String [][] newStackN = new String [fLocalElemStackPos+INC_STACK_SIZE][];
             System.arraycopy(fLocalElemNamespaceContext, 0, newStackN, 0, fLocalElemStackPos);
             fLocalElemNamespaceContext = newStackN;
@@ -1555,6 +1560,7 @@ public class XSDHandler {
         fParticle[fLocalElemStackPos] = particle;
         fLocalElementDecl[fLocalElemStackPos] = elmDecl;
         fAllContext[fLocalElemStackPos] = allContextFlags;
+        fEnclosingCT[fLocalElemStackPos] = enclosingCT;
         fLocalElemNamespaceContext[fLocalElemStackPos++] = schemaDoc.fNamespaceSupport.getEffectiveLocalContext();
     } // end fillInLocalElemInfo(...)
 
