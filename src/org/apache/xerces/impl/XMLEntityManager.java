@@ -548,8 +548,11 @@ public class XMLEntityManager
             if (fEntityHandler != null) {
                 final String publicId = null;
                 final String systemId = null;
+                final String baseSystemId = null;
                 final String encoding = null;
-                fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                fEntityHandler.startEntity(entityName, 
+                                           publicId, systemId, 
+                                           baseSystemId, encoding);
                 fEntityHandler.endEntity(entityName);
             }
             return;
@@ -566,13 +569,17 @@ public class XMLEntityManager
                 if (fEntityHandler != null) {
                     String publicId = null;
                     String systemId = null;
+                    String baseSystemId = null;
                     final String encoding = null;
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
                         publicId = externalEntity.publicId;
                         systemId = externalEntity.systemId;
+                        baseSystemId = expandSystemId(systemId, externalEntity.baseSystemId);
                     }
-                    fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                    fEntityHandler.startEntity(entityName, 
+                                               publicId, systemId, 
+                                               baseSystemId, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
                 return;
@@ -600,13 +607,17 @@ public class XMLEntityManager
                 if (fEntityHandler != null) {
                     String publicId = null;
                     String systemId = null;
+                    String baseSystemId = null;
                     final String encoding = null;
                     if (external) {
                         ExternalEntity externalEntity = (ExternalEntity)entity;
                         publicId = externalEntity.publicId;
                         systemId = externalEntity.systemId;
+                        baseSystemId = expandSystemId(systemId, externalEntity.baseSystemId);
                     }
-                    fEntityHandler.startEntity(entityName, publicId, systemId, encoding);
+                    fEntityHandler.startEntity(entityName, 
+                                               publicId, systemId, 
+                                               baseSystemId, encoding);
                     fEntityHandler.endEntity(entityName);
                 }
                 return;
@@ -633,7 +644,7 @@ public class XMLEntityManager
         // start the entity
         startEntity(entityName, xmlInputSource, literal);
 
-    } // startEntity(String)
+    } // startEntity(String,boolean)
 
     /**
      * Starts the document entity. The document entity has the "[xml]"
@@ -934,12 +945,14 @@ public class XMLEntityManager
      * @throws XNIException Thrown by entity handler to signal an error.
      */
     protected void startEntity(String name, 
-                               XMLInputSource xmlInputSource, boolean literal) 
+                               XMLInputSource xmlInputSource, 
+                               boolean literal) 
         throws IOException, XNIException {
 
         // get information
         final String publicId = xmlInputSource.getPublicId();
         final String systemId = xmlInputSource.getSystemId();
+        String baseSystemId = xmlInputSource.getBaseSystemId();
         String encoding = xmlInputSource.getEncoding();
 
         // create reader
@@ -950,8 +963,10 @@ public class XMLEntityManager
             if (stream == null) {
                 String expandedSystemId = xmlInputSource.getExpandedSystemId();
                 if (expandedSystemId == null) {
-                    final String baseSystemId = xmlInputSource.getBaseSystemId();
                     expandedSystemId = expandSystemId(systemId, baseSystemId);
+                    if (baseSystemId == null) {
+                        baseSystemId = expandedSystemId;
+                    }
                     xmlInputSource.setExpandedSystemId(expandedSystemId);
                 }
                 stream = new URL(expandedSystemId).openStream();
@@ -1017,12 +1032,16 @@ public class XMLEntityManager
             fEntityStack.push(fCurrentEntity);
         }
         
+        // create entity
+        String expandedSystemId = expandSystemId(systemId, baseSystemId);
         fCurrentEntity = new ScannedEntity(name, publicId, systemId, 
-                                           stream, reader, encoding, literal);
+                                           expandedSystemId, stream, reader, 
+                                           encoding, literal);
 
         // call handler
         if (fEntityHandler != null) {
-            fEntityHandler.startEntity(name, publicId, systemId, encoding);
+            fEntityHandler.startEntity(name, publicId, systemId, 
+                                       baseSystemId, encoding);
         }
 
     } // startEntity(String,XMLInputSource)
@@ -1532,6 +1551,9 @@ public class XMLEntityManager
         /** System identifier. */
         public String systemId;
 
+        /** Base system identifier. */
+        public String baseSystemId;
+
         /** Line number. */
         public int lineNumber = 1;
 
@@ -1564,12 +1586,15 @@ public class XMLEntityManager
         //
 
         /** Constructs a scanned entity. */
-        public ScannedEntity(String name, String publicId, String systemId,
+        public ScannedEntity(String name, 
+                             String publicId, String systemId,
+                             String baseSystemId,
                              InputStream stream, Reader reader, 
                              String encoding, boolean literal) {
             super(name);
             this.publicId = publicId;
             this.systemId = systemId;
+            this.baseSystemId = baseSystemId;
             this.stream = stream;
             this.reader = reader;
             this.encoding = encoding;
@@ -1628,6 +1653,14 @@ public class XMLEntityManager
         // XMLEntityScanner methods
         //
     
+        /** 
+         * Returns the base system identifier of the currently scanned
+         * entity, or null if none is available.
+         */
+        public String getBaseSystemId() {
+            return fCurrentEntity.baseSystemId;
+        } // getBaseSystemId():String
+
         /**
          * Sets the encoding of the scanner. This method is used by the
          * scanners if the XMLDecl or TextDecl line contains an encoding

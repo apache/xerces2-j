@@ -100,6 +100,8 @@ public interface XMLDTDHandler {
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -107,7 +109,9 @@ public interface XMLDTDHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException;
 
     /**
@@ -235,12 +239,14 @@ public interface XMLDTDHandler {
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
+     * @param baseSystemId The base system identifier where this entity
+     *                     is declared.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void externalEntityDecl(String name, 
-                                   String publicId, String systemId) 
-        throws XNIException;
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException;
 
     /**
      * An unparsed entity declaration.

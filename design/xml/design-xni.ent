@@ -94,6 +94,9 @@
    <param name='systemId'>
     <reference idref='java-string'/>
    </param>
+   <param name='baseSystemId'>
+    <reference idref='java-string'/>
+   </param>
    <param name='encoding'>
     <note>
      The auto-detected encoding of the entity or null if not appropriate. 
@@ -209,6 +212,9 @@
  <interface id='document-fragment-handler' name='XMLDocumentFragmentHandler'>
  
   <method name='startDocumentFragment'>
+   <param name='baseSystemId'>
+    <reference idref='java-string'/>
+   </param>
    <param name='namespaceContext'>
     <reference idref='namespace-context'/>
    </param>
@@ -263,6 +269,9 @@
     <reference idref='java-string'/>
    </param>
    <param name='systemId'>
+    <reference idref='java-string'/>
+   </param>
+   <param name='baseSystemId'>
     <reference idref='java-string'/>
    </param>
    <param name='encoding'>
@@ -468,6 +477,9 @@
    <param name='systemId'>
     <reference idref='java-string'/>
    </param>
+   <param name='baseSystemId'>
+    <reference idref='java-string'/>
+   </param>
    <param name='encoding'>
     <note>
      The auto-detected encoding of the entity or null if not appropriate. 
@@ -574,6 +586,9 @@
     <reference idref='java-string'/>
    </param>
    <param name='systemId'>
+    <reference idref='java-string'/>
+   </param>
+   <param name='baseSystemId'>
     <reference idref='java-string'/>
    </param>
    <throws>

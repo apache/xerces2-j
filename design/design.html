@@ -61,6 +61,8 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">systemId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
         class="param-title">encoding</SPAN>          )
        <LI>
         <SPAN class="method-title">textDecl</SPAN>      (   <SPAN
@@ -117,7 +119,9 @@
      <DD class="methods">      methods:      <UL>
        <LI>
         <SPAN class="method-title">startDocumentFragment</SPAN>      (
-         <SPAN class="interface-title">NamespaceContext</SPAN> <SPAN
+         <SPAN class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>, <SPAN
+        class="interface-title">NamespaceContext</SPAN> <SPAN
         class="param-title">namespaceContext</SPAN>          )
        <LI>
         <SPAN class="method-title">comment</SPAN>      (   <SPAN
@@ -143,6 +147,8 @@
         class="param-title">publicId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
         class="param-title">encoding</SPAN>          )
        <LI>
@@ -248,6 +254,8 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">systemId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
         class="param-title">encoding</SPAN>          )
        <LI>
         <SPAN class="method-title">textDecl</SPAN>      (   <SPAN
@@ -299,7 +307,9 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">publicId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
-        class="param-title">systemId</SPAN>          )
+        class="param-title">systemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>          )
        <LI>
         <SPAN class="method-title">unparsedEntityDecl</SPAN>      (
          <SPAN class="class-title">String</SPAN> <SPAN
@@ -925,6 +935,8 @@
         class="class-title">String</SPAN> <SPAN
         class="param-title">systemId</SPAN>, <SPAN
         class="class-title">String</SPAN> <SPAN
+        class="param-title">baseSystemId</SPAN>, <SPAN
+        class="class-title">String</SPAN> <SPAN
         class="param-title">encoding</SPAN>          )
        <LI>
         <SPAN class="method-title">endEntity</SPAN>      (   <SPAN
@@ -981,6 +993,9 @@
      <DT>class <SPAN class="class-title">XMLEntityScanner</SPAN>
      <DD class="implements">      implements      <SPAN class="interface-title">Locator</SPAN>
      <DD class="methods">      methods:      <UL>
+       <LI>
+        <SPAN class="method-title">getBaseSystemId</SPAN>      (
+        )       :    <SPAN class="class-title">String</SPAN>
        <LI>
         <SPAN class="method-title">setEncoding</SPAN>      (   <SPAN
         class="class-title">String</SPAN> <SPAN

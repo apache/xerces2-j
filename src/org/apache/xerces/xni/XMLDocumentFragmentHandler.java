@@ -78,6 +78,8 @@ public interface XMLDocumentFragmentHandler {
     /**
      * The start of the document fragment.
      *
+     * @param baseSystemId     The base system identifier for this
+     *                         fragment.
      * @param namespaceContext The namespace context in effect at the
      *                         start of this document fragment. This
      *                         object only represents the current context.
@@ -88,7 +90,8 @@ public interface XMLDocumentFragmentHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocumentFragment(NamespaceContext namespaceContext) 
+    public void startDocumentFragment(String baseSystemId,
+                                      NamespaceContext namespaceContext) 
         throws XNIException;
 
     /**
@@ -102,6 +105,8 @@ public interface XMLDocumentFragmentHandler {
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -110,7 +115,9 @@ public interface XMLDocumentFragmentHandler {
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException;
 
     /**

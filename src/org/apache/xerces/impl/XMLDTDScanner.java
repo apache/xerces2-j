@@ -420,10 +420,12 @@ public class XMLDTDScanner
      * @param systemId 
      * @param encoding
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
-        super.startEntity(name, publicId, systemId, encoding);
+        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
 
         if (name.equals("[dtd]")) {
             // call handler
@@ -441,10 +443,11 @@ public class XMLDTDScanner
 
         // call handler
         if (fDTDHandler != null) {
-            fDTDHandler.startEntity(name, publicId, systemId, encoding);
+            fDTDHandler.startEntity(name, publicId, systemId, 
+                                    baseSystemId, encoding);
         }
 
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * endEntity
@@ -1381,14 +1384,18 @@ public class XMLDTDScanner
                 fEntityManager.addUnparsedEntity(name, publicId, systemId, notation);
             }
             else {
-                fEntityManager.addExternalEntity(name, publicId, systemId, null);
+                String baseSystemId = fEntityScanner.getBaseSystemId();
+                fEntityManager.addExternalEntity(name, publicId, systemId, 
+                                                 baseSystemId);
             }
             if (fDTDHandler != null) {
                 if (notation != null) {
                     fDTDHandler.unparsedEntityDecl(name, publicId, systemId, notation);
                 }
                 else {
-                    fDTDHandler.externalEntityDecl(name, publicId, systemId);
+                    String baseSystemId = fEntityScanner.getBaseSystemId();
+                    fDTDHandler.externalEntityDecl(name, publicId, systemId, 
+                                                   baseSystemId);
                 }
             }
         }

@@ -306,6 +306,8 @@ public class DTDGrammar
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -313,7 +315,9 @@ public class DTDGrammar
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId, 
+    public void startEntity(String name, 
+                            String publicId, String systemId, 
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
         if (name.startsWith("%")) {
@@ -604,17 +608,21 @@ public class DTDGrammar
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void externalEntityDecl(String name, String publicId, 
-                                   String systemId) throws XNIException {
+    public void externalEntityDecl(String name, 
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException {
 
         XMLEntityDecl  entityDecl = new XMLEntityDecl();
         boolean isPE = name.startsWith("%");
         boolean inExternal = fReadingExternalDTD;
        
-        entityDecl.setValues(name,publicId,systemId, null, null, isPE, inExternal);
+        entityDecl.setValues(name, publicId, systemId, baseSystemId, 
+                             null, isPE, inExternal);
 
         int entityIndex = getEntityDeclIndex(name);
         if (entityIndex == -1) {

@@ -972,6 +972,8 @@ public class XMLValidator
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -979,14 +981,18 @@ public class XMLValidator
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
         
         // call handlers
         if (fInDTD) {
-            fDTDGrammar.startEntity(name, publicId, systemId, encoding);
+            fDTDGrammar.startEntity(name, publicId, systemId, 
+                                    baseSystemId, encoding);
             if (fDTDHandler != null) {
-                fDTDHandler.startEntity(name, publicId, systemId, encoding);
+                fDTDHandler.startEntity(name, publicId, systemId, 
+                                        baseSystemId, encoding);
             }
         } 
         else {
@@ -1006,11 +1012,12 @@ public class XMLValidator
             }
 
             if (fDocumentHandler != null) {
-                fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+                fDocumentHandler.startEntity(name, publicId, systemId, 
+                                             baseSystemId, encoding);
             }
         }
 
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * Notifies of the presence of a TextDecl line in an entity. If present,
@@ -1428,19 +1435,23 @@ public class XMLValidator
      * @param publicId The public identifier of the entity or null if the
      *                 the entity was specified with SYSTEM.
      * @param systemId The system identifier of the entity.
+     * @param baseSystemId The base system identifier of where the entity
+     *                     is declared.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void externalEntityDecl(String name, String publicId, 
-                                   String systemId) throws XNIException {
+    public void externalEntityDecl(String name, 
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException {
 
         // call handlers
-        fDTDGrammar.externalEntityDecl(name, publicId, systemId);
+        fDTDGrammar.externalEntityDecl(name, publicId, systemId, baseSystemId);
         if (fDTDHandler != null) {
-            fDTDHandler.externalEntityDecl(name, publicId, systemId);
+            fDTDHandler.externalEntityDecl(name, publicId, systemId,
+                                           baseSystemId);
         }
 
-    } // externalEntityDecl(String,String,String)
+    } // externalEntityDecl(String,String,String,String)
 
     /**
      * An unparsed entity declaration.

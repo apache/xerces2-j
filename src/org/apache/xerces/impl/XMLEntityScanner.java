@@ -90,6 +90,12 @@ public abstract class XMLEntityScanner
     // Public methods
     //
 
+    /** 
+     * Returns the base system identifier of the currently scanned
+     * entity, or null if none is available.
+     */
+    public abstract String getBaseSystemId();
+
     /**
      * Sets the encoding of the scanner. This method is used by the
      * scanners if the XMLDecl or TextDecl line contains an encoding

@@ -103,7 +103,9 @@ public class XMLEntityDecl {
      * @param notation 
      * @param isPE 
      */
-    public void setValues(String name, String publicId, String systemId, String baseSystemId, String notation, boolean isPE, boolean inExternal) {
+    public void setValues(String name, String publicId, String systemId, 
+                          String baseSystemId, String notation, 
+                          boolean isPE, boolean inExternal) {
         this.name         = name;
         this.publicId     = publicId;
         this.systemId     = systemId;
@@ -111,7 +113,7 @@ public class XMLEntityDecl {
         this.notation     = notation;
         this.isPE         = isPE;
         this.inExternal   = inExternal;
-    } // setValues
+    } // setValues(String,String,String,String,String,boolean,boolean)
 
     /**
      * clear

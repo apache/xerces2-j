@@ -519,6 +519,8 @@ public class XMLDocumentScanner
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -527,7 +529,9 @@ public class XMLDocumentScanner
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
         // keep track of this entity before fEntityDepth is increased
@@ -538,7 +542,7 @@ public class XMLDocumentScanner
         }
         fEntityStack[fEntityDepth] = fMarkupDepth;
 
-        super.startEntity(name, publicId, systemId, encoding);
+        super.startEntity(name, publicId, systemId, baseSystemId, encoding);
 
         // prepare to look for a TextDecl if external general entity
         if (!name.equals("[xml]") && fEntityScanner.isExternal()) {
@@ -551,11 +555,12 @@ public class XMLDocumentScanner
                 fDocumentHandler.startDocument(systemId, encoding);
             }
             else if (!fScanningAttribute) {
-                fDocumentHandler.startEntity(name, publicId, systemId, encoding);
+                fDocumentHandler.startEntity(name, publicId, systemId, 
+                                             baseSystemId, encoding);
             }
         }
 
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * This method notifies the end of an entity. The DTD has the pseudo-name
@@ -1091,7 +1096,7 @@ public class XMLDocumentScanner
             if (fDocumentHandler != null) {
                 if (fNotifyCharRefs) {
                     fDocumentHandler.startEntity(fCharRefLiteral, null,
-                                                 null, null);
+                                                 null, null, null);
                 }
                 fDocumentHandler.characters(fStringBuffer2);
                 if (fNotifyCharRefs) {
@@ -1171,7 +1176,7 @@ public class XMLDocumentScanner
     private void handleCharacter(char c, String entity) throws XNIException {
         if (fDocumentHandler != null) {
             if (fNotifyBuiltInRefs) {
-                fDocumentHandler.startEntity(entity, null, null, null);
+                fDocumentHandler.startEntity(entity, null, null, null, null);
             }
             
             fSingleChar[0] = c;

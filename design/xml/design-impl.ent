@@ -474,6 +474,9 @@
    <param name='systemId'>
     <reference idref='java-string'/>
    </param>
+   <param name='baseSystemId'>
+    <reference idref='java-string'/>
+   </param>
    <param name='encoding'>
     <note>
      The auto-detected encoding of the entity or null if not appropriate. 
@@ -561,6 +564,11 @@
    <reference idref='sax-locator'/>
   </implements>
 
+  <method name='getBaseSystemId'>
+   <returns>
+    <reference idref='java-string'/>
+   </returns>
+  </method>
   <method name='setEncoding'>
    <param name='encoding'>
     <reference idref='java-string'/>

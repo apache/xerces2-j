@@ -391,7 +391,9 @@ public class DocumentTracer
     //
 
     /** Start entity. */
-    public void startEntity(String name, String publicId, String systemId, 
+    public void startEntity(String name, 
+                            String publicId, String systemId, 
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
         printIndent();
@@ -404,6 +406,9 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("systemId=");
         printQuotedString(systemId);
+        fOut.print(',');
+        fOut.print("baseSystemId=");
+        printQuotedString(baseSystemId);
         fOut.print(',');
         fOut.print("encoding=");
         printQuotedString(encoding);
@@ -587,8 +592,9 @@ public class DocumentTracer
     } // internalEntityDecl(String,XMLString)
 
     /** External entity declaration. */
-    public void externalEntityDecl(String name, String publicId, 
-                                   String systemId) throws XNIException {
+    public void externalEntityDecl(String name, 
+                                   String publicId, String systemId,
+                                   String baseSystemId) throws XNIException {
 
         printIndent();
         fOut.print("externalEntityDecl(");
@@ -600,6 +606,9 @@ public class DocumentTracer
         fOut.print(',');
         fOut.print("systemId=");
         printQuotedString(systemId);
+        fOut.print(',');
+        fOut.print("baseSystemId=");
+        printQuotedString(baseSystemId);
         fOut.println(')');
         fOut.flush();
 

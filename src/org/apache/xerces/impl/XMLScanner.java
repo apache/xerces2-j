@@ -167,7 +167,6 @@ public abstract class XMLScanner
     /** Debug attribute normalization. */
     protected static final boolean DEBUG_ATTR_NORMALIZATION = false;
 
-
     // private data
 
     // symbols
@@ -1113,6 +1112,8 @@ public abstract class XMLScanner
      *                 is external, null otherwise.
      * @param systemId The system identifier of the entity if the entity
      *                 is external, null otherwise.
+     * @param baseSystemId The base system identifier of the entity if
+     *                     the entity is external, null otherwise.
      * @param encoding The auto-detected IANA encoding name of the entity
      *                 stream. This value will be null in those situations
      *                 where the entity encoding is not auto-detected (e.g.
@@ -1121,7 +1122,9 @@ public abstract class XMLScanner
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, String publicId, String systemId,
+    public void startEntity(String name, 
+                            String publicId, String systemId,
+                            String baseSystemId,
                             String encoding) throws XNIException {
 
         // keep track of the entity depth
@@ -1134,7 +1137,7 @@ public abstract class XMLScanner
             }
             fAttributeEntityStack.pushAttrEntity(name, fAttributeOffset);
         }
-    } // startEntity(String,String,String,String)
+    } // startEntity(String,String,String,String,String)
 
     /**
      * This method notifies the end of an entity. The document entity has
