@@ -10,7 +10,7 @@ Authors:
   Andy Clark, IBM
 
 Copyright:
-  Copyright (c) 2000-2003 The Apache Software Foundation.
+  Copyright (c) 2000-2004 The Apache Software Foundation.
 
    $Id$
 
@@ -47,7 +47,7 @@ Copyright:
     <property name='default.parser.config.name' value='XML11Configuration'/>
     <property name='default.parser.config.qualified' value='org.apache.xerces.parsers.XML11Configuration'/>
 
-    <property name="year" value="1999-2003"/>
+    <property name="year" value="1999-2004"/>
     <property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
     <echo message= "---------------- ${parser.Name} ${parser.Version} [${year}] ---------------"/>
@@ -96,7 +96,7 @@ Copyright:
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
   <!-- =================================================================== -->
-  <target name="usage">
+  <target name="usage" depends="init">
     <echo message=""/>
     <echo message=""/>
     <echo message="${parser.Name} Build instructions"/>
