@@ -77,7 +77,7 @@ import java.lang.Integer;
 
 /**
  * The simple type definition schema component traverser.
- *
+ * 
  * <simpleType
  *   final = (#all | (list | union | restriction))
  *   id = ID
@@ -85,27 +85,30 @@ import java.lang.Integer;
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, (restriction | list | union))
  * </simpleType>
- *
+ * 
  * <restriction
  *   base = QName
  *   id = ID
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern)*))
  * </restriction>
- *
+ * 
  * <list
  *   id = ID
  *   itemType = QName
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, (simpleType?))
  * </list>
- *
+ * 
  * <union
  *   id = ID
  *   memberTypes = List of QName
  *   {any attributes with non-schema namespace . . .}>
  *   Content: (annotation?, (simpleType*))
  * </union>
+ * 
+ * @author Elena Litani
+ * @author IBM
  * @version $Id$
  */
 class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
@@ -153,7 +156,6 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         String nameProperty  =  DOMUtil.getAttrValue(simpleTypeDecl, SchemaSymbols.ATT_NAME);
         String qualifiedName = nameProperty;
-
 
         //---------------------------------------------------
         // set qualified name
@@ -270,10 +272,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             dTValidators = new Vector (size, 2);
         }
         else {
-            //REVISIT: port SchemaMessageProvider
-            //reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
-            //          new Object [] { varietyProperty });
-            //          return fSchemaHandler.EMPTY_STRING;
+            Object[] args = { varietyProperty};
+            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN, 
+                                       "FeatureUnsupported",
+                                       args, XMLErrorReporter.SEVERITY_ERROR);
         }
         if (DOMUtil.getNextSiblingElement(content) != null) {
             // REVISIT: Localize
@@ -304,17 +306,20 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     }
                 }
                 if (baseValidator == null) {
-                    //REVISIT:
-                    // reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                    //                      new Object [] { content.getAttribute( SchemaSymbols.ATT_BASE ),
-                    //                          content.getAttribute(SchemaSymbols.ATT_NAME) });
+                    Object[] args = {content.getAttribute( SchemaSymbols.ATT_BASE )};
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "UnknownBaseDatatype",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
                     return resetSimpleTypeNameStack(fSchemaHandler.EMPTY_STRING);
                 }
             }
             else {
-                //REVISIT
-                //reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
-                //       new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           "ListUnionRestrictionError",
+                                           args,
+                                           XMLErrorReporter.SEVERITY_ERROR);
                 return resetSimpleTypeNameStack(fSchemaHandler.EMPTY_STRING);
             }
         } //end - must see simpleType?
@@ -401,10 +406,11 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     }
                 }
                 if (baseValidator == null) {
-                    //REVISIT: 
-                    //reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
-                    //                  new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ),
-                    //                      simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)});
+                    Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_BASE ), simpleTypeDecl.getAttribute(SchemaSymbols.ATT_NAME)};
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "UnknownBaseDatatype",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
                     return fSchemaHandler.EMPTY_STRING;
                 }
                 content   = DOMUtil.getNextSiblingElement( content );
@@ -465,9 +471,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                         checkContent(simpleTypeDecl, DOMUtil.getFirstChildElement( content ), true);
                     }
                     else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
-                        //REVISIT:      
-                        //reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
-                        //new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                        //REVISIT: 
+                        Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
+                        fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                   "ListUnionRestrictionError",
+                                                   args,
+                                                   XMLErrorReporter.SEVERITY_ERROR);
+
                     }
                     else if (facet.equals(SchemaSymbols.ELT_PATTERN)) {
                         if (fPattern == null) {
@@ -485,10 +495,11 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     }
                     else {
                         if (fFacetData.containsKey(facet))
-                            //REVISIT:
-                            //reportSchemaError(SchemaMessageProvider.DatatypeError,
-                            //                  new Object [] {"The facet '" + facet + "' is defined more than once."} );
-                            fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
+                            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                       "DatatypeError",
+                                                       new Object[]{"The facet '" + facet + "' is defined more than once."},
+                                                       XMLErrorReporter.SEVERITY_ERROR);
+                        fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
 
                         if (content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE) ||
                             content.getAttribute( SchemaSymbols.ATT_FIXED).equals(SchemaSymbols.ATTVAL_TRUE_1)) {
@@ -542,23 +553,26 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             }
             fPattern.setLength(0);
         }
-
-
         else if (list && content!=null) {
             // report error - must not have any children!
             if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
                 if (content!=null) {
                     //REVISIT:
-                    //reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
-                    //                  new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                    Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "ListUnionRestrictionError",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
+
                 }
             }
             else {
-                //REVISIT
-                //reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
-                //                  new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-                //REVISIT: should we return?
+                Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           "ListUnionRestrictionError",
+                                           args,
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
         }
         else if (union && content!=null) {
@@ -566,16 +580,19 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (baseTypeQNameProperty.length() != 0) {
                 content = checkContent(simpleTypeDecl, content, true);
                 if (content!=null) {
-                    //REVISIT
-                    //reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
-                    //                  new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
+                    Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
+                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                               "ListUnionRestrictionError",
+                                               args,
+                                               XMLErrorReporter.SEVERITY_ERROR);
                 }
             }
             else {
-                //REVISIT
-                //reportSchemaError(SchemaMessageProvider.ListUnionRestrictionError,
-                //                  new Object [] { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )});
-                //REVISIT: should we return?
+                Object[] args = { simpleTypeDecl.getAttribute( SchemaSymbols.ATT_NAME )};
+                fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                           "ListUnionRestrictionError",
+                                           args,
+                                           XMLErrorReporter.SEVERITY_ERROR);
             }
         }
 

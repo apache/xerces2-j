@@ -76,13 +76,13 @@ abstract class XSDAbstractTraverser {
     protected XSDHandler            fSchemaHandler = null;
     protected SymbolTable           fSymbolTable = null;
     protected XSAttributeChecker    fAttrChecker = null;
-    private XMLErrorReporter        fErrorReporter = null;
+    protected XMLErrorReporter      fErrorReporter = null;
 
     //REVISIT: should we add global fSchemaGrammar field
 
     XSDAbstractTraverser (XSDHandler handler,
                           XMLErrorReporter errorReporter,
-                          XSAttributeChecker attrChecker) {
+                          XSAttributeChecker attrChecker) {        
         fSchemaHandler = handler;
         fErrorReporter = errorReporter;
         fAttrChecker = attrChecker;
@@ -129,11 +129,7 @@ abstract class XSDAbstractTraverser {
     }
 
     // REVISIT: is it how we want to handle error reporting?
-    //REVISIT: Implement
     void reportGenericSchemaError (String error) {
-    }
-    //REVISIT: Implement
-    void reportSchemaError(String key, Object args[]) {
     }
 
     //
