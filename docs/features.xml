@@ -408,7 +408,7 @@ catch (SAXException e) {
   <feature name='http://apache.org/xml/features/xinclude/fixup-base-uris'
            id='xinclude.fixup-base-uris'>
    <true>Perform base URI fixup as specified by the XInclude Recommendation.</true>
-   <false>Do not perform base URI fixup.</false>
+   <false>Do not perform base URI fixup. The XInclude processor will not add xml:base attributes.</false>
    <default value='true'/>
    <since value='&ParserName; 2.7.0'/>
    <see idref='xinclude'/>
@@ -417,7 +417,7 @@ catch (SAXException e) {
   <feature name='http://apache.org/xml/features/xinclude/fixup-language'
            id='xinclude.fixup-language'>
    <true>Perform language fixup as specified by the XInclude Recommendation.</true>
-   <false>Do not perform language fixup.</false>
+   <false>Do not perform language fixup. The XInclude processor will not add xml:lang attributes.</false>
    <default value='true'/>
    <since value='&ParserName; 2.7.0'/>
    <see idref='xinclude'/>
