@@ -576,10 +576,6 @@ public class GeneralAttrCheck {
         attrList = new Hashtable();
         // id = ID
         attrList.put(SchemaSymbols.ATT_ID, allAttrs[ATT_ID_N]);
-        // maxOccurs = (nonNegativeInteger | unbounded)  : 1
-        attrList.put(SchemaSymbols.ATT_MAXOCCURS, allAttrs[ATT_MAXOCCURS_D]);
-        // minOccurs = nonNegativeInteger : 1
-        attrList.put(SchemaSymbols.ATT_MINOCCURS, allAttrs[ATT_MINOCCURS_D]);
         // name = NCName
         attrList.put(SchemaSymbols.ATT_NAME, allAttrs[ATT_NAME_R]);
         oneEle = new OneElement (attrList);
