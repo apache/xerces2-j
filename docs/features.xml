@@ -72,6 +72,14 @@ try {
 									<br/><link idref="properties" anchor="namespace-sep">http://xml.org/sax/properties/namespace-sep</link></td></tr>
 		</table>
 		
+		<anchor name="schema"/>
+		<p>http://apache.org/xml/features/validation/schema</p>
+		<table>
+			<tr><th>True:</th>		<td>Turn on XML Schema support.</td></tr>
+			<tr><th>False:</th>		<td>Turn off XML Schema support.</td></tr>
+			<tr><th>Default:</th>	<td>true</td></tr>
+		</table>
+
 		<anchor name="dynamic"/>
 		<p>http://apache.org/xml/features/validation/dynamic</p>
 		<table>

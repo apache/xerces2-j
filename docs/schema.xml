@@ -44,11 +44,12 @@
             <li>Attribute group definitions</li>
             <li>Simple type definitions</li>
             <li>Complex type definitions</li>
+            <li>Wildcards: any</li>
         </ul>
     </s2>
     <s2 title='Components NOT Supported'>
         <ul>
-            <li>Wildcards</li>
+            <li>Wildcards: anyAttribute</li>
             <li>Identity constraints: unique, key, keyref</li>
             <li>Notation declaration</li>
             <li>Annotation (ignored)</li>
@@ -64,6 +65,8 @@
             <li>Equivalency classes (partial)</li>
             <li>Target namespace</li>
             <li>"xsi:schemaLocation" and "xsl:noNamespacesSchemaLocation"</li>
+            <li>Include</li>
+            <li>Import</li>
         </ul>
     </s2>
     <s2 title='Features NOT Supported'>
@@ -73,8 +76,6 @@
             <li>Block</li>
             <li>Abstract</li>
             <li>"xsi:type"</li>
-            <li>Include</li>
-            <li>Import</li>
         </ul>
     </s2>
     <s2 title='Datatypes Supported'>
@@ -92,7 +93,8 @@
         </ul>
     </s2>
 	<s2 title="Other Limitations">
-		<p>The schema is specified by the xsi:schemaLocation attribute on the root 
+		<p>The schema is specified by the xsi:schemaLocation or
+		xsi:noNamespaceSchemaLocation attribute on the root 
 		element of the document. The xsi prefix must be bound to the 
 		Schema document instance namespace, as specified by the
 		working draft specification. See the sample provided in the
@@ -104,8 +106,19 @@
 		required to parse documents that use a schema.</p>
 		<p>Documents that use XML Schema grammars specify the location of the
 		grammar using an xsi:schemaLocation attribute attached to the root / top-level element 
-		in the document. Here is an example: </p>
-<source>&lt;document xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' xsi:schemaLocation='document.xsd'&gt;
+		in the document. Here is an example with no target namspace: </p>
+<source>&lt;document
+  xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='document.xsd'&gt;
+...
+&lt;/document&gt;</source>
+		<p>Here is an example with a target namespace. Note that it is an
+		error to specify a different namespace than the target namespace
+		defined in Schema.</p>
+<source>&lt;document
+  xmlns='NS'
+  xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' 
+  xsi:schemaLocation='NS document.xsd'&gt;
 ...
 &lt;/document&gt;</source>
 		<p>Review the sample file, 'data/personal.xsd' for an example of an XML 

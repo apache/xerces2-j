@@ -2,6 +2,25 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
+    <s2 title='June 21, 2000'>
+        <ul>
+           <li>Added "any" element content support for Schema [andyc]</li>
+           <li>Fixed adjacent text nodes bug in deferred DOM [andyc]</li>
+           <li>Fixed namespace URI bug in deferred DOM [andyc]</li>
+           <li>Fixed null document type node bug [andyc]</li>
+           <li>Fixed StringReader index out of bounds exception bug [andyc]</li>
+           <li>Turned on namespace support in all parsers, by default [andyc]</li>
+           <li>Added feature to allow Schema support to be turned off [andyc]</li>
+           <li>Fixed DOM serialization [jeffreyr]</li>
+           <li>Fixed datatype enumeration bugs [jeffreyr]</li>
+           <li>Fixed datatype pattern bugs [jeffreyr]</li>
+           <li>Fixed datatype min/maxLength bugs [jeffreyr]</li>
+           <li>Modified samples to include additional switched [jeffreyr]</li>
+           <li>Added regular expression character class subtraction [tkent@jp.ibm.com]</li>
+           <li>Fixed regular expression bugs [tkent@jp.ibm.com]</li>
+           <li>Added URI class [paul.eng@iclick.com]</li>
+        </ul>
+    </s2>
     <s2 title='June 5, 2000'>
         <ul>
            <li>Added Schema include/import [ericye]</li>
@@ -15,7 +34,7 @@
 	   <li>Added JAXP to build, updated JAXP files [lehors]</li>
            <li>Added a DOM from scratch and Serializer sample [jeffreyr]</li>
            <li>Fixed NodeImpl supports nullpointer bug in Samples [lehors]</li>
-           <li>Fixed a bug in clonning default attribute</li>
+           <li>Fixed a bug in cloning default attribute</li>
         </ul>
     </s2>
     <s2 title='May 19, 2000'>
