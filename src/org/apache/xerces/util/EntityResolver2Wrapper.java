@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class EntityResolver2Wrapper
         if (fEntityResolver != null) {
             
             String pubId = resourceIdentifier.getPublicId();
-            String sysId = resourceIdentifier.getExpandedSystemId();
+            String sysId = resourceIdentifier.getLiteralSystemId();
             String baseURI = resourceIdentifier.getBaseSystemId();
             String name = null;
             if (resourceIdentifier instanceof XMLDTDDescription) {
