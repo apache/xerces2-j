@@ -89,11 +89,13 @@ import org.apache.xerces.impl.validation.datatypes.ListDatatypeValidator;
 import org.apache.xerces.impl.validation.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.validation.InvalidDatatypeValueException;
 
-
-
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * @author Eric Ye, IBM
@@ -199,6 +201,9 @@ public class XMLValidator
     private QName fTempQName = new QName();
     private StringBuffer fDatatypeBuffer = new StringBuffer();
 
+    /** ndata notation list */
+    private Hashtable fNDataDeclNotations = new Hashtable();
+
     // symbols
 
     private String fEMPTYSymbol ;
@@ -283,6 +288,8 @@ public class XMLValidator
         fSeenRootElement = false;
         fBufferDatatype = false;
         fInElementContent = false;
+
+        fNDataDeclNotations.clear();
 
         fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
 
@@ -1037,8 +1044,9 @@ public class XMLValidator
      */
     public void startDTD() throws SAXException {
 
-        // set state
+        // initialize state
         fInDTD = true;
+        fNDataDeclNotations.clear();
 
         // create DTD grammar
         fDTDGrammar = new DTDGrammar();
@@ -1207,6 +1215,11 @@ public class XMLValidator
                                    String publicId, String systemId, 
                                    String notation) throws SAXException {
 
+        // VC: Notation declared,  in the production of NDataDecl
+        if (fValidation) {
+            fNDataDeclNotations.put(name, notation);
+        }
+
         // call handlers
         fDTDGrammar.unparsedEntityDecl(name, publicId, systemId, notation);
         if (fDTDHandler != null) {
@@ -1293,6 +1306,21 @@ public class XMLValidator
         fDTDGrammar.endDTD();
         fCurrentGrammar = fDTDGrammar;
         fDTDGrammar = null;
+
+        // check VC: Notation declared,  in the production of NDataDecl
+        if (fValidation ) {
+            Enumeration entities = fNDataDeclNotations.keys();
+            while (entities.hasMoreElements()) {
+                String entity = (String) entities.nextElement();
+                String notation = (String) fNDataDeclNotations.get(entity);
+                if (fCurrentGrammar.getNotationDeclIndex(notation) == -1) {
+                    fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                               "MSG_NOTATION_NOT_DECLARED_FOR_UNPARSED_ENTITYDECL",
+                                               new Object[]{entity, notation},
+                                               XMLErrorReporter.SEVERITY_ERROR);
+                }
+            }
+        }
 
         // call handlers
         if (fDTDHandler != null) {
