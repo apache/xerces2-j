@@ -1056,13 +1056,17 @@ public class TraverseSchema implements
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
         }
-        else {
-            // create a string for uniqueness of this included schema in fIncludeLocations
-            if (source.getPublicId () != null)
-                location = source.getPublicId ();
+        // create a string for uniqueness of this included schema in fIncludeLocations
+        // algorithm:  string is pubId+sysId or if both null then filename
+        String pubId = "";
+        String sysId = "";
+        if (source.getPublicId () != null)
+            pubId = source.getPublicId ();
+        if (source.getSystemId () != null)
+            sysId = source.getSystemId ();
 
-            location += (',' + source.getSystemId ());
-        }
+        if(pubId.length() != 0 || sysId.length() != 0)
+            location = pubId+sysId;
 
         if (fIncludeLocations.contains((Object)location)) {
             return;
@@ -1370,20 +1374,25 @@ public class TraverseSchema implements
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
         }
-        else {
-            // Make sure we don't redefine the same schema twice; it's allowed
-            // but the specs encourage us to avoid it.
-            if (source.getPublicId () != null)
-                location = source.getPublicId ();
+        // Make sure we don't redefine the same schema twice; it's allowed
+        // but the specs encourage us to avoid it.
+        // algorithm:  string is pubId+sysId or if both null then filename
+        String pubId = "";
+        String sysId = "";
+        if (source.getPublicId () != null)
+            pubId = source.getPublicId ();
+        if (source.getSystemId () != null)
+            sysId = source.getSystemId ();
 
-            // make sure we're not redefining ourselves!
-            if(source.getSystemId().equals(fCurrentSchemaURL)) {
-                // REVISIT:  localize
-                reportGenericSchemaError("src-redefine.2:  a schema cannot redefine itself");
-                fRedefineSucceeded = false;
-                return;
-            }
-            location += (',' + source.getSystemId ());
+        if(pubId.length() != 0 || sysId.length() != 0)
+            location += pubId+sysId;
+
+        // make sure we're not redefining ourselves!
+        if(source.getSystemId().equals(fCurrentSchemaURL)) {
+            // REVISIT:  localize
+            reportGenericSchemaError("src-redefine.2:  a schema cannot redefine itself");
+            fRedefineSucceeded = false;
+            return;
         }
         if (fRedefineLocations.get((Object)location) != null) {
             // then we'd better make sure we're directed at that schema...
@@ -2028,13 +2037,17 @@ public class TraverseSchema implements
             location = expandSystemId(location, fCurrentSchemaURL);
             source = new InputSource(location);
         }
-         else {
-             // create a string for uniqueness of this imported schema in fImportLocations
-             if (source.getPublicId () != null)
-                 location = source.getPublicId ();
+         // create a string for uniqueness of this imported schema in fImportLocations
+        // algorithm:  string is pubId+sysId or if both null then filename
+        String pubId = "";
+        String sysId = "";
+        if (source.getPublicId () != null)
+            pubId = source.getPublicId ();
+        if (source.getSystemId () != null)
+            sysId = source.getSystemId ();
 
-             location += (',' + source.getSystemId ());
-         }
+        if(pubId.length() != 0 || sysId.length() != 0)
+            location = pubId+sysId;
 
          if (fImportLocations.contains((Object)location)) {
              return null;
