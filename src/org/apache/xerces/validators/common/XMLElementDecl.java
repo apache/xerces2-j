@@ -73,9 +73,10 @@ public class XMLElementDecl {
 
     public static final int TYPE_EMPTY = 0;
     public static final int TYPE_ANY = 1;
-    public static final int TYPE_MIXED = 2;
-    public static final int TYPE_CHILDREN = 3;
-    public static final int TYPE_SIMPLE = 4;
+    public static final int TYPE_MIXED_SIMPLE=2;  // for simple (a la-DTD) style MIXED
+    public static final int TYPE_MIXED_COMPLEX=3; // for complex mixed models
+    public static final int TYPE_CHILDREN = 4;
+    public static final int TYPE_SIMPLE = 5;
 
     //
     // Data

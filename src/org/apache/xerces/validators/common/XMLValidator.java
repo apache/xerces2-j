@@ -1250,7 +1250,8 @@ public final class XMLValidator
 
    private void pushContentLeafStack() throws Exception {
       int contentType = getContentSpecType(fCurrentElementIndex);
-      if ( contentType == XMLElementDecl.TYPE_CHILDREN) {
+      if ( contentType == XMLElementDecl.TYPE_CHILDREN || 
+           contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) {
          XMLContentModel cm = getElementContentModel(fCurrentElementIndex);
          ContentLeafNameTypeVector cv = cm.getContentLeafNameTypeVector();
          if (cm != null) {
@@ -3969,7 +3970,8 @@ public final class XMLValidator
          //  This one is open game so we don't pass any judgement on it
          //  at all. Its assumed to fine since it can hold anything.
          //
-      } else if (contentType == XMLElementDecl.TYPE_MIXED ||  
+      } else if (contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ||
+                 contentType == XMLElementDecl.TYPE_MIXED_COMPLEX ||
                  contentType == XMLElementDecl.TYPE_CHILDREN) {
          // Get the content model for this element, faulting it in if needed
          XMLContentModel cmElem = null;
@@ -4109,7 +4111,9 @@ public final class XMLValidator
 
        for (int i = 0; i < fElementCount; i++) {
            int type = fGrammar.getContentSpecType(i);
-           if (type == XMLElementDecl.TYPE_MIXED || type == XMLElementDecl.TYPE_CHILDREN) {
+           if (type == XMLElementDecl.TYPE_MIXED_SIMPLE || 
+               type == XMLElementDecl.TYPE_MIXED_COMPLEX ||
+               type == XMLElementDecl.TYPE_CHILDREN) {
                int chunk = i >> CHUNK_SHIFT;
                int index = i &  CHUNK_MASK;
                int contentSpecIndex = fContentSpec[chunk][index];

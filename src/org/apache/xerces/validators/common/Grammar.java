@@ -274,24 +274,39 @@ implements XMLContentSpec.Provider {
         
         // And create the content model according to the spec type
         
-        if ( contentType == XMLElementDecl.TYPE_MIXED ) {
-            //
-            //  Just create a mixel content model object. This type of
-            //  content model is optimized for mixed content validation.
-            //
+        if ( contentType == XMLElementDecl.TYPE_MIXED_SIMPLE ) {
+              //
+              //  just create a mixed content model object. This type of
+              //  content model is optimized for simple mixed content validation.
+              //
 
-            Vector vQName = new Vector(); 
-            try {
-                ChildrenList children = new ChildrenList();
-                contentSpecTree(contentSpecIndex, contentSpec, children);
-                contentModel = new MixedContentModel(children.qname,
-                                                     children.type,
-                                                     0, children.length, false, isDTD());
-            }catch(  CMException ex ){
+              Vector vQName = new Vector(); 
+              try {
+                  ChildrenList children = new ChildrenList();
+                  contentSpecTree(contentSpecIndex, contentSpec, children);
+                  contentModel = new MixedContentModel(children.qname,
+                                                       children.type,
+                                                       0, children.length, false, isDTD());
+              }catch(  CMException ex ){
+                  ex.printStackTrace();
+              }
+        }
+        else if (contentType == XMLElementDecl.TYPE_MIXED_COMPLEX) {
+              //
+              // For Schema, we need a more complex model.   Create a child model as 
+              // per the element-only case, unless there are actually no children in 
+              // the model.  If that's the case, we can use the Mixed Content Model for 
+              // DTDs.  
+              try {
+                contentModel = createChildModel(contentSpecIndex, true);
+              }
+              catch (CMException ex) {
                 ex.printStackTrace();
-            }
+              }
+        }
+            
 
-        } else if (contentType == XMLElementDecl.TYPE_CHILDREN) {
+        else if (contentType == XMLElementDecl.TYPE_CHILDREN) {
             //  This method will create an optimal model for the complexity
             //  of the element's defined model. If its simple, it will create
             //  a SimpleContentModel object. If its a simple list, it will
@@ -299,7 +314,7 @@ implements XMLContentSpec.Provider {
             //  will create a DFAContentModel object.
             //
             try {
-            contentModel = createChildModel(contentSpecIndex);
+            contentModel = createChildModel(contentSpecIndex, false);
             }catch( CMException ex ) {
                  ex.printStackTrace();
             }
@@ -580,7 +595,7 @@ implements XMLContentSpec.Provider {
     //  models and creates SimpleContentModel objects for those. For the rest
     //  it creates the standard DFA style model.
     //
-    private final XMLContentModel createChildModel(int contentSpecIndex) throws CMException
+    private final XMLContentModel createChildModel(int contentSpecIndex, boolean isMixed) throws CMException
     {
         //
         //  Get the content spec node for the element we are working on.
@@ -595,6 +610,9 @@ implements XMLContentSpec.Provider {
         if ((contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY ||
             (contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY_OTHER ||
             (contentSpec.type & 0x0f ) == XMLContentSpec.CONTENTSPECNODE_ANY_LOCAL) {
+            // let fall through to build a DFAContentModel
+        }
+        else if (isMixed) {
             // let fall through to build a DFAContentModel
         }
 
@@ -674,7 +692,7 @@ implements XMLContentSpec.Provider {
         CMNode cmn    = buildSyntaxTree(contentSpecIndex, contentSpec);
 
         // REVISIT: has to be fLeafCount because we convert x+ to x,x*, one more leaf
-        return new DFAContentModel(  cmn, fLeafCount, isDTD());
+        return new DFAContentModel(  cmn, fLeafCount, isDTD(), isMixed);
     }
 
     private void printSyntaxTree(CMNode cmn){

@@ -1771,7 +1771,7 @@ public final class XMLDTDScanner {
             checkForPEReference(false);
             boolean skippedPCDATA = fEntityReader.skippedString(pcdata_string);
             if (skippedPCDATA) {
-                contentSpecType = XMLElementDecl.TYPE_MIXED;
+                contentSpecType = XMLElementDecl.TYPE_MIXED_SIMPLE;
                 // REVISIT: Validation. Should we pass in QName?
                 contentSpec = scanMixed(fElementQName);
             } else {

@@ -2982,29 +2982,6 @@ public class TraverseSchema implements
            }
        }
      
-       if (isMixed) {
-            //
-            // TODO - check to see if we MUST have an element.  What if only attributes 
-            // were specified??
-
-
-            // add #PCDATA leaf
-            int pcdataNode = fSchemaGrammar.addContentSpecNode(
-                             XMLContentSpec.CONTENTSPECNODE_LEAF,
-                             -1, // -1 means "#PCDATA" is name
-                             -1, false);
-            // 
-            // If there was an element, the content spec becomes a choice of PCDATA and
-            // the element
-            //
-            if (index != -2) 
-                index = fSchemaGrammar.addContentSpecNode(
-                    XMLContentSpec.CONTENTSPECNODE_CHOICE,pcdataNode,index,false);
-            else
-                index = pcdataNode;
-
-       }
-
        typeInfo.contentSpecHandle = index;
 
        // -----------------------------------------------------------------------
@@ -3056,8 +3033,22 @@ public class TraverseSchema implements
        // -------------------------------------------------------------
        // Set the content type                                                     
        // -------------------------------------------------------------
-       if (isMixed) 
-           typeInfo.contentType = XMLElementDecl.TYPE_MIXED;
+       if (isMixed) {
+
+           // if there are no children, we can use a simple mixed type
+           if (typeInfo.contentSpecHandle == -2) {
+             typeInfo.contentType = XMLElementDecl.TYPE_MIXED_SIMPLE;
+                   
+             // add #PCDATA leaf
+             typeInfo.contentSpecHandle = 
+                     fSchemaGrammar.addContentSpecNode(
+                      XMLContentSpec.CONTENTSPECNODE_LEAF,
+                     -1, // -1 means "#PCDATA" is name
+                     -1, false);
+           }
+           else
+             typeInfo.contentType = XMLElementDecl.TYPE_MIXED_COMPLEX;
+       }
        else if (typeInfo.contentSpecHandle == -2)
            typeInfo.contentType = XMLElementDecl.TYPE_EMPTY;
        else
@@ -4586,7 +4577,8 @@ int aaaa= 1;
                 dv.validate(dflt, null);
             }
             if(typeInfo != null && 
-                    (typeInfo.contentType != XMLElementDecl.TYPE_MIXED &&
+                    (typeInfo.contentType != XMLElementDecl.TYPE_MIXED_SIMPLE &&
+                     typeInfo.contentType != XMLElementDecl.TYPE_MIXED_COMPLEX &&
                     typeInfo.contentType != XMLElementDecl.TYPE_SIMPLE)) {
                 // REVISIT: Localize
                 reportGenericSchemaError ("element " + name + " has a fixed or default value and must have a mixed or simple content model");
@@ -6067,22 +6059,6 @@ int aaaa= 1;
             }
     }
 
-    private int parseComplexContent (String contentString)  throws Exception
-    {
-            if ( contentString.equals (SchemaSymbols.ATTVAL_EMPTY) ) {
-                    return XMLElementDecl.TYPE_EMPTY;
-            } else if ( contentString.equals (SchemaSymbols.ATTVAL_ELEMENTONLY) ) {
-                    return XMLElementDecl.TYPE_CHILDREN;
-            } else if ( contentString.equals (SchemaSymbols.ATTVAL_TEXTONLY) ) {
-                    return XMLElementDecl.TYPE_SIMPLE;
-            } else if ( contentString.equals (SchemaSymbols.ATTVAL_MIXED) ) {
-                    return XMLElementDecl.TYPE_MIXED;
-            } else {
-                // REVISIT: Localize
-                    reportGenericSchemaError ( "Invalid value for content" );
-                    return -1;
-            }
-    }
 
     private int parseDerivationSet (String finalString)  throws Exception
     {

@@ -68,12 +68,6 @@ import org.apache.xerces.utils.StringPool;
  * all of the non-trivial element content validation. This class does 
  * the conversion from the regular expression to the DFA that 
  * it then uses in its validation algorithm.
- * <p>
- * <b>Note:</b> Upstream work insures that this class will never see
- * a content model with PCDATA in it. Any model with PCDATA is 'mixed' 
- * and is handled via the MixedContentModel class since mixed models 
- * are very constrained in form and easily handled via a special case. 
- * This also makes implementation of this class much easier.
  *
  * @version $Id$
  */
@@ -124,6 +118,9 @@ public class DFAContentModel
 
     /** Boolean to allow DTDs to validate even with namespace support. */
     private boolean fDTD;
+
+    /* Used to indicated mixed model */
+    private boolean fMixed;
 
     /**
      * The string index for the 'end of content' string that we add to
@@ -242,7 +239,7 @@ public class DFAContentModel
    // public DFAContentModel(StringPool stringPool, 
    public DFAContentModel( CMNode syntaxTree, 
                            int leafCount) throws CMException {
-       this(syntaxTree, leafCount, false);
+       this(syntaxTree, leafCount, false, false);
    }
 
     /**
@@ -257,7 +254,7 @@ public class DFAContentModel
 
    // public DFAContentModel(StringPool stringPool, 
    public DFAContentModel( CMNode syntaxTree, 
-                           int leafCount, boolean dtd) throws CMException {
+                           int leafCount, boolean dtd, boolean mixed) throws CMException {
 
         // Store away our index and pools in members
         //fStringPool = stringPool;
@@ -284,6 +281,7 @@ public class DFAContentModel
         fEOCIndex     = EOC;
 
         fDTD = dtd;
+        fMixed = mixed;
 
         //
         //  Ok, so lets grind through the building of the DFA. This method
@@ -387,6 +385,12 @@ public class DFAContentModel
             // Get the current element index out
             final QName curElem = children[offset + childIndex];
             //System.out.println("children["+(offset+childIndex)+"]: "+curElem);
+
+
+            // If this is text in a Schema mixed content model, skip it.
+            if (fMixed && (curElem.localpart == -1)) {
+                continue;
+            }
 
             // Look up this child in our element map
             int elemIndex = 0;
@@ -673,12 +677,12 @@ public class DFAContentModel
         final int insertState = curState;
 
         //
-        //  Set any stuff we can know right off the bat for all cases. We know
-        //  that this content model will never get PCData nodes because that
-        //  is a mixed model. We can also set the valid EOC flag at this point
+        //  Set any stuff we can know right off the bat for all cases. 
+        //  We can set the valid EOC flag at this point
         //  since its just based on the state we ended in at the insert point.
+        //  The 'canHoldPCData" will be true if it's a mixed content model.
         //
-        info.canHoldPCData = false;
+        info.canHoldPCData = fMixed;
         info.isValidEOC = fFinalStateFlags[insertState];
 
         //
