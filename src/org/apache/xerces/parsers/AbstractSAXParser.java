@@ -95,7 +95,7 @@ import org.xml.sax.ext.LexicalHandler;
 public abstract class AbstractSAXParser
     extends AbstractXMLDocumentParser
     implements Parser, XMLReader // SAX1, SAX2
-    {
+{
 
     //
     // Constants
@@ -116,6 +116,10 @@ public abstract class AbstractSAXParser
     // Data
     //
 
+    // features
+
+    boolean fNamespacePrefixes = false;
+
     // parser handlers
 
     /** Content handler. */
@@ -133,10 +137,13 @@ public abstract class AbstractSAXParser
     /** Lexical handler. */
     protected LexicalHandler fLexicalHandler;
 
+    protected QName fQName = new QName();
+
     // symbols
        
     /** Symbol: empty string (""). */
     private String fEmptySymbol;
+    private String fXmlnsSymbol;
 
     // state
 
@@ -283,6 +290,19 @@ public abstract class AbstractSAXParser
 
         // SAX2
         if (fContentHandler != null) {
+
+            if (!fNamespacePrefixes) {
+                // remove namespace declaration attributes
+                int len = attributes.getLength();
+                for (int i = len - 1; i >= 0; i--) {
+                    attributes.getName(i, fQName);
+                    if (fQName.rawname == fXmlnsSymbol ||
+                        fQName.prefix == fXmlnsSymbol) {
+                        attributes.removeAttributeAt(i);
+                    }
+                }
+            }
+
             String uri = element.uri != null ? element.uri : fEmptySymbol;
             fContentHandler.startElement(uri, element.localpart,
                                          element.rawname, attributes);
@@ -845,6 +865,7 @@ public abstract class AbstractSAXParser
             //
             if (feature.equals(Constants.NAMESPACE_PREFIXES_FEATURE)) {
                 fConfiguration.setFeature(featureId, state);
+                fNamespacePrefixes = state;
                 return;
             }
             // http://xml.org/sax/features/string-interning
@@ -1245,6 +1266,7 @@ public abstract class AbstractSAXParser
         // save needed symbols
         SymbolTable symbolTable = (SymbolTable)fConfiguration.getProperty(SYMBOL_TABLE);
         fEmptySymbol = symbolTable.addSymbol("");
+        fXmlnsSymbol = symbolTable.addSymbol("xmlns");
 
     } // reset()
 
