@@ -248,7 +248,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     throws SAXException {
         fCurrentElementIndex = createElementDecl();//create element decl
         
-        if( this.fDebugDTDGrammar == true ){
+        if( fDebugDTDGrammar == true ){
              System.out.println(  "name = " + fElementDecl.name.localpart );
              System.out.println(  "Type = " + fElementDecl.type );
         }
@@ -291,6 +291,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     public void attributeDecl(String elementName, String attributeName, String type, String[] enumeration, String defaultType, XMLString defaultValue)
     throws SAXException {
 
+        int elementIndex       = getElementDeclIndex( elementName, 0 );
         fCurrentAttributeIndex = createAttributeDecl();// Create current Attribute Decl
 
         fSimpleType.clear();
@@ -303,19 +304,24 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
                 fSimpleType.defaultType = fSimpleType.DEFAULT_TYPE_REQUIRED;
             }
         }
+        if( fDebugDTDGrammar == true ){
+            System.out.println("defaultvalue = " + defaultValue.toString() );
+        }
         fSimpleType.defaultValue      = defaultValue.toString();
         fSimpleType.enumeration       = enumeration;
         fSimpleType.datatypeValidator = DatatypeValidatorFactoryImpl.getDatatypeRegistry().getDatatypeValidator(type);
 
         fQName.clear();
-        fQName.setValues(null, null, attributeName, null);
+        fQName.setValues(null, attributeName, null, null);
 
 
         fAttributeDecl.clear();
         fAttributeDecl.simpleType     = fSimpleType;
         fAttributeDecl.setValues( fQName, fSimpleType, false );
 
-        setAttributeDecl( fCurrentElementIndex, fCurrentAttributeIndex,
+        System.out.println("ELement decl Indx = " + elementIndex );
+
+        setAttributeDecl( elementIndex, fCurrentAttributeIndex,
                           fAttributeDecl );
 
     } // attributeDecl
@@ -458,7 +464,7 @@ implements XMLDTDHandler, XMLDTDContentModelHandler {
     throws SAXException {
 
         fQName.clear();
-        fQName.setValues(null, null, elementName, null);
+        fQName.setValues(null, elementName, null, null);
 
         fElementDecl.clear();
         fElementDecl.type = type;

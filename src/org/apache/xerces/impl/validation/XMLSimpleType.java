@@ -108,7 +108,7 @@ public class XMLSimpleType {
     //
 
     /** type */
-    protected short type;
+    public short type;
 
     /** name */
     protected String name;
