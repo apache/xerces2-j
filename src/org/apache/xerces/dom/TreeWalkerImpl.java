@@ -57,6 +57,7 @@
 
 package org.apache.xerces.dom;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.TreeWalker;
@@ -134,6 +135,11 @@ public class TreeWalkerImpl implements TreeWalker {
     }
     /** Return the current Node. */
     public void               setCurrentNode(Node node) {
+        if (node == null) {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NOT_SUPPORTED_ERR", null);
+              throw new DOMException(DOMException.NOT_SUPPORTED_ERR, msg);
+        }
+
         fCurrentNode = node;
     }
     
