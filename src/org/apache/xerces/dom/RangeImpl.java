@@ -173,6 +173,13 @@ public class RangeImpl  implements Range {
         
         fStartContainer = refNode;
         fStartOffset = offset;
+        
+        // If one boundary-point of a Range is set to have a root container other
+        // than the current one for the Range, the Range should be collapsed to
+        // the new position.
+         if (getCommonAncestorContainer() == null ) {
+             collapse(true);
+         }  
     }
     
     public void setEnd(Node refNode, int offset)
@@ -198,6 +205,14 @@ public class RangeImpl  implements Range {
         
         fEndContainer = refNode;
         fEndOffset = offset;
+        
+        // If one boundary-point of a Range is set to have a root container other
+        // than the current one for the Range, the Range should be collapsed to
+        // the new position.
+         if (getCommonAncestorContainer() == null ) {
+             collapse(true);
+         }  
+
     }
 
     public void setStartBefore(Node refNode) 
@@ -226,6 +241,13 @@ public class RangeImpl  implements Range {
             i++;
         }
         fStartOffset = i-1;
+        
+        // If one boundary-point of a Range is set to have a root container other
+        // than the current one for the Range, the Range should be collapsed to
+        // the new position.
+         if (getCommonAncestorContainer() == null ) {
+             collapse(true);
+         }  
     }
     
     public void setStartAfter(Node refNode)
@@ -253,6 +275,13 @@ public class RangeImpl  implements Range {
             i++;
         }
         fStartOffset = i;
+        
+        // If one boundary-point of a Range is set to have a root container other
+        // than the current one for the Range, the Range should be collapsed to
+        // the new position.
+         if (getCommonAncestorContainer() == null ) {
+             collapse(true);
+         }  
     }
     
     public void setEndBefore(Node refNode)
@@ -280,6 +309,13 @@ public class RangeImpl  implements Range {
             i++;
         }
         fEndOffset = i-1;
+
+        // If one boundary-point of a Range is set to have a root container other
+        // than the current one for the Range, the Range should be collapsed to
+        // the new position.
+         if (getCommonAncestorContainer() == null ) {
+             collapse(false);
+         }    
     }
                                             
     public void setEndAfter(Node refNode)
@@ -307,6 +343,13 @@ public class RangeImpl  implements Range {
             i++;
         }
         fEndOffset = i;
+        
+       // If one boundary-point of a Range is set to have a root container other
+       // than the current one for the Range, the Range should be collapsed to
+       // the new position.
+        if (getCommonAncestorContainer() == null ) {
+            collapse(false);
+        }                
     }
     
     public void collapse(boolean toStart) {
@@ -669,6 +712,7 @@ public class RangeImpl  implements Range {
         Range range = fDocument.createRange();
         range.setStart(fStartContainer, fStartOffset);
         range.setEnd(fEndContainer, fEndOffset);
+        //System.out.println ("Clone Range " + fStartOffset);
         return range;
     }
     
@@ -678,7 +722,7 @@ public class RangeImpl  implements Range {
     		DOMException.INVALID_STATE_ERR, 
                 DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "INVALID_STATE_ERR", null));
     	}
-    	
+
     	Node node = fStartContainer;
         Node stopNode = fEndContainer;
     	StringBuffer sb = new StringBuffer();
