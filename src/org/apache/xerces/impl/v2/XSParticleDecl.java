@@ -92,4 +92,51 @@ public class XSParticleDecl {
     // maximum occurrence of this particle
     public int fMaxOccurs = 1;
 
+    public String toString() {
+        // build string
+        StringBuffer str = new StringBuffer();
+        appendParticle(str);
+        return str.toString();
+    }
+
+    void appendParticle(StringBuffer str) {
+        switch (fType) {
+        case PARTICLE_EMPTY:
+            break;
+        case PARTICLE_ELEMENT:
+        case PARTICLE_WILDCARD:
+            str.append(fValue.toString());
+            break;
+        case PARTICLE_CHOICE:
+        case PARTICLE_SEQUENCE:
+        case PARTICLE_ALL:
+            if (fType == PARTICLE_ALL)
+                str.append("all(");
+            else
+                str.append('(');
+            str.append(fValue.toString());
+            if (fOtherValue != null) {
+                if (fType == PARTICLE_CHOICE)
+                    str.append('|');
+                else
+                    str.append(',');
+            }
+            str.append(fOtherValue.toString());
+            str.append(')');
+            break;
+        case PARTICLE_ZERO_OR_ONE:
+        case PARTICLE_ZERO_OR_MORE:
+        case PARTICLE_ONE_OR_MORE:
+            str.append('(');
+            str.append(fValue.toString());
+            str.append(')');
+            if (fType == PARTICLE_ZERO_OR_ONE)
+                str.append('?');
+            if (fType == PARTICLE_ZERO_OR_MORE)
+                str.append('*');
+            if (fType == PARTICLE_ONE_OR_MORE)
+                str.append('+');
+            break;
+        }
+    }
 } // class XSParticle

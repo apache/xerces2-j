@@ -141,4 +141,7 @@ public class XSElementDecl {
         return newArray;
     }
 
+    public String toString() {
+        return fTargetNamespace+","+fName;
+    }
 } // class XMLElementDecl

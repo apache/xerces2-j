@@ -131,12 +131,12 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         fMiscFlags |= CT_HAS_TYPE_ID;
     }
 
-    public XSCMValidator getContentModel() {
+    public XSCMValidator getContentModel(CMBuilder cmBuilder) {
         if (fCMValidator != null)
             return fCMValidator;
         if (fParticle == null || fParticle.fType == XSParticleDecl.PARTICLE_EMPTY)
             return null;
-        // REVISIT: call CMBuilder.buildCM(this);
+        cmBuilder.getContentModel(this);
 
         return fCMValidator;
     }

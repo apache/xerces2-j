@@ -676,6 +676,10 @@ public class SchemaValidator
     /** Schema handler */
     final XSDHandler fSchemaHandler;
 
+    /** used to build content models */
+    // REVISIT: create decl pool, and pass it to each traversers
+    CMBuilder fCMBuilder = new CMBuilder(new XSDeclarationPool());
+
     // state
 
     /** Skip validation. */
@@ -901,9 +905,8 @@ public class SchemaValidator
                 wildcard = (XSWildcardDecl)decl;
             } else if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
                        fDoValidation) {
-                // REVISIT: report error: invalid content
                 XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                reportGenericSchemaError("invlid content starting with element '"+element.rawname+"', the content must match ("+ctype.fParticle.toString()+")");
+                reportGenericSchemaError("invlid content starting with element '"+element.rawname+"', the content must match "+ctype.fParticle.toString()+"");
                 fCurrCMState[0] = XSCMValidator.SUBSEQUENT_ERROR;
             }
         }
@@ -960,11 +963,11 @@ public class SchemaValidator
         if (fCurrentType == null && fDoValidation) {
             // if this is the root element, or wildcard = strict, report error
             if (fElementDepth == 0) {
-                // REVISIT: report error, because it's root element
+                // report error, because it's root element
                 reportGenericSchemaError("can't find decl for root element '"+element.rawname+"'");
             } else if (wildcard != null &&
                 wildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT) {
-                // REVISIT: report error, because wilcard = strict
+                // report error, because wilcard = strict
                 reportGenericSchemaError("can't find decl for strict wildcard '"+element.rawname+"'");
             }
 
@@ -977,7 +980,7 @@ public class SchemaValidator
         fCurrentCM = null;
         if (fCurrentType != null) {
             if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
-                fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel();
+                fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
             }
         }
 
@@ -1096,7 +1099,10 @@ public class SchemaValidator
 
         // if there is a matching element decl, then this xsi:type must
         // be validly derived from the type of the element decl
-        if (!checkTypeDerivationOk(type, fCurrentType, fCurrentElemDecl.fBlock))
+        int block = fCurrentElemDecl.fBlock;
+        if ((fCurrentType.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+            block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
+        if (!checkTypeDerivationOk(type, fCurrentType, block))
             reportGenericSchemaError("xsitype is not validly derived from element type");
     }
 
@@ -1117,16 +1123,12 @@ public class SchemaValidator
         // REVISIT: have a stack to hold it, because it's checked at endElement
     }
 
-    void checkXsiNil(String xsiNil) {
-        // REVISIT: check whether the content is empty
-    }
-
     void processAttributes(QName element, XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
 
-        // REVISIT: add default attribute values
-        //if (fGrammar != null && fGrammarIsSchemaGrammar && elementIndex != -1) {
-        //    fAttrListHandle = addDefaultAttributes(elementIndex, attrList, fAttrListHandle, fValidating, fStandaloneReader != -1);
-        //}
+        // add default attributes
+        if (attrGrp != null) {
+            addDefaultAttributes(attributes, attrGrp);
+        }
 
         // if we don't do validation, we don't need to validate the attributes
         if (!fDoValidation)
@@ -1139,13 +1141,15 @@ public class SchemaValidator
             int attCount = attributes.getLength();
             for (int index = 0; index < attCount; index++) {
                 attributes.getName(index, fTempQName);
-                if (fTempQName.uri != URI_XSI ||
-                    fTempQName.localpart != XSI_SCHEMALOCACTION &&
-                    fTempQName.localpart != XSI_NONAMESPACESCHEMALOCACTION &&
-                    fTempQName.localpart != XSI_NIL &&
-                    fTempQName.localpart != XSI_TYPE) {
-                    reportGenericSchemaError("no attribute is allowed other than those from xsi namespace whose name is one of schemaLocation, noNamespaceSchemaLocation, type, or nil");
-                    return;
+                if (fTempQName.uri == URI_XSI) {
+                    if (fTempQName.localpart != XSI_SCHEMALOCACTION &&
+                        fTempQName.localpart != XSI_NONAMESPACESCHEMALOCACTION &&
+                        fTempQName.localpart != XSI_NIL &&
+                        fTempQName.localpart != XSI_TYPE) {
+                        reportGenericSchemaError("no attribute is allowed other than those from xsi namespace whose name is one of schemaLocation, noNamespaceSchemaLocation, type, or nil and namespace declarations");
+                    }
+                } else if (fTempQName.rawname != XMLNS && !fTempQName.rawname.startsWith("xmlns:")) {
+                    reportGenericSchemaError("no attribute is allowed other than those from xsi namespace whose name is one of schemaLocation, noNamespaceSchemaLocation, type, or nil and namespace declarations");
                 }
             }
             return;
@@ -1233,7 +1237,7 @@ public class SchemaValidator
                 }
 
                 // now check the value against the simpleType
-                // REVISIT: or should the normalize() be called withing validate()?
+                // REVISIT: or should the normalize() be called within validate()?
                 attrValue = XSAttributeChecker.normalize(attrValue, attDV.getWSFacet());
                 try {
                     // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
@@ -1244,6 +1248,54 @@ public class SchemaValidator
             } // end of if (not xsi and not xmlns)
         } // end of for (all attributes)
     } //processAttributes
+
+    void addDefaultAttributes(XMLAttributes attributes, XSAttributeGroupDecl attrGrp) {
+        // Check after all specified attrs are scanned
+        // (1) report error for REQUIRED attrs that are missing (V_TAGc)
+        // REVISIT: should we check prohibited attributes?
+        // (2) report error for PROHIBITED attrs that are present (V_TAGc)
+        // (3) add default attrs (FIXED and NOT_FIXED)
+        //
+
+        XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
+        int useCount = attrUses.length;
+        XSAttributeUse currUse;
+        XSAttributeDecl currDecl;
+        short constType;
+        Object defaultValue;
+        boolean isSpecified;
+        QName attName;
+
+        // for each attribute use
+        for (int i = 0; i < useCount; i++) {
+            currUse = attrUses[i];
+            currDecl = currUse.fAttrDecl;
+
+            // get value constraint
+            constType = currUse.fConstraintType;
+            defaultValue = currUse.fDefault;
+            if (constType == XSAttributeDecl.NO_CONSTRAINT) {
+                constType = currDecl.fConstraintType;
+                defaultValue = currDecl.fDefault;
+            }
+
+            // whether this attribute is specified
+            isSpecified = attributes.getValue(currDecl.fTargetNamespace, currDecl.fName) != null;
+
+            // if the use is required, then check whether it's specified
+            if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
+                if (!isSpecified)
+                    reportGenericSchemaError("required attribute not present '"+currDecl.fName+"'");
+            }
+
+            // if the attribute is not specified, then apply the value constraint
+            if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
+                attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
+                //REVISIT: what's the proper attrType?
+                attributes.addAttribute(attName, null, defaultValue.toString());
+            }
+        } // for
+    } // addDefaultAttributes
 
     void processElementContent(QName element) {
         // REVISIT: fCurrentElemDecl: default value; ...
@@ -1266,9 +1318,9 @@ public class SchemaValidator
                     }
                     // REVISIT: or should the normalize() be called withing validate()?
                     String content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
+                    // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
                     dv.validate(content, null);
                 } catch (InvalidDatatypeValueException e) {
-                    //REVISIT
                     reportGenericSchemaError("datatype error: " + e.getMessage());
                 }
             } else {
@@ -1277,8 +1329,13 @@ public class SchemaValidator
                 if (fCurrentElemDecl != null &&
                     fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUET) {
                     // REVISIT: get compiled form of value, then compare
-                    if (!content.equals(fBuffer.toString()))
-                        reportGenericSchemaError("element value not match fixed value");
+                    if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
+                        if (ctype.fDatatypeValidator.compare(fBuffer.toString(), (String)fCurrentElemDecl.fDefault) != 0)
+                            reportGenericSchemaError("element value not match fixed value");
+                    } else {
+                        if (!content.equals(fBuffer.toString()))
+                            reportGenericSchemaError("element value not match fixed value");
+                    }
                 }
                 boolean hasTextContent = content.length() == 0;
                 // REVISIT: implement nil
@@ -1289,9 +1346,17 @@ public class SchemaValidator
                 }
 
                 if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
-                    // REVISIT: validate against complex type with simple content
                     if (fChildCount != 0)
                         reportGenericSchemaError("element content isn't allowed here");
+                    DatatypeValidator dv = ctype.fDatatypeValidator;
+                    // REVISIT: or should the normalize() be called withing validate()?
+                    content = XSAttributeChecker.normalize(fBuffer.toString(), dv.getWSFacet());
+                    try {
+                        // REVISIT: use XSSimpleTypeDecl.ValidateContext to replace null
+                        dv.validate(content, null);
+                    } catch (InvalidDatatypeValueException e) {
+                        reportGenericSchemaError("datatype error: " + e.getMessage());
+                    }
                 }
 
                 if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_ELEMENT) {
@@ -1303,7 +1368,6 @@ public class SchemaValidator
                     ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                     if (fCurrentCM == null) {
                         // the parent element doesn't expect any child element
-                        // REVISIT: report an error
                         if (fChildCount != 0)
                             reportGenericSchemaError("element content isn't allowed here");
                     }
@@ -1311,7 +1375,6 @@ public class SchemaValidator
                     // it's one of the final states.
                     else if (fCurrCMState != null && fCurrCMState[0] >= 0 &&
                         !fCurrentCM.endContentModel(fCurrCMState)) {
-                        // REVISIT: report error for not matching content
                         reportGenericSchemaError("the content of '"+element.rawname+"' is not complete. it must match ("+ctype.fParticle.toString()+")");
                     }
                 }
@@ -1343,20 +1406,34 @@ public class SchemaValidator
             return checkSimpleDerivation((DatatypeValidator)derived,
                                          (DatatypeValidator)base, block);
         } else {
-            if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
-                block |= ((XSComplexTypeDecl)base).fBlock;
             return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
         }
     }
 
     boolean checkSimpleDerivationOk(DatatypeValidator derived, XSTypeDecl base, int block) {
-        // REVISIT: to implement and move to common place
-        return true;
+        // if derived is anySimpleType, then it's valid only if the base
+        // is ur-type
+        if (derived.getXSType() == XSTypeDecl.ANYSIMPLE_TYPE)
+            return (base.getXSType() & XSTypeDecl.UR_TYPE) != 0;
+
+        // if base is complex type
+        if ((base.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+            // if base is anyType, change base to anySimpleType,
+            // otherwise, not valid
+            if (base.getXSType() == XSTypeDecl.ANY_TYPE)
+                base = SchemaGrammar.SG_SchemaNS.getGlobalTypeDecl(SchemaSymbols.ATTVAL_ANYSIMPLETYPE);
+            else
+                return false;
+        }
+        return checkSimpleDerivation((DatatypeValidator)derived,
+                                     (DatatypeValidator)base, block);
     }
 
     boolean checkComplexDerivationOk(XSComplexTypeDecl derived, XSTypeDecl base, int block) {
-        // REVISIT: to implement and move to common place
-        return true;
+        // if derived is anyType, then it's valid only if base is anyType too
+        if (derived.getXSType() == XSTypeDecl.ANY_TYPE)
+            return derived == base;
+        return checkComplexDerivation((XSComplexTypeDecl)derived, base, block);
     }
 
     /**

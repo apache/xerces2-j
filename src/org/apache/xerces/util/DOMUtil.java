@@ -689,7 +689,10 @@ public class DOMUtil {
     } // getLocalName(Element):  String
 
     public static Element getParent(Element elem) {
-        return (Element)elem.getParentNode();
+        Node parent = elem.getParentNode();
+        if (parent instanceof Element)
+            return (Element)parent;
+        return null;
     } // getParent(Element):Element
 
     // get the Document of which this Node is a part

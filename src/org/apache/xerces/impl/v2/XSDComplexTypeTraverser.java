@@ -160,7 +160,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                              schemaDoc.fBlockDefault : blockAtt.shortValue();
         complexType.fFinal = finalAtt == null ?
                              schemaDoc.fFinalDefault : finalAtt.shortValue();
-        if (abstractAtt.booleanValue())
+        if (abstractAtt != null && abstractAtt.booleanValue())
             complexType.setIsAbstractType();
 
 
@@ -340,11 +340,11 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // The name is quite good for debugging/error purposes, but we may want to
         // revisit how this is done for performance reasons (LM).
         String typeName;
-        Element node=complexTypeDecl;
+        Element node = DOMUtil.getParent(complexTypeDecl);
         typeName="#AnonType_";
-        while ((Element)node.getParentNode()!=null) {
-          node = (Element)node.getParentNode();
+        while (node != null) {
           typeName = typeName+node.getAttribute(SchemaSymbols.ATT_NAME);
+          node = DOMUtil.getParent(node);
         }
         return typeName;
     }

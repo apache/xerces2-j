@@ -176,7 +176,7 @@ public class CMBuilder {
             //  just one instance of one element. That one is definitely a
             //  simple content model.
             //
-            // pass element declaration 
+            // pass element declaration
             return new XSSimpleCM(type, (XSElementDecl)particle.fValue);
         }
         else if ((type == XSParticleDecl.PARTICLE_CHOICE)
@@ -185,8 +185,8 @@ public class CMBuilder {
             //  Lets see if both of the children are leafs. If so, then it
             //  it has to be a simple content model
             //
-            XSParticleDecl right = (XSParticleDecl)particle.fValue;
-            XSParticleDecl left = (XSParticleDecl)particle.fOtherValue;
+            XSParticleDecl left = (XSParticleDecl)particle.fValue;
+            XSParticleDecl right = (XSParticleDecl)particle.fOtherValue;
 
             if ((right.fType == XSParticleDecl.PARTICLE_ELEMENT)
                 &&  (left.fType == XSParticleDecl.PARTICLE_ELEMENT)) {
@@ -283,13 +283,13 @@ public class CMBuilder {
             //}
 
             particle.fValue = left;
-            particle.fOtherValue = right;          
+            particle.fOtherValue = right;
             return expandContentModel((XSParticleDecl)particle, minOccurs, maxOccurs);
         }
         else {
             // When checking Unique Particle Attribution, we have to rename
             // uri even on zero_or_one, zero_or_more and one_or_more
-            //if (grammar.fUPAChecking) 
+            //if (grammar.fUPAChecking)
             //REVISIT:
             //return addContentSpecNode (type,
             //                           convertContentSpecTree(particle.fValue),
@@ -331,7 +331,7 @@ public class CMBuilder {
             }
 
             // => a,a,..,a+
-            particle = createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE, 
+            particle = createParticle (XSParticleDecl.PARTICLE_ONE_OR_MORE,
                                        particle, null);
 
             for (int i=0; i < (minOccurs-1); i++) {
@@ -377,8 +377,8 @@ public class CMBuilder {
         return particle;
     }
 
-    private XSParticleDecl createParticle (short type, 
-                                           XSParticleDecl left, 
+    private XSParticleDecl createParticle (short type,
+                                           XSParticleDecl left,
                                            XSParticleDecl right) {
 
         XSParticleDecl newParticle = new XSParticleDecl();

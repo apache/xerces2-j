@@ -115,4 +115,22 @@ public class XSWildcardDecl {
         return false;
     }
 
+    public String toString() {
+        String ret = null;
+        switch (fType) {
+        case WILDCARD_ANY:
+            ret = SchemaSymbols.ATTVAL_TWOPOUNDANY;
+            break;
+        case WILDCARD_OTHER:
+            ret = SchemaSymbols.ATTVAL_TWOPOUNDOTHER + ":uri=" + fNamespaceList[0];
+            break;
+        case WILDCARD_LIST:
+            ret = "namespace:uri=";
+            for (int i = 0; i < fNamespaceList.length; i++)
+                ret += fNamespaceList[i] + ",";
+            break;
+        }
+
+        return ret;
+    }
 } // class XSWildcardDecl
