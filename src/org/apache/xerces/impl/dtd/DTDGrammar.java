@@ -527,10 +527,10 @@ public class DTDGrammar
         }
 
         XMLElementDecl elementDecl       = new XMLElementDecl();
-        QName          elementName       = new QName(null, name, name, null);
-        //XMLSimpleType  elementSimpleType = new XMLSimpleType();
-
-        elementDecl.name.setValues(elementName);
+        
+        fQName.setValues(null, name, name, null);
+       
+        elementDecl.name.setValues(fQName);
 
         elementDecl.contentModelValidator = null;
         elementDecl.scope= -1;
