@@ -825,6 +825,20 @@ public class XMLDTDScanner
         // occurence operator
         c = fEntityScanner.peekChar();
         if (c == '?' || c == '*' || c == '+') {
+            // call handler
+            if (fDTDContentModelHandler != null) {
+                short oc;
+                if (c == '?') {
+                    oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_ONE;
+                }
+                else if (c == '*') {
+                    oc = XMLDTDContentModelHandler.OCCURS_ZERO_OR_MORE;
+                }
+                else {
+                    oc = XMLDTDContentModelHandler.OCCURS_ONE_OR_MORE;
+                }
+                fDTDContentModelHandler.childrenOccurrence(oc);
+            }
             fEntityScanner.scanChar();
             fStringBuffer.append((char)c);
         }
