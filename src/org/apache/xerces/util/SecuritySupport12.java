@@ -93,6 +93,22 @@ class SecuritySupport12 extends SecuritySupport {
             });
     }
 
+    public ClassLoader getParentClassLoader(final ClassLoader cl) {
+        return (ClassLoader)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    ClassLoader parent = null;
+                    try {
+                        parent = cl.getParent();
+                    } catch (SecurityException ex) {}
+
+                    // eliminate loops in case of the boot
+                    // ClassLoader returning itself as a parent
+                    return (parent == cl) ? null : parent;
+                }
+            });
+    }
+
     public String getSystemProperty(final String propName) {
 	return (String)
             AccessController.doPrivileged(new PrivilegedAction() {

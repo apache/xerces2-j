@@ -120,6 +120,10 @@ class SecuritySupport {
         return null;
     }
 
+    public ClassLoader getParentClassLoader(ClassLoader cl) {
+        return null;
+    }
+
     public String getSystemProperty(String propName) {
         return System.getProperty(propName);
     }
