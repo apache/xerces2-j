@@ -67,8 +67,8 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(icElem);
-            if(text != null) {
-                ic.addAnnotation(traverseSyntheticAnnotation(text, icElemAttrs, false, schemaDoc));
+            if (text != null) {
+                ic.addAnnotation(traverseSyntheticAnnotation(icElem, text, icElemAttrs, false, schemaDoc));
             }
         }
         
@@ -96,8 +96,8 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(sElem);
-            if(text != null) {
-                ic.addAnnotation(traverseSyntheticAnnotation(text, attrValues, false, schemaDoc));
+            if (text != null) {
+                ic.addAnnotation(traverseSyntheticAnnotation(icElem, text, attrValues, false, schemaDoc));
             }
         }
         
@@ -151,8 +151,8 @@ class XSDAbstractIDConstraintTraverser extends XSDAbstractTraverser {
             }
             else {
                 String text = DOMUtil.getSyntheticAnnotation(fElem);
-                if(text != null) {
-                    ic.addAnnotation(traverseSyntheticAnnotation(text, attrValues, false, schemaDoc));
+                if (text != null) {
+                    ic.addAnnotation(traverseSyntheticAnnotation(icElem, text, attrValues, false, schemaDoc));
                 }
             }
             String fText = ((String)attrValues[XSAttributeChecker.ATTIDX_XPATH]);

@@ -311,8 +311,8 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(elmDecl);
-            if(text != null) {
-                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+            if (text != null) {
+                annotation = traverseSyntheticAnnotation(elmDecl, text, attrValues, false, schemaDoc);
             }
         }
         element.fAnnotation = annotation;

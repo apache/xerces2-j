@@ -148,8 +148,8 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
             }
             else {
                 String text = DOMUtil.getSyntheticAnnotation(elmNode);
-                if(text != null) {
-                    annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+                if (text != null) {
+                    annotation = traverseSyntheticAnnotation(elmNode, text, attrValues, false, schemaDoc);
                 }
             }
             

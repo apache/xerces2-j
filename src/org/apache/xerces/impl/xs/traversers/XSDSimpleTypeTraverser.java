@@ -148,8 +148,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(simpleTypeDecl);
-            if(text != null) {
-                XSAnnotationImpl annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+            if (text != null) {
+                XSAnnotationImpl annotation = traverseSyntheticAnnotation(simpleTypeDecl, text, attrValues, false, schemaDoc);
                 annotations = new XSAnnotationImpl[] {annotation};
             }
         }
@@ -200,9 +200,10 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         //check content (annotation?, ...)
         if (content != null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
             XSAnnotationImpl annotation = traverseAnnotationDecl(content, contentAttrs, false, schemaDoc);
-            if(annotation != null ) {
-                if(annotations == null) 
+            if (annotation != null ) {
+                if(annotations == null) {
                     annotations = new XSAnnotationImpl [] {annotation};
+                }
                 else {
                     XSAnnotationImpl [] tempArray = new XSAnnotationImpl[2];
                     tempArray[0] = annotations[0];
@@ -214,10 +215,11 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(child);
-            if(text != null) {
-                XSAnnotationImpl annotation = traverseSyntheticAnnotation(text, contentAttrs, false, schemaDoc);
-                if(annotations == null) 
+            if (text != null) {
+                XSAnnotationImpl annotation = traverseSyntheticAnnotation(child, text, contentAttrs, false, schemaDoc);
+                if (annotations == null) {
                     annotations = new XSAnnotationImpl [] {annotation};
+                }
                 else {
                     XSAnnotationImpl [] tempArray = new XSAnnotationImpl[2];
                     tempArray[0] = annotations[0];

@@ -212,8 +212,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 }
                 else {
                     String text = DOMUtil.getSyntheticAnnotation(complexTypeDecl);
-                    if(text != null) {
-                        addAnnotation(traverseSyntheticAnnotation(text, attrValues, false, schemaDoc));
+                    if (text != null) {
+                        addAnnotation(traverseSyntheticAnnotation(complexTypeDecl, text, attrValues, false, schemaDoc));
                     }
                 }
                 if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
@@ -224,8 +224,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else {
                 String text = DOMUtil.getSyntheticAnnotation(complexTypeDecl);
-                if(text != null) {
-                    addAnnotation(traverseSyntheticAnnotation(text, attrValues, false, schemaDoc));
+                if (text != null) {
+                    addAnnotation(traverseSyntheticAnnotation(complexTypeDecl, text, attrValues, false, schemaDoc));
                 }
             }
             // ---------------------------------------------------------------
@@ -319,8 +319,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(simpleContentElement);
-            if(text != null) {
-                addAnnotation(traverseSyntheticAnnotation(text, simpleContentAttrValues, false, schemaDoc));
+            if (text != null) {
+                addAnnotation(traverseSyntheticAnnotation(simpleContentElement, text, simpleContentAttrValues, false, schemaDoc));
             }
         }
         
@@ -444,8 +444,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else {
                 String text = DOMUtil.getSyntheticAnnotation(scElement);
-                if(text != null) {
-                    addAnnotation(traverseSyntheticAnnotation(text, derivationTypeAttrValues, false, schemaDoc));
+                if (text != null) {
+                    addAnnotation(traverseSyntheticAnnotation(scElement, text, derivationTypeAttrValues, false, schemaDoc));
                 }
             }
             
@@ -460,8 +460,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(scElement);
-            if(text != null) {
-                addAnnotation(traverseSyntheticAnnotation(text, derivationTypeAttrValues, false, schemaDoc));
+            if (text != null) {
+                addAnnotation(traverseSyntheticAnnotation(scElement, text, derivationTypeAttrValues, false, schemaDoc));
             }
         }
         
@@ -654,8 +654,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(complexContentElement);
-            if(text != null) {
-                addAnnotation(traverseSyntheticAnnotation(text, complexContentAttrValues, false, schemaDoc));
+            if (text != null) {
+                addAnnotation(traverseSyntheticAnnotation(complexContentElement, text, complexContentAttrValues, false, schemaDoc));
             }
         }
         
@@ -748,8 +748,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             }
             else {
                 String text = DOMUtil.getSyntheticAnnotation(complexContent);
-                if(text != null) {
-                    addAnnotation(traverseSyntheticAnnotation(text, derivationTypeAttrValues, false, schemaDoc));
+                if (text != null) {
+                    addAnnotation(traverseSyntheticAnnotation(complexContent, text, derivationTypeAttrValues, false, schemaDoc));
                 }
             }
             if (complexContent !=null &&
@@ -762,8 +762,8 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(complexContent);
-            if(text != null) {
-                addAnnotation(traverseSyntheticAnnotation(text, derivationTypeAttrValues, false, schemaDoc));
+            if (text != null) {
+                addAnnotation(traverseSyntheticAnnotation(complexContent, text, derivationTypeAttrValues, false, schemaDoc));
             }
         }
         // -----------------------------------------------------------------------

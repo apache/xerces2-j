@@ -721,8 +721,8 @@ public class XSDHandler {
                 }
                 else {
                     String text = DOMUtil.getSyntheticAnnotation(child);
-                    if(text != null) {
-                        sg.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(text, importAttrs, true, currSchemaInfo));
+                    if (text != null) {
+                        sg.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(child, text, importAttrs, true, currSchemaInfo));
                     }
                 }
                 fAttributeChecker.returnAttrArray(importAttrs, currSchemaInfo);
@@ -795,8 +795,8 @@ public class XSDHandler {
                     }
                     else {
                         String text = DOMUtil.getSyntheticAnnotation(child);
-                        if(text != null) {
-                            sg.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(text, includeAttrs, true, currSchemaInfo));
+                        if (text != null) {
+                            sg.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(child, text, includeAttrs, true, currSchemaInfo));
                         }
                     }
                 }
@@ -813,8 +813,8 @@ public class XSDHandler {
                         }
                         else {
                             String text = DOMUtil.getSyntheticAnnotation(child);
-                            if(text != null) {
-                                sg.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(text, includeAttrs, true, currSchemaInfo));
+                            if (text != null) {
+                                sg.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(child, text, includeAttrs, true, currSchemaInfo));
                             }
                         }
                         // catch all other content errors later
@@ -1113,10 +1113,11 @@ public class XSDHandler {
                 }
             } // end for
             
-            if(!sawAnnotation) {
+            if (!sawAnnotation) {
                 String text = DOMUtil.getSyntheticAnnotation(currRoot);
-                if(text != null)
-                    currSG.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(text, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
+                if (text != null) {
+                    currSG.addAnnotation(fElementTraverser.traverseSyntheticAnnotation(currRoot, text, currSchemaDoc.getSchemaAttrs(), true, currSchemaDoc));
+                }
             }
             
             /** Collect annotation information for validation. **/

@@ -70,8 +70,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(allDecl);
-            if(text != null) {
-                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+            if (text != null) {
+                annotation = traverseSyntheticAnnotation(allDecl, text, attrValues, false, schemaDoc);
             }
         }
         String childName = null;
@@ -197,8 +197,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         }
         else {
             String text = DOMUtil.getSyntheticAnnotation(decl);
-            if(text != null) {
-                annotation = traverseSyntheticAnnotation(text, attrValues, false, schemaDoc);
+            if (text != null) {
+                annotation = traverseSyntheticAnnotation(decl, text, attrValues, false, schemaDoc);
             }
         }
         
