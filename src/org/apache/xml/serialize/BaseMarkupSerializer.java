@@ -1191,7 +1191,7 @@ public abstract class BaseMarkupSerializer
             while ( length-- > 0 ) {
                 ch = chars[ start ];
                 ++start;
-                if ( ch == '\n' || ch == '\r' || ! unescaped )
+                if ( ch == '\n' || ch == '\r' || unescaped )
                     _printer.printText( ch );
                 else
                     printEscaped( ch );
@@ -1228,7 +1228,7 @@ public abstract class BaseMarkupSerializer
             // break will occur.
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
-                if ( ch == '\n' || ch == '\r' || ! unescaped ) 
+                if ( ch == '\n' || ch == '\r' || unescaped ) 
                     _printer.printText( ch );
                 else
                     printEscaped( ch );
