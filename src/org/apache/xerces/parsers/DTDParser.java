@@ -90,6 +90,7 @@ public class DTDParser
      * @param symbolTable 
      */
     public DTDParser(SymbolTable symbolTable) {
+        super(symbolTable);
     }
 
     //

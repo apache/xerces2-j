@@ -201,32 +201,4 @@ public class XMLParser
         throws IOException, SAXException {
     } // parse
 
-    //
-    // XMLComponentManager methods
-    //
-
-    /**
-     * getFeature
-     * 
-     * @param featureId 
-     * 
-     * @return 
-     */
-    public boolean getFeature(String featureId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-        return false;
-    } // getFeature
-
-    /**
-     * getProperty
-     * 
-     * @param propertyId 
-     * 
-     * @return 
-     */
-    public Object getProperty(String propertyId)
-        throws SAXNotRecognizedException, SAXNotSupportedException {
-        return null;
-    } // getProperty
-
 } // class XMLParser

@@ -113,18 +113,6 @@ public class XMLValidator
     }
 
     //
-    // Methods
-    //
-
-    /**
-     * setDocumentHandler
-     * 
-     * @param documentHandler 
-     */
-    public void setDocumentHandler(XMLDocumentHandler documentHandler) {
-    } // setDocumentHandler
-
-    //
     // XMLComponent methods
     //
 

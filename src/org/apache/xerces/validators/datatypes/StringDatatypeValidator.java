@@ -81,6 +81,7 @@ public class StringDatatypeValidator
      */
     public StringDatatypeValidator(DatatypeValidator base, Hashtable facets, boolean list)
         throws InvalidDatatypeFacetException {
+        super(base, facets, list);
     }
 
 } // class StringDatatypeValidator

@@ -89,6 +89,7 @@ public class SchemaParser
      * @param grammarPool 
      */
     public SchemaParser(SymbolTable symbolTable, GrammarPool grammarPool) {
+        super(symbolTable);
     }
 
     //

@@ -74,6 +74,7 @@ public class InvalidDatatypeFacetException
      * 
      */
     public InvalidDatatypeFacetException() {
+        super("");
     }
 
     /**
@@ -82,6 +83,7 @@ public class InvalidDatatypeFacetException
      * @param message 
      */
     public InvalidDatatypeFacetException(String message) {
+        super(message);
     }
 
     /**
@@ -90,6 +92,7 @@ public class InvalidDatatypeFacetException
      * @param exception 
      */
     public InvalidDatatypeFacetException(Exception exception) {
+        super(exception);
     }
 
     /**
@@ -99,6 +102,7 @@ public class InvalidDatatypeFacetException
      * @param exception 
      */
     public InvalidDatatypeFacetException(String message, Exception exception) {
+        super(message, exception);
     }
 
 } // class InvalidDatatypeFacetException
