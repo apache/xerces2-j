@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import org.apache.xerces.dom3.TypeInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -129,6 +130,10 @@ public class DefaultElement extends NodeImpl
 
     public boolean hasAttributeNS(String namespaceURI, String localName) {
     	return false;
+    }
+    
+    public TypeInfo getSchemaTypeInfo(){
+      return null;
     }
     
 

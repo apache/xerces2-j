@@ -133,39 +133,21 @@ public final class DeferredAttrNSImpl
 
         // extract prefix and local part from QName
         int index = name.indexOf(':');
-        String prefix;
         if (index < 0) {
-            prefix = null;
             localName = name;
         } 
         else {
-            prefix = name.substring(0, index); 
             localName = name.substring(index + 1);
         }
 
         int extra = ownerDocument.getNodeExtra(fNodeIndex);
         isSpecified((extra & SPECIFIED) != 0);
-        isIdAttribute((extra & IDATTRIBUTE) != 0);
+        isIdAttribute((extra & ID) != 0);
 
         namespaceURI = ownerDocument.getNodeURI(fNodeIndex);
-        // hide the fact that our parser uses an empty string for null
-        if (namespaceURI != null && namespaceURI.length() == 0) {
-            namespaceURI = null;
-        }
-	// DOM Level 2 wants all namespace declaration attributes
-	// to be bound to "http://www.w3.org/2000/xmlns/"
-	// So as long as the XML parser doesn't do it, it needs to
-	// done here.
-	if (namespaceURI == null) {
-	    if (prefix != null)  {
-		if (prefix.equals("xmlns")) {
-		    namespaceURI = "http://www.w3.org/2000/xmlns/";
-		}
-	    } else if (name.equals("xmlns")) {
-		namespaceURI = "http://www.w3.org/2000/xmlns/";
-	    }
-	}
-
+        
+        int extraNode = ownerDocument.getLastChild(fNodeIndex);
+        type = ownerDocument.getTypeInfo(extraNode);
     } // synchronizeData()
 
     /**

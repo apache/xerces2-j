@@ -66,6 +66,7 @@
 
 package org.apache.xerces.dom;
 
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -145,11 +146,8 @@ public class DeferredElementNSImpl
             localName = name.substring(index + 1);
         }
 
-	namespaceURI = ownerDocument.getNodeURI(fNodeIndex);
-        // hide the fact that our parser uses an empty string for null
-        if (namespaceURI != null && namespaceURI.length() == 0) {
-            namespaceURI = null;
-        }
+	    namespaceURI = ownerDocument.getNodeURI(fNodeIndex);
+        type = (XSTypeDefinition)ownerDocument.getTypeInfo(fNodeIndex);
 
         // attributes
         setupDefaultAttributes();

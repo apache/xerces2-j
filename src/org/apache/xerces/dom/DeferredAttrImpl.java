@@ -161,8 +161,10 @@ public final class DeferredAttrImpl
         name = ownerDocument.getNodeName(fNodeIndex);
         int extra = ownerDocument.getNodeExtra(fNodeIndex);
         isSpecified((extra & SPECIFIED) != 0);
-        isIdAttribute((extra & IDATTRIBUTE) != 0);
+        isIdAttribute((extra & ID) != 0);
 
+        int extraNode = ownerDocument.getLastChild(fNodeIndex);
+        type = ownerDocument.getTypeInfo(extraNode);        
     } // synchronizeData()
 
     /**

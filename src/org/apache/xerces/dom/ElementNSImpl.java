@@ -57,11 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Attr;
-
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.xni.NamespaceContext;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 
 
 
@@ -94,6 +94,9 @@ public class ElementNSImpl
   
     /** DOM2: localName. */
     protected String localName;
+    
+    /** DOM3: type information */
+    XSTypeDefinition type;
 
     protected ElementNSImpl() {
         super();
@@ -357,4 +360,35 @@ public class ElementNSImpl
         }
         return baseURI;
     }
+    
+        
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     */
+    public String getTypeName() {        
+        if (type !=null){
+            return type.getName();
+        }
+        return null;
+    }
+
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     */
+    public String getTypeNamespace() {
+        if (type !=null){
+            return type.getNamespace();
+        }
+        return null;
+    }
+    
+    
+    /**
+     * NON-DOM: setting type used by the DOM parser
+     * @see NodeImpl#setReadOnly
+     */
+    public void setType(XSTypeDefinition type) {
+        type = type;
+    }
+    
 }

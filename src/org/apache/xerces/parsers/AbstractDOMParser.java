@@ -57,50 +57,45 @@
 
 package org.apache.xerces.parsers;
 
+import java.util.Locale;
+import java.util.Stack;
+
 import org.apache.xerces.dom.AttrImpl;
-import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.DocumentTypeImpl;
 import org.apache.xerces.dom.ElementDefinitionImpl;
 import org.apache.xerces.dom.ElementImpl;
+import org.apache.xerces.dom.ElementNSImpl;
 import org.apache.xerces.dom.EntityImpl;
 import org.apache.xerces.dom.EntityReferenceImpl;
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.dom.NotationImpl;
-import org.apache.xerces.dom.ProcessingInstructionImpl;
 import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIElementNSImpl;
+import org.apache.xerces.dom.ProcessingInstructionImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
-import org.apache.xerces.util.ObjectFactory;
-import org.apache.xerces.util.XMLAttributesImpl;
-
-// id types
-import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.impl.dv.XSSimpleType;
-
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
-import org.apache.xerces.xni.XMLDocumentHandler;
-import org.apache.xerces.xni.XMLDTDHandler;
 import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.apache.xerces.xni.parser.XMLConfigurationException;
 import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.xni.psvi.ElementPSVI;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Element;
 import org.w3c.dom.EntityReference;
 import org.w3c.dom.NamedNodeMap;
@@ -108,12 +103,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
-
 import org.w3c.dom.ls.DOMBuilderFilter;
 import org.w3c.dom.traversal.NodeFilter;
-
-import java.util.Locale;
-import java.util.Stack;
 
 /**
  * This is the base class of all DOM parsers. It implements the XNI
@@ -584,6 +575,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void textDecl(String version, String encoding, Augmentations augs) throws XNIException {
+        if (fInDTD){
+            return;
+        }
         if (!fDeferNodeExpansion) {
             if (fCurrentEntityDecl != null && !fFilterReject) {
                 fCurrentEntityDecl.setEncoding(encoding);
@@ -926,11 +920,12 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 Attr attr = createAttrNode(fAttrQName);
 
                 String attrValue = attributes.getValue(i);
-                if (fStorePSVI) {
-                    AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
-                    if (attrPSVI != null)
-                        ((PSVIAttrNSImpl)attr).setPSVI(attrPSVI);
+
+                AttributePSVI attrPSVI =(AttributePSVI) attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+			    if (fStorePSVI && attrPSVI != null){
+				  ((PSVIAttrNSImpl) attr).setPSVI(attrPSVI);
                 }
+            
                 
                 attr.setValue(attrValue);
                 el.setAttributeNode(attr);
@@ -938,26 +933,60 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
                 //       the node value because that turns the "specified"
                 //       flag to "true" which may overwrite a "false"
                 //       value from the attribute list. -Ac
-                if (fDocumentImpl != null) {
-                    AttrImpl attrImpl = (AttrImpl)attr;
-                    boolean specified = attributes.isSpecified(i);
-                    attrImpl.setSpecified(specified);
-                    // REVISIT: when DOM Level 3 becomes Rec this code
-                    // should not depend odn fDocumentImpl
-                    // Identifier registration
-                    if (attributes.getType(i).equals("ID")) {
-                        ((ElementImpl) el).setIdAttributeNode(attr, true);
-                    }
-                    else if (attributes instanceof XMLAttributesImpl) {
-                        XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
-                        if (attrs.getSchemaId(i))
-                            ((ElementImpl) el).setIdAttributeNode(attr, true);
-                    }
+				if (fDocumentImpl != null) {
+					AttrImpl attrImpl = (AttrImpl) attr;
+					Object type = null;
+					boolean id = false;
+
+					// REVISIT: currently it is possible that someone turns off
+					// namespaces and turns on xml schema validation 
+					// To avoid classcast exception in AttrImpl check for namespaces
+					// however the correct solution should probably disallow setting
+					// namespaces to false when schema processing is turned on.
+					if (attrPSVI != null && fNamespaceAware) {
+						// XML Schema 
+						type = attrPSVI.getMemberTypeDefinition();
+						if (type == null) {
+							type = attrPSVI.getTypeDefinition();
+							if (type != null) {
+								id = ((XSSimpleType) type).isIDType();
+								attrImpl.setType(type);
+							}
+						}
+						else {
+							id = ((XSSimpleType) type).isIDType();
+							attrImpl.setType(type);
+						}
+					}
+					else {
+						// DTD 
+                        type = attributes.getType(i);
+						attrImpl.setType(type);
+						id = (type.equals("ID")) ? true : false;
+					}
+                
+					if (id) {
+						((ElementImpl) el).setIdAttributeNode(attr, true);
+					}
+
+					attrImpl.setSpecified(attributes.isSpecified(i));
+					// REVISIT: Handle entities in attribute value.
                 }
-                // REVISIT: Handle entities in attribute value.
+            }
+            setCharacterData(false);
+            
+            if (augs != null) {
+                ElementPSVI elementPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                if (elementPSVI != null && fNamespaceAware) {
+                    XSTypeDefinition type = elementPSVI.getMemberTypeDefinition();
+                    if (type == null) {
+                        type = elementPSVI.getTypeDefinition();
+                    }
+                    ((ElementNSImpl)el).setType(type);
+                }
             }
 
-            setCharacterData(false);
+            
             // filter nodes
             if (fDOMFilter != null) {
                 short code = fDOMFilter.startElement(el);
@@ -983,29 +1012,63 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             fCurrentNode = el;
         }
         else {
+           Object type = null;
+           if (augs != null) {
+                ElementPSVI elementPSVI = (ElementPSVI)augs.getItem(Constants.ELEMENT_PSVI);
+                if (elementPSVI != null) {
+                    type = elementPSVI.getMemberTypeDefinition();
+                    if (type == null) {
+                        type = elementPSVI.getTypeDefinition();
+                    }
+                }
+            }
+
             int el =
                 fDeferredDocumentImpl.createDeferredElement(fNamespaceAware ?
                                                             element.uri : null,
-                                                            element.rawname);
+                                                            element.rawname,
+                                                            type);
             int attrCount = attributes.getLength();
             for (int i = 0; i < attrCount; i++) {
-                String attrValue = attributes.getValue(i);
+                // set type information
+                AttributePSVI attrPSVI = (AttributePSVI)attributes.getAugmentations(i).getItem(Constants.ATTRIBUTE_PSVI);
+                boolean id = false;
+
+                // REVISIT: currently it is possible that someone turns off
+                // namespaces and turns on xml schema validation 
+                // To avoid classcast exception in AttrImpl check for namespaces
+                // however the correct solution should probably disallow setting
+                // namespaces to false when schema processing is turned on.
+				if (attrPSVI != null && fNamespaceAware) {
+					// XML Schema 
+					type = attrPSVI.getMemberTypeDefinition();
+					if (type == null) {
+						type = attrPSVI.getTypeDefinition();
+                        if (type != null){
+						  id = ((XSSimpleType) type).isIDType();
+                        }
+					}
+					else {
+						id = ((XSSimpleType) type).isIDType();
+					}
+				}
+				else {
+					// DTD 
+					type = attributes.getType(i);
+					id = (type.equals("ID")) ? true : false;
+				}
                 
-                int attr = fDeferredDocumentImpl.setDeferredAttribute(el,
-                                                    attributes.getQName(i),
-                                                    attributes.getURI(i),
-                                                    attrValue,
-                                                    attributes.isSpecified(i));
-                // Identifier registration
-                if (attributes.getType(i).equals("ID")) {
-                    fDeferredDocumentImpl.setIdAttributeNode(el, attr);
-                }
-                else if (attributes instanceof XMLAttributesImpl) {
-                    XMLAttributesImpl attrs = (XMLAttributesImpl)attributes;
-                    if (attrs.getSchemaId(i))
-                        fDeferredDocumentImpl.setIdAttributeNode(el, attr);
-                }
+                // create attribute
+               fDeferredDocumentImpl.setDeferredAttribute(
+                        el,
+                        attributes.getQName(i),
+                        attributes.getURI(i),
+                        attributes.getValue(i),
+                        attributes.isSpecified(i),
+                        id,
+                        type);
             }
+            
             fDeferredDocumentImpl.appendChild(fCurrentNodeIndex, el);
             fCurrentNodeIndex = el;
         }
@@ -2068,23 +2131,26 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
         // internal subset string
         String publicId = identifier.getPublicId();
         String literalSystemId = identifier.getLiteralSystemId();
-        if (fInternalSubset != null && !fInDTDExternalSubset) {
-            fInternalSubset.append("<!NOTATION ");
-            fInternalSubset.append(name);
-            if (publicId != null) {
-                fInternalSubset.append(" PUBLIC '");
-                fInternalSubset.append(publicId);
-                if (literalSystemId != null) {
-                    fInternalSubset.append("' '");
-                    fInternalSubset.append(literalSystemId);
-                }
-            }
-            else {
-                fInternalSubset.append(" SYSTEM '");
-                fInternalSubset.append(literalSystemId);
-            }
-            fInternalSubset.append("'>\n");
-        }
+		if (fInDTD) {
+			if (fInternalSubset != null && !fInDTDExternalSubset) {
+				fInternalSubset.append("<!NOTATION ");
+				fInternalSubset.append(name);
+				if (publicId != null) {
+					fInternalSubset.append(" PUBLIC '");
+					fInternalSubset.append(publicId);
+					if (literalSystemId != null) {
+						fInternalSubset.append("' '");
+						fInternalSubset.append(literalSystemId);
+					}
+				}
+				else {
+					fInternalSubset.append(" SYSTEM '");
+					fInternalSubset.append(literalSystemId);
+				}
+				fInternalSubset.append("'>\n");
+			}
+			return;
+		}
 
         // NOTE: We only know how to create these nodes for the Xerces
         //       DOM implementation because DOM Level 2 does not specify 
@@ -2232,7 +2298,9 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             }
             fInternalSubset.append(">\n");
         }
-
+        // REVISIT: This code applies to the support of domx/grammar-access 
+        // feature in Xerces 1
+ 
         // deferred expansion
         if (fDeferredDocumentImpl != null) {
 
@@ -2308,7 +2376,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             }
 
         } // if NOT defer-node-expansion
-
+      
     } // attributeDecl(String,String,String,String[],String,XMLString, XMLString, Augmentations)
 
 

@@ -58,6 +58,7 @@
 package org.apache.xerces.dom;
 
 import org.w3c.dom.DOMException;
+import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
 import org.apache.xerces.xni.NamespaceContext;
 
 /**
@@ -324,5 +325,31 @@ public class AttrNSImpl
             synchronizeData();
         }
         return localName;
+    }
+    
+    
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     */
+    public String getTypeName() {
+        if (type !=null){
+            if (type instanceof XSSimpleTypeDecl){
+                return ((XSSimpleTypeDecl)type).getName();
+            }
+            return (String)type;
+        }
+        return null;
+    }
+
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     */
+    public String getTypeNamespace() {
+        if (type !=null){
+            if (type instanceof XSSimpleTypeDecl){
+                return ((XSSimpleTypeDecl)type).getNamespace();
+            }
+        }
+        return null;
     }
 }

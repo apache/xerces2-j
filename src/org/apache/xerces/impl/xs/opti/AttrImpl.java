@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.xs.opti;
 
+import org.apache.xerces.dom3.TypeInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -127,6 +128,14 @@ public class AttrImpl extends NodeImpl
      */
     public boolean getIsId(){
         return false;
+    }
+    
+        /**
+     * Method getSchemaTypeInfo.
+     * @return TypeInfo
+     */
+    public TypeInfo getSchemaTypeInfo(){
+      return null;
     }
 
 }

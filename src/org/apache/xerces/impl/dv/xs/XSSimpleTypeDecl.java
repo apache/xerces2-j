@@ -2190,5 +2190,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
         // REVISIT: implement
 		return null;
 	}
+    
+    
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+        
+		return this.fTargetNamespace+"," +this.fTypeName;
+	}
 
 } // class XSSimpleTypeDecl

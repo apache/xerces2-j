@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.xerces.dom3.TypeInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -149,7 +150,7 @@ import org.w3c.dom.Text;
  */
 public class AttrImpl
     extends NodeImpl
-    implements Attr {
+    implements Attr, TypeInfo{
 
     //
     // Constants
@@ -167,6 +168,9 @@ public class AttrImpl
 
     /** Attribute name. */
     protected String name;
+    
+    /** Type information */
+    Object type;
 
     protected static TextImpl textNode = null;
 
@@ -304,6 +308,28 @@ public class AttrImpl
      */
     public void setNodeValue(String value) throws DOMException {
     	setValue(value);
+    }
+    
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     */
+    public String getTypeName() {
+        return (String)type;
+    }
+
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     */
+    public String getTypeNamespace() {
+        return null;
+    }
+    
+    /**
+     * Method getSchemaTypeInfo.
+     * @return TypeInfo
+     */
+    public TypeInfo getSchemaTypeInfo(){
+      return this;
     }
 
     /**
@@ -564,6 +590,14 @@ public class AttrImpl
     	isSpecified(arg);
 
     } // setSpecified(boolean)
+    
+	/**
+	 * NON-DOM: used by the parser
+	 * @param type
+	 */
+    public void setType (Object type){
+        this.type = type;
+    }
 
     //
     // Object methods
@@ -1178,5 +1212,6 @@ public class AttrImpl
         needsSyncChildren(false);
 
     } // readObject(ObjectInputStream)
+
 
 } // class AttrImpl

@@ -65,6 +65,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import org.apache.xerces.dom3.TypeInfo;
 import org.apache.xerces.util.URI;
 
 /**
@@ -93,7 +94,7 @@ import org.apache.xerces.util.URI;
  */
 public class ElementImpl
     extends ParentNode
-    implements Element {
+    implements Element, TypeInfo {
 
     //
     // Constants
@@ -994,7 +995,28 @@ public class ElementImpl
             ownerDocument.putIdentifier(at.getValue(), this);
         }
    }
+   
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeName()
+     */
+     public String getTypeName() {
+        return null;
+     }
 
+    /**
+     * @see org.apache.xerces.dom3.TypeInfo#getTypeNamespace()
+     */
+    public String getTypeNamespace() {
+        return null;
+    }
+
+	/**
+	 * Method getSchemaTypeInfo.
+	 * @return TypeInfo
+	 */
+    public TypeInfo getSchemaTypeInfo(){
+      return this;
+    }
 
     //
     // Public methods
