@@ -779,9 +779,6 @@ public final class XMLValidator
                 if (fCurrentDV !=null) { 
                     fWhiteSpace = fCurrentDV.getWSFacet();
                 }
-                if (DEBUG_NORMALIZATION) {
-                    System.out.println("==>currentElement: " + fCurrentElementIndex + ", element: " +fStringPool.toString(fTempElementDecl.name.localpart));
-                }
             }
             if (DEBUG_NORMALIZATION) {
                 System.out.println("Start schema datatype normalization <whiteSpace value=" +fWhiteSpace+">");
@@ -835,9 +832,6 @@ public final class XMLValidator
             fCurrentDV = fTempElementDecl.datatypeValidator;
             if (fCurrentDV !=null) { 
                 fWhiteSpace = fCurrentDV.getWSFacet();
-            }
-            if (DEBUG_NORMALIZATION) {
-                System.out.println("==>DOM: whiteSpace: "  +fWhiteSpace);
             }
             if (fWhiteSpace == DatatypeValidator.PRESERVE) {  //no normalization done
                 fDatatypeBuffer.append(fStringPool.toString(data));
