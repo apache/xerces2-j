@@ -923,8 +923,6 @@ public class DOMParser
 
             // full expansion
             else {
-                Class docClass = Class.forName(documentClassName);
-                Class defaultDocClass = Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
                 if (isDocumentImpl) {
                     fDocumentImpl = new DocumentImpl(fGrammarAccess);
                     fDocument = fDocumentImpl;
@@ -932,8 +930,8 @@ public class DOMParser
                     fDocumentImpl.setErrorChecking(false);
                 }
                 else {
+                    Class documentClass = Class.forName(documentClassName);
                     try {
-                        Class documentClass = Class.forName(documentClassName);
                         fDocument = (Document)documentClass.newInstance();
                     }
                     catch (Exception e) {
@@ -941,6 +939,12 @@ public class DOMParser
                         throw new RuntimeException(
                                  "Failed to create document object of class: "
                                  + documentClassName);
+                    }
+                    // if subclass of our own class that's cool too
+                    Class defaultDocClass =
+                        Class.forName(DEFAULT_DOCUMENT_CLASS_NAME);
+                    if (defaultDocClass.isAssignableFrom(documentClass)) {
+                        fDocumentImpl = (DocumentImpl)fDocument;
                     }
                 }
                 fCurrentElementNode = fDocument;
