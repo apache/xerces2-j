@@ -69,6 +69,7 @@ import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.ObjectFactory;
 import org.apache.xerces.util.ParserConfigurationSettings;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.MessageFormatter;
@@ -274,10 +275,9 @@ public class DOMValidationConfiguration extends ParserConfigurationSettings
         if (fErrorReporter.getMessageFormatter("http://www.w3.org/TR/xml-schema-1") == null) {
             MessageFormatter xmft = null;
             try {            
-               xmft = (MessageFormatter)(Class.forName("org.apache.xerces.impl.xs.XSMessageFormatter")).newInstance();
-            } catch (ClassNotFoundException ex){
-                // will happen if this is DTD Only build
-
+               xmft = (MessageFormatter)(
+                    ObjectFactory.newInstance("org.apache.xerces.impl.xs.XSMessageFormatter", 
+                    ObjectFactory.findClassLoader(), true));
             } catch (Exception exception){
             }
 

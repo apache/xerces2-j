@@ -73,6 +73,8 @@ import org.apache.xerces.dom.PSVIAttrNSImpl;
 import org.apache.xerces.dom.PSVIElementNSImpl;
 import org.apache.xerces.dom.TextImpl;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.util.ObjectFactory;
+
 // id types
 import org.apache.xerces.xni.psvi.AttributePSVI;
 import org.apache.xerces.impl.xs.psvi.XSAttributeDeclaration;
@@ -370,7 +372,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
 
         // verify that this class exists and is of the right type
         try {
-            Class _class = Class.forName(documentClassName);
+            Class _class = ObjectFactory.findProviderClass(documentClassName,
+                    ObjectFactory.findClassLoader(), true);
             //if (!_class.isAssignableFrom(Document.class)) {
             if (!Document.class.isAssignableFrom(_class)) {
                 // REVISIT: message
@@ -767,16 +770,19 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
             else {
                 // use specified document class
                 try {
-                    Class documentClass = Class.forName(fDocumentClassName);
+                    Class documentClass = ObjectFactory.findProviderClass(fDocumentClassName,
+                        ObjectFactory.findClassLoader(), true);
                     fDocument = (Document)documentClass.newInstance();
 
                     // if subclass of our own class that's cool too
                     Class defaultDocClass =
-                        Class.forName(CORE_DOCUMENT_CLASS_NAME);
+                        ObjectFactory.findProviderClass(CORE_DOCUMENT_CLASS_NAME,
+                        ObjectFactory.findClassLoader(), true);
                     if (defaultDocClass.isAssignableFrom(documentClass)) {
                         fDocumentImpl = (CoreDocumentImpl)fDocument;
 
-                        Class psviDocClass = Class.forName(PSVI_DOCUMENT_CLASS_NAME);
+                        Class psviDocClass = ObjectFactory.findProviderClass(PSVI_DOCUMENT_CLASS_NAME,
+                            ObjectFactory.findClassLoader(), true);
                         if (psviDocClass.isAssignableFrom(documentClass)) {
                             fStorePSVI = true;
                         }

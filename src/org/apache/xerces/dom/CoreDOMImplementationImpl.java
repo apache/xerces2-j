@@ -76,6 +76,7 @@ import org.apache.xml.serialize.DOMWriterImpl;
 
 // DOM Revalidation
 import org.apache.xerces.impl.RevalidationHandler;
+import org.apache.xerces.util.ObjectFactory;
 
 /**
  * The DOMImplementation class is description of a particular
@@ -286,10 +287,10 @@ implements DOMImplementation, DOMImplementationLS {
         //          implement retrieving grammar based on schemaType
         if (fDOMRevalidator == null) {
             try {            
-                fDOMRevalidator = (RevalidationHandler)  (Class.forName("org.apache.xerces.impl.xs.XMLSchemaValidator")).newInstance();
-            } catch (ClassNotFoundException ex){
-                // will happen if this is DTD Only build
-
+                // use context class loader.  If it returns
+                // null, class.forName gets used.
+                fDOMRevalidator = (RevalidationHandler)  
+                    (ObjectFactory.newInstance("org.apache.xerces.impl.xs.XMLSchemaValidator", ObjectFactory.findClassLoader(), true));
             } catch (Exception e){
             }
         }
@@ -300,10 +301,8 @@ implements DOMImplementation, DOMImplementationLS {
             catch (InterruptedException e){
 
                 try {            
-                    return (RevalidationHandler) (Class.forName("org.apache.xerces.impl.xs.XMLSchemaValidator")).newInstance();
-                } catch (ClassNotFoundException ex){
-                    // will happen if this is DTD Only build
-                    return null;
+                    return (RevalidationHandler)  
+                        (ObjectFactory.newInstance("org.apache.xerces.impl.xs.XMLSchemaValidator", ObjectFactory.findClassLoader(), true));
 
                 } catch (Exception exception){
                     return null;

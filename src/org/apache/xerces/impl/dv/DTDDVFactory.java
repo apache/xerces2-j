@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.dv;
 
 import java.util.Hashtable;
+import org.apache.xerces.util.ObjectFactory;
 
 /**
  * The factory to create and return DTD types. The implementation should
@@ -95,14 +96,9 @@ public abstract class DTDDVFactory {
 
         try {
             // if the class name is not specified, use the default one
-            return (DTDDVFactory)(Class.forName(factoryClass).newInstance());
-        } catch (ClassNotFoundException e1) {
-            throw new DVFactoryException("DTD factory class " + factoryClass + " not found.");
-        } catch (IllegalAccessException e2) {
-            throw new DVFactoryException("DTD factory class " + factoryClass + " found but cannot be loaded.");
-        } catch (InstantiationException e3) {
-            throw new DVFactoryException("DTD factory class " + factoryClass + " loaded but cannot be instantiated (no empty public constructor?).");
-        } catch (ClassCastException e4) {
+            return (DTDDVFactory)
+                (ObjectFactory.newInstance(factoryClass, ObjectFactory.findClassLoader(), true));
+        } catch (ClassCastException e) {
             throw new DVFactoryException("DTD factory class " + factoryClass + " does not extend from DTDDVFactory.");
         }
     }

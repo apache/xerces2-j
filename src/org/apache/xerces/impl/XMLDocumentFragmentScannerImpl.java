@@ -898,9 +898,10 @@ public class XMLDocumentFragmentScannerImpl
         }
 
         while (true) {
-            if (!fEntityScanner.scanData("]]", fString)) {
-                if (fDocumentHandler != null && fString.length > 0) {
-                    fDocumentHandler.characters(fString, null);
+            fStringBuffer.clear();
+            if (!fEntityScanner.scanData("]]", fStringBuffer)) {
+                if (fDocumentHandler != null && fStringBuffer.length > 0) {
+                    fDocumentHandler.characters(fStringBuffer, null);
                 }
                 int brackets = 2;
                 while (fEntityScanner.skipChar(']')) {
@@ -924,7 +925,7 @@ public class XMLDocumentFragmentScannerImpl
             }
             else {
                 if (fDocumentHandler != null) {
-                    fDocumentHandler.characters(fString, null);
+                    fDocumentHandler.characters(fStringBuffer, null);
                 }
                 int c = fEntityScanner.peekChar();
                 if (c != -1 && XMLChar.isInvalid(c)) {

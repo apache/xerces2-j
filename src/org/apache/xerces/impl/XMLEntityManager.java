@@ -79,6 +79,7 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 
 import org.apache.xerces.util.EncodingMap;
+import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.XMLChar;
@@ -2740,7 +2741,7 @@ public class XMLEntityManager
         } // scanLiteral(int,XMLString):int
 
         /**
-         * Scans a range of character data up to the specicied delimiter,
+         * Scans a range of character data up to the specified delimiter,
          * setting the fields of the XMLString structure, appropriately.
          * <p>
          * <strong>Note:</strong> The characters are consumed.
@@ -2769,8 +2770,16 @@ public class XMLEntityManager
          * @throws IOException  Thrown if i/o error occurs.
          * @throws EOFException Thrown on end of file.
          */
-        public boolean scanData(String delimiter, XMLString data)
+        public boolean scanData(String delimiter, XMLStringBuffer buffer)
             throws IOException {
+            boolean done = false;
+            int delimLen = delimiter.length();
+            char charAt0 = delimiter.charAt(0);
+            int offset = fCurrentEntity.position;
+            int c = fCurrentEntity.ch[offset];
+            int newlines = 0;
+            boolean external = fCurrentEntity.isExternal();
+            do {
             if (DEBUG_BUFFER) {
                 System.out.print("(scanData: ");
                 print();
@@ -2778,9 +2787,6 @@ public class XMLEntityManager
             }
 
             // load more characters, if needed
-            int delimLen = delimiter.length();
-            char charAt0 = delimiter.charAt(0);
-            //int limit = fCurrentEntity.count - delimLen + 1;
 
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 load(0, true);
@@ -2794,7 +2800,7 @@ public class XMLEntityManager
             if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
                 // something must be wrong with the input:  e.g., file ends  an unterminated comment
                 int length = fCurrentEntity.count - fCurrentEntity.position;
-                data.setValues(fCurrentEntity.ch, fCurrentEntity.position, length); 
+                buffer.append (fCurrentEntity.ch, fCurrentEntity.position, length); 
                 fCurrentEntity.columnNumber += fCurrentEntity.count;
                 fCurrentEntity.position = fCurrentEntity.count;
                 load(0,true);
@@ -2802,10 +2808,9 @@ public class XMLEntityManager
             }
 
             // normalize newlines
-            int offset = fCurrentEntity.position;
-            int c = fCurrentEntity.ch[offset];
-            int newlines = 0;
-            boolean external = fCurrentEntity.isExternal();
+            offset = fCurrentEntity.position;
+            c = fCurrentEntity.ch[offset];
+            newlines = 0;
             if (c == '\n' || (c == '\r' && external)) {
                 if (DEBUG_BUFFER) {
                     System.out.print("[newline, "+offset+", "+fCurrentEntity.position+": ");
@@ -2818,7 +2823,6 @@ public class XMLEntityManager
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
-                        /***/
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             offset = 0;
                             fCurrentEntity.position = newlines;
@@ -2826,7 +2830,6 @@ public class XMLEntityManager
                                 break;
                             }
                         }
-                        /***/
                         if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
                             fCurrentEntity.position++;
                             offset++;
@@ -2835,13 +2838,11 @@ public class XMLEntityManager
                         else {
                             newlines++;
                         }
-                        /***/
                     }
                     else if (c == '\n') {
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
-                        /***/
                         if (fCurrentEntity.position == fCurrentEntity.count) {
                             offset = 0;
                             fCurrentEntity.position = newlines;
@@ -2850,14 +2851,6 @@ public class XMLEntityManager
                                 break;
                             }
                         }
-                        /***/
-                        /*** NEWLINE NORMALIZATION ***
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r'
-                            && external) {
-                            fCurrentEntity.position++;
-                            offset++;
-                        }
-                        /***/
                     }
                     else {
                         fCurrentEntity.position--;
@@ -2869,7 +2862,7 @@ public class XMLEntityManager
                 }
                 int length = fCurrentEntity.position - offset;
                 if (fCurrentEntity.position == fCurrentEntity.count - 1) {
-                    data.setValues(fCurrentEntity.ch, offset, length);
+                    buffer.append(fCurrentEntity.ch, offset, length);
                     if (DEBUG_BUFFER) {
                         System.out.print("]newline, "+offset+", "+fCurrentEntity.position+": ");
                         print();
@@ -2885,7 +2878,6 @@ public class XMLEntityManager
             }
 
             // iterate over buffer looking for delimiter
-            boolean done = false;
             OUTER: while (fCurrentEntity.position < fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if (c == charAt0) {
@@ -2913,7 +2905,10 @@ public class XMLEntityManager
                 }
                 else if (XMLChar.isInvalid(c)) {
                     fCurrentEntity.position--;
-                    break;
+                    int length = fCurrentEntity.position - offset;
+                    fCurrentEntity.columnNumber += length - newlines;
+                    buffer.append(fCurrentEntity.ch, offset, length); 
+                    return true;
                 }
             }
             int length = fCurrentEntity.position - offset;
@@ -2921,7 +2916,7 @@ public class XMLEntityManager
             if (done) {
                 length -= delimLen;
             }
-            data.setValues(fCurrentEntity.ch, offset, length);
+            buffer.append (fCurrentEntity.ch, offset, length);
 
             // return true if string was skipped
             if (DEBUG_BUFFER) {
@@ -2929,6 +2924,7 @@ public class XMLEntityManager
                 print();
                 System.out.println(" -> " + done);
             }
+            } while (!done);
             return !done;
 
         } // scanData(String,XMLString)

@@ -65,6 +65,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
+import org.apache.xerces.util.ObjectFactory;
 
 /**
  *
@@ -108,7 +109,8 @@ public abstract class SerializerFactory
             while ( token.hasMoreTokens() ) {
                 className = token.nextToken();
                 try {
-                    factory = (SerializerFactory) Class.forName( className ).newInstance();
+                    factory = (SerializerFactory) ObjectFactory.newInstance( className, 
+                        ObjectFactory.findClassLoader(), true);
                     if ( _factories.containsKey( factory.getSupportedMethod() ) )
                         _factories.put( factory.getSupportedMethod(), factory );
                 } catch ( Exception except ) { }
