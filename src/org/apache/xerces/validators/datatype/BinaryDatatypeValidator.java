@@ -181,6 +181,11 @@ public class BinaryDatatypeValidator extends AbstractDatatypeValidator {
      *  not a W3C binary type
      */
     public Object validate(String content, Object state ) throws InvalidDatatypeValueException {
+        if( fFacetsDefined == 0 )
+           {
+           throw new InvalidDatatypeValueException( "Constrain encoding required for binary datatype" );
+           }
+
         if ( fDerivedByList == false) { //derived by restriction
             if (((fFacetsDefined & DatatypeValidator.FACET_ENCODING) != 0 ) ){ //Encode defined then validate
                 if ( fEncoding.equals( SchemaSymbols.ATTVAL_BASE64)){ //Base64
