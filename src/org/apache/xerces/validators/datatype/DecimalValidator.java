@@ -185,8 +185,12 @@ public class DecimalValidator implements InternalDatatypeValidator {
 	        } else if (key.equals(DatatypeValidator.PRECISION)) {
 	        } else if (key.equals(DatatypeValidator.SCALE)) {
 	        } else if (key.equals(DatatypeValidator.LENGTH) ||
+	                 key.equals(DatatypeValidator.MINLENGTH) ||
                      key.equals(DatatypeValidator.MAXLENGTH) ||
                      key.equals(DatatypeValidator.LITERAL) ||
+                     key.equals(DatatypeValidator.ENCODING) ||
+                     key.equals(DatatypeValidator.PERIOD) ||
+                     key.equals(DatatypeValidator.PATTERN) ||
                      key.equals(DatatypeValidator.LEXICALREPRESENTATION) ||
                      key.equals(DatatypeValidator.LEXICAL))
                 throw new IllegalFacetException(
@@ -268,7 +272,7 @@ public class DecimalValidator implements InternalDatatypeValidator {
      * set the locate to be used for error messages
      */
     public void setLocale(Locale locale) {
-        // REVISIT when error handling is settled
+        fLocale = locale;
     }
 
     private String getErrorString(int major, int minor, Object args[]) {

@@ -70,6 +70,8 @@ import java.util.Locale;
 
 public class StringValidator implements InternalDatatypeValidator {
 	
+	Locale fLocale = null;
+	
 	/**
      * validate that a string is a W3C string type
      *
@@ -102,6 +104,6 @@ public class StringValidator implements InternalDatatypeValidator {
      * set the locate to be used for error messages
      */
     public void setLocale(Locale locale) {
-        // REVISIT when error handling is settled
+        fLocale = locale;
     }
 }

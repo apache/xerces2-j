@@ -111,7 +111,8 @@ import org.apache.xerces.validators.datatype.UnknownFacetException;
 import org.apache.xerces.validators.datatype.BooleanValidator;
 import org.apache.xerces.validators.datatype.IntegerValidator;
 import org.apache.xerces.validators.datatype.StringValidator;
-import org.apache.xerces.validators.datatype.RealValidator;
+import org.apache.xerces.validators.datatype.FloatValidator;
+import org.apache.xerces.validators.datatype.DoubleValidator;
 import org.apache.xerces.validators.datatype.DecimalValidator;
 import org.apache.xerces.msg.SchemaMessages;
 
@@ -3123,8 +3124,9 @@ public class XSchemaValidator implements XMLValidator {
             DatatypeValidator integerValidator = new IntegerValidator();
             fRegistry.put("integer", integerValidator);
             fRegistry.put("string", new StringValidator());
-            fRegistry.put("real", new RealValidator());
             fRegistry.put("decimal", new DecimalValidator());
+            fRegistry.put("float", new FloatValidator());
+            fRegistry.put("double", new DoubleValidator());
             //REVISIT - enable the below
             //fRegistry.put("binary", new BinaryValidator());
             //fRegistry.put("date", new DateValidator());

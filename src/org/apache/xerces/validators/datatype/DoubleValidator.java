@@ -64,53 +64,53 @@ import java.util.Vector;
 
 /**
  *
- * IntegerValidator validates that content satisfies the W3C XML Datatype for Integer
+ * RealValidator validates that content satisfies the W3C XML Datatype for Real
  *
  * @author Ted Leung
  * @version
  */
 
-public class IntegerValidator implements InternalDatatypeValidator {
+public class DoubleValidator implements InternalDatatypeValidator {
 	
-	int fMaxInclusive = 0;
+	double fMaxInclusive = 0;
 	boolean fIsMaxInclusive = false;
-	int fMaxExclusive = 0;
+	double fMaxExclusive = 0;
 	boolean fIsMaxExclusive = false;
-	int fMinInclusive = 0;
+	double fMinInclusive = 0;
 	boolean fIsMinInclusive = false;
-	int fMinExclusive = 0;
+	double fMinExclusive = 0;
 	boolean fIsMinExclusive = false;
-	int fEnumValues[] = null;
+	double fEnumValues[] = null;
 	boolean fHasEnums = false;
-	IntegerValidator fBaseValidator = null;
+	RealValidator fBaseValidator = null;
 	private DatatypeMessageProvider fMessageProvider = new DatatypeMessageProvider();
 	private Locale fLocale = null;
 	
 	/**
-     * validate that a string matches the integer datatype
+     * validate that a string matches the real datatype
      *
      * validate returns true or false depending on whether the string content is a
-     * W3C integer type.
+     * W3C real type.
      * 
      * @param content A string containing the content to be validated
      *
      * @exception throws InvalidDatatypeException if the content is
-     *  is not a W3C integer type
+     *  is not a W3C real type
      */
 
 	public void validate(String content) throws InvalidDatatypeValueException {
-	    int i = 0;
+	    double d = 0;
         try {
-            i = Integer.parseInt(content);
+            d = Double.valueOf(content).doubleValue();
         } catch (NumberFormatException nfe) {
             throw new InvalidDatatypeValueException(
-				getErrorString(DatatypeMessageProvider.NotInteger,
+				getErrorString(DatatypeMessageProvider.NotReal,
 							   DatatypeMessageProvider.MSG_NONE,
 							   new Object [] { content }));
         }
-        boundsCheck(i);
+        boundsCheck(d);
         if (fHasEnums)
-            enumCheck(i);
+            enumCheck(d);
 	}
 			
 	public void validate(int contentIndex) throws InvalidDatatypeValueException {
@@ -125,20 +125,20 @@ public class IntegerValidator implements InternalDatatypeValidator {
 	        if (key.equals(DatatypeValidator.ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
-	        int integerValue = 0;
+	        double realValue = 0;
 	        try {
-	            integerValue = Integer.parseInt(value);
+	            realValue = Double.valueOf(value).doubleValue();
 	        } catch (NumberFormatException nfe) {
                 facetsAreConsistent = false;
 	        }
 	        if (key.equals(DatatypeValidator.MININCLUSIVE) && fIsMinInclusive) {
-                facetsAreConsistent = fMinInclusive <= integerValue;
+                facetsAreConsistent = fMinInclusive <= realValue;
 	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE) && fIsMinExclusive) {
-	            facetsAreConsistent = fMinExclusive < integerValue;
+	            facetsAreConsistent = fMinExclusive < realValue;
 	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE) && fIsMaxInclusive) {
-	            facetsAreConsistent = fMaxInclusive >= integerValue;
+	            facetsAreConsistent = fMaxInclusive >= realValue;
 	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE) && fIsMaxExclusive) {
-	            facetsAreConsistent = fMaxExclusive > integerValue;
+	            facetsAreConsistent = fMaxExclusive > realValue;
 	        }
 	    }
 	    return facetsAreConsistent;
@@ -159,9 +159,9 @@ public class IntegerValidator implements InternalDatatypeValidator {
 	        if (key.equals(DatatypeValidator.ENUMERATION)) 
                 continue;  // ENUM values passed as a vector & handled after bounds facets	    
     	    value = (String) facets.get(key);   
-	        int integerValue = 0;
+	        double realValue = 0;
 	        try {
-	            integerValue = Integer.parseInt(value);
+	            realValue = Double.valueOf(value).doubleValue();
 	        } catch (NumberFormatException nfe) {
 	            throw new IllegalFacetValueException(
 					getErrorString(DatatypeMessageProvider.IllegalFacetValue,
@@ -170,16 +170,16 @@ public class IntegerValidator implements InternalDatatypeValidator {
 	        }
 	        if (key.equals(DatatypeValidator.MININCLUSIVE)) {
                 fIsMinInclusive = true;
-	            fMinInclusive = integerValue;
+	            fMinInclusive = realValue;
 	        } else if (key.equals(DatatypeValidator.MINEXCLUSIVE)) {
 	            fIsMinExclusive = true;
-	            fMinExclusive = integerValue;
+	            fMinExclusive = realValue;
 	        } else if (key.equals(DatatypeValidator.MAXINCLUSIVE)) {
 	            fIsMaxInclusive = true;
-	            fMaxInclusive = integerValue;
+	            fMaxInclusive = realValue;
 	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
 	            fIsMaxExclusive = true;
-	            fMaxExclusive = integerValue;
+	            fMaxExclusive = realValue;
 	        } else if (key.equals(DatatypeValidator.ENUMERATION)) {
 	        } else if (key.equals(DatatypeValidator.PRECISION) ||
                      key.equals(DatatypeValidator.SCALE) ||
@@ -187,13 +187,13 @@ public class IntegerValidator implements InternalDatatypeValidator {
                      key.equals(DatatypeValidator.MINLENGTH) ||
                      key.equals(DatatypeValidator.MAXLENGTH) ||
                      key.equals(DatatypeValidator.LITERAL) ||
-                     key.equals(DatatypeValidator.ENCODING) ||
                      key.equals(DatatypeValidator.PERIOD) ||
+                     key.equals(DatatypeValidator.ENCODING) ||
                      key.equals(DatatypeValidator.PATTERN) ||
                      key.equals(DatatypeValidator.LEXICALREPRESENTATION) ||
                      key.equals(DatatypeValidator.LEXICAL))
                 throw new IllegalFacetException(
-					getErrorString(DatatypeMessageProvider.IllegalIntegerFacet,
+					getErrorString(DatatypeMessageProvider.IllegalRealFacet,
 								   DatatypeMessageProvider.MSG_NONE,
 								   null));
             else 
@@ -207,18 +207,18 @@ public class IntegerValidator implements InternalDatatypeValidator {
         Vector v = (Vector) facets.get(DatatypeValidator.ENUMERATION);    
 	    if (v != null) {
 	        fHasEnums = true;
-	        fEnumValues = new int[v.size()];
+	        fEnumValues = new double[v.size()];
 	        for (int i = 0; i < v.size(); i++)
 	            try {
-	                fEnumValues[i] = Integer.parseInt((String) v.elementAt(i));
+	                fEnumValues[i] = Double.valueOf((String) v.elementAt(i)).doubleValue();
 	                boundsCheck(fEnumValues[i]);
 	            } catch (InvalidDatatypeValueException idve) {
 	                throw new IllegalFacetValueException(
 						getErrorString(DatatypeMessageProvider.InvalidEnumValue,
 									   DatatypeMessageProvider.MSG_NONE,
-									   new Object [] { v.elementAt(i)}));
+									   new Object [] { v.elementAt(i) }));
 	            } catch (NumberFormatException nfe) {
-	                System.out.println("Internal Error parsing enumerated values for integer type");
+	                System.out.println("Internal Error parsing enumerated values for real type");
 	            }
 	    }
 
@@ -228,43 +228,43 @@ public class IntegerValidator implements InternalDatatypeValidator {
 	}
 
     public void setBasetype(DatatypeValidator base) {
-	    fBaseValidator = (IntegerValidator) base;
+	    fBaseValidator = (RealValidator) base;
     }
 
     /*
      * check that a facet is in range, assumes that facets are compatible -- compatibility ensured by setFacets
      */
-    private void boundsCheck(int i) throws InvalidDatatypeValueException {
+    private void boundsCheck(double d) throws InvalidDatatypeValueException {
         boolean minOk = false;
         boolean maxOk = false;
         if (fIsMaxInclusive)
-            maxOk = (i <= fMaxInclusive);
+            maxOk = (d <= fMaxInclusive);
         else if (fIsMaxExclusive)
-            maxOk = (i < fMaxExclusive);
+            maxOk = (d < fMaxExclusive);
         else 
             maxOk = (!fIsMaxInclusive && !fIsMaxExclusive);
         
         if (fIsMinInclusive)
-            minOk = (i >= fMinInclusive);
+            minOk = (d >= fMinInclusive);
         else if (fIsMinExclusive) 
-            minOk = (i > fMinInclusive);
+            minOk = (d > fMinInclusive);
         else 
             minOk = (!fIsMinInclusive && !fIsMinExclusive);
         if (!(minOk && maxOk))
             throw new InvalidDatatypeValueException(
 				getErrorString(DatatypeMessageProvider.OutOfBounds,
 							   DatatypeMessageProvider.MSG_NONE,
-							   new Object [] { new Integer(i) }));
+							   new Object [] { new Double(d) }));
     }
     
-    private void enumCheck(int v) throws InvalidDatatypeValueException {
+    private void enumCheck(double v) throws InvalidDatatypeValueException {
         for (int i = 0; i < fEnumValues.length; i++) {
             if (v == fEnumValues[i]) return;
         }
-        throw new InvalidDatatypeValueException(
+		throw new InvalidDatatypeValueException(
 			getErrorString(DatatypeMessageProvider.NotAnEnumValue,
 						   DatatypeMessageProvider.MSG_NONE,
-						   new Object [] { new Integer(v) }));
+						   new Object [] { new Double(v) }));
     }
 
     /**
@@ -273,7 +273,7 @@ public class IntegerValidator implements InternalDatatypeValidator {
     public void setLocale(Locale locale) {
         fLocale = locale;
     }
-    
+
     private String getErrorString(int major, int minor, Object args[]) {
          try {
              return fMessageProvider.createMessage(fLocale, major, minor, args);
@@ -281,25 +281,4 @@ public class IntegerValidator implements InternalDatatypeValidator {
              return "Illegal Errorcode "+minor;
          }
     }
-    
-    /*
-    public static void main(String args[]) {
-        // simple unit test
-        try {
-            DatatypeValidator v = new IntegerValidator();
-            Hashtable facets = new Hashtable();
-            facets.put("minInclusive","0");
-            DatatypeValidator nonneg = new IntegerValidator();
-            nonneg.setBasetype(v);
-            nonneg.setFacets(facets);
-            facets = new Hashtable();
-            facets.put("minInclusive","-1");
-            DatatypeValidator bad = new IntegerValidator();
-            bad.setBasetype(nonneg);
-            bad.setFacets(facets);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    */
 }

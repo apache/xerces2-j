@@ -109,7 +109,7 @@ public class BooleanValidator implements InternalDatatypeValidator {
      * set the locate to be used for error messages
      */
     public void setLocale(Locale locale) {
-        // REVISIT when error handling is settled
+        fLocale = locale;
     }
 
     private String getErrorString(int major, int minor, Object args[]) {

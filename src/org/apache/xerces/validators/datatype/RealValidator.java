@@ -80,10 +80,6 @@ public class RealValidator implements InternalDatatypeValidator {
 	boolean fIsMinInclusive = false;
 	double fMinExclusive = 0;
 	boolean fIsMinExclusive = false;
-	double fMinAbsoluteValue = 0;
-	boolean fIsMinAbsoluteValue = false;
-	double fMaxAbsoluteValue = 0;
-	boolean fIsMaxAbsoluteValue = false;
 	double fEnumValues[] = null;
 	boolean fHasEnums = false;
 	RealValidator fBaseValidator = null;
@@ -143,10 +139,6 @@ public class RealValidator implements InternalDatatypeValidator {
 	            facetsAreConsistent = fMaxInclusive >= realValue;
 	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE) && fIsMaxExclusive) {
 	            facetsAreConsistent = fMaxExclusive > realValue;
-	        } else if (key.equals(DatatypeValidator.MINABSOLUTEVALUE) && fIsMinAbsoluteValue) {
-	            facetsAreConsistent = fMinAbsoluteValue <= realValue;
-	        } else if (key.equals(DatatypeValidator.MAXABSOLUTEVALUE) && fIsMaxAbsoluteValue) {
-	            facetsAreConsistent = fMaxAbsoluteValue >= realValue;
 	        }
 	    }
 	    return facetsAreConsistent;
@@ -188,12 +180,6 @@ public class RealValidator implements InternalDatatypeValidator {
 	        } else if (key.equals(DatatypeValidator.MAXEXCLUSIVE)) {
 	            fIsMaxExclusive = true;
 	            fMaxExclusive = realValue;
-	        } else if (key.equals(DatatypeValidator.MINABSOLUTEVALUE)) {
-	            fIsMinAbsoluteValue = true;
-	            fMinAbsoluteValue = realValue;
-	        } else if (key.equals(DatatypeValidator.MAXABSOLUTEVALUE)) {
-	            fIsMaxAbsoluteValue = true;
-	            fMaxAbsoluteValue = realValue;
 	        } else if (key.equals(DatatypeValidator.ENUMERATION)) {
 	        } else if (key.equals(DatatypeValidator.PRECISION) ||
                      key.equals(DatatypeValidator.SCALE) ||

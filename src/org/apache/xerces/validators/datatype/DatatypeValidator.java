@@ -78,19 +78,20 @@ public interface DatatypeValidator {
 	public static final String MINEXCLUSIVE = "minExclusive";
 	public static final String MAXINCLUSIVE = "maxInclusive";
 	public static final String MAXEXCLUSIVE = "maxExclusive";
-	public static final String MINABSOLUTEVALUE = "minAbsoluteValue";
-	public static final String MAXABSOLUTEVALUE = "maxAbsoluteValue";
 	
 	public static final String PRECISION = "precision";
 	public static final String SCALE = "scale";
 	
 	public static final String LENGTH = "length";
+    public static final String MINLENGTH = "minLength";
 	public static final String MAXLENGTH = "maxLength";
 	public static final String ENUMERATION = "enumeration";
 	public static final String LITERAL = "literal";
 	public static final String LEXICALREPRESENTATION = "lexicalRepresentation";
 	public static final String LEXICAL = "lexical";
 	public static final String ENCODING = "encoding";
+    public static final String PERIOD = "period";
+	public static final String PATTERN = "pattern";
 	
 	/**
      * validate that a string matches a datatype
