@@ -104,7 +104,7 @@ Copyright:
     <mkdir dir="${build.dest}"/>
 
     <!-- copy src files -->
-    <copydir src="${src.dir}" dest="${build.src}" ignore="Makefile Makefile.incl classfiles_updated"/>
+    <copydir src="${src.dir}" dest="${build.src}" excludes="Makefile Makefile.incl classfiles_updated"/>
 
     <!-- substitute tokens as needed -->
     <!-- <replace file="${build.src}/${version.file}" token="@@version@@" value="${version}"/> -->
@@ -122,7 +122,7 @@ Copyright:
   <!-- Creates the class package                                           -->
   <!-- =================================================================== -->
   <target name="package" depends="compile">
-    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}" items="org"/>
+    <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}" includes="org/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -130,7 +130,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="samples" depends="package">
     <mkdir dir="${build.samples}"/>
-    <copydir src="${samples.dir}" dest="${build.samples}" ignore="Makefile"/>
+    <copydir src="${samples.dir}" dest="${build.samples}" excludes="Makefile"/>
     <javac srcdir="${build.samples}" destdir="${build.dest}" classpath="${build.dir}/${name}.jar" debug="${debug}"/>
   </target>
 
@@ -138,7 +138,7 @@ Copyright:
   <!-- Creates the samples package                                           -->
   <!-- =================================================================== -->
   <target name="samples-package" depends="samples">
-    <jar jarfile="${build.dir}/${name}Samples.jar" basedir="${build.dest}" items="dom,sax,ui"/>
+    <jar jarfile="${build.dir}/${name}Samples.jar" basedir="${build.dest}" includes="dom/**,sax/**,ui/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -146,7 +146,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="docs" depends="prepare">
     <mkdir dir="${build.docs}"/>
-    <java class="${doc.generator}" args="targetDirectory=${build.docs} ${docs.book} ${style}"/>
+    <java classname="${doc.generator}" args="targetDirectory=${build.docs} ${docs.book} ${style}"/>
   </target>
   
   <!-- =================================================================== -->
@@ -154,7 +154,7 @@ Copyright:
   <!-- =================================================================== -->
   <target name="site" depends="init">
     <mkdir dir="${site.docs}"/>
-    <java class="${doc.generator}" args="targetDirectory=${site.docs} ${site.book} ${style}"/>
+    <java classname="${doc.generator}" args="targetDirectory=${site.docs} ${site.book} ${style}"/>
   </target>  
   
   <!-- =================================================================== -->
@@ -200,7 +200,7 @@ Copyright:
     <copyfile src="STATUS" dest="${dist.dir}/STATUS"/>
     <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
 
-    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}" items="bin,build.xml,data,docs,README,Readme.html,samples,src,STATUS,xerces.jar,xercesSamples.jar"/>
+    <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}" includes="bin/**,build.xml,data/**,docs/**,README,Readme.html,samples/**,src/**,STATUS,xerces.jar,xercesSamples.jar"/>
   </target>
 
   <!-- =================================================================== -->
