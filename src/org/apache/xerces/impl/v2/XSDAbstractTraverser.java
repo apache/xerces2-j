@@ -88,6 +88,7 @@ abstract class XSDAbstractTraverser {
         fAttrChecker = attrChecker;
     }
 
+    //REVISIT: Implement
     void reset() {
     }
 
@@ -128,9 +129,10 @@ abstract class XSDAbstractTraverser {
     }
 
     // REVISIT: is it how we want to handle error reporting?
+    //REVISIT: Implement
     void reportGenericSchemaError (String error) {
     }
-
+    //REVISIT: Implement
     void reportSchemaError(String key, Object args[]) {
     }
 
@@ -142,11 +144,13 @@ abstract class XSDAbstractTraverser {
     // @param: isEmpty: -- true if the content allowed is (annotation?) only
     //                     false if must have some element (with possible preceding <annotation?>)
     //
-    //REVISIT: this function should be used in all traverse* methods!
-    //REVISIT: in fact, no one should call this method. To support PSVI, the
-    //         traversers have to call traverseAnnotationDecl directly, and
-    //         store the returned annotation index in their own structure.
+
+    //REVISIT: Implement
     Element checkContent( Element elm, Element content, boolean isEmpty ) {
         return null;
+    }
+    //REVISIT: Implement
+    int parseFinalSet (String finalString){
+        return -1;
     }
 }

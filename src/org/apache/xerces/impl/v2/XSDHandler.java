@@ -111,6 +111,14 @@ class XSDHandler {
     //REVISIT: should we have this constant in symbolTable?
     public final static String EMPTY_STRING="";
 
+    //
+    //protected data that can be accessable by any traverser
+    // stores <notation> decl
+    protected Hashtable fNotationRegistry = new Hashtable();
+
+    // stores "final" values of simpleTypes--no clean way to integrate this into the existing datatype validation structure...
+    protected Hashtable fSimpleTypeFinalRegistry = new Hashtable();
+
     // These tables correspond to the symbol spaces defined in the
     // spec.
     // They are keyed with a QName (that is, String("URI,localpart) and
@@ -545,6 +553,47 @@ class XSDHandler {
 
     } // reset
 
+
+    protected DatatypeValidator getDatatypeValidator(String uri, String localpart) {
+
+        DatatypeValidator dv = null;
+
+        if (uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
+            dv = fDatatypeRegistry.getDatatypeValidator( localpart );
+        }
+        else {
+            dv = fDatatypeRegistry.getDatatypeValidator( uri+","+localpart );
+        }
+
+        return dv;
+    }
+
+    protected  DatatypeValidator getSimpleTypeValidator (String qualifiedName){
+        return fDatatypeRegistry.getDatatypeValidator(qualifiedName);
+    }
+
+    protected void createSimpleType (String qualifiedName, DatatypeValidator baseValidator,
+                                Hashtable facetData, boolean isList){
+        
+        try {
+            fDatatypeRegistry.createDatatypeValidator( qualifiedName, baseValidator,
+                                                       facetData, isList);
+        }
+        catch (Exception e) {
+            //REVISIT
+            //reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage()});
+        }
+    }
+    protected void createUnionSimpleType (String qualifiedName, Vector dTValidators){
+        try{            
+            fDatatypeRegistry.createDatatypeValidator( qualifiedName, dTValidators);
+        }
+        catch (Exception e) {
+            //REVISIT
+            //reportSchemaError(SchemaMessageProvider.DatatypeError,new Object [] { e.getMessage()});
+        }
+    }
+    
     /** This method makes sure that 
      * if this component is being redefined that it lives in the
      * right schema.  It then renames the component correctly.  If it
@@ -574,4 +623,26 @@ class XSDHandler {
         }
     } // checkForDuplicateNames(String, Hashtable, Element, XSDocumentInfo):void
     
+
+    //
+    //!!!!!!!!!!!!!!!! IMPLEMENT the following functions !!!!!!!!!!
+    //
+    //REVISIT: implement namescope support!!!
+    protected String resolvePrefixToURI (String prefix) {
+        //String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
+        //if (uriStr.length() == 0 && prefix.length() > 0) {
+            // REVISIT: Localize
+            //reportGenericSchemaError("prefix : [" + prefix +"] cannot be resolved to a URI");
+            //return "";
+        //}
+
+        return null;
+    }
+    //REVISIT: implement namescope support!!!
+    protected Element getTopLevelComponentByName(String componentCategory, String name){
+        return null;
+    }
+
+
+
 } // XSDHandler
