@@ -73,8 +73,8 @@ public class XSGrammarBucket {
     /**
      * Hashtable that maps between Namespace and a Grammar
      */
-    private Hashtable fGrammarRegistry = new Hashtable();
-    private SchemaGrammar fNoNSGrammar = null;
+    Hashtable fGrammarRegistry = new Hashtable();
+    SchemaGrammar fNoNSGrammar = null;
 
     /**
      * Get the schema grammar for the specified namespace
@@ -138,8 +138,8 @@ public class XSGrammarBucket {
             // check whether the bucket has one with the same tns
             sg2 = getGrammar(sg1.fTargetNamespace);
             if (sg2 == null) {
-                // we need to add grammars imported by sg2 too
-                gs = sg2.getImportedGrammars();
+                // we need to add grammars imported by sg1 too
+                gs = sg1.getImportedGrammars();
                 // for all grammars imported by sg2, but not in the vector
                 // we add them to the vector
                 for (int j = gs.size() - 1; j >= 0; j--) {

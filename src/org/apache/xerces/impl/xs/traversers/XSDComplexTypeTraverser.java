@@ -66,13 +66,15 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
-import org.apache.xerces.impl.xs.XSAttributeUse;
+import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroup;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.xni.QName;
 import org.w3c.dom.Element;
 import java.util.Hashtable;
@@ -330,9 +332,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // -----------------------------------------------------------------------
         String simpleContentName = DOMUtil.getLocalName(simpleContent);
         if (simpleContentName.equals(SchemaSymbols.ELT_RESTRICTION))
-            typeInfo.fDerivedBy = SchemaSymbols.RESTRICTION;
+            typeInfo.fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
         else if (simpleContentName.equals(SchemaSymbols.ELT_EXTENSION))
-            typeInfo.fDerivedBy = SchemaSymbols.EXTENSION;
+            typeInfo.fDerivedBy = XSConstants.DERIVATION_EXTENSION;
         else {
             throw new ComplexTypeRecoverableError("src-ct.0.1",
                             new Object[]{typeInfo.fName,simpleContentName},
@@ -373,7 +375,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         int baseFinalSet = 0;
 
         // If the base type is complex, it must have simpleContent
-        if ((type.getXSType() == XSTypeDecl.COMPLEX_TYPE)) {
+        if ((type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)) {
 
             baseComplexType = (XSComplexTypeDecl)type;
             if (baseComplexType.fContentType != XSComplexTypeDecl.CONTENTTYPE_SIMPLE) {
@@ -385,18 +387,18 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         }
         else {
             baseValidator = (XSSimpleType)type;
-            if (typeInfo.fDerivedBy == SchemaSymbols.RESTRICTION) {
+            if (typeInfo.fDerivedBy == XSConstants.DERIVATION_RESTRICTION) {
                 throw new ComplexTypeRecoverableError("src-ct.2",
                                 new Object[]{typeInfo.fName}, simpleContent);
             }
-            baseFinalSet=baseValidator.getFinalSet();
+            baseFinalSet=baseValidator.getFinal();
         }
 
         // -----------------------------------------------------------------------
         // Check that the base permits the derivation
         // -----------------------------------------------------------------------
         if ((baseFinalSet & typeInfo.fDerivedBy)!=0) {
-            String errorKey = (typeInfo.fDerivedBy==SchemaSymbols.EXTENSION) ?
+            String errorKey = (typeInfo.fDerivedBy==XSConstants.DERIVATION_EXTENSION) ?
                               "cos-ct-extends.1.1" : "derivation-ok-restriction.1";
             throw new ComplexTypeRecoverableError(errorKey,
                                 new Object[]{typeInfo.fName}, simpleContent);
@@ -425,7 +427,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // -----------------------------------------------------------------------
         // Process a RESTRICTION
         // -----------------------------------------------------------------------
-        if (typeInfo.fDerivedBy == SchemaSymbols.RESTRICTION) {
+        if (typeInfo.fDerivedBy == XSConstants.DERIVATION_RESTRICTION) {
 
             // -----------------------------------------------------------------------
             // There may be a simple type definition in the restriction element
@@ -443,7 +445,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                 //according to derivation-ok-restriction 5.1.1
 
                 if (!XSConstraints.checkSimpleDerivationOk(dv, baseValidator,
-                                                           baseValidator.getFinalSet())) {
+                                                           baseValidator.getFinal())) {
                     throw new ComplexTypeRecoverableError("derivation-ok-restriction.5.1.1",
                            new Object[]{typeName},
                            simpleContent);
@@ -588,9 +590,9 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // -----------------------------------------------------------------------
         String complexContentName = DOMUtil.getLocalName(complexContent);
         if (complexContentName.equals(SchemaSymbols.ELT_RESTRICTION))
-            typeInfo.fDerivedBy = SchemaSymbols.RESTRICTION;
+            typeInfo.fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
         else if (complexContentName.equals(SchemaSymbols.ELT_EXTENSION))
-            typeInfo.fDerivedBy = SchemaSymbols.EXTENSION;
+            typeInfo.fDerivedBy = XSConstants.DERIVATION_EXTENSION;
         else {
             throw new ComplexTypeRecoverableError("src-ct.0.1",
                       new Object[]{typeName, complexContentName}, complexContent);
@@ -635,7 +637,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // Check that the base permits the derivation
         // -----------------------------------------------------------------------
         if ((baseType.fFinal & typeInfo.fDerivedBy)!=0) {
-            String errorKey = (typeInfo.fDerivedBy==SchemaSymbols.EXTENSION) ?
+            String errorKey = (typeInfo.fDerivedBy==XSConstants.DERIVATION_EXTENSION) ?
                               "cos-ct-extends.1.1" : "derivation-ok-restriction.1";
             throw new ComplexTypeRecoverableError(errorKey,
                                 new Object[]{typeInfo.fName}, complexContent);
@@ -669,7 +671,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
         // Compose the final content and attribute uses
         // -----------------------------------------------------------------------
         XSParticleDecl baseContent = baseType.fParticle;
-        if (typeInfo.fDerivedBy==SchemaSymbols.RESTRICTION) {
+        if (typeInfo.fDerivedBy==XSConstants.DERIVATION_RESTRICTION) {
 
             // This is an RESTRICTION
 
@@ -724,15 +726,15 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             else {
                 // if the content of either type is an "all" model group, error.
                 if (typeInfo.fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
-                    ((XSModelGroup)typeInfo.fParticle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL ||
+                    ((XSModelGroupImpl)typeInfo.fParticle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL ||
                     baseType.fParticle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
-                    ((XSModelGroup)baseType.fParticle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL) {
+                    ((XSModelGroupImpl)baseType.fParticle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL) {
                     throw new ComplexTypeRecoverableError("cos-all-limited.1.2",
                           null, complexContent);
                 }
                 // the "sequence" model group to contain both particles
-                XSModelGroup group = new XSModelGroup();
-                group.fCompositor = XSModelGroup.MODELGROUP_SEQUENCE;
+                XSModelGroupImpl group = new XSModelGroupImpl();
+                group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
                 group.fParticleCount = 2;
                 group.fParticles = new XSParticleDecl[2];
                 group.fParticles[0] = baseType.fParticle;
@@ -772,18 +774,19 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
                                  Element elem)
     throws ComplexTypeRecoverableError {
 
-        XSAttributeUse[] attrUseS = fromAttrGrp.getAttributeUses();
-        XSAttributeUse existingAttrUse, duplicateAttrUse =  null;
-        int attrCount = (attrUseS!=null)?attrUseS.length:0;
+        XSObjectList attrUseS = fromAttrGrp.getAttributeUses();
+        XSAttributeUseImpl existingAttrUse, duplicateAttrUse =  null, oneAttrUse;
+        int attrCount = attrUseS.getListLength();
         for (int i=0; i<attrCount; i++) {
-            existingAttrUse = toAttrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
-                                                        attrUseS[i].fAttrDecl.fName);
+            oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
+            existingAttrUse = toAttrGrp.getAttributeUse(oneAttrUse.fAttrDecl.fTargetNamespace,
+                                                        oneAttrUse.fAttrDecl.fName);
             if (existingAttrUse == null) {
 
-                String idName = toAttrGrp.addAttributeUse(attrUseS[i]);
+                String idName = toAttrGrp.addAttributeUse(oneAttrUse);
                 if (idName != null) {
                     throw new ComplexTypeRecoverableError("ct-props-correct.5",
-                          new Object[]{typeName, idName, attrUseS[i].fAttrDecl.fName},
+                          new Object[]{typeName, idName, oneAttrUse.fAttrDecl.fName},
                           elem);
                 }
             }
@@ -962,14 +965,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
     private static synchronized XSParticleDecl getErrorContent() {
         if (fErrorContent==null) {
             fErrorWildcard = new XSWildcardDecl();
-            fErrorWildcard.fProcessContents = XSWildcardDecl.WILDCARD_SKIP;
+            fErrorWildcard.fProcessContents = XSWildcardDecl.PC_SKIP;
             XSParticleDecl particle = new XSParticleDecl();
             particle.fType = XSParticleDecl.PARTICLE_WILDCARD;
             particle.fValue = fErrorWildcard;
             particle.fMinOccurs = 0;
             particle.fMaxOccurs = SchemaSymbols.OCCURRENCE_UNBOUNDED;
-            XSModelGroup group = new XSModelGroup();
-            group.fCompositor = XSModelGroup.MODELGROUP_SEQUENCE;
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
             group.fParticleCount = 1;
             group.fParticles = new XSParticleDecl[1];
             group.fParticles[0] = particle;

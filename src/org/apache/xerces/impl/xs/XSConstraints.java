@@ -58,13 +58,14 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.util.SymbolHash;
 import java.util.Vector;
@@ -97,9 +98,9 @@ public class XSConstraints {
         }
 
         // if derived is simple type
-        if (derived.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+        if (derived.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             // if base is complex type
-            if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+            if (base.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
                 if (base == SchemaGrammar.fAnyType)
@@ -127,7 +128,7 @@ public class XSConstraints {
         }
 
         // if base is complex type
-        if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+        if (base.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
             // if base is anyType, change base to anySimpleType,
             // otherwise, not valid
             if (base == SchemaGrammar.fAnyType)
@@ -162,8 +163,8 @@ public class XSConstraints {
 
         // 2 All of the following must be true:
         // 2.1 restriction is not in the subset, or in the {final} of its own {base type definition};
-        if ((block & SchemaSymbols.RESTRICTION) != 0 ||
-            (derived.getBaseType().getFinalSet() & SchemaSymbols.RESTRICTION) != 0) {
+        if ((block & XSConstants.DERIVATION_RESTRICTION) != 0 ||
+            (derived.getBaseType().getFinal() & XSConstants.DERIVATION_RESTRICTION) != 0) {
             return false;
         }
 
@@ -188,10 +189,10 @@ public class XSConstraints {
 
         // 2.2.4 B's {variety} is union and D is validly derived from a type definition in B's {member type definitions} given the subset, as defined by this constraint.
         if (base.getVariety() == XSSimpleType.VARIETY_UNION) {
-            XSSimpleType[] subUnionMemberDV = ((XSUnionSimpleType)base).getMemberTypes();
-            int subUnionSize = subUnionMemberDV.length ;
+            XSObjectList subUnionMemberDV = base.getMemberTypes();
+            int subUnionSize = subUnionMemberDV.getListLength();
             for (int i=0; i<subUnionSize; i++) {
-                base = subUnionMemberDV[i];
+                base = (XSSimpleType)subUnionMemberDV.getItem(i);
                 if (checkSimpleDerivation(derived, base, block))
                     return true;
             }
@@ -229,13 +230,13 @@ public class XSConstraints {
 
         // 2.3.2 The appropriate case among the following must be true:
         // 2.3.2.1 If D's {base type definition} is complex, then it must be validly derived from B given the subset as defined by this constraint.
-        if (directBase.getXSType() == XSTypeDecl.COMPLEX_TYPE)
+        if (directBase.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)
             return checkComplexDerivation((XSComplexTypeDecl)directBase, base, block);
 
         // 2.3.2.2 If D's {base type definition} is simple, then it must be validly derived from B given the subset as defined in Type Derivation OK (Simple) (3.14.6).
-        if (directBase.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+        if (directBase.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             // if base is complex type
-            if (base.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+            if (base.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                 // if base is anyType, change base to anySimpleType,
                 // otherwise, not valid
                 if (base == SchemaGrammar.fAnyType)
@@ -262,7 +263,7 @@ public class XSConstraints {
         // e-props-correct
         // For a string to be a valid default with respect to a type definition the appropriate case among the following must be true:
         // 1 If the type definition is a simple type definition, then the string must be valid with respect to that definition as defined by String Valid (3.14.4).
-        if (type.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+        if (type.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             dv = (XSSimpleType)type;
         }
 
@@ -349,9 +350,9 @@ public class XSConstraints {
             SimpleLocator [] rgLocators = grammars[g].getRGLocators();
             for(int i=0; i<redefinedGroups.length; ) {
                 XSGroupDecl derivedGrp = redefinedGroups[i++];
-                XSModelGroup derivedMG = derivedGrp.fModelGroup;
+                XSModelGroupImpl derivedMG = derivedGrp.fModelGroup;
                 XSGroupDecl baseGrp = redefinedGroups[i++];
-                XSModelGroup baseMG = baseGrp.fModelGroup;
+                XSModelGroupImpl baseMG = baseGrp.fModelGroup;
                 if(baseMG == null) {
                     if(derivedMG != null) { // can't be a restriction!
                         reportSchemaError(errorReporter, rgLocators[i/2-1],
@@ -420,7 +421,7 @@ public class XSConstraints {
                 // 2. Particle Derivation
                 if (types[j].fBaseType != null &&
                     types[j].fBaseType != SchemaGrammar.fAnyType &&
-                    types[j].fDerivedBy == SchemaSymbols.RESTRICTION &&
+                    types[j].fDerivedBy == XSConstants.DERIVATION_RESTRICTION &&
                     types[j].fParticle !=null &&
                     (types[j].fBaseType instanceof XSComplexTypeDecl) &&
                     ((XSComplexTypeDecl)(types[j].fBaseType)).fParticle != null) {
@@ -502,7 +503,7 @@ public class XSConstraints {
           XSElementDecl elem = (XSElementDecl)(particle.fValue);
           findElemInTable(type, elem, elemDeclHash);
 
-          if (elem.isGlobal()) {
+          if (elem.fScope == XSConstants.SCOPE_GLOBAL) {
              // Check for subsitution groups.  
              XSElementDecl[] subGroup = sgHandler.getSubstitutionGroup(elem);
              for (int i = 0; i < subGroup.length; i++) {
@@ -512,7 +513,7 @@ public class XSConstraints {
           return;
        }
 
-       XSModelGroup group = (XSModelGroup)particle.fValue;
+       XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
        for (int i = 0; i < group.fParticleCount; i++)
            checkElementDeclsConsistent(type, group.fParticles[i], elemDeclHash, sgHandler);
     }
@@ -586,7 +587,7 @@ public class XSConstraints {
        // Handle pointless groups for the derived particle
        //
        if (dType == XSParticleDecl.PARTICLE_MODELGROUP) {
-         dType = ((XSModelGroup)dParticle.fValue).fCompositor;
+         dType = ((XSModelGroupImpl)dParticle.fValue).fCompositor;
 
          // Find a group, starting with this particle, with more than 1 child.   There
          // may be none, and the particle of interest trivially becomes an element or
@@ -597,7 +598,7 @@ public class XSConstraints {
             dParticle = dtmp;
             dType = dParticle.fType;
             if (dType == XSParticleDecl.PARTICLE_MODELGROUP)
-               dType = ((XSModelGroup)dParticle.fValue).fCompositor;
+               dType = ((XSModelGroupImpl)dParticle.fValue).fCompositor;
          }
 
          // Fill in a vector with the children of the particle, removing any
@@ -614,7 +615,7 @@ public class XSConstraints {
        if (dSGHandler != null && dType == XSParticleDecl.PARTICLE_ELEMENT) {
            XSElementDecl dElement = (XSElementDecl)dParticle.fValue;
 
-           if (dElement.isGlobal()) {
+           if (dElement.fScope == XSConstants.SCOPE_GLOBAL) {
              // Check for subsitution groups.   Treat any element that has a
              // subsitution group as a choice.   Fill in the children vector with the
              // members of the substitution group
@@ -622,7 +623,7 @@ public class XSConstraints {
              if (subGroup.length >0 ) {
                 // Now, set the type to be CHOICE.  The "group" will have the same
                 // occurrence information as the original particle.
-                dType = XSModelGroup.MODELGROUP_CHOICE;
+                dType = XSModelGroupImpl.MODELGROUP_CHOICE;
                 dMinEffectiveTotalRange = dMinOccurs;
                 dMaxEffectiveTotalRange = dMaxOccurs;
 
@@ -645,7 +646,7 @@ public class XSConstraints {
        // Handle pointless groups for the base particle
        //
        if (bType == XSParticleDecl.PARTICLE_MODELGROUP) {
-         bType = ((XSModelGroup)bParticle.fValue).fCompositor;
+         bType = ((XSModelGroupImpl)bParticle.fValue).fCompositor;
 
          // Find a group, starting with this particle, with more than 1 child.   There
          // may be none, and the particle of interest trivially becomes an element or
@@ -656,7 +657,7 @@ public class XSConstraints {
             bParticle = btmp;
             bType = bParticle.fType;
             if (bType == XSParticleDecl.PARTICLE_MODELGROUP)
-               bType = ((XSModelGroup)bParticle.fValue).fCompositor;
+               bType = ((XSModelGroupImpl)bParticle.fValue).fCompositor;
          }
 
          // Fill in a vector with the children of the particle, removing any
@@ -670,14 +671,14 @@ public class XSConstraints {
        if (bSGHandler != null && bType == XSParticleDecl.PARTICLE_ELEMENT) {
            XSElementDecl bElement = (XSElementDecl)bParticle.fValue;
 
-           if (bElement.isGlobal()) {
+           if (bElement.fScope == XSConstants.SCOPE_GLOBAL) {
              // Check for subsitution groups.   Treat any element that has a
              // subsitution group as a choice.   Fill in the children vector with the
              // members of the substitution group
              XSElementDecl[] bsubGroup = bSGHandler.getSubstitutionGroup(bElement);
              if (bsubGroup.length >0 ) {
                 // Now, set the type to be CHOICE
-                bType = XSModelGroup.MODELGROUP_CHOICE;
+                bType = XSModelGroupImpl.MODELGROUP_CHOICE;
 
                 bChildren = new Vector(bsubGroup.length+1);
                 for (int i = 0; i < bsubGroup.length; i++) {
@@ -717,7 +718,7 @@ public class XSConstraints {
               }
 
               // Elt:All RecurseAsIfGroup
-              case XSModelGroup.MODELGROUP_CHOICE:
+              case XSModelGroupImpl.MODELGROUP_CHOICE:
               {
                  // Treat the element as if it were in a group of the same type
                  // as the base Particle
@@ -728,8 +729,8 @@ public class XSConstraints {
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
-              case XSModelGroup.MODELGROUP_SEQUENCE:
-              case XSModelGroup.MODELGROUP_ALL:
+              case XSModelGroupImpl.MODELGROUP_SEQUENCE:
+              case XSModelGroupImpl.MODELGROUP_ALL:
               {
                  // Treat the element as if it were in a group of the same type
                  // as the base Particle
@@ -761,9 +762,9 @@ public class XSConstraints {
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_CHOICE:
-              case XSModelGroup.MODELGROUP_SEQUENCE:
-              case XSModelGroup.MODELGROUP_ALL:
+              case XSModelGroupImpl.MODELGROUP_CHOICE:
+              case XSModelGroupImpl.MODELGROUP_SEQUENCE:
+              case XSModelGroupImpl.MODELGROUP_ALL:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  throw new XMLSchemaException("cos-particle-restrict.2",
@@ -778,7 +779,7 @@ public class XSConstraints {
             }
          }
 
-         case XSModelGroup.MODELGROUP_ALL:
+         case XSModelGroupImpl.MODELGROUP_ALL:
          {
             switch (bType) {
 
@@ -799,15 +800,15 @@ public class XSConstraints {
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_ALL:
+              case XSModelGroupImpl.MODELGROUP_ALL:
               {
                  checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_CHOICE:
-              case XSModelGroup.MODELGROUP_SEQUENCE:
+              case XSModelGroupImpl.MODELGROUP_CHOICE:
+              case XSModelGroupImpl.MODELGROUP_SEQUENCE:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  throw new XMLSchemaException("cos-particle-restrict.2",
@@ -822,7 +823,7 @@ public class XSConstraints {
             }
          }
 
-         case XSModelGroup.MODELGROUP_CHOICE:
+         case XSModelGroupImpl.MODELGROUP_CHOICE:
          {
             switch (bType) {
 
@@ -842,15 +843,15 @@ public class XSConstraints {
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_CHOICE:
+              case XSModelGroupImpl.MODELGROUP_CHOICE:
               {
                  checkRecurseLax(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                  bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_ALL:
-              case XSModelGroup.MODELGROUP_SEQUENCE:
+              case XSModelGroupImpl.MODELGROUP_ALL:
+              case XSModelGroupImpl.MODELGROUP_SEQUENCE:
               case XSParticleDecl.PARTICLE_ELEMENT:
               {
                  throw new XMLSchemaException("cos-particle-restrict.2",
@@ -866,7 +867,7 @@ public class XSConstraints {
          }
 
 
-         case XSModelGroup.MODELGROUP_SEQUENCE:
+         case XSModelGroupImpl.MODELGROUP_SEQUENCE:
          {
             switch (bType) {
 
@@ -886,21 +887,21 @@ public class XSConstraints {
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_ALL:
+              case XSModelGroupImpl.MODELGROUP_ALL:
               {
                  checkRecurseUnordered(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                                        bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_SEQUENCE:
+              case XSModelGroupImpl.MODELGROUP_SEQUENCE:
               {
                  checkRecurse(dChildren, dMinOccurs, dMaxOccurs, dSGHandler,
                               bChildren, bMinOccurs, bMaxOccurs, bSGHandler);
                  return;
               }
 
-              case XSModelGroup.MODELGROUP_CHOICE:
+              case XSModelGroupImpl.MODELGROUP_CHOICE:
               {
                  int min1 = dMinOccurs * dChildren.size();
                  int max1 = (dMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)?
@@ -943,8 +944,8 @@ public class XSConstraints {
          return p;
 
        if (p.fMinOccurs==1 && p.fMaxOccurs==1 &&
-           p.fValue!=null && ((XSModelGroup)p.fValue).fParticleCount == 1)
-         return getNonUnaryGroup(((XSModelGroup)p.fValue).fParticles[0]);
+           p.fValue!=null && ((XSModelGroupImpl)p.fValue).fParticleCount == 1)
+         return getNonUnaryGroup(((XSModelGroupImpl)p.fValue).fParticles[0]);
        else
          return p;
     }
@@ -959,7 +960,7 @@ public class XSConstraints {
 
        Vector children = new Vector();
 
-       XSModelGroup group = (XSModelGroup)p.fValue;
+       XSModelGroupImpl group = (XSModelGroupImpl)p.fValue;
        for (int i = 0; i < group.fParticleCount; i++)
            gatherChildren(group.fCompositor, group.fParticles[i], children);
 
@@ -973,7 +974,7 @@ public class XSConstraints {
        int max = p.fMaxOccurs;
        int type = p.fType;
        if (type == XSParticleDecl.PARTICLE_MODELGROUP)
-          type = ((XSModelGroup)p.fValue).fCompositor;
+          type = ((XSModelGroupImpl)p.fValue).fCompositor;
 
        if (type == XSParticleDecl.PARTICLE_EMPTY)
           return;
@@ -988,7 +989,7 @@ public class XSConstraints {
           children.addElement(p);
        }
        else if (parentType == type) {
-          XSModelGroup group = (XSModelGroup)p.fValue;
+          XSModelGroupImpl group = (XSModelGroupImpl)p.fValue;
           for (int i = 0; i < group.fParticleCount; i++)
              gatherChildren(type, group.fParticles[i], children);
        }
@@ -1016,7 +1017,7 @@ public class XSConstraints {
       //
       // Check nillable
       //
-      if (! (bElement.isNillable() || !dElement.isNillable())) {
+      if (! (bElement.getIsNillable() || !dElement.getIsNillable())) {
         throw new XMLSchemaException("rcase-NameAndTypeOK.2",
                                       new Object[]{dElement.fName});
       }
@@ -1032,16 +1033,16 @@ public class XSConstraints {
       //
       // Check for consistent fixed values
       //
-      if (bElement.getConstraintType() == XSElementDecl.FIXED_VALUE) {
+      if (bElement.getConstraintType() == XSConstants.VC_FIXED) {
          // derived one has to have a fixed value
-         if (dElement.getConstraintType() != XSElementDecl.FIXED_VALUE) {
+         if (dElement.getConstraintType() != XSConstants.VC_FIXED) {
             throw new XMLSchemaException("rcase-NameAndTypeOK.4",
                                       new Object[]{dElement.fName});
          }
 
          // get simple type
          XSSimpleType dv = null;
-         if (dElement.fType.getXSType() == XSTypeDecl.SIMPLE_TYPE)
+         if (dElement.fType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE)
             dv = (XSSimpleType)dElement.fType;
          else if (((XSComplexTypeDecl)dElement.fType).fContentType == XSComplexTypeDecl.CONTENTTYPE_SIMPLE)
             dv = ((XSComplexTypeDecl)dElement.fType).fXSSimpleType;
@@ -1065,7 +1066,7 @@ public class XSConstraints {
       int blockSet1 = dElement.fBlock;
       int blockSet2 = bElement.fBlock;
       if (((blockSet1 & blockSet2)!=blockSet2) ||
-            (blockSet1==SchemaSymbols.EMPTY_SET && blockSet2!=SchemaSymbols.EMPTY_SET))
+            (blockSet1==XSConstants.DERIVATION_NONE && blockSet2!=XSConstants.DERIVATION_NONE))
         throw new XMLSchemaException("rcase-NameAndTypeOK.6",
                                   new Object[]{dElement.fName});
 
@@ -1074,7 +1075,7 @@ public class XSConstraints {
       // Check that the derived element's type is derived from the base's.
       //
       if (!checkTypeDerivationOk(dElement.fType, bElement.fType,
-                                 (short)(SchemaSymbols.EXTENSION|SchemaSymbols.LIST|SchemaSymbols.UNION))) {
+                                 (short)(XSConstants.DERIVATION_EXTENSION|XSConstants.DERIVATION_LIST|XSConstants.DERIVATION_UNION))) {
           throw new XMLSchemaException("rcase-NameAndTypeOK.7",
                                   new Object[]{dElement.fName});
       }
@@ -1390,7 +1391,7 @@ public class XSConstraints {
         // if the intersection of the two wildcard is not empty list
         XSWildcardDecl intersect = wildcard1.performIntersectionWith(wildcard2, wildcard1.fProcessContents);
         if (intersect == null ||
-            intersect.fType != XSWildcardDecl.WILDCARD_LIST ||
+            intersect.fType != XSWildcardDecl.NSCONSTRAINT_LIST ||
             intersect.fNamespaceList.length != 0) {
             return true;
         }

@@ -58,6 +58,7 @@
 package org.apache.xerces.util;
 
 import org.apache.xerces.xni.QName;
+import java.util.Vector;
 
 /**
  * This class is an unsynchronized hash table primary used for String
@@ -84,17 +85,23 @@ public class SymbolHash {
     /** Buckets. */
     protected Entry[] fBuckets; 
 
+    /** Number of elements. */
+    protected int fNum = 0;
 
     //
     // Constructors
     //
 
-    /** Constructs a key table. */
+    /** Constructs a key table with the default size. */
     public SymbolHash() {
         fBuckets = new Entry[fTableSize];
     }
 
-
+    /**
+     * Constructs a key table with a given size.
+     * 
+     * @param size  the size of the key table.
+     */
     public SymbolHash(int size) {
         fTableSize = size;
         fBuckets = new Entry[fTableSize];
@@ -105,122 +112,103 @@ public class SymbolHash {
     //
 
     /**
-     * Adds the specified key to the key table and returns a
-     * reference to the unique key. If the key already exists, 
-     * the previous key reference is returned instead, in order
-     * guarantee that key references remain unique.
+     * Adds the key/value mapping to the key table. If the key already exists, 
+     * the previous value associated with this key is overwritten by the new
+     * value.
      * 
-     * @param key The new key.
-     */
-    public String put (String key, Object value ) {
-
-        int bucket = hash(key) % fTableSize;
-        Entry entry = search (key, bucket);
-
-        if (entry !=null) {
-            return entry.key;
-        }
-        // create new entry
-        entry = new Entry(key, value, fBuckets[bucket]);
-        fBuckets[bucket] = entry;
-        return key;
-
-    } 
-
-    /**
-     * Adds the specified key to the key table and returns a
-     * reference to the unique key. If the key already exists, 
-     * the previous key reference is returned instead, in order
-     * guarantee that key references remain unique.
-     * 
-     * @param qName The QName which is the key
+     * @param key
      * @param value 
      */
-    public String put(QName qName, Object value) {
+    public void put(Object key, Object value) {
+        int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
+        Entry entry = search(key, bucket);
 
-        String key = (qName.uri == null)?qName.localpart:qName.uri.concat(qName.localpart);
-
-        // search for identical key
-        int bucket = hash(key) % fTableSize;
-        Entry entry = search (key, bucket);
-
-        if (entry !=null) {
-            return entry.key;
+        // replace old value
+        if (entry != null) {
+            entry.value = value;
         }
-        // add new entry
-        entry = new Entry(key, value,fBuckets[bucket]);
-        fBuckets[bucket] = entry;
-        return entry.key;
+        // create new entry
+        else {
+            entry = new Entry(key, value, fBuckets[bucket]);
+            fBuckets[bucket] = entry;
+            fNum++;
+        }
+    }
 
-    } 
-
-    public Object get (String key){
-
-        int bucket = hash(key) % fTableSize;
-        Entry entry = search (key, bucket);
-        if (entry !=null) {
+    /**
+     * Get the value associated with the given key.
+     * 
+     * @param key
+     * @return
+     */
+    public Object get(Object key) {
+        int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
+        Entry entry = search(key, bucket);
+        if (entry != null) {
             return entry.value;
         }
         return null;
     }
 
-    // this tries to save a bit of GC'ing by at least keeping the fBuckets array around.
-    public void clear() {
-        for (int i=0; i<fTableSize; i++) {
-            fBuckets[i] = new Entry();
-        }
-    } // clear():  void
-
-    public Object get (QName qName){
-
-        String key = qName.uri.concat(qName.localpart);
-        
-        int bucket = hash(key) % fTableSize;
-        Entry entry = search (key, bucket);
-        
-        if (entry !=null) {
-            return entry.value;
-        }
-        return null;
+    /**
+     * Get the number of key/value pairs stored in this table.
+     * 
+     * @return
+     */
+    public int getLength() {
+        return fNum;
     }
-
-    protected Entry search (String key, int bucket){
-        // search for identical key
-        int length = key.length();
-        OUTER: for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
-            if (entry.characters != null && length == entry.characters.length) {
-                for (int i = 0; i < length; i++) {
-                    if (key.charAt(i) != entry.characters[i]) {
-                        continue OUTER;
-                    }
-                }
-                return entry;
+    
+    /**
+     * Add all values to the given array. The array must have enough entry.
+     * 
+     * @param elements  the array to store the elements
+     * @param from      where to start store element in the array
+     * @return          number of elements copied to the array
+     */
+    public int getValues(Object[] elements, int from) {
+        for (int i=0, j=0; i<fTableSize && j<fNum; i++) {
+            for (Entry entry = fBuckets[i]; entry != null; entry = entry.next) {
+                elements[from+j] = entry.value;
+                j++;
             }
         }
+        return fNum;
+    }
+    
+    /**
+     * Make a clone of this object.
+     */
+    public SymbolHash makeClone() {
+        SymbolHash newTable = new SymbolHash(fTableSize);
+        newTable.fNum = fNum;
+        for (int i = 0; i < fTableSize; i++) {
+            if (fBuckets[i] != null)
+                newTable.fBuckets[i] = fBuckets[i].makeClone();
+        }
+        return newTable;
+    }
+    
+    /**
+     * Remove all key/value assocaition. This tries to save a bit of GC'ing
+     * by at least keeping the fBuckets array around.
+     */
+    public void clear() {
+        for (int i=0; i<fTableSize; i++) {
+            fBuckets[i] = null;
+        }
+        fNum = 0;
+    } // clear():  void
+
+    protected Entry search(Object key, int bucket) {
+        // search for identical key
+        for (Entry entry = fBuckets[bucket]; entry != null; entry = entry.next) {
+            if (key.equals(entry.key))
+                return entry;
+        }
         return null;
     }
-    /**
-     * Returns a hashcode value for the specified key. The value
-     * returned by this method must be identical to the value returned
-     * by the <code>hash(char[],int,int)</code> method when called
-     * with the character array that comprises the key string.
-     * 
-     * @param key The key to hash.
-     */
-    public int hash(String key) {
-
-        int code = 0;
-        int length = key.length();
-        for (int i = 0; i < length; i++) {
-            code = code * 37 + key.charAt(i);
-        }
-        return code & 0x7FFFFFF;
-
-    } // hash(String):int
-
-
-
-
+    
     //
     // Classes
     //
@@ -230,36 +218,32 @@ public class SymbolHash {
      * in a linked list.
      */
     protected static final class Entry {
-	    /**
-         * key is a name or QName 
-         */
-	    public String key;
-
-	    public Object value;
-	
-        /** 
-         * key characters. This information is duplicated here for
-         * comparison performance.
-         */
-        public char[] characters;
-
+        // key/value
+        public Object key;
+        public Object value;
         /** The next entry. */
         public Entry next;
-
 
         public Entry() {
             key = null;
             value = null;
-            characters = null;
             next = null;
         }
-	    public Entry(String key, Object value, Entry next) {
-	        this.key = key;
-	        this.value = value;
-	        this.next = next;
-            characters = new char[key.length()];
-            key.getChars(0, characters.length, characters, 0);
-	    }
+
+        public Entry(Object key, Object value, Entry next) {
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+        
+        public Entry makeClone() {
+            Entry entry = new Entry();
+            entry.key = key;
+            entry.value = value;
+            if (next != null)
+                entry.next = next.makeClone();
+            return entry;
+        }
     } // entry
 
 } // class SymbolHash

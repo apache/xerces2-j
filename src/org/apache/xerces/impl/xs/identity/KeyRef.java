@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs.identity;
 
+import org.apache.xerces.impl.xs.psvi.XSIDConstraintDefinition;
+
 /**
  * Schema key reference identity constraint.
  *
@@ -78,10 +80,11 @@ public class KeyRef
     //
 
     /** Constructs a keyref with the specified name. */
-    public KeyRef(String identityConstraintName, String elemName, UniqueOrKey key) {
-        super(identityConstraintName, elemName);
+    public KeyRef(String namespace, String identityConstraintName,
+                  String elemName, UniqueOrKey key) {
+        super(namespace, identityConstraintName, elemName);
         fKey = key;
-        type = KEYREF;
+        type = IC_KEYREF;
     } // <init>(String,String,String)
 
     //
@@ -92,5 +95,14 @@ public class KeyRef
     public UniqueOrKey getKey() {
         return fKey;
     } // getKey(): int
+
+    /**
+     * {referenced key} Required if {identity-constraint category} is keyref,
+     * forbidden otherwise. An identity-constraint definition with
+     * {identity-constraint category} equal to key or unique.
+     */
+    public XSIDConstraintDefinition getRefKey() {
+        return fKey;
+    }
 
 } // class KeyRef

@@ -59,9 +59,6 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSAtomicSimpleType;
-import org.apache.xerces.impl.dv.XSListSimpleType;
-import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 import org.apache.xerces.impl.xs.SchemaGrammar;
@@ -69,11 +66,12 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.impl.xs.XSNotationDecl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
-import org.apache.xerces.impl.xs.XSAttributeUse;
+import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.NamespaceSupport;
@@ -203,7 +201,7 @@ abstract class XSDAbstractTraverser {
                 // for NOTATION types, need to check whether there is a notation
                 // declared with the same name as the enumeration value.
                 if (baseValidator.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
-                    ((XSAtomicSimpleType)baseValidator).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION) {
+                    baseValidator.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
                     // need to use the namespace context returned from checkAttributes
                     schemaDoc.fValidationContext.setNamespaceSupport(nsDecls);
                     try{
@@ -377,17 +375,17 @@ abstract class XSDAbstractTraverser {
     // return whether QName/NOTATION is part of the given type
     private boolean containsQName(XSSimpleType type) {
         if (type.getVariety() == XSSimpleType.VARIETY_ATOMIC) {
-            short primitive = ((XSAtomicSimpleType)type).getPrimitiveKind();
-            return (primitive == XSAtomicSimpleType.PRIMITIVE_QNAME ||
-                    primitive == XSAtomicSimpleType.PRIMITIVE_NOTATION);
+            short primitive = type.getPrimitiveKind();
+            return (primitive == XSSimpleType.PRIMITIVE_QNAME ||
+                    primitive == XSSimpleType.PRIMITIVE_NOTATION);
         }
         else if (type.getVariety() == XSSimpleType.VARIETY_LIST) {
-            return containsQName(((XSListSimpleType)type).getItemType());
+            return containsQName((XSSimpleType)type.getItemType());
         }
         else if (type.getVariety() == XSSimpleType.VARIETY_UNION) {
-            XSSimpleType[] members = ((XSUnionSimpleType)type).getMemberTypes();
-            for (int i = 0; i < members.length; i++) {
-                if (containsQName(members[i]))
+            XSObjectList members = type.getMemberTypes();
+            for (int i = 0; i < members.getListLength(); i++) {
+                if (containsQName((XSSimpleType)members.getItem(i)))
                     return true;
             }
         }
@@ -405,7 +403,7 @@ abstract class XSDAbstractTraverser {
 
         Element child=null;
         XSAttributeGroupDecl tempAttrGrp = null;
-        XSAttributeUse tempAttrUse = null;
+        XSAttributeUseImpl tempAttrUse = null;
         String childName;
 
         for (child=firstAttr; child!=null; child=DOMUtil.getNextSiblingElement(child)) {
@@ -433,16 +431,17 @@ abstract class XSDAbstractTraverser {
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
                        child, schemaDoc, grammar);
                 if(tempAttrGrp == null ) break;
-                XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
-                XSAttributeUse existingAttrUse = null;
-                int attrCount = (attrUseS !=null)?attrUseS.length:0;
+                XSObjectList attrUseS = tempAttrGrp.getAttributeUses();
+                XSAttributeUseImpl existingAttrUse = null, oneAttrUse;
+                int attrCount = attrUseS.getListLength();
                 for (int i=0; i<attrCount; i++) {
-                    existingAttrUse = attrGrp.getAttributeUse(attrUseS[i].fAttrDecl.fTargetNamespace,
-                                                              attrUseS[i].fAttrDecl.fName);
+                    oneAttrUse = (XSAttributeUseImpl)attrUseS.getItem(i);
+                    existingAttrUse = attrGrp.getAttributeUse(oneAttrUse.fAttrDecl.fTargetNamespace,
+                                                              oneAttrUse.fAttrDecl.fName);
                     if (existingAttrUse == null) {
-                        String idName = attrGrp.addAttributeUse(attrUseS[i]);
+                        String idName = attrGrp.addAttributeUse(oneAttrUse);
                         if (idName != null) {
-                            reportSchemaError("cvc-complex-type.5.3", new Object[]{attrUseS[i].fAttrDecl.fName, idName}, child);
+                            reportSchemaError("cvc-complex-type.5.3", new Object[]{oneAttrUse.fAttrDecl.fName, idName}, child);
                         }
                     }
                     else {
@@ -503,9 +502,9 @@ abstract class XSDAbstractTraverser {
      * the type is NOTATION without enumeration facet
      */
     void checkNotationType(String refName, XSTypeDecl typeDecl, Element elem) {
-        if (typeDecl.getXSType() == typeDecl.SIMPLE_TYPE &&
+        if (typeDecl.getTypeCategory() == typeDecl.SIMPLE_TYPE &&
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
-            ((XSAtomicSimpleType)typeDecl).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION) {
+            ((XSSimpleType)typeDecl).getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {
                 reportSchemaError("enumeration-required-notation", new Object[]{refName}, elem);
             }

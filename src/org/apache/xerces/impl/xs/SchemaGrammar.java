@@ -61,6 +61,7 @@ import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.xs.util.SimpleLocator;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SymbolHash;
 
@@ -97,7 +98,7 @@ public class SchemaGrammar implements Grammar {
     SymbolHash fGlobalGroupDecls;
     SymbolHash fGlobalNotationDecls;
     SymbolHash fGlobalIDConstraintDecls;
-    Hashtable fGlobalTypeDecls;
+    SymbolHash fGlobalTypeDecls;
 
     // the XMLGrammarDescription member
     XSDDescription fGrammarDescription = null;
@@ -125,7 +126,7 @@ public class SchemaGrammar implements Grammar {
         fGlobalElemDecls = new SymbolHash();
         fGlobalGroupDecls = new SymbolHash();
         fGlobalNotationDecls = new SymbolHash();
-        fGlobalTypeDecls = new Hashtable();
+        fGlobalTypeDecls = new SymbolHash();
         fGlobalIDConstraintDecls = new SymbolHash();
     } // <init>(String, XSDDescription)
 
@@ -180,7 +181,7 @@ public class SchemaGrammar implements Grammar {
             fGlobalGroupDecls = new SymbolHash(1);
             fGlobalNotationDecls = new SymbolHash(1);
             fGlobalIDConstraintDecls = new SymbolHash(1);
-            fGlobalTypeDecls = new Hashtable(1);
+            fGlobalTypeDecls = new SymbolHash(1);
 
             // 4 attributes, so initialize the size as 4*2 = 8
             fGlobalAttrDecls  = new SymbolHash(8);
@@ -191,7 +192,7 @@ public class SchemaGrammar implements Grammar {
             attr.fName = SchemaSymbols.OXSI_TYPE.intern();
             attr.fTargetNamespace = SchemaSymbols.URI_XSI;
             attr.fType = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_QNAME);
-            attr.setIsGlobal();
+            attr.fScope = XSConstants.SCOPE_GLOBAL;
             fGlobalAttrDecls.put(attr.fName, attr);
             
             // xsi:nil
@@ -199,7 +200,7 @@ public class SchemaGrammar implements Grammar {
             attr.fName = SchemaSymbols.OXSI_NIL.intern();
             attr.fTargetNamespace = SchemaSymbols.URI_XSI;
             attr.fType = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_BOOLEAN);
-            attr.setIsGlobal();
+            attr.fScope = XSConstants.SCOPE_GLOBAL;
             fGlobalAttrDecls.put(attr.fName, attr);
             
             XSSimpleType anyURI = schemaFactory.getBuiltInType(SchemaSymbols.ATTVAL_ANYURI);
@@ -209,7 +210,7 @@ public class SchemaGrammar implements Grammar {
             attr.fName = SchemaSymbols.OXSI_SCHEMALOCATION.intern();
             attr.fTargetNamespace = SchemaSymbols.URI_XSI;
             attr.fType = schemaFactory.createTypeList(null, SchemaSymbols.URI_XSI, (short)0, anyURI);
-            attr.setIsGlobal();
+            attr.fScope = XSConstants.SCOPE_GLOBAL;
             fGlobalAttrDecls.put(attr.fName, attr);
             
             // xsi:noNamespaceSchemaLocation
@@ -217,7 +218,7 @@ public class SchemaGrammar implements Grammar {
             attr.fName = SchemaSymbols.OXSI_NONAMESPACESCHEMALOCATION.intern();
             attr.fTargetNamespace = SchemaSymbols.URI_XSI;
             attr.fType = anyURI;
-            attr.setIsGlobal();
+            attr.fScope = XSConstants.SCOPE_GLOBAL;
             fGlobalAttrDecls.put(attr.fName, attr);
         }
     } // <init>(int)
@@ -299,7 +300,7 @@ public class SchemaGrammar implements Grammar {
      * register one global type
      */
     public final void addGlobalTypeDecl(XSTypeDecl decl) {
-        fGlobalTypeDecls.put(decl.getTypeName(), decl);
+        fGlobalTypeDecls.put(decl.getName(), decl);
     }
 
     /**
@@ -480,13 +481,13 @@ public class SchemaGrammar implements Grammar {
         fAnyType.fName = SchemaSymbols.ATTVAL_ANYTYPE;
         fAnyType.fTargetNamespace = SchemaSymbols.URI_SCHEMAFORSCHEMA;
         fAnyType.fBaseType = fAnyType;
-        fAnyType.fDerivedBy = SchemaSymbols.RESTRICTION;
+        fAnyType.fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
         fAnyType.fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
 
         // the wildcard used in anyType (content and attribute)
         // the spec will change strict to lax for anyType
         XSWildcardDecl wildcard = new XSWildcardDecl();
-        wildcard.fProcessContents = SchemaSymbols.ANY_LAX;
+        wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
         // the particle for the content wildcard
         XSParticleDecl particleW = new XSParticleDecl();
         particleW.fMinOccurs = 0;
@@ -494,8 +495,8 @@ public class SchemaGrammar implements Grammar {
         particleW.fType = XSParticleDecl.PARTICLE_WILDCARD;
         particleW.fValue = wildcard;
         // the model group of a sequence of the above particle
-        XSModelGroup group = new XSModelGroup();
-        group.fCompositor = XSModelGroup.MODELGROUP_SEQUENCE;
+        XSModelGroupImpl group = new XSModelGroupImpl();
+        group.fCompositor = XSModelGroupImpl.MODELGROUP_SEQUENCE;
         group.fParticleCount = 1;
         group.fParticles = new XSParticleDecl[1];
         group.fParticles[0] = particleW;

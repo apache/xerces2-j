@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,9 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
+
 /**
  * Store schema model group declaration.
  *
@@ -64,15 +67,15 @@ package org.apache.xerces.impl.xs;
  *
  * @version $Id$
  */
-public class XSModelGroup {
+public class XSModelGroupImpl implements XSModelGroup {
 
     // types of model groups
-    // REVISIT: can't use same constants as those in XSParticleDecl, because
+    // REVISIT: can't use same constants as those for particles, because
     // there are place where the constants are used together. For example,
     // to check whether the content is an element or a sequence.
-    public static final short MODELGROUP_CHOICE       = 11;
-    public static final short MODELGROUP_SEQUENCE     = 12;
-    public static final short MODELGROUP_ALL          = 13;
+    public static final short MODELGROUP_CHOICE       = 101;
+    public static final short MODELGROUP_SEQUENCE     = 102;
+    public static final short MODELGROUP_ALL          = 103;
 
     // compositor of the model group
     public short fCompositor;
@@ -200,4 +203,56 @@ public class XSModelGroup {
         fDescription = null;
     }
     
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.MODEL_GROUP;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return null;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return null;
+    }
+
+    /**
+     * {compositor} One of all, choice or sequence. The valid constants values
+     * are: ALL, CHOICE, SEQUENCE.
+     */
+    public short getCompositor() {
+        if (fCompositor == MODELGROUP_CHOICE)
+            return XSModelGroup.COMPOSITOR_CHOICE;
+        else if (fCompositor == MODELGROUP_SEQUENCE)
+            return XSModelGroup.COMPOSITOR_SEQUENCE;
+        else
+            return XSModelGroup.COMPOSITOR_ALL;
+    }
+
+    /**
+     * {particles} A list of particles
+     */
+    public XSObjectList getParticles() {
+        return new XSObjectListImpl(fParticles, fParticleCount);
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+
 } // class XSParticle

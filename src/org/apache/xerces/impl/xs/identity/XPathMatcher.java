@@ -58,7 +58,7 @@
 package org.apache.xerces.impl.xs.identity;
 
 import org.apache.xerces.impl.xs.XSAttributeDecl;
-import org.apache.xerces.impl.xs.XSAttributeUse;
+import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSAttributeGroupDecl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
@@ -414,7 +414,7 @@ public class XPathMatcher {
                     if (elementDecl != null) {
                         XSTypeDecl type = elementDecl.fType;
                         if (type != null) {
-                          if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+                          if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                             XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
                             attrGrp = ctype.fAttrGrp;
                           }
@@ -438,7 +438,7 @@ public class XPathMatcher {
 
                                     XSSimpleType aValidator = null;
                                     if (attrGrp != null) {
-                                      XSAttributeUse tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
+                                      XSAttributeUseImpl tempAttUse = attrGrp.getAttributeUse(aname.uri, aname.localpart);
                                       if (tempAttUse != null) {
                                         XSAttributeDecl tempAttDecl = tempAttUse.fAttrDecl;
                                         aValidator = tempAttDecl.fType;
@@ -531,7 +531,7 @@ public class XPathMatcher {
                     if (eDecl!=null) {
                       XSTypeDecl type = eDecl.fType;
                       if (type != null) {
-                        if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+                        if (type.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                           XSComplexTypeDecl ctype = (XSComplexTypeDecl)type;
                           val = ctype.fXSSimpleType;
                         }
@@ -542,7 +542,7 @@ public class XPathMatcher {
                     }
 
                     if(eDecl != null) {
-                        matched(fMatchedString, val, (eDecl.isNillable()));
+                        matched(fMatchedString, val, (eDecl.getIsNillable()));
                     } else
                         matched(fMatchedString, val, false);
 

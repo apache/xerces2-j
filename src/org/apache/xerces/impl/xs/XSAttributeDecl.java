@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
@@ -68,12 +69,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSAttributeDecl {
-
-    // types of value constraint
-    public final static short     NO_CONSTRAINT       = 0;
-    public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUE         = 2;
+public class XSAttributeDecl implements XSAttributeDeclaration {
 
     // scopes
     public final static short     SCOPE_ABSENT        = 0;
@@ -87,26 +83,18 @@ public class XSAttributeDecl {
     // the simple type of the attribute
     public XSSimpleType fType = null;
     // value constraint type: default, fixed or !specified
-    short fMiscFlags = 0;
+    public short fConstraintType = XSConstants.VC_NONE;
     // scope
-    short fScope = SCOPE_ABSENT;
+    public short fScope = XSConstants.SCOPE_ABSENT;
     // enclosing complex type, when the scope is local
     XSComplexTypeDecl fEnclosingCT = null;
     // value constraint value
     public ValidatedInfo fDefault = null;
 
-    // methods to get/set misc flag
-
-    public short getConstraintType() {
-        return  fMiscFlags;
-    }
-    public boolean isGlobal() {
-        return fScope == SCOPE_GLOBAL;
-    }
-
     public void setConstraintType(short constraintType) {
-        fMiscFlags = constraintType;
+        fConstraintType = constraintType;
     }
+
     public void setIsGlobal() {
         fScope = SCOPE_GLOBAL;
     }
@@ -119,8 +107,86 @@ public class XSAttributeDecl {
         fName = null;
         fTargetNamespace = null;
         fType = null;
-        fMiscFlags = 0;
+        fConstraintType = XSConstants.VC_NONE;
+        fScope = XSConstants.SCOPE_ABSENT;
         fDefault = null;
     }
 
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.ATTRIBUTE_DECLARATION;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * A simple type definition
+     */
+    public XSSimpleTypeDefinition getTypeDefinition() {
+        return fType;
+    }
+
+    /**
+     * Optional. Either global or a complex type definition (
+     * <code>ctDefinition</code>). This property is absent in the case of
+     * declarations within attribute group definitions: their scope will be
+     * determined when they are used in the construction of complex type
+     * definitions.
+     */
+    public short getScope() {
+        return fScope;
+    }
+
+    /**
+     * Locally scoped declarations are available for use only within the
+     * complex type definition identified by the <code>scope</code>
+     * property.
+     */
+    public XSComplexTypeDefinition getEnclosingCTDefinition() {
+        return fEnclosingCT;
+    }
+
+    /**
+     * Value constraint: one of default, fixed.
+     */
+    public short getConstraintType() {
+        return fConstraintType;
+    }
+
+    /**
+     * Value constraint: The actual value (with respect to the {type
+     * definition}) Should we return Object instead of DOMString?
+     */
+    public String getConstraintValue() {
+        // REVISIT: SCAPI: what's the proper representation
+        return getConstraintType() == XSConstants.VC_NONE ?
+               null :
+               fDefault.normalizedValue;
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+    
 } // class XSAttributeDecl

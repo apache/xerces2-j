@@ -58,9 +58,6 @@
 package org.apache.xerces.impl.dv.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSAtomicSimpleType;
-import org.apache.xerces.impl.dv.XSListSimpleType;
-import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
@@ -68,12 +65,16 @@ import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
+import org.apache.xerces.impl.xs.util.EnumerationImpl;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.xni.NamespaceContext;
 import java.util.Vector;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 /**
@@ -82,7 +83,7 @@ import java.util.StringTokenizer;
  *
  * @version $Id$
  */
-public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, XSUnionSimpleType {
+public class XSSimpleTypeDecl implements XSSimpleType {
 
     static final short DV_STRING        = PRIMITIVE_STRING;
     static final short DV_BOOLEAN       = PRIMITIVE_BOOLEAN;
@@ -184,7 +185,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
 
     // for fundamental facets
     private short fOrdered;
-    private short fCardinality;
+    private boolean fFinite;
     private boolean fBounded;
     private boolean fNumeric;
     
@@ -194,7 +195,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
     //Create a new built-in primitive types (and id/idref/entity)
     protected XSSimpleTypeDecl(XSSimpleTypeDecl base, String name, short validateDV,
                                short ordered, boolean bounded,
-                               short cardinality, boolean numeric) {
+                               boolean finite, boolean numeric) {
         fBase = base;
         fTypeName = name;
         fTargetNamespace = SchemaDVFactoryImpl.URI_SCHEMAFORSCHEMA;
@@ -208,6 +209,10 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             fWhiteSpace = WS_COLLAPSE;
             fFixedFacet = FACET_WHITESPACE;
         }
+        this.fOrdered = ordered;
+        this.fBounded = bounded;
+        this.fFinite = finite;
+        this.fNumeric = numeric;
     }
 
     //Create a new simple type for restriction.
@@ -375,38 +380,41 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         return this;
     }
 
-
-    public short getXSType () {
-        return XSTypeDecl.SIMPLE_TYPE;
+    public short getType () {
+        return XSConstants.TYPE_DEFINITION;
     }
 
-    public String getTypeName() {
+    public short getTypeCategory () {
+        return SIMPLE_TYPE;
+    }
+
+    public String getName() {
         return fTypeName;
     }
 
-    public String getTargetNamespace() {
+    public String getNamespace() {
         return fTargetNamespace;
     }
 
-    public short getFinalSet(){
+    public short getFinal(){
         return fFinalSet;
     }
 
-    public XSTypeDecl getBaseType(){
+    public boolean getIsFinal(short derivation) {
+        return (fFinalSet & derivation) != 0;
+    }
+
+    public XSTypeDefinition getBaseType(){
         return fBase;
     }
 
-    public boolean isAnonymous() {
+    public boolean getIsAnonymous() {
         return fTypeName == null;
     }
 
     public short getVariety(){
         // for anySimpleType, return absent variaty
         return fValidationDV == DV_ANYSIMPLETYPE ? VARIETY_ABSENT : fVariety;
-    }
-
-    public short getDefinedFacets() {
-        return fFacetsDefined;
     }
 
     public boolean isIDType(){
@@ -433,7 +441,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         }
     }
 
-    public XSSimpleType getPrimitiveType() {
+    public XSSimpleTypeDefinition getPrimitiveType() {
         if (fVariety == VARIETY_ATOMIC && fValidationDV != DV_ANYSIMPLETYPE) {
             XSSimpleTypeDecl pri = this;
             // recursively get base, until we reach anySimpleType
@@ -447,7 +455,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         }
     }
 
-    public XSSimpleType getItemType() {
+    public XSSimpleTypeDefinition getItemType() {
         if (fVariety == VARIETY_LIST) {
             return fItemType;
         }
@@ -457,9 +465,9 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         }
     }
 
-    public XSSimpleType[] getMemberTypes() {
+    public XSObjectList getMemberTypes() {
         if (fVariety == VARIETY_UNION) {
-            return fMemberTypes;
+            return new XSObjectListImpl(fMemberTypes, fMemberTypes.length);
         }
         else {
             // REVISIT: error situation. runtime exception?
@@ -1555,20 +1563,83 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         }
     }
 
-    public short getOrderedFacet() {
+    public short getOrdered() {
         return fOrdered;
     }
 
-    public boolean isBounded(){
+    public boolean getIsBounded(){
         return fBounded;
     }
 
-    public short getCardinalityFacet(){
-        return fCardinality;
+    public boolean getIsFinite(){
+        return fFinite;
     }
 
-    public boolean isNumeric(){
+    public boolean getIsNumeric(){
         return fNumeric;
+    }
+
+    public boolean getIsDefinedFacet(short facetName) {
+        return (fFacetsDefined & facetName) != 0;
+    }
+
+    public short getDefinedFacets() {
+        return fFacetsDefined;
+    }
+
+    public boolean getIsFixedFacet(short facetName) {
+        return (fFixedFacet & facetName) != 0;
+    }
+
+    public short getFixedFacets() {
+        return fFixedFacet;
+    }
+
+    public String getLexicalFacetValue(short facetName) {
+        switch (facetName) {
+        case FACET_LENGTH:
+            return Integer.toString(fLength);
+        case FACET_MINLENGTH:
+            return Integer.toString(fMinLength);
+        case FACET_MAXLENGTH:
+            return Integer.toString(fMaxLength);
+        case FACET_WHITESPACE:
+            return WS_FACET_STRING[fWhiteSpace];
+        case FACET_MAXINCLUSIVE:
+            return getStringValue(fMaxInclusive);
+        case FACET_MAXEXCLUSIVE:
+            return getStringValue(fMaxExclusive);
+        case FACET_MINEXCLUSIVE:
+            return getStringValue(fMinExclusive);
+        case FACET_MININCLUSIVE:
+            return getStringValue(fMinInclusive);
+        case FACET_TOTALDIGITS:
+            return Integer.toString(fTotalDigits);
+        case FACET_FRACTIONDIGITS:
+            return Integer.toString(fFractionDigits);
+        }
+        return null;
+    }
+
+    public Enumeration getLexicalEnumerations() {
+        int size = fEnumeration.size();
+        String[] strs = new String[size];
+        for (int i = 0; i < size; i++)
+            strs[i] = getStringValue(fEnumeration.elementAt(i));
+        return new EnumerationImpl(strs, size);
+    }
+
+    public Enumeration getLexicalPatterns() {
+        int size = fPattern.size();
+        String[] strs = new String[size];
+        for (int i = 0; i < size; i++)
+            strs[i] = ((RegularExpression)fPattern.elementAt(i)).toString();
+        return new EnumerationImpl(strs, size);
+    }
+
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
     }
 
     private void caclFundamentalFacets() {
@@ -1633,9 +1704,9 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             this.fNumeric = false;
         }
         else if(fVariety == VARIETY_UNION){
-            XSSimpleType [] memberTypes = this.getMemberTypes();
+            XSSimpleType[] memberTypes = fMemberTypes;
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if( ! memberTypes[i].isNumeric() ){
+                if(!memberTypes[i].getIsNumeric() ){
                     this.fNumeric = false;
                     return;
                 }
@@ -1675,7 +1746,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
             }
 
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if( ! memberTypes[i].isBounded() || (ancestorId != getPrimitiveDV(memberTypes[i].fValidationDV)) ){
+                if(!memberTypes[i].getIsBounded() || (ancestorId != getPrimitiveDV(memberTypes[i].fValidationDV)) ){
                     this.fBounded = false;
                     return;
                 }
@@ -1697,47 +1768,47 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
 
     private void setCardinality(){
         if(fVariety == VARIETY_ATOMIC){
-            if(fBase.fCardinality == CARDINALITY_FINITE){
-                this.fCardinality = CARDINALITY_FINITE;
+            if(fBase.fFinite){
+                this.fFinite = true;
             }
-            else {// (fBase.fCardinality == CARDINALITY_COUNTABLY_INFINITE)
+            else {// (!fBase.fFinite)
                 if ( ((this.fFacetsDefined & FACET_LENGTH) != 0 ) || ((this.fFacetsDefined & FACET_MAXLENGTH) != 0 )
                      || ((this.fFacetsDefined & FACET_TOTALDIGITS) != 0 ) ){
-                    this.fCardinality = CARDINALITY_FINITE;
+                    this.fFinite = true;
                 }
                 else if( (((this.fFacetsDefined & FACET_MININCLUSIVE) != 0 ) || ((this.fFacetsDefined & FACET_MINEXCLUSIVE) != 0 ))
                         && (((this.fFacetsDefined & FACET_MAXINCLUSIVE) != 0 ) || ((this.fFacetsDefined & FACET_MAXEXCLUSIVE) != 0 )) ){
                     if( ((this.fFacetsDefined & FACET_FRACTIONDIGITS) != 0 ) || specialCardinalityCheck()){
-                        this.fCardinality = CARDINALITY_FINITE;
+                        this.fFinite = true;
                     }
                     else{
-                        this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                        this.fFinite = false;
                     }
                 }
                 else{
-                    this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                    this.fFinite = false;
                 }
             }
         }
         else if(fVariety == VARIETY_LIST){
             if( ((this.fFacetsDefined & FACET_LENGTH) != 0 ) || ( ((this.fFacetsDefined & FACET_MINLENGTH) != 0 )
                                                             && ((this.fFacetsDefined & FACET_MAXLENGTH) != 0 )) ){
-                this.fCardinality = CARDINALITY_FINITE;
+                this.fFinite = true;
             }
             else{
-                this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                this.fFinite = false;
             }
 
         }
         else if(fVariety == VARIETY_UNION){
-            XSSimpleType [] memberTypes = this.getMemberTypes();
+            XSSimpleType [] memberTypes = fMemberTypes;
             for(int i = 0 ; i < memberTypes.length ; i++){
-                if( ! (memberTypes[i].getCardinalityFacet() == CARDINALITY_FINITE) ){
-                    this.fCardinality = CARDINALITY_COUNTABLY_INFINITE;
+                if(!(memberTypes[i].getIsFinite()) ){
+                    this.fFinite = false;
                     return;
                 }
             }
-            this.fCardinality = CARDINALITY_FINITE;
+            this.fFinite = true;
         }
 
     }//setCardinality
@@ -1753,7 +1824,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
 
     }//getPrimitiveDV()
 
-    public boolean derivedFrom(XSTypeDecl ancestor) {
+    public boolean derivedFrom(XSTypeDefinition ancestor) {
         // ancestor is null, retur false
         if (ancestor == null)
             return false;
@@ -1761,7 +1832,7 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
         if (ancestor == SchemaGrammar.fAnyType)
             return true;
         // recursively get base, and compare it with ancestor
-        XSTypeDecl type = this;
+        XSTypeDefinition type = this;
         while (type != ancestor &&                      // compare with ancestor
                type != SchemaGrammar.fAnySimpleType) {  // reached anySimpleType
             type = type.getBaseType();
@@ -1783,17 +1854,17 @@ public class XSSimpleTypeDecl implements XSAtomicSimpleType, XSListSimpleType, X
 
         // recursively get base, and compare it with ancestor
         XSTypeDecl type = this;
-        while (!(ancestorName.equals(type.getTypeName()) &&
-                 ((ancestorNS == null && type.getTargetNamespace() == null) ||
-                  (ancestorNS != null && ancestorNS.equals(type.getTargetNamespace())))) &&   // compare with ancestor
+        while (!(ancestorName.equals(type.getName()) &&
+                 ((ancestorNS == null && type.getNamespace() == null) ||
+                  (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
                type != SchemaGrammar.fAnySimpleType) {  // reached anySimpleType
-            type = type.getBaseType();
+            type = (XSTypeDecl)type.getBaseType();
         }
 
         return type != SchemaGrammar.fAnySimpleType;
     }
 
-    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, CARDINALITY_FINITE, false);
+    static final XSSimpleTypeDecl fAnySimpleType = new XSSimpleTypeDecl(null, "anySimpleType", DV_ANYSIMPLETYPE, ORDERED_FALSE, false, true, false);
 
     /**
      * Validation context used to validate facet values.

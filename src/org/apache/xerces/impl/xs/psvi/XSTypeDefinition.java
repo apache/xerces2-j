@@ -68,11 +68,11 @@ public interface XSTypeDefinition extends XSObject {
     /**
      * This constant value signifies a complex type.
      */
-    public static final short COMPLEX_TYPE   = 101;
+    public static final short COMPLEX_TYPE   = XSConstants.ANNOTATION+1;
     /**
      * This constant value signifies a simple type.
      */
-    public static final short SIMPLE_TYPE    = 102;
+    public static final short SIMPLE_TYPE    = XSConstants.ANNOTATION+2;
 
     /**
      * Return whether this type definition is a simple type or complex type.

@@ -58,6 +58,7 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.impl.xs.psvi.*;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 
@@ -69,13 +70,7 @@ import org.apache.xerces.impl.xs.models.CMBuilder;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSComplexTypeDecl implements XSTypeDecl {
-
-    // content types of complextype
-    public static final short CONTENTTYPE_EMPTY   = 0;
-    public static final short CONTENTTYPE_SIMPLE  = 1;
-    public static final short CONTENTTYPE_MIXED   = 2;
-    public static final short CONTENTTYPE_ELEMENT = 3;
+public class XSComplexTypeDecl implements XSTypeDecl, XSComplexTypeDefinition {
 
     // name of the complexType
     public String fName = null;
@@ -87,13 +82,13 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     public XSTypeDecl fBaseType = null;
 
     // derivation method of the complexType
-    public short fDerivedBy = SchemaSymbols.RESTRICTION;
+    public short fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
 
     // final set of the complexType
-    public short fFinal = SchemaSymbols.EMPTY_SET;
+    public short fFinal = XSConstants.DERIVATION_NONE;
 
     // block set (prohibited substitution) of the complexType
-    public short fBlock = SchemaSymbols.EMPTY_SET;
+    public short fBlock = XSConstants.DERIVATION_NONE;
 
     // flags: whether is abstract; whether contains ID type;
     //        whether it's an anonymous tpye
@@ -114,7 +109,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     // if there is a particle, the content model corresponding to that particle
     public XSCMValidator fCMValidator = null;
 
-    public short getXSType () {
+    public short getTypeCategory() {
         return COMPLEX_TYPE;
     }
 
@@ -130,10 +125,6 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         return fTargetNamespace;
     }
 
-    public XSTypeDecl getBaseType(){
-        return fBaseType;
-    }
-
     // flags for the misc flag
     private static final short CT_IS_ABSTRACT = 1;
     private static final short CT_HAS_TYPE_ID = 2;
@@ -141,14 +132,8 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
     // methods to get/set misc flag
 
-    public boolean isAbstractType() {
-        return((fMiscFlags & CT_IS_ABSTRACT) != 0);
-    }
     public boolean containsTypeID () {
         return((fMiscFlags & CT_HAS_TYPE_ID) != 0);
-    }
-    public boolean isAnonymous() {
-        return((fMiscFlags & CT_IS_ANONYMOUS) != 0);
     }
 
     public void setIsAbstractType() {
@@ -169,7 +154,6 @@ public class XSComplexTypeDecl implements XSTypeDecl {
     }
 
     public String toString() {
-
         StringBuffer str = new StringBuffer();
         appendTypeInfo(str);
         return str.toString();
@@ -181,10 +165,10 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
         str.append("Complex type name='" + fTargetNamespace + "," + getTypeName() + "', ");
         if (fBaseType != null)
-            str.append(" base type name='" + fBaseType.getTypeName() + "', ");
+            str.append(" base type name='" + fBaseType.getName() + "', ");
 
         str.append(" content type='" + contentType[fContentType] + "', ");
-        str.append(" isAbstract='" + isAbstractType() + "', ");
+        str.append(" isAbstract='" + getIsAbstract() + "', ");
         str.append(" hasTypeId='" + containsTypeID() + "', ");
         str.append(" final='" + fFinal + "', ");
         str.append(" block='" + fBlock + "', ");
@@ -194,7 +178,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
     }
 
-    public boolean derivedFrom(XSTypeDecl ancestor) {
+    public boolean derivedFrom(XSTypeDefinition ancestor) {
         // ancestor is null, retur false
         if (ancestor == null)
             return false;
@@ -202,7 +186,7 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         if (ancestor == SchemaGrammar.fAnyType)
             return true;
         // recursively get base, and compare it with ancestor
-        XSTypeDecl type = this;
+        XSTypeDefinition type = this;
         while (type != ancestor &&                      // compare with ancestor
                type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
                type != SchemaGrammar.fAnyType) {        // reached anyType
@@ -225,12 +209,12 @@ public class XSComplexTypeDecl implements XSTypeDecl {
 
         // recursively get base, and compare it with ancestor
         XSTypeDecl type = this;
-        while (!(ancestorName.equals(type.getTypeName()) &&
-                 ((ancestorNS == null && type.getTargetNamespace() == null) ||
-                  (ancestorNS != null && ancestorNS.equals(type.getTargetNamespace())))) &&   // compare with ancestor
+        while (!(ancestorName.equals(type.getName()) &&
+                 ((ancestorNS == null && type.getNamespace() == null) ||
+                  (ancestorNS != null && ancestorNS.equals(type.getNamespace())))) &&   // compare with ancestor
                type != SchemaGrammar.fAnySimpleType &&  // reached anySimpleType
                type != SchemaGrammar.fAnyType) {        // reached anyType
-            type = type.getBaseType();
+            type = (XSTypeDecl)type.getBaseType();
         }
 
         return type != SchemaGrammar.fAnySimpleType &&
@@ -241,9 +225,9 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         fName = null;
         fTargetNamespace = null;
         fBaseType = null;
-        fDerivedBy = SchemaSymbols.RESTRICTION;
-        fFinal = SchemaSymbols.EMPTY_SET;
-        fBlock = SchemaSymbols.EMPTY_SET;
+        fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
+        fFinal = XSConstants.DERIVATION_NONE;
+        fBlock = XSConstants.DERIVATION_NONE;
 
         fMiscFlags = 0;
 
@@ -255,4 +239,152 @@ public class XSComplexTypeDecl implements XSTypeDecl {
         fCMValidator = null;
     }
 
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.TYPE_DEFINITION;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * A boolean that specifies if the type definition is anonymous.
+     * Convenience attribute. This is a field is not part of
+     * XML Schema component model.
+     */
+    public boolean getIsAnonymous() {
+        return((fMiscFlags & CT_IS_ANONYMOUS) != 0);
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * {base type definition} Either a simple type definition or a complex
+     * type definition.
+     */
+    public XSTypeDefinition getBaseType() {
+        return fBaseType;
+    }
+
+    /**
+     * {derivation method} Either extension or restriction. The valid constant
+     * value for this <code>XSConstants</code> EXTENTION, RESTRICTION.
+     */
+    public short getDerivationMethod() {
+        return fDerivedBy;
+    }
+
+    /**
+     * {final} For complex type definition it is a subset of {extension,
+     * restriction}. For simple type definition it is a subset of
+     * {extension, list, restriction, union}.
+     * @param derivation  Extension, restriction, list, union constants
+     *   (defined in <code>XSConstants</code>).
+     * @return True if derivation is in the final set, otherwise false.
+     */
+    public boolean getIsFinal(short derivation) {
+        return (fFinal & derivation) != 0;
+    }
+
+    /**
+     * {final} For complex type definition it is a subset of {extension, restriction}.
+     *
+     * @return A bit flag that represents:
+     *         {extension, restriction) or none for complexTypes;
+     *         {extension, list, restriction, union} or none for simpleTypes;
+     */
+    public short getFinal() {
+        return fFinal;
+    }
+
+    /**
+     * {abstract} A boolean. Complex types for which {abstract} is true must
+     * not be used as the {type definition} for the validation of element
+     * information items.
+     */
+    public boolean getIsAbstract() {
+        return((fMiscFlags & CT_IS_ABSTRACT) != 0);
+    }
+
+    /**
+     *  {attribute uses} A set of attribute uses.
+     */
+    public XSObjectList getAttributeUses() {
+        return fAttrGrp.getAttributeUses();
+    }
+
+    /**
+     * {attribute wildcard} Optional. A wildcard.
+     */
+    public XSWildcard getAttributeWildcard() {
+        return fAttrGrp.getAttributeWildcard();
+    }
+
+    /**
+     * {content type} One of empty, a simple type definition (see
+     * <code>simpleType</code>, or mixed, element-only (see
+     * <code>cmParticle</code>).
+     */
+    public short getContentType() {
+        return fContentType;
+    }
+
+    /**
+     * A simple type definition corresponding to simple content model,
+     * otherwise <code>null</code>
+     */
+    public XSSimpleTypeDefinition getSimpleType() {
+        return fXSSimpleType;
+    }
+
+    /**
+     * A particle for mixed or element-only content model, otherwise
+     * <code>null</code>
+     */
+    public XSParticle getParticle() {
+        return fParticle;
+    }
+
+    /**
+     * {prohibited substitutions} A subset of {extension, restriction}.
+     * @param prohibited  extention or restriction constants (defined in
+     *   <code>XSConstants</code>).
+     * @return True if prohibited is a prohibited substitution, otherwise
+     *   false.
+     */
+    public boolean getIsProhibitedSubstitution(short prohibited) {
+        return (fBlock & prohibited) != 0;
+    }
+
+    /**
+     * {prohibited substitutions}
+     *
+     * @return A bit flag corresponding to prohibited substitutions
+     */
+    public short getProhibitedSubstitutions() {
+        return fBlock;
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSObjectList getAnnotations() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+    
 } // class XSComplexTypeDecl

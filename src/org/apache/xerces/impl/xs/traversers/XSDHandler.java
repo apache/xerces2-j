@@ -488,7 +488,7 @@ public class XSDHandler {
         }
 
         // and return.
-        return fGrammarBucket.getGrammar(schemaNamespace);
+        return fGrammarBucket.getGrammar(fRoot.fTargetNamespace);
     } // end parseSchema
 
     /**

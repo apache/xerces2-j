@@ -63,7 +63,7 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSDeclarationPool;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroup;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.models.*;
 
@@ -123,7 +123,7 @@ public class CMBuilder {
         // we create an "all" content model, otherwise a DFA content model
         XSCMValidator cmValidator = null;
         if (particle.fType == XSParticleDecl.PARTICLE_MODELGROUP &&
-            ((XSModelGroup)particle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL) {
+            ((XSModelGroupImpl)particle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL) {
             cmValidator = createAllCM(particle);
         }
         else {
@@ -147,7 +147,7 @@ public class CMBuilder {
         XSAllCM allContent = new XSAllCM(particle.fMinOccurs == 0);
         
         // get the model group, and add all children of it to the content model
-        XSModelGroup group = (XSModelGroup)particle.fValue;
+        XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
         for (int i = 0; i < group.fParticleCount; i++) {
             // for all non-empty particles
             if (group.fParticles[i].fType != XSParticleDecl.PARTICLE_EMPTY &&
@@ -197,7 +197,7 @@ public class CMBuilder {
         }
         else if (type == XSParticleDecl.PARTICLE_MODELGROUP) {
             // (task 1,3) convert model groups to binary trees
-            XSModelGroup group = (XSModelGroup)particle.fValue;
+            XSModelGroupImpl group = (XSModelGroupImpl)particle.fValue;
             CMNode temp = null;
             for (int i = 0; i < group.fParticleCount; i++) {
                 // first convert each child to a CM tree
@@ -253,7 +253,7 @@ public class CMBuilder {
                 // (task 4) we need to call copyNode here, so that we append
                 // an entire new copy of the node (a subtree). this is to ensure
                 // all leaf nodes have distinct position
-                nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                nodeRet = new XSCMBinOp(XSModelGroupImpl.MODELGROUP_SEQUENCE,
                                         copyNode(node), nodeRet);
             }
         }
@@ -264,7 +264,7 @@ public class CMBuilder {
             if (minOccurs > 0) {
                 nodeRet = node;
                 for (int i=0; i<minOccurs-1; i++) {
-                    nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                    nodeRet = new XSCMBinOp(XSModelGroupImpl.MODELGROUP_SEQUENCE,
                                             nodeRet, copyNode(node));
                 }
             }
@@ -274,11 +274,11 @@ public class CMBuilder {
                     nodeRet = node;
                 }
                 else {
-                    nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                    nodeRet = new XSCMBinOp(XSModelGroupImpl.MODELGROUP_SEQUENCE,
                                             nodeRet, copyNode(node));
                 }
                 for (int i=minOccurs; i<maxOccurs-1; i++) {
-                    nodeRet = new XSCMBinOp(XSModelGroup.MODELGROUP_SEQUENCE,
+                    nodeRet = new XSCMBinOp(XSModelGroupImpl.MODELGROUP_SEQUENCE,
                                             nodeRet, node);
                 }
             }
@@ -291,8 +291,8 @@ public class CMBuilder {
     private CMNode copyNode(CMNode node) {
         int type = node.type();
         // for choice or sequence, copy the two subtrees, and combine them
-        if (type == XSModelGroup.MODELGROUP_CHOICE ||
-            type == XSModelGroup.MODELGROUP_SEQUENCE) {
+        if (type == XSModelGroupImpl.MODELGROUP_CHOICE ||
+            type == XSModelGroupImpl.MODELGROUP_SEQUENCE) {
             XSCMBinOp bin = (XSCMBinOp)node;
             node = new XSCMBinOp(type, copyNode(bin.getLeft()),
                                  copyNode(bin.getRight()));

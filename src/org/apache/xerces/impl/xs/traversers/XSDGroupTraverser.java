@@ -59,7 +59,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroup;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSGroupDecl;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.DOMUtil;
@@ -202,7 +202,7 @@ class  XSDGroupTraverser extends XSDAbstractParticleTraverser {
                 group.fName = strNameAttr;
                 group.fTargetNamespace = schemaDoc.fTargetNamespace;
                 if (particle != null)
-                    group.fModelGroup = (XSModelGroup)particle.fValue;
+                    group.fModelGroup = (XSModelGroupImpl)particle.fValue;
                 grammar.addGlobalGroupDecl(group);
             }
         }

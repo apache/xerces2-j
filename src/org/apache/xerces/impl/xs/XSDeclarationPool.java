@@ -91,7 +91,7 @@ public final class XSDeclarationPool {
     private int fParticleDeclIndex = 0;
 
     /** Particle declaration pool */
-    private XSModelGroup fModelGroup[][] = new XSModelGroup[INITIAL_CHUNK_COUNT][];
+    private XSModelGroupImpl fModelGroup[][] = new XSModelGroupImpl[INITIAL_CHUNK_COUNT][];
     private int fModelGroupIndex = 0;
 
     /** Attribute declaration pool */
@@ -107,7 +107,7 @@ public final class XSDeclarationPool {
     private int fSTDeclIndex = 0;
 
     /** AttributeUse declaration pool */
-    private XSAttributeUse fAttributeUse[][] = new XSAttributeUse[INITIAL_CHUNK_COUNT][];
+    private XSAttributeUseImpl fAttributeUse[][] = new XSAttributeUseImpl[INITIAL_CHUNK_COUNT][];
     private int fAttributeUseIndex = 0;
 
     public final  XSElementDecl getElementDecl(){
@@ -137,12 +137,12 @@ public final class XSDeclarationPool {
 
     }
 
-    public final XSAttributeUse getAttributeUse(){
+    public final XSAttributeUseImpl getAttributeUse(){
         int     chunk       = fAttributeUseIndex >> CHUNK_SHIFT;
         int     index       = fAttributeUseIndex &  CHUNK_MASK;
         ensureAttributeUseCapacity(chunk);
         if (fAttributeUse[chunk][index] == null) {
-            fAttributeUse[chunk][index] = new XSAttributeUse();
+            fAttributeUse[chunk][index] = new XSAttributeUseImpl();
         } else {
             fAttributeUse[chunk][index].reset();
         }
@@ -192,12 +192,12 @@ public final class XSDeclarationPool {
         return fParticleDecl[chunk][index];
     }
 
-    public final XSModelGroup getModelGroup(){
+    public final XSModelGroupImpl getModelGroup(){
         int     chunk       = fModelGroupIndex >> CHUNK_SHIFT;
         int     index       = fModelGroupIndex &  CHUNK_MASK;
         ensureModelGroupCapacity(chunk);
         if (fModelGroup[chunk][index] == null) {
-            fModelGroup[chunk][index] = new XSModelGroup();
+            fModelGroup[chunk][index] = new XSModelGroupImpl();
         } else {
             fModelGroup[chunk][index].reset();
         }
@@ -246,7 +246,7 @@ public final class XSDeclarationPool {
             return false;
         }
 
-        fModelGroup[chunk] = new XSModelGroup[CHUNK_SIZE];
+        fModelGroup[chunk] = new XSModelGroupImpl[CHUNK_SIZE];
         return true;
     }
 
@@ -256,8 +256,8 @@ public final class XSDeclarationPool {
         return newarray;
     }
 
-    private static XSModelGroup[][] resize(XSModelGroup array[][], int newsize) {
-        XSModelGroup newarray[][] = new XSModelGroup[newsize][];
+    private static XSModelGroupImpl[][] resize(XSModelGroupImpl array[][], int newsize) {
+        XSModelGroupImpl newarray[][] = new XSModelGroupImpl[newsize][];
         System.arraycopy(array, 0, newarray, 0, array.length);
         return newarray;
     }
@@ -286,12 +286,12 @@ public final class XSDeclarationPool {
             return false;
         }
 
-        fAttributeUse[chunk] = new XSAttributeUse[CHUNK_SIZE];
+        fAttributeUse[chunk] = new XSAttributeUseImpl[CHUNK_SIZE];
         return true;
     }
 
-    private static XSAttributeUse[][] resize(XSAttributeUse array[][], int newsize) {
-        XSAttributeUse newarray[][] = new XSAttributeUse[newsize][];
+    private static XSAttributeUseImpl[][] resize(XSAttributeUseImpl array[][], int newsize) {
+        XSAttributeUseImpl newarray[][] = new XSAttributeUseImpl[newsize][];
         System.arraycopy(array, 0, newarray, 0, array.length);
         return newarray;
     }

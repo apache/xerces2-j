@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,76 +55,93 @@
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.dv;
+package org.apache.xerces.impl.xs;
+
+import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
- * Any atomic simple type will implement this interface. It inherits the methods
- * of generic <code>XSSimpleType</code> interface.
+ * The XML representation for an attribute use
+ * schema component is a local <attribute> element information item
  *
  * @author Sandy Gao, IBM
- *
  * @version $Id$
  */
-public interface XSAtomicSimpleType extends XSSimpleType {
+public class XSAttributeUseImpl implements XSAttributeUse {
+
+    // the referred attribute decl
+    public XSAttributeDecl fAttrDecl = null;
+    // use information: SchemaSymbols.USE_OPTIONAL, REQUIRED, PROHIBITED
+    public short fUse = SchemaSymbols.USE_OPTIONAL;
+    // value constraint type: default, fixed or !specified
+    public short fConstraintType = XSConstants.VC_NONE;
+    // value constraint value
+    public ValidatedInfo fDefault = null;
+
+    public void reset(){
+        fDefault = null;
+        fAttrDecl = null;
+        fUse = SchemaSymbols.USE_OPTIONAL;
+        fConstraintType = XSConstants.VC_NONE;
+    }
 
     /**
-     * Constant defined for the primitive built-in simple tpyes.
-     * see <a href='http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes'>
-     * XML Schema Part 2: Datatypes </a>
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
      */
-    /** "string" type */
-    public static final short PRIMITIVE_STRING        = 1;
-    /** "boolean" type */
-    public static final short PRIMITIVE_BOOLEAN       = 2;
-    /** "decimal" type */
-    public static final short PRIMITIVE_DECIMAL       = 3;
-    /** "float" type */
-    public static final short PRIMITIVE_FLOAT         = 4;
-    /** "double" type */
-    public static final short PRIMITIVE_DOUBLE        = 5;
-    /** "duration" type */
-    public static final short PRIMITIVE_DURATION      = 6;
-    /** "dataTime" type */
-    public static final short PRIMITIVE_DATETIME      = 7;
-    /** "time" type */
-    public static final short PRIMITIVE_TIME          = 8;
-    /** "date" type */
-    public static final short PRIMITIVE_DATE          = 9;
-    /** "gYearMonth" type */
-    public static final short PRIMITIVE_GYEARMONTH    = 10;
-    /** "gYear" type */
-    public static final short PRIMITIVE_GYEAR         = 11;
-    /** "gMonthDay" type */
-    public static final short PRIMITIVE_GMONTHDAY     = 12;
-    /** "gDay" type */
-    public static final short PRIMITIVE_GDAY          = 13;
-    /** "gMonth" type */
-    public static final short PRIMITIVE_GMONTH        = 14;
-    /** "hexBinary" type */
-    public static final short PRIMITIVE_HEXBINARY     = 15;
-    /** "base64Binary" type */
-    public static final short PRIMITIVE_BASE64BINARY  = 16;
-    /** "anyURI" type */
-    public static final short PRIMITIVE_ANYURI        = 17;
-    /** "QName" type */
-    public static final short PRIMITIVE_QNAME         = 18;
-    /** "NOTATION" type */
-    public static final short PRIMITIVE_NOTATION      = 19;
+    public short getType() {
+        return XSConstants.ATTRIBUTE_USE;
+    }
 
     /**
-     * return an ID representing the built-in primitive base type.
-     * REVISIT: This method is (currently) for internal use only.
-     *          the constants returned from this method are not finalized yet.
-     *          the names and values might change in the further.
-     *
-     * @return   an ID representing the built-in primitive base type
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
      */
-    public short getPrimitiveKind();
+    public String getName() {
+        return null;
+    }
 
     /**
-     * return the built-in primitive base type
-     *
-     * @return   the built-in primitive base type
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
      */
-    public XSSimpleType getPrimitiveType();
-}
+    public String getNamespace() {
+        return null;
+    }
+
+    /**
+     * {required} determines whether this use of an attribute declaration
+     * requires an appropriate attribute information item to be present, or
+     * merely allows it.
+     */
+    public boolean getIsRequired() {
+        return fUse == SchemaSymbols.USE_REQUIRED;
+    }
+
+    /**
+     * {attribute declaration} provides the attribute declaration itself,
+     * which will in turn determine the simple type definition used.
+     */
+    public XSAttributeDeclaration getAttrDeclaration() {
+        return fAttrDecl;
+    }
+
+    /**
+     * Value Constraint: one of default, fixed.
+     */
+    public short getConstraintType() {
+        return fConstraintType;
+    }
+
+    /**
+     * Value Constraint: The actual value (with respect to the {type
+     * definition}).
+     */
+    public String getConstraintValue() {
+        // REVISIT: SCAPI: what's the proper representation
+        return getConstraintType() == XSConstants.VC_NONE ?
+               null :
+               fDefault.normalizedValue;
+    }
+
+} // class XSAttributeUseImpl

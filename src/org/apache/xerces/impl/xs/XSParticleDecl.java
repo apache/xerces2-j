@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.*;
+
 /**
  * Store schema particle declaration.
  *
@@ -64,7 +66,7 @@ package org.apache.xerces.impl.xs;
  *
  * @version $Id$
  */
-public class XSParticleDecl {
+public class XSParticleDecl implements XSParticle {
 
     // types of particles
     public static final short PARTICLE_EMPTY        = 0;
@@ -82,7 +84,7 @@ public class XSParticleDecl {
     // for PARTICLE_ELEMENT : the element decl
     // for PARTICLE_WILDCARD: the wildcard decl
     // for PARTICLE_MODELGROUP: the model group
-    public Object fValue = null;
+    public XSTerm fValue = null;
 
     // minimum occurrence of this particle
     public int fMinOccurs = 1;
@@ -115,7 +117,7 @@ public class XSParticleDecl {
         if (fType == PARTICLE_ELEMENT || fType == PARTICLE_WILDCARD)
             return false; 
 
-        return ((XSModelGroup)fValue).isEmpty();
+        return ((XSModelGroupImpl)fValue).isEmpty();
     }
 
     /**
@@ -127,14 +129,14 @@ public class XSParticleDecl {
      */
     public int minEffectiveTotalRange() {
         if (fType == PARTICLE_MODELGROUP) {
-            return ((XSModelGroup)fValue).minEffectiveTotalRange() * fMinOccurs;
+            return ((XSModelGroupImpl)fValue).minEffectiveTotalRange() * fMinOccurs;
         }
         return fMinOccurs;
     }
 
     public int maxEffectiveTotalRange() {
         if (fType == PARTICLE_MODELGROUP) {
-            int max = ((XSModelGroup)fValue).maxEffectiveTotalRange();
+            int max = ((XSModelGroupImpl)fValue).maxEffectiveTotalRange();
             if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED)
                 return SchemaSymbols.OCCURRENCE_UNBOUNDED;
             if (max != 0 && fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED)
@@ -194,4 +196,57 @@ public class XSParticleDecl {
         fMaxOccurs = 1;
         fDescription = null;
     }
+
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.PARTICLE;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return null;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return null;
+    }
+
+    /**
+     * {min occurs} determines the minimum number of terms that can occur.
+     */
+    public int getMinOccurs() {
+        return fMinOccurs;
+    }
+
+    /**
+     * {max occurs} whether the maxOccurs value is unbounded.
+     */
+    public boolean getIsMaxOccursUnbounded() {
+        return fMaxOccurs == SchemaSymbols.OCCURRENCE_UNBOUNDED;
+    }
+
+    /**
+     * {max occurs} determines the maximum number of terms that can occur.
+     */
+    public int getMaxOccurs() {
+        return fMaxOccurs;
+    }
+
+    /**
+     * {term} One of a model group, a wildcard, or an element declaration.
+     */
+    public XSTerm getTerm() {
+        return fValue;
+    }
+
 } // class XSParticle

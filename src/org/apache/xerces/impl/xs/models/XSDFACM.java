@@ -64,7 +64,7 @@ import org.apache.xerces.impl.dtd.models.CMStateSet;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroup;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
@@ -418,7 +418,7 @@ public class XSDFACM
         fEOCPos = fLeafCount;
         XSCMLeaf nodeEOC = new XSCMLeaf(XSParticleDecl.PARTICLE_ELEMENT, null, -1, fLeafCount++);
         fHeadNode = new XSCMBinOp(
-            XSModelGroup.MODELGROUP_SEQUENCE,
+            XSModelGroupImpl.MODELGROUP_SEQUENCE,
             syntaxTree,
             nodeEOC
         );
@@ -722,12 +722,12 @@ public class XSDFACM
      */
     private void calcFollowList(CMNode nodeCur) {
         // Recurse as required
-        if (nodeCur.type() == XSModelGroup.MODELGROUP_CHOICE) {
+        if (nodeCur.type() == XSModelGroupImpl.MODELGROUP_CHOICE) {
             // Recurse only
             calcFollowList(((XSCMBinOp)nodeCur).getLeft());
             calcFollowList(((XSCMBinOp)nodeCur).getRight());
         }
-         else if (nodeCur.type() == XSModelGroup.MODELGROUP_SEQUENCE) {
+         else if (nodeCur.type() == XSModelGroupImpl.MODELGROUP_SEQUENCE) {
             // Recurse first
             calcFollowList(((XSCMBinOp)nodeCur).getLeft());
             calcFollowList(((XSCMBinOp)nodeCur).getRight());
@@ -796,9 +796,9 @@ public class XSDFACM
 
         switch(type ) {
 
-        case XSModelGroup.MODELGROUP_CHOICE:
-        case XSModelGroup.MODELGROUP_SEQUENCE: {
-            if (type == XSModelGroup.MODELGROUP_CHOICE)
+        case XSModelGroupImpl.MODELGROUP_CHOICE:
+        case XSModelGroupImpl.MODELGROUP_SEQUENCE: {
+            if (type == XSModelGroupImpl.MODELGROUP_CHOICE)
                 System.out.print("Choice Node ");
             else
                 System.out.print("Seq Node ");
@@ -894,8 +894,8 @@ public class XSDFACM
             fLeafList[pos] = leaf;
             fLeafListType[pos] = XSParticleDecl.PARTICLE_WILDCARD;
         }
-        else if ((nodeCur.type() == XSModelGroup.MODELGROUP_CHOICE) ||
-                 (nodeCur.type() == XSModelGroup.MODELGROUP_SEQUENCE)) {
+        else if ((nodeCur.type() == XSModelGroupImpl.MODELGROUP_CHOICE) ||
+                 (nodeCur.type() == XSModelGroupImpl.MODELGROUP_SEQUENCE)) {
             postTreeBuildInit(((XSCMBinOp)nodeCur).getLeft());
             postTreeBuildInit(((XSCMBinOp)nodeCur).getRight());
         }
@@ -965,8 +965,8 @@ public class XSDFACM
         for (int i = 0; i < fElemMapSize; i++) {
             if (fElemMapType[i] == XSParticleDecl.PARTICLE_WILDCARD) {
                 XSWildcardDecl wildcard = (XSWildcardDecl)fElemMap[i];
-                if (wildcard.fType == XSWildcardDecl.WILDCARD_LIST ||
-                    wildcard.fType == XSWildcardDecl.WILDCARD_OTHER) {
+                if (wildcard.fType == XSWildcardDecl.NSCONSTRAINT_LIST ||
+                    wildcard.fType == XSWildcardDecl.NSCONSTRAINT_NOT) {
                     return true;
                 }
             }

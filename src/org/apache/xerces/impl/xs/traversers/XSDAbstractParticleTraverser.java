@@ -60,7 +60,7 @@ package org.apache.xerces.impl.xs.traversers;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSParticleDecl;
-import org.apache.xerces.impl.xs.XSModelGroup;
+import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
@@ -140,8 +140,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
             Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
             
-            XSModelGroup group = new XSModelGroup();
-            group.fCompositor = XSModelGroup.MODELGROUP_ALL;
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = XSModelGroupImpl.MODELGROUP_ALL;
             group.fParticleCount = fPArray.getParticleCount();
             group.fParticles = fPArray.popContext();
             particle = new XSParticleDecl();
@@ -300,8 +300,8 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
             XInt maxAtt = (XInt)attrValues[XSAttributeChecker.ATTIDX_MAXOCCURS];
             Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
 
-            XSModelGroup group = new XSModelGroup();
-            group.fCompositor = choice ? XSModelGroup.MODELGROUP_CHOICE : XSModelGroup.MODELGROUP_SEQUENCE;
+            XSModelGroupImpl group = new XSModelGroupImpl();
+            group.fCompositor = choice ? XSModelGroupImpl.MODELGROUP_CHOICE : XSModelGroupImpl.MODELGROUP_SEQUENCE;
             group.fParticleCount = fPArray.getParticleCount();
             group.fParticles = fPArray.popContext();
             particle = new XSParticleDecl();
@@ -328,7 +328,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
     protected boolean hasAllContent(XSParticleDecl particle) {
         // If the content is not empty, is the top node ALL?
         if (particle != null && particle.fType == XSParticleDecl.PARTICLE_MODELGROUP) {
-            return ((XSModelGroup)particle.fValue).fCompositor == XSModelGroup.MODELGROUP_ALL;
+            return ((XSModelGroupImpl)particle.fValue).fCompositor == XSModelGroupImpl.MODELGROUP_ALL;
         }
 
         return false;

@@ -57,6 +57,7 @@
 
 package org.apache.xerces.impl.dv;
 
+import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
 import org.apache.xerces.impl.validation.ValidationContext;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 
@@ -71,53 +72,7 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
  *
  * @version $Id$
  */
-public interface XSSimpleType extends XSTypeDecl {
-
-    /**
-     * Constant defined for the constraining facets as defined in schema.
-     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-facets'> XML Schema
-     * Part 2: Datatypes </a>
-     * The bit combination of the following constants are used to tell
-     * which facets are fixed, and which ones are present
-     */
-    /** the length facet */
-    public static final short FACET_LENGTH         = 1<<0;
-    /** the minLength facet */
-    public static final short FACET_MINLENGTH      = 1<<1;
-    /** the maxLength facet */
-    public static final short FACET_MAXLENGTH      = 1<<2;
-    /** the pattern facet */
-    public static final short FACET_PATTERN        = 1<<3;
-    /** the enumeration facet */
-    public static final short FACET_ENUMERATION    = 1<<4;
-    /** the whiteSpace facet */
-    public static final short FACET_WHITESPACE     = 1<<5;
-    /** the maxInclusive facet */
-    public static final short FACET_MAXINCLUSIVE   = 1<<6;
-    /** the maxExclusive facet */
-    public static final short FACET_MAXEXCLUSIVE   = 1<<7;
-    /** the minExclusive facet */
-    public static final short FACET_MINEXCLUSIVE   = 1<<8;
-    /** the minInclusive facet */
-    public static final short FACET_MININCLUSIVE   = 1<<9;
-    /** the totalDigits facet */
-    public static final short FACET_TOTALDIGITS    = 1<<10;
-    /** the fractionDigits facet */
-    public static final short FACET_FRACTIONDIGITS = 1<<11;
-
-    /**
-     * constants defined for the 'variety' property of Simple Type schema component.
-     * see <a href='http://www.w3.org/TR/xmlschema-2/#defn-variety'> XML Schema
-     * Part 2: Datatypes </a>
-     */
-    /** the absent variety, for anySimpleType */
-    public static final short VARIETY_ABSENT    = 0;
-    /** the atomic variety */
-    public static final short VARIETY_ATOMIC    = 1;
-    /** the list variety */
-    public static final short VARIETY_LIST      = 2;
-    /** the union variety */
-    public static final short VARIETY_UNION     = 3;
+public interface XSSimpleType extends XSTypeDecl, XSSimpleTypeDefinition {
 
     /**
      * constants defined for the values of 'whitespace' facet.
@@ -132,26 +87,58 @@ public interface XSSimpleType extends XSTypeDecl {
     public static final short WS_COLLAPSE = 2;
 
     /**
-     * constants defined for the 'ordered' fundamental facet.
-     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-fund-facets'> XML
-     * Schema Part 2: Datatypes </a>
+     * Constant defined for the primitive built-in simple tpyes.
+     * see <a href='http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes'>
+     * XML Schema Part 2: Datatypes </a>
      */
-    /** not ordered */
-    public static final short ORDERED_FALSE     = 1;
-    /** partically ordered */
-    public static final short ORDERED_PARTIAL   = 2;
-    /** totally ordered */
-    public static final short ORDERED_TOTAL     = 3;
+    /** "string" type */
+    public static final short PRIMITIVE_STRING        = 1;
+    /** "boolean" type */
+    public static final short PRIMITIVE_BOOLEAN       = 2;
+    /** "decimal" type */
+    public static final short PRIMITIVE_DECIMAL       = 3;
+    /** "float" type */
+    public static final short PRIMITIVE_FLOAT         = 4;
+    /** "double" type */
+    public static final short PRIMITIVE_DOUBLE        = 5;
+    /** "duration" type */
+    public static final short PRIMITIVE_DURATION      = 6;
+    /** "dataTime" type */
+    public static final short PRIMITIVE_DATETIME      = 7;
+    /** "time" type */
+    public static final short PRIMITIVE_TIME          = 8;
+    /** "date" type */
+    public static final short PRIMITIVE_DATE          = 9;
+    /** "gYearMonth" type */
+    public static final short PRIMITIVE_GYEARMONTH    = 10;
+    /** "gYear" type */
+    public static final short PRIMITIVE_GYEAR         = 11;
+    /** "gMonthDay" type */
+    public static final short PRIMITIVE_GMONTHDAY     = 12;
+    /** "gDay" type */
+    public static final short PRIMITIVE_GDAY          = 13;
+    /** "gMonth" type */
+    public static final short PRIMITIVE_GMONTH        = 14;
+    /** "hexBinary" type */
+    public static final short PRIMITIVE_HEXBINARY     = 15;
+    /** "base64Binary" type */
+    public static final short PRIMITIVE_BASE64BINARY  = 16;
+    /** "anyURI" type */
+    public static final short PRIMITIVE_ANYURI        = 17;
+    /** "QName" type */
+    public static final short PRIMITIVE_QNAME         = 18;
+    /** "NOTATION" type */
+    public static final short PRIMITIVE_NOTATION      = 19;
 
     /**
-     * constants defined for the 'cardinality' fundamental facet.
-     * see <a href='http://www.w3.org/TR/xmlschema-2/#rf-fund-facets'> XML
-     * Schema Part 2: Datatypes </a>
+     * return an ID representing the built-in primitive base type.
+     * REVISIT: This method is (currently) for internal use only.
+     *          the constants returned from this method are not finalized yet.
+     *          the names and values might change in the further.
+     *
+     * @return   an ID representing the built-in primitive base type
      */
-    /** finite cardinality */
-    public static final short CARDINALITY_FINITE             = 1;
-    /** countably infinite cardinality */
-    public static final short CARDINALITY_COUNTABLY_INFINITE = 2;
+    public short getPrimitiveKind();
 
     /**
      * validate a given string against this simple type.
@@ -193,13 +180,6 @@ public interface XSSimpleType extends XSTypeDecl {
         throws InvalidDatatypeFacetException;
 
     /**
-     * Get the variety of the simple type: atomic, list or union.
-     *
-     * @return  a constant corresponding to the variety, as defined above.
-     */
-    public short getVariety();
-
-    /**
      * Check whether two actual values are equal.
      *
      * @param value1  the first value
@@ -226,14 +206,6 @@ public interface XSSimpleType extends XSTypeDecl {
     //public short compare(Object value1, Object value2);
 
     /**
-     * bit combination of the constants defined in this simple type.
-     *
-     * @return  the bit combination of the constants corresponding to the
-     *          constraining facets, as defined above.
-     */
-    public short getDefinedFacets();
-
-    /**
      * Check whether this type is or is derived from ID.
      * REVISIT: this method makes ID special, which is not a good design.
      *          but since ID is not a primitive, there doesn't seem to be a
@@ -243,39 +215,6 @@ public interface XSSimpleType extends XSTypeDecl {
      */
     public boolean isIDType();
 
-    // REVISIT: it's not decided yet how to return the facets,
-    //          as String's or as values (Object's).
-    //public XSFacet[] getFacets();
-
-    /**
-     * Return the value of the "ordered" fundamental facet.
-     *
-     * @return  a constant corresponding to the "ordered" facet.
-     */
-    public short getOrderedFacet();
-
-    /**
-     * Return the value of the "bounded" fundamental facet.
-     *
-     * @return  whether the this type is bounded.
-     */
-    public boolean isBounded();
-
-    /**
-     * Return the value of the "numeric" fundamental facet.
-     *
-     * @return  whether the this type is numeric.
-     */
-    public boolean isNumeric();
-
-    /**
-     * Return the value of the "cardinality" fundamental facet.
-     *
-     * @return  a constant corresponding to the "cardinality" facet.
-     */
-    public short getCardinalityFacet();
-
-    
     /**
      * Return the whitespace corresponding to this datatype.
      * 
@@ -283,5 +222,5 @@ public interface XSSimpleType extends XSTypeDecl {
      * @exception DatatypeException
      *                   union datatypes don't have whitespace facet associated with them
      */
-    public short getWhitespace () throws DatatypeException;
+    public short getWhitespace() throws DatatypeException;
 }

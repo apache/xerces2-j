@@ -65,7 +65,7 @@ import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
-import org.apache.xerces.impl.xs.XSAttributeUse;
+import org.apache.xerces.impl.xs.XSAttributeUseImpl;
 import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.impl.xs.XSComplexTypeDecl;
@@ -73,6 +73,7 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.w3c.dom.Element;
 
@@ -103,10 +104,10 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         super(handler, gAttrCheck);
     }
 
-    protected XSAttributeUse traverseLocal(Element attrDecl,
-                                           XSDocumentInfo schemaDoc,
-                                           SchemaGrammar grammar,
-                                           XSComplexTypeDecl enclosingCT) {
+    protected XSAttributeUseImpl traverseLocal(Element attrDecl,
+                                               XSDocumentInfo schemaDoc,
+                                               SchemaGrammar grammar,
+                                               XSComplexTypeDecl enclosingCT) {
 
         // General Attribute Checking
         Object[] attrValues = fAttrChecker.checkAttributes(attrDecl, false, schemaDoc);
@@ -142,21 +143,21 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
 
         // get 'value constraint'
-        short consType = XSAttributeDecl.NO_CONSTRAINT;
+        short consType = XSConstants.VC_NONE;
         if (defaultAtt != null) {
-            consType = XSAttributeDecl.DEFAULT_VALUE;
+            consType = XSConstants.VC_DEFAULT;
         } else if (fixedAtt != null) {
-            consType = XSAttributeDecl.FIXED_VALUE;
+            consType = XSConstants.VC_FIXED;
             defaultAtt = fixedAtt;
             fixedAtt = null;
         }
 
-        XSAttributeUse attrUse = null;
+        XSAttributeUseImpl attrUse = null;
         if (attribute != null) {
             if (fSchemaHandler.fDeclPool !=null) {
                 attrUse = fSchemaHandler.fDeclPool.getAttributeUse();
             } else {
-                attrUse = new XSAttributeUse();
+                attrUse = new XSAttributeUseImpl();
             }
             attrUse.fAttrDecl = attribute;
             attrUse.fUse = useAtt.shortValue();
@@ -176,7 +177,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         }
 
         // 2 If default and use are both present, use must have the actual value optional.
-        if (consType == XSAttributeDecl.DEFAULT_VALUE &&
+        if (consType == XSConstants.VC_DEFAULT &&
             useAtt != null && useAtt.intValue() != SchemaSymbols.USE_OPTIONAL) {
             reportSchemaError("src-attribute.2", new Object[]{nameAtt}, attrDecl);
         }
@@ -198,9 +199,9 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             // check 3.5.6 constraint
             // Attribute Use Correct
             // 2 If the {attribute declaration} has a fixed {value constraint}, then if the attribute use itself has a {value constraint}, it must also be fixed and its value must match that of the {attribute declaration}'s {value constraint}.
-            if (attrUse.fAttrDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE &&
-                attrUse.fConstraintType != XSAttributeDecl.NO_CONSTRAINT) {
-                if (attrUse.fConstraintType != XSAttributeDecl.FIXED_VALUE ||
+            if (attrUse.fAttrDecl.getConstraintType() == XSConstants.VC_FIXED &&
+                attrUse.fConstraintType != XSConstants.VC_NONE) {
+                if (attrUse.fConstraintType != XSConstants.VC_FIXED ||
                     !attrUse.fAttrDecl.fType.isEqual(attrUse.fAttrDecl.fDefault.actualValue,
                                                      attrUse.fDefault.actualValue)) {
                     reportSchemaError ("au-props-correct.2", new Object[]{nameAtt}, attrDecl);
@@ -284,13 +285,13 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             if (fixedAtt != null) {
                 attribute.fDefault = new ValidatedInfo();
                 attribute.fDefault.normalizedValue = fixedAtt;
-                attribute.setConstraintType(XSElementDecl.FIXED_VALUE);
+                attribute.setConstraintType(XSConstants.VC_FIXED);
             } else if (defaultAtt != null) {
                 attribute.fDefault = new ValidatedInfo();
                 attribute.fDefault.normalizedValue = defaultAtt;
-                attribute.setConstraintType(XSElementDecl.DEFAULT_VALUE);
+                attribute.setConstraintType(XSConstants.VC_DEFAULT);
             } else {
-                attribute.setConstraintType(XSElementDecl.NO_CONSTRAINT);
+                attribute.setConstraintType(XSConstants.VC_NONE);
             }
         }
 
@@ -319,7 +320,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         // Handler type attribute
         if (attrType == null && typeAtt != null) {
             XSTypeDecl type = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, XSDHandler.TYPEDECL_TYPE, typeAtt, attrDecl);
-            if (type != null && type.getXSType() == XSTypeDecl.SIMPLE_TYPE)
+            if (type != null && type.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE)
                 attrType = (XSSimpleType)type;
             else
                 reportSchemaError("src-resolve", new Object[]{typeAtt.rawname, "simpleType definition"}, attrDecl);
@@ -429,7 +430,7 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
     }
 
     // return whether the constraint value is valid for the given type
-    boolean checkDefaultValid(XSAttributeUse attrUse) {
+    boolean checkDefaultValid(XSAttributeUseImpl attrUse) {
 
         boolean ret = true;
 

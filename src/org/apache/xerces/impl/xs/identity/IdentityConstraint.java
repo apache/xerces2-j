@@ -57,26 +57,17 @@
 
 package org.apache.xerces.impl.xs.identity;
 
+import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.util.EnumerationImpl;
+import java.util.Enumeration;
+
 /**
  * Base class of Schema identity constraint.
  *
  * @author Andy Clark, IBM
  * @version $Id$
  */
-public abstract class IdentityConstraint {
-
-    //
-    // Constants
-    //
-
-    /** Type: unique. */
-    public static final short UNIQUE = 0;
-
-    /** Type: key. */
-    public static final short KEY = 1;
-
-    /** Type: key reference. */
-    public static final short KEYREF = 2;
+public abstract class IdentityConstraint implements XSIDConstraintDefinition {
 
     //
     // Data
@@ -85,6 +76,9 @@ public abstract class IdentityConstraint {
     /** type */
     protected short type;
 
+    /** target namespace */
+    protected String fNamespace;
+    
     /** Identity constraint name. */
     protected String fIdentityConstraintName;
 
@@ -105,7 +99,8 @@ public abstract class IdentityConstraint {
     //
 
     /** Default constructor. */
-    protected IdentityConstraint(String identityConstraintName, String elemName) {
+    protected IdentityConstraint(String namespace, String identityConstraintName, String elemName) {
+        fNamespace = namespace;
         fIdentityConstraintName = identityConstraintName;
         fElementName = elemName;
     } // <init>(String,String)
@@ -113,11 +108,6 @@ public abstract class IdentityConstraint {
     //
     // Public methods
     //
-
-    /** Returns the identity constraint type. */
-    public short getType() {
-        return type;
-    } // getType():  short
 
     /** Returns the identity constraint name. */
     public String getIdentityConstraintName() {
@@ -197,4 +187,69 @@ public abstract class IdentityConstraint {
         return newArray;
     }
 
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.IDENTITY_CONSTRAINT;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fIdentityConstraintName;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fNamespace;
+    }
+
+    /**
+     * {identity-constraint category} One of key, keyref or unique.
+     */
+    public short getCategory() {
+        return type;
+    }
+
+    /**
+     * {selector} A restricted XPath ([XPath]) expression
+     */
+    public String getSelectorStr() {
+        return fSelector.toString();
+    }
+
+    /**
+     * {fields} A non-empty list of restricted XPath ([XPath]) expressions.
+     */
+    public Enumeration getFieldStrs() {
+        String[] strs = new String[fFieldCount];
+        for (int i = 0; i < fFieldCount; i++)
+            strs[i] = fFields[i].toString();
+        return new EnumerationImpl(strs, fFieldCount);
+    }
+
+    /**
+     * {referenced key} Required if {identity-constraint category} is keyref,
+     * forbidden otherwise. An identity-constraint definition with
+     * {identity-constraint category} equal to key or unique.
+     */
+    public XSIDConstraintDefinition getRefKey() {
+        return null;
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+    
 } // class IdentityConstraint

@@ -70,6 +70,7 @@ import org.apache.xerces.impl.xs.XSTypeDecl;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.QName;
 import  org.w3c.dom.Element;
@@ -301,13 +302,13 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         if (fixedAtt != null) {
             element.fDefault = new ValidatedInfo();
             element.fDefault.normalizedValue = fixedAtt;
-            element.setConstraintType(XSElementDecl.FIXED_VALUE);
+            element.setConstraintType(XSConstants.VC_FIXED);
         } else if (defaultAtt != null) {
             element.fDefault = new ValidatedInfo();
             element.fDefault.normalizedValue = defaultAtt;
-            element.setConstraintType(XSElementDecl.DEFAULT_VALUE);
+            element.setConstraintType(XSConstants.VC_DEFAULT);
         } else {
-            element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
+            element.setConstraintType(XSConstants.VC_NONE);
         }
 
         // get 'substitutionGroup affiliation'
@@ -444,7 +445,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             XSConstraints.ElementDefaultValidImmediate(element.fType, element.fDefault.normalizedValue, fValidationState, element.fDefault);
             if (element.fDefault.actualValue == null) {
                 reportSchemaError ("e-props-correct.2", new Object[]{nameAtt, element.fDefault.normalizedValue}, elmDecl);
-                element.setConstraintType(XSElementDecl.NO_CONSTRAINT);
+                element.setConstraintType(XSConstants.VC_NONE);
             }
         }
 
@@ -457,9 +458,9 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 4 If the {type definition} or {type definition}'s {content type} is or is derived from ID then there must not be a {value constraint}.
         if (element.fDefault != null) {
-            if ((elementType.getXSType() == XSTypeDecl.SIMPLE_TYPE &&
+            if ((elementType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE &&
                  ((XSSimpleType)elementType).isIDType()) ||
-                (elementType.getXSType() == XSTypeDecl.COMPLEX_TYPE &&
+                (elementType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE &&
                  ((XSComplexTypeDecl)elementType).containsTypeID())) {
                 reportSchemaError ("e-props-correct.4", new Object[]{element.fName}, elmDecl);
             }

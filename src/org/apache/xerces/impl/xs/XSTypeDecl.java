@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.XSTypeDefinition;
+
 /**
  * The XML representation for a type declaration
  * schema component is a <simpleType> or <complexType> element information item
@@ -64,22 +66,12 @@ package org.apache.xerces.impl.xs;
  * @author Elena Litani, IBM
  * @version $Id$
  */
-public interface XSTypeDecl {
+public interface XSTypeDecl extends XSTypeDefinition {
 
-    public static final short COMPLEX_TYPE   = 1;
-    public static final short SIMPLE_TYPE    = 2;
-
-    public short getXSType();
-    public String getTypeName();
-    public String getTargetNamespace();
-    public XSTypeDecl getBaseType();
-    public short getFinalSet();
-    public boolean isAnonymous();
-    
     /**
      * Experimental: return whether this type is derived from a given type.
      */
-    public boolean derivedFrom(XSTypeDecl ancestor);
+    public boolean derivedFrom(XSTypeDefinition ancestor);
     /**
      * Experimental: return whether this type is derived from a type of
      * the given namespace name and type name.

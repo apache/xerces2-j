@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.*;
+
 /**
  * The XML representation for a NOTATION declaration
  * schema component is a global <notation> element information item
@@ -64,7 +66,7 @@ package org.apache.xerces.impl.xs;
  * @author Rahul Srivastava, Sun Microsystems Inc.
  * @version $Id$
  */
-public class XSNotationDecl {
+public class XSNotationDecl implements XSNotationDeclaration {
 
     // name of the group
     public String fName = null;
@@ -74,5 +76,52 @@ public class XSNotationDecl {
     public String fPublicId = null;
     // system id of the notation
     public String fSystemId = null;
+
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.NOTATION_DECLARATION;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * Optional if {public identifier} is present. A URI reference.
+     */
+    public String getSystemId() {
+        return fSystemId;
+    }
+
+    /**
+     * Optional if {system identifier} is present. A public identifier,
+     * as defined in [XML 1.0 (Second Edition)]. 
+     */
+    public String getPublicId() {
+        return fPublicId;
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
 
 } // class XSNotationDecl

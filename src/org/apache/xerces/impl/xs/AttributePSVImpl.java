@@ -111,7 +111,7 @@ public class AttributePSVImpl implements AttributePSVI {
      *         otherwise false.
      */
     public boolean  isMemberTypeAnonymous() {
-        return (fMemberType !=null)? fMemberType.isAnonymous():false;
+        return (fMemberType !=null)? fMemberType.getIsAnonymous():false;
     }
 
 
@@ -123,7 +123,7 @@ public class AttributePSVImpl implements AttributePSVI {
      *         value unique to the definition.
      */
     public String   getMemberTypeName() {
-        return (fMemberType !=null)? fMemberType.getTypeName():null;
+        return (fMemberType !=null)? fMemberType.getName():null;
     }
 
     /**
@@ -132,7 +132,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return The {target namespace} of the actual member type definition.
      */
     public String   getMemberTypeNamespace() {
-        return (fMemberType !=null)? fMemberType.getTargetNamespace():null;
+        return (fMemberType !=null)? fMemberType.getNamespace():null;
     }
 
     /**
@@ -176,7 +176,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return true if the {name} of the type definition is absent, otherwise false.
      */
     public boolean isTypeAnonymous() {
-        return (fTypeDecl !=null)? fTypeDecl.isAnonymous():false;
+        return (fTypeDecl !=null)? fTypeDecl.getIsAnonymous():false;
     }
 
     /**
@@ -187,7 +187,7 @@ public class AttributePSVImpl implements AttributePSVI {
      *         provide a value unique to the definition.
      */
     public String getTypeName() {
-        return (fTypeDecl !=null)? fTypeDecl.getTypeName():null;
+        return (fTypeDecl !=null)? fTypeDecl.getName():null;
     }
 
     /**
@@ -196,7 +196,7 @@ public class AttributePSVImpl implements AttributePSVI {
      * @return The {target namespace} of the type definition.
      */
     public String getTypeNamespace() {
-        return (fTypeDecl !=null)? fTypeDecl.getTargetNamespace():null;
+        return (fTypeDecl !=null)? fTypeDecl.getNamespace():null;
     }
 
     /**

@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.util.XSNamedMapImpl;
 import org.apache.xerces.impl.xs.identity.IdentityConstraint;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 
@@ -68,12 +70,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSElementDecl {
-
-    // types of value constraint
-    public final static short     NO_CONSTRAINT       = 0;
-    public final static short     DEFAULT_VALUE       = 1;
-    public final static short     FIXED_VALUE         = 2;
+public class XSElementDecl implements XSElementDeclaration {
 
     // scopes
     public final static short     SCOPE_ABSENT        = 0;
@@ -88,14 +85,13 @@ public class XSElementDecl {
     public XSTypeDecl fType = null;
     // misc flag of the element: nillable/abstract/fixed
     short fMiscFlags = 0;
-    // scope
-    short fScope = SCOPE_ABSENT;
+    public short fScope = XSConstants.SCOPE_ABSENT;
     // enclosing complex type, when the scope is local
     XSComplexTypeDecl fEnclosingCT = null;
     // block set (disallowed substitutions) of the element
-    public short fBlock = SchemaSymbols.EMPTY_SET;
+    public short fBlock = XSConstants.DERIVATION_NONE;
     // final set (substitution group exclusions) of the element
-    public short fFinal = SchemaSymbols.EMPTY_SET;
+    public short fFinal = XSConstants.DERIVATION_NONE;
     // value constraint value
     public ValidatedInfo fDefault = null;
     // the substitution group affiliation of the element
@@ -110,20 +106,6 @@ public class XSElementDecl {
     private static final short ABSTRACT        = 8;
 
     // methods to get/set misc flag
-
-    public short getConstraintType() {
-        return (short)(fMiscFlags & CONSTRAINT_MASK);
-    }
-    public boolean isNillable() {
-        return ((fMiscFlags & NILLABLE) != 0);
-    }
-    public boolean isAbstract() {
-        return ((fMiscFlags & ABSTRACT) != 0);
-    }
-    public boolean isGlobal() {
-        return fScope == SCOPE_GLOBAL;
-    }
-
     public void setConstraintType(short constraintType) {
         // first clear the bits
         fMiscFlags ^= (fMiscFlags & CONSTRAINT_MASK);
@@ -211,8 +193,8 @@ public class XSElementDecl {
         fTargetNamespace = null;
         fType = null;
         fMiscFlags = 0;
-        fBlock = SchemaSymbols.EMPTY_SET;
-        fFinal = SchemaSymbols.EMPTY_SET;
+        fBlock = XSConstants.DERIVATION_NONE;
+        fFinal = XSConstants.DERIVATION_NONE;
         fDefault = null;
         fSubGroup = null;
         // reset identity constraints
@@ -222,4 +204,160 @@ public class XSElementDecl {
 
         fIDCPos = 0;
     }
+
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.ELEMENT_DECLARATION;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * Either a simple type definition or a complex type definition.
+     */
+    public XSTypeDefinition getTypeDefinition() {
+        return fType;
+    }
+
+    /**
+     * Optional. Either global or a complex type definition (
+     * <code>ctDefinition</code>). This property is absent in the case of
+     * declarations within named model groups: their scope will be
+     * determined when they are used in the construction of complex type
+     * definitions.
+     */
+    public short getScope() {
+        return fScope;
+    }
+
+    /**
+     * Locally scoped declarations are available for use only within the
+     * complex type definition identified by the <code>scope</code>
+     * property.
+     */
+    public XSComplexTypeDefinition getEnclosingCTDefinition() {
+        return fEnclosingCT;
+    }
+
+    /**
+     * A value constraint: one of default, fixed.
+     */
+    public short getConstraintType() {
+        return (short)(fMiscFlags & CONSTRAINT_MASK);
+    }
+
+    /**
+     * A value constraint: The actual value (with respect to the {type
+     * definition})
+     */
+    public String getConstraintValue() {
+        // REVISIT: SCAPI: what's the proper representation
+        return getConstraintType() == XSConstants.VC_NONE ?
+               null :
+               fDefault.normalizedValue;
+    }
+
+    /**
+     * If {nillable} is true, then an element may also be valid if it carries
+     * the namespace qualified attribute with [local name] nil from
+     * namespace http://www.w3.org/2001/XMLSchema-instance and value true
+     * (see xsi:nil (2.6.2)) even if it has no text or element content
+     * despite a {content type} which would otherwise require content.
+     */
+    public boolean getIsNillable() {
+        return ((fMiscFlags & NILLABLE) != 0);
+    }
+
+    /**
+     * {identity-constraint definitions} A set of constraint definitions.
+     */
+    public XSNamedMap getIdentityConstraints() {
+        return new XSNamedMapImpl(fIDConstraints, fIDCPos);
+    }
+
+    /**
+     * {substitution group affiliation} Optional. A top-level element
+     * definition.
+     */
+    public XSElementDeclaration getSubstitutionGroupAffiliation() {
+        return fSubGroup;
+    }
+
+    /**
+     * Convenience method. Check if <code>exclusion</code> is a substitution
+     * group exclusion for this element declaration.
+     * @param exclusion Extension, restriction or none. Represents final
+     *   set for the element.
+     * @return True if <code>exclusion</code> is a part of the substitution
+     *   group exclusion subset.
+     */
+    public boolean getIsSubstitutionGroupExclusion(short exclusion) {
+        return (fFinal & exclusion) != 0;
+    }
+
+    /**
+     * Specifies if this declaration can be nominated as
+     * the {substitution group affiliation} of other
+     * element declarations having the same {type definition}
+     * or types derived therefrom.
+     *
+     * @return A bit flag representing {extension, restriction} or NONE.
+     */
+    public short getSubstitutionGroupExclusions() {
+        return fFinal;
+    }
+
+    /**
+     * Convenience method. Check if <code>disallowed</code> is a disallowed
+     * substitution for this element declaration.
+     * @param disallowed Substitution, extension, restriction or none.
+     *   Represents a block set for the element.
+     * @return True if <code>disallowed</code> is a part of the substitution
+     *   group exclusion subset.
+     */
+    public boolean getIsDisallowedSubstition(short disallowed) {
+        return (fBlock & disallowed) != 0;
+    }
+
+    /**
+     * The supplied values for {disallowed substitutions}
+     *
+     * @return A bit flag representing {substitution, extension, restriction} or NONE.
+     */
+    public short getDisallowedSubstitutions() {
+        return fBlock;
+    }
+
+    /**
+     * {abstract} A boolean.
+     */
+    public boolean getIsAbstract() {
+        return ((fMiscFlags & ABSTRACT) != 0);
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+    
 } // class XMLElementDecl

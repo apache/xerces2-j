@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,29 +49,64 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.dv;
+package org.apache.xerces.impl.xs.util;
 
 /**
- * Any union simple type will implement this interface. It inherits the methods
- * of generic <code>XSSimpleType</code> interface.
+ * Contains a list of Objects.
  *
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public interface XSUnionSimpleType extends XSSimpleType {
+public class EnumerationImpl implements java.util.Enumeration {
+
+    // The array to hold all data
+    private Object[] fArray = null;
+    // Number of elements in this enumeration
+    private int fLength = 0;
+    // The current position
+    private int fCurPos = 0;
 
     /**
-     * return the member type definitions of Union Simple Type schema component.
-     *
-     * @return the member type definitions
+     * Construct an enumeration implementation
+     * 
+     * @param array     the data array
+     * @param length    the number of elements
      */
-    public XSSimpleType[] getMemberTypes();
+    public EnumerationImpl(Object[] array, int length) {
+        fArray = array;
+        fLength = length;
+    }
 
-}
+    /**
+     * Tests if this enumeration contains more elements.
+     *
+     * @return  <code>true</code> if and only if this enumeration object
+     *           contains at least one more element to provide;
+     *          <code>false</code> otherwise.
+     */
+    public boolean hasMoreElements() {
+        return fCurPos < fLength;
+    }
+
+    /**
+     * Returns the next element of this enumeration if this enumeration
+     * object has at least one more element to provide.
+     *
+     * @return     the next element of this enumeration.
+     * @exception  NoSuchElementException  if no more elements exist.
+     */
+    public Object nextElement() {
+        if (hasMoreElements()) {
+            return fArray[fCurPos++];
+        }
+        throw new java.util.NoSuchElementException();
+    }
+
+} // class XSParticle

@@ -252,36 +252,17 @@ public final class SchemaSymbols {
     public static final String ATTVAL_YEAR              = "gYear";
     public static final String ATTVAL_YEARMONTH         = "gYearMonth";
 
-    // block/final values
-    public static final short EMPTY_SET    = 0;
-    public static final short EXTENSION    = 1;
-    public static final short RESTRICTION  = 2;
-    public static final short UNION        = 4;
-    public static final short LIST         = 8;
-    public static final short ENUMERATION  = 16;
-    public static final short SUBSTITUTION = 32;
-
     // form qualified/unqualified
     public static final short FORM_UNQUALIFIED = 0;
     public static final short FORM_QUALIFIED   = 1;
-
-    // any: processContents
-    public static final short ANY_STRICT = 0;
-    public static final short ANY_LAX    = 1;
-    public static final short ANY_SKIP   = 2;
 
     // attribute use
     public static final short USE_OPTIONAL   = 0;
     public static final short USE_REQUIRED   = 1;
     public static final short USE_PROHIBITED = 2;
-
-    // whiteSpace
-    public static final short WS_PRESERVE = 0;
-    public static final short WS_REPLACE  = 1;
-    public static final short WS_COLLAPSE = 2;
-
+    
     // maxOccurs = "unbounded"
-   public static final int OCCURRENCE_UNBOUNDED = -1;
+    public static final int OCCURRENCE_UNBOUNDED = -1;
 
 
     /**

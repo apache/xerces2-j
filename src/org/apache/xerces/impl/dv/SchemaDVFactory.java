@@ -57,7 +57,7 @@
 
 package org.apache.xerces.impl.dv;
 
-import java.util.Hashtable;
+import org.apache.xerces.util.SymbolHash;
 
 /**
  * Defines a factory API that enables applications to <p>
@@ -153,12 +153,12 @@ public abstract class SchemaDVFactory {
     public abstract XSSimpleType getBuiltInType(String name);
 
     /**
-     * get all built-in simple types, which are stored in a hashtable keyed by
+     * get all built-in simple types, which are stored in a SymbolHash keyed by
      * the name
      *
-     * @return      a hashtable which contains all built-in simple types
+     * @return      a SymbolHash which contains all built-in simple types
      */
-    public abstract Hashtable getBuiltInTypes();
+    public abstract SymbolHash getBuiltInTypes();
 
     /**
      * Create a new simple type which is derived by restriction from another
@@ -183,8 +183,8 @@ public abstract class SchemaDVFactory {
      * @param itemType          item type of the list type
      * @return                  the newly created simple type
      */
-    public abstract XSListSimpleType createTypeList(String name, String targetNamespace,
-                                                    short finalSet, XSSimpleType itemType);
+    public abstract XSSimpleType createTypeList(String name, String targetNamespace,
+                                                short finalSet, XSSimpleType itemType);
 
     /**
      * Create a new simple type which is derived by union from a list of other
@@ -196,7 +196,7 @@ public abstract class SchemaDVFactory {
      * @param base              member types of the union type
      * @return                  the newly created simple type
      */
-    public abstract XSUnionSimpleType createTypeUnion(String name, String targetNamespace,
-                                                      short finalSet, XSSimpleType[] memberTypes);
+    public abstract XSSimpleType createTypeUnion(String name, String targetNamespace,
+                                                 short finalSet, XSSimpleType[] memberTypes);
 
 }

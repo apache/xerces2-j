@@ -69,20 +69,14 @@ package org.apache.xerces.impl.xs.identity;
 public class UniqueOrKey 
     extends IdentityConstraint {
 
-    // CONSTANTS
-    public static short UNIQUE_TYPE = 1;
-    public static short KEY_TYPE = 2;
-
-    // DATA
-    public short type;
-
     //
     // Constructors
     //
 
     /** Constructs a unique or a key identity constraint. */
-    public UniqueOrKey(String identityConstraintName, String elemName, short type) {
-        super(identityConstraintName, elemName);
+    public UniqueOrKey(String namespace, String identityConstraintName,
+                       String elemName, short type) {
+        super(namespace, identityConstraintName, elemName);
         this.type = type;
     } // <init>(String,String)
 

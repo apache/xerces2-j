@@ -125,7 +125,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *         otherwise false.
      */
     public boolean  isMemberTypeAnonymous() {
-        return (fMemberType !=null)? fMemberType.isAnonymous():false;
+        return (fMemberType !=null)? fMemberType.getIsAnonymous():false;
     }
 
 
@@ -137,7 +137,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *         value unique to the definition.
      */
     public String   getMemberTypeName() {
-        return (fMemberType !=null)? fMemberType.getTypeName():null;
+        return (fMemberType !=null)? fMemberType.getName():null;
     }
 
     /**
@@ -146,7 +146,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The {target namespace} of the actual member type definition.
      */
     public String   getMemberTypeNamespace() {
-        return (fMemberType !=null)? fMemberType.getTargetNamespace():null;
+        return (fMemberType !=null)? fMemberType.getNamespace():null;
     }
 
     /**
@@ -190,7 +190,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return true if the {name} of the type definition is absent, otherwise false.
      */
     public boolean isTypeAnonymous() {
-        return (fTypeDecl !=null)? fTypeDecl.isAnonymous():false;
+        return (fTypeDecl !=null)? fTypeDecl.getIsAnonymous():false;
     }
 
     /**
@@ -201,7 +201,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *         provide a value unique to the definition.
      */
     public String getTypeName() {
-        return (fTypeDecl !=null)? fTypeDecl.getTypeName():null;
+        return (fTypeDecl !=null)? fTypeDecl.getName():null;
     }
 
     /**
@@ -210,7 +210,7 @@ public class ElementPSVImpl implements ElementPSVI {
      * @return The {target namespace} of the type definition.
      */
     public String getTypeNamespace() {
-        return (fTypeDecl !=null)? fTypeDecl.getTargetNamespace():null;
+        return (fTypeDecl !=null)? fTypeDecl.getNamespace():null;
     }
 
     /**
@@ -221,7 +221,7 @@ public class ElementPSVImpl implements ElementPSVI {
      *  @return simple or complex, depending on the type definition.
      */
     public short getTypeDefinitionType() {
-        return (fTypeDecl !=null)? fTypeDecl.getXSType():XSTypeDecl.COMPLEX_TYPE;
+        return (fTypeDecl !=null)? fTypeDecl.getTypeCategory():XSTypeDecl.COMPLEX_TYPE;
     }
 
     /**

@@ -76,6 +76,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
 import org.apache.xerces.xni.QName;
 
 /**
@@ -156,16 +157,16 @@ public class XSAttributeChecker {
     // constants to return
     private static final XInt INT_QUALIFIED      = fXIntPool.getXInt(SchemaSymbols.FORM_QUALIFIED);
     private static final XInt INT_UNQUALIFIED    = fXIntPool.getXInt(SchemaSymbols.FORM_UNQUALIFIED);
-    private static final XInt INT_EMPTY_SET      = fXIntPool.getXInt(SchemaSymbols.EMPTY_SET);
-    private static final XInt INT_ANY_STRICT     = fXIntPool.getXInt(SchemaSymbols.ANY_STRICT);
-    private static final XInt INT_ANY_LAX        = fXIntPool.getXInt(SchemaSymbols.ANY_LAX);
-    private static final XInt INT_ANY_SKIP       = fXIntPool.getXInt(SchemaSymbols.ANY_SKIP);
+    private static final XInt INT_EMPTY_SET      = fXIntPool.getXInt(XSConstants.DERIVATION_NONE);
+    private static final XInt INT_ANY_STRICT     = fXIntPool.getXInt(XSWildcardDecl.PC_STRICT);
+    private static final XInt INT_ANY_LAX        = fXIntPool.getXInt(XSWildcardDecl.PC_LAX);
+    private static final XInt INT_ANY_SKIP       = fXIntPool.getXInt(XSWildcardDecl.PC_SKIP);
     private static final XInt INT_USE_OPTIONAL   = fXIntPool.getXInt(SchemaSymbols.USE_OPTIONAL);
     private static final XInt INT_USE_REQUIRED   = fXIntPool.getXInt(SchemaSymbols.USE_REQUIRED);
     private static final XInt INT_USE_PROHIBITED = fXIntPool.getXInt(SchemaSymbols.USE_PROHIBITED);
-    private static final XInt INT_WS_PRESERVE    = fXIntPool.getXInt(SchemaSymbols.WS_PRESERVE);
-    private static final XInt INT_WS_REPLACE     = fXIntPool.getXInt(SchemaSymbols.WS_REPLACE);
-    private static final XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(SchemaSymbols.WS_COLLAPSE);
+    private static final XInt INT_WS_PRESERVE    = fXIntPool.getXInt(XSSimpleType.WS_PRESERVE);
+    private static final XInt INT_WS_REPLACE     = fXIntPool.getXInt(XSSimpleType.WS_REPLACE);
+    private static final XInt INT_WS_COLLAPSE    = fXIntPool.getXInt(XSSimpleType.WS_COLLAPSE);
     private static final XInt INT_UNBOUNDED      = fXIntPool.getXInt(SchemaSymbols.OCCURRENCE_UNBOUNDED);
 
     // default wildcard to return
@@ -1234,9 +1235,9 @@ public class XSAttributeChecker {
             // block = (#all | List of (substitution | extension | restriction | list | union))
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
-                choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
-                         SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
-                         SchemaSymbols.UNION;
+                choice = XSConstants.DERIVATION_SUBSTITUTION|XSConstants.DERIVATION_EXTENSION|
+                         XSConstants.DERIVATION_RESTRICTION|XSConstants.DERIVATION_LIST|
+                         XSConstants.DERIVATION_UNION;
             }
             else {
                 StringTokenizer t = new StringTokenizer (value, " ");
@@ -1244,19 +1245,19 @@ public class XSAttributeChecker {
                     String token = t.nextToken ();
 
                     if (token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION)) {
-                        choice |= SchemaSymbols.SUBSTITUTION;
+                        choice |= XSConstants.DERIVATION_SUBSTITUTION;
                     }
                     else if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
-                        choice |= SchemaSymbols.EXTENSION;
+                        choice |= XSConstants.DERIVATION_EXTENSION;
                     }
                     else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
-                        choice |= SchemaSymbols.RESTRICTION;
+                        choice |= XSConstants.DERIVATION_RESTRICTION;
                     }
                     else if (token.equals (SchemaSymbols.ATTVAL_LIST)) {
-                        choice |= SchemaSymbols.LIST;
+                        choice |= XSConstants.DERIVATION_LIST;
                     }
                     else if (token.equals (SchemaSymbols.ATTVAL_UNION)) {
-                        choice |= SchemaSymbols.RESTRICTION;
+                        choice |= XSConstants.DERIVATION_RESTRICTION;
                     }
                     else {
                         throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (substitution | extension | restriction | list | union))"});
@@ -1282,9 +1283,9 @@ public class XSAttributeChecker {
                 // finalDefault="extension restriction".
                 // if finalDefault="#all", final on any simple type would be
                 // "extension restriction list union".
-                choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
-                         SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
-                         SchemaSymbols.UNION;
+                choice = XSConstants.DERIVATION_SUBSTITUTION|XSConstants.DERIVATION_EXTENSION|
+                         XSConstants.DERIVATION_RESTRICTION|XSConstants.DERIVATION_LIST|
+                         XSConstants.DERIVATION_UNION;
             }
             else {
                 StringTokenizer t = new StringTokenizer (value, " ");
@@ -1292,10 +1293,10 @@ public class XSAttributeChecker {
                     String token = t.nextToken ();
 
                     if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
-                        choice |= SchemaSymbols.EXTENSION;
+                        choice |= XSConstants.DERIVATION_EXTENSION;
                     }
                     else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
-                        choice |= SchemaSymbols.RESTRICTION;
+                        choice |= XSConstants.DERIVATION_RESTRICTION;
                     }
                     else {
                         throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | List of (extension | restriction))"});
@@ -1314,18 +1315,18 @@ public class XSAttributeChecker {
                 //          everything: substitution/externsion/restriction/list/union.
                 //          would this be a problem?
                 // same reason as above DT_BLOCK1/DT_FINAL
-                choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
-                         SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
-                         SchemaSymbols.UNION;
+                choice = XSConstants.DERIVATION_SUBSTITUTION|XSConstants.DERIVATION_EXTENSION|
+                         XSConstants.DERIVATION_RESTRICTION|XSConstants.DERIVATION_LIST|
+                         XSConstants.DERIVATION_UNION;
             }
             else if (value.equals (SchemaSymbols.ATTVAL_LIST)) {
-                choice = SchemaSymbols.LIST;
+                choice = XSConstants.DERIVATION_LIST;
             }
             else if (value.equals (SchemaSymbols.ATTVAL_UNION)) {
-                choice = SchemaSymbols.UNION;
+                choice = XSConstants.DERIVATION_UNION;
             }
             else if (value.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
-                choice = SchemaSymbols.RESTRICTION;
+                choice = XSConstants.DERIVATION_RESTRICTION;
             }
             else {
                 throw new InvalidDatatypeValueException("cvc-datatype-valid.1.2.3", new Object[]{value, "(#all | (list | union | restriction))"});
@@ -1400,14 +1401,14 @@ public class XSAttributeChecker {
             } else if (value.equals(SchemaSymbols.ATTVAL_TWOPOUNDOTHER)) {
                 // ##other
                 wildcard = fTempWC;
-                wildcard.fType = XSWildcardDecl.WILDCARD_OTHER;
+                wildcard.fType = XSWildcardDecl.NSCONSTRAINT_NOT;
                 wildcard.fNamespaceList = new String[2];
                 wildcard.fNamespaceList[0] = schemaDoc.fTargetNamespace;
                 wildcard.fNamespaceList[1] = null;
             } else {
                 // list
                 wildcard = fTempWC;
-                wildcard.fType = XSWildcardDecl.WILDCARD_LIST;
+                wildcard.fType = XSWildcardDecl.NSCONSTRAINT_LIST;
 
                 // tokenize
                 StringTokenizer tokens = new StringTokenizer(value);

@@ -59,12 +59,13 @@ package org.apache.xerces.impl.xs.traversers;
 
 import org.apache.xerces.impl.dv.SchemaDVFactory;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSUnionSimpleType;
 import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
 import org.apache.xerces.impl.dv.XSFacets;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSTypeDecl;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
 
 import org.apache.xerces.util.DOMUtil;
@@ -193,28 +194,28 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         // (list|restriction|union)
         if (child == null) {
             reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
-            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.RESTRICTION);
+            return errorType(name, schemaDoc.fTargetNamespace, XSConstants.DERIVATION_RESTRICTION);
         }
 
         // derivation type: restriction/list/union
         String varietyProperty = DOMUtil.getLocalName(child);
-        short refType = SchemaSymbols.RESTRICTION;
+        short refType = XSConstants.DERIVATION_RESTRICTION;
         boolean restriction = false, list = false, union = false;
         if (varietyProperty.equals(SchemaSymbols.ELT_RESTRICTION)) {
-            refType = SchemaSymbols.RESTRICTION;
+            refType = XSConstants.DERIVATION_RESTRICTION;
             restriction = true;
         }
         else if (varietyProperty.equals(SchemaSymbols.ELT_LIST)) {
-            refType = SchemaSymbols.LIST;
+            refType = XSConstants.DERIVATION_LIST;
             list = true;
         }
         else if (varietyProperty.equals(SchemaSymbols.ELT_UNION)) {
-            refType = SchemaSymbols.UNION;
+            refType = XSConstants.DERIVATION_UNION;
             union = true;
         }
         else {
             reportSchemaError("s4s-elt-must-match", new Object[]{SchemaSymbols.ELT_SIMPLETYPE, "(annotation?, (restriction | list | union))"}, simpleTypeDecl);
-            return errorType(name, schemaDoc.fTargetNamespace, SchemaSymbols.RESTRICTION);
+            return errorType(name, schemaDoc.fTargetNamespace, XSConstants.DERIVATION_RESTRICTION);
         }
 
         // nothing should follow this element
@@ -250,7 +251,8 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
         // get types from "memberTypes" attribute
         Vector dTValidators = null;
-        XSSimpleType dv = null, dvs[];
+        XSSimpleType dv = null;
+        XSObjectList dvs;
         if (union && memberTypes != null && memberTypes.size() > 0) {
             int size = memberTypes.size();
             dTValidators = new Vector(size, 2);
@@ -258,13 +260,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             for (int i = 0; i < size; i++) {
                 // get the type decl
                 dv = findDTValidator(child, (QName)memberTypes.elementAt(i),
-                                     SchemaSymbols.UNION, schemaDoc);
+                                     XSConstants.DERIVATION_UNION, schemaDoc);
                 if (dv != null) {
                     // if it's a union, expand it
                     if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
-                        dvs = ((XSUnionSimpleType)dv).getMemberTypes();
-                        for (int j = 0; j < dvs.length; j++)
-                            dTValidators.addElement(dvs[j]);
+                        dvs = dv.getMemberTypes();
+                        for (int j = 0; j < dvs.getListLength(); j++)
+                            dTValidators.addElement(dvs.getItem(j));
                     } else {
                         dTValidators.addElement(dv);
                     }
@@ -301,9 +303,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
                     if (dv != null) {
                         // if it's a union, expand it
                         if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
-                            dvs = ((XSUnionSimpleType)dv).getMemberTypes();
-                            for (int j = 0; j < dvs.length; j++)
-                                dTValidators.addElement(dvs[j]);
+                            dvs = dv.getMemberTypes();
+                            for (int j = 0; j < dvs.getListLength(); j++)
+                                dTValidators.addElement(dvs.getItem(j));
                         } else {
                             dTValidators.addElement(dv);
                         }
@@ -406,20 +408,20 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         XSTypeDecl baseType = (XSTypeDecl)fSchemaHandler.getGlobalDecl(schemaDoc, fSchemaHandler.TYPEDECL_TYPE, baseTypeStr, elm);
         if (baseType != null) {
             // if it's a complex type, or if its restriction of anySimpleType
-            if (baseType.getXSType() != XSTypeDecl.SIMPLE_TYPE ||
+            if (baseType.getTypeCategory() != XSTypeDecl.SIMPLE_TYPE ||
                 baseType == SchemaGrammar.fAnySimpleType &&
-                baseRefContext == SchemaSymbols.RESTRICTION) {
+                baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
                 reportSchemaError("st-props-correct.4.1", new Object[]{baseTypeStr.rawname}, elm);
                 return SchemaGrammar.fAnySimpleType;
             }
-            if ((baseType.getFinalSet() & baseRefContext) != 0) {
-                if (baseRefContext == SchemaSymbols.RESTRICTION) {
+            if ((baseType.getFinal() & baseRefContext) != 0) {
+                if (baseRefContext == XSConstants.DERIVATION_RESTRICTION) {
                     reportSchemaError("st-props-correct.3", new Object[]{baseTypeStr.rawname}, elm);
                 }
-                else if (baseRefContext == SchemaSymbols.LIST) {
+                else if (baseRefContext == XSConstants.DERIVATION_LIST) {
                     reportSchemaError("st-props-correct.4.2.1", new Object[]{baseTypeStr.rawname}, elm);
                 }
-                else if (baseRefContext == SchemaSymbols.UNION) {
+                else if (baseRefContext == XSConstants.DERIVATION_UNION) {
                     reportSchemaError("st-props-correct.4.2.2", new Object[]{baseTypeStr.rawname}, elm);
                 }
             }
@@ -434,9 +436,9 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             return true;
 
         if (validator.getVariety() == XSSimpleType.VARIETY_UNION) {
-            XSSimpleType[] temp = ((XSUnionSimpleType)validator).getMemberTypes();
-            for (int i = 0; i < temp.length; i++) {
-                if (temp[i].getVariety() == XSSimpleType.VARIETY_LIST) {
+            XSObjectList temp = validator.getMemberTypes();
+            for (int i = 0; i < temp.getListLength(); i++) {
+                if (((XSSimpleType)temp.getItem(i)).getVariety() == XSSimpleType.VARIETY_LIST) {
                     return true;
                 }
             }
@@ -447,13 +449,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
 
     private XSSimpleType errorType(String name, String namespace, short refType) {
         switch (refType) {
-        case SchemaSymbols.RESTRICTION:
+        case XSConstants.DERIVATION_RESTRICTION:
             return schemaFactory.createTypeRestriction(name, namespace, (short)0,
                                                        SchemaGrammar.fAnySimpleType);
-        case SchemaSymbols.LIST:
+        case XSConstants.DERIVATION_LIST:
             return schemaFactory.createTypeList(name, namespace, (short)0,
                                                 SchemaGrammar.fAnySimpleType);
-        case SchemaSymbols.UNION:
+        case XSConstants.DERIVATION_UNION:
             return schemaFactory.createTypeUnion(name, namespace, (short)0,
                                                  new XSSimpleType[]{SchemaGrammar.fAnySimpleType});
         }

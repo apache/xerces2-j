@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,29 +49,63 @@
  *
  * This software consists of voluntary contributions made by many
  * individuals on behalf of the Apache Software Foundation and was
- * originally based on software copyright (c) 1999, International
+ * originally based on software copyright (c) 2001, International
  * Business Machines, Inc., http://www.apache.org.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
  */
 
-package org.apache.xerces.impl.dv;
+package org.apache.xerces.impl.xs.util;
+
+import org.apache.xerces.impl.xs.psvi.XSObject;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 
 /**
- * Any list simple type will implement this interface. It inherits the methods
- * of generic <code>XSSimpleType</code> interface.
+ * Containts a list of XSObject's.
  *
  * @author Sandy Gao, IBM
  *
  * @version $Id$
  */
-public interface XSListSimpleType extends XSSimpleType {
+public class XSObjectListImpl implements XSObjectList {
+
+    // The array to hold all data
+    private XSObject[] fArray = null;
+    // Number of elements in this list
+    private int fLength = 0;
 
     /**
-     * return the item type definiton of List simple type schema component.
-     *
-     * @return the item type definition.
+     * Construct an XSObjectList implementation
+     * 
+     * @param array     the data array
+     * @param length    the number of elements
      */
-    public XSSimpleType getItemType();
+    public XSObjectListImpl(XSObject[] array, int length) {
+        fArray = array;
+        fLength = length;
+    }
 
-}
+    /**
+     * The number of <code>XSObjects</code> in the list. The range of valid
+     * child node indices is 0 to <code>length-1</code> inclusive.
+     */
+    public int getListLength() {
+        return fLength;
+    }
+
+    /**
+     * Returns the <code>index</code>th item in the collection. The index
+     * starts at 0. If <code>index</code> is greater than or equal to the
+     * number of nodes in the list, this returns <code>null</code>.
+     * @param index index into the collection.
+     * @return The XSObject at the <code>index</code>th position in the
+     *   <code>XSObjectList</code>, or <code>null</code> if that is not a
+     *   valid index.
+     */
+    public XSObject getItem(int index) {
+        if (index < 0 || index >= fLength)
+            return null;
+        return fArray[index];
+    }
+
+} // class XSParticle

@@ -106,8 +106,8 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
         // if ret == null, we've already reported an error in getGlobalDecl
         // we report an error only when ret != null, and the return type keyref
         if (ret != null) {
-            if (ret.getType() == IdentityConstraint.KEY ||
-                ret.getType() == IdentityConstraint.UNIQUE) {
+            if (ret.getCategory() == IdentityConstraint.IC_KEY ||
+                ret.getCategory() == IdentityConstraint.IC_UNIQUE) {
                 key = (UniqueOrKey)ret;
             } else {
                 reportSchemaError("src-resolve", new Object[]{kName.rawname, "identity constraint key/unique"}, krElem);
@@ -119,7 +119,7 @@ class XSDKeyrefTraverser extends XSDAbstractIDConstraintTraverser {
             return;
         }
 
-        KeyRef keyRef = new KeyRef(krName, element.fName, key);
+        KeyRef keyRef = new KeyRef(schemaDoc.fTargetNamespace, krName, element.fName, key);
 
         // add to element decl
         traverseIdentityConstraint(keyRef, krElem, schemaDoc, attrValues);

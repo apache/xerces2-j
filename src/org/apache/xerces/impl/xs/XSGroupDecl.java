@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.*;
+
 /**
  * The XML representation for a group declaration
  * schema component is a global <group> element information item
@@ -64,13 +66,52 @@ package org.apache.xerces.impl.xs;
  * @author Sandy Gao, IBM
  * @version $Id$
  */
-public class XSGroupDecl {
+public class XSGroupDecl implements XSModelGroupDefinition {
 
     // name of the group
     public String fName = null;
     // target namespace of the group
     public String fTargetNamespace = null;
     // model group of the group
-    public XSModelGroup fModelGroup = null;
+    public XSModelGroupImpl fModelGroup = null;
 
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.MODEL_GROUP_DEFINITION;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * {model group} A model group.
+     */
+    public XSModelGroup getModelGroup() {
+        return fModelGroup;
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+    
 } // class XSGroupDecl

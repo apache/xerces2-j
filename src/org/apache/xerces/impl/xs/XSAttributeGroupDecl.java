@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xs;
 
+import org.apache.xerces.impl.xs.psvi.*;
+import org.apache.xerces.impl.xs.util.XSObjectListImpl;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 
 /**
@@ -68,7 +70,7 @@ import org.apache.xerces.impl.dv.ValidatedInfo;
  *
  * @version $Id$
  */
-public class XSAttributeGroupDecl {
+public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
 
     // name of the attribute group
     public String fName = null;
@@ -78,7 +80,7 @@ public class XSAttributeGroupDecl {
     int fAttrUseNum = 0;
     // attribute uses included by this attribute group
     private static final int INITIAL_SIZE = 5;
-    XSAttributeUse[] fAttributeUses = new XSAttributeUse[INITIAL_SIZE];
+    XSAttributeUseImpl[] fAttributeUses = new XSAttributeUseImpl[INITIAL_SIZE];
     // attribute wildcard included by this attribute group
     public XSWildcardDecl fAttributeWC = null;
     // whether there is an attribute use whose type is or is derived from ID.
@@ -88,7 +90,7 @@ public class XSAttributeGroupDecl {
     // if the type is derived from ID, but there is already another attribute
     // use of type ID, then return the name of the other attribute use;
     // otherwise, return null
-    public String addAttributeUse(XSAttributeUse attrUse) {
+    public String addAttributeUse(XSAttributeUseImpl attrUse) {
 
         if (fAttrUseNum == fAttributeUses.length) {
             fAttributeUses = resize(fAttributeUses, fAttrUseNum*2);
@@ -110,7 +112,7 @@ public class XSAttributeGroupDecl {
         return null;
     }
 
-    public XSAttributeUse getAttributeUse(String uri, String localpart) {
+    public XSAttributeUseImpl getAttributeUse(String uri, String localpart) {
         for (int i=0; i<fAttrUseNum; i++) {
             if ( (fAttributeUses[i].fAttrDecl.fTargetNamespace == uri) &&
                  (fAttributeUses[i].fAttrDecl.fName == localpart) )
@@ -123,7 +125,7 @@ public class XSAttributeGroupDecl {
     public void removeProhibitedAttrs() {
         if (fAttrUseNum == 0) return;
         int pCount = 0;
-        XSAttributeUse[] pUses = new XSAttributeUse[fAttrUseNum];
+        XSAttributeUseImpl[] pUses = new XSAttributeUseImpl[fAttrUseNum];
         for (int i = 0; i < fAttrUseNum; i++) {
             if (fAttributeUses[i].fUse == SchemaSymbols.USE_PROHIBITED) {
                 pCount++;
@@ -152,24 +154,14 @@ public class XSAttributeGroupDecl {
         }
     }
 
-    public XSAttributeUse[] getAttributeUses() {
-        if (fAttrUseNum == 0) {
-            return null;
-        }
-        if (fAttrUseNum < fAttributeUses.length) {
-            fAttributeUses = resize(fAttributeUses, fAttrUseNum);
-        }
-        return fAttributeUses;
-    }
-
     // Check that the attributes in this group validly restrict those from a base group
     // If an error is found, the error code is returned.
     public String validRestrictionOf(XSAttributeGroupDecl baseGroup) {
 
         String errorCode = null;
-        XSAttributeUse attrUse = null;
+        XSAttributeUseImpl attrUse = null;
         XSAttributeDecl attrDecl = null;
-        XSAttributeUse baseAttrUse = null;
+        XSAttributeUseImpl baseAttrUse = null;
         XSAttributeDecl baseAttrDecl = null;
 
         for (int i=0; i<fAttrUseNum; i++) {
@@ -203,7 +195,7 @@ public class XSAttributeGroupDecl {
                 //
                 if (! XSConstraints.checkSimpleDerivationOk(attrDecl.fType,
                                                             baseAttrDecl.fType,
-                                                            baseAttrDecl.fType.getFinalSet()) ) {
+                                                            baseAttrDecl.fType.getFinal()) ) {
                     errorCode="derivation-ok-restriction.2.1.2";
                     return errorCode;
                 }
@@ -212,14 +204,14 @@ public class XSAttributeGroupDecl {
                 //
                 // derivation-ok-restriction.  Constraint 2.1.3
                 //
-                int baseConsType=baseAttrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT?
+                int baseConsType=baseAttrUse.fConstraintType!=XSConstants.VC_NONE?
                                  baseAttrUse.fConstraintType:baseAttrDecl.getConstraintType();
-                int thisConstType = attrUse.fConstraintType!=XSAttributeDecl.NO_CONSTRAINT?
+                int thisConstType = attrUse.fConstraintType!=XSConstants.VC_NONE?
                                     attrUse.fConstraintType:attrDecl.getConstraintType();
 
-                if (baseConsType == XSAttributeDecl.FIXED_VALUE) {
+                if (baseConsType == XSConstants.VC_FIXED) {
 
-                    if (thisConstType != XSAttributeDecl.FIXED_VALUE) {
+                    if (thisConstType != XSConstants.VC_FIXED) {
                         errorCode="derivation-ok-restriction.2.1.3";
                         return errorCode;
                     } else {
@@ -265,7 +257,7 @@ public class XSAttributeGroupDecl {
 
                 baseAttrDecl = baseAttrUse.fAttrDecl;
                 // Look for a match in this group
-                XSAttributeUse thisAttrUse = getAttributeUse(
+                XSAttributeUseImpl thisAttrUse = getAttributeUse(
                                                             baseAttrDecl.fTargetNamespace,baseAttrDecl.fName);
                 if (thisAttrUse == null) {
                     errorCode = "derivation-ok-restriction.3";
@@ -294,8 +286,8 @@ public class XSAttributeGroupDecl {
 
     }
 
-    static final XSAttributeUse[] resize(XSAttributeUse[] oldArray, int newSize) {
-        XSAttributeUse[] newArray = new XSAttributeUse[newSize];
+    static final XSAttributeUseImpl[] resize(XSAttributeUseImpl[] oldArray, int newSize) {
+        XSAttributeUseImpl[] newArray = new XSAttributeUseImpl[newSize];
         System.arraycopy(oldArray, 0, newArray, 0, Math.min(oldArray.length, newSize));
         return newArray;
     }
@@ -314,4 +306,50 @@ public class XSAttributeGroupDecl {
 
     }
 
+    /**
+     * Get the type of the object, i.e ELEMENT_DECLARATION.
+     */
+    public short getType() {
+        return XSConstants.ATTRIBUTE_GROUP;
+    }
+
+    /**
+     * The <code>name</code> of this <code>XSObject</code> depending on the
+     * <code>XSObject</code> type.
+     */
+    public String getName() {
+        return fName;
+    }
+
+    /**
+     * The namespace URI of this node, or <code>null</code> if it is
+     * unspecified.  defines how a namespace URI is attached to schema
+     * components.
+     */
+    public String getNamespace() {
+        return fTargetNamespace;
+    }
+
+    /**
+     * {attribute uses} A set of attribute uses.
+     */
+    public XSObjectList getAttributeUses() {
+        return new XSObjectListImpl(fAttributeUses, fAttrUseNum);
+    }
+
+    /**
+     * {attribute wildcard} Optional. A wildcard.
+     */
+    public XSWildcard getAttributeWildcard() {
+        return fAttributeWC;
+    }
+
+    /**
+     * Optional. Annotation.
+     */
+    public XSAnnotation getAnnotation() {
+        // REVISIT: SCAPI: to implement
+        return null;
+    }
+    
 } // class XSAttributeGroupDecl

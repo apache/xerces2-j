@@ -58,7 +58,6 @@
 package org.apache.xerces.impl.xs;
 
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.impl.dv.XSAtomicSimpleType;
 import org.apache.xerces.impl.dv.ValidatedInfo;
 import org.apache.xerces.impl.dv.DatatypeException;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
@@ -71,6 +70,8 @@ import org.apache.xerces.impl.xs.traversers.XSDHandler;
 import org.apache.xerces.impl.xs.traversers.XSAttributeChecker;
 import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
+import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationState;
 import org.apache.xerces.impl.XMLEntityManager;
@@ -1440,7 +1441,7 @@ public class XMLSchemaValidator
         }
 
         boolean mixed = false;
-        if (fCurrentType != null && fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType != null && fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
               XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
               if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                     mixed = true;
@@ -1448,7 +1449,7 @@ public class XMLSchemaValidator
         }
 
         if (DEBUG) {
-         System.out.println("==>characters()"+fCurrentType.getTypeName()+":"+mixed);
+         System.out.println("==>characters()"+fCurrentType.getName()+":"+mixed);
         }
 
         if (mixed || fWhiteSpace !=-1 || fUnionType) {
@@ -1725,7 +1726,7 @@ public class XMLSchemaValidator
         }
 
         // if the wildcard is skip, then return
-        if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP) {
+        if (wildcard != null && wildcard.fProcessContents == XSWildcardDecl.PC_SKIP) {
             fSkipValidationDepth = fElementDepth;
             return augs;
         }
@@ -1746,7 +1747,7 @@ public class XMLSchemaValidator
 
         // Element Locally Valid (Element)
         // 2 Its {abstract} must be false.
-        if (fCurrentElemDecl != null && fCurrentElemDecl.isAbstract())
+        if (fCurrentElemDecl != null && fCurrentElemDecl.getIsAbstract())
             reportSchemaError("cvc-elt.2", new Object[]{element.rawname});
 
         if (fCurrentElemDecl != null) {
@@ -1771,7 +1772,7 @@ public class XMLSchemaValidator
                 }
                 // if wildcard = strict, report error
                 else if (wildcard != null &&
-                         wildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT) {
+                         wildcard.fProcessContents == XSWildcardDecl.PC_STRICT) {
                     // report error, because wilcard = strict
                     reportSchemaError("cvc-complex-type.2.4.c", new Object[]{element.rawname});
                 }
@@ -1798,9 +1799,9 @@ public class XMLSchemaValidator
 
         // Element Locally Valid (Type)
         // 2 Its {abstract} must be false.
-        if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-            if (ctype.isAbstractType()) {
+            if (ctype.getIsAbstract()) {
                 reportSchemaError("cvc-type.2", new Object[]{"Element " + element.rawname + " is declared with a type that is abstract.  Use xsi:type to specify a non-abstract type"});
             }
             if (fNormalizeData) {
@@ -1820,7 +1821,7 @@ public class XMLSchemaValidator
             }
         }
         // normalization
-        if (fNormalizeData && fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+        if (fNormalizeData && fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             // if !union type
              XSSimpleType dv = (XSSimpleType)fCurrentType;
              if (dv.getVariety() == XSSimpleType.VARIETY_UNION) {
@@ -1837,7 +1838,7 @@ public class XMLSchemaValidator
 
         // then try to get the content model
         fCurrentCM = null;
-        if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
             fCurrentCM = ((XSComplexTypeDecl)fCurrentType).getContentModel(fCMBuilder);
         }
 
@@ -1855,7 +1856,7 @@ public class XMLSchemaValidator
         // now validate everything related with the attributes
         // first, get the attribute group
         XSAttributeGroupDecl attrGrp = null;
-        if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
             XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
             attrGrp = ctype.fAttrGrp;
         }
@@ -1870,7 +1871,7 @@ public class XMLSchemaValidator
                 int icCount = fCurrentElemDecl.fIDCPos;
                 int uniqueOrKey = 0;
                 for (;uniqueOrKey < icCount; uniqueOrKey++) {
-                    if (fCurrentElemDecl.fIDConstraints[uniqueOrKey].getType() != IdentityConstraint.KEYREF) {
+                    if (fCurrentElemDecl.fIDConstraints[uniqueOrKey].getCategory() != IdentityConstraint.IC_KEYREF) {
                         activateSelectorFor(fCurrentElemDecl.fIDConstraints[uniqueOrKey]);
                     }
                     else
@@ -1976,7 +1977,7 @@ public class XMLSchemaValidator
         for (int i = oldCount - 1; i >= newCount; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
             IdentityConstraint id;
-            if ((id = matcher.getIDConstraint()) != null  && id.getType() != IdentityConstraint.KEYREF) {
+            if ((id = matcher.getIDConstraint()) != null && id.getCategory() != IdentityConstraint.IC_KEYREF) {
                 matcher.endDocumentFragment();
                 fValueStoreCache.transplant(id);
             }
@@ -1987,7 +1988,7 @@ public class XMLSchemaValidator
         for (int i = oldCount - 1; i >= newCount; i--) {
             XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
             IdentityConstraint id;
-            if ((id = matcher.getIDConstraint()) != null && id.getType() == IdentityConstraint.KEYREF) {
+            if ((id = matcher.getIDConstraint()) != null && id.getCategory() == IdentityConstraint.IC_KEYREF) {
                 ValueStoreBase values = fValueStoreCache.getValueStoreFor(id);
                 if (values != null) // nothing to do if nothing matched!
                     values.endDocumentFragment();
@@ -2366,7 +2367,7 @@ public class XMLSchemaValidator
         if (fCurrentType != null) {
             // 4.3 The local type definition must be validly derived from the {type definition} given the union of the {disallowed substitutions} and the {type definition}'s {prohibited substitutions}, as defined in Type Derivation OK (Complex) (3.4.6) (if it is a complex type definition), or given {disallowed substitutions} as defined in Type Derivation OK (Simple) (3.14.6) (if it is a simple type definition).
             short block = fCurrentElemDecl.fBlock;
-            if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE)
+            if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE)
                 block |= ((XSComplexTypeDecl)fCurrentType).fBlock;
             if (!XSConstraints.checkTypeDerivationOk(type, fCurrentType, block))
                 reportSchemaError("cvc-elt.4.3", new Object[]{element.rawname, xsiType});
@@ -2379,7 +2380,7 @@ public class XMLSchemaValidator
         // Element Locally Valid (Element)
         // 3 The appropriate case among the following must be true:
         // 3.1 If {nillable} is false, then there must be no attribute information item among the element information item's [attributes] whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and whose [local name] is nil.
-        if (fCurrentElemDecl != null && !fCurrentElemDecl.isNillable()) {
+        if (fCurrentElemDecl != null && !fCurrentElemDecl.getIsNillable()) {
             reportSchemaError("cvc-elt.3.1", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
         }
         // 3.2 If {nillable} is true and there is such an attribute information item and its actual value is true , then all of the following must be true:
@@ -2389,7 +2390,7 @@ public class XMLSchemaValidator
             if (value.equals(SchemaSymbols.ATTVAL_TRUE) ||
                 value.equals(SchemaSymbols.ATTVAL_TRUE_1)) {
                 if (fCurrentElemDecl != null &&
-                    fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE) {
+                    fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED) {
                     reportSchemaError("cvc-elt.3.2.2", new Object[]{element.rawname, URI_XSI+","+XSI_NIL});
                 }
                 return true;
@@ -2438,7 +2439,7 @@ public class XMLSchemaValidator
         // 3.1.1 The element information item's [attributes] must be empty, excepting those
         // whose [namespace name] is identical to http://www.w3.org/2001/XMLSchema-instance and
         // whose [local name] is one of type, nil, schemaLocation or noNamespaceSchemaLocation.
-        if (fCurrentType == null || fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+        if (fCurrentType == null || fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             int attCount = attributes.getLength();
 
             for (int index = 0; index < attCount; index++) {
@@ -2473,8 +2474,8 @@ public class XMLSchemaValidator
             return;
         }
 
-        XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
-        int useCount = (attrUses!=null)? attrUses.length:0;
+        XSObjectList attrUses = attrGrp.getAttributeUses();
+        int useCount = attrUses.getListLength();
         XSWildcardDecl attrWildcard = attrGrp.fAttributeWC;
 
         // whether we have seen a Wildcard ID.
@@ -2516,12 +2517,12 @@ public class XMLSchemaValidator
             }
             
             // it's not xmlns, and not xsi, then we need to find a decl for it
-            XSAttributeUse currUse = null;
+            XSAttributeUseImpl currUse = null, oneUse;
             for (int i = 0; i < useCount; i++) {
-
-                if (attrUses[i].fAttrDecl.fName == fTempQName.localpart &&
-                    attrUses[i].fAttrDecl.fTargetNamespace == fTempQName.uri) {
-                    currUse = attrUses[i];
+                oneUse = (XSAttributeUseImpl)attrUses.getItem(i);
+                if (oneUse.fAttrDecl.fName == fTempQName.localpart &&
+                    oneUse.fAttrDecl.fTargetNamespace == fTempQName.uri) {
+                    currUse = oneUse;
                     break;
                 }
             }
@@ -2549,7 +2550,7 @@ public class XMLSchemaValidator
             else {
                 // which means it matches a wildcard
                 // skip it if processContents is skip
-                if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_SKIP)
+                if (attrWildcard.fProcessContents == XSWildcardDecl.PC_SKIP)
                     continue;
 
                 //try to find grammar by different means...
@@ -2562,7 +2563,7 @@ public class XMLSchemaValidator
                 // if can't find
                 if (currDecl == null) {
                     // if strict, report error
-                    if (attrWildcard.fProcessContents == XSWildcardDecl.WILDCARD_STRICT){
+                    if (attrWildcard.fProcessContents == XSWildcardDecl.PC_STRICT){
                         reportSchemaError("cvc-complex-type.3.2.2", new Object[]{element.rawname, fTempQName.rawname});
                     }
 
@@ -2572,7 +2573,7 @@ public class XMLSchemaValidator
                 else {
                     // 5 Let [Definition:]  the wild IDs be the set of all attribute information item to which clause 3.2 applied and whose validation resulted in a context-determined declaration of mustFind or no context-determined declaration at all, and whose [local name] and [namespace name] resolve (as defined by QName resolution (Instance) (3.15.4)) to an attribute declaration whose {type definition} is or is derived from ID. Then all of the following must be true:
                     // 5.1 There must be no more than one item in wild IDs.
-                    if (currDecl.fType.getXSType() == XSTypeDecl.SIMPLE_TYPE &&
+                    if (currDecl.fType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE &&
                         ((XSSimpleType)currDecl.fType).isIDType()) {
                         if (wildcardIDName != null){
                             reportSchemaError("cvc-complex-type.5.1", new Object[]{element.rawname, currDecl.fName, wildcardIDName});
@@ -2600,7 +2601,7 @@ public class XMLSchemaValidator
     } //processAttributes
 
     void processOneAttribute(QName element, String attrValue,
-                             XSAttributeDecl currDecl, XSAttributeUse currUse,
+                             XSAttributeDecl currDecl, XSAttributeUseImpl currUse,
                              AttributePSVImpl attrPSVI) {
         // Attribute Locally Valid
         // For an attribute information item to be locally valid with respect to an attribute declaration all of the following must be true:
@@ -2626,7 +2627,7 @@ public class XMLSchemaValidator
             attrPSVI.fMemberType = fValidatedInfo.memberType;
             // PSVI: element notation
             if (attDV.getVariety() == XSSimpleType.VARIETY_ATOMIC &&
-                ((XSAtomicSimpleType)attDV).getPrimitiveKind() == XSAtomicSimpleType.PRIMITIVE_NOTATION){
+                attDV.getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION){
                QName qName = (QName)actualValue;
                SchemaGrammar grammar = fGrammarBucket.getGrammar(qName.uri);
     
@@ -2656,7 +2657,7 @@ public class XMLSchemaValidator
         // get the value constraint from use or decl
         // 4 The item's actual value must match the value of the {value constraint}, if it is present and fixed.                 // now check the value against the simpleType
         if (actualValue != null &&
-            currDecl.getConstraintType() == XSAttributeDecl.FIXED_VALUE) {
+            currDecl.getConstraintType() == XSConstants.VC_FIXED) {
             if (!attDV.isEqual(actualValue, currDecl.fDefault.actualValue)){
     
                 // PSVI: attribute is invalid, record errors
@@ -2668,7 +2669,7 @@ public class XMLSchemaValidator
     
         // 3.1 If there is among the {attribute uses} an attribute use with an {attribute declaration} whose {name} matches the attribute information item's [local name] and whose {target namespace} is identical to the attribute information item's [namespace name] (where an absent {target namespace} is taken to be identical to a [namespace name] with no value), then the attribute information must be valid with respect to that attribute use as per Attribute Locally Valid (Use) (3.5.4). In this case the {attribute declaration} of that attribute use is the context-determined declaration for the attribute information item with respect to Schema-Validity Assessment (Attribute) (3.2.4) and Assessment Outcome (Attribute) (3.2.5).
         if (actualValue != null &&
-            currUse != null && currUse.fConstraintType == XSAttributeDecl.FIXED_VALUE) {
+            currUse != null && currUse.fConstraintType == XSConstants.VC_FIXED) {
             if (!attDV.isEqual(actualValue, currUse.fDefault.actualValue)){
                 // PSVI: attribute is invalid, record errors
                 attrPSVI.fValidity = AttributePSVI.INVALID_VALIDITY;
@@ -2688,9 +2689,9 @@ public class XMLSchemaValidator
         if (DEBUG) {
             System.out.println("addDefaultAttributes: " + element);
         }
-        XSAttributeUse attrUses[] = attrGrp.getAttributeUses();
-        int useCount = (attrUses!=null)? attrUses.length:0;
-        XSAttributeUse currUse;
+        XSObjectList attrUses = attrGrp.getAttributeUses();
+        int useCount = attrUses.getListLength();
+        XSAttributeUseImpl currUse;
         XSAttributeDecl currDecl;
         short constType;
         ValidatedInfo defaultValue;
@@ -2699,12 +2700,12 @@ public class XMLSchemaValidator
         // for each attribute use
         for (int i = 0; i < useCount; i++) {
 
-            currUse = attrUses[i];
+            currUse = (XSAttributeUseImpl)attrUses.getItem(i);
             currDecl = currUse.fAttrDecl;
             // get value constraint
             constType = currUse.fConstraintType;
             defaultValue = currUse.fDefault;
-            if (constType == XSAttributeDecl.NO_CONSTRAINT) {
+            if (constType == XSConstants.VC_NONE) {
                 constType = currDecl.getConstraintType();
                 defaultValue = currDecl.fDefault;
             }
@@ -2720,7 +2721,7 @@ public class XMLSchemaValidator
                     reportSchemaError("cvc-complex-type.4", new Object[]{element.rawname, currDecl.fName});
             }
             // if the attribute is not specified, then apply the value constraint
-            if (!isSpecified && constType != XSAttributeDecl.NO_CONSTRAINT) {
+            if (!isSpecified && constType != XSConstants.VC_NONE) {
                 attName = new QName(null, currDecl.fName, currDecl.fName, currDecl.fTargetNamespace);
 
                 int attrIndex = attributes.addAttribute(attName, "CDATA", (defaultValue!=null)?defaultValue.normalizedValue:"");
@@ -2782,7 +2783,7 @@ public class XMLSchemaValidator
         }
 
         if (fCurrentElemDecl != null &&
-            fCurrentElemDecl.getConstraintType() == XSElementDecl.DEFAULT_VALUE) {
+            fCurrentElemDecl.getConstraintType() == XSConstants.VC_DEFAULT) {
         }
 
         if (fDoValidation) {
@@ -2803,13 +2804,13 @@ public class XMLSchemaValidator
             // 5 The appropriate case among the following must be true:
             // 5.1 If the declaration has a {value constraint}, the item has neither element nor character [children] and clause 3.2 has not applied, then all of the following must be true:
             if (fCurrentElemDecl != null &&
-                fCurrentElemDecl.getConstraintType() != XSElementDecl.NO_CONSTRAINT &&
+                fCurrentElemDecl.getConstraintType() != XSConstants.VC_NONE &&
                 fChildCount == 0 && content.length() == 0 && !fNil) {
                 // 5.1.1 If the actual type definition is a local type definition then the canonical lexical representation of the {value constraint} value must be a valid default for the actual type definition as defined in Element Default Valid (Immediate) (3.3.6).
                 if (fCurrentType != fCurrentElemDecl.fType) {
                     //REVISIT:we should pass ValidatedInfo here.
                     if (XSConstraints.ElementDefaultValidImmediate(fCurrentType, fCurrentElemDecl.fDefault, fState4XsiType, null) == null)
-                        reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getTypeName(), fCurrentElemDecl.fDefault.normalizedValue});
+                        reportSchemaError("cvc-elt.5.1.1", new Object[]{element.rawname, fCurrentType.getName(), fCurrentElemDecl.fDefault.normalizedValue});
                 }
                 // 5.1.2 The element information item with the canonical lexical representation of the {value constraint} value used as its normalized value must be valid with respect to the actual type definition as defined by Element Locally Valid (Type) (3.3.4).
                 // REVISIT: don't use toString, but validateActualValue instead
@@ -2825,13 +2826,13 @@ public class XMLSchemaValidator
                 Object actualValue = elementLocallyValidType(element, content);
                 // 5.2.2 If there is a fixed {value constraint} and clause 3.2 has not applied, all of the following must be true:
                 if (fCurrentElemDecl != null &&
-                    fCurrentElemDecl.getConstraintType() == XSElementDecl.FIXED_VALUE &&
+                    fCurrentElemDecl.getConstraintType() == XSConstants.VC_FIXED &&
                     !fNil) {
                     // 5.2.2.1 The element information item must have no element information item [children].
                     if (fChildCount != 0)
                         reportSchemaError("cvc-elt.5.2.2.1", new Object[]{element.rawname});
                     // 5.2.2.2 The appropriate case among the following must be true:
-                    if (fCurrentType.getXSType() == XSTypeDecl.COMPLEX_TYPE) {
+                    if (fCurrentType.getTypeCategory() == XSTypeDecl.COMPLEX_TYPE) {
                         XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
                         // 5.2.2.2.1 If the {content type} of the actual type definition is mixed, then the initial value of the item must match the canonical lexical representation of the {value constraint} value.
                         if (ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
@@ -2846,7 +2847,7 @@ public class XMLSchemaValidator
                                 reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
                         }
                     }
-                    else if (fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+                    else if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
                         XSSimpleType sType = (XSSimpleType)fCurrentType;
                         if (!sType.isEqual(actualValue, fCurrentElemDecl.fDefault.actualValue))
                             reportSchemaError("cvc-elt.5.2.2.2.2", new Object[]{element.rawname, content, fCurrentElemDecl.fDefault.normalizedValue});
@@ -2879,7 +2880,7 @@ public class XMLSchemaValidator
         // Element Locally Valid (Type)
         // 3 The appropriate case among the following must be true:
         // 3.1 If the type definition is a simple type definition, then all of the following must be true:
-        if (fCurrentType.getXSType() == XSTypeDecl.SIMPLE_TYPE) {
+        if (fCurrentType.getTypeCategory() == XSTypeDecl.SIMPLE_TYPE) {
             // 3.1.2 The element information item must have no element information item [children].
             if (fChildCount != 0)
                 reportSchemaError("cvc-type.3.1.2", new Object[]{element.rawname});
@@ -3179,7 +3180,7 @@ public class XMLSchemaValidator
             // REVISIT: Is this a problem? -Ac
             // Yes - NG
             if (fValuesCount == 0) {
-                if (fIdentityConstraint.getType() == IdentityConstraint.KEY) {
+                if (fIdentityConstraint.getCategory() == IdentityConstraint.IC_KEY) {
                     String code = "AbsentKeyValue";
                     String eName = fIdentityConstraint.getElementName();
                     reportSchemaError(code, new Object[]{eName});
@@ -3189,14 +3190,14 @@ public class XMLSchemaValidator
 
             // do we have enough values?
             if (fValuesCount != fIdentityConstraint.getFieldCount()) {
-                switch (fIdentityConstraint.getType()) {
-                case IdentityConstraint.UNIQUE: {
+                switch (fIdentityConstraint.getCategory()) {
+                case IdentityConstraint.IC_UNIQUE: {
                         String code = "UniqueNotEnoughValues";
                         String ename = fIdentityConstraint.getElementName();
                         reportSchemaError(code, new Object[]{ename});
                         break;
                     }
-                case IdentityConstraint.KEY: {
+                case IdentityConstraint.IC_KEY: {
                         String code = "KeyNotEnoughValues";
                         UniqueOrKey key = (UniqueOrKey)fIdentityConstraint;
                         String ename = fIdentityConstraint.getElementName();
@@ -3204,7 +3205,7 @@ public class XMLSchemaValidator
                         reportSchemaError(code, new Object[]{ename,kname});
                         break;
                     }
-                case IdentityConstraint.KEYREF: {
+                case IdentityConstraint.IC_KEYREF: {
                         String code = "KeyRefNotEnoughValues";
                         KeyRef keyref = (KeyRef)fIdentityConstraint;
                         String ename = fIdentityConstraint.getElementName();
@@ -3244,7 +3245,7 @@ public class XMLSchemaValidator
          */
 
         public void reportNilError(IdentityConstraint id) {
-            if (id.getType() == IdentityConstraint.KEY) {
+            if (id.getCategory() == IdentityConstraint.IC_KEY) {
                 String code = "KeyMatchesNillable";
                 reportSchemaError(code, new Object[]{id.getElementName()});
             }
@@ -3623,8 +3624,8 @@ public class XMLSchemaValidator
             IdentityConstraint [] icArray = eDecl.fIDConstraints;
             int icCount = eDecl.fIDCPos;
             for (int i = 0; i < icCount; i++) {
-                switch (icArray[i].getType()) {
-                case (IdentityConstraint.UNIQUE):
+                switch (icArray[i].getCategory()) {
+                case (IdentityConstraint.IC_UNIQUE):
                     // initialize value stores for unique fields
                     UniqueOrKey unique = (UniqueOrKey)icArray[i];
                     UniqueValueStore uniqueValueStore = (UniqueValueStore)fIdentityConstraint2ValueStoreMap.get(unique);
@@ -3637,7 +3638,7 @@ public class XMLSchemaValidator
                     fValueStores.addElement(uniqueValueStore);
                     fIdentityConstraint2ValueStoreMap.put(unique, uniqueValueStore);
                     break;
-                case (IdentityConstraint.KEY):
+                case (IdentityConstraint.IC_KEY):
                     // initialize value stores for key fields
                     UniqueOrKey key = (UniqueOrKey)icArray[i];
                     KeyValueStore keyValueStore = (KeyValueStore)fIdentityConstraint2ValueStoreMap.get(key);
@@ -3650,7 +3651,7 @@ public class XMLSchemaValidator
                     fValueStores.addElement(keyValueStore);
                     fIdentityConstraint2ValueStoreMap.put(key, keyValueStore);
                     break;
-                case (IdentityConstraint.KEYREF):
+                case (IdentityConstraint.IC_KEYREF):
                     // initialize value stores for key reference fields
                     KeyRef keyRef = (KeyRef)icArray[i];
                     KeyRefValueStore keyRefValueStore = (KeyRefValueStore)fIdentityConstraint2ValueStoreMap.get(keyRef);
@@ -3687,7 +3688,7 @@ public class XMLSchemaValidator
         // hashtable, if id is a <unique> or a <key>.
         // If it's a <keyRef>, then we leave it for later.
         public void transplant(IdentityConstraint id) {
-            if (id.getType() == IdentityConstraint.KEYREF) return;
+            if (id.getCategory() == IdentityConstraint.IC_KEYREF) return;
             ValueStoreBase newVals = (ValueStoreBase)fIdentityConstraint2ValueStoreMap.get(id);
             fIdentityConstraint2ValueStoreMap.remove(id);
             ValueStoreBase currVals = (ValueStoreBase)fGlobalIDConstraintMap.get(id);
