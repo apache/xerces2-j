@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -57,6 +57,9 @@
 
 package org.apache.xerces.util;
 
+import org.apache.xerces.impl.xs.psvi.XSModel;
+import org.apache.xerces.impl.xs.SchemaGrammar;
+import org.apache.xerces.impl.xs.XSModelImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -66,7 +69,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
  * implementation stores two types of grammars: those keyed by the root element
  * name, and those keyed by the grammar's target namespace.
  *
- * This is the default implementation of the GrammarPool interface.  
+ * This is the default implementation of the GrammarPool interface.
  * As we move forward, this will become more function-rich and robust.
  *
  * @author Jeffrey Rodriguez, IBM
@@ -79,20 +82,20 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
  */
 public class XMLGrammarPoolImpl implements XMLGrammarPool {
 
-    // 
+    //
     // Constants
-    // 
-    
+    //
+
     /** Default size. */
     protected static final int TABLE_SIZE = 11;
 
     //
     // Data
     //
-    
+
     /** Grammars. */
     protected Entry[] fGrammars = null;
-    
+
     // whether this pool is locked
     protected boolean fPoolIsLocked;
 
@@ -100,17 +103,17 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     protected int fGrammarCount = 0;
 
     private static final boolean DEBUG = false ;
-	
+
     //
     // Constructors
     //
 
     /** Constructs a grammar pool with a default number of buckets. */
     public XMLGrammarPoolImpl() {
-    	fGrammars = new Entry[TABLE_SIZE];
+        fGrammars = new Entry[TABLE_SIZE];
         fPoolIsLocked = false;
     } // <init>()
-    
+
     /** Constructs a grammar pool with a specified number of buckets. */
     public XMLGrammarPoolImpl(int initialCapacity) {
         fGrammars = new Entry[initialCapacity];
@@ -120,14 +123,14 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     //
     // XMLGrammarPool methods
     //
-    
+
     /* <p> Retrieve the initial known set of grammars. This method is
-     * called by a validator before the validation starts. The application 
-     * can provide an initial set of grammars available to the current 
+     * called by a validator before the validation starts. The application
+     * can provide an initial set of grammars available to the current
      * validation attempt. </p>
-     * 
+     *
      * @param grammarType The type of the grammar, from the
-     *  		  <code>org.apache.xerces.xni.grammars.XMLGrammarDescription</code> 
+     *  		  <code>org.apache.xerces.xni.grammars.XMLGrammarDescription</code>
      *  		  interface.
      * @return 		  The set of grammars the validator may put in its "bucket"
      */
@@ -150,7 +153,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     } // retrieveInitialGrammarSet (String): Grammar[]
 
     /* <p> Return the final set of grammars that the validator ended up
-     * with. This method is called after the validation finishes. The 
+     * with. This method is called after the validation finishes. The
      * application may then choose to cache some of the returned grammars.</p>
      * <p>In this implementation, we make our choice based on whether this object
      * is "locked"--that is, whether the application has instructed
@@ -162,27 +165,27 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
      */
     public void cacheGrammars(String grammarType, Grammar[] grammars) {
         if(!fPoolIsLocked) {
-    	    for (int i = 0; i < grammars.length; i++) {
+            for (int i = 0; i < grammars.length; i++) {
                 if(DEBUG) {
-    	            System.out.println("CACHED GRAMMAR " + (i+1) ) ;
-    	            Grammar temp = grammars[i] ;
-    	            //print(temp.getGrammarDescription());
+                    System.out.println("CACHED GRAMMAR " + (i+1) ) ;
+                    Grammar temp = grammars[i] ;
+                    //print(temp.getGrammarDescription());
                 }
-    	        putGrammar(grammars[i]);
+                putGrammar(grammars[i]);
             }
-    	}
+        }
     } // cacheGrammars(String, Grammar[]);
-    
+
     /* <p> This method requests that the application retrieve a grammar
      * corresponding to the given GrammarIdentifier from its cache.
      * If it cannot do so it must return null; the parser will then
      * call the EntityResolver. </p>
-     * <strong>An application must not call its EntityResolver itself 
+     * <strong>An application must not call its EntityResolver itself
      * from this method; this may result in infinite recursions.</strong>
-     * 
+     *
      * This implementation chooses to use the root element name to identify a DTD grammar
      * and the target namespace to identify a Schema grammar.
-     * 
+     *
      * @param desc The description of the Grammar being requested.
      * @return     The Grammar corresponding to this description or null if
      *  	   no such Grammar is known.
@@ -227,7 +230,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
 
     /**
      * Returns the grammar associated to the specified grammar description.
-     * Currently, the root element name is used as the key for DTD grammars 
+     * Currently, the root element name is used as the key for DTD grammars
      * and the target namespace  is used as the key for Schema grammars.
      *
      * @param desc The Grammar Description.
@@ -235,67 +238,91 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     public Grammar getGrammar(XMLGrammarDescription desc) {
         synchronized (fGrammars) {
             int hash = hashCode(desc);
-	    int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-	    for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
-	        if ((entry.hash == hash) && equals(entry.desc, desc)) {
-	            return entry.grammar;
-	        }
-	    }
-	    return null;
-	}
+        int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+        for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
+            if ((entry.hash == hash) && equals(entry.desc, desc)) {
+                return entry.grammar;
+            }
+        }
+        return null;
+    }
     } // getGrammar(XMLGrammarDescription):Grammar
 
     /**
      * Removes the grammar associated to the specified grammar description from the
-     * grammar pool and returns the removed grammar. Currently, the root element name 
-     * is used as the key for DTD grammars and the target namespace  is used 
+     * grammar pool and returns the removed grammar. Currently, the root element name
+     * is used as the key for DTD grammars and the target namespace  is used
      * as the key for Schema grammars.
-     * 
+     *
      * @param desc The Grammar Description.
      * @return     The removed grammar.
      */
     public Grammar removeGrammar(XMLGrammarDescription desc) {
         synchronized (fGrammars) {
-    	    int hash = hashCode(desc);
-	    int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-	    for (Entry entry = fGrammars[index], prev = null ; entry != null ; prev = entry, entry = entry.next) {
-	        if ((entry.hash == hash) && equals(entry.desc, desc)) {
-	            if (prev != null) {
+            int hash = hashCode(desc);
+        int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+        for (Entry entry = fGrammars[index], prev = null ; entry != null ; prev = entry, entry = entry.next) {
+            if ((entry.hash == hash) && equals(entry.desc, desc)) {
+                if (prev != null) {
                         prev.next = entry.next;
-		    } 
-		    else {
-		        fGrammars[index] = entry.next;
-		    }
-	    	    Grammar tempGrammar = entry.grammar;
-	    	    entry.grammar = null;
+            }
+            else {
+                fGrammars[index] = entry.next;
+            }
+                Grammar tempGrammar = entry.grammar;
+                entry.grammar = null;
                 fGrammarCount--;
-	            return tempGrammar;
-	        }
-	    }
-	    return null;
+                return tempGrammar;
+            }
+        }
+        return null;
         }
     } // removeGrammar(XMLGrammarDescription):Grammar
 
     /**
      * Returns true if the grammar pool contains a grammar associated
-     * to the specified grammar description. Currently, the root element name 
-     * is used as the key for DTD grammars and the target namespace  is used 
+     * to the specified grammar description. Currently, the root element name
+     * is used as the key for DTD grammars and the target namespace  is used
      * as the key for Schema grammars.
      *
      * @param desc The Grammar Description.
      */
     public boolean containsGrammar(XMLGrammarDescription desc) {
         synchronized (fGrammars) {
-    	    int hash = hashCode(desc);
-	    int index = (hash & 0x7FFFFFFF) % fGrammars.length;
-	    for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
-	        if ((entry.hash == hash) && equals(entry.desc, desc)) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
+            int hash = hashCode(desc);
+        int index = (hash & 0x7FFFFFFF) % fGrammars.length;
+        for (Entry entry = fGrammars[index] ; entry != null ; entry = entry.next) {
+            if ((entry.hash == hash) && equals(entry.desc, desc)) {
+                return true;
+            }
+        }
+        return false;
+    }
     } // containsGrammar(XMLGrammarDescription):boolean
+
+    /**
+     * Return an <code>XSModel</code> that represents components in
+     * the schema grammars in this pool implementation.
+     *
+     * @return  an <code>XSModel</code> representing this schema grammar
+     */
+    public XSModel toXSModel() {
+        java.util.Vector list = new java.util.Vector();
+        for (int i = 0; i < fGrammars.length; i++) {
+            for (Entry entry = fGrammars[i] ; entry != null ; entry = entry.next) {
+                if (entry.desc.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA))
+                    list.addElement(entry.grammar);
+            }
+        }
+
+        int size = list.size();
+        if (size == 0)
+            return null;
+        SchemaGrammar[] gs = new SchemaGrammar[size];
+        for (int i = 0; i < size; i++)
+            gs[i] = (SchemaGrammar)list.elementAt(i);
+        return new XSModelImpl(gs);
+    }
 
     /* <p> Sets this grammar pool to a "locked" state--i.e.,
      * no new grammars will be added until it is "unlocked".
@@ -305,14 +332,14 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     } // lockPool()
 
     /* <p> Sets this grammar pool to an "unlocked" state--i.e.,
-     * new grammars will be added when putGrammar or cacheGrammars 
+     * new grammars will be added when putGrammar or cacheGrammars
      * are called.
      */
     public void unlockPool() {
         fPoolIsLocked = false;
     } // unlockPool()
 
-    /* 
+    /*
      * <p>This method clears the pool-i.e., removes references
      * to all the grammars in it.</p>
      */
@@ -327,7 +354,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     } // clear()
 
     /**
-     * This method checks whether two grammars are the same. Currently, we compare 
+     * This method checks whether two grammars are the same. Currently, we compare
      * the root element names for DTD grammars and the target namespaces for Schema grammars.
      * The application can override this behaviour and add its own logic.
      *
@@ -338,7 +365,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     public boolean equals(XMLGrammarDescription desc1, XMLGrammarDescription desc2) {
         return desc1.equals(desc2);
     }
-    
+
     /**
      * Returns the hash code value for the given grammar description.
      *
@@ -348,7 +375,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
     public int hashCode(XMLGrammarDescription desc) {
         return desc.hashCode();
     }
-    
+
     /**
      * This class is a grammar pool entry. Each entry acts as a node
      * in a linked list.
@@ -358,7 +385,7 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
         public XMLGrammarDescription desc;
         public Grammar grammar;
         public Entry next;
-	
+
         protected Entry(int hash, XMLGrammarDescription desc, Grammar grammar, Entry next) {
             this.hash = hash;
             this.desc = desc;
@@ -377,28 +404,28 @@ public class XMLGrammarPoolImpl implements XMLGrammarPool {
             }
         } // clear()
     } // class Entry
-    
+
     /* For DTD build we can't import here XSDDescription. Thus, this method is commented out.. */
     /* public void print(XMLGrammarDescription description){
-    	if(description.getGrammarType().equals(XMLGrammarDescription.XML_DTD)){
-    	
-    	}
-    	else if(description.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)){
-    		XSDDescription schema = (XSDDescription)description ;
-    		System.out.println("Context = " + schema.getContextType());
-    		System.out.println("TargetNamespace = " + schema.getTargetNamespace());
-    		String [] temp = schema.getLocationHints();
-    		
-    		for (int i = 0 ; (temp != null && i < temp.length) ; i++){
-    			System.out.println("LocationHint " + i + " = "+ temp[i]);
-    		}
-    		    		
-    		System.out.println("Triggering Component = " + schema.getTriggeringComponent());
-    		System.out.println("EnclosingElementName =" + schema.getEnclosingElementName());
-    	
-    	}
-    
+        if(description.getGrammarType().equals(XMLGrammarDescription.XML_DTD)){
+
+        }
+        else if(description.getGrammarType().equals(XMLGrammarDescription.XML_SCHEMA)){
+            XSDDescription schema = (XSDDescription)description ;
+            System.out.println("Context = " + schema.getContextType());
+            System.out.println("TargetNamespace = " + schema.getTargetNamespace());
+            String [] temp = schema.getLocationHints();
+
+            for (int i = 0 ; (temp != null && i < temp.length) ; i++){
+                System.out.println("LocationHint " + i + " = "+ temp[i]);
+            }
+
+            System.out.println("Triggering Component = " + schema.getTriggeringComponent());
+            System.out.println("EnclosingElementName =" + schema.getEnclosingElementName());
+
+        }
+
     }//print
     */
-    
+
 } // class XMLGrammarPoolImpl
