@@ -621,7 +621,8 @@ public class XMLDocumentScanner
                     fStringBuffer.clear();
                     do {
                         fStringBuffer.append(fString);
-                        if (XMLChar.isMarkup(fEntityScanner.peekChar())) {
+                        int c = fEntityScanner.peekChar();
+                        if (XMLChar.isMarkup(c) || c == ']') {
                             fStringBuffer.append((char)fEntityScanner.scanChar());
                         }
                     } while (fEntityScanner.scanLiteral(quote, fString) != quote);
