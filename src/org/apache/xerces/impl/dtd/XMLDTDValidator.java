@@ -1770,7 +1770,7 @@ public class XMLDTDValidator
     protected void init() {
 
         // datatype validators
-        if (fValidation) {
+        if (fValidation || fDynamicValidation) {
             try {
                 //REVISIT: datatypeRegistry + initialization of datatype 
                 //         why do we cast to ListDatatypeValidator?
