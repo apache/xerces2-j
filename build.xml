@@ -59,7 +59,7 @@ Copyright:
 
   <target name="init">
     <property name="name" value="xerces"/>
-    <property name="Name" value="Xerces-J"/>
+    <property name="Name" value="xerces"/>
     <property name="version" value="1.2.2"/>
     <property name="version_postfix" value="_1_2_2"/>
     <property name="year" value="1999-2000"/>
