@@ -771,7 +771,14 @@ implements XMLDTDHandler, XMLDTDContentModelHandler{
    int prevNodeIndex         = -1;
    int nodeIndex             = -1;
    public void mixedElement(String elementName) throws SAXException {
-       fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
+       if (fNodeIndexStack[fDepth] == -1 ) {
+           fNodeIndexStack[fDepth] = addUniqueLeafNode(elementName);
+       }
+       else {
+           fNodeIndexStack[fDepth] = addContentSpecNode(XMLContentSpec.CONTENTSPECNODE_CHOICE, 
+                                                        fNodeIndexStack[fDepth], 
+                                                        addUniqueLeafNode(elementName));
+       }
    } // mixedElement
 
    /**
