@@ -311,11 +311,13 @@ public class DeferredDocumentImpl
     // DOM Level 3 - el
     // setting encoding and version
     public void setEntityInfo(int currentEntityDecl, int versionIndex, int encodingIndex){
-        int eNodeIndex = getNodeValue(getNodeValue(currentEntityDecl, false), false); 
-        int echunk = eNodeIndex >> CHUNK_SHIFT;
-        int eindex = eNodeIndex & CHUNK_MASK;
-        setChunkIndex(fNodeValue, versionIndex, echunk, eindex);
-        setChunkIndex(fNodeLastChild, encodingIndex, echunk, eindex);
+        int eNodeIndex = getNodeValue(getNodeValue(currentEntityDecl, false), false);
+        if (eNodeIndex !=-1) {
+            int echunk = eNodeIndex >> CHUNK_SHIFT;
+            int eindex = eNodeIndex & CHUNK_MASK;
+            setChunkIndex(fNodeValue, versionIndex, echunk, eindex);
+            setChunkIndex(fNodeLastChild, encodingIndex, echunk, eindex);
+        }
     }
 
     /** Creates an entity reference node in the table. */
