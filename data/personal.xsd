@@ -10,7 +10,8 @@
 
   <xs:unique name="unique1">
    <xs:selector xpath="person"/>
-   <xs:field xpath="@name"/>
+   <xs:field xpath="name/given"/>
+   <xs:field xpath="name/family"/>
   </xs:unique>
   <xs:key name='empid'>
    <xs:selector xpath="person"/>
