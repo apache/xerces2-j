@@ -142,12 +142,13 @@ public class XML11EntityScanner
                 fCurrentEntity.ch[0] = (char)c;
                 load(1, false);
             }
-            if ((c == '\r' || c == 0x85) && external) {
-                if (fCurrentEntity.ch[fCurrentEntity.position++] != '\n') {
+            if (c == '\r' && external) {
+                int cc = fCurrentEntity.ch[fCurrentEntity.position++];
+                if (cc != '\n' && cc != 0x85) {
                     fCurrentEntity.position--;
                 }
-                c = '\n';
             }
+            c = '\n';
         }
 
         // return character that was scanned
@@ -428,7 +429,7 @@ public class XML11EntityScanner
         if (c == '\n' || ((c == '\r' || c == 0x85 || c == 0x2028) && external)) {
             do {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if ((c == '\r' || c == 0x85) && external) {
+                if ((c == '\r' ) && external) {
                     newlines++;
                     fCurrentEntity.lineNumber++;
                     fCurrentEntity.columnNumber = 1;
@@ -439,7 +440,8 @@ public class XML11EntityScanner
                             break;
                         }
                     }
-                    if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+                    int cc = fCurrentEntity.ch[fCurrentEntity.position]; 
+                    if (cc == '\n' || cc == 0x85) {
                         fCurrentEntity.position++;
                         offset++;
                     }
@@ -448,7 +450,7 @@ public class XML11EntityScanner
                         newlines++;
                     }
                 }
-                else if (c == '\n' || c == 0x2028) {
+                else if (c == '\n' || c == 0x2028 || c == 0x85) {
                     newlines++;
                     fCurrentEntity.lineNumber++;
                     fCurrentEntity.columnNumber = 1;
@@ -552,7 +554,7 @@ public class XML11EntityScanner
         if (c == '\n' || ((c == '\r' || c == 0x85 || c == 0x2028) && external)) {
             do {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if ((c == '\r' || c == 0x85) && external) {
+                if ((c == '\r' ) && external) {
                     newlines++;
                     fCurrentEntity.lineNumber++;
                     fCurrentEntity.columnNumber = 1;
@@ -563,7 +565,8 @@ public class XML11EntityScanner
                             break;
                         }
                     }
-                    if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+                    int cc = fCurrentEntity.ch[fCurrentEntity.position]; 
+                    if (cc == '\n' || cc == 0x85) {
                         fCurrentEntity.position++;
                         offset++;
                     }
@@ -572,7 +575,7 @@ public class XML11EntityScanner
                         newlines++;
                     }
                 }
-                else if (c == '\n' || c == 0x2028) {
+                else if (c == '\n' || c == 0x2028 || c == 0x85) {
                     newlines++;
                     fCurrentEntity.lineNumber++;
                     fCurrentEntity.columnNumber = 1;
@@ -705,7 +708,7 @@ public class XML11EntityScanner
             if (c == '\n' || ((c == '\r' || c == 0x85 || c == 0x2028) && external)) {
                 do {
                     c = fCurrentEntity.ch[fCurrentEntity.position++];
-                    if ((c == '\r' || c == 0x85) && external) {
+                    if ((c == '\r' ) && external) {
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
@@ -716,7 +719,8 @@ public class XML11EntityScanner
                                 break;
                             }
                         }
-                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+                        int cc = fCurrentEntity.ch[fCurrentEntity.position]; 
+                        if (cc == '\n' || cc == 0x85) {
                             fCurrentEntity.position++;
                             offset++;
                         }
@@ -725,7 +729,7 @@ public class XML11EntityScanner
                             newlines++;
                         }
                     }
-                    else if (c == '\n' || c == 0x2028) {
+                    else if (c == '\n' || c == 0x2028 || c == 0x85) {
                         newlines++;
                         fCurrentEntity.lineNumber++;
                         fCurrentEntity.columnNumber = 1;
@@ -833,20 +837,20 @@ public class XML11EntityScanner
             }
             return true;
         }
-        else if (c == '\n' && cc == 0x2028) {
+        else if (c == '\n' && ((cc == 0x2028 || cc == 0x85) && fCurrentEntity.isExternal())) {
             fCurrentEntity.position++;
             fCurrentEntity.lineNumber++;
             fCurrentEntity.columnNumber = 1;
             return true;
         }
-        else if (c == '\n' && (cc == '\r' || cc == 0x85 ) && fCurrentEntity.isExternal()) {
+        else if (c == '\n' && (cc == '\r' ) && fCurrentEntity.isExternal()) {
             // handle newlines
             if (fCurrentEntity.position == fCurrentEntity.count) {
                 fCurrentEntity.ch[0] = (char)cc;
                 load(1, false);
             }
-            fCurrentEntity.position++;
-            if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+            int ccc = fCurrentEntity.ch[++fCurrentEntity.position];
+            if (ccc == '\n' || ccc == 0x85) {
                 fCurrentEntity.position++;
             }
             fCurrentEntity.lineNumber++;
@@ -897,10 +901,11 @@ public class XML11EntityScanner
                             // need to restore it when entity not changed
                             fCurrentEntity.position = 0;
                     }
-                    if ((c == '\r' || c == 0x85) && external) {
+                    if ((c == '\r' ) && external) {
                         // REVISIT: Does this need to be updated to fix the
                         //          #x0D ^#x0A newline normalization problem? -Ac
-                        if (fCurrentEntity.ch[++fCurrentEntity.position] != '\n') {
+                        int cc = fCurrentEntity.ch[++fCurrentEntity.position];
+                        if (cc != '\n' && cc  != 0x85 ) {
                             fCurrentEntity.position--;
                         }
                     }

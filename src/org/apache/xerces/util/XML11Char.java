@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,6 +125,11 @@ public class XML11Char {
         int xml11NonWhitespaceRange  [] = {
                 0x21, 0x7E, 0xA0, 0x2027, 0x2029, 0xD7FF, 0xE000, 0xFFFD, 
         };
+        // NOTE:  this does *NOT* correspond to the S production
+        // from XML 1.0.  Rather, it corresponds to S+chars that are
+        // involved in whitespace normalization.  It's handy
+        // in a few places in the entity scanner where we need to detect the
+        // presence of all characters to be considered whitespace.
         int xml11WhitespaceChars [] = {
             0x9, 0xA, 0xD, 0x20, 0x85, 0x2028,
         };
