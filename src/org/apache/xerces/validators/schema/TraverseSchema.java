@@ -415,7 +415,28 @@ public class TraverseSchema implements
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
         extractTopLevel3Components(root);
 
-        for (Element child = XUtil.getFirstChildElement(root); child != null;
+        // process <redefine>, <include> and <import> info items.
+        Element child = XUtil.getFirstChildElement(root); 
+        for (; child != null;
+            child = XUtil.getNextSiblingElement(child)) {
+
+            String name = child.getLocalName();
+            if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
+                traverseAnnotationDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
+                traverseInclude(child); 
+            } else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
+                traverseImport(child); 
+            } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
+                fRedefineSucceeded = true; // presume worked until proven failed.
+                traverseRedefine(child); 
+            } else
+                break;
+        }
+
+        // child refers to the first info item which is not <annotation> or 
+        // one of the schema inclusion/importation declarations.
+        for (; child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
             String name = child.getLocalName();
@@ -435,15 +456,9 @@ public class TraverseSchema implements
                 traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
                 ; //TO DO
-            }
-            else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
-                traverseInclude(child); 
-            }
-            else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
-                traverseImport(child); 
-            } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
-                fRedefineSucceeded = true; // presume worked until proven failed.
-                traverseRedefine(child); 
+            } else {
+                // REVISIT: Localize
+                reportGenericSchemaError("error in content of <schema> element information item");
             }
         } // for each child node
 
@@ -581,7 +596,13 @@ public class TraverseSchema implements
 
     private void traverseInclude(Element includeDecl) throws Exception {
 
-        String location = includeDecl.getAttribute(SchemaSymbols.ATT_SCHEMALOCATION);
+        Attr locationAttr = includeDecl.getAttributeNode(SchemaSymbols.ATT_SCHEMALOCATION);
+	    if (locationAttr == null) {
+            // REVISIT: Localize
+            reportGenericSchemaError("a schemaLocation attribute must be specified on an <include> element");
+            return;
+        }
+        String location = locationAttr.getValue();
         
         // expand it before passing it to the parser
         InputSource source = null;
@@ -715,7 +736,28 @@ public class TraverseSchema implements
         //extract all top-level attribute, attributeGroup, and group Decls and put them in the 3 hasn table in the SchemaGrammar.
         extractTopLevel3Components(root);
 
-        for (Element child = XUtil.getFirstChildElement(root); child != null;
+        // handle <redefine>, <include> and <import> elements.
+        Element child = XUtil.getFirstChildElement(root); 
+        for (; child != null;
+            child = XUtil.getNextSiblingElement(child)) {
+
+            String name = child.getLocalName();
+
+            if (name.equals(SchemaSymbols.ELT_ANNOTATION) ) {
+                traverseAnnotationDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
+                traverseInclude(child); 
+            } else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
+                traverseImport(child); 
+            } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
+                fRedefineSucceeded = true; // presume worked until proven failed.
+                traverseRedefine(child); 
+            } else
+                break;
+        }
+
+        // handle the rest of the schema elements.
+        for (; child != null;
             child = XUtil.getNextSiblingElement(child)) {
 
             String name = child.getLocalName();
@@ -736,15 +778,9 @@ public class TraverseSchema implements
                 traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
                 ; //TO DO
-            }
-            else if (name.equals(SchemaSymbols.ELT_INCLUDE)) {
-                traverseInclude(child); 
-            }
-            else if (name.equals(SchemaSymbols.ELT_IMPORT)) {
-                traverseImport(child); 
-            } else if (name.equals(SchemaSymbols.ELT_REDEFINE)) {
-                fRedefineSucceeded = true; // presume worked until proven failed.
-                traverseRedefine(child); 
+            } else {
+                // REVISIT: Localize
+                reportGenericSchemaError("error in content of included <schema> element information item");
             }
         } // for each child node
 
@@ -925,8 +961,16 @@ public class TraverseSchema implements
             		// REVISIT: Localize
             		reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
                 } else {
-            		String grandKidName = grandKid.getLocalName();
-					if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
+               	    String grandKidName = grandKid.getLocalName();
+					if(grandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+				        grandKid = XUtil.getNextSiblingElement(grandKid);
+               	        grandKidName = grandKid.getLocalName();
+                    }
+				    if (grandKid == null) {
+                        fRedefineSucceeded = false;
+            		    // REVISIT: Localize
+            		    reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
+                    } else if(!grandKidName.equals(SchemaSymbols.ELT_RESTRICTION)) {
                         fRedefineSucceeded = false;
             			// REVISIT: Localize
             			reportGenericSchemaError("a simpleType child of a <redefine> must have a restriction element as a child");
@@ -956,34 +1000,51 @@ public class TraverseSchema implements
             		// REVISIT: Localize
             		reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
                 } else {
-					// have to go one more level down; let another pass worry whether complexType is valid.
-					Element greatGrandKid = XUtil.getFirstChildElement(grandKid);
-					if (greatGrandKid == null) {
+                    if(grandKid.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+				        grandKid = XUtil.getNextSiblingElement(grandKid);
+                    }
+				    if (grandKid == null) {
                         fRedefineSucceeded = false;
-            			// REVISIT: Localize
-            			reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+            		    // REVISIT: Localize
+            		    reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
                     } else {
-            			String greatGrandKidName = greatGrandKid.getLocalName();
-						if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) && 
-								!greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
+					    // have to go one more level down; let another pass worry whether complexType is valid.
+					    Element greatGrandKid = XUtil.getFirstChildElement(grandKid);
+					    if (greatGrandKid == null) {
                             fRedefineSucceeded = false;
-            				// REVISIT: Localize
-            				reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
-						} else {
-            				String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
-							QName processedDerivedBase = parseBase(derivedBase);
-							if(!processedTypeName.equals(processedDerivedBase)) {
+            			    // REVISIT: Localize
+            			    reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+                        } else {
+            			    String greatGrandKidName = greatGrandKid.getLocalName();
+					        if(greatGrandKidName.equals(SchemaSymbols.ELT_ANNOTATION)) {
+				                greatGrandKid = XUtil.getNextSiblingElement(greatGrandKid);
+               	                greatGrandKidName = greatGrandKid.getLocalName();
+                            }
+				            if (greatGrandKid == null) {
                                 fRedefineSucceeded = false;
-            					// REVISIT: Localize
-            					reportGenericSchemaError("the base attribute of the restriction or extension grandchild of a complexType child of a redefine must have the same value as the complexType's type attribute");
-							} else {
-								// now we have to do the renaming...
-								String newBase = derivedBase + "#redefined";
-            					greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE, newBase );
-								fixRedefinedSchema(SchemaSymbols.ELT_COMPLEXTYPE, 
-									typeName, typeName+"#redefined", 
-									schemaToRedefine);
-							}
+            		            // REVISIT: Localize
+            			        reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+						    } else if(!greatGrandKidName.equals(SchemaSymbols.ELT_RESTRICTION) && 
+								    !greatGrandKidName.equals(SchemaSymbols.ELT_EXTENSION)) {
+                                fRedefineSucceeded = false;
+            				    // REVISIT: Localize
+            				    reportGenericSchemaError("a complexType child of a <redefine> must have a restriction or extension element as a grandchild");
+						    } else {
+            				    String derivedBase = greatGrandKid.getAttribute( SchemaSymbols.ATT_BASE );
+							    QName processedDerivedBase = parseBase(derivedBase);
+							    if(!processedTypeName.equals(processedDerivedBase)) {
+                                    fRedefineSucceeded = false;
+            					    // REVISIT: Localize
+            					    reportGenericSchemaError("the base attribute of the restriction or extension grandchild of a complexType child of a redefine must have the same value as the complexType's type attribute");
+							    } else {
+								    // now we have to do the renaming...
+								    String newBase = derivedBase + "#redefined";
+            					    greatGrandKid.setAttribute( SchemaSymbols.ATT_BASE, newBase );
+								    fixRedefinedSchema(SchemaSymbols.ELT_COMPLEXTYPE, 
+									    typeName, typeName+"#redefined", 
+									    schemaToRedefine);
+							    }
+                            }
 						}
 					}
 				}
@@ -1103,7 +1164,7 @@ public class TraverseSchema implements
 		if(!foundIt) {
             fRedefineSucceeded = false;
 			// REVISIT: localize
-			reportGenericSchemaError("could not find a declaration in the schema to be redefined corresonding to " + oldName);
+			reportGenericSchemaError("could not find a declaration in the schema to be redefined corresponding to " + oldName);
         }
 	} // end fixRedefinedSchema
 
@@ -1182,13 +1243,21 @@ public class TraverseSchema implements
     }
 
     /**
-    * No-op - Traverse Annotation Declaration
+    * <annotation>(<appinfo> | <documentation>)*</annotation>
     * 
-    * @param comment
+    * @param annotationDecl:  the DOM node corresponding to the <annotation> info item
     */
-    private void traverseAnnotationDecl(Element comment) {
-        //TO DO
-        return ;
+    private void traverseAnnotationDecl(Element annotationDecl) throws Exception {
+
+        for(Element child = XUtil.getFirstChildElement(annotationDecl); child != null;
+                 child = XUtil.getNextSiblingElement(child)) {
+            String name = child.getLocalName();
+            if(!((name.equals(SchemaSymbols.ELT_APPINFO)) ||
+                    (name.equals(SchemaSymbols.ELT_DOCUMENTATION)))) {
+                // REVISIT: Localize
+                reportGenericSchemaError("an <annotation> can only contain <appinfo> and <documentation> elements");
+            }
+        }
     }
 
     //@param: elm - top element
@@ -1332,6 +1401,10 @@ public class TraverseSchema implements
              reportSchemaError(SchemaMessageProvider.FeatureUnsupported,
                        new Object [] { varietyProperty });
                        return -1;
+        }
+        if(XUtil.getNextSiblingElement(content) != null) {
+            // REVISIT: Localize
+            reportGenericSchemaError("error in content of simpleType");
         }
 
         int typeNameIndex;
@@ -1558,6 +1631,11 @@ public class TraverseSchema implements
     * </any>
     */
     private int traverseAny(Element child) throws Exception {
+        Element annotation = checkContent( child, XUtil.getFirstChildElement(child), true );
+        if(annotation != null ) {
+            // REVISIT: Localize
+            reportGenericSchemaError("<any> elements can contain at most one <annotation> element in their children");
+        }
         int anyIndex = -1;
         String namespace = child.getAttribute(SchemaSymbols.ATT_NAMESPACE).trim();
         String processContents = child.getAttribute("processContents").trim();
@@ -1663,10 +1741,17 @@ public class TraverseSchema implements
     * </anyAttribute>
     */
     private XMLAttributeDecl traverseAnyAttribute(Element anyAttributeDecl) throws Exception {
+        Element annotation = checkContent( anyAttributeDecl, XUtil.getFirstChildElement(anyAttributeDecl), true );
+        if(annotation != null ) {
+            // REVISIT: Localize
+            reportGenericSchemaError("<anyAttribute> elements can contain at most one <annotation> element in their children");
+        }
         XMLAttributeDecl anyAttDecl = new XMLAttributeDecl();
         String processContents = anyAttributeDecl.getAttribute(SchemaSymbols.ATT_PROCESSCONTENTS).trim();
         String namespace = anyAttributeDecl.getAttribute(SchemaSymbols.ATT_NAMESPACE).trim();
-        String curTargetUri = anyAttributeDecl.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+        // simplify!  NG
+        //String curTargetUri = anyAttributeDecl.getOwnerDocument().getDocumentElement().getAttribute("targetNamespace");
+        String curTargetUri = fTargetNSURIString;
 
         if ( namespace.length() == 0 || namespace.equals(SchemaSymbols.ATTVAL_TWOPOUNDANY) ) {
             anyAttDecl.type = XMLAttributeDecl.TYPE_ANY_ANY;
@@ -2812,6 +2897,9 @@ public class TraverseSchema implements
             else if ( childName.equals(SchemaSymbols.ELT_ANYATTRIBUTE) ) { 
                 attWildcard = traverseAnyAttribute(child);
             }
+            else {
+                throw new ComplexTypeRecoverableError( "Invalid child among the children of the complexType definition");
+            }
         }
 
         if (attWildcard != null) {
@@ -3562,7 +3650,9 @@ public class TraverseSchema implements
             	}
  				return -1;
 			}
-        }
+        } else if (attGrpNameStr.equals(""))
+				// REVISIT:  localize 
+                reportGenericSchemaError ( "an attributeGroup must have a name or a ref attribute present");
 
         for (; 
              child != null ; child = XUtil.getNextSiblingElement(child)) {
@@ -3625,7 +3715,8 @@ public class TraverseSchema implements
         int enumeration = -1;
 
 
-        for ( Element child = XUtil.getFirstChildElement(attGrpDecl); 
+        Element child = checkContent(attGrpDecl, XUtil.getFirstChildElement(attGrpDecl), true); 
+        for (; 
              child != null ; child = XUtil.getNextSiblingElement(child)) {
 
             //child attribute couldn't be a top-level attribute DEFINITION, 
@@ -3650,13 +3741,18 @@ public class TraverseSchema implements
                 anyAttDecls.addElement(traverseAnyAttribute(child));
                 break;
             }
-            else if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION) ) {
-                // REVISIT: what about appInfo
+            else {
+                // REVISIT: Localize
+                reportGenericSchemaError("Invalid content for attributeGroup");
             }
         }
 
         fNamespacesScope = saveNSMapping;
         fTargetNSURI = saveTargetNSUri;
+        if(child != null) {
+            // REVISIT: Localize
+            reportGenericSchemaError("Invalid content for attributeGroup");
+        }
         return -1;
     } // end of method traverseAttributeGroupFromAnotherSchema
     
@@ -3828,7 +3924,6 @@ public class TraverseSchema implements
             }
             int localpartIndex = fStringPool.addSymbol(localpart);
             String uriString = resolvePrefixToURI(prefix);
-            System.err.println("the uriString is " + uriString);
             QName eltName = new QName(prefix != null ? fStringPool.addSymbol(prefix) : -1,
                                       localpartIndex,
                                       fStringPool.addSymbol(ref),
@@ -4854,7 +4949,9 @@ public class TraverseSchema implements
             }
             
             return contentSpecIndex;
-        }
+        } else if (groupName.equals(""))
+            // REVISIT: Localize
+            reportGenericSchemaError("a <group> must have a name or a ref present");
 		String qualifiedGroupName = fTargetNSURIString + "," + groupName;
 		Object contentSpecHolder = fGroupNameRegistry.get(qualifiedGroupName);
 		if(contentSpecHolder != null ) 	// we've already traversed this group
@@ -4973,9 +5070,7 @@ public class TraverseSchema implements
     **/
     int traverseSequence (Element sequenceDecl) throws Exception {
             
-        Element child = XUtil.getFirstChildElement(sequenceDecl);
-        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
-            child = XUtil.getNextSiblingElement(child);
+        Element child = checkContent(sequenceDecl, XUtil.getFirstChildElement(sequenceDecl), true);
 
         int contentSpecType = 0;
         int csnType = 0;
@@ -5051,7 +5146,7 @@ public class TraverseSchema implements
     
     /**
     *
-    * Traverse the Sequence declaration
+    * Traverse the Choice declaration
     * 
     * <choice
     *   id = ID 
@@ -5064,9 +5159,7 @@ public class TraverseSchema implements
     int traverseChoice (Element choiceDecl) throws Exception {
             
         // REVISIT: traverseChoice, traverseSequence can be combined
-        Element child = XUtil.getFirstChildElement(choiceDecl);
-        while (child != null && child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION))
-            child = XUtil.getNextSiblingElement(child);
+        Element child = checkContent(choiceDecl, XUtil.getFirstChildElement(choiceDecl), true);
 
         int contentSpecType = 0;
         int csnType = 0;

@@ -76,6 +76,8 @@ public final  class SchemaSymbols {
 
     public static final String ELT_ALL =  "all";
     public static final String ELT_ANNOTATION =  "annotation";
+    public static final String ELT_APPINFO =  "appinfo";
+    public static final String ELT_DOCUMENTATION =  "documentation";
     public static final String ELT_ANY =  "any";
     public static final String ELT_WILDCARD = "any";
     public static final String ELT_ANYATTRIBUTE =  "anyAttribute";
