@@ -746,6 +746,9 @@ public final class XMLValidator
         if (fAttrListHandle == -1) {
             fAttrListHandle = fAttrList.startAttrList();
         }
+        
+        // if fAttrList.addAttr returns -1, indicates duplicate att in start tag of an element.
+        // specified: true, search : true
         return fAttrList.addAttr(attrName, attrValue, -1, true, true) == -1;
     }
 
@@ -1225,17 +1228,20 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
 
     /** Normalize attribute value. */
     public int normalizeAttValue(QName element, QName attribute, 
-                                 int attValue, int attType, 
+                                int attValue, int attType, boolean list,
                                  int enumHandle) throws Exception {
 
                 //****DEBUG****
                 if (DEBUG) print("(VAL) XMLValidator.normalizeAttValue: " + param("elementType",element.rawname) + param("attValue",attValue) +
                                                         param("attType",attType) + param("enumHandle",enumHandle) + "\n");
                 //****DEBUG****
-        AttributeValidator av = getValidatorForAttType(attType);
-        return av.normalize(element, attribute, attValue, attType, enumHandle);
+        AttributeValidator av = getValidatorForAttType(attType, list);
+        if (av != null) {
+            return av.normalize(element, attribute, attValue, attType, enumHandle);
+        }
+        return -1;
 
-    } // normalizeAttValue(QName,QName,int,int,int):int
+    } // normalizeAttValue(QName,QName,int,int,boolean,int):int
 
     // other
 
@@ -2342,8 +2348,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     // initialization
 
     /** Reset pool. */
-    /*private void poolReset() {
-
+    private void poolReset() {
+        /***
         int chunk = 0;
         int index = 0;
         for (int i = 0; i < fElementCount; i++) {
@@ -2353,9 +2359,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 index = 0;
             }
         }
+        
         fElementCount = 0;
         fNodeCount = 0;
         fAttDefCount = 0;
+        ***/
         if (fIdDefs != null) {
             fIdDefs.clear();
         }
@@ -2364,7 +2372,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         }
 
     } // poolReset()
-    */
+    
 
     /** Reset common. */
     private void resetCommon(StringPool stringPool) throws Exception {
@@ -2376,7 +2384,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         fValidating = fValidationEnabled;
         fValidationEnabledByDynamic = false;
         fDynamicDisabledByValidation = false;
-    //    poolReset();
+        poolReset();
         fCalledStartDocument = false;
         fStandaloneReader = -1;
         fElementDepth = -1;
@@ -2510,6 +2518,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
         // (3) add default attrs (FIXED and NOT_FIXED)
         //
         fGrammar.getElementDecl(elementIndex,fTempElementDecl);
+
+        //System.out.println("addDefaultAttributes: " + fStringPool.toString(fTempElementDecl.name.localpart)+
+        //                   "," + attrIndex + "," + validationEnabled);
+
         int elementNameIndex = fTempElementDecl.name.localpart;
         int attlistIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
         int firstCheck = attrIndex;
@@ -2544,6 +2556,15 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             }
             boolean specified = false;
             boolean required = attDefType == fREQUIREDSymbol;
+
+            /****
+            if (fValidating && fGrammar != null && fGrammar instanceof DTDGrammar && attValue != -1) {
+                normalizeAttValue(null, fTempAttDecl.name,
+                                  attValue,attType,fTempAttDecl.list, 
+                                  fTempAttDecl.enumeration);
+            }
+            /****/
+
             if (firstCheck != -1) {
                 boolean cdata = attType == fCDATASymbol;
                 if (!cdata || required || attValue != -1) {
@@ -2920,7 +2941,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     // query attribute information
 
     /** Returns the validatator for an attribute type. */
-    private AttributeValidator getValidatorForAttType(int attType) {
+    private AttributeValidator getValidatorForAttType(int attType, boolean list) {
         if (attType == fCDATASymbol) {
             if (fAttValidatorCDATA == null) {
                 fAttValidatorCDATA = new AttValidatorCDATA();
@@ -2934,40 +2955,47 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             return fAttValidatorID;
         }
         if (attType == fIDREFSymbol) {
-            if (fAttValidatorIDREF == null) {
-                fAttValidatorIDREF = new AttValidatorIDREF();
+            if (!list) {
+            
+                if (fAttValidatorIDREF == null) {
+                    fAttValidatorIDREF = new AttValidatorIDREF();
+                }
+                return fAttValidatorIDREF;
             }
-            return fAttValidatorIDREF;
-        }
-        if (attType == fIDREFSSymbol) {
-            if (fAttValidatorIDREFS == null) {
-                fAttValidatorIDREFS = new AttValidatorIDREFS();
+            else {
+                if (fAttValidatorIDREFS == null) {
+                    fAttValidatorIDREFS = new AttValidatorIDREFS();
+                }
+                return fAttValidatorIDREFS;
             }
-            return fAttValidatorIDREFS;
         }
         if (attType == fENTITYSymbol) {
-            if (fAttValidatorENTITY == null) {
-                fAttValidatorENTITY = new AttValidatorENTITY();
+            if (!list) {
+                if (fAttValidatorENTITY == null) {
+                    fAttValidatorENTITY = new AttValidatorENTITY();
+                }
+                return fAttValidatorENTITY;
             }
-            return fAttValidatorENTITY;
-        }
-        if (attType == fENTITIESSymbol) {
-            if (fAttValidatorENTITIES == null) {
-                fAttValidatorENTITIES = new AttValidatorENTITIES();
+            else{
+                if (fAttValidatorENTITIES == null) {
+                    fAttValidatorENTITIES = new AttValidatorENTITIES();
+                }
+                return fAttValidatorENTITIES;
             }
-            return fAttValidatorENTITIES;
         }
         if (attType == fNMTOKENSymbol) {
-            if (fAttValidatorNMTOKEN == null) {
-                fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
+            if (!list) {
+                if (fAttValidatorNMTOKEN == null) {
+                    fAttValidatorNMTOKEN = new AttValidatorNMTOKEN();
+                }
+                return fAttValidatorNMTOKEN;
             }
-            return fAttValidatorNMTOKEN;
-        }
-        if (attType == fNMTOKENSSymbol) {
-            if (fAttValidatorNMTOKENS == null) {
-                fAttValidatorNMTOKENS = new AttValidatorNMTOKENS();
+            else{
+                if (fAttValidatorNMTOKENS == null) {
+                    fAttValidatorNMTOKENS = new AttValidatorNMTOKENS();
+                }
+                return fAttValidatorNMTOKENS;
             }
-            return fAttValidatorNMTOKENS;
         }
         if (attType == fNOTATIONSymbol) {
             if (fAttValidatorNOTATION == null) {
@@ -2985,9 +3013,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             if (fAttValidatorDATATYPE == null) {
                 fAttValidatorDATATYPE = null; //REVISIT : !!! used to be fSchemaImporter.createDatatypeAttributeValidator();
             }
-            return fAttValidatorDATATYPE;
+            //return fAttValidatorDATATYPE;
         }
-        throw new RuntimeException("getValidatorForAttType(" + fStringPool.toString(attType) + ")");
+        return null;
+        //throw new RuntimeException("getValidatorForAttType(" + fStringPool.toString(attType) + ")");
     }
 
     /** Returns an attribute definition for an element type. */

@@ -150,7 +150,7 @@ public final class XMLDocumentScanner {
     //
     // Instance Variables
     //
-    /***
+    /***/
     // NOTE: Used by old implementation of scanElementType method. -Ac
     private StringPool.CharArrayRange fCurrentElementCharArrayRange = null;
     /***/
@@ -1061,7 +1061,7 @@ public final class XMLDocumentScanner {
                             //
                             // [42] ETag ::= '</' Name S? '>'
                             //
-                            if (!scanExpectedElementType(fEntityReader, '>', fElementQName)) {
+                            if (!scanExpectedElementType(fEntityReader, '>', fCurrentElementType)) {
                                 abortMarkup(XMLMessages.MSG_ETAG_REQUIRED,
                                             XMLMessages.P39_UNTERMINATED,
                                             fCurrentElementType);
@@ -1175,7 +1175,7 @@ public final class XMLDocumentScanner {
                         //
                         // [42] ETag ::= '</' Name S? '>'
                         //
-                        if (!scanExpectedElementType(fEntityReader, '>', fElementQName)) {
+                        if (!scanExpectedElementType(fEntityReader, '>', fCurrentElementType)) {
                             abortMarkup(XMLMessages.MSG_ETAG_REQUIRED,
                                         XMLMessages.P39_UNTERMINATED,
                                         fCurrentElementType);
@@ -1816,7 +1816,12 @@ public final class XMLDocumentScanner {
                                         XMLMessages.WFC_UNIQUE_ATT_SPEC,
                                         element.rawname, fAttributeQName.rawname);
                 }
-                fEventHandler.attribute(element, fAttributeQName, result);
+                //The validator will check whether we have a duplicate attr in the start tag.
+                if ( fEventHandler.attribute(element, fAttributeQName, result) ) {
+                    reportFatalXMLError(XMLMessages.MSG_ATTRIBUTE_NOT_UNIQUE,
+                                        XMLMessages.WFC_UNIQUE_ATT_SPEC,
+                                        element.rawname, fAttributeQName.rawname);
+                }
                 restoreScannerState(SCANNER_STATE_ATTRIBUTE_LIST);
                 if (!fEntityReader.lookingAtSpace(true)) {
                     if (!(greater = fEntityReader.lookingAtChar('>', true)))
@@ -2063,17 +2068,19 @@ public final class XMLDocumentScanner {
 
     /** Scans expected element type. */
     private boolean scanExpectedElementType(XMLEntityHandler.EntityReader entityReader, 
-                                           char fastchar, QName element) 
+                                           char fastchar, int elementType) 
         throws Exception {
 
-        /***
+        /***/
         // REVISIT: Why aren't we using the 'element' parameter? -Ac
+        // REVISIT: I replaced the 'fCurrentElement' with 'element' parameter, still working, 
+        //          just wondering Why are we using CharArrayRange in the first place? -ericye
         if (fCurrentElementCharArrayRange == null) {
             fCurrentElementCharArrayRange = fStringPool.createCharArrayRange();
         }
-        fStringPool.getCharArrayRange(fCurrentElement.rawname, fCurrentElementCharArrayRange);
+        fStringPool.getCharArrayRange(elementType, fCurrentElementCharArrayRange);
         return entityReader.scanExpectedName(fastchar, fCurrentElementCharArrayRange);
-        /***/
+        /***
         entityReader.scanQName(fastchar, element);
         return true;
         /***/
@@ -2177,32 +2184,6 @@ public final class XMLDocumentScanner {
             return XMLDocumentScanner.RESULT_FAILURE;
         }
 
-        //
-        // Check for Schema and load
-        //
-
-        /*
-        if (!fCheckedForSchema) {
-            fCheckedForSchema = true;
-            if (attrName == fStringPool.addSymbol("xmlns")) { // default namespacedecl
-                                
-                if (fSchemaImporter == null) {
-                    fSchemaImporter = new SchemaImporter(fStringPool, fErrorReporter, fEntityHandler, this);
-                } else {
-                    fSchemaImporter.reset(fStringPool);
-                }
-                String fs = fEntityHandler.expandSystemId(fStringPool.toString(attValue));
-                EntityResolver resolver = fEntityHandler.getEntityResolver();
-                InputSource is = resolver == null ? null : resolver.resolveEntity(null, fs);
-                if (is == null) {
-                    is = new InputSource(fs);
-                }
-
-                fSchemaImporter.loadSchema(is);
-                fSchemaDocument = fSchemaImporter.getSchemaDocument();
-            }
-        }
-        */
 
         /***
         // REVISIT: This is validation related.
@@ -2216,10 +2197,13 @@ public final class XMLDocumentScanner {
             }
             return XMLDocumentScanner.RESULT_SUCCESS;
         }
+        /****/
 
+        /****
         // REVISIT: Validation. What should these be?
         int attDefIndex = getAttDef(element, attribute);
         if (attDefIndex == -1) {
+
             if (fValidating) {
                 // REVISIT - cache the elem/attr tuple so that we only give
                 //  this error once for each unique occurrence
@@ -2232,6 +2216,7 @@ public final class XMLDocumentScanner {
                                            args,
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
             }
+
             int attType = fCDATASymbol;
             if (fAttrListHandle == -1) {
                 fAttrListHandle = fAttrList.startAttrList();
@@ -2242,7 +2227,9 @@ public final class XMLDocumentScanner {
             }
             return XMLDocumentScanner.RESULT_SUCCESS;
         }
+        /****/
 
+        /****
         int attType = getAttType(attDefIndex);
         if (attType != fCDATASymbol) {
             AttributeValidator av = getAttributeValidator(attDefIndex);
