@@ -1,9 +1,9 @@
 # Makefile for directory ./org/apache/xerces/impl/xpath
 
 TARGETS=\
-	XPath.java\
-	XPathException.java\
-	XPathMatcher.java
+	XPath.class\
+	XPathException.class\
+	XPathMatcher.class
 
 DIRS =
 
