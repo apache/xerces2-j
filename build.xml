@@ -324,45 +324,46 @@ Copyright:
   <!-- =================================================================== -->
   <target name="test" depends="sampjar">
 	<echo message="Performing sanity test for ${Name} ${version} ..." />
+	<echo message="Using classpath=&apos;${build.dir}/${name}Samples.jar;${build.dir}/${name}.jar&apos;" />
 	<echo message="Running SAXCount ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
           classname="sax.SAXCount"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running SAXWriter ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="sax.SAXWriter"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running DOMCount ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.DOMCount"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running DOMWriter ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.DOMWriter"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running DOMFilter ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.DOMFilter"
           args="-p dom.wrappers.DOMParser ${data.dir}/personal.xml"/>
     <!-- The following are samples but not command-line applications.
 	<echo message="Running IteratorView ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.traversal.IteratorView"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running TreeWalkerView ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.traversal.TreeWalkerView"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running TreeViewer ..." />
-    <java fork="no"
-          classpath="${java.class.path}:${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar"
           classname="dom.TreeViewer"
           args="${data.dir}/personal.xml"/>
      -->
