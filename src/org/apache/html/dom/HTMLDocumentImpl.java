@@ -64,7 +64,6 @@ import org.w3c.dom.*;
 import org.w3c.dom.html.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.dom.NodeImpl;
-import org.apache.xerces.dom.AttrImpl;
 import org.apache.xerces.util.ObjectFactory;
 import org.w3c.dom.DOMException;
 
@@ -777,8 +776,9 @@ public class HTMLDocumentImpl
     private static void populateElementType( String tagName, String className )
     {
         try {
-            _elementTypesHTML.put( tagName, 
-                    ObjectFactory.findClassLoader().loadClass("org.apache.html.dom." + className) );
+            _elementTypesHTML.put( tagName,
+                ObjectFactory.findProviderClass("org.apache.html.dom." + className,
+                    HTMLDocumentImpl.class.getClassLoader(), false) );
         } catch ( Exception except ) {
             new RuntimeException( "HTM019 OpenXML Error: Could not find or execute class " + className + " implementing HTML element " + tagName
                                   + "\n" + className + "\t" + tagName);

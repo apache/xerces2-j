@@ -110,7 +110,7 @@ public abstract class SerializerFactory
                 className = token.nextToken();
                 try {
                     factory = (SerializerFactory) ObjectFactory.newInstance( className, 
-                        ObjectFactory.findClassLoader(), true);
+                        SerializerFactory.class.getClassLoader(), true);
                     if ( _factories.containsKey( factory.getSupportedMethod() ) )
                         _factories.put( factory.getSupportedMethod(), factory );
                 } catch ( Exception except ) { }
