@@ -923,6 +923,7 @@ public class XMLEntityManager
         String baseSystemId = xmlInputSource.getBaseSystemId();
         String encoding = xmlInputSource.getEncoding();
         Boolean isBigEndian = null;
+		boolean declaredEncoding = false;
 
         // create reader
         InputStream stream = null;
@@ -934,6 +935,8 @@ public class XMLEntityManager
         }
         if (reader == null) {
             stream = xmlInputSource.getByteStream();
+			if(stream != null && encoding != null)
+				declaredEncoding = true;
             if (stream == null) {
                 URL location = new URL(expandedSystemId);
                 URLConnection connect = location.openConnection();
@@ -1085,6 +1088,7 @@ public class XMLEntityManager
         fCurrentEntity = new ScannedEntity(name,
                 new XMLResourceIdentifierImpl(publicId, literalSystemId, baseSystemId, expandedSystemId),
                 stream, reader, encoding, literal, false, isExternal);
+		fCurrentEntity.setDeclaredEncoding(declaredEncoding);
         fEntityScanner.setCurrentEntity(fCurrentEntity);
         fResourceIdentifier.setValues(publicId, literalSystemId, baseSystemId, expandedSystemId);
         return encoding;
@@ -2287,7 +2291,10 @@ public class XMLEntityManager
         /** Auto-detected encoding. */
         public String encoding;
 
-        // status
+		/** Encoding has been set externally for eg: using DOMInput*/
+		boolean declaredEncoding = false;
+        
+		// status
 
         /** True if in a literal.  */
         public boolean literal;
@@ -2439,6 +2446,14 @@ public class XMLEntityManager
             return str.toString();
 
         } // toString():String
+		
+		public boolean isDeclaredEncoding() {
+			return declaredEncoding;
+		}
+		
+		public void setDeclaredEncoding(boolean value) {
+			declaredEncoding = value;
+		}
 
     } // class ScannedEntity
 
