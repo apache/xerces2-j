@@ -25,6 +25,7 @@ import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXMessageFormatter;
 import org.apache.xerces.util.SymbolHash;
+import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -438,30 +439,30 @@ public abstract class AbstractSAXParser
                 
                 if (fNamespaces) {
                     // send prefix mapping events
-                    int count = startNamespaceMapping();
+                    startNamespaceMapping();
 
-                    // If there were no new namespaces declared
-                    // then we can skip searching the attribute list
-                    // for namespace declarations.
-                    if (count > 0) {
-                        int len = attributes.getLength();
-                        for (int i = len - 1; i >= 0; i--) {
-                            attributes.getName(i, fQName);
-
-                            if ((fQName.prefix != null && fQName.prefix.equals("xmlns")) || 
-                                fQName.rawname.equals("xmlns")) {
-                                if (!fNamespacePrefixes) {
-                                    // remove namespace declaration attributes
-                                    attributes.removeAttributeAt(i);
-                                }
-                                else {
-                                    // localpart should be empty string as per SAX documentation:
-                                    // http://www.saxproject.org/?selected=namespaces
-                                    fQName.prefix = "";
-                                    fQName.uri = "";
-                                    fQName.localpart = "";
-                                    attributes.setName(i, fQName);
-                                }
+                    // REVISIT: It should not be necessary to iterate over the attribute
+                    // list when the set of [namespace attributes] is empty for this
+                    // element. This should be computable from the NamespaceContext, but
+                    // since we currently don't report the mappings for the xml prefix
+                    // we cannot use the declared prefix count for the current context
+                    // to skip this section. -- mrglavas
+                    int len = attributes.getLength();
+                    for (int i = len - 1; i >= 0; --i) {
+                        attributes.getName(i, fQName);    
+                        if ((fQName.prefix == XMLSymbols.PREFIX_XMLNS) || 
+                            (fQName.rawname == XMLSymbols.PREFIX_XMLNS)) {
+                            if (!fNamespacePrefixes) {
+                                // remove namespace declaration attributes
+                                attributes.removeAttributeAt(i);
+                            }
+                            else {
+                                // localpart should be empty string as per SAX documentation:
+                                // http://www.saxproject.org/?selected=namespaces
+                                fQName.prefix = "";
+                                fQName.uri = "";
+                                fQName.localpart = "";
+                                attributes.setName(i, fQName);
                             }
                         }
                     }
@@ -1926,7 +1927,7 @@ public abstract class AbstractSAXParser
     /**
      * Send startPrefixMapping events
      */
-    protected final int startNamespaceMapping() throws SAXException{
+    protected final void startNamespaceMapping() throws SAXException{
         int count = fNamespaceContext.getDeclaredPrefixCount();
         if (count > 0) {
             String prefix = null;
@@ -1938,7 +1939,6 @@ public abstract class AbstractSAXParser
                     (uri == null) ? "" : uri);
             }
         }
-        return count;
     }
     
     /**
