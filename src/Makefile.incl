@@ -1,0 +1,41 @@
+
+#
+# Define the environment commands and/or utilities
+#
+JAR = jar c0vf 
+JAVAC = javac
+RM = -rm 
+
+#define MKDIR and CP for unix machines
+MKDIR = mkdir -p 
+CP = cp
+#
+# Define the version strings
+#
+PRODUCTVERSION = 1_0_0
+PRODUCTVERSION_DOT = 1.0.0
+PRODUCTNAME = Xerces
+
+#define the jar file names
+
+JARFILE = xerces.jar
+SAMPLESJARFILE = xercesSamples.jar
+
+#define the package value	
+PACKAGES = org.apache.xerces.parsers \
+           org.apache.xerces.framework \
+           org.apache.xerces.dom \
+           org.apache.xerces.domx.events \
+           org.apache.xerces.dom.traversal \
+           org.apache.xerces.domx.traversal \
+           org.w3c.dom \
+           org.xml.sax \
+           org.xml.sax.helpers
+
+
+BINZIPFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.zip
+SRCZIPFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.zip
+
+BINTARFILE = ${PRODUCTNAME}-J-bin.${PRODUCTVERSION_DOT}.tar
+SRCTARFILE = ${PRODUCTNAME}-J-src.${PRODUCTVERSION_DOT}.tar
+

@@ -1,0 +1,39 @@
+<!-- Note that the expansion of 'facets' below is less
+     restrictive than that imposed by the XML Schema schema for
+     datatypes:  There should in fact be no more than one of each of
+     minInclusive, minExclusive, maxInclusive, maxExclusive,
+     precision, scale, lexicalRepresentation, enumeration,
+     length, maxLength within datatype -->
+<!ENTITY % minBound '(minInclusive | minExclusive)'>
+<!ENTITY % maxBound '(maxInclusive | maxExclusive)'>
+<!ENTITY % bounds '%minBound; | %maxBound;'>
+<!ENTITY % numeric 'precision | scale'>
+<!ENTITY % ordered '%bounds; | %numeric;'>   
+<!ENTITY % unordered
+   'lexicalRepresentation | enumeration | length | maxLength'>   
+<!ENTITY % facets '%ordered; | %unordered;'>
+<!ELEMENT datatype (basetype, (%facets;)*)>   
+<!ATTLIST datatype   
+    name NMTOKEN #REQUIRED   
+    export (true|false) 'true'>   
+   
+<!ELEMENT basetype EMPTY>   
+<!ATTLIST basetype   
+    name NMTOKEN #REQUIRED   
+    schemaAbbrev NMTOKEN #IMPLIED   
+    schemaName CDATA #IMPLIED>   
+   
+<!ELEMENT maxExclusive (#PCDATA)>   
+<!ELEMENT minExclusive (#PCDATA)>   
+<!ELEMENT maxInclusive (#PCDATA)>   
+<!ELEMENT minInclusive (#PCDATA)>   
+   
+<!ELEMENT precision (#PCDATA)>   
+<!ELEMENT scale (#PCDATA)>   
+   
+<!ELEMENT length (#PCDATA)>   
+<!ELEMENT maxLength (#PCDATA)>   
+<!ELEMENT enumeration (literal)+>   
+<!ELEMENT literal (#PCDATA)>   
+<!ELEMENT lexicalRepresentation (lexical)+>   
+<!ELEMENT lexical (#PCDATA)>

@@ -1,0 +1,220 @@
+<!-- $Id$ -->
+<!ELEMENT schema ((import*, include*, export?,  
+                  (comment | datatype | archetype | element   
+                  | attrGroup | modelGroup | notation 
+                  | textEntity | externalEntity | unparsedEntity)* ))>
+<!ATTLIST schema
+                 targetNS    CDATA       #IMPLIED
+                 version     CDATA       #IMPLIED
+                 xmlns       CDATA       'http://www.w3.org/XML/Group/1999/09/23-xmlschema/'
+                 model      (open|refinable|closed) 'closed' >
+
+<!ELEMENT import (component*) >
+
+<!ATTLIST import
+                 schemaAbbrev     NMTOKEN      #REQUIRED 
+                 schemaName       CDATA        #REQUIRED 
+                 datatypes        (true|false) 'true'  
+                 archetypes       (true|false) 'true'  
+                 elements         (true|false) 'true'  
+                 attrGroups       (true|false) 'true'  
+                 modelGroups      (true|false) 'true'  
+                 entities         (true|false) 'true'  
+                 notations        (true|false) 'true' >
+
+<!ELEMENT component EMPTY >
+<!ATTLIST component name NMTOKEN #REQUIRED
+                    type (datatype|archetype|element|attrGroup|modelGroup|
+                          entity|notation) #REQUIRED>
+
+<!ELEMENT export EMPTY >
+<!ATTLIST export 
+                 datatypes        (true|false) 'true'  
+                 archetypes       (true|false) 'true'  
+                 elements         (true|false) 'true'  
+                 attrGroups       (true|false) 'true'  
+                 modelGroups      (true|false) 'true'  
+                 entities         (true|false) 'true'  
+                 notations        (true|false) 'true' >
+
+<!ELEMENT include (component*) >
+
+<!ATTLIST include
+                 schemaName       CDATA        #REQUIRED 
+                 datatypes        (true|false) 'true'  
+                 archetypes       (true|false) 'true'  
+                 elements         (true|false) 'true'  
+                 attrGroups       (true|false) 'true'  
+                 modelGroups      (true|false) 'true'  
+                 entities         (true|false) 'true'  
+                 notations        (true|false) 'true' >
+
+
+<!-- -->
+<!-- comments contain text -->
+<!-- -->
+<!ELEMENT comment (#PCDATA) >
+
+<!-- The datatype element is defined in XML Schema: Part 2: Datatypes -->
+<!-- for publication:
+     http://www.w3.org/1999/05/06-xmlschema/datatypes.dtd -->
+<!ENTITY % xs-datatypes PUBLIC 'datatypes'
+                     '../datatypes/datatypes.dtd' >
+%xs-datatypes;
+
+<!-- -->
+<!-- an archetype is a named content type specification with attribute 
+     declarations-->
+<!-- -->
+
+<!ELEMENT archetype (refines*,
+                     ((element|group|modelGroupRef)*|datatypeQual?),
+                     (attribute|attrGroupRef)*)>
+                           
+<!-- note that datatypeQual only if type attr present -->
+
+<!ATTLIST archetype
+          name      NMTOKEN     #IMPLIED
+          content   (elemOnly|textOnly|mixed|empty|any) 'elemOnly'
+          model     (open|refinable|closed) #IMPLIED
+          order     (choice|seq|all)   'seq'
+          type      NMTOKEN     #IMPLIED
+          default   CDATA       #IMPLIED
+          fixed     CDATA       #IMPLIED
+          schemaAbbrev    NMTOKEN    #IMPLIED
+          schemaName      CDATA      #IMPLIED >
+
+<!-- Note that schemaAbbrev/Name, default|fixed only if type,
+     type iff content='textOnly', in which case must name a datatype -->
+<!-- Note that if order is 'all', group/groupRef is not allowed -->
+
+<!ELEMENT refines EMPTY>
+<!ATTLIST refines
+                 name            NMTOKEN    #REQUIRED
+                 schemaAbbrev    NMTOKEN    #IMPLIED
+                 schemaName      CDATA      #IMPLIED >
+
+<!-- -->
+<!-- an element is declared by either:
+ a name and a type (either nested or referenced via the type attribute)
+or:
+ a ref to an existing element declaration -->   
+<!-- -->
+<!ELEMENT element ((archetype|datatype)?)>
+<!-- archetype or datatype only if no type|ref|archRef attribute -->
+<!-- ref|archRef not allowed at top level -->
+<!ATTLIST element
+            name        NMTOKEN      #IMPLIED
+            ref         NMTOKEN      #IMPLIED
+            archRef     NMTOKEN      #IMPLIED
+            type        NMTOKEN      #IMPLIED
+            schemaAbbrev    NMTOKEN    #IMPLIED
+            schemaName      CDATA      #IMPLIED 
+            minOccurs   CDATA        '1'
+            maxOccurs   CDATA        #IMPLIED
+            export      (true|false) 'true'
+	    default   CDATA      #IMPLIED 
+            fixed     CDATA      #IMPLIED>
+<!-- type, ref and archRef are mutually exclusive.  schemaName/Abbrev applies
+     to whichever is there, not allowed if neither.
+     If name is absent, ref is required -->
+<!-- maxOccurs defaults to 1 or minOccurs, whichever is greater -->
+
+<!ELEMENT group (element|group|modelGroupRef)+>
+<!ATTLIST group
+            name        NMTOKEN          #IMPLIED
+            collection  (no|list)        'no'
+            minOccurs   CDATA            '1'
+            maxOccurs   CDATA            #IMPLIED
+	    order       (choice|seq|all) 'seq' >
+<!-- Note that if order is 'all', group/groupRef is not allowed -->
+
+<!-- -->
+<!-- a model group is a named content model (without attributes) -->
+<!-- -->
+<!ELEMENT modelGroup  (element|group|modelGroupRef)+ >
+<!ATTLIST modelGroup
+                 name    NMTOKEN          #REQUIRED
+	         order   (choice|seq|all) 'seq' 
+                 export  (true|false)     'true' >
+<!-- Note that if order is 'all', group/groupRef is not allowed -->
+
+<!ELEMENT modelGroupRef EMPTY >
+<!ATTLIST modelGroupRef 
+                 name        NMTOKEN    #REQUIRED
+                 schemaAbbrev      NMTOKEN    #IMPLIED
+                 schemaName   CDATA      #IMPLIED
+                 minOccurs    CDATA      '1' 
+                 maxOccurs    CDATA      #IMPLIED >
+
+<!-- the entity reference below is discharged in datatypes.dtd -->
+<!ELEMENT datatypeQual (%facets;)*>
+
+<!-- -->
+<!-- an attribute declaration names an attribute specification -->
+<!-- -->
+<!ELEMENT attribute (%facets;)*>
+<!ATTLIST attribute
+          name      NMTOKEN    #REQUIRED
+          schemaAbbrev      NMTOKEN    #IMPLIED
+          schemaName   CDATA      #IMPLIED
+	  type      CDATA      'string'
+	  maxOccurs CDATA      #FIXED '1'
+	  minOccurs (0|1)      '0'
+	  default   CDATA      #IMPLIED 
+          fixed     CDATA      #IMPLIED>
+
+<!-- an attrGroup is a named collection of attribute decls -->
+<!ELEMENT attrGroup (attribute | attrGroupRef)+ >
+<!ATTLIST attrGroup
+                 name        NMTOKEN     #REQUIRED
+                 export     (true|false) 'true' >
+
+<!ELEMENT attrGroupRef EMPTY >
+<!ATTLIST attrGroupRef 
+                 name      NMTOKEN    #REQUIRED
+                 schemaAbbrev    NMTOKEN    #IMPLIED
+                 schemaName CDATA      #IMPLIED >
+
+<!--  -->
+<!-- Entities and notations in XML Schema -->
+<!--  -->
+
+<!-- a textEntity can be referenced in documents of this type -->
+<!ELEMENT textEntity (#PCDATA) >
+<!ATTLIST textEntity
+                 name        NMTOKEN     #REQUIRED
+                 export      (true|false) #FIXED 'true' >
+
+<!-- an externalEntity can be referenced in documents of this type -->
+<!ELEMENT externalEntity EMPTY >
+<!ATTLIST externalEntity
+                 name        NMTOKEN     #REQUIRED
+                 export     (true|false) #FIXED 'true' 
+                 public      CDATA       #IMPLIED
+                 system      CDATA       #REQUIRED
+                 notation    NMTOKEN     #FIXED 'XML'>
+
+<!-- declares notation to be a 1st class element or entity content types -->
+<!ELEMENT notation EMPTY >
+<!ATTLIST notation
+                 name        NMTOKEN     #REQUIRED
+                 export     (true|false) #FIXED 'true'
+                 public      CDATA       #REQUIRED
+                 system      CDATA       #IMPLIED>
+
+<!-- an unparsedEntity can be referenced in documents of this type  -->
+<!ELEMENT unparsedEntity EMPTY >
+<!ATTLIST unparsedEntity
+                 name        NMTOKEN     #REQUIRED
+                 export     (true|false) #FIXED 'true'
+                 public      CDATA       #IMPLIED
+                 system      CDATA       #REQUIRED
+                 notation    NMTOKEN     #REQUIRED >
+
+<!--
+<!NOTATION XMLSchemaStructures PUBLIC 'structures'
+           'http://www.w3.org/1999/09/23-xmlschema/structures/structures.xsd' >
+<!NOTATION XML PUBLIC 'REC-xml-1998-0210'
+               'http://www.w3.org/TR/1998/REC-xml-19980210' >
+-->

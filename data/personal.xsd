@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!-- <!DOCTYPE schema SYSTEM "structures.dtd"> -->
+<!DOCTYPE schema PUBLIC "-//W3C/DTD XML Schema Version 1.0//EN" 
+                        "http://www.w3.org/XML/Group/1999/09/23-xmlschema/structures/structures.dtd">
+<schema>
+
+ <element name="personnel">
+  <archetype>
+   <element ref="person" minOccurs='1' maxOccurs='*'/>
+   <attribute name="xmlns"/>
+  </archetype>
+ </element>
+
+ <element name="family">
+  <archetype content="mixed"/>
+ </element>
+
+ <element name="given">
+  <archetype content="mixed"/>
+ </element>
+
+ <element name="name">
+  <archetype>
+   <element ref="family"/>
+   <element ref="given" minOccurs='0' maxOccurs='1'/>
+  </archetype>
+ </element>
+
+ <element name="email" type="integer">
+  <!--    <mixed/> -->
+ </element>
+
+ <element name="url">
+  <archetype content="empty">
+   <attribute name="href" type="string" default="http://"/>
+  </archetype>
+ </element>
+
+ <element name="link">
+  <archetype content="empty">
+   <attribute name="manager" type="IDREF"/>
+   <attribute name="subordinates" type="IDREFS"/>
+  </archetype>
+ </element>
+
+ <element name="person">
+  <archetype>
+   <element ref="name"/>
+   <element ref="email" minOccurs='0' maxOccurs='*'/>
+   <element ref="url"   minOccurs='0' maxOccurs='*'/>
+   <element ref="link"  minOccurs='0' maxOccurs='1'/>
+
+   <attribute name="id"  type="ID"/>
+   <attribute name="note" type="string"/>
+   <attribute name="contr" type="NMTOKEN" default="false">
+	<enumeration>
+	 <literal>true</literal>
+	 <literal>false</literal>
+	</enumeration>
+   </attribute>
+   <attribute name="salary" type="integer"/>
+  </archetype>
+ </element>
+
+ <notation name='gif' public='-//APP/Photoshop/4.0' system='photoshop.exe'/>
+
+ <textEntity name='internal-entity'>entity-value</textEntity>
+ <externalEntity name='external-entity' public='-//ENTITY' system='external-entity.ent'/>
+ <unparsedEntity name='unparsed-entity' system='unparsed-entity.ent' notation='gif'/>
+
+</schema>

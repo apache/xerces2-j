@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# The "JDK12BIN" is set only for javadoc
+export JDK12BIN=/jdk1.2.2/bin

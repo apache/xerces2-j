@@ -1,0 +1,11 @@
+This drop of Xerces is based on a development version of the IBM XML4J
+code base.  There are lots of things that need to be done:
+
+* integrate cool stuff from OpenXML and Project X
+
+* continued tracking of the W3C Schema Language working drafts
+* support for DOM Level 2 ranges
+* support for DTD caching
+* a total rework of the makefile/build system
+* close outstanding bugs
+* DOM performance work
