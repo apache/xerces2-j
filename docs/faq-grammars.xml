@@ -312,7 +312,7 @@
     <p>
         For SAX and DOM the case is simple.  Just do:
     </p>
-    <source>XMLParserConfiguration config = new StandardParserConfiguration();
+    <source>XMLParserConfiguration config = new &DefaultConfig;();
 config.setProperty("http://apache.org/xml/properties/internal/grammar-pool",
     myFullGrammarPool);
 (SAX|DOM)Parser parser = new (SAX|DOM)Parser(config);</source>
@@ -349,7 +349,7 @@ DocumentBuilder builder = // JAXP factory invocation
         No such API exists at the current moment for DTD's.  For
         XML Schemas, there is a Xerces-specific schema component
         model API.  For details, it's best to look at the javadocs for
-        the <code>org.apache.xerces.impl.xs.psvi</code>
+        the <code>org.apache.xerces.xs</code>
         package.  Assuming you have produced a Grammar object from an XML Schema
         document by some means, to turn that object
         into an object usable in this API, do the following:
@@ -362,7 +362,7 @@ DocumentBuilder builder = // JAXP factory invocation
             Call the <code>toXSModel()</code> method on the casted object;
         </li>
         <li>
-            Use the methods in the <code>org.apache.xerces.impl.xs.psvi.XSModel</code>
+            Use the methods in the <code>org.apache.xerces.xs.XSModel</code>
             interface to examine the new object; methods on this
             interface and others in the same package should allow you to access
             all aspects of the schema.
