@@ -246,7 +246,8 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
         int type = node.getNodeType();
         boolean wellformed;
-
+        fLocator.fRelatedNode=node;
+        
         switch (type) {
         case Node.DOCUMENT_TYPE_NODE: {
                 if (DEBUG_ND) {
@@ -276,7 +277,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				                DOMMessageFormatter.DOM_DOMAIN, 
 				                "wf-invalid-character-in-node-name", 
 				                new Object[]{"Element", node.getNodeName()});
-                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, node, 
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
                                 "wf-invalid-character-in-node-name");                       
                     }
                 }
@@ -312,7 +313,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				                              "wf-invalid-character-in-node-name", 
 				                               new Object[]{"Attr",node.getNodeName()});
 				                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
-				                                node, "wf-invalid-character-in-node-name");
+				                                "wf-invalid-character-in-node-name");
                                     }
                                 }           
                             }
@@ -479,12 +480,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         parent.insertBefore(newChild, node.getNextSibling());
                         node = newChild;                      
                         // issue warning
+                        fLocator.fRelatedNode = firstSplitNode;
                         String msg = DOMMessageFormatter.formatMessage(
                             DOMMessageFormatter.DOM_DOMAIN, 
                             "cdata-sections-splitted", 
                              null);
                         reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_WARNING, 
-                            firstSplitNode, "cdata-sections-splitted");
+                            "cdata-sections-splitted");
                     }
 
                 }
@@ -572,7 +574,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				        DOMMessageFormatter.DOM_DOMAIN, 
 				        "wf-invalid-character-in-node-name", 
 				        new Object[]{"Element", node.getNodeName()});
-                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, null,  
+                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR,  
                         "wf-invalid-character-in-node-name");
                 }        
                                 
@@ -643,8 +645,9 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     if (value.equals(NamespaceContext.XMLNS_URI)) {
                     	//A null value for locale is passed to formatMessage, 
                     	//which means that the default locale will be used
+                        fLocator.fRelatedNode = attr;
                         String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,"CantBindXMLNS",null );
-                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, attr, "CantBindXMLNS");
+                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, "CantBindXMLNS");
                     } else {
                         // XML 1.0 Attribute value normalization
                         // value = normalizeAttributeValue(value, attr);
@@ -717,13 +720,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "NullLocalElementName", 
                         new Object[]{element.getNodeName()});
-                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, element, 
+                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, 
                         "NullLocalElementName");
                 } else {
                     String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "NullLocalElementName", 
                         new Object[]{element.getNodeName()});
-                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, element, 
+                    reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
                         "NullLocalElementName");
                 }
             } else { // uri=null and no colon (DOM L2 node)
@@ -748,6 +751,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
             attributes.cloneMap(fAttributeList);
             for (int i = 0; i < fAttributeList.size(); i++) {
                 Attr attr = (Attr) fAttributeList.elementAt(i);
+                fLocator.fRelatedNode = attr;
 
                 if (DEBUG) {
                     System.out.println("==>[ns-fixup] process attribute: "+attr.getNodeName());
@@ -789,7 +793,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
 				                            DOMMessageFormatter.DOM_DOMAIN, 
 				                            "wf-invalid-character-in-node-name", 
 				                            new Object[]{"Attribute", attr.getNodeName()});
-                                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, attr, 
+                                        reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
                                             "wf-invalid-character-in-node-name");  
                                 }
                         }
@@ -871,13 +875,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
                                 "NullLocalAttrName", new Object[]{attr.getNodeName()});
-                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, attr, 
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, 
                                 "NullLocalAttrName");
                         } else {
                             String msg = DOMMessageFormatter.formatMessage(
                                 DOMMessageFormatter.DOM_DOMAIN, 
                                 "NullLocalAttrName", new Object[]{attr.getNodeName()});
-                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, attr, 
+                            reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_ERROR, 
                                 "NullLocalAttrName");
                         }
                     } else {
@@ -958,7 +962,6 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         locator,
                         msg,
                         DOMError.SEVERITY_ERROR,
-                        null,
                         "wf-invalid-character");
                 }
                 else if (c==']'){
@@ -971,7 +974,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             //CDEndInContent
 		  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
 							    "CDEndInContent", null);
-							reportDOMError(errorHandler, error, locator,msg, DOMError.SEVERITY_ERROR, null, "wf-invalid-character");
+							reportDOMError(errorHandler, error, locator,msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                         }
                     }
                     
@@ -989,7 +992,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 	//"wf-invalid-character" is used.  Also per DOM it is error but 
                 	//as per XML spec. it is fatal error
 					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, "InvalidCharInCDSect", new Object[]{Integer.toString(c, 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, 
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
 					    "wf-invalid-character");
                 }
                 else if (c==']'){
@@ -1000,7 +1003,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         }
                         if (count <datalength && dataarray[count]=='>'){
 		  					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,"CDEndInContent", null);
-							reportDOMError(errorHandler, error, locator,  msg, DOMError.SEVERITY_ERROR, null, "wf-invalid-character");
+							reportDOMError(errorHandler, error, locator,  msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                         }
                     }
                     
@@ -1024,27 +1027,27 @@ public class DOMNormalizer implements XMLDocumentHandler {
 
         //version of the document is XML 1.1
         if(isXML11Version){                    
-            //we need to check all chracters as per production rules of XML11
+            //we need to check all characters as per production rules of XML11
             int i = 0 ;
             while(i < datalength){                            
                 if(XML11Char.isXML11Invalid(dataarray[i++])){
 					String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "InvalidXMLCharInDOM", 
                         new Object[]{Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, 
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
 					    "wf-invalid-character");
                 };
             }
         }//version of the document is XML 1.0
         else{                    
-            //we need to check all chracters as per production rules of XML 1.0
+            //we need to check all characters as per production rules of XML 1.0
             int i = 0 ;
             while(i < datalength){                            
                 if( XMLChar.isInvalid(dataarray[i++]) ){
 					String msg = DOMMessageFormatter.formatMessage(
                         DOMMessageFormatter.DOM_DOMAIN, "InvalidXMLCharInDOM", 
                         new Object[]{Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, 
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
 					    "wf-invalid-character");
                 };
             }            
@@ -1076,13 +1079,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
   					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN, 
 					    "InvalidCharInComment", 
 					    new Object [] {Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, "wf-invalid-character");
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }
                 else if (c == '-' && i<datalength && dataarray[i]=='-'){
   					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
 					    "DashDashInComment", null);
 					// invalid: '--' in comment                   
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, "wf-invalid-character");
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }
             }
         }//version of the document is XML 1.0
@@ -1094,13 +1097,13 @@ public class DOMNormalizer implements XMLDocumentHandler {
                 if( XMLChar.isInvalid(c) ){
   					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
 					    "InvalidCharInComment", new Object [] {Integer.toString(dataarray[i-1], 16)});
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, "wf-invalid-character");
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }  
                 else if (c == '-' && i<datalength && dataarray[i]=='-'){
   					String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.XML_DOMAIN,
 					    "DashDashInComment", null);
 					// invalid: '--' in comment                   
-					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, null, "wf-invalid-character");
+					reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, "wf-invalid-character");
                 }                                      
             }
                         
@@ -1143,7 +1146,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             DOMMessageFormatter.DOM_DOMAIN, "UndeclaredEntRefInAttrValue", 
                             new Object[]{a.getNodeName()});
                         reportDOMError(errorHandler, error, locator, msg, DOMError.SEVERITY_ERROR, 
-                            null, "UndeclaredEntRefInAttrValue");
+                            "UndeclaredEntRefInAttrValue");
                     }
                 }
                 else {
@@ -1162,15 +1165,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * If the error is fatal, the processing will be always aborted.
      */
     public static final void reportDOMError(DOMErrorHandler errorHandler, DOMErrorImpl error, DOMLocatorImpl locator, 
-                        String message, short severity, Node node, String type ){
+                        String message, short severity, String type ) {
         if( errorHandler!=null ) {
             error.reset();
             error.fMessage = message;
             error.fSeverity = severity;
             error.fLocator = locator;
             error.fType = type;
-            error.fRelatedData = node;
-            locator.fRelatedNode = node;
+            error.fRelatedData = locator.fRelatedNode;
     
             if(!errorHandler.handleError(error))
                 throw abort;

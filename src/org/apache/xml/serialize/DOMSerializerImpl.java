@@ -1005,6 +1005,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
     private void verify (Node node, boolean verifyNames, boolean xml11Version){
 
         int type = node.getNodeType();
+        fLocator.fRelatedNode = node;
         boolean wellformed;
         switch (type) { 
             case Node.DOCUMENT_NODE:{
@@ -1028,7 +1029,7 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                                         DOMMessageFormatter.DOM_DOMAIN, 
                                         "wf-invalid-character-in-node-name", 
                                         new Object[]{"Element", node.getNodeName()});
-                                        DOMNormalizer.reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, null, 
+                                        DOMNormalizer.reportDOMError(fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, 
                                         "wf-invalid-character-in-node-name");
                                 }
                         
@@ -1040,17 +1041,18 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                 if (attributes != null) {
                     for (int i = 0; i < attributes.getLength(); ++i) {
                         Attr attr = (Attr) attributes.item(i);
+                        fLocator.fRelatedNode = attr;
                         DOMNormalizer.isAttrValueWF( fErrorHandler, fError, fLocator, 
                                       attributes,(AttrImpl) attr, attr.getValue(), xml11Version);
                         if (verifyNames) {
-                            wellformed = CoreDocumentImpl.isXMLName( node.getNodeName(), xml11Version);
+                            wellformed = CoreDocumentImpl.isXMLName( attr.getNodeName(), xml11Version);
                             if (!wellformed) {
                                     String msg =
                                         DOMMessageFormatter.formatMessage(
                                             DOMMessageFormatter.DOM_DOMAIN,
                                             "wf-invalid-character-in-node-name",
                                             new Object[] { "Attr", node.getNodeName()});
-                                    DOMNormalizer.reportDOMError( fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR, null,
+                                    DOMNormalizer.reportDOMError( fErrorHandler, fError, fLocator, msg, DOMError.SEVERITY_FATAL_ERROR,
                                         "wf-invalid-character-in-node-name");
                             }
                         }
@@ -1107,7 +1109,6 @@ public class DOMSerializerImpl implements LSSerializer, DOMConfiguration {
                         fLocator,
                         msg,
                         DOMError.SEVERITY_FATAL_ERROR,
-                        null,
                         "wf-invalid-character-in-node-name");
                 }
             }              
