@@ -4,8 +4,8 @@ TARGETS=\
 	Counter.class\
 	DOMAddLines.class\
 	DOMGenerate.class\
-	DOMParserWrapper.class\
 	GetElementsByTagName.class\
+	ParserWrapper.class\
 	Writer.class
 
 DIRS = traversal wrappers
