@@ -113,15 +113,14 @@ public class DocumentBuilderImpl extends DocumentBuilder {
             // Validation
             validating = dbf.isValidating();
             String validation = "http://xml.org/sax/features/validation";
+            domParser.setFeature(validation, validating);
 
             // If validating, provide a default ErrorHandler that prints
             // validation errors with a warning telling the user to set an
             // ErrorHandler
             if (validating) {
-                domParser.setErrorHandler(new DefaultValidationErrorHandler());
+                setErrorHandler(new DefaultValidationErrorHandler());
             }
-            // Allow parser to use a different ErrorHandler if it wants to
-            domParser.setFeature(validation, validating);
 
             // XXX Ignore unimplemented features for now
             try {
@@ -188,6 +187,8 @@ public class DocumentBuilderImpl extends DocumentBuilder {
     }
 
     public void setErrorHandler(org.xml.sax.ErrorHandler eh) {
-        this.eh = eh; 
+        // If app passes in a ErrorHandler of null, then ignore all errors
+        // and warnings
+        this.eh = (eh == null) ? new DefaultHandler() : eh;
     }
 }
