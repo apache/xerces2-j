@@ -129,7 +129,11 @@ public class XSGrammarBucket {
         // we can recursively process the grammars, and add distinct ones
         // to the same vector
         Vector currGrammars = (Vector)grammar.getImportedGrammars();
-        if (currGrammars == null ) return true;
+        if (currGrammars == null) {
+            putGrammar(grammar);
+            return true;
+        }
+        
         Vector grammars = ((Vector)currGrammars.clone());
         SchemaGrammar sg1, sg2;
         Vector gs;
