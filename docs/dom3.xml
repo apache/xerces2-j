@@ -11,10 +11,9 @@
 			The
 			<jump href="http://www.w3.org/DOM/DOMTR#DOML3">DOM Level 3</jump>
 			specification is at the stage of
-			<strong>Working Draft in Last Call</strong>, which represents work in progress and thus may be
-			updated, replaced, or obsoleted by other documents at any
-			time.
-
+			<strong>Candidate Recommendation</strong>, which represents work in progress 
+			and has been widely reviewed and satisfies certain technical requirements
+			but may still change based on implementation experience.
 
 			This implementation is experimental: it should not be
 			considered as complete or correct.
@@ -23,8 +22,8 @@
 	<s2 title="Introduction">
 		<p>
 			The &ParserNameLong; &ParserVersion; contains an implementation of 
-			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030609/">Core</jump> 
-			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030619/">Load and Save</jump> Working drafts.
+			the Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/">Core</jump> 
+			and Document Object Model Level 3 <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/">Load and Save</jump> Candidate Recommendations.
 			To learn how to program with the DOM Level 3 see <jump href="samples-dom.html#DOM3">dom.DOM3</jump> sample.
 		</p>
 		<p>
@@ -59,7 +58,7 @@
 				]
 			</li>
 			<li>
-				<strong>entity-resolver</strong>
+				<strong>resource-resolver</strong>
 				[
 				<em>DOMResourceResolver</em>
 				]
@@ -90,6 +89,12 @@
 			</li>
 			<li>
 				<strong>comments</strong>
+				[
+				<em>true/false</em>
+				]
+			</li>
+			<li>
+				<strong>namespaces</strong>
 				[
 				<em>true/false</em>
 				]
@@ -143,14 +148,6 @@
 				]
 			</li>
 			<li>
-				<strong>discard-default-content</strong>
-				[
-				<em>true/false</em>
-				] -- the removal of default content depends on
-				<code>isSpecified</code>
-				flag.
-			</li>
-			<li>
 				<strong>validate</strong>
 				[
 				<em>true/false</em>
@@ -165,16 +162,25 @@
 				]
 			</li>
 			<li>
+				<strong>check-character-normalization</strong>
+				[
+				<em>false</em>
+				]
+			</li>			
+			<li>
+				<strong>well-formed</strong>
+				[
+				<em>false</em>
+				]
+			</li>	
+			<li>
 				<strong>psvi</strong>
 				[
 				<em>true/false</em>
-				] -- setting the value of this parameter to true will include 
+				] -- (NON-DOM) setting the value of this parameter to true will include 
 				PSVI information in the DOM tree. 
 				To access the information, cast dom.Element to org.apache.xerces.xni.psvi.ElementPSVI and dom.Attr to org.apache.xerces.xni.psvi.AttributePSVI.
 			</li>
-
-
-
 
 		</ul>
 	</s2>
@@ -184,12 +190,12 @@
 		<ul>
 
     		<li>
-    			<strong>DOMParser</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMBuilder-parseWithContext">
+    			<strong>DOMParser</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-LSParser-parseWithContext">
     			parserWithContext</jump>
     			 -- not supported.
 	    	</li>
             <li><strong>DocumentLS, ElementLS</strong> - convenience interfaces are not supported.</li>
-	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/WD-DOM-Level-3-LS-20030226/load-save.html#LS-DOMIMplementationLS-MODE_SYNC">
+	      <li><strong>DOMImplementationLS</strong> <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-LS-20031107/load-save.html#LS-DOMIMplementationLS-MODE_ASYNCH">
 			MODE_ASYNCHRONOUS</jump> 
 				-- not supported.
 			</li>

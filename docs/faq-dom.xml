@@ -114,7 +114,7 @@ catch (IOException e) {
       <source>import  org.w3c.dom.DOMImplementationRegistry;
 import  org.w3c.dom.Document;
 import  org.w3c.dom.ls.DOMImplementationLS;
-import  org.w3c.dom.ls.DOMBuilder;
+import  org.w3c.dom.ls.LSParser;
 
 ...
 
@@ -126,7 +126,7 @@ DOMImplementationRegistry registry =
 DOMImplementationLS impl = 
     (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
 
-DOMBuilder builder = impl.createDOMBuilder(
+LSParser builder = impl.createLSParser(
     DOMImplementationLS.MODE_SYNCHRONOUS, null);
 	
 Document document = builder.parseURI("data/personal.xml");</source>
@@ -164,7 +164,7 @@ serializer.serialize(document);</source>
       <source>import  org.w3c.dom.DOMImplementationRegistry;
 import  org.w3c.dom.Document;
 import  org.w3c.dom.ls.DOMImplementationLS;
-import  org.w3c.dom.ls.DOMWriter;
+import  org.w3c.dom.ls.LSWriter;
 
 ...
 
@@ -177,8 +177,8 @@ DOMImplementationLS impl =
 
 ...     
 
-DOMWriter builder = impl.createDOMWriter();
-writer.writeNode(System.out, document);</source>  
+LSWriter writer = impl.createLSSerializer();
+String str = writer.writeToString(document);</source>  
     </a>
   </faq>
 
@@ -199,7 +199,7 @@ writer.writeNode(System.out, document);</source>
   				<jump href="#dom3">Build</jump> DOM Level 3 Xerces jars.  			
   		    </li>
   			<li>
-  				<jump href="#domparser">Create</jump> the DOMBuilder.
+  				<jump href="#domparser">Create</jump> the DOMParser.
   			</li>
   			<li>
   				Retrieve <code>DOMConfiguration</code> from the <code>Document</code>, 
@@ -214,19 +214,19 @@ writer.writeNode(System.out, document);</source>
   			</li>
   			<li>
   				Relative URIs for the schema documents will be resolved relative to the
-  		       <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20020409/core.html#Document3-documentURI">documentURI</jump>
+  		       <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Document3-documentURI">documentURI</jump>
   		       (which should be set).
-  		       Otherwise, you can implement your own <code>DOMEntityResolver</code> and set it 
-  		       via <code>entity-resolver</code> on the <code>DOMConfiguration</code>.
+  		       Otherwise, you can implement your own <code>DOMResourceResolver</code> and set it 
+  		       via <code>resource-resolver</code> on the <code>DOMConfiguration</code>.
   			</li>
   		</ul>
   		<p>
   			<strong>Note:</strong> if a document contains any DOM Level 1 nodes (the nodes created using createElement, 
   			createAttribute, etc.) the fatal error will occur as described in the 
-  			<jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/namespaces-algorithms.html'>Namespace Normalization</jump>
+  			<jump href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/namespaces-algorithms.html'>Namespace Normalization</jump>
   			algorithm.
   			In general, the
-  			<jump href='http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#Namespaces-Considerations'>DOM specification</jump>
+  			<jump href='http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#Namespaces-Considerations'>DOM specification</jump>
   			discourages using DOM Level 1 nodes in the namespace aware application:
   		</p>
   		<p><em>DOM Level 1 methods are namespace ignorant. Therefore, while it is safe to use these methods when not 
@@ -238,7 +238,7 @@ writer.writeNode(System.out, document);</source>
   		<source>
 import org.w3c.dom.Document;
 import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.ls.DOMBuilder;
+import org.w3c.dom.ls.LSParser;
 
 ..... 
 
@@ -368,7 +368,7 @@ builder.setErrorHandler(handler);</source>
   
      <faq title="Accessing type information">
     <q>How do I access type information in the DOM?</q>
-    <a> <p><jump href="#dom3">DOM Level 3</jump> defines a  <jump href="http://www.w3.org/TR/2002/WD-DOM-Level-3-Core-20021022/core.html#TypeInfo">TypeInfo</jump> 
+    <a> <p><jump href="#dom3">DOM Level 3</jump> defines a  <jump href="http://www.w3.org/TR/2003/CR-DOM-Level-3-Core-20031107/core.html#TypeInfo">TypeInfo</jump> 
     interface that exposes type information for 
      element and attribute nodes. The type information depends on the document schema and is only available
      if Xerces was able to find the corresponding grammar (DOM Level 3 <code>validate</code> or 

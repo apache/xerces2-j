@@ -25,7 +25,7 @@
     </p>
     <p>
       Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the Document 
-      Object Model Level 3 Core and Load/Save Working Drafts and provides a 
+      Object Model Level 3 Core and Load/Save Candidate Recommendations and provides a 
       <link idref='faq-xinclude'>partial implementation</link> of the XML Inclusions 
       (XInclude) W3C Candidate Recommendation.
     </p>
