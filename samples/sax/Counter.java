@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package sax;                    
+package sax;
 
 import java.io.PrintWriter;
 
@@ -75,15 +75,15 @@ import org.xml.sax.helpers.ParserFactory;
  * A sample SAX2 counter. This sample program illustrates how to
  * register a SAX2 ContentHandler and receive the callbacks in
  * order to print information about the document. The output of
- * this program shows the time and count of elements, attributes, 
- * ignorable whitespaces, and characters appearing in the document. 
+ * this program shows the time and count of elements, attributes,
+ * ignorable whitespaces, and characters appearing in the document.
  * <p>
  * This class is useful as a "poor-man's" performance tester to
  * compare the speed and accuracy of various SAX parsers. However,
  * it is important to note that the first parse time of a parser
  * will include both VM class load time and parser initialization
  * that would not be present in subsequent parses with the same
- * file. 
+ * file.
  * <p>
  * <strong>Note:</strong> The results produced by this program
  * should never be accepted as true performance measurements.
@@ -103,7 +103,7 @@ public class Counter
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
-    
+
     /** Namespace prefixes feature id (http://xml.org/sax/features/namespace-prefixes). */
     protected static final String NAMESPACE_PREFIXES_FEATURE_ID = "http://xml.org/sax/features/namespace-prefixes";
 
@@ -112,6 +112,9 @@ public class Counter
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
     protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+
+    /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
+    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
 
     /** Dynamic validation feature id (http://apache.org/xml/features/validation/dynamic). */
     protected static final String DYNAMIC_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/dynamic";
@@ -132,9 +135,12 @@ public class Counter
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
-    
+
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+
+    /** Default Schema full checking support (false). */
+    protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
 
     /** Default dynamic validation support (false). */
     protected static final boolean DEFAULT_DYNAMIC_VALIDATION = false;
@@ -180,7 +186,7 @@ public class Counter
     //
 
     /** Prints the results. */
-    public void printResults(PrintWriter out, String uri, long time, 
+    public void printResults(PrintWriter out, String uri, long time,
                              long memory, boolean tagginess,
                              int repetition) {
 
@@ -241,7 +247,7 @@ public class Counter
     } // startDocument()
 
     /** Start element. */
-    public void startElement(String uri, String local, String raw, 
+    public void startElement(String uri, String local, String raw,
                              Attributes attrs) throws SAXException {
 
         fElements++;
@@ -264,7 +270,7 @@ public class Counter
     } // startElement(String,String,StringAttributes)
 
     /** Characters. */
-    public void characters(char ch[], int start, int length) 
+    public void characters(char ch[], int start, int length)
         throws SAXException {
 
         fCharacters += length;
@@ -272,7 +278,7 @@ public class Counter
     } // characters(char[],int,int);
 
     /** Ignorable whitespace. */
-    public void ignorableWhitespace(char ch[], int start, int length) 
+    public void ignorableWhitespace(char ch[], int start, int length)
         throws SAXException {
 
         fIgnorableWhitespace += length;
@@ -348,7 +354,7 @@ public class Counter
 
     /** Main program entry point. */
     public static void main(String argv[]) {
-        
+
         // is there anything to do?
         if (argv.length == 0) {
             printUsage();
@@ -364,10 +370,11 @@ public class Counter
         boolean namespacePrefixes = DEFAULT_NAMESPACE_PREFIXES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean dynamicValidation = DEFAULT_DYNAMIC_VALIDATION;
         boolean memoryUsage = DEFAULT_MEMORY_USAGE;
         boolean tagginess = DEFAULT_TAGGINESS;
-        
+
         // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
@@ -433,6 +440,10 @@ public class Counter
                     schemaValidation = option.equals("s");
                     continue;
                 }
+                if (option.equalsIgnoreCase("f")) {
+                    schemaFullChecking = option.equals("f");
+                    continue;
+                }
                 if (option.equalsIgnoreCase("dv")) {
                     dynamicValidation = option.equals("dv");
                     continue;
@@ -474,7 +485,7 @@ public class Counter
                     continue;
                 }
             }
-        
+
             // set parser features
             try {
                 parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
@@ -504,6 +515,15 @@ public class Counter
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
             }
             try {
+                parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+            }
+            catch (SAXNotRecognizedException e) {
+                // ignore
+            }
+            catch (SAXNotSupportedException e) {
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
+            }
+            try {
                 parser.setFeature(DYNAMIC_VALIDATION_FEATURE_ID, dynamicValidation);
             }
             catch (SAXNotRecognizedException e) {
@@ -524,9 +544,9 @@ public class Counter
                 }
                 long memoryAfter = Runtime.getRuntime().freeMemory();
                 long timeAfter = System.currentTimeMillis();
-                
+
                 long time = timeAfter - timeBefore;
-                long memory = memoryUsage 
+                long memory = memoryUsage
                             ? memoryBefore - memoryAfter : Long.MIN_VALUE;
                 counter.printResults(out, arg, time, memory, tagginess,
                                      repetition);
@@ -544,7 +564,7 @@ public class Counter
                   se.printStackTrace(System.err);
                 else
                   e.printStackTrace(System.err);
-                
+
             }
         }
 
@@ -559,7 +579,7 @@ public class Counter
 
         System.err.println("usage: java sax.Counter (options) uri ...");
         System.err.println();
-        
+
         System.err.println("options:");
         System.err.println("  -p name     Select parser by name.");
         System.err.println("  -x number   Select number of repetitions.");
@@ -569,6 +589,8 @@ public class Counter
         System.err.println("  -v  | -V    Turn on/off validation.");
         System.err.println("  -s  | -S    Turn on/off Schema validation support.");
         System.err.println("              NOTE: Not supported by all parsers.");
+        System.err.println("  -f  | -F    Turn on/off Schema full checking.");
+        System.err.println("              NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -dv | -DV   Turn on/off dynamic validation.");
         System.err.println("              NOTE: Requires use of -v and not supported by all parsers.");
         System.err.println("  -m  | -M    Turn on/off memory usage report");
@@ -588,6 +610,8 @@ public class Counter
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Schema full checking:     ");
+        System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
         System.err.print("  Dynamic:    ");
         System.err.println(DEFAULT_DYNAMIC_VALIDATION ? "on" : "off");
         System.err.print("  Memory:     ");

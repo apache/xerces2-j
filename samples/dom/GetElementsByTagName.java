@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -55,8 +55,8 @@
  * <http://www.apache.org/>.
  */
 
-package dom;                    
-                    
+package dom;
+
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -75,7 +75,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * A sample DOM filter. This sample program illustrates how to
- * use the Document#getElementsByTagName() method to quickly 
+ * use the Document#getElementsByTagName() method to quickly
  * and easily locate elements by name.
  *
  * @author Jeffrey Rodriguez, IBM
@@ -93,12 +93,15 @@ public class GetElementsByTagName {
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
-    
+
     /** Validation feature id (http://xml.org/sax/features/validation). */
     protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
     protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+
+    /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
+    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
 
     // default settings
 
@@ -113,16 +116,19 @@ public class GetElementsByTagName {
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
-    
+
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+
+    /** Default Schema full checking support (false). */
+    protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
 
     //
     // Public static methods
     //
 
     /** Prints the specified elements in the given document. */
-    public static void print(PrintWriter out, Document document, 
+    public static void print(PrintWriter out, Document document,
                              String elementName, String attributeName) {
 
         // get elements that match
@@ -161,7 +167,7 @@ public class GetElementsByTagName {
     //
 
     /** Prints the specified element. */
-    protected static void print(PrintWriter out, 
+    protected static void print(PrintWriter out,
                                 Element element, NamedNodeMap attributes) {
 
         out.print('<');
@@ -229,7 +235,7 @@ public class GetElementsByTagName {
 
     /** Main program entry point. */
     public static void main(String argv[]) {
-        
+
         // is there anything to do?
         if (argv.length == 0) {
             printUsage();
@@ -245,7 +251,8 @@ public class GetElementsByTagName {
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
-        
+        boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
+
         // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
@@ -294,6 +301,10 @@ public class GetElementsByTagName {
                     schemaValidation = option.equals("s");
                     continue;
                 }
+                if (option.equalsIgnoreCase("f")) {
+                    schemaFullChecking = option.equals("f");
+                    continue;
+                }
                 if (option.equals("h")) {
                     printUsage();
                     continue;
@@ -312,7 +323,7 @@ public class GetElementsByTagName {
                     continue;
                 }
             }
-        
+
             // set parser features
             try {
                 parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
@@ -331,6 +342,12 @@ public class GetElementsByTagName {
             }
             catch (SAXException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
             }
 
             // parse file
@@ -361,7 +378,7 @@ public class GetElementsByTagName {
 
         System.err.println("usage: java dom.GetElementsByTagName (options) uri ...");
         System.err.println();
-        
+
         System.err.println("options:");
         System.err.println("  -p name  Select parser by name.");
         System.err.println("  -e name  Specify element name for search.");
@@ -370,6 +387,8 @@ public class GetElementsByTagName {
         System.err.println("  -v | -V  Turn on/off validation.");
         System.err.println("  -s | -S  Turn on/off Schema validation support.");
         System.err.println("           NOTE: Not supported by all parsers.");
+        System.err.println("  -f  | -F Turn on/off Schema full checking.");
+        System.err.println("           NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -h       This help screen.");
         System.err.println();
 
@@ -382,6 +401,8 @@ public class GetElementsByTagName {
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.out.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Schema full checking:     ");
+        System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
 
     } // printUsage()
 

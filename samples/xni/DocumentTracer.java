@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -78,7 +78,7 @@ import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
 /**
- * Provides a complete trace of XNI document and DTD events for 
+ * Provides a complete trace of XNI document and DTD events for
  * files parsed.
  *
  * @author Andy Clark, IBM
@@ -86,7 +86,7 @@ import org.apache.xerces.xni.parser.XMLParserConfiguration;
  *
  * @version $Id$
  */
-public class DocumentTracer 
+public class DocumentTracer
     extends XMLDocumentParser
     implements XMLErrorHandler {
 
@@ -97,25 +97,29 @@ public class DocumentTracer
     // feature ids
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
-    protected static final String NAMESPACES_FEATURE_ID = 
+    protected static final String NAMESPACES_FEATURE_ID =
         "http://xml.org/sax/features/namespaces";
-    
+
     /** Validation feature id (http://xml.org/sax/features/validation). */
-    protected static final String VALIDATION_FEATURE_ID = 
+    protected static final String VALIDATION_FEATURE_ID =
         "http://xml.org/sax/features/validation";
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
-    protected static final String SCHEMA_VALIDATION_FEATURE_ID = 
+    protected static final String SCHEMA_VALIDATION_FEATURE_ID =
         "http://apache.org/xml/features/validation/schema";
 
+    /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
+    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID =
+        "http://apache.org/xml/features/validation/schema-full-checking";
+
     /** Character ref notification feature id (http://apache.org/xml/features/scanner/notify-char-refs). */
-    protected static final String NOTIFY_CHAR_REFS_FEATURE_ID = 
+    protected static final String NOTIFY_CHAR_REFS_FEATURE_ID =
         "http://apache.org/xml/features/scanner/notify-char-refs";
 
     // default settings
 
     /** Default parser configuration (org.apache.xerces.parsers.StandardParserConfiguration). */
-    protected static final String DEFAULT_PARSER_CONFIG = 
+    protected static final String DEFAULT_PARSER_CONFIG =
         "org.apache.xerces.parsers.StandardParserConfiguration";
 
     /** Default namespaces support (true). */
@@ -123,13 +127,16 @@ public class DocumentTracer
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
-    
+
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
 
+    /** Default Schema full checking support (false). */
+    protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
+
     /** Default character notifications (false). */
-    protected static final boolean DEFAULT_NOTIFY_CHAR_REFS = false; 
-    
+    protected static final boolean DEFAULT_NOTIFY_CHAR_REFS = false;
+
     //
     // Data
     //
@@ -178,7 +185,7 @@ public class DocumentTracer
 
     /** Sets the output writer. */
     public void setOutput(Writer writer) {
-            
+
         fOut = writer instanceof PrintWriter
              ? (PrintWriter)writer : new PrintWriter(writer);
 
@@ -198,10 +205,10 @@ public class DocumentTracer
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
-     *     
+     *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding)
         throws XNIException {
 
         fIndent = 0;
@@ -260,7 +267,7 @@ public class DocumentTracer
     } // xmlDecl(String,String,String,String)
 
     /** Doctype declaration. */
-    public void doctypeDecl(String rootElement, String publicId, 
+    public void doctypeDecl(String rootElement, String publicId,
                             String systemId) throws XNIException {
 
         printIndent();
@@ -415,8 +422,8 @@ public class DocumentTracer
     //
 
     /** Start entity. */
-    public void startEntity(String name, 
-                            String publicId, String systemId, 
+    public void startEntity(String name,
+                            String publicId, String systemId,
                             String baseSystemId,
                             String encoding) throws XNIException {
 
@@ -565,8 +572,8 @@ public class DocumentTracer
     } // startAttlist(String)
 
     /** Attribute declaration. */
-    public void attributeDecl(String elementName, String attributeName, 
-                              String type, String[] enumeration, 
+    public void attributeDecl(String elementName, String attributeName,
+                              String type, String[] enumeration,
                               String defaultType, XMLString defaultValue)
         throws XNIException {
 
@@ -636,7 +643,7 @@ public class DocumentTracer
         printQuotedString(text.ch, text.offset, text.length);
         fOut.print(',');
         fOut.print("nonNormalizedText=");
-        printQuotedString(nonNormalizedText.ch, nonNormalizedText.offset, 
+        printQuotedString(nonNormalizedText.ch, nonNormalizedText.offset,
                           nonNormalizedText.length);
         fOut.println(')');
         fOut.flush();
@@ -644,7 +651,7 @@ public class DocumentTracer
     } // internalEntityDecl(String,XMLString)
 
     /** External entity declaration. */
-    public void externalEntityDecl(String name, 
+    public void externalEntityDecl(String name,
                                    String publicId, String systemId,
                                    String baseSystemId) throws XNIException {
 
@@ -667,7 +674,7 @@ public class DocumentTracer
     } // externalEntityDecl(String,String,String)
 
     /** Unparsed entity declaration. */
-    public void unparsedEntityDecl(String name, String publicId, 
+    public void unparsedEntityDecl(String name, String publicId,
                                    String systemId, String notation)
         throws XNIException {
 
@@ -800,7 +807,7 @@ public class DocumentTracer
 
     /** #PCDATA. */
     public void pcdata() throws XNIException {
-    
+
         printIndent();
         fOut.println("pcdata()");
         fOut.flush();
@@ -896,13 +903,13 @@ public class DocumentTracer
     //
 
     /** Warning. */
-    public void warning(String domain, String key, XMLParseException ex) 
+    public void warning(String domain, String key, XMLParseException ex)
         throws XNIException {
         printError("Warning", ex);
     } // warning(String,String,XMLParseException)
 
     /** Error. */
-    public void error(String domain, String key, XMLParseException ex) 
+    public void error(String domain, String key, XMLParseException ex)
         throws XNIException {
         printError("Error", ex);
     } // error(String,String,XMLParseException)
@@ -1083,7 +1090,7 @@ public class DocumentTracer
 
     /** Main. */
     public static void main(String[] argv) throws Exception {
-        
+
         // is there anything to do?
         if (argv.length == 0) {
             printUsage();
@@ -1096,6 +1103,7 @@ public class DocumentTracer
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean notifyCharRefs = DEFAULT_NOTIFY_CHAR_REFS;
 
         // process arguments
@@ -1134,6 +1142,10 @@ public class DocumentTracer
                     schemaValidation = option.equals("s");
                     continue;
                 }
+                if (option.equalsIgnoreCase("f")) {
+                    schemaFullChecking = option.equals("f");
+                    continue;
+                }
                 if (option.equalsIgnoreCase("c")) {
                     notifyCharRefs = option.equals("c");
                     continue;
@@ -1156,7 +1168,7 @@ public class DocumentTracer
                     continue;
                 }
             }
-        
+
             // set parser features
             if (parser == null) {
                 parser = new DocumentTracer(parserConfig);
@@ -1182,6 +1194,14 @@ public class DocumentTracer
                 }
             }
             try {
+                parserConfig.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+            }
+            catch (XMLConfigurationException e) {
+                if (e.getType() == XMLConfigurationException.NOT_SUPPORTED) {
+                    System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
+                }
+            }
+            try {
                 parserConfig.setFeature(NOTIFY_CHAR_REFS_FEATURE_ID, notifyCharRefs);
             }
             catch (XMLConfigurationException e) {
@@ -1192,7 +1212,7 @@ public class DocumentTracer
                     System.err.println("warning: Parser does not support feature ("+NOTIFY_CHAR_REFS_FEATURE_ID+")");
                 }
             }
-    
+
             // parse file
             try {
                 parser.parse(new XMLInputSource(null, arg, null));
@@ -1220,13 +1240,15 @@ public class DocumentTracer
 
         System.err.println("usage: java xni.DocumentTracer (options) uri ...");
         System.err.println();
-        
+
         System.err.println("options:");
         System.out.println("  -p name  Specify parser configuration by name.");
         System.err.println("  -n | -N  Turn on/off namespace processing.");
         System.err.println("  -v | -V  Turn on/off validation.");
         System.err.println("  -s | -S  Turn on/off Schema validation support.");
         System.err.println("           NOTE: Not supported by all parser configurations.");
+        System.err.println("  -f  | -F Turn on/off Schema full checking.");
+        System.err.println("           NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -c | -C  Turn on/off character notifications");
         System.err.println("  -h       This help screen.");
         System.err.println();
@@ -1239,6 +1261,8 @@ public class DocumentTracer
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.out.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Schema full checking:     ");
+        System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
         System.out.print("  Char refs:  ");
         System.err.println(DEFAULT_NOTIFY_CHAR_REFS ? "on" : "off" );
 

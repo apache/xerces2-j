@@ -91,6 +91,13 @@
       <strong>NOTE:</strong> Not supported by all parsers.
      </td>
     </tr>
+    <tr>
+     <td>-f  | -F</td>
+     <td>
+      Turn on/off Schema full checking.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
     <tr><td>-h</td><td>Display help screen.</td></tr>
    </table>
   </s3>

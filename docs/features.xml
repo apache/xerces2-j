@@ -111,10 +111,6 @@ catch (SAXException e) {
    <see idref='validation.dynamic'/>
    <see idref='namespaces'/>
   </feature>
-  <!--
-    - REVISIT: Do we still need this feature in X2?
-    -          Or still use it to control whether we do UPA/PD checking?
-    -
   <feature name='http://apache.org/xml/features/validation/schema-full-checking'
            id='validation.schema-full-checking'>
    <true>
@@ -132,7 +128,6 @@ catch (SAXException e) {
     document instances that use Schema grammars.
    </note>
   </feature>
-  -->
   <feature name='http://xml.org/sax/features/external-general-entities'
            id='external-general-entities'>
    <true>Include external general entities.</true>

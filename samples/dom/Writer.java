@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -89,12 +89,15 @@ public class Writer {
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
     protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
-    
+
     /** Validation feature id (http://xml.org/sax/features/validation). */
     protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
     protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+
+    /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
+    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
 
     // property ids
 
@@ -111,9 +114,12 @@ public class Writer {
 
     /** Default validation support (false). */
     protected static final boolean DEFAULT_VALIDATION = false;
-    
+
     /** Default Schema validation support (true). */
     protected static final boolean DEFAULT_SCHEMA_VALIDATION = true;
+
+    /** Default Schema full checking support (false). */
+    protected static final boolean DEFAULT_SCHEMA_FULL_CHECKING = false;
 
     /** Default canonical output (false). */
     protected static final boolean DEFAULT_CANONICAL = false;
@@ -164,7 +170,7 @@ public class Writer {
 
     /** Sets the output writer. */
     public void setOutput(java.io.Writer writer) {
-            
+
         fOut = writer instanceof PrintWriter
              ? (PrintWriter)writer : new PrintWriter(writer);
 
@@ -185,7 +191,7 @@ public class Writer {
                     fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
                     fOut.flush();
                 }
-                
+
                 Document document = (Document)node;
                 write(document.getDocumentElement());
                 break;
@@ -221,7 +227,7 @@ public class Writer {
                         write(child);
                         child = child.getNextSibling();
                     }
-                } 
+                }
                 else {
                     fOut.print('&');
                     fOut.print(node.getNodeName());
@@ -234,7 +240,7 @@ public class Writer {
             case Node.CDATA_SECTION_NODE: {
                 if (fCanonical) {
                     normalizeAndPrint(node.getNodeValue());
-                } 
+                }
                 else {
                     fOut.print("<![CDATA[");
                     fOut.print(node.getNodeValue());
@@ -360,7 +366,7 @@ public class Writer {
 
     /** Main program entry point. */
     public static void main(String argv[]) {
-        
+
         // is there anything to do?
         if (argv.length == 0) {
             printUsage();
@@ -373,8 +379,9 @@ public class Writer {
         boolean namespaces = DEFAULT_NAMESPACES;
         boolean validation = DEFAULT_VALIDATION;
         boolean schemaValidation = DEFAULT_SCHEMA_VALIDATION;
+        boolean schemaFullChecking = DEFAULT_SCHEMA_FULL_CHECKING;
         boolean canonical = DEFAULT_CANONICAL;
-        
+
         // process arguments
         for (int i = 0; i < argv.length; i++) {
             String arg = argv[i];
@@ -409,6 +416,10 @@ public class Writer {
                     schemaValidation = option.equals("s");
                     continue;
                 }
+                if (option.equalsIgnoreCase("f")) {
+                    schemaFullChecking = option.equals("f");
+                    continue;
+                }
                 if (option.equalsIgnoreCase("c")) {
                     canonical = option.equals("c");
                     continue;
@@ -431,7 +442,7 @@ public class Writer {
                     continue;
                 }
             }
-        
+
             // set parser features
             try {
                 parser.setFeature(NAMESPACES_FEATURE_ID, namespaces);
@@ -450,6 +461,12 @@ public class Writer {
             }
             catch (SAXException e) {
                 System.err.println("warning: Parser does not support feature ("+SCHEMA_VALIDATION_FEATURE_ID+")");
+            }
+            try {
+                parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, schemaFullChecking);
+            }
+            catch (SAXException e) {
+                System.err.println("warning: Parser does not support feature ("+SCHEMA_FULL_CHECKING_FEATURE_ID+")");
             }
 
             // setup writer
@@ -493,13 +510,15 @@ public class Writer {
 
         System.err.println("usage: java dom.Writer (options) uri ...");
         System.err.println();
-        
+
         System.err.println("options:");
         System.err.println("  -p name  Select parser by name.");
         System.err.println("  -n | -N  Turn on/off namespace processing.");
         System.err.println("  -v | -V  Turn on/off validation.");
         System.err.println("  -s | -S  Turn on/off Schema validation support.");
         System.err.println("           NOTE: Not supported by all parsers.");
+        System.err.println("  -f  | -F Turn on/off Schema full checking.");
+        System.err.println("           NOTE: Requires use of -s and not supported by all parsers.");
         System.err.println("  -c | -C  Turn on/off Canonical XML output.");
         System.err.println("           NOTE: This is not W3C canonical output.");
         System.err.println("  -h       This help screen.");
@@ -513,6 +532,8 @@ public class Writer {
         System.err.println(DEFAULT_VALIDATION ? "on" : "off");
         System.err.print("  Schema:     ");
         System.err.println(DEFAULT_SCHEMA_VALIDATION ? "on" : "off");
+        System.err.print("  Schema full checking:     ");
+        System.err.println(DEFAULT_SCHEMA_FULL_CHECKING ? "on" : "off");
         System.err.print("  Canonical:  ");
         System.err.println(DEFAULT_CANONICAL ? "on" : "off");
 
