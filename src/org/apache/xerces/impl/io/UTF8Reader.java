@@ -233,6 +233,9 @@ public class UTF8Reader
                     invalidByte(4, 4, b3, index != fOffset ? 0 : index - 1);
                 }
                 int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
+                if (uuuuu > 0x10) {
+                    invalidSurrogate(uuuuu);
+                }
                 int wwww = uuuuu - 1;
                 int hs = 0xD800 | 
                          ((wwww << 6) & 0x03C0) | ((b1 << 2) & 0x003C) | 
@@ -421,6 +424,9 @@ public class UTF8Reader
 
                 // decode bytes into surrogate characters
                 int uuuuu = ((b0 << 2) & 0x001C) | ((b1 >> 4) & 0x0003);
+                if (uuuuu > 0x10) {
+                    invalidSurrogate(uuuuu);
+                }
                 int wwww = uuuuu - 1;
                 int zzzz = b1 & 0x000F;
                 int yyyyyy = b2 & 0x003F;
@@ -590,5 +596,17 @@ public class UTF8Reader
         throw new UTFDataFormatException(message);
 
     } // invalidByte(int,int,int,int)
+
+    /** Throws an exception for invalid surrogate bits. */
+    private void invalidSurrogate(int uuuuu) throws UTFDataFormatException {
+        
+        StringBuffer str = new StringBuffer();
+        str.append("high surrogate bits in UTF-8 sequence must not exceed 0x10 but found 0x");
+        str.append(Integer.toHexString(uuuuu));
+
+        String message = str.toString();
+        throw new UTFDataFormatException(message);
+
+    } // invalidSurrogate(int)
 
 } // class UTF8Reader
