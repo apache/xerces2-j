@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -451,6 +451,13 @@ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
      */
     public final IdentityConstraint getIDConstraintDecl(String declName) {
         return(IdentityConstraint)fGlobalIDConstraintDecls.get(declName);
+    }
+
+    /**
+     * get one identity constraint
+     */
+    public final boolean hasIDConstraints() {
+        return fGlobalIDConstraintDecls.getLength() > 0;
     }
 
     // array to store complex type decls

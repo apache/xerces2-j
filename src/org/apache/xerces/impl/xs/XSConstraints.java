@@ -506,8 +506,7 @@ public class XSConstraints {
 
        int pType = particle.fType;
 
-       if (pType == XSParticleDecl.PARTICLE_EMPTY ||
-           pType == XSParticleDecl.PARTICLE_WILDCARD)
+       if (pType == XSParticleDecl.PARTICLE_WILDCARD)
           return;
 
        if (pType == XSParticleDecl.PARTICLE_ELEMENT) {
@@ -968,8 +967,7 @@ public class XSConstraints {
 
 
        if (p.fType == XSParticleDecl.PARTICLE_ELEMENT ||
-           p.fType == XSParticleDecl.PARTICLE_WILDCARD ||
-           p.fType == XSParticleDecl.PARTICLE_EMPTY)
+           p.fType == XSParticleDecl.PARTICLE_WILDCARD)
          return null;
 
        Vector children = new Vector();
@@ -989,9 +987,6 @@ public class XSConstraints {
        int type = p.fType;
        if (type == XSParticleDecl.PARTICLE_MODELGROUP)
           type = ((XSModelGroupImpl)p.fValue).fCompositor;
-
-       if (type == XSParticleDecl.PARTICLE_EMPTY)
-          return;
 
        if (type == XSParticleDecl.PARTICLE_ELEMENT ||
            type== XSParticleDecl.PARTICLE_WILDCARD) {
@@ -1130,11 +1125,11 @@ public class XSConstraints {
       if (checkWCOccurrence && !checkOccurrenceRange(min1,max1,min2,max2)) {
         throw new XMLSchemaException("rcase-NSCompat.2",
                                   new Object[]{
-                                  	elem.fName,
-                                  	Integer.toString(min1),
-                                  	max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
-                                  	Integer.toString(min2),
-                                  	max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
+                                    elem.fName,
+                                    Integer.toString(min1),
+                                    max1==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max1),
+                                    Integer.toString(min2),
+                                    max2==SchemaSymbols.OCCURRENCE_UNBOUNDED?"unbounded":Integer.toString(max2)});
       }
 
       // check wildcard allows namespace of element

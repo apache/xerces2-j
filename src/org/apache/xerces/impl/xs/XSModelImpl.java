@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2002, 2003 The Apache Software Foundation.  All rights
+ * Copyright (c) 2002-2004 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -134,6 +134,8 @@ public class XSModelImpl implements XSModel {
     private SchemaGrammar[] fGrammarList;
     // a map from namespace to schema grammar
     private SymbolHash fGrammarMap;
+    // a map from element declaration to its substitution group
+    private SymbolHash fSubGroupMap;
     
     // store a certain kind of components from all namespaces
     private XSNamedMap[] fGlobalComponents;
@@ -142,6 +144,9 @@ public class XSModelImpl implements XSModel {
 
     // store all annotations
     private XSObjectListImpl fAnnotations = null;
+    
+    // whether there is any IDC in this XSModel
+    private boolean fHasIDC = false;
     
    /**
     * Construct an XSModelImpl, by storing some grammars and grammars imported
@@ -205,11 +210,35 @@ public class XSModelImpl implements XSModel {
         fGrammarMap = new SymbolHash(len*2);
         for (i = 0; i < len; i++) {
             fGrammarMap.put(null2EmptyString(fNamespaces[i]), fGrammarList[i]);
+            // update the idc field
+            if (fGrammarList[i].hasIDConstraints())
+                fHasIDC = true;
         }
         
         fGrammarCount = len;
         fGlobalComponents = new XSNamedMap[MAX_COMP_IDX+1];
         fNSComponents = new XSNamedMap[len][MAX_COMP_IDX+1];
+        
+        // build substitution groups
+        buildSubGroups();
+    }
+    
+    private void buildSubGroups() {
+        SubstitutionGroupHandler sgHandler = new SubstitutionGroupHandler(null);
+        for (int i = 0 ; i < fGrammarCount; i++) {
+            sgHandler.addSubstitutionGroup(fGrammarList[i].getSubstitutionGroups());
+        }
+
+        XSNamedMap elements = getComponents(XSConstants.ELEMENT_DECLARATION);
+        int len = elements.getLength();
+        fSubGroupMap = new SymbolHash(len*2);
+        XSElementDecl head;
+        XSElementDeclaration[] subGroup;
+        for (int i = 0; i < len; i++) {
+            head = (XSElementDecl)elements.item(i);
+            subGroup = sgHandler.getSubstitutionGroup(head);
+            fSubGroupMap.put(head, new XSObjectListImpl(subGroup, subGroup.length));
+        }
     }
     
     /**
@@ -469,5 +498,22 @@ public class XSModelImpl implements XSModel {
         return str == null ? XMLSymbols.EMPTY_STRING : str;
     }
     
+    /**
+     * REVISIT: to expose identity constraints from XSModel.
+     * For now, we only expose whether there are any IDCs.
+     * We also need to add these methods to the public
+     * XSModel interface.
+     */
+    public boolean hasIDConstraints() {
+        return fHasIDC;
+    }
+
+    /**
+     * REVISIT: to expose substitution group of a given element.
+     * We need to add this to the XSModel interface.
+     */
+    public XSObjectList getSubstitutionGroup(XSElementDeclaration head) {
+        return (XSObjectList)fSubGroupMap.get(head);
+    }
 
 } // class XSModelImpl
