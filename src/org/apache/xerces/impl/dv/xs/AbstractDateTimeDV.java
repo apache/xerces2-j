@@ -245,11 +245,15 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         stop = stop+2;
         data[s]=parseInt(buffer, start,stop);
 
+        if (stop == end)
+            return;
+        
         //get miliseconds (ms)
-        int milisec = indexOf(buffer, start, end, '.');
+        start = stop;
+        int milisec = buffer.charAt(start) == '.' ? start : -1;
 
         //find UTC sign if any
-        int sign = findUTCSign(buffer, (milisec!=-1)?milisec:start, end);
+        int sign = findUTCSign(buffer, start, end);
 
         //parse miliseconds
         if ( milisec != -1 ) {
@@ -257,12 +261,14 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
             if ( sign<0 ) {
 
                 //get all digits after "."
-                data[ms]=parseInt(buffer, milisec+1, buffer.length());
+                data[ms]=parseInt(buffer, milisec+1, end);
+                start = end;
             }
             else {
 
                 //get ms before UTC sign
                 data[ms]=parseInt(buffer, milisec+1,sign);
+                start = sign;
             }
 
         }
@@ -270,6 +276,9 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
         //parse UTC time zone (hh:mm)
         if ( sign>0 ) {
             getTimeZone(buffer, data, sign, end, timeZone);
+        }
+        else if (start != end) {
+            throw new RuntimeException("Error in parsing time zone" );
         }
     }
 
