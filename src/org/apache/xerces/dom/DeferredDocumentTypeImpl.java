@@ -187,18 +187,7 @@ public class DeferredDocumentTypeImpl
 
                 // element definitions
                 case NodeImpl.ELEMENT_DEFINITION_NODE: {
-
-                    // add element definition
                     elements.setNamedItem(node);
-
-                    // add attributes to element definition
-                    NamedNodeMap attrs = node.getAttributes();
-                    for (int attrIndex = ownerDocument.getLastChild(node.getNodeIndex());
-                         attrIndex != -1;
-                         attrIndex = ownerDocument.getPrevSibling(attrIndex)) {
-                        DeferredNode attr = ownerDocument.getNodeObject(attrIndex);
-                        attrs.setNamedItem(attr);
-                    }
                     break;
                 }
 
