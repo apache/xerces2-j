@@ -18,7 +18,6 @@ package org.apache.xerces.impl.xs.traversers;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -30,13 +29,13 @@ import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.XSAttributeDecl;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
-import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.impl.xs.util.XInt;
 import org.apache.xerces.impl.xs.util.XIntPool;
 import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.QName;
+import org.apache.xerces.xs.XSConstants;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -113,6 +112,7 @@ public class XSAttributeChecker {
     public static final int ATTIDX_VALUE           = ATTIDX_COUNT++;
     public static final int ATTIDX_ENUMNSDECLS     = ATTIDX_COUNT++;
     public static final int ATTIDX_VERSION         = ATTIDX_COUNT++;
+    public static final int ATTIDX_XML_LANG        = ATTIDX_COUNT++;
     public static final int ATTIDX_XPATH           = ATTIDX_COUNT++;
     public static final int ATTIDX_FROMDEFAULT     = ATTIDX_COUNT++;
     //public static final int ATTIDX_OTHERVALUES     = ATTIDX_COUNT++;
@@ -156,9 +156,10 @@ public class XSAttributeChecker {
     protected static final int DT_NCNAME           = 5;
     protected static final int DT_XPATH            = 6;
     protected static final int DT_XPATH1           = 7;
+    protected static final int DT_LANGUAGE         = 8;
 
     // used to store extra datatype validators
-    protected static final int DT_COUNT            = DT_XPATH1 + 1;
+    protected static final int DT_COUNT            = DT_LANGUAGE + 1;
     private static final XSSimpleType[] fExtraDVs = new XSSimpleType[DT_COUNT];
     static {
         // step 5: register all datatype validators for new types
@@ -179,6 +180,8 @@ public class XSAttributeChecker {
         fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
         // xpath = a subset of XPath expression
         fExtraDVs[DT_XPATH] = fExtraDVs[DT_STRING];
+        // language
+        fExtraDVs[DT_LANGUAGE] = (XSSimpleType)grammar.getGlobalTypeDecl(SchemaSymbols.ATTVAL_LANGUAGE);
     }
 
     protected static final int DT_BLOCK            = -1;
@@ -247,6 +250,7 @@ public class XSAttributeChecker {
         int ATT_VALUE_STR_N         = attCount++;
         int ATT_VALUE_WS_N          = attCount++;
         int ATT_VERSION_N           = attCount++;
+        int ATT_XML_LANG            = attCount++;
         int ATT_XPATH_R             = attCount++;
         int ATT_XPATH1_R            = attCount++;
 
@@ -431,6 +435,10 @@ public class XSAttributeChecker {
         allAttrs[ATT_VERSION_N]         =   new OneAttr(SchemaSymbols.ATT_VERSION,
                                                         DT_TOKEN,
                                                         ATTIDX_VERSION,
+                                                        null);
+        allAttrs[ATT_XML_LANG]          =   new OneAttr(SchemaSymbols.ATT_XML_LANG,
+                                                        DT_LANGUAGE,
+                                                        ATTIDX_XML_LANG,
                                                         null);
         allAttrs[ATT_XPATH_R]           =   new OneAttr(SchemaSymbols.ATT_XPATH,
                                                         DT_XPATH,
@@ -779,10 +787,11 @@ public class XSAttributeChecker {
         fEleAttrsMapL.put(SchemaSymbols.ELT_APPINFO, oneEle);
 
         // for element "documentation" - local
-        attrList = Container.getContainer(1);
+        attrList = Container.getContainer(2);
         // source = anyURI
         attrList.put(SchemaSymbols.ATT_SOURCE, allAttrs[ATT_SOURCE_N]);
-        // xml:lang = language ???
+        // xml:lang = language
+        attrList.put(SchemaSymbols.ATT_XML_LANG, allAttrs[ATT_XML_LANG]);
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
         fEleAttrsMapL.put(SchemaSymbols.ELT_DOCUMENTATION, oneEle);
@@ -829,7 +838,7 @@ public class XSAttributeChecker {
         fEleAttrsMapL.put(SchemaSymbols.ELT_UNION, oneEle);
 
         // for element "schema" - global
-        attrList = Container.getContainer(7);
+        attrList = Container.getContainer(8);
         // attributeFormDefault = (qualified | unqualified) : unqualified
         attrList.put(SchemaSymbols.ATT_ATTRIBUTEFORMDEFAULT, allAttrs[ATT_ATTRIBUTE_FD_D]);
         // blockDefault = (#all | List of (substitution | extension | restriction | list | union))  : ''
@@ -844,7 +853,8 @@ public class XSAttributeChecker {
         attrList.put(SchemaSymbols.ATT_TARGETNAMESPACE, allAttrs[ATT_TARGET_N_N]);
         // version = token
         attrList.put(SchemaSymbols.ATT_VERSION, allAttrs[ATT_VERSION_N]);
-        // xml:lang = language ???
+        // xml:lang = language
+        attrList.put(SchemaSymbols.ATT_XML_LANG, allAttrs[ATT_XML_LANG]);
         oneEle = new OneElement (attrList);
         fEleAttrsMapG.put(SchemaSymbols.ELT_SCHEMA, oneEle);
 
@@ -1067,29 +1077,27 @@ public class XSAttributeChecker {
             // get the attribute name/value
             //String attrName = DOMUtil.getLocalName(sattr);
             String attrName = sattr.getName();
+            String attrURI = DOMUtil.getNamespaceURI(sattr);
             String attrVal = DOMUtil.getValue(sattr);
-
-            // we don't want to add namespace declarations to the non-schema attributes
-            if (attrName.startsWith("xmlns")) {
-                continue;
-            }
-
-            // skip anything starts with x/X m/M l/L
-            // add this to the list of "non-schema" attributes
-            if (attrName.toLowerCase(Locale.ENGLISH).startsWith("xml")) {
-                if(attrValues[ATTIDX_NONSCHEMA] == null) {
-                    // these are usually small
-                    attrValues[ATTIDX_NONSCHEMA] = new Vector(4,2);
+            
+            if (attrName.startsWith("xml")) {
+                String attrPrefix = DOMUtil.getPrefix(sattr);
+                // we don't want to add namespace declarations to the non-schema attributes
+                if ("xmlns".equals(attrPrefix) || "xmlns".equals(attrName)) {
+                    continue;
                 }
-                ((Vector)attrValues[ATTIDX_NONSCHEMA]).addElement(attrName);
-                ((Vector)attrValues[ATTIDX_NONSCHEMA]).addElement(attrVal);
-                //otherValues.put(attrName, attrVal);
-                continue;
+                // Both <schema> and <documentation> may have an xml:lang attribute.
+                // Set the URI for this attribute to null so that we process it
+                // like any other schema attribute.
+                else if (SchemaSymbols.ATT_XML_LANG.equals(attrName) &&
+                        (SchemaSymbols.ELT_SCHEMA.equals(elName) ||
+                                SchemaSymbols.ELT_DOCUMENTATION.equals(elName))) {
+                    attrURI = null;
+                }
             }
 
             // for attributes with namespace prefix
             //
-            String attrURI = DOMUtil.getNamespaceURI(sattr);
             if (attrURI != null && attrURI.length() != 0) {
                 // attributes with schema namespace are not allowed
                 // and not allowed on "document" and "appInfo"
@@ -1222,7 +1230,14 @@ public class XSAttributeChecker {
         // To validate these types, we don't actually need to normalize the
         // strings. We only need to remove the whitespace from both ends.
         // In some special cases (list types), StringTokenizer can correctly
-        // process the un-normalized whitespace.
+        // process the un-normalized whitespace.        
+        /**
+         * REVISIT: Trim removes all leading and trailing characters less
+         * than or equal to U+0020. This is okay for XML 1.0 since all
+         * of the valid characters in that range are white space but
+         * in XML 1.1 control chars are allowed. We shouldn't be trimming
+         * those. -- mrglavas
+         */
         String value = ivalue.trim();
         Object retValue = null;
         Vector memberType;

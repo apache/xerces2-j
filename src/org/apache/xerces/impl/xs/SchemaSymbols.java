@@ -88,7 +88,7 @@ public final class SchemaSymbols {
     public static final String ELT_UNIQUE               = "unique".intern();
     public static final String ELT_WHITESPACE           = "whiteSpace".intern();
 
-    // all possible schema attribute names
+    // all possible schema attribute names (and xml:lang defined on <schema> and <documentation>)
     public static final String ATT_ABSTRACT             = "abstract".intern();
     public static final String ATT_ATTRIBUTEFORMDEFAULT = "attributeFormDefault".intern();
     public static final String ATT_BASE                 = "base".intern();
@@ -122,6 +122,7 @@ public final class SchemaSymbols {
     public static final String ATT_USE                  = "use".intern();
     public static final String ATT_VALUE                = "value".intern();
     public static final String ATT_VERSION              = "version".intern();
+    public static final String ATT_XML_LANG             = "xml:lang".intern();
     public static final String ATT_XPATH                = "xpath".intern();
 
     // all possible schema attribute values
