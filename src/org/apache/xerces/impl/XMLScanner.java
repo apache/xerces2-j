@@ -747,7 +747,7 @@ public abstract class XMLScanner
                         }
                         if (!fEntityScanner.skipChar(';')) {
                             reportFatalError("SemicolonRequiredInReference",
-                                             null);
+                                             new Object []{entityName});
                         }
                         else if (entityDepth == fEntityDepth) {
                             fStringBuffer2.append(';');

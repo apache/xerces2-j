@@ -1027,7 +1027,7 @@ public class XMLDocumentFragmentScannerImpl
 
         // end
         if (!fEntityScanner.skipChar(';')) {
-            reportFatalError("SemicolonRequiredInReference", null);
+            reportFatalError("SemicolonRequiredInReference", new Object []{name});
         }
         fMarkupDepth--;
 
