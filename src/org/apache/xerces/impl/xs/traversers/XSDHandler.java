@@ -1614,6 +1614,18 @@ public class XSDHandler {
                         referElement);
             }
         }
+        else {
+            if (hasInput) {
+                reportSchemaWarning("schema_reference.4",
+                        new Object[]{schemaSource.getSystemId()},
+                        referElement);
+            }
+            else {
+                reportSchemaWarning("schema_reference.4",
+                        new Object[]{schemaSource == null ? "" : schemaSource.getSystemId()},
+                        referElement);
+            }
+        }
         
         fLastSchemaWasDuplicate = false;
         return null;
