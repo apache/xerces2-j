@@ -1483,20 +1483,17 @@ public class TraverseSchema implements
         String mixed = complexTypeDecl.getAttribute(SchemaSymbols.ATT_MIXED);
         boolean isNamedType = false;
 
-        if ( DEBUGGING )
-            System.out.println("traversing complex Type : " + typeName); 
-
         // ------------------------------------------------------------------
         // Generate a type name, if one wasn't specified
         // ------------------------------------------------------------------
         if (typeName.equals("")) { // gensym a unique name
-            //typeName = "http://www.apache.org/xml/xerces/internalType"+fTypeCount++;
-            typeName = "#"+fAnonTypeCount++;
+            typeName = genAnonTypeName(complexTypeDecl);
         }
-        else {
-            fCurrentTypeNameStack.push(typeName);
-            isNamedType = true;
-        }
+
+        if ( DEBUGGING )
+            System.out.println("traversing complex Type : " + typeName); 
+
+        fCurrentTypeNameStack.push(typeName);
 
         int typeNameIndex = fStringPool.addSymbol(typeName);
 
@@ -1584,9 +1581,7 @@ public class TraverseSchema implements
         typeInfo.blockSet = parseBlockSet(blockSet); 
         typeInfo.finalSet = parseFinalSet(finalSet); 
         typeInfo.isAbstract = isAbstract.equals(SchemaSymbols.ATTVAL_TRUE) ? true:false ;
-        if (!typeName.startsWith("#")) {
-            typeName = fTargetNSURIString + "," + typeName;
-        }
+        typeName = fTargetNSURIString + "," + typeName;
         typeInfo.typeName = new String(typeName);
 
         if ( DEBUGGING )
@@ -1604,10 +1599,8 @@ public class TraverseSchema implements
         // Before exiting, restore the scope, mainly for nested anonymous types
         // ------------------------------------------------------------------
         fCurrentScope = previousScope;
-        if (isNamedType) {
-            fCurrentTypeNameStack.pop();
-            checkRecursingComplexType();
-        }
+        fCurrentTypeNameStack.pop();
+        checkRecursingComplexType();
 
         //set template element's typeInfo
         fSchemaGrammar.setElementComplexTypeInfo(typeInfo.templateElementIndex, typeInfo);
@@ -2075,6 +2068,41 @@ public class TraverseSchema implements
         return;
     }
 
+    /**
+     * Generate a name for an anonymous type                        
+     *  
+     * @param Element
+     * @return String
+     */
+    private String genAnonTypeName(Element complexTypeDecl) throws Exception {
+
+        String typeName; 
+
+        // If the anonymous type is not nested within another type, we can 
+        // simply assign the type a numbered name
+        //
+        if (fCurrentTypeNameStack.empty()) 
+            typeName = "#"+fAnonTypeCount++;
+          
+        // Otherwise, we must generate a name that can be looked up later 
+        // Do this by concatenating outer type names with the name of the parent
+        // element
+        else {
+            String parentName = ((Element)complexTypeDecl.getParentNode()).getAttribute(
+                                SchemaSymbols.ATT_NAME);
+            typeName = parentName + "_AnonType";
+            int index=fCurrentTypeNameStack.size() -1; 
+	    for (int i = index; i > -1; i--) {
+               String parentType = (String)fCurrentTypeNameStack.get(i); 
+               typeName = parentType + "_" + typeName;
+               if (!(parentType.startsWith("#"))) 
+                  break;
+            }
+            typeName = "#" + typeName;
+        }
+           
+        return typeName;
+    }
     /**
      * Parse base string                                            
      *  
@@ -3545,17 +3573,38 @@ public class TraverseSchema implements
                     // REVISIT: Localize
                     reportGenericSchemaError("anonymous complexType in element '" + name +"' has a name attribute"); 
                 }
-                else 
-                    typeNameIndex = traverseComplexTypeDecl(child);
-                if (typeNameIndex != -1 ) {
-                    typeInfo = (ComplexTypeInfo)
-                        fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
-                }
+
                 else {
-                    noErrorSoFar = false;
-                    // REVISIT: Localize
-                    reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
+                    // Determine what the type name will be 
+                    String anonTypeName = genAnonTypeName(child);
+                    if (fCurrentTypeNameStack.search((Object)anonTypeName) > - 1) {
+                        // A recursing element using an anonymous type
+
+                        int uriInd = StringPool.EMPTY_STRING;
+                        if ( isQName.equals(SchemaSymbols.ATTVAL_QUALIFIED)||
+                             fElementDefaultQualified) {
+                             uriInd = fTargetNSURI;
+                        }
+                        int nameIndex = fStringPool.addSymbol(name);
+                        QName tempQName = new QName(fCurrentScope, nameIndex, nameIndex, uriInd);
+                        fElementRecurseComplex.put(tempQName, anonTypeName);
+                        return new QName(-1, nameIndex, nameIndex, uriInd);
+
+                    }
+                    else {
+                        typeNameIndex = traverseComplexTypeDecl(child);
+                        if (typeNameIndex != -1 ) {
+                            typeInfo = (ComplexTypeInfo)
+                                fComplexTypeRegistry.get(fStringPool.toString(typeNameIndex));
+                        }
+                        else {
+                            noErrorSoFar = false;
+                            // REVISIT: Localize
+                            reportGenericSchemaError("traverse complexType error in element '" + name +"'"); 
+                        }
+                    }
                 }
+
                 haveAnonType = true;
             	child = XUtil.getNextSiblingElement(child);
             } 
