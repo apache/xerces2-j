@@ -218,7 +218,7 @@ abstract class XSDAbstractTraverser {
             return new XSAnnotationImpl(contentBuffer.toString(), grammar);
         } else {
             return new XSAnnotationImpl(contents, grammar);
-        } 
+        }
 
     }
 
@@ -548,7 +548,9 @@ abstract class XSDAbstractTraverser {
                     oneAttrUse.fAttrDecl.getName())) {
                         String idName = attrGrp.addAttributeUse(oneAttrUse);
                         if (idName != null) {
-                            reportSchemaError("cvc-complex-type.5.3", new Object[]{oneAttrUse.fAttrDecl.getName(), idName}, child);
+                            String code = (enclosingCT == null) ? "ag-props-correct.3" : "ct-props-correct.5";
+                            String name = (enclosingCT == null) ? attrGrp.fName : enclosingCT.getName();
+                            reportSchemaError(code, new Object[]{name, oneAttrUse.fAttrDecl.getName(), idName}, child);
                         }
                     }
                     else {
@@ -619,7 +621,7 @@ abstract class XSDAbstractTraverser {
             ((XSSimpleType)typeDecl).getVariety() == XSSimpleType.VARIETY_ATOMIC &&
             ((XSSimpleType)typeDecl).getPrimitiveKind() == XSSimpleType.PRIMITIVE_NOTATION) {
             if ((((XSSimpleType)typeDecl).getDefinedFacets() & XSSimpleType.FACET_ENUMERATION) == 0) {
-            	reportSchemaError("enumeration-required-notation", new Object[]{typeDecl.getName(), refName, DOMUtil.getLocalName(elem)}, elem);
+                reportSchemaError("enumeration-required-notation", new Object[]{typeDecl.getName(), refName, DOMUtil.getLocalName(elem)}, elem);
             }
         }
     }
@@ -669,7 +671,7 @@ abstract class XSDAbstractTraverser {
         if (processingAllEl) {
             if (max != 1) {
                 reportSchemaError("cos-all-limited.2", new Object[]{new Integer(max),
-                	              ((XSElementDecl)particle.fValue).getName()}, parent);
+                                  ((XSElementDecl)particle.fValue).getName()}, parent);
                 max = 1;
                 if (min > 1)
                     min = 1;
