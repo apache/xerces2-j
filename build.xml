@@ -731,6 +731,16 @@ Copyright:
           classname="jaxp.PropertyTest"
           failOnError="yes">
     </java>
+    <echo message="Running jaxp.JAXPSpecTest ..." />
+    <java fork="yes"
+          classpath="${tools.dir}/${jar.apis}:${build.dir}/classes"
+          classname="jaxp.JAXPSpecTest"
+          failOnError="yes">
+           <arg value="testSchemaLanguageSAX"/>
+           <arg value="testSchemaSourceSAX"/>
+           <arg value="testSchemaLanguageDOM"/>
+           <arg value="testSchemaSourceDOM"/>
+    </java>
   </target>
 
   <!-- =================================================================== -->
