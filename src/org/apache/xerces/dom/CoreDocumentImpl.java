@@ -220,6 +220,10 @@ extends ParentNode implements Document, DocumentLS {
     /** Bypass error checking. */
     protected boolean errorChecking = true;
     
+    //Did version change at any point when the document was created ?
+    //this field helps us to optimize when normalizingDocument.
+    protected boolean xmlVersionChanged = false ;
+
     /** The following are required for compareDocumentPosition
      */
     // Document number.   Documents are ordered across the implementation using
@@ -810,11 +814,17 @@ extends ParentNode implements Document, DocumentLS {
     /**
      * DOM Level 3 WD - Experimental.
      * version - An attribute specifying, as part of the XML declaration,
-     * the version number of this document. This is null when unspecified
+     * the version number of this document.
      */
     public void setXmlVersion(String value) {
         if(value.equals("1.0") || value.equals("1.1")){
+            //we need to change the flag value only --
+            // when the version set is different than already set.
+            if(!getXmlVersion().equals(version)){
+                xmlVersionChanged = true ;
+            }
             version = value;
+
         }
         else{
             //NOT_SUPPORTED_ERR: Raised if the vesion is set to a value that is not supported by
@@ -2408,6 +2418,11 @@ extends ParentNode implements Document, DocumentLS {
         return true;
     }
     
+    //we should be checking the (elements, attribute, entity etc.) names only when
+    //version of the document is changed.
+    boolean isXMLVersionChanged(){
+        return xmlVersionChanged ;
+    }
     /**
      * NON-DOM: kept for backward compatibility
      * Store user data related to a given node
