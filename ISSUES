@@ -4,16 +4,11 @@
  1.1. XNI package names and content. Drop the XNI prefix?
 
 2. Dependencies
- 2.1. APIs: DOM, SAX, etc.
  2.2. Java version
 
 3. APIs
- 3.1. DTD handlers
-  3.1.1. Separate or combined?
-  3.1.2. Which methods are needed?
  3.2. Parser configuration
   3.2.1. Filters
-  3.2.2. Scanners
  3.3. Buffer management
   3.3.1. To transcode or not to transcode
 
@@ -27,3 +22,18 @@
 *** DEFERRED ***
 
 *** RESOLVED ***
+
+2. Dependencies
+ 2.1. APIs: DOM, SAX, etc.
+      Resolution: SAX dependence removed from XNI
+3. APIs
+ 3.1. DTD handlers
+  3.1.1. Separate or combined?
+         Resolution: Separate.
+  3.1.2. Which methods are needed?
+         Resolution: Modification to content model callbacks
+                     so that start/endEntity is more useful.
+ 3.2. Parser configuration
+  3.2.2. Scanners
+         Resolution: Source and scanner interfaces added.
+
