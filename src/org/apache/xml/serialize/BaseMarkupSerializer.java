@@ -96,6 +96,10 @@ import java.util.StringTokenizer;
 import org.w3c.dom.*;
 
 import org.apache.xerces.dom3.DOMErrorHandler;
+import org.apache.xerces.dom3.DOMError;
+import org.apache.xerces.dom3.DOMLocator;
+import org.apache.xerces.dom.DOMErrorImpl;
+import org.apache.xerces.dom.DOMLocatorImpl;
 
 import org.xml.sax.DocumentHandler;
 import org.xml.sax.DTDHandler;
@@ -148,6 +152,7 @@ import org.xml.sax.ext.DeclHandler;
  * @version $Revision$ $Date$
  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
+ * @author Elena Litani, IBM 
  * @see Serializer
  * @see DOMSerializer
  */
@@ -159,6 +164,7 @@ public abstract class BaseMarkupSerializer
     // DOM L3 implementation
     protected Hashtable fFeatures;
     protected DOMErrorHandler fDOMErrorHandler;
+    protected final DOMErrorImpl fDOMError = new DOMErrorImpl();
 
     private EncodingInfo _encodingInfo;
 
@@ -242,6 +248,8 @@ public abstract class BaseMarkupSerializer
      */
     protected boolean       _indenting;
 
+    /** Temporary buffer to store character data */
+    protected final StringBuffer fStrBuffer = new StringBuffer(40);
 
     /**
      * The underlying writer.
@@ -254,6 +262,10 @@ public abstract class BaseMarkupSerializer
      */
     private OutputStream    _output;
 
+    /** Current node that is being processed  */
+    private Node fCurrentNode = null;
+
+    
 
     //--------------------------------//
     // Constructor and initialization //
@@ -334,6 +346,8 @@ public abstract class BaseMarkupSerializer
         if ( _elementStateCount > 1 )
             throw new IllegalStateException( "Serializer reset in the middle of serialization" );
         _prepared = false;
+        fCurrentNode = null;
+        fStrBuffer.setLength(0);
         return true;
     }
 
@@ -567,42 +581,42 @@ public abstract class BaseMarkupSerializer
         throws IOException
     {
         int          index;
-        StringBuffer buffer;
         ElementState state;
 
         state = content();
-        buffer = new StringBuffer( 40 );
 
         // Create the processing instruction textual representation.
         // Make sure we don't have '?>' inside either target or code.
         index = target.indexOf( "?>" );
         if ( index >= 0 )
-            buffer.append( "<?" ).append( target.substring( 0, index ) );
+            fStrBuffer.append( "<?" ).append( target.substring( 0, index ) );
         else
-            buffer.append( "<?" ).append( target );
+            fStrBuffer.append( "<?" ).append( target );
         if ( code != null ) {
-            buffer.append( ' ' );
+            fStrBuffer.append( ' ' );
             index = code.indexOf( "?>" );
             if ( index >= 0 )
-                buffer.append( code.substring( 0, index ) );
+                fStrBuffer.append( code.substring( 0, index ) );
             else
-                buffer.append( code );
+                fStrBuffer.append( code );
         }
-        buffer.append( "?>" );
+        fStrBuffer.append( "?>" );
 
         // If before the root element (or after it), do not print
         // the PI directly but place it in the pre-root vector.
         if ( isDocumentState() ) {
             if ( _preRoot == null )
                 _preRoot = new Vector();
-            _preRoot.addElement( buffer.toString() );
+            _preRoot.addElement( fStrBuffer.toString() );
         } else {
             _printer.indent();
-            printText( buffer.toString(), true, true );
+            printText( fStrBuffer.toString(), true, true );
             _printer.unindent();
             if ( _indenting )
             state.afterElement = true;
         }
+
+        fStrBuffer.setLength(0);
     }
 
 
@@ -620,7 +634,6 @@ public abstract class BaseMarkupSerializer
     public void comment( String text )
         throws IOException
     {
-        StringBuffer buffer;
         int          index;
         ElementState state;
         
@@ -628,21 +641,20 @@ public abstract class BaseMarkupSerializer
             return;
 
         state  = content();
-        buffer = new StringBuffer( 40 );
         // Create the processing comment textual representation.
         // Make sure we don't have '-->' inside the comment.
         index = text.indexOf( "-->" );
         if ( index >= 0 )
-            buffer.append( "<!--" ).append( text.substring( 0, index ) ).append( "-->" );
+            fStrBuffer.append( "<!--" ).append( text.substring( 0, index ) ).append( "-->" );
         else
-            buffer.append( "<!--" ).append( text ).append( "-->" );
+            fStrBuffer.append( "<!--" ).append( text ).append( "-->" );
 
         // If before the root element (or after it), do not print
         // the comment directly but place it in the pre-root vector.
         if ( isDocumentState() ) {
             if ( _preRoot == null )
                 _preRoot = new Vector();
-            _preRoot.addElement( buffer.toString() );
+            _preRoot.addElement( fStrBuffer.toString() );
         } else {
             // Indent this element on a new line if the first
             // content of the parent element or immediately
@@ -650,13 +662,15 @@ public abstract class BaseMarkupSerializer
             if ( _indenting && ! state.preserveSpace)
                 _printer.breakLine();
 						_printer.indent();
-            printText( buffer.toString(), true, true );
+            printText( fStrBuffer.toString(), true, true );
 						_printer.unindent();
             if ( _indenting )
                 state.afterElement = true;
         }
-				state.afterComment = true;
-				state.afterElement = false;
+
+        fStrBuffer.setLength(0);
+	state.afterComment = true;
+	state.afterElement = false;
     }
 
 
@@ -729,7 +743,7 @@ public abstract class BaseMarkupSerializer
         // Print all the elements accumulated outside of
         // the root element.
         serializePreRoot();
-        // Flush the output, this is necessary for buffered output.
+        // Flush the output, this is necessary for fStrBuffered output.
         _printer.flush();
         } catch ( IOException except ) {
             throw new SAXException( except );
@@ -971,6 +985,9 @@ public abstract class BaseMarkupSerializer
     protected void serializeNode( Node node )
         throws IOException
     {
+
+        fCurrentNode = node;
+
         // Based on the node type call the suitable SAX handler.
         // Only comments entities and documents which are not
         // handled by SAX are serialized directly.
@@ -1180,31 +1197,54 @@ public abstract class BaseMarkupSerializer
         // state) or whether we are inside a CDATA section or entity.
 
         if ( state.inCData || state.doCData ) {
-            StringBuffer buffer;
             int          index;
             int          saveIndent;
 
             // Print a CDATA section. The text is not escaped, but ']]>'
             // appearing in the code must be identified and dealt with.
             // The contents of a text node is considered space preserving.
-            buffer = new StringBuffer( text.length() );
             if ( ! state.inCData ) {
-                buffer.append( "<![CDATA[" );
+                fStrBuffer.append( "<![CDATA[" );
                 state.inCData = true;
             }
             index = text.indexOf( "]]>" );
             if (index >=0 && !((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
-               // REVISIT: issue fatal error
+               // issue fatal error
+                if (fDOMErrorHandler != null) {
+                    fDOMError.reset();
+                    fDOMError.setMessage("The character sequence \"]]>\" must not appear in content"+
+                                         " unless used to mark the end of a CDATA section.");
+                    fDOMError.setSeverity(DOMError.SEVERITY_FATAL_ERROR);
+                    fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, fCurrentNode, null));
+                    boolean continueProcess = fDOMErrorHandler.handleError(fDOMError);
+                    // Should we always terminate the serialization?
+                    // otherwise should we split CDATA section..?
+                    if (!continueProcess) {
+                        throw new IOException();
+                    }
+                }
             }
+            else if (index >=0 && ((Boolean)fFeatures.get("split-cdata-sections")).booleanValue()) {
+               // issue warning
+               if (fDOMErrorHandler != null) {
+                    fDOMError.reset();
+                    fDOMError.setMessage("Spliting a CDATA section containing the CDATA section termination marker ']]>' ");
+                    fDOMError.setSeverity(DOMError.SEVERITY_WARNING);
+                    fDOMError.setLocator(new DOMLocatorImpl(-1, -1, -1, fCurrentNode, null));
+                    fDOMErrorHandler.handleError(fDOMError);
+                }
+            }
+
             while ( index >= 0 ) {
-                buffer.append( text.substring( 0, index + 2 ) ).append( "]]><![CDATA[" );
+                fStrBuffer.append( text.substring( 0, index + 2 ) ).append( "]]><![CDATA[" );
                 text = text.substring( index + 2 );
                 index = text.indexOf( "]]>" );
             }
-            buffer.append( text );
+            fStrBuffer.append( text );
             saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
-            printText( buffer.toString(), true, true );
+            printText( fStrBuffer.toString(), true, true );
+            fStrBuffer.setLength(0);
             _printer.setNextIndent( saveIndent );
 
         } else {

@@ -670,7 +670,7 @@ public class XMLSerializer
                 value = attr.getValue();
                 if ( value == null )
                     value = "";
-                if ( attr.getSpecified() ) {
+                if ( attr.getSpecified() || !getFeature("discard-default-content") ) {
                     _printer.printSpace();
                     _printer.printText( name );
                     _printer.printText( "=\"" );
@@ -791,6 +791,20 @@ public class XMLSerializer
             _format.setPreserveSpace(false);
     }
 
+    /**
+     * Set the state of a feature.
+     * <br>The feature name has the same form as a DOM hasFeature string.
+     * <br>It is possible for a <code>DOMWriter</code> to recognize a feature 
+     * name but to be unable to set its value.
+     * @param name The feature name.
+     * @param state The requested state of the feature (<code>true</code> or 
+     *   <code>false</code>).
+     * @exception DOMException
+     *   Raise a NOT_SUPPORTED_ERR exception when the <code>DOMWriter</code> 
+     *   recognizes the feature name but cannot set the requested value. 
+     *   <br>Raise a NOT_FOUND_ERR When the <code>DOMWriter</code> does not 
+     *   recognize the feature name.
+     */
     public void setFeature(String name, 
                            boolean state)
                            throws DOMException {
@@ -803,6 +817,17 @@ public class XMLSerializer
             throw new DOMException(DOMException.NOT_FOUND_ERR,"Feature "+name+" not found");
     }
 
+    /**
+     * Query whether setting a feature to a specific value is supported.
+     * <br>The feature name has the same form as a DOM hasFeature string.
+     * @param name The feature name, which is a DOM has-feature style string.
+     * @param state The requested state of the feature (<code>true</code> or 
+     *   <code>false</code>).
+     * @return <code>true</code> if the feature could be successfully set to 
+     *   the specified value, or <code>false</code> if the feature is not 
+     *   recognized or the requested value is not supported. The value of 
+     *   the feature itself is not changed.
+     */
     public boolean canSetFeature(String name, boolean state) {
         if (name.equals("normalize-characters") && state)
                 return false;
@@ -818,6 +843,17 @@ public class XMLSerializer
                 return true;
     }   
     
+    /**
+     * Look up the value of a feature.
+     * <br>The feature name has the same form as a DOM hasFeature string
+     * @param name The feature name, which is a string with DOM has-feature 
+     *   syntax.
+     * @return The current state of the feature (<code>true</code> or 
+     *   <code>false</code>).
+     * @exception DOMException
+     *   Raise a NOT_FOUND_ERR When the <code>DOMWriter</code> does not 
+     *   recognize the feature name.
+     */
     public boolean getFeature(String name)
                               throws DOMException {
         Boolean state = (Boolean)fFeatures.get(name);
@@ -826,35 +862,137 @@ public class XMLSerializer
         return state.booleanValue();
     }
 
+    /**
+     *  The character encoding in which the output will be written. 
+     * <br> The encoding to use when writing is determined as follows: If the 
+     * encoding attribute has been set, that value will be used.If the 
+     * encoding attribute is <code>null</code> or empty, but the item to be 
+     * written includes an encoding declaration, that value will be used.If 
+     * neither of the above provides an encoding name, a default encoding of 
+     * "UTF-8" will be used.
+     * <br>The default value is <code>null</code>.
+     */
     public String getEncoding() {
         return fEncoding;
     }
     
+    /**
+     *  The character encoding in which the output will be written. 
+     * <br> The encoding to use when writing is determined as follows: If the 
+     * encoding attribute has been set, that value will be used.If the 
+     * encoding attribute is <code>null</code> or empty, but the item to be 
+     * written includes an encoding declaration, that value will be used.If 
+     * neither of the above provides an encoding name, a default encoding of 
+     * "UTF-8" will be used.
+     * <br>The default value is <code>null</code>.
+     */
     public void setEncoding(String encoding) {
         _format.setEncoding(encoding);
         fEncoding = _format.getEncoding();
     }
 
+    /**
+     *  The actual character encoding that was last used by this formatter. 
+     * This convenience method allows the encoding that was used when 
+     * serializing a document to be directly obtained. 
+     */
     public String getLastEncoding() {
         return fLastEncoding;
     }
 
+    /**
+     *  The end-of-line sequence of characters to be used in the XML being 
+     * written out. The only permitted values are these: 
+     * <dl>
+     * <dt><code>null</code></dt>
+     * <dd> 
+     * Use a default end-of-line sequence. DOM implementations should choose 
+     * the default to match the usual convention for text files in the 
+     * environment being used. Implementations must choose a default 
+     * sequence that matches one of those allowed by  2.11 "End-of-Line 
+     * Handling". </dd>
+     * <dt>CR</dt>
+     * <dd>The carriage-return character (#xD).</dd>
+     * <dt>CR-LF</dt>
+     * <dd> The 
+     * carriage-return and line-feed characters (#xD #xA). </dd>
+     * <dt>LF</dt>
+     * <dd> The line-feed 
+     * character (#xA). </dd>
+     * </dl>
+     * <br>The default value for this attribute is <code>null</code>.
+     */
     public String getNewLine() {
         return _format.getLineSeparator();
     }
     
+    /**
+     *  The end-of-line sequence of characters to be used in the XML being 
+     * written out. The only permitted values are these: 
+     * <dl>
+     * <dt><code>null</code></dt>
+     * <dd> 
+     * Use a default end-of-line sequence. DOM implementations should choose 
+     * the default to match the usual convention for text files in the 
+     * environment being used. Implementations must choose a default 
+     * sequence that matches one of those allowed by  2.11 "End-of-Line 
+     * Handling". </dd>
+     * <dt>CR</dt>
+     * <dd>The carriage-return character (#xD).</dd>
+     * <dt>CR-LF</dt>
+     * <dd> The 
+     * carriage-return and line-feed characters (#xD #xA). </dd>
+     * <dt>LF</dt>
+     * <dd> The line-feed 
+     * character (#xA). </dd>
+     * </dl>
+     * <br>The default value for this attribute is <code>null</code>.
+     */
     public void setNewLine(String newLine) {
         _format.setLineSeparator(newLine);
     }
 
+    /**
+     *  The error handler that will receive error notifications during 
+     * serialization. The node where the error occured is passed to this 
+     * error handler, any modification to nodes from within an error 
+     * callback should be avoided since this will result in undefined, 
+     * implementation dependent behavior. 
+     */
     public DOMErrorHandler getErrorHandler() {
         return fDOMErrorHandler;
     }
     
+    /**
+     *  The error handler that will receive error notifications during 
+     * serialization. The node where the error occured is passed to this 
+     * error handler, any modification to nodes from within an error 
+     * callback should be avoided since this will result in undefined, 
+     * implementation dependent behavior. 
+     */
     public void setErrorHandler(DOMErrorHandler errorHandler) {
         fDOMErrorHandler = errorHandler;
     }
 
+    /**
+     * Write out the specified node as described above in the description of 
+     * <code>DOMWriter</code>. Writing a Document or Entity node produces a 
+     * serialized form that is well formed XML. Writing other node types 
+     * produces a fragment of text in a form that is not fully defined by 
+     * this document, but that should be useful to a human for debugging or 
+     * diagnostic purposes. 
+     * @param destination The destination for the data to be written.
+     * @param wnode The <code>Document</code> or <code>Entity</code> node to 
+     *   be written. For other node types, something sensible should be 
+     *   written, but the exact serialized form is not specified.
+     * @return  Returns <code>true</code> if <code>node</code> was 
+     *   successfully serialized and <code>false</code> in case a failure 
+     *   occured and the failure wasn't canceled by the error handler. 
+     * @exception DOMSystemException
+     *   This exception will be raised in response to any sort of IO or system 
+     *   error that occurs while writing to the destination. It may wrap an 
+     *   underlying system exception.
+     */
     public boolean writeNode(java.io.OutputStream destination, 
                              Node wnode)
                              throws Exception {
@@ -882,6 +1020,22 @@ public class XMLSerializer
         return true;
     }
 
+    /**
+     *  Serialize the specified node as described above in the description of 
+     * <code>DOMWriter</code>. The result of serializing the node is 
+     * returned as a string. Writing a Document or Entity node produces a 
+     * serialized form that is well formed XML. Writing other node types 
+     * produces a fragment of text in a form that is not fully defined by 
+     * this document, but that should be useful to a human for debugging or 
+     * diagnostic purposes. 
+     * @param wnode  The node to be written. 
+     * @return  Returns the serialized data, or <code>null</code> in case a 
+     *   failure occured and the failure wasn't canceled by the error 
+     *   handler. 
+     * @exception DOMException
+     *    DOMSTRING_SIZE_ERR: The resulting string is too long to fit in a 
+     *   <code>DOMString</code>. 
+     */
     public String writeToString(Node wnode)
                                 throws DOMException {
         checkAllFeatures();
