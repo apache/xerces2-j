@@ -111,7 +111,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                                                        null);
 
             LSSerializer writer = impl.createLSSerializer();
-            DOMConfiguration config = writer.getConfig();
+            DOMConfiguration config = writer.getDomConfig();
             config.setParameter("namespaces",(namespaces)?Boolean.TRUE:Boolean.FALSE);
             config.setParameter("validate",Boolean.FALSE);
             
@@ -185,7 +185,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             //System.out.println("TEST #2: normalizeDocumention() - 3 errors, input: tests/dom/dom3/schema.xml");
             {
                 errorCounter = 0;
-                config = builder.getConfig();
+                config = builder.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 DocumentImpl core = (DocumentImpl)builder.parseURI("tests/dom/dom3/schema.xml");
@@ -227,7 +227,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 Assertion.verify(errorCounter == 0, "No errors should be reported");
 
 
-                config = builder.getConfig();
+                config = builder.getDomConfig();
                 config.setParameter("validate", Boolean.FALSE);
                 
             }
@@ -239,7 +239,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             // System.out.println("TEST #3: normalizeDocumention() + psvi, input: data/personal-schema.xml");
             {
                 errorCounter = 0;
-                config = builder.getConfig();
+                config = builder.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("validate", Boolean.TRUE);
                 config.setParameter("psvi", Boolean.TRUE);
@@ -274,7 +274,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
                 Assertion.verify(errorCounter == 0, "No errors should be reported");
                 Assertion.verify(((ElementPSVI)e1).getElementDeclaration().getName().equals("person"), "e1 decl");              
                 
-                config = builder.getConfig();
+                config = builder.getDomConfig();
                 config.setParameter("validate", Boolean.FALSE);
                 
 
@@ -418,7 +418,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
 
 
                 // serialize data
-                writer.getConfig().setParameter("namespaces", Boolean.TRUE);
+                writer.getDomConfig().setParameter("namespaces", Boolean.TRUE);
                 String xmlData = writer.writeToString(doc);
                 Reader r = new StringReader(xmlData);
                 LSInput in = impl.createLSInput();
@@ -506,7 +506,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
            
             //System.out.println("TEST #5: wholeText, input: tests/dom/dom3/wholeText.xml");
            {
-            config = builder.getConfig();
+            config = builder.getDomConfig();
             config.setParameter("error-handler",errorHandler);
             config.setParameter("validate", Boolean.FALSE);
             config.setParameter("entities", Boolean.TRUE);
@@ -567,7 +567,7 @@ public class Test implements DOMErrorHandler, LSResourceResolver{
             //************************
             {
                 errorCounter = 0;
-                config = builder.getConfig();
+                config = builder.getDomConfig();
                 config.setParameter("error-handler",errorHandler);
                 config.setParameter("resource-resolver",resolver);
                 config.setParameter("validate", Boolean.TRUE);
