@@ -562,8 +562,17 @@ public abstract class AbstractDOMParser
                     attr = fDocument.createAttribute(fAttrQName.rawname);
                 }
                 String attrValue = attributes.getValue(i);
-                attr.setNodeValue(attrValue);
+                attr.setValue(attrValue);
                 el.setAttributeNode(attr);
+                // NOTE: The specified value MUST be set after you set
+                //       the node value because that turns the "specified"
+                //       flag to "true" which may overwrite a "false"
+                //       value from the attribute list. -Ac
+                if (fDocumentImpl != null) {
+                    AttrImpl attrImpl = (AttrImpl)attr;
+                    boolean specified = attributes.isSpecified(i);
+                    attrImpl.setSpecified(specified);
+                }
                 // REVISIT: Handle entities in attribute value.
             }
             fCurrentNode.appendChild(el);
