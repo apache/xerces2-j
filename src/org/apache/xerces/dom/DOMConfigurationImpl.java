@@ -182,11 +182,10 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
     protected final static short DTNORMALIZATION     = 0x1<<1;
     protected final static short ENTITIES            = 0x1<<2;
     protected final static short CDATA               = 0x1<<3;
-    protected final static short DEFAULTS            = 0x1<<4;
-    protected final static short SPLITCDATA          = 0x1<<5;
-    protected final static short COMMENTS            = 0x1<<6;
-    protected final static short VALIDATE            = 0x1<<7;
-    protected final static short PSVI                = 0x1<<8;
+    protected final static short SPLITCDATA          = 0x1<<4;
+    protected final static short COMMENTS            = 0x1<<5;
+    protected final static short VALIDATE            = 0x1<<6;
+    protected final static short PSVI                = 0x1<<7;
 
     // components
 
@@ -253,7 +252,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
             DYNAMIC_VALIDATION,
             NORMALIZE_DATA,
             SEND_PSVI,
-            Constants.DOM_DISCARD_DEFAULT_CONTENT
         };
         addRecognizedFeatures(recognizedFeatures);
 
@@ -263,7 +261,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         setFeature(DYNAMIC_VALIDATION, false);
         setFeature(NORMALIZE_DATA, false);
         setFeature(XERCES_NAMESPACES, true);
-        setFeature(Constants.DOM_DISCARD_DEFAULT_CONTENT, true);
         setFeature(SEND_PSVI, true);
 
         // add default recognized properties
@@ -286,7 +283,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
         features |= ENTITIES;
         features |= COMMENTS;
         features |= CDATA;
-        features |= DEFAULTS;
         features |= SPLITCDATA;
         
         if (symbolTable == null) {
@@ -569,11 +565,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
                 features = (short) (state ? features | ENTITIES : features & ~ENTITIES);
 
             }
-            else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
-                setFeature (Constants.DOM_DISCARD_DEFAULT_CONTENT, state);
-                features = (short) (state ? features | DEFAULTS : features & ~DEFAULTS);
-
-            }
             else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
                 features = (short) (state ? features | SPLITCDATA : features & ~SPLITCDATA);
 
@@ -807,11 +798,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 		}
 		else if (name.equals(Constants.DOM_ENTITIES)) {
 			return (features & ENTITIES) != 0 ? Boolean.TRUE : Boolean.FALSE;
-
-		}
-		else if (name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)) {
-			return (features & DEFAULTS) != 0 ? Boolean.TRUE : Boolean.FALSE;
-
 		}
 		else if (name.equals(Constants.DOM_SPLIT_CDATA)) {
 			return (features & SPLITCDATA) != 0 ? Boolean.TRUE : Boolean.FALSE;
@@ -880,7 +866,6 @@ public class DOMConfigurationImpl extends ParserConfigurationSettings
 			|| name.equals(Constants.DOM_DATATYPE_NORMALIZATION)
 			|| name.equals(Constants.DOM_CDATA_SECTIONS)
 			|| name.equals(Constants.DOM_ENTITIES)
-			|| name.equals(Constants.DOM_DISCARD_DEFAULT_CONTENT)
 			|| name.equals(Constants.DOM_SPLIT_CDATA)
 			|| name.equals(Constants.DOM_NAMESPACES)
 			|| name.equals(Constants.DOM_VALIDATE)) {

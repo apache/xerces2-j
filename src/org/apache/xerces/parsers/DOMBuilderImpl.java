@@ -189,7 +189,6 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
             Constants.DOM_NAMESPACE_DECLARATIONS,
             Constants.DOM_SUPPORTED_MEDIATYPES_ONLY,
             Constants.DOM_CERTIFIED,
-            Constants.DOM_DISCARD_DEFAULT_CONTENT
         };
 
         fConfiguration.addRecognizedFeatures(domRecognizedFeatures);
@@ -204,7 +203,6 @@ extends AbstractDOMParser implements DOMBuilder, DOMConfiguration {
         fConfiguration.setFeature(Constants.DOM_INFOSET, false);
         fConfiguration.setFeature(Constants.DOM_NAMESPACE_DECLARATIONS, true);
         fConfiguration.setFeature(Constants.DOM_SUPPORTED_MEDIATYPES_ONLY, false);
-        fConfiguration.setFeature(Constants.DOM_DISCARD_DEFAULT_CONTENT, true);
         
         // REVISIT: by default Xerces assumes that input is certified.
         //          default is different from the one specified in the DOM spec

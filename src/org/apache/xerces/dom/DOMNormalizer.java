@@ -324,7 +324,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                     if ( attributes!=null ) {
                         for ( int i=0; i<attributes.getLength(); ++i ) {
                             Attr attr = (Attr)attributes.item(i);
-                            removeDefault(attr, attributes);
+                            //removeDefault(attr, attributes);
                             attr.normalize();
                             // XML 1.0 attribute value normalization
                             normalizeAttributeValue(attr.getValue(), attr);                            
@@ -607,7 +607,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                                 //          xmlns:foo = ""
 
                             }
-                            removeDefault (attr, attributes);
+                            //removeDefault (attr, attributes);
                             continue;
                         } else { // (localpart == fXmlnsSymbol && prefix == fEmptySymbol)  -- xmlns
                             // empty prefix is always bound ("" or some string)
@@ -615,7 +615,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                             fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
                             fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value);
 
-                            removeDefault (attr, attributes);
+                            //removeDefault (attr, attributes);
                             continue;
                         }
                     }  // end-else: valid declaration
@@ -729,13 +729,14 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         continue;
                     }
 
-
                     // ---------------------------------------
                     // remove default attributes
                     // ---------------------------------------
+                    /* 
                     if (removeDefault(attr, attributes)) {
                         continue;
                     }
+                    */
                     // XML 1.0 Attribute value normalization
                     value = normalizeAttributeValue(value, attr);
 
@@ -816,7 +817,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
                         // ---------------------------------------
                         // remove default attributes
                         // ---------------------------------------
-                        removeDefault(attr, attributes);
+                        // removeDefault(attr, attributes);
                     }
                 }
             }
@@ -853,7 +854,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
     }
 
-    protected final boolean removeDefault (Attr attribute, AttributeMap attrMap){
+    /*protected final boolean removeDefault (Attr attribute, AttributeMap attrMap){
         if ((fConfiguration.features & DOMConfigurationImpl.DEFAULTS) != 0) {
             // remove default attributes
             if (!attribute.getSpecified()) {
@@ -866,6 +867,7 @@ public class DOMNormalizer implements XMLDocumentHandler {
         }
         return false;
     }
+    */
 
 
     protected final DOMError modifyDOMError(String message, short severity, Node node){
@@ -1431,36 +1433,36 @@ public class DOMNormalizer implements XMLDocumentHandler {
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-	public void endElement(QName element, Augmentations augs) throws XNIException {	
-        if (DEBUG_EVENTS) {
+	public void endElement(QName element, Augmentations augs) throws XNIException {
+		if (DEBUG_EVENTS) {
 			System.out.println("==>endElement: " + element);
 		}
-        
+
 		ElementPSVI elementPSVI = (ElementPSVI) augs.getItem(Constants.ELEMENT_PSVI);
 		if (elementPSVI != null) {
 			ElementImpl elementNode = (ElementImpl) fCurrentNode;
 			if (fPSVI) {
 				((PSVIElementNSImpl) fCurrentNode).setPSVI(elementPSVI);
 			}
-			if ((fConfiguration.features & DOMConfigurationImpl.DEFAULTS) == 0) {
-				String normalizedValue = elementPSVI.getSchemaNormalizedValue();
-				if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
+			// include element default content (if one is available)
+			String normalizedValue = elementPSVI.getSchemaNormalizedValue();
+			if ((fConfiguration.features & DOMConfigurationImpl.DTNORMALIZATION) != 0) {
+				elementNode.setTextContent(normalizedValue);
+			}
+			else {
+				// NOTE: this is a hack: it is possible that DOM had an empty element
+				// and validator sent default value using characters(), which we don't 
+				// implement. Thus, here we attempt to add the default value.
+				String text = elementNode.getTextContent();
+				if (text.length() == 0) {
+					// default content could be provided
+					// REVISIT: should setTextConent(null) be allowed?
 					elementNode.setTextContent(normalizedValue);
-				}
-				else {
-					// NOTE: this is a hack: it is possible that DOM had an empty element
-					// and validator sent default value using characters(), which we don't 
-					// implement. Thus, here we attempt to add the default value.
-					String text = elementNode.getTextContent();
-					if (text.length() == 0) {
-						// default content could be provided
-						// REVISIT: should setTextConent(null) be allowed?
-						elementNode.setTextContent(normalizedValue);
-					}
 				}
 			}
 		}
 	}
+
 
     /**
      * The start of a CDATA section.
