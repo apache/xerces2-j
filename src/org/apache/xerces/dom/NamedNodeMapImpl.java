@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -119,7 +119,7 @@ public class NamedNodeMapImpl
     //
 
     /** Nodes. */
-	protected Vector nodes = new Vector();
+	protected Vector nodes;
 
     /** Owner document. */
 	protected Document ownerDocument; // support for WRONG_DOCUMENT_ERR
@@ -226,17 +226,17 @@ public class NamedNodeMapImpl
         return (i < 0) ? null : (Node)(nodes.elementAt(i));
 
     } // getNamedItem(String):Node
-    
+
     /**
      * Introduced in DOM Level 2. <p>
      * Retrieves a node specified by local name and namespace URI.
-     * 
+     *
      * @param namespaceURI  The namespace URI of the node to retrieve.
      *                      When it is null or an empty string, this
      *                      method behaves like getNamedItem.
      * @param localName     The local name of the node to retrieve.
      * @return Node         A Node (of any type) with the specified name, or null if the specified
-     *                      name did not identify any node in the map. 
+     *                      name did not identify any node in the map.
      */
     public Node getNamedItemNS(String namespaceURI, String localName) {
 
@@ -244,7 +244,7 @@ public class NamedNodeMapImpl
         return (i < 0) ? null : (Node)(nodes.elementAt(i));
 
     } // getNamedItemNS(String,String):Node
-  
+
     /**
      * Internal routine: Only update this structure.
      * @see org.w3c.dom.NamedNodeMap#setNamedItem
@@ -280,7 +280,7 @@ public class NamedNodeMapImpl
     	else {
     		i = -1 - i; // Insert point (may be end of list)
     		if (null == nodes) {
-    			nodes = new Vector();
+    			nodes = new Vector(5, 10);
             }
             if (element != null) {
                 ((NodeImpl)arg).parentNode = element;
@@ -323,7 +323,7 @@ public class NamedNodeMapImpl
     	int i = findNamePoint(name);
     	//int i = findNamePoint(null, name);
     	if (i < 0) {
-    		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+    		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
     		                           "NOT_FOUND_ERR");
         }
 
@@ -353,10 +353,10 @@ public class NamedNodeMapImpl
     public Node removeNamedItem(String name) {
         return removeNamedItemNS(null, name);
     }
-    
+
     /**
      * Introduced in DOM Level 2. <p>
-     * Removes a node specified by local name and namespace URI. 
+     * Removes a node specified by local name and namespace URI.
      * @param namespaceURI
      *                      The namespace URI of the node to remove.
      *                      When it is null or an empty string, this
@@ -371,18 +371,18 @@ public class NamedNodeMapImpl
      * @return Node         The node removed from the map if a node with such a local name and
      *                       namespace URI exists.
      * @throws              NOT_FOUND_ERR: Raised if there is no node named
-     *                      name in the map. 
-     
+     *                      name in the map.
+
      */
      public Node removeNamedItemNS(String namespaceURI, String name)
         throws DOMException {
 
     	int i = findNamePoint(namespaceURI, name);
     	if (i < 0) {
-    		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
+    		throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR,
     		                           "NOT_FOUND_ERR");
         }
-        
+
         LCount lc=null;
         String oldvalue="";
         AttrImpl enclosingAttribute=null;
@@ -424,7 +424,7 @@ public class NamedNodeMapImpl
         }
 
         ++changes;
-        
+
 		// We can't use the standard dispatchAggregate, since it assumes
 		// that the Attr is still attached to an owner. This code is
 		// similar but dispatches to the previous owner, "element".
@@ -441,17 +441,17 @@ public class NamedNodeMapImpl
                    null,n.getNodeValue(),element.getAttribute(name),name);
                 element.dispatchEvent(me);
             }
-            
+
             // We can hand off to process DOMSubtreeModified, though.
             // Note that only the Element needs to be informed; the
             // Attr's subtree has not been changed by this operation.
             element.dispatchAggregateEvents(null,null);
         }
-        
+
         return n;
 
     } // removeNamedItem(String):Node
- 
+
     //
     // Public methods
     //
@@ -546,7 +546,7 @@ public class NamedNodeMapImpl
 
     		int n = 0;
             int d = 0;
-            int nsize = nodes.size();
+            int nsize = (nodes != null) ? nodes.size() : 0;
             int dsize = defaults.nodes.size();
 
     		AttrImpl nnode = (nsize == 0) ? null : (AttrImpl) nodes.elementAt(0);
@@ -560,21 +560,21 @@ public class NamedNodeMapImpl
     			String nNSString = nnode.getNamespaceURI();
     			String dNSString = dnode.getNamespaceURI();
     			// REVISTNS: Are null namespace and "" namespace equal?
-    			if (nNSString == null) 
+    			if (nNSString == null)
     			    if (dNSString == null)
     			        testNS = 0;
-    			    else 
+    			    else
     			        //if (dNSString.equals(""))
     			        //    testNS = 0;
-    			        //else 
+    			        //else
     			            testNS = 1;
-    			else 
+    			else
     			    if (dNSString == null)
     			        //if (nNSString.equals(""))
     			        //    testNS = 0;
-    			        //else 
+    			        //else
     			            testNS = -1;
-    			    else 
+    			    else
     			        testNS = nNSString.compareTo(dNSString);
     			System.out.println("n,d"+nnode.getLocalName()+","+dnode.getLocalName());
     			int testLocal = (
@@ -623,12 +623,15 @@ public class NamedNodeMapImpl
         	}
 
     		// If we ran out of local before default, pick up defaults
-    		while (d < dsize) {
-                dnode = (AttrImpl)defaults.nodes.elementAt(d++);
-                NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                clone.parentNode = element;
-    			nodes.addElement(clone);
-    		}
+            if (d < dsize) {
+                nodes = new Vector();
+                while (d < dsize) {
+                    dnode = (AttrImpl)defaults.nodes.elementAt(d++);
+                    NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
+                    clone.parentNode = element;
+                    nodes.addElement(clone);
+                }
+            }
     		lastDefaultsChanges = defaults.changes;
     	}
 
@@ -690,7 +693,7 @@ public class NamedNodeMapImpl
     } // findNamePoint(String):int
     /***/
 
-    // REVISTNS: Reimplement. 
+    // REVISTNS: Reimplement.
     private int findNamePoint(String name) {
         return findNamePoint(null, name);
     }
@@ -713,28 +716,28 @@ public class NamedNodeMapImpl
     			
     			String nodeNS = ((NodeImpl)(nodes.elementAt(i))).getNamespaceURI();
     			
-    			if (namespaceURI == null) 
+    			if (namespaceURI == null)
     			    if (nodeNS == null)
     			        testNS = 0;
-    			    else 
+    			    else
     			        //if (nodeNS.equals(""))
     			        //    testNS = 0;
-    			        //else 
+    			        //else
     			            testNS = 1;
-    			else 
+    			else
     			    if (nodeNS == null)
     			        //if (namespaceURI.equals(""))
     			        //    testNS = 0;
-    			        //else 
+    			        //else
     			            testNS = - 1;
-    			    else 
+    			    else
     			        testNS = namespaceURI.compareTo(nodeNS);
-    			        
+    			
                 String local = ((NodeImpl)(nodes.elementAt(i))).getLocalName();
     			
                 //REVISTNS: How can the local name be null? !!!
     			if(local==null) testLocal = -1;
-    			else 
+    			else
     		    testLocal = (
     			        name
     			    ).compareTo(
@@ -767,4 +770,3 @@ public class NamedNodeMapImpl
     } // findNamePoint(String):int
 
 } // class NamedNodeMapImpl
-
