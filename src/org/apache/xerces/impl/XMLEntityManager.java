@@ -2924,12 +2924,22 @@ public class XMLEntityManager
                 if (fCurrentEntity.position == fCurrentEntity.count) {
                     load(0, true);
                 }
-                else if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
-                    System.arraycopy(fCurrentEntity.ch, fCurrentEntity.position,
-                                     fCurrentEntity.ch, 0, fCurrentEntity.count - fCurrentEntity.position);
-                    load(fCurrentEntity.count - fCurrentEntity.position, false);
-                    fCurrentEntity.position = 0;
-                } 
+
+                boolean bNextEntity = false;
+
+                while ((fCurrentEntity.position >= fCurrentEntity.count - delimLen)
+                    && (!bNextEntity))
+                {
+                  System.arraycopy(fCurrentEntity.ch,
+                                   fCurrentEntity.position,
+                                   fCurrentEntity.ch,
+                                   0,
+                                   fCurrentEntity.count - fCurrentEntity.position);
+
+                  bNextEntity = load(fCurrentEntity.count - fCurrentEntity.position, false);
+                  fCurrentEntity.position = 0;
+                }
+
                 if (fCurrentEntity.position >= fCurrentEntity.count - delimLen) {
                     // something must be wrong with the input:  e.g., file ends  an unterminated comment
                     int length = fCurrentEntity.count - fCurrentEntity.position;
