@@ -67,7 +67,6 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.HandlerBase;
 import org.xml.sax.Parser;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.XMLReaderAdapter;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXNotRecognizedException;
@@ -84,11 +83,7 @@ import java.util.*;
  * This is the implementation specific class for the
  * <code>javax.xml.parsers.SAXParser</code>. 
  */
-public class SAXParserImpl extends SAXParser {
-    /** Default parser name. */
-    static final String DEFAULT_PARSER_NAME =
-                                    "org.apache.xerces.parsers.SAXParser";
-
+public class SAXParserImpl extends javax.xml.parsers.SAXParser {
     private SAXParserFactory spf = null;
     private XMLReader xmlReader;
     private Parser parser = null;
@@ -103,7 +98,9 @@ public class SAXParserImpl extends SAXParser {
     SAXParserImpl(SAXParserFactory spf, Hashtable features)
         throws SAXException
     {
-        xmlReader = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
+        // Instantiate a SAXParser directly and not through SAX so that we
+        // use the right ClassLoader
+        xmlReader = new org.apache.xerces.parsers.SAXParser();
 
         // Validation
         validating = spf.isValidating();
