@@ -752,7 +752,7 @@ public class XMLDTDValidator
         fInDTD = true;
 
         // create DTD grammar
-        fDTDGrammar = new DTDGrammar();
+        fDTDGrammar = new DTDGrammar(fSymbolTable);
 
         // call handlers
         fDTDGrammar.startDTD();
