@@ -311,11 +311,12 @@ public class DecimalDatatypeValidator extends AbstractDatatypeValidator {
             if ( isPrecisionDefined == true ) {
                 int precision = d.movePointRight(d.scale()).toString().length() - 
                                 ((d.signum() < 0) ? 1 : 0); // account for minus sign
+
                 if (precision > fPrecision)
                     throw new InvalidDatatypeValueException(
-                                                           getErrorString(DatatypeMessageProvider.PrecisionExceeded,
-                                                                          DatatypeMessageProvider.MSG_NONE,
-                                                                          new Object[] {content} ));
+                             getErrorString(DatatypeMessageProvider.PrecisionExceeded,
+                                 DatatypeMessageProvider.MSG_NONE,
+                                 new Object[] { "'" + content + "'" , "'" + precision + "'" } ));
             }
             boundsCheck(d);
             if (  fEnumDecimal != null )
