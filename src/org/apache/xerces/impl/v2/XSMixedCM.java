@@ -61,13 +61,13 @@ import org.apache.xerces.xni.QName;
 
 /**
  * XSMixedCM is a derivative of the abstract content model base class that
- * handles a mixed content model with no chilren (elements). 
+ * handles a mixed content model with no chilren (elements).
  * In the future, this class may handle a small subset of mixed content
- * model with limited number of children (for example, a mixed content model 
- * with one child) 
- * 
+ * model with limited number of children (for example, a mixed content model
+ * with one child)
+ *
  * This model validated on the way in.
- * 
+ *
  * @author Elena Litani
  * @author IBM
  * @version $Id$
@@ -85,7 +85,7 @@ public class XSMixedCM  implements XSCMValidator {
     // Data
     //
     private int[] fState = {STATE_START};
-    
+
 
     //
     // XSCMValidator methods
@@ -109,15 +109,15 @@ public class XSMixedCM  implements XSCMValidator {
      * @param state  Current state
      * @return element index corresponding to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, int[] currentState){
+    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler){
         // mixed content model do not have any children
 
-        int state = currentState[0];
         // error state
-        if (state < 0 ) {
+        if (currentState[0] == XSCMValidator.FIRST_ERROR) {
+            currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
             return null;
         }
-        
+
         currentState[0] = XSCMValidator.FIRST_ERROR;
         return null;
     }
@@ -132,10 +132,10 @@ public class XSMixedCM  implements XSCMValidator {
     public boolean endContentModel (int[] currentState){
         boolean isFinal =  false;
         int state = currentState[0];
-        
+
         // restore content model state:
         fState[0] = STATE_START;
-        
+
         // error
         if (state < 0) {
             return false;

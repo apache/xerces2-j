@@ -68,10 +68,10 @@ import org.apache.xerces.xni.QName;
  */
 public interface XSCMValidator {
 
-    
+
     public static final short FIRST_ERROR = -1;
-    
-    // on subsequent errors the validator should not report 
+
+    // on subsequent errors the validator should not report
     // an error
     //
     public static final short SUBSEQUENT_ERROR = -2;
@@ -93,7 +93,7 @@ public interface XSCMValidator {
      * @return element decl or wildcard decl that
      *         corresponds to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, int[] state);
+    public Object oneTransition (QName elementName, int[] state, SubstitutionGroupHandler subGroupHandler);
 
 
     /**

@@ -440,8 +440,8 @@ public class SchemaValidator
                     break;
                 }
         }
-        
-        fBuffer.append(text.toString()); 
+
+        fBuffer.append(text.toString());
         if (!allWhiteSpace) {
             fSawCharacters = true;
         }
@@ -716,6 +716,7 @@ public class SchemaValidator
 
     /** Schema grammar resolver. */
     final XSGrammarResolver fGrammarResolver;
+    final SubstitutionGroupHandler fSubGroupHandler;
 
     /** Schema handler */
     final XSDHandler fSchemaHandler;
@@ -833,7 +834,8 @@ public class SchemaValidator
     public SchemaValidator() {
 
         fGrammarResolver = new XSGrammarResolver();
-        fSchemaHandler = new XSDHandler(fGrammarResolver);
+        fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
+        fSchemaHandler = new XSDHandler(fGrammarResolver, fSubGroupHandler);
 
     } // <init>()
 
@@ -857,7 +859,7 @@ public class SchemaValidator
         fSymbolTable = symbolTable;
 
         // get entity resolver. if there is no one, create a default
-        // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution        
+        // REVISIT: use default entity resolution from ENTITY MANAGER - temporary solution
         fEntityResolver = (XMLEntityResolver)componentManager.getProperty(ENTITY_MANAGER);
 
         // initialize namespace support
@@ -867,6 +869,9 @@ public class SchemaValidator
         // clear grammars, and put the one for schema namespace there
         fGrammarResolver.reset();
         fGrammarResolver.putGrammar(URI_SCHEMAFORSCHEMA, SchemaGrammar.SG_SchemaNS);
+
+        // clear thing in substitution group handler
+        fSubGroupHandler.reset();
 
         // reset schema handler and all traversal objects
         fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable);
@@ -900,19 +905,19 @@ public class SchemaValidator
             int[] newArrayI = new int[newSize];
             System.arraycopy(fChildCountStack, 0, newArrayI, 0, newSize);
             fChildCountStack = newArrayI;
-            
+
             XSElementDecl[] newArrayE = new XSElementDecl[newSize];
             System.arraycopy(fElemDeclStack, 0, newArrayE, 0, newSize);
             fElemDeclStack = newArrayE;
-            
+
             XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
             System.arraycopy(fTypeStack, 0, newArrayT, 0, newSize);
             fTypeStack = newArrayT;
-            
+
             XSCMValidator[] newArrayC = new XSCMValidator[newSize];
             System.arraycopy(fCMStack, 0, newArrayC, 0, newSize);
             fCMStack = newArrayC;
-            
+
             boolean[] newArrayD = new boolean[newSize];
             System.arraycopy(fStringContent, 0, newArrayD, 0, newSize);
             fStringContent = newArrayD;
@@ -1063,32 +1068,24 @@ public class SchemaValidator
         XSWildcardDecl wildcard = null;
         // if there is a content model, then get the decl from that
         if (fCurrentCM != null) {
-            Object decl = fCurrentCM.oneTransition(element, fCurrCMState);
+            Object decl = fCurrentCM.oneTransition(element, fCurrCMState, fSubGroupHandler);
             // it could be an element decl or a wildcard decl
             // REVISIT: is there a more efficient way than 'instanceof'
-            if (decl instanceof XSElementDecl) {
-                fCurrentElemDecl = (XSElementDecl)decl;
-            } else if (decl instanceof XSWildcardDecl) {
-                wildcard = (XSWildcardDecl)decl;
-            } else if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR &&
-                       fDoValidation) {
-                XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
-                //REVISIT: is it the only case we will have particle = null?
-                // 
-                if (ctype.fParticle != null) {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
-                } else {
-                    reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname,"mixed with no element content"});
+            if (decl == null) {
+                if (fCurrCMState[0] == XSCMValidator.FIRST_ERROR && fDoValidation) {
+                    XSComplexTypeDecl ctype = (XSComplexTypeDecl)fCurrentType;
+                    //REVISIT: is it the only case we will have particle = null?
+                    if (ctype.fParticle != null) {
+                        reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, ctype.fParticle.toString()});
+                    } else {
+                        reportSchemaError("cvc-complex-type.2.4.a", new Object[]{element.rawname, "mixed with no element content"});
+                    }
                 }
-                
-                fCurrCMState[0] = XSCMValidator.SUBSEQUENT_ERROR;
-               
-           
             } else if (decl instanceof XSElementDecl) {
                 fCurrentElemDecl = (XSElementDecl)decl;
-            } else if (decl instanceof XSWildcardDecl) {
+            } else {
                 wildcard = (XSWildcardDecl)decl;
-            }  
+            }
         }
 
         // save the current content model state in the stack
@@ -1210,7 +1207,7 @@ public class SchemaValidator
             int count = fMatcherStack.getMatcherCount();
             for (int i = 0; i < count; i++) {
                 XPathMatcher matcher = fMatcherStack.getMatcherAt(i);
-            matcher.startElement(element, attributes, fGrammarResolver.getGrammar(element.uri)); 
+            matcher.startElement(element, attributes, fGrammarResolver.getGrammar(element.uri));
             }
         }
 
@@ -1307,7 +1304,7 @@ public class SchemaValidator
             fCurrCMState = fCMStateStack[fElementDepth];
             fSawCharacters = fStringContent[fElementDepth];
         }
-        
+
     } // handleEndElement(QName,boolean)*/
 
 
@@ -1585,7 +1582,7 @@ public class SchemaValidator
             }
             // whether this attribute is specified
             isSpecified = attributes.getValue(currDecl.fTargetNamespace, currDecl.fName) != null;
-            
+
             // Element Locally Valid (Complex Type)
             // 4 The {attribute declaration} of each attribute use in the {attribute uses} whose {required} is true matches one of the attribute information items in the element information item's [attributes] as per clause 3.1 above.
             if (currUse.fUse == SchemaSymbols.USE_REQUIRED) {
@@ -1599,7 +1596,7 @@ public class SchemaValidator
                 attributes.addAttribute(attName, null, (defaultValue !=null)?defaultValue.toString():"");
             }
 
-            
+
         } // for
     } // addDefaultAttributes
 
@@ -1610,7 +1607,7 @@ public class SchemaValidator
                 if(fBuffer.toString().trim().length() == 0) {
                     int bufLen = fCurrentElemDecl.fDefault.toString().length();
                     char [] chars = new char[bufLen];
-                    fCurrentElemDecl.fDefault.toString().getChars(0, bufLen, chars, 0); 
+                    fCurrentElemDecl.fDefault.toString().getChars(0, bufLen, chars, 0);
                     XMLString text = new XMLString(chars, 0, bufLen);
                     if(fDocumentHandler != null) {
                         fDocumentHandler.characters(text);
@@ -1629,7 +1626,7 @@ public class SchemaValidator
         if (DEBUG) {
           System.out.println("processElementContent:" +element);
         }
-        
+
         if (fCurrentElemDecl != null &&
             fCurrentElemDecl.getConstraintType() == XSElementDecl.DEFAULT_VALUE) {
         }
@@ -1773,7 +1770,7 @@ public class SchemaValidator
                 ctype.fContentType == XSComplexTypeDecl.CONTENTTYPE_MIXED) {
                 // if the current state is a valid state, check whether
                 // it's one of the final states.
-                if (DEBUG) {                
+                if (DEBUG) {
                   System.out.println(fCurrCMState);
                 }
                 if (fCurrCMState[0] >= 0 &&
@@ -2454,7 +2451,7 @@ public class SchemaValidator
                     fIdentityConstraint2ValueStoreMap.put(keyRef, keyRefValueStore);
                     break;
                 }
-            } 
+            }
         } // initValueStoresFor(XSElementDecl)
 
         /** Returns the value store associated to the specified field. */

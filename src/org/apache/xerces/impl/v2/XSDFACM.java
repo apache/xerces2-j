@@ -256,7 +256,7 @@ public class XSDFACM
         //  Create some string pool indexes that represent the names of some
         //  magical nodes in the syntax tree.
         //  (already done in static initialization...
-        // 
+        //
 
         fMixed = mixed;
 
@@ -271,14 +271,14 @@ public class XSDFACM
         //
 
         if(DEBUG_VALIDATE_CONTENT) {
-	        XSDFACM.time -= System.currentTimeMillis();
+            XSDFACM.time -= System.currentTimeMillis();
         }
 
         buildDFA(syntaxTree);
 
         if(DEBUG_VALIDATE_CONTENT) {
-	        XSDFACM.time += System.currentTimeMillis();
-	        System.out.println("DFA build: " + XSDFACM.time + "ms");
+            XSDFACM.time += System.currentTimeMillis();
+            System.out.println("DFA build: " + XSDFACM.time + "ms");
         }
     }
 
@@ -308,50 +308,35 @@ public class XSDFACM
      * @param curPos      the current position of the stack
      *
      * @return:  null if transition is invalid; otherwise the Object corresponding to the
-     *      XSElementDecl or XSWildcardDecl identified.  Also, the 
+     *      XSElementDecl or XSWildcardDecl identified.  Also, the
      *      state array will be modified to include the new state; this so that the validator can
      *      store it away.
      *
      * @exception RuntimeException thrown on error
      */
-    public Object oneTransition(QName curElem, int[] state) {
+    public Object oneTransition(QName curElem, int[] state, SubstitutionGroupHandler subGroupHandler) {
         int curState = state[0];
         if(curState == XSCMValidator.FIRST_ERROR || curState == XSCMValidator.SUBSEQUENT_ERROR) {
             // there was an error last time; so just go find correct Object in fElemmMap.
             // ... after resetting state[0].
             if(curState == XSCMValidator.FIRST_ERROR)
-                state[0] = XSCMValidator.SUBSEQUENT_ERROR; 
+                state[0] = XSCMValidator.SUBSEQUENT_ERROR;
             int elemIndex = 0;
 
             for (; elemIndex < fElemMapSize; elemIndex++) {
                 int type = fElemMapType[elemIndex] ;
                 if (type == XSParticleDecl.PARTICLE_ELEMENT) {
                     if ((curElem.uri == ((XSElementDecl)fElemMap[elemIndex]).fTargetNamespace) &&
-                            (curElem.localpart == ((XSElementDecl)fElemMap[elemIndex]).fName) ) {
+                        (curElem.localpart == ((XSElementDecl)fElemMap[elemIndex]).fName) ||
+                        subGroupHandler.substitutionGroupOK(curElem, (XSElementDecl)fElemMap[elemIndex])) {
                         return fElemMap[elemIndex];
                     }
                 }
                 else if (type == XSParticleDecl.PARTICLE_WILDCARD) {
-                    if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri)) 
+                    if(((XSWildcardDecl)fElemMap[elemIndex]).allowNamespace(curElem.uri))
                         return fElemMap[elemIndex];
                 }
             }
-
-            // if we can't find a match, try substitutionGroup
-            // REVISIT:  add substitutionGroup support!
-            /***
-            if (elemIndex == fElemMapSize && comparator != null) {
-                for (elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-                    if (fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                        if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex])) {
-                            nextState = fTransTable[curState][elemIndex];
-                            if (nextState != -1)
-                                break;
-                        }
-                    }
-                }
-            }
-            /**** end of commented-out section ****/
         }
 
         int nextState = 0;
@@ -361,7 +346,8 @@ public class XSDFACM
             int type = fElemMapType[elemIndex] ;
             if (type == XSParticleDecl.PARTICLE_ELEMENT) {
                 if ((curElem.uri == ((XSElementDecl)fElemMap[elemIndex]).fTargetNamespace) &&
-                        (curElem.localpart == ((XSElementDecl)fElemMap[elemIndex]).fName) ) {
+                    (curElem.localpart == ((XSElementDecl)fElemMap[elemIndex]).fName) ||
+                    subGroupHandler.substitutionGroupOK(curElem, (XSElementDecl)fElemMap[elemIndex])) {
                     nextState = fTransTable[curState][elemIndex];
                     if (nextState != -1)
                         break;
@@ -376,24 +362,8 @@ public class XSDFACM
             }
         }
 
-        // if we can't find a match, try substitutionGroup
-        // REVISIT:  add substitutionGroup support!
-        /***
-        if (elemIndex == fElemMapSize && comparator != null) {
-            for (elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-                if (fElemMapType[elemIndex] == XSParticleDecl.PARTICLE_ELEMENT) {
-                    if (comparator.isEquivalentTo(curElem,fElemMap[elemIndex])) {
-                        nextState = fTransTable[curState][elemIndex];
-                        if (nextState != -1)
-                            break;
-                    }
-                }
-            }
-        }
-        /**** end of commented-out section ****/
-
         // if we still can't find a match, set the state to first_error
-        // and return null 
+        // and return null
         if (elemIndex == fElemMapSize) {
             state[0] = XSCMValidator.FIRST_ERROR;
             return null;
@@ -401,9 +371,9 @@ public class XSDFACM
 
         state[0] = nextState;
         return fElemMap[elemIndex];
-    } // oneTransition(QName, int[]):  Object
+    } // oneTransition(QName, int[], SubstitutionGroup):  Object
 
-    // This method returns the start states of the content model.  
+    // This method returns the start states of the content model.
     public int[] startContentModel() {
         int[] val = new int[1];
         val[0]=0;
@@ -414,13 +384,6 @@ public class XSDFACM
     public boolean endContentModel(int[] state) {
         return fFinalStateFlags[state[0]];
     } // endContentModel(int[]):  boolean
-
-    // REVISIT:  is any method like this still needed?
-    /***
-    public void setSubstitutionGroupComparator(SubstitutionGroupComparator comparator) {
-        this.comparator = comparator;
-    }
-    ***/
 
     // Killed off whatCanGoHere; we may need it for DOM canInsert(...) etc.,
     // but we can put it back later.
@@ -512,17 +475,17 @@ public class XSDFACM
         //  for that matter.)
         //
 
-	    /* MODIFIED (Jan, 2001)
-	     *
-	     * Use following rules.
-	     *   nullable(x+) := nullable(x), first(x+) := first(x),  last(x+) := last(x)
-	     *   nullable(x?) := true, first(x?) := first(x),  last(x?) := last(x)
-	     *
-	     * The same computation of follow as x* is applied to x+
-	     *
-	     * The modification drastically reduces computation time of
-	     * "(a, (b, a+, (c, (b, a+)+, a+, (d,  (c, (b, a+)+, a+)+, (b, a+)+, a+)+)+)+)+"
-	     */
+        /* MODIFIED (Jan, 2001)
+         *
+         * Use following rules.
+         *   nullable(x+) := nullable(x), first(x+) := first(x),  last(x+) := last(x)
+         *   nullable(x?) := true, first(x?) := first(x),  last(x?) := last(x)
+         *
+         * The same computation of follow as x* is applied to x+
+         *
+         * The modification drastically reduces computation time of
+         * "(a, (b, a+, (c, (b, a+)+, a+, (d,  (c, (b, a+)+, a+)+, (b, a+)+, a+)+)+)+)+"
+         */
 
         fElementDecl = new XSElementDecl();
         fElementDecl.fName = fEOCString;
@@ -598,7 +561,7 @@ public class XSDFACM
             }
             ***/
 
-            // Get the current leaf's element 
+            // Get the current leaf's element
             final XSElementDecl element = fLeafList[outIndex].getElement();
 
             // See if the current leaf node's element index is in the list
@@ -624,30 +587,30 @@ public class XSDFACM
         }
         ******/
 
-	    /***
-	     * Optimization(Jan, 2001); We sort fLeafList according to
-	     * elemIndex which is *uniquely* associated to each leaf.
-	     * We are *assuming* that each element appears in at least one leaf.
-	     **/
+        /***
+         * Optimization(Jan, 2001); We sort fLeafList according to
+         * elemIndex which is *uniquely* associated to each leaf.
+         * We are *assuming* that each element appears in at least one leaf.
+         **/
 
-	    int[] fLeafSorter = new int[fLeafCount + fElemMapSize];
-	    int fSortCount = 0;
+        int[] fLeafSorter = new int[fLeafCount + fElemMapSize];
+        int fSortCount = 0;
 
-	    for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
-	        for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
-		        final XSElementDecl leaf = fLeafList[leafIndex].getElement();
-		        final int leafType = fLeafListType[leafIndex];
-		        final XSElementDecl element = (XSElementDecl)fElemMap[elemIndex];
-		        if (fElemMapType[elemIndex] == fLeafListType[leafIndex] &&
+        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+            for (int leafIndex = 0; leafIndex < fLeafCount; leafIndex++) {
+                final XSElementDecl leaf = fLeafList[leafIndex].getElement();
+                final int leafType = fLeafListType[leafIndex];
+                final XSElementDecl element = (XSElementDecl)fElemMap[elemIndex];
+                if (fElemMapType[elemIndex] == fLeafListType[leafIndex] &&
                         leaf.fTargetNamespace == element.fTargetNamespace &&
-					    leaf.fName == element.fName ) {
-				    fLeafSorter[fSortCount++] = leafIndex;
-		        }
-	        }
-	        fLeafSorter[fSortCount++] = -1;
-	    }
+                        leaf.fName == element.fName ) {
+                    fLeafSorter[fSortCount++] = leafIndex;
+                }
+            }
+            fLeafSorter[fSortCount++] = -1;
+        }
 
-	    /* Optimization(Jan, 2001) */
+        /* Optimization(Jan, 2001) */
 
         //
         //  Next lets create some arrays, some that hold transient
@@ -693,13 +656,13 @@ public class XSDFACM
         statesToDo[curState] = setT;
         curState++;
 
-	    /* Optimization(Jan, 2001); This is faster for
-	     * a large content model such as, "(t001+|t002+|.... |t500+)".
-	     */
+        /* Optimization(Jan, 2001); This is faster for
+         * a large content model such as, "(t001+|t002+|.... |t500+)".
+         */
 
-	    java.util.Hashtable stateTable = new java.util.Hashtable();
+        java.util.Hashtable stateTable = new java.util.Hashtable();
 
-	    /* Optimization(Jan, 2001) */
+        /* Optimization(Jan, 2001) */
 
         //
         //  Ok, almost done with the algorithm... We now enter the
@@ -722,9 +685,9 @@ public class XSDFACM
 
             // Loop through each possible input symbol in the element map
             CMStateSet newSet = null;
-	        /* Optimization(Jan, 2001) */
+            /* Optimization(Jan, 2001) */
             int sorterIndex = 0;
-	        /* Optimization(Jan, 2001) */
+            /* Optimization(Jan, 2001) */
             for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
                 //
                 //  Build up a set of states which is the union of all of
@@ -737,11 +700,11 @@ public class XSDFACM
                 else
                     newSet.zeroBits();
 
-	            /* Optimization(Jan, 2001) */
+                /* Optimization(Jan, 2001) */
                 int leafIndex = fLeafSorter[sorterIndex++];
 
                 while (leafIndex != -1) {
-	                // If this leaf index (DFA position) is in the current set...
+                    // If this leaf index (DFA position) is in the current set...
                     if (setT.getBit(leafIndex)) {
                         //
                         //  If this leaf is the current input symbol, then we
@@ -752,8 +715,8 @@ public class XSDFACM
                     }
 
                    leafIndex = fLeafSorter[sorterIndex++];
-	            }
-	            /* Optimization(Jan, 2001) */
+                }
+                /* Optimization(Jan, 2001) */
 
                 //
                 //  If this new set is not empty, then see if its in the list
@@ -765,10 +728,10 @@ public class XSDFACM
                     //  state set is already in there.
                     //
 
-	                /* Optimization(Jan, 2001) */
-	                Integer stateObj = (Integer)stateTable.get(newSet);
-	                int stateIndex = (stateObj == null ? curState : stateObj.intValue());
-	                /* Optimization(Jan, 2001) */
+                    /* Optimization(Jan, 2001) */
+                    Integer stateObj = (Integer)stateTable.get(newSet);
+                    int stateIndex = (stateObj == null ? curState : stateObj.intValue());
+                    /* Optimization(Jan, 2001) */
 
                     // If we did not find it, then add it
                     if (stateIndex == curState) {
@@ -780,9 +743,9 @@ public class XSDFACM
                         statesToDo[curState] = newSet;
                         fTransTable[curState] = makeDefStateList();
 
-	                    /* Optimization(Jan, 2001) */ 
+                        /* Optimization(Jan, 2001) */
                         stateTable.put(newSet, new Integer(curState));
-	                    /* Optimization(Jan, 2001) */
+                        /* Optimization(Jan, 2001) */
 
                         // We now have a new state to do so bump the count
                         curState++;
@@ -885,7 +848,7 @@ public class XSDFACM
             }
         }
          else if (nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_MORE
-	    || nodeCur.type() == XSParticleDecl.PARTICLE_ONE_OR_MORE) {
+        || nodeCur.type() == XSParticleDecl.PARTICLE_ONE_OR_MORE) {
             // Recurse first
             calcFollowList(((XSCMUniOp)nodeCur).getChild());
 
@@ -1023,7 +986,7 @@ public class XSDFACM
         // Recurse as required
         if (nodeCur.type() == XSParticleDecl.PARTICLE_WILDCARD) {
             // REVISIT: Don't waste these structures.
-			fElementDecl = ((XSCMAny)nodeCur).getURI();
+            fElementDecl = ((XSCMAny)nodeCur).getURI();
             // REVISIT:  depends on result of XSDElement->XSDWildcard discussions...
             fLeafList[curIndex] = new XSCMLeaf(fElementDecl, ((XSCMAny)nodeCur).getPosition());
             fLeafListType[curIndex] = nodeCur.type();
@@ -1036,8 +999,8 @@ public class XSDFACM
             curIndex = postTreeBuildInit(((XSCMBinOp)nodeCur).getRight(), curIndex);
         }
          else if (nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_MORE
-	     || nodeCur.type() == XSParticleDecl.PARTICLE_ONE_OR_MORE
-	     || nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
+         || nodeCur.type() == XSParticleDecl.PARTICLE_ONE_OR_MORE
+         || nodeCur.type() == XSParticleDecl.PARTICLE_ZERO_OR_ONE)
         {
             curIndex = postTreeBuildInit(((XSCMUniOp)nodeCur).getChild(), curIndex);
         }

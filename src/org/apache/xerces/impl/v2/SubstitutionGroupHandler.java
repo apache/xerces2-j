@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.v2;
 
+import org.apache.xerces.xni.QName;
+
 /**
  * To store and validate information about substitutionGroup
  *
@@ -105,6 +107,76 @@ class SubstitutionGroupHandler {
      */
     static boolean checkSubstitutionGroupOK(XSElementDecl element) {
         // REVISIT: to implement
+        return true;
+    }
+
+    // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
+    // check whether one element decl matches an element with the given qname
+    boolean substitutionGroupOK(QName element, XSElementDecl exemplar) {
+        // if the decl blocks substitution, return false
+        if ((exemplar.fBlock & SchemaSymbols.SUBSTITUTION) != 0)
+            return false;
+
+        // get grammar of the element
+        SchemaGrammar sGrammar = fGrammarResolver.getGrammar(element.uri);
+        if (sGrammar == null)
+            return false;
+
+        // get the decl for the element
+        XSElementDecl eDecl = sGrammar.getGlobalElementDecl(element.localpart);
+        if (eDecl == null)
+            return false;
+
+        // and check by using substitutionGroup information
+        return substitutionGroupOK(eDecl, exemplar, exemplar.fBlock);
+    }
+
+    // 3.3.6 Substitution Group OK (Transitive)
+    // check whether element can substitute exemplar
+    boolean substitutionGroupOK(XSElementDecl element, XSElementDecl exemplar, short blockingConstraint) {
+        // For an element declaration (call it D) together with a blocking constraint (a subset of {substitution, extension, restriction}, the value of a {disallowed substitutions}) to be validly substitutable for another element declaration (call it C) all of the following must be true:
+        // 1 The blocking constraint does not contain substitution.
+        if ((blockingConstraint & SchemaSymbols.SUBSTITUTION) != 0)
+            return false;
+
+        // prepare the combination of {derivation method} and
+        // {disallowed substitution}
+        short devMethod = 0, blockConstraint = blockingConstraint;
+
+        // initialize the derivation method to be that of the type of D
+        XSTypeDecl type = element.fType;
+        if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+            devMethod = ((XSComplexTypeDecl)type).fDerivedBy;
+        else
+            devMethod = SchemaSymbols.RESTRICTION;
+
+        // initialize disallowed substitution to the passed in blocking constraint
+        type = exemplar.fType;
+        if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0)
+            blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
+
+        // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
+        XSElementDecl subGroup = element.fSubGroup;
+        while (subGroup != null && subGroup != exemplar) {
+            // add the derivation method and disallowed substitution info
+            // of the current type to the corresponding variables
+            type = subGroup.fType;
+            if ((type.getXSType() & XSTypeDecl.COMPLEX_TYPE) != 0) {
+                devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
+                blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
+            } else {
+                devMethod |= SchemaSymbols.RESTRICTION;
+            }
+            subGroup = subGroup.fSubGroup;
+        }
+
+        if (subGroup == null)
+            return false;
+
+        // 3 The set of all {derivation method}s involved in the derivation of D's {type definition} from C's {type definition} does not intersect with the union of the blocking constraint, C's {prohibited substitutions} (if C is complex, otherwise the empty set) and the {prohibited substitutions} (respectively the empty set) of any intermediate {type definition}s in the derivation of D's {type definition} from C's {type definition}.
+        if ((devMethod & blockConstraint) != 0)
+            return false;
+
         return true;
     }
 

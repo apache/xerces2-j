@@ -127,7 +127,7 @@ implements XSCMValidator {
     public XSSimpleCM(short operator, XSElementDecl elem) {
         fFirstElement = elem;
         fOperator = operator;
-        
+
     }
 
     /**
@@ -139,10 +139,10 @@ implements XSCMValidator {
         fFirstElement = elem1;
         fSecondElement = elem2;
         fOperator = operator;
-        
+
     }
 
-    
+
 
     //
     // XSCMValidator methods
@@ -166,22 +166,23 @@ implements XSCMValidator {
      * @param state  Current state
      * @return element index corresponding to the element from the Schema grammar
      */
-    public Object oneTransition (QName elementName, int[] currentState){
+    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler){
 
-        int state = currentState[0];
         // error state
-        if (state < 0 ) {
+        if (currentState[0] == XSCMValidator.FIRST_ERROR) {
+            currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
             return null;
         }
 
+        int state = currentState[0];
 
-        
         switch (fOperator) {
         case XSParticleDecl.PARTICLE_ELEMENT :
         case XSParticleDecl.PARTICLE_ZERO_OR_ONE :
             if (state == STATE_START) {
                 if (fFirstElement.fTargetNamespace == elementName.uri &&
-                    fFirstElement.fName == elementName.localpart) {
+                    fFirstElement.fName == elementName.localpart ||
+                    subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
                     currentState[0] = STATE_VALID;
                     return fFirstElement;
                 }
@@ -192,7 +193,8 @@ implements XSCMValidator {
         case XSParticleDecl.PARTICLE_ZERO_OR_MORE :
         case XSParticleDecl.PARTICLE_ONE_OR_MORE :
             if (fFirstElement.fTargetNamespace == elementName.uri &&
-                fFirstElement.fName == elementName.localpart) {
+                fFirstElement.fName == elementName.localpart ||
+                subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
                 currentState[0] = STATE_VALID;
                 return fFirstElement;
             }
@@ -201,13 +203,15 @@ implements XSCMValidator {
         case XSParticleDecl.PARTICLE_CHOICE :
             if (state == STATE_START) {
                 if (fFirstElement.fTargetNamespace == elementName.uri &&
-                    fFirstElement.fName == elementName.localpart) {
+                    fFirstElement.fName == elementName.localpart ||
+                    subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
                     currentState[0] = STATE_VALID;
                     return fFirstElement;
 
                 }
                 else if (fSecondElement.fTargetNamespace == elementName.uri &&
-                         fSecondElement.fName == elementName.localpart) {
+                         fSecondElement.fName == elementName.localpart ||
+                         subGroupHandler.substitutionGroupOK(elementName, fSecondElement)) {
                     currentState[0] = STATE_VALID;
                     return fSecondElement;
                 }
@@ -223,7 +227,8 @@ implements XSCMValidator {
             //
             if (state == STATE_START) {
                 if (fFirstElement.fTargetNamespace == elementName.uri &&
-                    fFirstElement.fName == elementName.localpart) {
+                    fFirstElement.fName == elementName.localpart ||
+                    subGroupHandler.substitutionGroupOK(elementName, fFirstElement)) {
                     currentState[0] = STATE_FIRST;
                     return fFirstElement;
                 }
@@ -231,7 +236,8 @@ implements XSCMValidator {
             }
             else if (state == STATE_FIRST) {
                 if (fSecondElement.fTargetNamespace == elementName.uri &&
-                    fSecondElement.fName == elementName.localpart) {
+                    fSecondElement.fName == elementName.localpart ||
+                    subGroupHandler.substitutionGroupOK(elementName, fSecondElement)) {
                     currentState[0] = STATE_VALID;
                     return fSecondElement;
                 }
@@ -258,10 +264,10 @@ implements XSCMValidator {
     public boolean endContentModel (int[] currentState){
         boolean isFinal =  false;
         int state = currentState[0];
-        
+
         // restore content model state:
         fState[0] = STATE_START;
-        
+
         // error
         if (state < 0) {
             return false;

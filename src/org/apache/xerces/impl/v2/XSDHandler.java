@@ -156,7 +156,7 @@ class XSDHandler {
     // publicId and systemId of the inputSource corresponding to a
     // schema document.  This combination is used so that the user's
     // EntityResolver can provide a consistent way of identifying a
-    // schema document that is included in multiple other schemas.  
+    // schema document that is included in multiple other schemas.
     private SymbolHash fTraversed = new SymbolHash();
 
     // the primary XSDocumentInfo we were called to parse
@@ -179,7 +179,7 @@ class XSDHandler {
     private Hashtable fRedefinedRestrictedAttributeGroupRegistry = new Hashtable();
     private Hashtable fRedefinedRestrictedGroupRegistry = new Hashtable();
 
-    // a variable storing whether the last schema document 
+    // a variable storing whether the last schema document
     // processed (by getSchema) was a duplicate.
     private boolean fLastSchemaWasDuplicate;
 
@@ -249,8 +249,9 @@ class XSDHandler {
     // it should be possible to use the same XSDHandler to parse
     // multiple schema documents; this will allow one to be
     // constructed.
-    XSDHandler (XSGrammarResolver gResolver) {
+    XSDHandler (XSGrammarResolver gResolver, SubstitutionGroupHandler subGroupHandler) {
         fGrammarResolver = gResolver;
+        fSubGroupHandler = subGroupHandler;
 
         // REVISIT: do we use shadowed or synchronized symbol table of
         //          SchemaSymbols.fSymbolTable?
@@ -276,7 +277,7 @@ class XSDHandler {
                               String schemaHint) {
 
         // first phase:  construct trees.
-        Document schemaRoot = getSchema(schemaNamespace, schemaHint); 
+        Document schemaRoot = getSchema(schemaNamespace, schemaHint);
         if(schemaRoot == null) {
             // something went wrong right off the hop
             fElementTraverser.reportGenericSchemaError("Could not locate a schema document corresponding to grammar " + schemaNamespace);
@@ -286,7 +287,7 @@ class XSDHandler {
         if (schemaNamespace.length() == 0) {
             schemaNamespace = null;
         }
-        else {        
+        else {
             schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
         }
         fRoot = constructTrees(schemaRoot, schemaNamespace);
@@ -333,8 +334,8 @@ class XSDHandler {
         if(schemaRoot == null) return null;
         XSDocumentInfo currSchemaInfo = new XSDocumentInfo(schemaRoot, fAttributeChecker, fSymbolTable);
 
-		 // Modified by Pavani Mukthipudi, Sun Microsystems Inc.
-		 fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
+         // Modified by Pavani Mukthipudi, Sun Microsystems Inc.
+         fDoc2XSDocumentMap.put(schemaRoot, currSchemaInfo);
 
         if(callerTNS != null) {
             // only set if we were included or redefined in.
@@ -368,11 +369,11 @@ class XSDHandler {
                 Object[] includeAttrs = fAttributeChecker.checkAttributes(child, true, currSchemaInfo);
                 schemaHint = (String)includeAttrs[XSAttributeChecker.ATTIDX_SCHEMALOCATION];
                 schemaNamespace = (String)includeAttrs[XSAttributeChecker.ATTIDX_NAMESPACE];
-                if(schemaNamespace != null) 
+                if(schemaNamespace != null)
                     schemaNamespace = fSymbolTable.addSymbol(schemaNamespace);
                 if(schemaNamespace == currSchemaInfo.fTargetNamespace) {
                     fElementTraverser.reportSchemaError("src-import.1.1", new Object [] {schemaNamespace});
-                } 
+                }
                 fAttributeChecker.returnAttrArray(includeAttrs, currSchemaInfo);
                 // consciously throw away whether was a duplicate; don't care.
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
@@ -394,13 +395,13 @@ class XSDHandler {
                 break;
             }
 
-		     // If the schema is duplicate, we needn't call constructTrees() again.
-		     // To handle mutual <include>s
+             // If the schema is duplicate, we needn't call constructTrees() again.
+             // To handle mutual <include>s
 
             XSDocumentInfo newSchemaInfo = null;
-		     if (fLastSchemaWasDuplicate) {
-		 		 newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
-		     } else { 
+             if (fLastSchemaWasDuplicate) {
+                 newSchemaInfo = (XSDocumentInfo)fDoc2XSDocumentMap.get(newSchemaRoot);
+             } else {
                 newSchemaInfo = constructTrees(newSchemaRoot, schemaNamespace);
             }
             if (localName.equals(SchemaSymbols.ELT_REDEFINE)) {
@@ -695,7 +696,7 @@ class XSDHandler {
                 break;
             default:
                 // REVISIT: report internal error...
-                fElementTraverser.reportGenericSchemaError("XSDHandler asked to locate component of type " + declType + "; it does not recognize this type (internal error!)"); 
+                fElementTraverser.reportGenericSchemaError("XSDHandler asked to locate component of type " + declType + "; it does not recognize this type (internal error!)");
             }
             if (decl != null)
                 schemaWithDecl = findXSDocumentForDecl(currSchema, decl);
@@ -814,8 +815,8 @@ class XSDHandler {
     }
 
     // This method squirrels away <keyref> declarations--along with the element
-    // decls and namespace bindings they might find handy.  
-    protected void storeKeyRef (Element keyrefToStore, XSDocumentInfo schemaDoc, 
+    // decls and namespace bindings they might find handy.
+    protected void storeKeyRef (Element keyrefToStore, XSDocumentInfo schemaDoc,
             XSElementDecl currElemDecl) {
         String keyrefName = DOMUtil.getAttrValue(keyrefToStore, SchemaSymbols.ATT_NAME);
         if(keyrefName.length() != 0) {
@@ -824,7 +825,7 @@ class XSDHandler {
             checkForDuplicateNames(keyrefQName, fUnparsedIdentityConstraintRegistry, keyrefToStore, schemaDoc);
         }
         // now set up all the registries we'll need...
-        
+
         // check array sizes
         if(fKeyrefStackPos == fKeyrefs.length) {
             Element [] elemArray = new Element [fKeyrefStackPos + INC_KEYREF_STACK_AMOUNT];
@@ -847,7 +848,7 @@ class XSDHandler {
     // the given namespace and hint, it returns it.  It returns true
     // if this is the first time it's seen this document, false
     // otherwise.  schemaDoc is null if and only if no schema document
-    // was resolved to.  
+    // was resolved to.
     private Document getSchema(String schemaNamespace,
                                String schemaHint) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
@@ -861,7 +862,7 @@ class XSDHandler {
                     schemaIdBuf.append(schemaSource.getPublicId());
                 if(schemaSource.getSystemId() != null)
                     schemaIdBuf.append(schemaSource.getSystemId());
-                if(schemaIdBuf.equals(EMPTY_STRING)) 
+                if(schemaIdBuf.equals(EMPTY_STRING))
                     schemaIdBuf.append(schemaSource.getBaseSystemId());
                 String schemaId =
                     fSymbolTable.addSymbol(schemaIdBuf.toString());
@@ -895,7 +896,6 @@ class XSDHandler {
     // construct schemaGrammars.
     private void createTraversers() {
         fAttributeChecker = new XSAttributeChecker(this);
-        fSubGroupHandler = new SubstitutionGroupHandler(fGrammarResolver);
         fAttributeGroupTraverser = new XSDAttributeGroupTraverser(this, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this, fAttributeChecker);
         fComplexTypeTraverser = new XSDComplexTypeTraverser(this, fAttributeChecker);
@@ -975,7 +975,7 @@ class XSDHandler {
      */
     void traverseLocalElements() {
         fElementTraverser.fDeferTraversingLocalElements = false;
-        
+
         for (int i = 0; i < fLocalElemStackPos; i++) {
             Element currElem = fLocalElementDecl[i];
             XSDocumentInfo currSchema = (XSDocumentInfo)fDoc2XSDocumentMap.get(DOMUtil.getDocument(currElem));
@@ -1050,14 +1050,14 @@ class XSDHandler {
                     currComp.setAttribute(SchemaSymbols.ATT_NAME, newName);
                     registry.put(qName+REDEF_IDENTIFIER, currComp);
                     // and take care of nested redefines by calling recursively:
-                    if(currSchema.fTargetNamespace == null) 
+                    if(currSchema.fTargetNamespace == null)
                         checkForDuplicateNames(","+newName, registry, currComp, currSchema);
-                    else 
+                    else
                         checkForDuplicateNames(currSchema.fTargetNamespace+","+newName, registry, currComp, currSchema);
                 } else { // we're apparently redefining the wrong schema
                     // REVISIT:  error that redefined element in wrong schema
                     fElementTraverser.reportSchemaError("src-redefine.1", new Object [] {qName});
-                } 
+                }
             } else { // we've just got a flat-out collision
                 fElementTraverser.reportSchemaError("sch-props-correct.2", new Object []{qName});
             }
@@ -1206,7 +1206,7 @@ class XSDHandler {
             } else if (groupRefsCount == 1) {
 //                return true;
             }  else {
-                if(currSchema.fTargetNamespace == null) 
+                if(currSchema.fTargetNamespace == null)
                     fRedefinedRestrictedGroupRegistry.put(processedBaseName, ","+newName);
                 else
                     fRedefinedRestrictedGroupRegistry.put(processedBaseName, currSchema.fTargetNamespace+","+newName);
@@ -1327,7 +1327,8 @@ class XSDHandler {
     /******* only for testing!  ******/
     public static void main (String args[]) throws Exception {
         DefaultHandler handler = new DefaultHandler();
-        XSDHandler me = new XSDHandler(new XSGrammarResolver());
+        XSGrammarResolver xsg = new XSGrammarResolver();
+        XSDHandler me = new XSDHandler(xsg, new SubstitutionGroupHandler(xsg));
         XMLErrorReporter rep = new XMLErrorReporter();
         rep.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, new XSMessageFormatter());
         me.reset(rep, new EntityResolverWrapper(new org.apache.xerces.impl.v2.XSDHandler.DummyResolver()), new SymbolTable());

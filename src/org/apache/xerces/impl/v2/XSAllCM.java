@@ -95,7 +95,7 @@ public class XSAllCM implements XSCMValidator {
     public XSAllCM (boolean hasOptionalContent) {
         fHasOptionalContent = hasOptionalContent;
     }
- 
+
     // REVISIT : do we need this ?
     // public XSAllCM (boolean hasOptionalContent, boolean isMixed) {
     //     this(hasOptionalContent);
@@ -134,25 +134,25 @@ public class XSAllCM implements XSCMValidator {
     // REVISIT : to implement Unique Particle Attribution
     // public void checkUniqueParticleAttribution()
 
-    
+
     //
     // XSCMValidator methods
     //
 
     /**
      * This methods to be called on entering a first element whose type
-     * has this content model. It will return the initial state of the 
+     * has this content model. It will return the initial state of the
      * content model
      *
      * @return Start state of the content model
      */
     public int[] startContentModel() {
 
-	    int[] state = new int[fNumElements + 1];
+        int[] state = new int[fNumElements + 1];
 
-	    for (int i = 0; i <= fNumElements; i++) {
-	        state[i] = STATE_START;
-	    }
+        for (int i = 0; i <= fNumElements; i++) {
+            state[i] = STATE_START;
+        }
         return state;
     }
 
@@ -164,39 +164,40 @@ public class XSAllCM implements XSCMValidator {
      * @param state  Current state
      * @return an element decl object
      */
-    public Object oneTransition (QName elementName, int[] currentState) {
+    public Object oneTransition (QName elementName, int[] currentState, SubstitutionGroupHandler subGroupHandler) {
 
-	    for (int i = 0; i < fNumElements; i++) {
+        for (int i = 0; i < fNumElements; i++) {
 
-	        if (fAllElements[i].fTargetNamespace == elementName.uri &&
-	                fAllElements[i].fName == elementName.localpart) {
+            if (fAllElements[i].fTargetNamespace == elementName.uri &&
+                fAllElements[i].fName == elementName.localpart ||
+                subGroupHandler.substitutionGroupOK(elementName, fAllElements[i])) {
 
-		        if (currentState[i+1] == STATE_START) {
-		            currentState[i+1] = STATE_VALID;
-		        }
-		        else if (currentState[i+1] == STATE_VALID) {
-		            // duplicate element 
-		            currentState[i+1] = XSCMValidator.FIRST_ERROR;
-		            currentState[0] = XSCMValidator.FIRST_ERROR;
-		        }
-		        else if (currentState[i+1] == XSCMValidator.FIRST_ERROR) {
-		            currentState[i+1] = XSCMValidator.SUBSEQUENT_ERROR;
-		            currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
-		        }
+                if (currentState[i+1] == STATE_START) {
+                    currentState[i+1] = STATE_VALID;
+                }
+                else if (currentState[i+1] == STATE_VALID) {
+                    // duplicate element
+                    currentState[i+1] = XSCMValidator.FIRST_ERROR;
+                    currentState[0] = XSCMValidator.FIRST_ERROR;
+                }
+                else if (currentState[i+1] == XSCMValidator.FIRST_ERROR) {
+                    currentState[i+1] = XSCMValidator.SUBSEQUENT_ERROR;
+                    currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
+                }
 
-		        if (currentState[0] == STATE_START) {
-		            currentState[0] = STATE_VALID;
-		        }
-		        return fAllElements[i];
-	        }
- 	    }
+                if (currentState[0] == STATE_START) {
+                    currentState[0] = STATE_VALID;
+                }
+                return fAllElements[i];
+            }
+        }
 
-	    if (currentState[0] == XSCMValidator.FIRST_ERROR) 
-	        currentState[0] = XSCMValidator.SUBSEQUENT_ERROR; 
-	    else if (currentState[0] == STATE_START || currentState[0] == STATE_VALID)
-	        currentState[0] = XSCMValidator.FIRST_ERROR;
+        if (currentState[0] == XSCMValidator.FIRST_ERROR)
+            currentState[0] = XSCMValidator.SUBSEQUENT_ERROR;
+        else if (currentState[0] == STATE_START || currentState[0] == STATE_VALID)
+            currentState[0] = XSCMValidator.FIRST_ERROR;
 
-	    return null;
+        return null;
     }
 
 
@@ -210,22 +211,22 @@ public class XSAllCM implements XSCMValidator {
 
         int state = currentState[0];
 
-	    if (state == XSCMValidator.FIRST_ERROR || state == XSCMValidator.SUBSEQUENT_ERROR) {
-	        return false;
-	    }
-	
-	    // If <all> has minOccurs of zero and there are
+        if (state == XSCMValidator.FIRST_ERROR || state == XSCMValidator.SUBSEQUENT_ERROR) {
+            return false;
+        }
+
+        // If <all> has minOccurs of zero and there are
         // no children to validate, it is trivially valid
 
         if (fHasOptionalContent && fNumElements == 0) {
             return true;
         }
 
-	    int numRequiredSeen = 0;
+        int numRequiredSeen = 0;
 
-	    for (int i = 0; i < fNumElements; i++) {
-	        if (!fIsOptionalElement[i] && currentState[i+1] != STATE_START)
-		        numRequiredSeen++;
+        for (int i = 0; i < fNumElements; i++) {
+            if (!fIsOptionalElement[i] && currentState[i+1] != STATE_START)
+                numRequiredSeen++;
         }
 
         if (fNumRequired == numRequiredSeen ) {
