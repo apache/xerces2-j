@@ -1,6 +1,7 @@
 # Makefile for directory ./socket
 
 TARGETS=\
+	DelayedInput.class\
 	KeepSocketOpen.class
 
 DIRS = io

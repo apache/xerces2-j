@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@
  * <http://www.apache.org/>.
  */
 
-package sax;
+package socket;
 
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
@@ -82,7 +82,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * This sample delays the input to the SAX parser to simulate reading data
  * from a socket where data is not always immediately available. An XML
  * parser should be able to parse the input and perform the necessary
- * callbacks as data becomes available.
+ * callbacks as data becomes available. So this is a good way to test
+ * any parser that implements the SAX2 <code>XMLReader</code> interface
+ * to see if it can parse data as it arrives.
+ * <p>
+ * <strong>Note:</strong> This sample uses NSGMLS-like output of elements
+ * and attributes interspersed with information about how many bytes are
+ * being read at a time.
  *
  * @author Andy Clark, IBM
  *
@@ -442,7 +448,7 @@ public class DelayedInput
     /** Prints the usage. */
     private static void printUsage() {
 
-        System.err.println("usage: java sax.DelayedInput (options) filename ...");
+        System.err.println("usage: java socket.DelayedInput (options) filename ...");
         System.err.println();
         
         System.err.println("options:");

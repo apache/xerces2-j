@@ -2,7 +2,6 @@
 
 TARGETS=\
 	Counter.class\
-	DelayedInput.class\
 	DocumentTracer.class\
 	Writer.class
 
