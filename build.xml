@@ -246,6 +246,10 @@ Copyright:
   <!-- Creates the implementation class package, excluding DOM Level 3     -->
   <!-- =================================================================== -->
   <target name="jar" depends="compile">
+    <!-- take care of manifest file -->
+    <copy todir="${build.dir}" file="${src.dir}/manifest.xerces"/>
+    <replace file="${build.dir}/manifest.xerces"
+             token="@@VERSION@@" value="${parser.Version}"/>
     <jar jarfile="${build.dir}/${jar.parser}"
          basedir="${build.dest}"
          compress="true"
@@ -257,7 +261,8 @@ Copyright:
                    org/w3c/dom/DOMImplementationSource.class
                    org/w3c/dom/DOMImplementationRegistry.class
                    org/w3c/dom/DOMLocator.class
-                   org/w3c/dom/UserDataHandler.class"/>
+                   org/w3c/dom/UserDataHandler.class"
+    manifest="${build.dir}/manifest.xerces"/>
   </target>
 
   <!-- =================================================================== -->
