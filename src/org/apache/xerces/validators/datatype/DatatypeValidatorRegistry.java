@@ -118,7 +118,8 @@ public class DatatypeValidatorRegistry {
         addValidator("NMTOKEN", createDatatypeValidator("string", facets,
                                                                        SchemaSymbols.ATTVAL_RESTRICTION ));
 
-        addValidator("NMTOKENS", createDatatypeValidator("NMTOKEN", facets,
+
+        addValidator("NMTOKENS", createDatatypeValidator("NMTOKEN", null,
                                                                        SchemaSymbols.ATTVAL_LIST));
 
 
