@@ -51,7 +51,6 @@ import org.apache.xerces.util.IntStack;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
-import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
@@ -3442,7 +3441,7 @@ public class XMLSchemaValidator
                         for (int k = 0; k < fFieldCount; ++k) {
                             final Object value1 = values.elementAt(i+k);
                             final Object value2 = fValues.elementAt(j+k);
-                            if (value1 != value2 && !value1.equals(value2)) {
+                            if (value1 != value2 && (value1 == null || !value1.equals(value2))) {
                                 continue INNER;
                             }
                         }
@@ -3491,6 +3490,11 @@ public class XMLSchemaValidator
             // no values
             if (length == 0) {
                 return "";
+            }
+            
+            // one value
+            if (length == 1) {
+                return String.valueOf(values.elementAt(start));
             }
 
             // construct value string
