@@ -120,7 +120,7 @@ public class XMLDTDValidator
     private int fElementDepth = -1;
 
     /** validation states */
-    private boolean fStandaloneIsNo = false;
+    private boolean fStandaloneIsYes = false;
     private boolean fSeenRootElement = false;
 
     /** temporary variables so that we create less objects */
@@ -131,6 +131,8 @@ public class XMLDTDValidator
     // Constructors
     //
 
+    public XMLDTDValidator() {
+    }
 
     //
     // XMLComponent methods
@@ -154,6 +156,11 @@ public class XMLDTDValidator
         throws SAXException {
         
         super.reset(configurationManager);
+
+        for (int i = 0; i < fElementQNamePartsStack.length; i++) {
+            fElementQNamePartsStack[i] = new QName();
+        }
+
 
         fElementDepth = -1;
 
@@ -195,8 +202,8 @@ public class XMLDTDValidator
         throws SAXException {
 
         if (standalone != null ) 
-            if ( standalone.equals("no") ) {
-                fStandaloneIsNo = true;
+            if ( standalone.equals("yes") ) {
+                fStandaloneIsYes = true;
             }
 
         // call handlers
@@ -268,10 +275,31 @@ public class XMLDTDValidator
             rootElementSpecified(element);
         }
 
-        // TO DO
-        //  0. resolve the element
-        //  1. insert default attributes
-        //  2. validate the attrivute list.
+        if (fCurrentGrammar == null && !fValidation ) {
+            fCurrentElementIndex = -1;
+            fCurrentContentSpecType = -1;
+            //fInElementContent = false;
+        }
+        else {
+            //  0. resolve the element
+            fCurrentElementIndex = fCurrentGrammar.getElementDeclIndex(element, -1);
+
+            fCurrentContentSpecType = getContentSpecType(fCurrentElementIndex);
+            if (fCurrentContentSpecType == -1 && fValidation ) {
+                // REVISIT
+                /****
+                reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
+                                          XMLMessages.VC_ELEMENT_VALID,
+                                          element.rawname);
+                /****/
+            }
+            
+            //  1. insert default attributes
+            //  2. validate the attrivute list.
+            // TO DO: 
+            // addDefaultAttributesAndValidate(fCurrentElementIndex, attriubtes, fStandaloneIsNo);
+            
+        }
 
         // increment the element depth, add this element's 
         // QName to its enclosing element 's children list
@@ -419,6 +447,7 @@ public class XMLDTDValidator
             fCurrentElement.clear();
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
+            //fInElementContent = false;
 
             // TO DO : fix this
             //
@@ -702,7 +731,7 @@ public class XMLDTDValidator
         if (fInDTD) {
             fDTDGrammar.endEntity(name);
             if (fDTDHandler != null) {
-                fDocumentHandler.endEntity(name);
+                fDTDHandler.endEntity(name);
             }
         }
         else {
@@ -1280,11 +1309,23 @@ public class XMLDTDValidator
         return -1;
 
     } // checkContent(int,int,QName[]):int
+    
+    
+    /** Returns the content spec type for an element index. */
+    private int getContentSpecType(int elementIndex) {
+
+        int contentSpecType = -1;
+        if ( elementIndex > -1) {
+            if ( fCurrentGrammar.getElementDecl(elementIndex,fTempElementDecl) ) {
+                contentSpecType = fTempElementDecl.type;
+            }
+        }
+        return contentSpecType;
+    }
 
 
     /** ensure element stack capacity */
     private void ensureStackCapacity ( int newElementDepth) {
-
         if (newElementDepth == fElementQNamePartsStack.length ) {
             int[] newStack = new int[newElementDepth * 2];
 
