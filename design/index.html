@@ -1,7 +1,7 @@
 <!-- $Id$ -->
 <html>
  <head>
-  <title>Xerces 2</title>
+  <title>Xerces2</title>
   <link rel='stylesheet' type='text/css' href='css/site.css'>
   <style type='text/css'>
    .needs { font-size: smaller }
@@ -10,7 +10,7 @@
  <body>
   <span class='netscape'>
   <a name='TOP'></a>
-  <h1>Xerces 2 Concept</h1>
+  <h1>Xerces2</h1>
   <a name='TOC'></a>
   <h2>Table of Contents</h2>
   <p>
@@ -30,7 +30,7 @@
   <a name='Goals'></a>
   <h2>Goals</h2>
   <p>
-   The ultimate goal of the Xerces 2 refactoring effort is to
+   The ultimate goal of the Xerces2 refactoring effort is to
    develop an XML parser that is simple, clean, and modular.
    By clearly defining the internal interfaces of the parser
    components, the design of the parser will be better understood
@@ -71,7 +71,9 @@
   <h2>Documentation</h2>
   <p>
    <dl>
+<!--
     <dt><a href='schedule.html'>Implementation Schedule</a></dt>
+-->
 
     <dt><a href='coding.html'>Coding Conventions</a></dt>
 
@@ -80,10 +82,15 @@
      Evaluation of <a href='crimson.html'>Crimson</a> and
      <a href='xerces.html'>Xerces</a> Code
     </dd>
-    <dd><a href='architecture.html'>Architecture Overview</a></dd>
+    <dd><a href='architecture.html'>Xerces2 Architecture</a></dd>
     <dd><a href='entities.html'>Entity Management</a></dd>
     <dd><a href='issues.html'>Implementation Issues</a></dd>
-    <dd><em>more coming soon...</em></dd>
+
+    <dt>Presentations</dt>
+    <dd>
+     <a href='http://www.apache.org/~andyc/speeches/20010407/Xerces2.ppt'>Xerces2</a> (PowerPoint 2000) <br>
+     07 Apr 2001: XML Developer's Day - Tokyo, Japan
+    </dd>
 
     <dt>Interfaces and Classes</dt>
     <dd>
@@ -117,13 +124,6 @@
   <a name='SourceCode'></a>
   <h2>Source Code</h2>
   <p>
-   The source code for the Xerces 2 concept implementation can
-   be obtained from the CVS repository. The ZIP file of the 
-   interfaces and classes only contains the stubs for the 
-   design generated from the design document; the actual source
-   code must be extracted from CVS.
-  </p>
-  <p>
    The source code is available in the Apache CVS repository
    in the "xerces_j_2" branch of the "xml-xerces" module. For
    anonymous access to the source code, use the following
@@ -143,7 +143,7 @@
     <tr>
      <td>xerces_j_2</td>
      <td>
-      Main development branch for the Xerces 2 concept implementation.
+      Main development branch for the Xerces2 implementation.
      </td>
     </tr>
     <tr>
@@ -184,7 +184,8 @@
       <strong>Warning:</strong> The entity scanner is very inefficient 
       and is not for production use. This entity scanner is only used 
       to implement the essential entity scanning methods needed by the 
-      document scanner.
+      document scanner. <em>Note:</em> This branch is no longer needed
+      and the files have been removed.
       <dl style='margin: 0'>
        <dt>Contents:</dt>
        <dd>src/org/apache/xerces/readers/XMLEntityManager.java</dd>
@@ -196,10 +197,22 @@
      <td>x2design</td>
      <td>
       A re-organization of class and interface packages to seperate core 
-      functionality from implementation.
+      functionality from implementation. <em>Note:</em> This
+      work has now been merged back into the "xerces_j_2" branch.
       <dl style='margin: 0'>
        <dt>Contents:</dt>
        <dd>design/xml/design.xml</dd>
+      </dl>
+     </td>
+    </tr>
+    <tr>
+     <td>parserConfig</td>
+     <td>
+      Experimentation with parser configuration. <em>Note:</em> This
+      work has now been merged back into the "xerces_j_2" branch.
+      <dl style='margin: 0'>
+       <dt>Contents:</dt>
+       <dd>src/org/apache/xerces/parsers (directory)</dd>
       </dl>
      </td>
     </tr>
@@ -216,6 +229,7 @@
   <a name='BOTTOM'></a>
   <hr>
   <span class='netscape'>
+   Author: Andy Clark <br>
    Last modified: $Date$
   </span>
  </body>
