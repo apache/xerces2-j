@@ -140,12 +140,14 @@ public class DOMImplementationImpl extends CoreDOMImplementationImpl
             (feature.equalsIgnoreCase("Core")
             && (anyVersion
 		|| version.equals("1.0")
-		|| version.equals("2.0")))
-         || (feature.equalsIgnoreCase("XML")
+		|| version.equals("2.0")
+                || version.equals("3.0")))
+         || (feature.equalsIgnoreCase("XML") 
             && (anyVersion
 		|| version.equals("1.0")
-		|| version.equals("2.0")))
-         || (feature.equalsIgnoreCase("Events")
+		|| version.equals("2.0")
+                || version.equals("3.0")))
+         || (feature.equalsIgnoreCase("Events") 
 	     && (anyVersion
 		 || version.equals("2.0")))
          || (feature.equalsIgnoreCase("MutationEvents")

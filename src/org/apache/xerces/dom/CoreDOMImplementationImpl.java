@@ -68,6 +68,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMParser;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.DOMInput;
+import org.w3c.dom.ls.DOMOutput;
 import org.w3c.dom.ls.DOMSerializer;
 /**
  * The DOMImplementation class is description of a particular
@@ -381,6 +382,7 @@ public class CoreDOMImplementationImpl
 	public DOMInput createDOMInput() {
 		return new DOMInputImpl();
 	}
+        
 	//
 	// Protected methods
 	//
@@ -428,5 +430,15 @@ public class CoreDOMImplementationImpl
             return ++docAndDoctypeCounter;
        }
 
+    /* DOM Level 3 WD - Experimental.
+     * 
+     * Create a new empty output source.
+     * @return  The newly created output object.
+     * - Gopal Sharma
+     * TODO: Real wording should be collected from W3C next LS
+     */
+       public DOMOutput createDOMOutput() {
+           return new DOMOutputImpl();
+       }       
     
 } // class DOMImplementationImpl

@@ -977,7 +977,15 @@ public class ElementImpl
             synchronizeData();
         }
         Attr at = getAttributeNode(name);
-        if (ownerDocument.errorChecking) {
+		
+		if( at == null){
+       		String msg = DOMMessageFormatter.formatMessage(
+									DOMMessageFormatter.DOM_DOMAIN, 
+									"NOT_FOUND_ERR", null);
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+		}
+        
+		if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
@@ -1009,7 +1017,15 @@ public class ElementImpl
             synchronizeData();
         }
         Attr at = getAttributeNodeNS(namespaceURI, localName);
-        if (ownerDocument.errorChecking) {
+		
+		if( at == null){
+       		String msg = DOMMessageFormatter.formatMessage(
+									DOMMessageFormatter.DOM_DOMAIN, 
+									"NOT_FOUND_ERR", null);
+            throw new DOMException(DOMException.NOT_FOUND_ERR, msg);
+		}
+       
+		if (ownerDocument.errorChecking) {
             if (isReadOnly()) {
                 String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.DOM_DOMAIN, "NO_MODIFICATION_ALLOWED_ERR", null);
                 throw new DOMException(
