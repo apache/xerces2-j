@@ -112,8 +112,9 @@ public final class XMLAttrList
 
     // Flags (bits)
 
-    private static final int ATTFLAG_SPECIFIED = 1;
-    private static final int ATTFLAG_LASTATTR  = 2;
+    private static final int ATTFLAG_SPECIFIED  = 1;
+    private static final int ATTFLAG_LASTATTR   = 2;
+    private static final int ATTFLAG_NEEDSEARCH = 4;
 
     //
     // Data
@@ -188,12 +189,9 @@ public final class XMLAttrList
             chunk = fCurrentHandle >> CHUNK_SHIFT;
             index = fCurrentHandle & CHUNK_MASK;
             for (int attrIndex = fCurrentHandle; attrIndex < fAttrCount; attrIndex++) {
-                // we only check on rawname, which results in bug 2250
-                // we should check uri+localpart, but uri is not ready at this point
-                // fix it later. ??? TO BE DONE
+                // check on rawname, as required by XML1.0
+                // we check qname later in endAttrList
                 if (fStringPool.equalNames(fAttName[chunk][index], attribute.rawname)) {
-                //if (fStringPool.equalNames(fAttURI[chunk][index], attribute.uri) &&
-                //    fStringPool.equalNames(fAttLocalpart[chunk][index], attribute.localpart)) {
                     return -1;
                 }
                 if (++index == CHUNK_SIZE) {
@@ -205,6 +203,7 @@ public final class XMLAttrList
             chunk = fAttrCount >> CHUNK_SHIFT;
             index = fAttrCount & CHUNK_MASK;
         }
+
         ensureCapacity(chunk, index);
         fAttPrefix[chunk][index] = attribute.prefix;
         fAttLocalpart[chunk][index] = attribute.localpart;
@@ -212,7 +211,7 @@ public final class XMLAttrList
         fAttURI[chunk][index] = attribute.uri;
         fAttValue[chunk][index] = attValue;
         fAttType[chunk][index] = attType;
-        fAttFlags[chunk][index] = (byte)(specified ? ATTFLAG_SPECIFIED : 0);
+        fAttFlags[chunk][index] = (byte)((specified ? ATTFLAG_SPECIFIED : 0) | (search ? ATTFLAG_NEEDSEARCH : 0));
         return fAttrCount++;
 
     } // addAttr(QName,int,int,boolean,boolean):int
@@ -230,12 +229,54 @@ public final class XMLAttrList
     /**
      * Terminate the current set of attributes.
      */
-    public void endAttrList() {
+    public int[] endAttrList() {
+        if (fCurrentHandle == -1)
+            return null;
+        int oldHandle = fCurrentHandle;
+
         int attrIndex = fAttrCount - 1;
         int chunk = attrIndex >> CHUNK_SHIFT;
         int index = attrIndex & CHUNK_MASK;
         fAttFlags[chunk][index] |= ATTFLAG_LASTATTR;
         fCurrentHandle = -1;
+
+        int dupCount = 0;
+        int dupNames[] = null;
+
+        int attrIndex1 = oldHandle + 1, attrIndex2;
+        int chunk1 = attrIndex1 >> CHUNK_SHIFT;
+        int index1 = attrIndex1 & CHUNK_MASK;
+        int chunk2, index2;
+        for (; attrIndex1 < fAttrCount; attrIndex1++) {
+            if ((fAttFlags[chunk1][index1] & ATTFLAG_NEEDSEARCH) == 0)
+                continue;
+            chunk2 = chunk1;
+            index2 = index1;
+            for (attrIndex2 = oldHandle; attrIndex2 < attrIndex1; attrIndex2++) {
+                if (--index2 == -1) {
+                    chunk2--;
+                    index2 = CHUNK_SIZE-1;
+                }
+                if (fStringPool.equalNames(fAttURI[chunk1][index1], fAttURI[chunk2][index2]) &&
+                    fStringPool.equalNames(fAttLocalpart[chunk1][index1], fAttLocalpart[chunk2][index2])) {
+                    if (dupCount == 0)
+                        dupNames = new int[fAttrCount - oldHandle];
+                    dupNames[dupCount++] = fAttName[chunk1][index1];
+                }
+            }
+            if (++index1 == CHUNK_SIZE) {
+                chunk1++;
+                index1 = 0;
+            }
+        }
+
+        if (dupCount > 0) {
+            int[] names = new int[dupCount];
+            System.arraycopy(dupNames, 0, names, 0, dupCount);
+            dupNames = names;
+        }
+
+        return dupNames;
     }
 
     /**
