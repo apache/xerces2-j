@@ -33,6 +33,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * registered external subset resolver does not provide an external subset
  * for a given document, it should return <code>null</code>.</p>
  *
+ * @xerces.internal
+ * 
  * @author Michael Glavassevich, IBM
  *
  * @version $Id$

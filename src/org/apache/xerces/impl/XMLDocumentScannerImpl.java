@@ -54,6 +54,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
  *  <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @author Glenn Marcy, IBM
  * @author Andy Clark, IBM

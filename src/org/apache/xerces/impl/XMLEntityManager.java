@@ -73,7 +73,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  *  <li>http://apache.org/xml/properties/internal/entity-resolver</li>
  * </ul>
  *
- *
+ * @xerces.internal
+ * 
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM
  *
@@ -2139,6 +2140,8 @@ public class XMLEntityManager
 
     /**
      * Entity information.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -2201,6 +2204,8 @@ public class XMLEntityManager
 
     /**
      * Internal entity.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -2265,6 +2270,8 @@ public class XMLEntityManager
 
     /**
      * External entity.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -2337,6 +2344,8 @@ public class XMLEntityManager
 
     /**
      * Entity state.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -2583,25 +2592,28 @@ public class XMLEntityManager
 
     } // class ScannedEntity
 
-    // This class wraps the byte inputstreams we're presented with.
-    // We need it because java.io.InputStreams don't provide
-    // functionality to reread processed bytes, and they have a habit
-    // of reading more than one character when you call their read()
-    // methods.  This means that, once we discover the true (declared)
-    // encoding of a document, we can neither backtrack to read the
-    // whole doc again nor start reading where we are with a new
-    // reader.
-    //
-    // This class allows rewinding an inputStream by allowing a mark
-    // to be set, and the stream reset to that position.  <strong>The
-    // class assumes that it needs to read one character per
-    // invocation when it's read() method is inovked, but uses the
-    // underlying InputStream's read(char[], offset length) method--it
-    // won't buffer data read this way!</strong>
-    //
-    // @author Neil Graham, IBM
-    // @author Glenn Marcy, IBM
-
+    /**
+     * This class wraps the byte inputstreams we're presented with.
+     * We need it because java.io.InputStreams don't provide
+     * functionality to reread processed bytes, and they have a habit
+     * of reading more than one character when you call their read()
+     * methods.  This means that, once we discover the true (declared)
+     * encoding of a document, we can neither backtrack to read the
+     * whole doc again nor start reading where we are with a new
+     * reader.
+     *
+     * This class allows rewinding an inputStream by allowing a mark
+     * to be set, and the stream reset to that position.  <strong>The
+     * class assumes that it needs to read one character per
+     * invocation when it's read() method is inovked, but uses the
+     * underlying InputStream's read(char[], offset length) method--it
+     * won't buffer data read this way!</strong>
+     *
+     * @xerces.internal
+     *  
+     * @author Neil Graham, IBM
+     * @author Glenn Marcy, IBM
+     */
     protected final class RewindableInputStream extends InputStream {
 
         private InputStream fInputStream;

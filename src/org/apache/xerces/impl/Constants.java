@@ -21,6 +21,8 @@ import java.util.NoSuchElementException;
 
 /**
  * Commonly used constants.
+ * 
+ * @xerces.internal
  *
  * @author Andy Clark, IBM
  *

@@ -29,6 +29,8 @@ import org.apache.xerces.xni.XMLString;
  * Implements the entity scanner methods in
  * the context of XML 1.1.
  *
+ * @xerces.internal
+ *
  * @author Michael Glavassevich, IBM
  * @author Neil Graham, IBM
  * @version $Id$

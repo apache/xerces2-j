@@ -57,6 +57,8 @@ import org.apache.xerces.xni.parser.XMLParseException;
  * <ul>
  *  <li>http://apache.org/xml/features/continue-after-fatal-error</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @see MessageFormatter
  *

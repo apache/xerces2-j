@@ -48,6 +48,8 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM

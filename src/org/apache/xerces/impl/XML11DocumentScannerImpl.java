@@ -44,6 +44,8 @@ import org.apache.xerces.xni.XNIException;
  *  <li>http://apache.org/xml/properties/internal/dtd-scanner</li>
  * </ul>
  *
+ * @xerces.internal
+ *
  * @author Glenn Marcy, IBM
  * @author Andy Clark, IBM
  * @author Arnaud  Le Hors, IBM

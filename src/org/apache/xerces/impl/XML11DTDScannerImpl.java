@@ -40,6 +40,8 @@ import org.apache.xerces.xni.XNIException;
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @author Arnaud  Le Hors, IBM
  * @author Andy Clark, IBM

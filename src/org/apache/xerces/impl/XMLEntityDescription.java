@@ -21,6 +21,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 /**
  * <p>This interface describes the properties of entities--their
  * physical location and their name.</p>
+ * 
+ * @xerces.internal
  *
  * @author Michael Glavassevich, IBM
  * 

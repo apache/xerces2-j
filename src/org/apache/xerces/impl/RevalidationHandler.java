@@ -21,7 +21,7 @@ import org.apache.xerces.xni.parser.XMLDocumentFilter;
 /**
  * DOM Revalidation handler adds additional functionality to XMLDocumentHandler
  * 
- *
+ * @xerces.internal
  * @author Elena Litani, IBM
  * @version $Id$
  */

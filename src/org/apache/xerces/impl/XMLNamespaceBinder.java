@@ -47,6 +47,8 @@ import org.apache.xerces.xni.parser.XMLDocumentSource;
  *  <li>http://apache.org/xml/properties/internal/symbol-table</li>
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @author Andy Clark, IBM
  *

@@ -55,6 +55,8 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  *  <li>http://apache.org/xml/properties/internal/error-reporter</li>
  *  <li>http://apache.org/xml/properties/internal/entity-manager</li>
  * </ul>
+ * 
+ * @xerces.internal
  *
  * @author Glenn Marcy, IBM
  * @author Andy Clark, IBM
@@ -1533,6 +1535,8 @@ public class XMLDocumentFragmentScannerImpl
      * This interface defines an XML "event" dispatching model. Classes
      * that implement this interface are responsible for scanning parts
      * of the XML document and dispatching callbacks.
+     * 
+     * @xerces.internal
      *
      * @author Glenn Marcy, IBM
      */

@@ -21,6 +21,8 @@ package org.apache.xerces.impl;
  * This class performs namespace binding on the startElement and endElement
  * method calls in accordance with Namespaces in XML 1.1.  It extends the standard,
  * Namespace-1.0-compliant binder in order to do this.
+ * 
+ * @xerces.internal
  *
  * @author Neil Graham, IBM
  *

@@ -31,11 +31,12 @@ import org.apache.xerces.xni.parser.XMLInputSource;
  * which scanner to use: XML 1.1 or XML 1.0.
  * The version is scanned using XML 1.1. scanner.  
  * 
+ * @xerces.internal
+ * 
  * @author Neil Graham, IBM 
  * @author Elena Litani, IBM
  * @version $Id$
  */
-
 public class XMLVersionDetector {
 
     //

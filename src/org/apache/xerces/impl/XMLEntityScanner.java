@@ -32,6 +32,8 @@ import org.apache.xerces.xni.XMLString;
 /**
  * Implements the entity scanner methods.
  *
+ * @xerces.internal
+ * 
  * @author Andy Clark, IBM
  * @author Neil Graham, IBM
  * @version $Id$

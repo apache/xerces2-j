@@ -23,6 +23,8 @@ import org.apache.xerces.xni.XNIException;
 /**
  * The entity handler interface defines methods to report information
  * about the start and end of entities.
+ * 
+ * @xerces.internal
  *
  * @see org.apache.xerces.impl.XMLEntityScanner
  *
