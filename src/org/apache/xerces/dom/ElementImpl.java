@@ -686,14 +686,21 @@ public class ElementImpl
     } // setAttributeNodeNS(Attr):Attr
     
     /**
-     * Introduced in DOM Level 2. <p>
+     * Introduced in DOM Level 2.
+     */
+    public boolean hasAttributes() {
+        return (attributes != null && attributes.getLength() != 0);
+    }
+
+    /**
+     * Introduced in DOM Level 2.
      */
     public boolean hasAttribute(String name) {
         return getAttributeNode(name) != null;
     }
 
     /**
-     * Introduced in DOM Level 2. <p>
+     * Introduced in DOM Level 2.
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
         return getAttributeNodeNS(namespaceURI, localName) != null;
