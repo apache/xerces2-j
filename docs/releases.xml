@@ -15,7 +15,7 @@
            <li>Fixed datatype enumeration bugs [jeffreyr]</li>
            <li>Fixed datatype pattern bugs [jeffreyr]</li>
            <li>Fixed datatype min/maxLength bugs [jeffreyr]</li>
-           <li>Modified samples to include additional switched [jeffreyr]</li>
+           <li>Modified samples to include additional switches [jeffreyr]</li>
            <li>Fixed lexical comparison for string/qname datatypes [jeffreyr]</li>
            <li>Added regular expression character class subtraction [tkent@jp.ibm.com]</li>
            <li>Fixed regular expression bugs [tkent@jp.ibm.com]</li>
