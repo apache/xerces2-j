@@ -99,7 +99,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
         if (child !=null) {
             // traverse Annotation
-            if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
@@ -111,7 +111,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         for (; child != null; child = DOMUtil.getNextSiblingElement(child)) {
 
             particle = null;
-            childName = child.getLocalName();
+            childName = DOMUtil.getLocalName(child);
 
             // Only elements are allowed in <all>
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
@@ -238,7 +238,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
         Element child = DOMUtil.getFirstChildElement(decl);
         if (child !=null) {
             // traverse Annotation
-            if (child.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+            if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(child, attrValues, false, schemaDoc);
                 child = DOMUtil.getNextSiblingElement(child);
             }
@@ -252,7 +252,7 @@ abstract class XSDAbstractParticleTraverser extends XSDAbstractTraverser {
 
             particle = null;
 
-            childName = child.getLocalName();
+            childName = DOMUtil.getLocalName(child);
             if (childName.equals(SchemaSymbols.ELT_ELEMENT)) {
                 particle = fSchemaHandler.fElementTraverser.traverseLocal(child, schemaDoc, grammar, NOT_ALL_CONTEXT);
             }

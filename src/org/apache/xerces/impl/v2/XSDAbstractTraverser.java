@@ -131,7 +131,7 @@ abstract class XSDAbstractTraverser {
         for (Element child = DOMUtil.getFirstChildElement(annotationDecl);
             child != null;
             child = DOMUtil.getNextSiblingElement(child)) {
-            String name = child.getLocalName();
+            String name = DOMUtil.getLocalName(child);
 
             // the only valid children of "annotation" are
             // "appinfo" and "documentation"
@@ -213,7 +213,16 @@ abstract class XSDAbstractTraverser {
         short flags = 0; // flag facets that have fixed="true"
         int numEnumerationLiterals = 0;
         Vector enumData  = new Vector();
-        content = checkContent(content , contentAttrs, schemaDoc);
+        if (content != null) {
+             // traverse annotation if any
+             if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                 traverseAnnotationDecl(content, contentAttrs, false, schemaDoc);
+                 content = DOMUtil.getNextSiblingElement(content);
+             }
+             if (content !=null && DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                  reportGenericSchemaError("Facets have more than one annotation.");
+             }
+       }
         String facet;
 
         int numFacets=0;
@@ -248,7 +257,18 @@ abstract class XSDAbstractTraverser {
                     fSymbolTable.addSymbol(enumVal);
                 }
                 enumData.addElement(enumVal);
-                checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
+                Element child = DOMUtil.getFirstChildElement( content );
+
+                if (child != null) {
+                     // traverse annotation if any
+                     if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                         traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                         child = DOMUtil.getNextSiblingElement(child);
+                     }
+                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                          reportGenericSchemaError("Enumeration facet has more than one annotation.");
+                     }
+               }
             }
             else if (facet.equals(SchemaSymbols.ELT_ANNOTATION) || facet.equals(SchemaSymbols.ELT_SIMPLETYPE)) {
                 //REVISIT:
@@ -270,7 +290,18 @@ abstract class XSDAbstractTraverser {
                     // ---------------------------------------------
                     fPattern.append("|");
                     fPattern.append(DOMUtil.getAttrValue(content, SchemaSymbols.ATT_VALUE ));
-                    checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
+                    
+                    Element child = DOMUtil.getFirstChildElement( content );
+                    if (child != null) {
+                         // traverse annotation if any
+                         if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                             traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                             child = DOMUtil.getNextSiblingElement(child);
+                         }
+                         if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                              reportGenericSchemaError("Pattern facet has more than one annotation.");
+                         }
+                   }
                 }
             }
             else {
@@ -322,7 +353,18 @@ abstract class XSDAbstractTraverser {
                     flags |= facetType;
                 }
                 fFacetData.put(facet,content.getAttribute( SchemaSymbols.ATT_VALUE ));
-                checkContent(DOMUtil.getFirstChildElement( content ), attrs, schemaDoc);
+                
+                Element child = DOMUtil.getFirstChildElement( content );
+                if (child != null) {
+                     // traverse annotation if any
+                     if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                         traverseAnnotationDecl(child, attrs, false, schemaDoc);
+                         child = DOMUtil.getNextSiblingElement(child);
+                     }
+                     if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                          reportGenericSchemaError(facet+" facet has more than one annotation.");
+                     }
+               }
             }
             // REVISIT: when to return the array
             fAttrChecker.returnAttrArray (attrs, schemaDoc);
@@ -447,33 +489,6 @@ abstract class XSDAbstractTraverser {
                                    XMLErrorReporter.SEVERITY_ERROR);
     }
 
-    //
-    // Evaluates content of Annotation if present.
-    //
-    // @param: content - the first child of <code>elm</code> that needs to be checked
-    // @param parentAttrs:  attributes of the parent element; needed for PSVI.
-    // @param schemaDoc:  the currently active schema document.
-    //
-
-    //REVISIT: if we want to expose annotation information to the application,
-    //         then it may be difficult to use this method because traversers
-    //         will need to store the <annotation> component in the grammar.
-    //          We would then have to provide some means of accessing that component.
-    // Note that it is assumed this method is never invoked in a global context.
-
-    Element checkContent( Element content, Object[] parentAttrs, XSDocumentInfo schemaDoc ) {
-
-        if (content == null) {
-            return content;
-        }
-        String tag = content.getLocalName();
-        if (tag != null && tag.equals(SchemaSymbols.ELT_ANNOTATION)) {
-            traverseAnnotationDecl(content, parentAttrs, false, schemaDoc);
-            content = DOMUtil.getNextSiblingElement(content);
-        }
-
-        return content;
-    }
 
     /**
      * Element/Attribute traversers call this method to check whether

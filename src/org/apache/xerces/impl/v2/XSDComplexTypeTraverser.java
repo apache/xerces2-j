@@ -183,8 +183,18 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
             // ---------------------------------------------------------------
             // First, handle any ANNOTATION declaration and get next child
             // ---------------------------------------------------------------
-            child = checkContent( DOMUtil.getFirstChildElement(complexTypeDecl), attrValues, schemaDoc);
+            child = DOMUtil.getFirstChildElement(complexTypeDecl);
 
+            if (child != null) {
+                // traverse annotation if any
+                if (DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(child, attrValues, false, schemaDoc);
+                    child = DOMUtil.getNextSiblingElement(child);
+                }
+                if (child !=null && DOMUtil.getLocalName(child).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    reportGenericSchemaError("ComplexType "+complexTypeName+" has more than one annotation.");
+                }
+            }
             // ---------------------------------------------------------------
             // Process the content of the complex type definition
             // ---------------------------------------------------------------
@@ -264,8 +274,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        typeInfo.fContentType = XSComplexTypeDecl.CONTENTTYPE_SIMPLE;
        typeInfo.fParticle = null;
 
-       Element simpleContent = checkContent(DOMUtil.getFirstChildElement(simpleContentElement), attrValues, schemaDoc);
-
+       Element simpleContent = DOMUtil.getFirstChildElement(simpleContentElement);
+       if (simpleContent != null) {
+                // traverse annotation if any
+                if (DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    traverseAnnotationDecl(simpleContent, attrValues, false, schemaDoc);
+                    simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
+                }
+       }
        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
        // If there are no children, return
@@ -338,7 +354,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        else {
           baseValidator = (DatatypeValidator)type;
           if (typeInfo.fDerivedBy == SchemaSymbols.RESTRICTION) {
-             reportGenericSchemaError("ComplexTYpe " + typeName + ": " +
+             reportGenericSchemaError("ComplexType " + typeName + ": " +
              "ct-props-correct.2:  The base is a simple type.   It cannot be used in a derivation by restriction");
              throw new ComplexTypeRecoverableError();
           }
@@ -358,8 +374,19 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -----------------------------------------------------------------------
        // Skip over any potential annotations
        // -----------------------------------------------------------------------
-       simpleContent = checkContent(DOMUtil.getFirstChildElement(simpleContent),
-                                     null, schemaDoc);
+       simpleContent = DOMUtil.getFirstChildElement(simpleContent);
+       if (simpleContent != null) {
+             // traverse annotation if any
+
+             if (DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                 traverseAnnotationDecl(simpleContent, null, false, schemaDoc);
+                 simpleContent = DOMUtil.getNextSiblingElement(simpleContent);
+             }
+
+             if (simpleContent !=null && DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                  reportGenericSchemaError("ComplexType "+typeName+" simpleContent has more than one annotation.");
+             }
+       }
 
        // -----------------------------------------------------------------------
        // Process a RESTRICTION
@@ -370,7 +397,7 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
           // There may be a simple type definition in the restriction element
           // The data type validator will be based on it, if specified
           // -----------------------------------------------------------------------
-          if (DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
+          if (simpleContent !=null && DOMUtil.getLocalName(simpleContent).equals(SchemaSymbols.ELT_SIMPLETYPE )) {
               DatatypeValidator dv =fSchemaHandler.fSimpleTypeTraverser.traverseLocal(simpleContent, schemaDoc, grammar);
               if (dv == null)
                 throw new ComplexTypeRecoverableError();
@@ -487,7 +514,14 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -----------------------------------------------------------------------
        typeInfo.fDatatypeValidator = null;
 
-       Element complexContent = checkContent(DOMUtil.getFirstChildElement(complexContentElement), attrValues, schemaDoc);
+       Element complexContent = DOMUtil.getFirstChildElement(complexContentElement);
+       if (complexContent != null) {
+             // traverse annotation if any
+             if (DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                 traverseAnnotationDecl(complexContent, attrValues, false, schemaDoc);
+                 complexContent = DOMUtil.getNextSiblingElement(complexContent);
+             }
+       }
 
        fAttrChecker.returnAttrArray(attrValues, schemaDoc);
        // If there are no children, return
@@ -560,9 +594,18 @@ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
        // -----------------------------------------------------------------------
        // Skip over any potential annotations
        // -----------------------------------------------------------------------
-       complexContent = checkContent(DOMUtil.getFirstChildElement(complexContent),
-                                     null, schemaDoc);
+       complexContent = DOMUtil.getFirstChildElement(complexContent);
 
+       if (complexContent != null) {
+             // traverse annotation if any
+             if (DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                 traverseAnnotationDecl(complexContent, null, false, schemaDoc);
+                 complexContent = DOMUtil.getNextSiblingElement(complexContent);
+             }
+             if (complexContent !=null && DOMUtil.getLocalName(complexContent).equals(SchemaSymbols.ELT_ANNOTATION)) {
+                  reportGenericSchemaError("ComplexType "+typeName+" complexContent has more than one annotation.");
+             }
+       }
        // -----------------------------------------------------------------------
        // Process the content.  Note:  should I try to catch any complexType errors
        // here in order to return the attr array?

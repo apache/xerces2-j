@@ -191,7 +191,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
         Element content = DOMUtil.getFirstChildElement(simpleTypeDecl);
         if (content != null) {
             // traverse annotation if any
-            if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+            if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
                 traverseAnnotationDecl(content, attrValues, false, schemaDoc);
                 content = DOMUtil.getNextSiblingElement(content);
             }
@@ -276,7 +276,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             //check content (annotation?, ...)
             if (content != null) {
                 // traverse annotation if any
-                if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
                     traverseAnnotationDecl(content, attrValues, false, schemaDoc);
                     content = DOMUtil.getNextSiblingElement(content);
                 }
@@ -378,13 +378,13 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
             if (memberTypes != null) {
                 if (content != null) {
                     // traverse annotation if any
-                    if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
                         traverseAnnotationDecl(content, attrValues, false, schemaDoc);
                         content = DOMUtil.getNextSiblingElement(content);
                     }
                 }
                 if (content !=null) {
-                    if (content.getLocalName().equals(SchemaSymbols.ELT_ANNOTATION)) {
+                    if (DOMUtil.getLocalName(content).equals(SchemaSymbols.ELT_ANNOTATION)) {
                         reportGenericSchemaError(nameProperty+" union should match the content Content: (annotation?, (simpleType*)");
                     }
                 }
