@@ -142,7 +142,6 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
             attrUse.fConstraintType = consType;
             attrUse.fDefault = defaultAtt;
         }
-
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
 
         //src-attribute
@@ -371,7 +370,11 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         boolean ret = true;
 
         try {
-            attribute.fDefault = attribute.fType.validate((String)attribute.fDefault, null);
+
+            //REVISIT:  Our validators don't return Objects yet, instead  return null
+            //         
+            //attribute.fDefault = attribute.fType.validate((String)attribute.fDefault, null);
+            attribute.fType.validate((String)attribute.fDefault, null);
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }
@@ -385,7 +388,11 @@ class XSDAttributeTraverser extends XSDAbstractTraverser {
         boolean ret = true;
 
         try {
-            attrUse.fDefault = attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
+
+            //REVISIT:  Our validators don't return Objects yet, instead  return null
+            //         
+            //attrUse.fDefault = attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
+            attrUse.fAttrDecl.fType.validate((String)attrUse.fDefault, null);
         } catch (InvalidDatatypeValueException ide) {
             ret = false;
         }
