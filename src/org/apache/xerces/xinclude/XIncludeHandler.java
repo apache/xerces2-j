@@ -57,12 +57,16 @@
 package org.apache.xerces.xinclude;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.net.*;
-import java.io.*;
+import java.io.Reader;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.Hashtable;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLEntityManager;
 import org.apache.xerces.impl.XMLErrorReporter;
@@ -1182,8 +1186,6 @@ public class XIncludeHandler
                 newHandler.setParent(this);
                 newHandler.setDocumentHandler(this.getDocumentHandler());
             }
-			//disabled for now.
-			//setHttpProperties(includedSource,attributes);
 
             // set all features on parserConfig to match this parser configuration
             copyFeatures(fSettings, fChildConfig);
@@ -1197,6 +1199,7 @@ public class XIncludeHandler
 
             try {
                 fNamespaceContext.pushScope();
+				setHttpProperties(includedSource,attributes);
                 fChildConfig.parse(includedSource);
                 // necessary to make sure proper location is reported in errors
                 if (fErrorReporter != null) {
@@ -1233,9 +1236,8 @@ public class XIncludeHandler
             includedSource.setEncoding(encoding);
 
             XIncludeTextReader reader = null;
-			//disabled for now.
-			//setHttpProperties(includedSource,attributes);
             try {
+				setHttpProperties(includedSource,attributes);
                 if (fIsXML11) {
                     reader = new XInclude11TextReader(includedSource, this);
                 }
@@ -2179,28 +2181,31 @@ public class XIncludeHandler
 	/**
 		Set the Accept,Accept-Language,Accept-CharSet 
 	*/
-	protected void setHttpProperties(XMLInputSource source,XMLAttributes attributes){
-		try{
-			String httpAcceptLang = attributes.getValue(HTTP_ACCEPT_LANGUAGE);
-			String httpAccept = attributes.getValue(HTTP_ACCEPT);
-			String httpAcceptchar = attributes.getValue(HTTP_ACCEPT_CHARSET);
-			InputStream stream = source.getByteStream();
-			if (stream == null) {
-   	        	URL location = new URL(source.getSystemId());
-   	         	URLConnection connect = location.openConnection();
-				if (connect instanceof HttpURLConnection) {
-					if( httpAcceptLang !=null && !httpAcceptLang.equals(""))
-						connect.setRequestProperty(HTTP_ACCEPT_LANGUAGE,httpAcceptLang);
+	protected void setHttpProperties(XMLInputSource source,XMLAttributes attributes) throws IOException{
+        Reader reader = source.getCharacterStream();
+        if (reader != null) 
+			return; 
+		String httpAcceptLang = attributes.getValue(HTTP_ACCEPT_LANGUAGE);
+		String httpAccept = attributes.getValue(HTTP_ACCEPT);
+		String httpAcceptchar = attributes.getValue(HTTP_ACCEPT_CHARSET);
+		InputStream stream = source.getByteStream();
+		if (stream == null) {
+			String literalSystemId = source.getSystemId();
+			String baseSystemId = source.getBaseSystemId();
+        	String expandedSystemId = XMLEntityManager.expandSystemId(literalSystemId, 
+													baseSystemId, false);
+   	        URL location = new URL(expandedSystemId);
+   	        URLConnection connect = location.openConnection();
+			if (connect instanceof HttpURLConnection) {
+				if( httpAcceptLang !=null && !httpAcceptLang.equals(""))
+					connect.setRequestProperty(HTTP_ACCEPT_LANGUAGE,httpAcceptLang);
 					if( httpAccept !=null && !httpAccept.equals(""))
 						connect.setRequestProperty(HTTP_ACCEPT,httpAccept);
 					if( httpAcceptchar !=null && !httpAcceptchar.equals(""))
 						connect.setRequestProperty(HTTP_ACCEPT_CHARSET,httpAcceptchar);
    	         }
-				stream = connect.getInputStream(); 
-				source.setByteStream(stream);
-			}
-		}catch(Exception ex){
-			ex.printStackTrace();
+			stream = connect.getInputStream(); 
+			source.setByteStream(stream);
 		}
 	}
 }
