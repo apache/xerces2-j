@@ -161,15 +161,13 @@ public abstract class ParentNode
      */
     public Node cloneNode(boolean deep) {
     	
+        if (needsSyncChildren()) {
+            synchronizeChildren();
+        }
     	ParentNode newnode = (ParentNode) super.cloneNode(deep);
 
         // set owner document
         newnode.ownerDocument = ownerDocument;
-
-        // REVISIT: Do we need to synchronize at this point? -Ac
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
 
     	// Need to break the association w/ original kids
     	newnode.firstChild      = null;
