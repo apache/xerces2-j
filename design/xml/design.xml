@@ -242,76 +242,6 @@
  <!-- Category: XNI -->
  <category name='Xerces Native Interface (XNI)' package='&package;.xni'>
   
-  <interface id='configurable' name='XMLComponent'>
-   <method name='reset'>
-    <param name='componentManager'>
-     <reference idref='configuration-manager'/>
-    </param>
-    <throws>
-     <reference idref='sax-exception'/>
-    </throws>
-   </method>
-   <method name='setFeature'>
-    <param name='featureId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='state'>
-     <primitive type='boolean'/>
-    </param>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='setProperty'>
-    <param name='propertyId'>
-     <reference idref='java-string'/>
-    </param>
-    <param name='value'>
-     <reference idref='java-object'/>
-    </param>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-  </interface>
-
-  <interface id='configuration-manager' name='XMLComponentManager'>
-   <method name='getFeature'>
-    <param name='featureId'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <primitive type='boolean'/>
-    </returns>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-   <method name='getProperty'>
-    <param name='propertyId'>
-     <reference idref='java-string'/>
-    </param>
-    <returns>
-     <reference idref='java-object'/>
-    </returns>
-    <throws>
-     <reference idref='sax-not-recognized-exception'/>
-    </throws>
-    <throws>
-     <reference idref='sax-not-supported-exception'/>
-    </throws>
-   </method>
-  </interface>
-
   <interface id='entity-handler' name='XMLEntityHandler'>
    <method name='startEntity'>
     <param name='name'>
@@ -1089,6 +1019,81 @@
   </class>
 
  </category>                                                   
+
+ <!-- Category: UNKNOWN -->
+ <category name='To Be Decided' package='&package;.tbd'>
+ 
+  <interface id='configurable' name='XMLComponent'>
+   <method name='reset'>
+    <param name='componentManager'>
+     <reference idref='configuration-manager'/>
+    </param>
+    <throws>
+     <reference idref='sax-exception'/>
+    </throws>
+   </method>
+   <method name='setFeature'>
+    <param name='featureId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='state'>
+     <primitive type='boolean'/>
+    </param>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+   <method name='setProperty'>
+    <param name='propertyId'>
+     <reference idref='java-string'/>
+    </param>
+    <param name='value'>
+     <reference idref='java-object'/>
+    </param>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+  </interface>
+
+  <interface id='configuration-manager' name='XMLComponentManager'>
+   <method name='getFeature'>
+    <param name='featureId'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <primitive type='boolean'/>
+    </returns>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+   <method name='getProperty'>
+    <param name='propertyId'>
+     <reference idref='java-string'/>
+    </param>
+    <returns>
+     <reference idref='java-object'/>
+    </returns>
+    <throws>
+     <reference idref='sax-not-recognized-exception'/>
+    </throws>
+    <throws>
+     <reference idref='sax-not-supported-exception'/>
+    </throws>
+   </method>
+  </interface>
+
+ </category>
                                                    
  <!-- Category: ERROR HANDLING -->
  <category name='Error Handling' package='&package;.framework'>
@@ -1515,8 +1520,8 @@
      <reference idref='string'/>
     </param>
     <returns>
-     <note>True if more content is available.</note>
-     <primitive type='boolean'/>
+     <note>The next character on the stream.</note>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1528,11 +1533,11 @@
      <primitive type='int'/>
     </param>
     <param name='content'>
-     <note>True if more attribute content is available.</note>
      <reference idref='string'/>
     </param>
     <returns>
-     <primitive type='boolean'/>
+     <note>The next character on the stream.</note>
+     <primitive type='int'/>
     </returns>
     <throws>
      <reference idref='java-io-exception'/>
@@ -1546,7 +1551,19 @@
      <reference idref='string'/>
     </param>
     <returns>
-     <note>True if more data is available</note>
+     <note>The next character on the stream.</note>
+     <primitive type='int'/>
+    </returns>
+    <throws>
+     <reference idref='java-io-exception'/>
+    </throws>
+   </method>
+   <method name='skipChar'>
+    <param name='c'>
+     <primitive type='int'/>
+    </param>
+    <returns>
+     <note>True if spaces were skipped.</note>
      <primitive type='boolean'/>
     </returns>
     <throws>
@@ -2822,6 +2839,7 @@
    <constant name='MASK_VALID'>
     <primitive type='byte'/>
    </constant>
+   <!--
    <constant name='MASK_LETTER'>
     <primitive type='byte'/>
    </constant>
@@ -2834,6 +2852,7 @@
    <constant name='MASK_EXTENDER'>
     <primitive type='byte'/>
    </constant>
+   -->
    <constant name='MASK_SPACE'>
     <primitive type='byte'/>
    </constant>
@@ -2843,14 +2862,18 @@
    <constant name='MASK_NAME'>
     <primitive type='byte'/>
    </constant>
+   <constant name='MASK_PUBID'>
+    <primitive type='byte'/>
+   </constant>
    <method name='isValid'>
     <param name='c'>
-     <primitive type='char'/>
+     <primitive type='int'/>
     </param>
     <returns>
      <primitive type='boolean'/>
     </returns>
    </method>
+   <!--
    <method name='isLetter'>
     <param name='c'>
      <primitive type='char'/>
@@ -2883,6 +2906,7 @@
      <primitive type='boolean'/>
     </returns>
    </method>
+   -->
    <method name='isSpace'>
     <param name='c'>
      <primitive type='char'/>
@@ -2900,6 +2924,14 @@
     </returns>
    </method>
    <method name='isName'>
+    <param name='c'>
+     <primitive type='char'/>
+    </param>
+    <returns>
+     <primitive type='boolean'/>
+    </returns>
+   </method>
+   <method name='isPubid'>
     <param name='c'>
      <primitive type='char'/>
     </param>
