@@ -450,6 +450,7 @@ public class DTDGrammar
         // REVISIT: Set the datatype validator
         // REVISIT: Don't forget attribute decl type, and enumeration
         fAttributeDecl.defaultValue = fStringPool.toString(attDefaultValue);
+
         int elementDeclIndex = getElementDeclIndex(elementDecl.localpart, -1);
         setAttributeDecl(elementDeclIndex, attributeDeclIndex, fAttributeDecl);
 

@@ -2444,9 +2444,9 @@ public final class XMLValidator
         /** addDefaultAttributes. */
     private int addDefaultAttributes(int elementIndex, XMLAttrList attrList, int attrIndex, boolean validationEnabled, boolean standalone) throws Exception {
 
-                //****DEBUG****
-                if (DEBUG) print("(POP) XMLValidator.addDefaultAttributes\n");
-                //****DEBUG****
+        //System.out.println("XMLValidator#addDefaultAttributes");
+        //System.out.print("  ");
+        //fGrammar.printAttributes(elementIndex);
 
         //
         // Check after all specified attrs are scanned
@@ -2456,7 +2456,7 @@ public final class XMLValidator
         //
         fGrammar.getElementDecl(elementIndex,fTempElementDecl);
         int elementNameIndex = fTempElementDecl.name.localpart;
-        int attlistIndex = fTempElementDecl.firstAttributeDeclIndex;
+        int attlistIndex = fGrammar.getFirstAttributeDeclIndex(elementIndex);
         int firstCheck = attrIndex;
         int lastCheck = -1;
         while (attlistIndex != -1) {
@@ -2465,14 +2465,19 @@ public final class XMLValidator
             fGrammar.getAttributeDecl(attlistIndex, fTempAttDecl);
 
             // TO DO: For ericye Debug only
-            /*if (fTempAttDecl != null) {
+            /***
+            if (fTempAttDecl != null) {
+                XMLElementDecl element = new XMLElementDecl();
+                fGrammar.getElementDecl(elementIndex, element);
+                System.out.println("element: "+fStringPool.toString(element.name.localpart));
                 System.out.println("attlistIndex " + attlistIndex + "\n"+
                     "attName : '"+fStringPool.toString(fTempAttDecl.name.localpart) + "'\n"
                                    + "attType : '"+fStringPool.toString(fTempAttDecl.type) + "'\n"
                                    + "attDefaultType : '"+fTempAttDecl.defaultType + "'\n"
                                    + "attDefaultValue : '"+fTempAttDecl.defaultValue + "'\n"
                                    );
-            }*/
+            }
+            /***/
 
             int attPrefix = fTempAttDecl.name.prefix;
             int attName = fTempAttDecl.name.localpart;

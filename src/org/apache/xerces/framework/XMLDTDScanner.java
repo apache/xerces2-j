@@ -1001,6 +1001,7 @@ public final class XMLDTDScanner {
      */
     public boolean scanDoctypeDecl() throws Exception
     {
+        //System.out.println("XMLDTDScanner#scanDoctypeDecl()");
         fDTDGrammar = new DTDGrammar(fStringPool, fEventHandler);
         fDTDGrammar.callStartDTD();
         increaseMarkupDepth();
@@ -1054,9 +1055,12 @@ public final class XMLDTDScanner {
         }
         decreaseMarkupDepth();
 
+        //System.out.println("  scanExternalSubset: "+scanExternalSubset);
         if (scanExternalSubset) {
             fDTDGrammar.startReadingFromExternalSubset(publicId, systemId);
         }
+	fGrammarResolver.putGrammar("", fDTDGrammar);
+
 
         return true;
     }
@@ -1680,7 +1684,11 @@ public final class XMLDTDScanner {
             return;
         }
         decreaseMarkupDepth();
-        int elementIndex = fDTDGrammar.addElementDecl(fElementQName, contentSpecType, contentSpec);
+        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        if (elementIndex == -1) {
+            elementIndex = fDTDGrammar.addElementDecl(fElementQName, contentSpecType, contentSpec);
+            //System.out.println("XMLDTDScanner#scanElementDecl->DTDGrammar#addElementDecl: "+elementIndex+" ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.localpart)+')');
+        }
 
     } // scanElementDecl()
 
@@ -1844,7 +1852,11 @@ public final class XMLDTDScanner {
                         XMLMessages.P52_ELEMENT_TYPE_REQUIRED);
             return;
         }
-        int elementIndex = fDTDGrammar.addElementDecl(fElementQName);
+        int elementIndex = fDTDGrammar.getElementDeclIndex(fElementQName.localpart, -1);
+        if (elementIndex == -1) {
+            elementIndex = fDTDGrammar.addElementDecl(fElementQName);
+            //System.out.println("XMLDTDScanner#scanAttListDecl->DTDGrammar#addElementDecl: "+elementIndex+" ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.localpart)+')');
+        }
         boolean sawSpace = checkForPEReference(true);
         if (fEntityReader.lookingAtChar('>', true)) {
             decreaseMarkupDepth();
@@ -1996,6 +2008,9 @@ public final class XMLDTDScanner {
             sawSpace = checkForPEReference(true);
             if (fEntityReader.lookingAtChar('>', true)) {
                 int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
+                //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
+                //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
                 decreaseMarkupDepth();
                 return;
             }
@@ -2013,10 +2028,16 @@ public final class XMLDTDScanner {
             }
             if (fEntityReader.lookingAtChar('>', true)) {
                 int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+                //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
+                //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
+                //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
                 decreaseMarkupDepth();
                 return;
             }
             int attDefIndex = fDTDGrammar.addAttDef(fElementQName, fAttributeQName, attDefType, attDefEnumeration, attDefDefaultType, attDefDefaultValue);
+            //System.out.println("XMLDTDScanner#scanAttlistDecl->DTDGrammar#addAttDef: "+attDefIndex+
+            //                   " ("+fElementQName.localpart+","+fStringPool.toString(fElementQName.rawname)+')'+
+            //                   " ("+fAttributeQName.localpart+","+fStringPool.toString(fAttributeQName.rawname)+')');
         }
     }
     //

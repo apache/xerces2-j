@@ -154,14 +154,11 @@ implements XMLContentSpec.Provider {
         int index = elementDeclIndex &  CHUNK_MASK;
 
         elementDecl.name.localpart          = fElementDeclNameIndex[chunk][index];               
+        elementDecl.name.uri                = 0; // ""
         elementDecl.type                    = fElementDeclType[chunk][index];                    
         elementDecl.datatypeValidator       = fElementDeclDatatypeValidator[chunk][index];       
         elementDecl.contentSpecIndex        = fElementDeclContentSpecIndex[chunk][index];        
         elementDecl.contentModelValidator   = fElementDeclContentModelValidator[chunk][index];   
-
-        //elementDecl.enclosingScope          = 
-        elementDecl.firstAttributeDeclIndex = fElementDeclFirstAttributeDeclIndex[chunk][index];
-        elementDecl.lastAttributeDeclIndex  = fElementDeclLastAttributeDeclIndex[chunk][index];
 
         return true;
     }
@@ -281,7 +278,17 @@ implements XMLContentSpec.Provider {
 
 
     public boolean getAttributeDecl(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
-        return false;
+        if (attributeDeclIndex < 0 || attributeDeclIndex >= fAttributeDeclCount) {
+            return false;
+        }
+        int chunk = attributeDeclIndex >> CHUNK_SHIFT;
+        int index = attributeDeclIndex & CHUNK_MASK;
+        attributeDecl.name.setValues(fAttributeDeclName[chunk][index]);
+        attributeDecl.type = fAttributeDeclType[chunk][index];
+        attributeDecl.datatypeValidator = fAttributeDeclDatatypeValidator[chunk][index];
+        attributeDecl.defaultType = fAttributeDeclDefaultType[chunk][index];
+        attributeDecl.defaultValue = fAttributeDeclDefaultValue[chunk][index];
+        return true;
     }
 
     //
@@ -296,25 +303,22 @@ implements XMLContentSpec.Provider {
 
         int chunk = fElementDeclCount >> CHUNK_SHIFT;
         int index = fElementDeclCount & CHUNK_MASK;
-        if ( ensureElementDeclCapacity(chunk) == true ) { // create an ElementDecl
-            fElementDeclNameIndex[chunk][index]               = -1; 
-            fElementDeclType[chunk][index]                    = -1;    
-            fElementDeclDatatypeValidator[chunk][index]       = null;
-
-            fContentSpecType[chunk][index]                    = -1;
-            fContentSpecValue[chunk][index]                   = -1;
-            fContentSpecOtherValue[chunk][index]              = -1;
-
-            fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
-            fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
-        }
+        ensureElementDeclCapacity(chunk);
+        fElementDeclNameIndex[chunk][index]               = -1; 
+        fElementDeclType[chunk][index]                    = -1;  
+        fElementDeclDatatypeValidator[chunk][index]       = null;
+        fElementDeclContentSpecIndex[chunk][index] = -1;
+        fElementDeclContentModelValidator[chunk][index] = null;
+        fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
+        //System.out.println("*** createElementDecl: "+fElementDeclFirstAttributeDeclIndex[chunk][index]);
+        fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
         return fElementDeclCount++;
     }
 
     protected void setElementDecl(int elementDeclIndex, XMLElementDecl elementDecl) {
 
         if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount) {
-
+            return;
         }
         int chunk = elementDeclIndex >> CHUNK_SHIFT;
         int index = elementDeclIndex &  CHUNK_MASK;
@@ -328,8 +332,6 @@ implements XMLContentSpec.Provider {
         // add the mapping information to the 
         fElementNameAndScopeToElementDeclIndexMapping.put(elementDecl.name.localpart, elementDecl.enclosingScope, 
                                                           elementDeclIndex);
-        //fElementDeclFirstAttributeDeclIndex[chunk][index] = 
-        //fElementDeclLastAttributeDeclIndex[chunk][index]  = 
     }
 
 
@@ -372,30 +374,68 @@ implements XMLContentSpec.Provider {
 
 
     protected void setAttributeDecl(int elementDeclIndex, int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
+        //System.out.println("Grammar#setAttributeDecl: "+elementDeclIndex+", "+attributeDeclIndex);
+
+        int attrChunk = attributeDeclIndex >> CHUNK_SHIFT;
+        int attrIndex = attributeDeclIndex &  CHUNK_MASK; 
+
+        //System.out.println("attributeDecl.name="+attributeDecl.name);
+        fAttributeDeclName[attrChunk][attrIndex]  =  attributeDecl.name;
+        fAttributeDeclType[attrChunk][attrIndex]  =  attributeDecl.type;
+        fAttributeDeclDefaultType[attrChunk][attrIndex]  =  attributeDecl.defaultType;
+        fAttributeDeclDatatypeValidator[attrChunk][attrIndex] =  attributeDecl.datatypeValidator;
+        fAttributeDeclDefaultValue[attrChunk][attrIndex]      =  attributeDecl.defaultValue;
+
         int elemChunk     = elementDeclIndex >> CHUNK_SHIFT;
         int elemIndex     = elementDeclIndex &  CHUNK_MASK;
+        int index = fElementDeclFirstAttributeDeclIndex[elemChunk][elemIndex];
+        while (index != -1) {
+            if (index == attributeDeclIndex) {
+                break;
+            }
+            attrChunk = index >> CHUNK_SHIFT;
+            attrIndex = index & CHUNK_MASK;
+            index = fAttributeDeclNextAttributeDeclIndex[attrChunk][attrIndex];
+        }
+        if (index == -1) {
+            if (fElementDeclFirstAttributeDeclIndex[elemChunk][elemIndex] == -1) {
+                fElementDeclFirstAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
+            }
+            else {
+                index = fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex];
+                attrChunk = index >> CHUNK_SHIFT;
+                attrIndex = index & CHUNK_MASK;
+                fAttributeDeclNextAttributeDeclIndex[attrChunk][attrIndex] = attributeDeclIndex;
+            }
+            fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
+        }
 
-        int thisAttrChunk = attributeDeclIndex >> CHUNK_SHIFT;
-        int thisAttrIndex = attributeDeclIndex &  CHUNK_MASK; 
+        //printAttributes(elementDeclIndex);
+    }
 
-        fAttributeDeclName[thisAttrChunk][thisAttrIndex]  =  attributeDecl.name;
-        fAttributeDeclType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.type;
-        fAttributeDeclDefaultType[thisAttrChunk][thisAttrIndex]  =  attributeDecl.defaultType;
-        fAttributeDeclDatatypeValidator[thisAttrChunk][thisAttrIndex] =  attributeDecl.datatypeValidator;
-        fAttributeDeclDefaultValue[thisAttrChunk][thisAttrIndex]      =  attributeDecl.defaultValue;
+    public void printAttributes(int elementDeclIndex) {
+        int attributeDeclIndex = getFirstAttributeDeclIndex(elementDeclIndex);
+        System.out.print(elementDeclIndex);
+        System.out.print(" [");
+        while (attributeDeclIndex != -1) {
+            System.out.print(' ');
+            System.out.print(attributeDeclIndex);
+            printAttribute(attributeDeclIndex);
+            attributeDeclIndex = getNextAttributeDeclIndex(attributeDeclIndex);
+            if (attributeDeclIndex != -1) {
+                System.out.print(",");
+            }
+        }
+        System.out.println(" ]");
+    }
 
-
-        int lastAttrDeclIndex = fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex];
-        int lastAttrChunk     = lastAttrDeclIndex >> CHUNK_SHIFT; 
-        int lastAttrIndex     = lastAttrDeclIndex &  CHUNK_MASK;
-
-        fAttributeDeclNextAttributeDeclIndex[lastAttrChunk][lastAttrIndex]
-        = attributeDeclIndex;
-
-        fElementDeclLastAttributeDeclIndex[elemChunk][elemIndex] = attributeDeclIndex;
-
-        fAttributeDeclNextAttributeDeclIndex[thisAttrChunk][thisAttrIndex]
-        =  -1; // we are created at the end of ElementDecl
+    private void printAttribute(int attributeDeclIndex) {
+        XMLAttributeDecl attributeDecl = new XMLAttributeDecl();
+        if (getAttributeDecl(attributeDeclIndex, attributeDecl)) {
+            System.out.print(" { ");
+            System.out.print(attributeDecl.name.localpart);
+            System.out.print(" }");
+        }
     }
 
     //
@@ -610,8 +650,8 @@ implements XMLContentSpec.Provider {
             fElementDeclDatatypeValidator = resize(fElementDeclDatatypeValidator, fElementDeclDatatypeValidator.length * 2);
             fElementDeclContentSpecIndex = resize(fElementDeclContentSpecIndex, fElementDeclContentSpecIndex.length * 2);
             fElementDeclContentModelValidator = resize(fElementDeclContentModelValidator, fElementDeclContentModelValidator.length * 2);
-            fElementDeclFirstAttributeDeclIndex = resize(fElementDeclNameIndex, fElementDeclFirstAttributeDeclIndex.length * 2);
-            fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclNameIndex.length * 2);
+            fElementDeclFirstAttributeDeclIndex = resize(fElementDeclFirstAttributeDeclIndex, fElementDeclFirstAttributeDeclIndex.length * 2);
+            fElementDeclLastAttributeDeclIndex = resize(fElementDeclLastAttributeDeclIndex, fElementDeclLastAttributeDeclIndex.length * 2);
         } catch (NullPointerException ex) {
             // ignore
         }
