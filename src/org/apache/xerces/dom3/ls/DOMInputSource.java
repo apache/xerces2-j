@@ -12,6 +12,8 @@
 
 package org.apache.xerces.dom3.ls;
 
+import java.io.InputStream;
+
 /**
  * This interface represents a single input source for an XML entity. 
  * <p> This interface allows an application to encapsulate information about 
@@ -48,7 +50,7 @@ public interface DOMInputSource {
      * it should set the encoding property. Setting the encoding in this way 
      * will override any encoding specified in the XML declaration itself.
      */
-    public DOMInputSource getByteStream();
+    public InputStream getByteStream();
     /**
      * An attribute of a language-binding dependent type that represents a 
      * stream of bytes.
@@ -59,7 +61,7 @@ public interface DOMInputSource {
      * it should set the encoding property. Setting the encoding in this way 
      * will override any encoding specified in the XML declaration itself.
      */
-    public void setByteStream(DOMInputSource byteStream);
+    public void setByteStream(InputStream byteStream);
 
     /**
      *  An attribute of a language-binding dependent type that represents a 

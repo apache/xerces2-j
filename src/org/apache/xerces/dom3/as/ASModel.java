@@ -119,7 +119,7 @@ public interface ASModel extends ASObject {
      * @param abstractSchema ASModel to be set. Subsequent calls will nest 
      *   the ASModels within the specified <code>ownerASModel</code>. 
      */
-    public void setASModel(ASModel abstractSchema);
+    public void addASModel(ASModel abstractSchema);
 
     /**
      * To retrieve a list of nested ASModels without reference to names. 
