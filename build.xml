@@ -60,8 +60,8 @@ Copyright:
   <target name="init">
     <property name="name" value="xerces"/>
     <property name="Name" value="Xerces-J"/>
-    <property name="version" value="1.2.0"/>
-    <property name="version_postfix" value="_1_2_0"/>
+    <property name="version" value="1.2.1"/>
+    <property name="version_postfix" value="_1_2_1"/>
     <property name="year" value="1999-2000"/>
 	<property name="copyright" value="Copyright &#169; ${year} Apache XML Project. All Rights Reserved."/>
 
