@@ -82,6 +82,13 @@
       <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
      </td>
     </tr>
+    <tr>
+     <td>-dv | -DV</td>
+     <td>
+      Turn on/off dynamic validation.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
     <tr><td>-m  | -M</td><td>Turn on/off memory usage report.</td></tr>
     <tr><td>-t  | -T</td><td>Turn on/off \"tagginess\" report.</td></tr>
     <tr>
@@ -128,11 +135,39 @@
     <tr><th>Option</th><th>Description</th></tr>
     <tr><td>-p name</td><td>Select parser by name.</td></tr>
     <tr><td>-n | -N</td><td>Turn on/off namespace processing.</td></tr>
+    <tr>
+     <td>-np | -NP</td>
+     <td>
+      Turn on/off namespace prefixes.<br/>
+      <strong>NOTE:</strong> Requires use of -n.
+     </td>
+    </tr>
     <tr><td>-v | -V</td><td>Turn on/off validation.</td></tr>
+    <tr>
+     <td>-xd | -XD</td>
+     <td>
+      Turn on/off loading of external DTDs.<br/>
+      <strong>NOTE:</strong> Always on when -v in use and not supported by all parsers.
+     </td>
+    </tr>
     <tr>
      <td>-s | -S</td>
      <td>
       Turn on/off Schema validation support.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-f  | -F</td>
+     <td>
+      Turn on/off Schema full checking.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-dv | -DV</td>
+     <td>
+      Turn on/off dynamic validation.<br/>
       <strong>NOTE:</strong> Not supported by all parsers.
      </td>
     </tr>
@@ -155,11 +190,39 @@
     <tr><th>Option</th><th>Description</th></tr>
     <tr><td>-p name</td><td>Select parser by name.</td></tr>
     <tr><td>-n | -N</td><td>Turn on/off namespace processing.</td></tr>
+    <tr>
+     <td>-np | -NP</td>
+     <td>
+      Turn on/off namespace prefixes.<br/>
+      <strong>NOTE:</strong> Requires use of -n.
+     </td>
+    </tr>
     <tr><td>-v | -V</td><td>Turn on/off validation.</td></tr>
+    <tr>
+     <td>-xd | -XD</td>
+     <td>
+      Turn on/off loading of external DTDs.<br/>
+      <strong>NOTE:</strong> Always on when -v in use and not supported by all parsers.
+     </td>
+    </tr>
     <tr>
      <td>-s | -S</td>
      <td>
       Turn on/off Schema validation support.<br/>
+      <strong>NOTE:</strong> Not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-f  | -F</td>
+     <td>
+      Turn on/off Schema full checking.<br/>
+      <strong>NOTE:</strong> Requires use of -s and not supported by all parsers.
+     </td>
+    </tr>
+    <tr>
+     <td>-dv | -DV</td>
+     <td>
+      Turn on/off dynamic validation.<br/>
       <strong>NOTE:</strong> Not supported by all parsers.
      </td>
     </tr>
