@@ -1213,6 +1213,8 @@ public final class XMLValidator
 
       if (fValidating && fGrammarIsSchemaGrammar) {
          pushContentLeafStack();
+      } else {
+        fContentModelStateStack[fElementDepth] = -2;
       }
 
       fValidationFlagStack[fElementDepth] = fValidating ? 0 : -1;
@@ -1256,6 +1258,8 @@ public final class XMLValidator
                 fContentModelStateStack[fElementDepth] = -2;
             fContentModelEleCount[fElementDepth] = 0;
          }
+      } else {
+        fContentModelStateStack[fElementDepth] = -2;
       }
    }
 
@@ -4078,7 +4082,7 @@ public final class XMLValidator
           // Get the content model for this element, faulting it in if needed
          XMLContentModel cmElem = null;
          try {
-            cmElem = fContentModelStack[fElementDepth+1];
+            cmElem = getElementContentModel(elementIndex);
             int curState = fContentModelStateStack[fElementDepth+1];
             // if state!=-2, we have validate the children
             if (curState != -2) {
