@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema>
+<schema xmlns='http://www.w3.org/1999/XMLSchema'>
 
  <element name="personnel">
   <complexType>
    <element ref="person" minOccurs='1' maxOccurs='unbounded'/>
   </complexType>
+  <unique>
+   <selector>person</selector>
+   <field>name</field>
+  </unique>
+  <key name='empid'>
+   <selector>person</selector>
+   <field>@id</field>
+  </key>
+  <keyref name='empid'>
+   <selector>person</selector>
+   <field>link/@manager</field>
+  </keyref>
  </element>
 
  <element name="person">
