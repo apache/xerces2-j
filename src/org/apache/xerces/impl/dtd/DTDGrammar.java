@@ -2610,7 +2610,6 @@ public class DTDGrammar
         //
         // Constants
         //
-        public static final boolean UNIQUE_STRINGS = true;
     
         /** Initial bucket size (4). */
         private static final int INITIAL_BUCKET_SIZE = 4;
@@ -2632,7 +2631,7 @@ public class DTDGrammar
         public void put(String key, int value) {
 
             // REVISIT: Why +2? -Ac
-            int hash = (hash(key)+2) % HASHTABLE_SIZE;
+            int hash = (key.hashCode() & 0x7FFFFFFF) % HASHTABLE_SIZE;
             Object[] bucket = fHashTable[hash];
 
             if (bucket == null) {
@@ -2675,7 +2674,7 @@ public class DTDGrammar
 
         /** Returns the value associated with the specified key tuple. */
         public int get(String key) {
-            int hash = (hash(key)+2) % HASHTABLE_SIZE;
+            int hash = (key.hashCode() & 0x7FFFFFFF) % HASHTABLE_SIZE;
             Object[] bucket = fHashTable[hash];
 
             if (bucket == null) {
@@ -2693,25 +2692,6 @@ public class DTDGrammar
             return -1;
 
         } // get(int,String,String)
-
-        //
-        // Protected methods
-        //
-
-        /** Returns a hash value for the specified symbol. */
-        protected int hash(String symbol) {
-
-            if (symbol == null) {
-                return 0;
-            }
-            int code = 0;
-            int length = symbol.length();
-            for (int i = 0; i < length; i++) {
-                code = code * 37 + symbol.charAt(i);
-            }
-            return code & 0x7FFFFFF;
-
-        } // hash(String):int
 
     }  // class QNameHashtable
 
