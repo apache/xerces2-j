@@ -144,19 +144,22 @@ public class TestNS {
 
                 Document core = parser.getDocument();
 
-                NodeList ls2 = core.getElementsByTagName("empty");
-                Node testElem = ls2.item(0);
-                // testing empty element
-                if (testElem !=null) {
-                    
-                    NamedNodeMap testAttr = testElem.getAttributes();
-                    testAttr.removeNamedItemNS("http://www.w3.org/2000/xmlns/", "xmlns");
-                } 
 
 
                 if (modify) {
 
                     System.out.println("Modifying document...");
+                    if (namespaces) {
+
+                        NodeList ls2 = core.getElementsByTagName("empty");
+                        Node testElem = ls2.item(0);
+                        // testing empty element
+                        if (testElem !=null) {
+
+                            NamedNodeMap testAttr = testElem.getAttributes();
+                            testAttr.removeNamedItemNS("http://www.w3.org/2000/xmlns/", "xmlns");
+                        }
+                    }
                     Node element = core.getFirstChild();
                     while (element!=null && element.getNodeType() != Node.ELEMENT_NODE) {
                         element = element.getNextSibling();
@@ -168,8 +171,6 @@ public class TestNS {
                     else {
                         System.out.println("Modifying information for the element: "+element.getNodeName());
                     }
-
-
 
 
                     // add element in same scope                            
@@ -204,6 +205,7 @@ public class TestNS {
                     element.appendChild(core.createElementNS("","s:noNamespace"));
                     element.appendChild(core.createTextNode("\n\n"));
 
+
                     Text text;
                     // add xmlns attribute
                     element.appendChild(core.createComment("create element: _attr_ bound to _hi_, local declaration of xmlns:attr = boo"));
@@ -215,6 +217,27 @@ public class TestNS {
                     element.appendChild(elm);
                     element.appendChild(core.createTextNode("\n\n"));
 
+
+                    // add element with empty string as uri
+                    element.appendChild(core.createComment("add p:foo, uri=emptyStr, xmlns:p=emptyStr"));
+                    element.appendChild(core.createTextNode("\n"));
+                    elm = core.createElementNS("","p:foo");
+                    attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:p");
+                    attr.setValue(null);
+                    elm.setAttributeNode(attr);
+                    element.appendChild(elm);
+                    element.appendChild(core.createTextNode("\n\n"));
+
+
+                    // add element with empty string as uri
+                    element.appendChild(core.createComment("add s:foo, uri=emptyStr, xmlns:p=emptyStr"));
+                    element.appendChild(core.createTextNode("\n"));
+                    elm=core.createElementNS("","s:foo");
+                    attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:p");
+                    attr.setValue(null);
+                    elm.setAttributeNode(attr);
+                    element.appendChild(elm);
+                    element.appendChild(core.createTextNode("\n\n"));
 
 
                     // add 2 xmlns attribute
@@ -235,11 +258,15 @@ public class TestNS {
                     // work on attributes algorithm
                     element.appendChild(core.createComment("\n1) noBooPrefixAttr had no prefix and bound to _boo_ URI (boo is not declared)."+
                                                            "\n2) dummy attribute with null namespace"+
-                                                           "\n3) boowithPrefixS with declared s - no change\n"));
+                                                           "\n3) s:dummy2 attribute with empty namespace"+
+                                                           "\n4) boowithPrefixS with declared s - no change\n"));
                     element.appendChild(core.createTextNode("\n"));
                     elm = core.createElementNS("urn:schemas-xmlsoap-org:soap.v1","s:testAttributes");
 
                     attr = core.createAttributeNS(null, "dummy");
+                    elm.setAttributeNode(attr);
+
+                    attr = core.createAttributeNS("", "s:dummy2");
                     elm.setAttributeNode(attr);
                     attr = core.createAttributeNS("urn:schemas-xmlsoap-org:soap.v1", "s:BooWithPrefixS"); 
                     elm.setAttributeNode(attr);
@@ -249,7 +276,7 @@ public class TestNS {
                     element.appendChild(core.createTextNode("\n\n"));
 
 
-                    element.appendChild(core.createComment("xml:space attributes, doml1 namespace declaration (NOT well-formed!!), doml2 ns decls"));
+                    element.appendChild(core.createComment("NON-WELLFORMED! xml:space attribute, \ndoml1 valid/invalid namespace declarations, \ndoml2 invalid declarations xmlns:foo=\"\""));
                     element.appendChild(core.createTextNode("\n"));
                     elm = core.createElementNS("","spaces");
                     attr = core.createAttributeNS("http://www.w3.org/XML/1998/namespace", "boo:space");
@@ -274,8 +301,8 @@ public class TestNS {
 
                     // more attributes tests
 
-                    element.appendChild(core.createComment("\n1) Declare _Table_ attribute with no prefix and bound to default namespace"+
-                                                           "\n2) declare attribute xmlns1000:NS bound to xmlns namespace"+
+                    element.appendChild(core.createComment("\n1) attr1 with no prefix and uri=\"hello_world\""+
+                                                           "\n2) attribute xmlns1000:NS bound to xmlns namespace"+
                                                            "\n3) Attribute _noFooPrefixAttr_ had no prefix and bound to _foo_ URI. There is local default decl bound to _foo_"));
                     element.appendChild(core.createTextNode("\n"));
                     elm = core.createElementNS("urn:schemas-xmlsoap-org:soap.v1","s:testAttributes2");
@@ -288,7 +315,7 @@ public class TestNS {
 
                     attr = core.createAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns1000:namespaceAttr2");
                     elm.setAttributeNode(attr);
-                    attr = core.createAttributeNS("hello_world", "Table");
+                    attr = core.createAttributeNS("hello_world", "attr1");
 
                     elm.setAttributeNode(attr);
                     element.appendChild(elm);
@@ -303,6 +330,7 @@ public class TestNS {
                     elm.appendChild(elm2);
                     element.appendChild(core.createTextNode("\n"));
 
+
                 }
                 // Serializer that ouputs tree in not pretty print format
                 OutputFormat format = new OutputFormat((Document)core);
@@ -310,16 +338,17 @@ public class TestNS {
                 format.setLineWidth(0);             
                 format.setPreserveSpace(true);
                 if (stdout) {
-                
-                  XMLSerializer serializer = new XMLSerializer(System.out, format);
-                  serializer.asDOMSerializer();
-                  serializer.serialize((Document)core);
-                } else {
-                
-                System.out.println("Serializing output to output.xml...");
-                XMLSerializer toFile = new XMLSerializer (new FileWriter("output.xml"), format);
-                toFile.asDOMSerializer();
-                toFile.serialize((Document)core);
+
+                    XMLSerializer serializer = new XMLSerializer(System.out, format);
+                    serializer.asDOMSerializer();
+                    serializer.serialize((Document)core);
+                }
+                else {
+
+                    System.out.println("Serializing output to output.xml...");
+                    XMLSerializer toFile = new XMLSerializer (new FileWriter("output.xml"), format);
+                    toFile.asDOMSerializer();
+                    toFile.serialize((Document)core);
                 }
                 /** Test SAX Serializer */
                 /* System.out.println("Testing SAX Serializer");

@@ -10,14 +10,17 @@
 	<elem xmlns="newURI"><a/></elem>
    </empty>
 
-  <!-- xmlns is not removed during the modifications -->
+  <!-- both first and second "elem" elements have 
+       xmlns="" declaration      
+   -->
    <empty xmlns="">
-	<elem/>
+	<elem xmlns=""/>
 	<elem xmlns="newURI"><a/></elem>
    </empty>
 
 
-   <!-- tests from namespace spec -->
+   <!-- the second element "good" had declaration 
+        xmlns:n1="http://www.w3.org" -->
    <x xmlns="http://www.w3.org" xmlns:n1="http://www.w3.org">
   	<good a="1" b="2"/>
   	<good a="1" n1:a="2"/>
@@ -40,23 +43,32 @@
 <!--create element: _attr_ bound to _hi_, local declaration of xmlns:attr = boo-->
 <attr:foo xmlns:attr="hi"/>
 
+<!--add p:foo, uri=emptyStr, xmlns:p=emptyStr-->
+<foo xmlns=""/>
+
+<!--add s:foo, uri=emptyStr, xmlns:p=emptyStr-->
+<foo xmlns=""/>
+
 <!--create element: with 2 xmlns-->
 <elem xmlns="namespace1"/>
 
 <!--
 1) noBooPrefixAttr had no prefix and bound to _boo_ URI (boo is not declared).
 2) dummy attribute with null namespace
-3) boowithPrefixS with declared s - no change
+3) s:dummy2 attribute with empty namespace
+4) boowithPrefixS with declared s - no change
 -->
-<s:testAttributes xmlns:s="urn:schemas-xmlsoap-org:soap.v1" dummy="" xmlns:NS1="boo" NS1:noBooPrefixAttr="" s:BooWithPrefixS=""/>
+<s:testAttributes xmlns:s="urn:schemas-xmlsoap-org:soap.v1" dummy="" xmlns:NS1="boo" NS1:noBooPrefixAttr="" s:BooWithPrefixS="" dummy2=""/>
 
-<!--xml:space attributes, doml1 namespace declaration (NOT well-formed!!), doml2 ns decls-->
-<spaces xmlns="" xml:space="" s:level1Node="" xmlns:="" xmlns:foo="" xmlns:k="" xmlns:k:d=""/>
+<!--NON-WELLFORMED! xml:space attribute, 
+doml1 valid/invalid namespace declarations, 
+doml2 invalid declarations xmlns:foo=""-->
+<spaces xmlns="" xml:space="" s:level1Node="" xmlns:="" xmlns:k="" xmlns:k:d=""/>
 
 <!--
-1) Declare _Table_ attribute with no prefix and bound to default namespace
-2) declare attribute xmlns1000:NS bound to xmlns namespace
+1) attr1 with no prefix and uri="hello_world"
+2) attribute xmlns1000:NS bound to xmlns namespace
 3) Attribute _noFooPrefixAttr_ had no prefix and bound to _foo_ URI. There is local default decl bound to _foo_-->
-<s:testAttributes2 xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns:NS2="hello_world" NS2:Table="" xmlns:NS3="foo" NS3:noFooPrefixAttr="" xmlns:xmlns1000="http://www.w3.org/2000/xmlns/" xmlns1000:namespaceAttr2="">
+<s:testAttributes2 xmlns:s="urn:schemas-xmlsoap-org:soap.v1" xmlns:NS2="hello_world" NS2:attr1="" xmlns:NS3="foo" NS3:noFooPrefixAttr="" xmlns="foo" xmlns:xmlns1000="http://www.w3.org/2000/xmlns/" xmlns1000:namespaceAttr2="">
 <s:testAttributes3 xmlns:s="have_no_correct_namespace" xmlns1000:myAttribute="">Has xmlns2000:myAttribute attribute with xmlns namespace(prefix not defined), element has no defined prefix</s:testAttributes3></s:testAttributes2>
 </s:Envelope>

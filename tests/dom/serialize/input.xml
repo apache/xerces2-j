@@ -9,21 +9,24 @@
 
   <!-- xmlns is removed during the modifications -->
    <empty xmlns="">
-	<elem xmlns=""/>
-	<elem xmlns="newURI"><a/></elem>
-   </empty>
-
-  <!-- xmlns is not removed during the modifications -->
-   <empty xmlns="">
 	<elem/>
 	<elem xmlns="newURI"><a/></elem>
    </empty>
 
+  <!-- both first and second "elem" elements have 
+       xmlns="" declaration      
+   -->
+   <empty xmlns="">
+	<elem xmlns=""/>
+	<elem xmlns="newURI"><a/></elem>
+   </empty>
 
-   <!-- tests from namespace spec -->
+
+   <!-- the second element "good" had declaration 
+        xmlns:n1="http://www.w3.org" -->
    <x 	xmlns:n1="http://www.w3.org" 
    	xmlns="http://www.w3.org" >
   	<good a="1"     b="2" />
-  	<good a="1"     n1:a="2" />
+  	<good a="1"  xmlns:n1="http://www.w3.org"   n1:a="2" />
    </x>
 </s:Envelope>
