@@ -267,6 +267,7 @@ public class XMLSchemaValidator
         null,
         null,
         null,
+        null,
     };
 
     // this is the number of valuestores of each kind
