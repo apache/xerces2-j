@@ -208,9 +208,9 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
 
                 if ( ( (fFacetsDefined & ( DatatypeValidator.FACET_MINLENGTH |
                                            DatatypeValidator.FACET_MAXLENGTH) ) != 0 ) ) {
-                    if ( fMinLength < fMaxLength ) {
-                        throw new InvalidDatatypeFacetException( "Value of minLength = " + fMinLength +
-                                                      "must be greater that the value of maxLength" + fMaxLength );
+                    if ( fMinLength > fMaxLength ) {
+                        throw new InvalidDatatypeFacetException( "Value of maxLength = " + fMinLength +
+                                                      "must be greater that the value of minLength" + fMaxLength );
                     }
                 }
             }
@@ -244,7 +244,9 @@ public class URIReferenceDatatypeValidator extends AbstractDatatypeValidator {
             } catch ( NoSuchElementException e ) {
                 e.printStackTrace();
             }
-        } else { //derived by list
+        } else { //derived by constraint
+            // 
+
             // checkContent( content ); TODO
         }
         return null;
