@@ -75,6 +75,11 @@ public class ValidationManager {
     protected final Vector fVSs = new Vector();
     protected boolean fGrammarFound = false;
 
+    // used by the DTD validator to tell other components that it has a
+    // cached DTD in hand so there's no reason to 
+    // scan external subset or entity decls.
+    protected boolean fCachedDTD = false;
+
     /**
      * Each validator should call this method to add its ValidationState into
      * the validation manager.
@@ -100,6 +105,14 @@ public class ValidationManager {
         return fGrammarFound;
     }
 
+    public void setCachedDTD(boolean cachedDTD) {
+        fCachedDTD = cachedDTD;
+    } // setCachedDTD(boolean)
+
+    public boolean isCachedDTD() {
+        return fCachedDTD;
+    } // isCachedDTD():  boolean
+
     // REVISIT: handle other validation coordination
     //          the following will depend on the final set of validation
     //          features
@@ -111,5 +124,6 @@ public class ValidationManager {
     public void reset (){
         fVSs.removeAllElements();
         fGrammarFound = false;
+        fCachedDTD = false;
     }
 }
