@@ -1183,32 +1183,58 @@ public abstract class XMLScanner
             hex = true;
             fStringBuffer3.clear();
             boolean digit = true;
-            do {
-                int c = fEntityScanner.peekChar();
-                digit = (c >= '0' && c <= '9') ||
-                        (c >= 'a' && c <= 'f') ||
-                        (c >= 'A' && c <= 'F');
-                if (digit) {
-                    if (buf2 != null) { buf2.append((char)c); }
-                    fEntityScanner.scanChar();
-                    fStringBuffer3.append((char)c);
-                }
-            } while (digit);
+            
+            int c = fEntityScanner.peekChar();
+            digit = (c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'f') ||
+                    (c >= 'A' && c <= 'F');
+            if (digit) {
+                if (buf2 != null) { buf2.append((char)c); }
+                fEntityScanner.scanChar();
+                fStringBuffer3.append((char)c);
+                
+                do {
+                    c = fEntityScanner.peekChar();
+                    digit = (c >= '0' && c <= '9') ||
+                            (c >= 'a' && c <= 'f') ||
+                            (c >= 'A' && c <= 'F');
+                    if (digit) {
+                        if (buf2 != null) { buf2.append((char)c); }
+                        fEntityScanner.scanChar();
+                        fStringBuffer3.append((char)c);
+                    }
+                } while (digit);
+            }
+            else {
+                reportFatalError("HexdigitRequiredInCharRef", null);
+            }
         }
 
         // scan decimal value
         else {
             fStringBuffer3.clear();
             boolean digit = true;
-            do {
-                int c = fEntityScanner.peekChar();
-                digit = c >= '0' && c <= '9';
-                if (digit) {
-                    if (buf2 != null) { buf2.append((char)c); }
-                    fEntityScanner.scanChar();
-                    fStringBuffer3.append((char)c);
-                }
-            } while (digit);
+            
+            int c = fEntityScanner.peekChar();
+            digit = c >= '0' && c <= '9';
+            if (digit) {
+                if (buf2 != null) { buf2.append((char)c); }
+                fEntityScanner.scanChar();
+                fStringBuffer3.append((char)c);
+                
+                do {
+                    c = fEntityScanner.peekChar();
+                    digit = c >= '0' && c <= '9';
+                    if (digit) {
+                        if (buf2 != null) { buf2.append((char)c); }
+                        fEntityScanner.scanChar();
+                        fStringBuffer3.append((char)c);
+                    }
+                } while (digit);
+            }
+            else {
+                reportFatalError("DigitRequiredInCharRef", null);
+            }
         }
 
         // end
@@ -1222,15 +1248,24 @@ public abstract class XMLScanner
         try {
             value = Integer.parseInt(fStringBuffer3.toString(),
                                      hex ? 16 : 10);
+            
+            // character reference must be a valid XML character
+            if (isInvalid(value)) {
+            	StringBuffer errorBuf = new StringBuffer(fStringBuffer3.length + 1);
+                if (hex) errorBuf.append('x');
+                errorBuf.append(fStringBuffer3.ch, fStringBuffer3.offset, fStringBuffer3.length);
+                reportFatalError("InvalidCharRef",
+                                 new Object[]{errorBuf.toString()});
+            }
         }
         catch (NumberFormatException e) {
-            // let -1 value drop through
-        }
-
-        // character reference must be a valid XML character
-        if (isInvalid(value)) {
+            // Conversion failed, let -1 value drop through.
+            // If we end up here, the character reference was invalid.
+            StringBuffer errorBuf = new StringBuffer(fStringBuffer3.length + 1);
+            if (hex) errorBuf.append('x');
+            errorBuf.append(fStringBuffer3.ch, fStringBuffer3.offset, fStringBuffer3.length);
             reportFatalError("InvalidCharRef",
-                             new Object[]{Integer.toString(value, 16)}); 
+                             new Object[]{errorBuf.toString()});
         }
 
         // append corresponding chars to the given buffer
