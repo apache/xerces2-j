@@ -96,25 +96,16 @@ public class XMLDTDScanner
 
     // scanner states
 
-    /** Scanner state: Text declaration. */
-    protected static final int SCANNER_STATE_TEXT_DECL = 0;
-
-    /** Scanner state: start of markup. */
-    protected static final int SCANNER_STATE_MARKUP_DECL = 1;
-
-    /** Scanner state: comment. */
-    protected static final int SCANNER_STATE_COMMENT = 2;
-
-    /** Scanner state: processing instruction. */
-    protected static final int SCANNER_STATE_PI = 3;
-
-    protected static final int SCANNER_STATE_ELEMENT_DECL = 4;
-
-    protected static final int SCANNER_STATE_ATTLIST_DECL = 5;
-
-    protected static final int SCANNER_STATE_NOTATION_DECL = 6;
-
-    protected static final int SCANNER_STATE_ENTITY_DECL = 7;
+    protected static final int SCANNER_STATE_END_OF_INPUT = 0;
+    protected static final int SCANNER_STATE_TEXT_DECL = 1;
+    protected static final int SCANNER_STATE_MARKUP_DECL = 2;
+    protected static final int SCANNER_STATE_COMMENT = 3;
+    protected static final int SCANNER_STATE_PI = 4;
+    protected static final int SCANNER_STATE_ELEMENT_DECL = 5;
+    protected static final int SCANNER_STATE_ATTLIST_DECL = 6;
+    protected static final int SCANNER_STATE_NOTATION_DECL = 7;
+    protected static final int SCANNER_STATE_ENTITY_DECL = 8;
+    protected static final int SCANNER_STATE_CONDITIONAL_SECT = 9;
 
     // debugging
 
@@ -145,18 +136,15 @@ public class XMLDTDScanner
 
     // private data
 
-    private boolean fValidation = false;
-
-    private boolean fStartDTDCalled = false;
-
+    private boolean fStartDTDCalled;
     private boolean fScanningExtSubset;
-    
-    private boolean fEndOfDTD = false;
 
     private String[] fPseudoAttributeValues = new String[3];
 
     private int[] fOpStack = new int[5];
     private int fDepth;
+
+    private int fIncludeSectDepth;
 
     private XMLString fDefaultValue = new XMLString();
     private String[] fEnumeration = new String[5];
@@ -198,6 +186,8 @@ public class XMLDTDScanner
             fDTDHandler.startDTD();
         }
 
+        fScanningExtSubset = true;
+
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);
 
@@ -228,8 +218,6 @@ public class XMLDTDScanner
      */
     public boolean scanDTDFragment(boolean complete)
         throws IOException, SAXException {
-
-        fScanningExtSubset = true;
 
         // set starting state
         setScannerState(SCANNER_STATE_TEXT_DECL);
@@ -305,11 +293,6 @@ public class XMLDTDScanner
 
         super.reset(componentManager);
 
-        // Xerces features
-/*        fValidation =
-            componentManager.getFeature(Constants.XERCES_FEATURE_PREFIX
-                                        + Constants.VALIDATION_FEATURE);
-*/
         // Xerces properties
         fGrammarPool = (GrammarPool)
             componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
@@ -318,7 +301,10 @@ public class XMLDTDScanner
             componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX
                                          + Constants.ERROR_REPORTER_PROPERTY);
 
-        fEndOfDTD = false;
+        // reset state related data
+        fScanningExtSubset = false;
+        fStartDTDCalled = false;
+        fIncludeSectDepth = 0;
 
         // save built-in symbols
         fXmlSymbol = fSymbolTable.addSymbol("xml");
@@ -336,15 +322,6 @@ public class XMLDTDScanner
      */
     public void setFeature(String featureId, boolean state)
         throws SAXNotRecognizedException, SAXNotSupportedException {
-
-        // Xerces properties
-        if (featureId.startsWith(Constants.XERCES_FEATURE_PREFIX)) {
-            String feature =
-                featureId.substring(Constants.XERCES_FEATURE_PREFIX.length());
-            if (feature.equals(Constants.VALIDATION_FEATURE)) {
-                fValidation = state;
-            }
-        }
 
     } // setFeature
 
@@ -427,7 +404,7 @@ public class XMLDTDScanner
         throws SAXException {
 
         if (name.equals("[dtd]")) {
-            fEndOfDTD = true;
+            fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
             if (fDTDHandler != null) {
                 fDTDHandler.endDTD();
@@ -1290,6 +1267,92 @@ public class XMLDTDScanner
 
     } // scanNotationDecl()
 
+    /**
+     * Partially scans a conditional section
+     * <p>
+     * <pre>
+     * [61] conditionalSect   ::= includeSect | ignoreSect  
+     * [62] includeSect       ::= '<![' S? 'INCLUDE' S? '[' extSubsetDecl ']]>'
+     * [63] ignoreSect   ::= '<![' S? 'IGNORE' S? '[' ignoreSectContents* ']]>'
+     * [64] ignoreSectContents ::= Ignore ('<![' ignoreSectContents ']]>' Ignore)* 
+     * [65] Ignore            ::=    Char* - (Char* ('<![' | ']]>') Char*)  
+     * </pre>
+     * <p>
+     * <strong>Note:</strong> Called after scanning past '&lt;!['
+     */
+    private final void scanConditionalSect()
+        throws IOException, SAXException {
+
+        fEntityScanner.skipSpaces();
+        if (fEntityScanner.skipString("INCLUDE")) {
+            // call handler
+            if (fDTDHandler != null) {
+                fDTDHandler.startConditional(
+                                            XMLDTDHandler.CONDITIONAL_INCLUDE);
+            }
+            fEntityScanner.skipSpaces();
+            if (!fEntityScanner.skipChar('[')) {
+                fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                           "MarkupNotRecognizedInDTD",
+                                           null,
+                                           XMLErrorReporter.SEVERITY_FATAL_ERROR);
+            }
+            fIncludeSectDepth++;
+            // just stop there and go back to the main loop
+        }
+        else if (fEntityScanner.skipString("IGNORE")) {
+            // call handler
+            if (fDTDHandler != null) {
+                fDTDHandler.startConditional(XMLDTDHandler.CONDITIONAL_IGNORE);
+            }
+            fEntityScanner.skipSpaces();
+            int initialDepth = ++fIncludeSectDepth;
+            while (true) {
+                if (fEntityScanner.skipChar('<')) {
+                    //
+                    // These tests are split so that we handle cases like
+                    // '<<![' and '<!<![' which we might otherwise miss.
+                    //
+                    if (fEntityScanner.skipChar('!')
+                        && fEntityScanner.skipChar('[')) {
+                        fIncludeSectDepth++;
+                    }
+                } else if (fEntityScanner.skipChar(']')) {
+                    //
+                    // The same thing goes for ']<![' and '<]]>', etc.
+                    //
+                    if (fEntityScanner.skipChar(']')) {
+                        while (fEntityScanner.skipChar(']')) {
+                            /* empty loop body */
+                        }
+                        if (fEntityScanner.skipChar('>')) {
+                            if (fIncludeSectDepth-- == initialDepth) {
+                                // decreaseMarkupDepth();
+
+                                // call handler
+                                if (fDTDHandler != null) {
+                                    fDTDHandler.endConditional();
+                                }
+                                return;
+                            }
+                        }
+                    }
+                }
+                else {
+                    fEntityScanner.scanChar();
+                    if (fScannerState == SCANNER_STATE_END_OF_INPUT) {
+                        return;
+                    }
+                }
+            }
+        } else {
+            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                       "MarkupNotRecognizedInDTD",
+                                       null,
+                                       XMLErrorReporter.SEVERITY_FATAL_ERROR);
+        }
+    } // scanConditionalSect()
+
     /** 
      * Dispatch an XML "event".
      *
@@ -1312,7 +1375,8 @@ public class XMLDTDScanner
             switch (fScannerState) {
                 case SCANNER_STATE_MARKUP_DECL: {
                     fEntityScanner.skipSpaces();
-                    if (!fEndOfDTD && fEntityScanner.skipChar('<')) {
+                    if (fScannerState != SCANNER_STATE_END_OF_INPUT
+                        && fEntityScanner.skipChar('<')) {
                         if (fEntityScanner.skipChar('?')) {
                             setScannerState(SCANNER_STATE_PI);
                             again = true;
@@ -1349,9 +1413,33 @@ public class XMLDTDScanner
                                 again = true;
                                 break;
                             }
+                            else if (fEntityScanner.skipChar('[')) {
+                                setScannerState(SCANNER_STATE_CONDITIONAL_SECT);
+                                again = true;
+                                break;
+                            }
                         }
                     }
-                    if (!fEndOfDTD) {
+                    else if (fIncludeSectDepth > 0
+                             && fEntityScanner.skipChar(']')) {
+                        // end of conditional section?
+                        if (!fEntityScanner.skipChar(']')
+                            || !fEntityScanner.skipChar('>')) {
+                            fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
+                                                       "MSG_UNTERMINATED_SEQ",
+                                                       null, XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                        }
+                        else {
+                            // call handler
+                            if (fDTDHandler != null) {
+                                fDTDHandler.endConditional();
+                            }
+                            // decreaseMarkupDepth();
+                        }
+                        fIncludeSectDepth--;
+                        break;
+                    }
+                    if (fScannerState != SCANNER_STATE_END_OF_INPUT) {
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                    "MarkupNotRecognizedInDTD",
                                                    null,XMLErrorReporter.SEVERITY_FATAL_ERROR);
@@ -1386,6 +1474,11 @@ public class XMLDTDScanner
                 }
                 case SCANNER_STATE_NOTATION_DECL: {
                     scanNotationDecl();
+                    setScannerState(SCANNER_STATE_MARKUP_DECL);
+                    break;  
+                }
+                case SCANNER_STATE_CONDITIONAL_SECT: {
+                    scanConditionalSect();
                     setScannerState(SCANNER_STATE_MARKUP_DECL);
                     break;  
                 }
