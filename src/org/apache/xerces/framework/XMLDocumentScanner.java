@@ -2166,6 +2166,7 @@ public final class XMLDocumentScanner {
         if (fDTDScanner == null) {
             fDTDScanner = new XMLDTDScanner(fStringPool, fErrorReporter, fEntityHandler, new ChunkyCharArray(fStringPool));
             fDTDScanner.setValidationEnabled(fValidationEnabled);
+            fDTDScanner.setNamespacesEnabled(fNamespacesEnabled);
         }
         else {
             fDTDScanner.reset(fStringPool, new ChunkyCharArray(fStringPool));

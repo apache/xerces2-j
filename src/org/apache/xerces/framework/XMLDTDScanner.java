@@ -214,6 +214,8 @@ public final class XMLDTDScanner {
     private int fDefaultAttValueMark = -1;
     private int fEntityValueReader = -1;
     private int fEntityValueMark = -1;
+    private int fXMLSymbol = -1;
+    private int fXMLNamespace = -1;
     private int fXMLSpace = -1;
     private int fDefault = -1;
     private int fPreserve = -1;
@@ -252,6 +254,11 @@ public final class XMLDTDScanner {
         fGrammarResolver = resolver;
     }
 
+    /** set fNamespacesEnabled  **/
+    public void setNamespacesEnabled(boolean enabled) {
+        fNamespacesEnabled = enabled;
+    }
+    
     /** set fValidationEnabled  **/
     public void setValidationEnabled(boolean enabled) {
         fValidationEnabled = enabled;
@@ -346,6 +353,9 @@ public final class XMLDTDScanner {
         init();
     }
     private void init() {
+        fXMLSymbol = fStringPool.addSymbol("xml");
+        fXMLNamespace = fStringPool.addSymbol("http://www.w3.org/XML/1998/namespace");
+
         fXMLSpace = fStringPool.addSymbol("xml:space");
         fDefault = fStringPool.addSymbol("default");
         fPreserve = fStringPool.addSymbol("preserve");
@@ -2134,8 +2144,19 @@ public final class XMLDTDScanner {
                     attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_FIXED;
                 } else
                     attDefDefaultType = XMLAttributeDecl.DEFAULT_TYPE_DEFAULT;
-                fElementQName.setValues(-1, elementTypeIndex, elementTypeIndex);
-                fAttributeQName.setValues(-1, attDefName, attDefName);
+
+                //fElementQName.setValues(-1, elementTypeIndex, elementTypeIndex);
+
+                // if attribute name has a prefix "xml", bind it to the XML Namespace.
+                // since this is the only pre-defined namespace.
+                /***
+                if (fAttributeQName.prefix == fXMLSymbol) {
+                    fAttributeQName.uri = fXMLNamespace;
+                }
+                else 
+                    fAttributeQName.setValues(-1, attDefName, attDefName);
+                ****/
+
                 attDefDefaultValue = scanDefaultAttValue(fElementQName, fAttributeQName, 
                                                          attDefType, 
                                                          attDefEnumeration);
@@ -2169,6 +2190,13 @@ public final class XMLDTDScanner {
                 }
             }
             sawSpace = checkForPEReference(true);
+            
+            // if attribute name has a prefix "xml", bind it to the XML Namespace.
+            // since this is the only pre-defined namespace.
+            if (fAttributeQName.prefix == fXMLSymbol) {
+                fAttributeQName.uri = fXMLNamespace;
+            }
+            
             if (fEntityReader.lookingAtChar('>', true)) {
                 int attDefIndex = addAttDef(fElementQName, fAttributeQName, 
                                                         attDefType, attDefList, attDefEnumeration, 
