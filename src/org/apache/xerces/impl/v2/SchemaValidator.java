@@ -1602,7 +1602,21 @@ public class SchemaValidator
     } // addDefaultAttributes
 
     void processElementContent(QName element) {
-        // REVISIT: fCurrentElemDecl: default value; ...
+        // fCurrentElemDecl: default value; ...
+        if(fCurrentElemDecl != null) {
+            if(fCurrentElemDecl.fDefault != null) {
+                if(fBuffer.toString().trim().length() == 0) {
+                    if(fDocumentHandler != null) {
+                        int bufLen = fCurrentElemDecl.fDefault.toString().length();
+                        char [] chars = new char[bufLen];
+                        fCurrentElemDecl.fDefault.toString().getChars(0, bufLen, chars, 0); 
+                        fDocumentHandler.characters(new XMLString(chars, 0, bufLen));
+                    }
+                }
+            }
+        }
+        // fixed values are handled later, after xsi:type determined.
+
         if (DEBUG) {
           System.out.println("processElementContent:" +element);
         }
