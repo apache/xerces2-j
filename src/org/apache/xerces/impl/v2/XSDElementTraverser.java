@@ -179,17 +179,16 @@ class XSDElementTraverser extends XSDAbstractTraverser {
             element = traverseNamedElement(elmDecl, attrValues, schemaDoc, grammar, false);
         }
 
+        particle.fMinOccurs = minAtt.intValue();
+        particle.fMaxOccurs = maxAtt.intValue();
         if (element != null) {
             particle.fType = XSParticleDecl.PARTICLE_ELEMENT;
             particle.fValue = element;
-            particle.fMinOccurs = minAtt.intValue();
-            particle.fMaxOccurs = maxAtt.intValue();
-
-            Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
-            checkOccurrences(particle, SchemaSymbols.ELT_ELEMENT,
-                             (Element)elmDecl.getParentNode(), allContextFlags,
-                             defaultVals.longValue());
         }
+        Long defaultVals = (Long)attrValues[XSAttributeChecker.ATTIDX_FROMDEFAULT];
+        checkOccurrences(particle, SchemaSymbols.ELT_ELEMENT,
+                         (Element)elmDecl.getParentNode(), allContextFlags,
+                         defaultVals.longValue());
 
         fAttrChecker.returnAttrArray(attrValues, schemaDoc);
     }
@@ -418,7 +417,7 @@ class XSDElementTraverser extends XSDAbstractTraverser {
 
         // 3 If there is an {substitution group affiliation}, the {type definition} of the element declaration must be validly derived from the {type definition} of the {substitution group affiliation}, given the value of the {substitution group exclusions} of the {substitution group affiliation}, as defined in Type Derivation OK (Complex) (§3.4.6) (if the {type definition} is complex) or as defined in Type Derivation OK (Simple) (§3.14.6) (if the {type definition} is simple).
         if (element.fSubGroup != null) {
-           if (!fSubGroupHandler.checkSubstitutionGroupOK(element)) {
+           if (!XSConstraints.checkTypeDerivationOk(element.fType, element.fSubGroup.fType, element.fSubGroup.fFinal)) {
                 reportSchemaError ("e-props-correct.3", new Object[]{nameAtt, subGroupAtt.prefix+":"+subGroupAtt.localpart});
            }
         }
@@ -433,7 +432,6 @@ class XSDElementTraverser extends XSDAbstractTraverser {
         }
 
         // Step 6: add substitutionGroup information to the handler
-
         if (element.fSubGroup != null) {
             fSubGroupHandler.addSubstitutionGroup(element);
         }

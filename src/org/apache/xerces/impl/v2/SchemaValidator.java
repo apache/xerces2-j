@@ -208,7 +208,7 @@ public class SchemaValidator
     // XMLComponent methods
     //
 
-    
+
     /**
      * Returns a list of feature identifiers that are recognized by
      * this component. This method may return null if no features
@@ -828,7 +828,7 @@ public class SchemaValidator
 
     } // <init>()
 
-    
+
     /*
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
@@ -848,7 +848,7 @@ public class SchemaValidator
         // get error reporter
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
 
-        
+
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         if (symbolTable != fSymbolTable) {
@@ -909,27 +909,31 @@ public class SchemaValidator
         if (fElementDepth == fElemDeclStack.length) {
             int newSize = fElementDepth + INC_STACK_SIZE;
             int[] newArrayI = new int[newSize];
-            System.arraycopy(fChildCountStack, 0, newArrayI, 0, newSize);
+            System.arraycopy(fChildCountStack, 0, newArrayI, 0, fElementDepth);
             fChildCountStack = newArrayI;
 
             XSElementDecl[] newArrayE = new XSElementDecl[newSize];
-            System.arraycopy(fElemDeclStack, 0, newArrayE, 0, newSize);
+            System.arraycopy(fElemDeclStack, 0, newArrayE, 0, fElementDepth);
             fElemDeclStack = newArrayE;
 
+            boolean[] newArrayB = new boolean[newSize];
+            System.arraycopy(fNilStack, 0, newArrayB, 0, fElementDepth);
+            fNilStack = newArrayB;
+
             XSTypeDecl[] newArrayT = new XSTypeDecl[newSize];
-            System.arraycopy(fTypeStack, 0, newArrayT, 0, newSize);
+            System.arraycopy(fTypeStack, 0, newArrayT, 0, fElementDepth);
             fTypeStack = newArrayT;
 
             XSCMValidator[] newArrayC = new XSCMValidator[newSize];
-            System.arraycopy(fCMStack, 0, newArrayC, 0, newSize);
+            System.arraycopy(fCMStack, 0, newArrayC, 0, fElementDepth);
             fCMStack = newArrayC;
 
             boolean[] newArrayD = new boolean[newSize];
-            System.arraycopy(fStringContent, 0, newArrayD, 0, newSize);
+            System.arraycopy(fStringContent, 0, newArrayD, 0, fElementDepth);
             fStringContent = newArrayD;
 
             int[][] newArrayIA = new int[newSize][];
-            System.arraycopy(fCMStateStack, 0, newArrayIA, 0, newSize);
+            System.arraycopy(fCMStateStack, 0, newArrayIA, 0, fElementDepth);
             fCMStateStack = newArrayIA;
         }
 

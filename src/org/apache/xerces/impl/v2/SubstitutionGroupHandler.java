@@ -101,15 +101,6 @@ class SubstitutionGroupHandler {
         return null;
     }
 
-    /**
-     * check whether an element with the given type can have the other element
-     * as its {substitution group affiliation}.
-     */
-    static boolean checkSubstitutionGroupOK(XSElementDecl element) {
-        // REVISIT: to implement
-        return true;
-    }
-
     // 3.9.4 Element Sequence Locally Valid (Particle) 2.3.3
     // check whether one element decl matches an element with the given qname
     XSElementDecl getMatchingElemDecl(QName element, XSElementDecl exemplar) {
@@ -163,6 +154,14 @@ class SubstitutionGroupHandler {
         if (type.getXSType() == XSTypeDecl.COMPLEX_TYPE)
             blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
 
+        // REVISIT: there is a potential infinite loop introcuded by
+        //          circular substitutionGroup. if A sub B, B sub C, and C
+        //          sub B again. Then we can't check whether A sub D, because
+        //          we'll get an infinite loop when trying to get A's
+        //          {substitution group affiliation} recursively.
+        //          To solve it, we need to keep track of all element decls
+        //          in the chain, and if we see the same decl again, just
+        //          stop the loop, and return false. -SG
         // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
         XSElementDecl subGroup = element.fSubGroup;
         while (subGroup != null && subGroup != exemplar) {

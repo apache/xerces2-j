@@ -109,8 +109,6 @@ public class XSParticleDecl {
      */
     public int minEffectiveTotalRange() {
         switch (fType) {
-        case PARTICLE_EMPTY:
-            return 0;
         case PARTICLE_ALL:
         case PARTICLE_SEQUENCE:
             return minEffectiveTotalRangeAllSeq();
@@ -140,8 +138,6 @@ public class XSParticleDecl {
 
     public int maxEffectiveTotalRange() {
         switch (fType) {
-        case PARTICLE_EMPTY:
-            return 0;
         case PARTICLE_ALL:
         case PARTICLE_SEQUENCE:
             return maxEffectiveTotalRangeAllSeq();

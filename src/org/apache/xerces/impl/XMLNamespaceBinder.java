@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000,2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -18,7 +18,7 @@
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:  
+ *    if any, must include the following acknowledgment:
  *       "This product includes software developed by the
  *        Apache Software Foundation (http://www.apache.org/)."
  *    Alternately, this acknowledgment may appear in the software itself,
@@ -26,7 +26,7 @@
  *
  * 4. The names "Xerces" and "Apache Software Foundation" must
  *    not be used to endorse or promote products derived from this
- *    software without prior written permission. For written 
+ *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
  * 5. Products derived from this software may not be called "Apache",
@@ -95,7 +95,7 @@ import org.apache.xerces.xni.parser.XMLDocumentFilter;
  *
  * @version $Id$
  */
-public class XMLNamespaceBinder 
+public class XMLNamespaceBinder
     implements XMLComponent, XMLDocumentFilter {
 
     //
@@ -113,7 +113,7 @@ public class XMLNamespaceBinder
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
-    
+
     /** Property identifier: error reporter. */
     protected static final String ERROR_REPORTER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ERROR_REPORTER_PROPERTY;
@@ -127,7 +127,7 @@ public class XMLNamespaceBinder
 
     /** Recognized properties. */
     protected static final String[] RECOGNIZED_PROPERTIES = {
-        SYMBOL_TABLE,       
+        SYMBOL_TABLE,
         ERROR_REPORTER,
     };
 
@@ -147,7 +147,7 @@ public class XMLNamespaceBinder
 
     /** Error reporter. */
     protected XMLErrorReporter fErrorReporter;
-    
+
     // handlers
 
     /** Document handler. */
@@ -193,7 +193,7 @@ public class XMLNamespaceBinder
         this(null);
     } // <init>()
 
-    /** 
+    /**
      * Constructs a namespace binder that shares the specified namespace
      * context during each parse.
      *
@@ -202,7 +202,7 @@ public class XMLNamespaceBinder
     public XMLNamespaceBinder(NamespaceContext namespaceContext) {
         fNamespaceContext = namespaceContext;
     } // <init>(NamespaceContext)
-    
+
 
     //
     // Public methods
@@ -217,7 +217,7 @@ public class XMLNamespaceBinder
 
     /**
      * Sets whether the namespace binder only passes the prefix mapping
-     * events to the registered document handler or passes all document 
+     * events to the registered document handler or passes all document
      * events.
      *
      * @param onlyPassPrefixMappingEvents True to pass only the prefix
@@ -228,7 +228,7 @@ public class XMLNamespaceBinder
         fOnlyPassPrefixMappingEvents = onlyPassPrefixMappingEvents;
     } // setOnlyPassPrefixMappingEvents(boolean)
 
-    /** 
+    /**
      * Returns true if the namespace binder only passes the prefix mapping
      * events to the registered document handler; false if the namespace
      * binder passes all document events.
@@ -245,13 +245,13 @@ public class XMLNamespaceBinder
      * Resets the component. The component can query the component manager
      * about any features and properties that affect the operation of the
      * component.
-     * 
+     *
      * @param componentManager The component manager.
      *
      * @throws SAXException Thrown by component on initialization error.
      *                      For example, if a feature or property is
      *                      required for the operation of the component, the
-     *                      component manager may throw a 
+     *                      component manager may throw a
      *                      SAXNotRecognizedException or a
      *                      SAXNotSupportedException.
      */
@@ -277,7 +277,7 @@ public class XMLNamespaceBinder
         fEmptySymbol = fSymbolTable.addSymbol("");
         fXmlSymbol = fSymbolTable.addSymbol("xml");
         fXmlnsSymbol = fSymbolTable.addSymbol("xmlns");
-    
+
         // use shared context
         NamespaceContext context = fNamespaceContext;
         while (context != null) {
@@ -305,11 +305,11 @@ public class XMLNamespaceBinder
 
     /**
      * Sets the state of a feature. This method is called by the component
-     * manager any time after reset when a feature changes state. 
+     * manager any time after reset when a feature changes state.
      * <p>
      * <strong>Note:</strong> Components should silently ignore features
      * that do not affect the operation of the component.
-     * 
+     *
      * @param featureId The feature identifier.
      * @param state     The state of the feature.
      *
@@ -333,13 +333,13 @@ public class XMLNamespaceBinder
 
     /**
      * Sets the value of a property during parsing.
-     * 
-     * @param propertyId 
-     * @param value 
+     *
+     * @param propertyId
+     * @param value
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
-        
+
         // Xerces properties
         if (propertyId.startsWith(Constants.XERCES_PROPERTY_PREFIX)) {
             String property =
@@ -361,7 +361,7 @@ public class XMLNamespaceBinder
 
     /**
      * Sets the document handler to receive information about the document.
-     * 
+     *
      * @param documentHandler The document handler.
      */
     public void setDocumentHandler(XMLDocumentHandler documentHandler) {
@@ -378,7 +378,7 @@ public class XMLNamespaceBinder
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param name     The name of the entity.
      * @param publicId The public identifier of the entity if the entity
      *                 is external, null otherwise.
@@ -394,12 +394,12 @@ public class XMLNamespaceBinder
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startEntity(String name, 
+    public void startEntity(String name,
                             String publicId, String systemId,
                             String baseSystemId,
                             String encoding) throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startEntity(name, publicId, systemId, 
+            fDocumentHandler.startEntity(name, publicId, systemId,
                                          baseSystemId, encoding);
         }
     } // startEntity(String,String,String,String,String)
@@ -414,13 +414,13 @@ public class XMLNamespaceBinder
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param version  The XML version, or null if not specified.
      * @param encoding The IANA encoding name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void textDecl(String version, String encoding) 
+    public void textDecl(String version, String encoding)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.textDecl(version, encoding);
@@ -432,7 +432,7 @@ public class XMLNamespaceBinder
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding) 
+    public void startDocument(XMLLocator locator, String encoding)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             fDocumentHandler.startDocument(locator, encoding);
@@ -443,7 +443,7 @@ public class XMLNamespaceBinder
      * Notifies of the presence of an XMLDecl line in the document. If
      * present, this method will be called immediately following the
      * startDocument call.
-     * 
+     *
      * @param version    The XML version.
      * @param encoding   The IANA encoding name of the document, or null if
      *                   not specified.
@@ -460,7 +460,7 @@ public class XMLNamespaceBinder
 
     /**
      * Notifies of the presence of the DOCTYPE line in the document.
-     * 
+     *
      * @param rootElement The name of the root element.
      * @param publicId    The public identifier if an external DTD or null
      *                    if the external DTD is specified using SYSTEM.
@@ -469,7 +469,7 @@ public class XMLNamespaceBinder
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void doctypeDecl(String rootElement, 
+    public void doctypeDecl(String rootElement,
                             String publicId, String systemId)
         throws XNIException {
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
@@ -479,7 +479,7 @@ public class XMLNamespaceBinder
 
     /**
      * A comment.
-     * 
+     *
      * @param text The text in the comment.
      *
      * @throws XNIException Thrown by application to signal an error.
@@ -500,7 +500,7 @@ public class XMLNamespaceBinder
      * element attributes but are <strong>not</strong> parsed or presented
      * to the application as anything other than text. The application is
      * responsible for parsing the data.
-     * 
+     *
      * @param target The target.
      * @param data   The data or null if none specified.
      *
@@ -516,7 +516,7 @@ public class XMLNamespaceBinder
     /**
      * The start of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
-     * 
+     *
      * @param prefix The namespace prefix.
      * @param uri    The URI bound to the prefix.
      *
@@ -543,7 +543,7 @@ public class XMLNamespaceBinder
      * fAttributeQName variable. Any contents of the variable will
      * be destroyed. Caller should copy the values out of this
      * temporary variable before calling this method.
-     * 
+     *
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
@@ -563,7 +563,7 @@ public class XMLNamespaceBinder
 
     /**
      * An empty element.
-     * 
+     *
      * @param element    The name of the element.
      * @param attributes The element attributes.
      *
@@ -584,7 +584,7 @@ public class XMLNamespaceBinder
 
     /**
      * Character content.
-     * 
+     *
      * @param text The content.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -602,7 +602,7 @@ public class XMLNamespaceBinder
      * example, the validator can determine if a length of whitespace
      * characters in the document are ignorable based on the element
      * content model.
-     * 
+     *
      * @param text The ignorable whitespace.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -615,7 +615,7 @@ public class XMLNamespaceBinder
 
     /**
      * The end of an element.
-     * 
+     *
      * @param element The name of the element.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -634,7 +634,7 @@ public class XMLNamespaceBinder
     /**
      * The end of a namespace prefix mapping. This method will only be
      * called when namespace processing is enabled.
-     * 
+     *
      * @param prefix The namespace prefix.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -651,8 +651,8 @@ public class XMLNamespaceBinder
 
     } // endPrefixMapping(String)
 
-    /** 
-     * The start of a CDATA section. 
+    /**
+     * The start of a CDATA section.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -663,7 +663,7 @@ public class XMLNamespaceBinder
     } // startCDATA()
 
     /**
-     * The end of a CDATA section. 
+     * The end of a CDATA section.
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
@@ -690,7 +690,7 @@ public class XMLNamespaceBinder
      * <p>
      * <strong>Note:</strong> This method is not called for entity references
      * appearing as part of attribute values.
-     * 
+     *
      * @param name The name of the entity.
      *
      * @throws XNIException Thrown by handler to signal an error.
@@ -724,7 +724,9 @@ public class XMLNamespaceBinder
                 uri = fSymbolTable.addSymbol(uri);
 
                 // http://www.w3.org/TR/1999/REC-xml-names-19990114/#dt-prefix
-                if (uri == fEmptySymbol) {
+                // We should only report an error if there is a prefix,
+                // that is, the local part is not "xmlns". -SG
+                if (uri == fEmptySymbol && localpart != fXmlnsSymbol) {
                     fErrorReporter.reportError(XMLMessageFormatter.XMLNS_DOMAIN,
                                                "EmptyPrefixedAttName",
                                                new Object[]{element.rawname},
@@ -759,7 +761,7 @@ public class XMLNamespaceBinder
         // bind the attributes
         for (int i = 0; i < length; i++) {
             attributes.getName(i, fAttributeQName);
-            String aprefix = fAttributeQName.prefix != null 
+            String aprefix = fAttributeQName.prefix != null
                            ? fAttributeQName.prefix : fEmptySymbol;
             String arawname = fAttributeQName.rawname;
             if (aprefix == fXmlSymbol) {
@@ -820,7 +822,7 @@ public class XMLNamespaceBinder
         if (element.uri != null) {
             element.prefix = eprefix;
         }
-        
+
         // call handlers
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
             if (!isEmpty) {
