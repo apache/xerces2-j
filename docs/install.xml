@@ -81,12 +81,6 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     1.2.  </td>
    </tr>
    <tr>
-    <td>xmlParserAPIs.jar</td>
-    <td>Jar file with the same contents as xml-apis.jar. This file has
-    been deprecated. Users are encouraged to use xml-apis.jar, as
-    xmlParserAPIs.jar will disappear in some future release.</td>
-   </tr>
-   <tr>
     <td>xercesSamples.jar</td>
     <td>Jar file containing all sample class files</td>
    </tr>
