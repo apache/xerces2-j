@@ -376,6 +376,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
                 return;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return;
         }
@@ -388,6 +392,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     return;
             }
@@ -406,6 +414,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     return;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     return;
             }
@@ -669,6 +681,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0)
                 return -1;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return -1;
         }
@@ -692,6 +708,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
                 if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                     break;
             } else {
+                if (!fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     break;
             }
@@ -737,6 +757,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
             if (XMLCharacterProperties.fgAsciiNameChar[ch] == 0)
                 return true;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                 return true;
         }
@@ -755,6 +779,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
             if (ch == ':')
                 return -1;
         } else {
+            if (!fCalledCharPropInit) {
+                XMLCharacterProperties.initCharFlags();
+                fCalledCharPropInit = true;
+            }
             if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                 return -1;
         }
@@ -803,6 +831,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
                         if (XMLCharacterProperties.fgAsciiInitialNameChar[ch] == 0 || ch == ':')
                             lpok = false;
                     } else {
+                        if (!fCalledCharPropInit) {
+                            XMLCharacterProperties.initCharFlags();
+                            fCalledCharPropInit = true;
+                        }
                         if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0)
                             lpok = false;
                     }
@@ -813,6 +845,10 @@ abstract class AbstractCharReader extends XMLEntityReader {
                     }
                 }
             } else {
+                if (fCalledCharPropInit) {
+                    XMLCharacterProperties.initCharFlags();
+                    fCalledCharPropInit = true;
+                }
                 if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0)
                     break;
             }
@@ -1070,6 +1106,7 @@ abstract class AbstractCharReader extends XMLEntityReader {
     //
     private static final char[] cdata_string = { 'C','D','A','T','A','[' };
     private StringPool fStringPool = null;
+    private boolean fCalledCharPropInit = false;
     private boolean fCallClearPreviousChunk = true;
     private Vector fDeferredErrors = null;
 
@@ -1258,9 +1295,9 @@ abstract class AbstractCharReader extends XMLEntityReader {
         if (!fSendCharDataAsCharArray) {
             int stringIndex = addString(offset, length);
             if (isWhitespace)
-                fEntityHandler.processWhitespace(stringIndex);
+                fCharDataHandler.processWhitespace(stringIndex);
             else
-                fEntityHandler.processCharacters(stringIndex);
+                fCharDataHandler.processCharacters(stringIndex);
             return;
         }
 
@@ -1272,9 +1309,9 @@ abstract class AbstractCharReader extends XMLEntityReader {
             //
             if (length != 0) {
                 if (isWhitespace)
-                    fEntityHandler.processWhitespace(dataChunk.toCharArray(), index, length);
+                    fCharDataHandler.processWhitespace(dataChunk.toCharArray(), index, length);
                 else
-                    fEntityHandler.processCharacters(dataChunk.toCharArray(), index, length);
+                    fCharDataHandler.processCharacters(dataChunk.toCharArray(), index, length);
             }
             return;
         }
@@ -1285,9 +1322,9 @@ abstract class AbstractCharReader extends XMLEntityReader {
         int count = length;
         int nbytes = CharDataChunk.CHUNK_SIZE - index;
         if (isWhitespace)
-            fEntityHandler.processWhitespace(dataChunk.toCharArray(), index, nbytes);
+            fCharDataHandler.processWhitespace(dataChunk.toCharArray(), index, nbytes);
         else
-            fEntityHandler.processCharacters(dataChunk.toCharArray(), index, nbytes);
+            fCharDataHandler.processCharacters(dataChunk.toCharArray(), index, nbytes);
         count -= nbytes;
 
         //
@@ -1300,9 +1337,9 @@ abstract class AbstractCharReader extends XMLEntityReader {
             }
             nbytes = count <= CharDataChunk.CHUNK_SIZE ? count : CharDataChunk.CHUNK_SIZE;
             if (isWhitespace)
-                fEntityHandler.processWhitespace(dataChunk.toCharArray(), 0, nbytes);
+                fCharDataHandler.processWhitespace(dataChunk.toCharArray(), 0, nbytes);
             else
-                fEntityHandler.processCharacters(dataChunk.toCharArray(), 0, nbytes);
+                fCharDataHandler.processCharacters(dataChunk.toCharArray(), 0, nbytes);
             count -= nbytes;
         } while (count > 0);
     }
