@@ -398,8 +398,6 @@ public class XSDHandler {
     // this object (i.e., clean the registries, etc.).
     public SchemaGrammar parseSchema(XSDDescription desc) {
         XMLInputSource schemaSource=null;
-        fDOMPool.reset();
-        fSchemaParser.setPool(fDOMPool);
         try {
             schemaSource = fLocationResolver.resolveEntity(desc);
         }
@@ -412,6 +410,10 @@ public class XSDHandler {
     } // end parseSchema
 
     public SchemaGrammar parseSchema(XMLInputSource is, XSDDescription desc) {
+
+        // reset pools
+        fDOMPool.reset();
+        fSchemaParser.setPool(fDOMPool);
 
         // first try to find it in the bucket/pool, return if one is found
         SchemaGrammar grammar = findGrammar(desc);
