@@ -516,9 +516,6 @@ class XSDHandler {
                             // and all we need to do is error-check+rename our kids:
                             renameRedefiningComponents(currSchemaDoc, redefineComp, SchemaSymbols.ELT_GROUP,
                                 lName, targetLName);
-                        } else {
-                            // REVISIT:  report schema element ordering error
-                            reportSchemaError("src-redefine", new Object [] {componentType});
                         }
                     } // end march through <redefine> children
                     // and now set as traversed
@@ -545,8 +542,6 @@ class XSDHandler {
                         checkForDuplicateNames(qName, fUnparsedGroupRegistry, globalComp, currSchemaDoc);
                     } else if(componentType.equals(SchemaSymbols.ELT_NOTATION)) {
                         checkForDuplicateNames(qName, fUnparsedNotationRegistry, globalComp, currSchemaDoc);
-                    } else {
-                        reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                     }
                 }
             } // end for
@@ -619,7 +614,7 @@ class XSDHandler {
                             // thus this should be done in buildGlobalNameRegistries not here...
                             fElementTraverser.traverseAnnotationDecl(globalComp, null, true, currSchemaDoc);
                         } else {
-                            // We'll have reported an error here already...
+                            reportSchemaError("src-redefine", new Object [] {componentType});
                         }
                     } // end march through <redefine> children
                 } else if(componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
@@ -641,7 +636,7 @@ class XSDHandler {
                     // thus this should be done in buildGlobalNameRegistries not here...
                     fElementTraverser.traverseAnnotationDecl(globalComp, null, true, currSchemaDoc);
                 } else {
-                    // we'll have already reported an error above if we get here.
+                    reportSchemaError("sch-props-correct.1", new Object [] {DOMUtil.getLocalName(globalComp)});
                 }
             } // end for
 
