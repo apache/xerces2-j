@@ -1055,7 +1055,7 @@ public class RangeImpl  implements Range {
         
         if (parent == fStartContainer) {
             int index = indexOf(node, fStartContainer);
-            if (index <= fStartOffset) {
+            if (index < fStartOffset) {
                 fStartOffset--;
             }
         }
@@ -1066,16 +1066,16 @@ public class RangeImpl  implements Range {
                 fEndOffset--;
             }
         }
-   
+        //startContainer or endContainer or both is/are the ancestor(s) of the Node to be deleted
         if (parent != fStartContainer 
-        &&  parent != fEndContainer) {
+        ||  parent != fEndContainer) {
             if (isAncestorOf(node, fStartContainer)) {
                 fStartContainer = parent;
-                fStartOffset = indexOf( node, parent)-1;
+                fStartOffset = indexOf( node, parent);
             }   
             if (isAncestorOf(node, fEndContainer)) {
                 fEndContainer = parent;
-                fEndOffset = indexOf( node, parent)-1;
+                fEndOffset = indexOf( node, parent);
             }
         } 
         
@@ -1121,6 +1121,7 @@ public class RangeImpl  implements Range {
                 (cloneCurrent.getNodeValue()).substring(fStartOffset, fEndOffset));
                 if (traversalType == EXTRACT_CONTENTS) {
                     deleteData((CharacterData)current, fStartOffset, fEndOffset-fStartOffset);
+                    collapse(true); 
                 }
                 frag.appendChild(cloneCurrent);
             } else {
@@ -1143,7 +1144,7 @@ public class RangeImpl  implements Range {
                     current = newCurrent;
                 }
                 if (traversalType == EXTRACT_CONTENTS ) {
-                    fEndOffset-=n; // update fEndOffset!
+                    collapse(true); //nodes removed were fully selected
                 }
             }
             return frag;
