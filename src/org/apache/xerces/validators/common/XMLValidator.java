@@ -122,6 +122,8 @@ import org.apache.xerces.validators.datatype.IDDatatypeValidator;
 import org.apache.xerces.validators.datatype.ENTITYDatatypeValidator;
 import org.apache.xerces.validators.datatype.NOTATIONDatatypeValidator;
 import org.apache.xerces.validators.datatype.UnionDatatypeValidator;
+import org.apache.xerces.validators.datatype.AnySimpleType;
+
 /**
  * This class is the super all-in-one validator used by the parser.
  *
@@ -3341,6 +3343,13 @@ public final class XMLValidator
 			                                break;
 			                            }
 			                        }
+                                    if (!found) {
+                                        // if dTempSub is anySimpleType,
+                                        // then the derivation is ok.
+                                        if (dTempSub instanceof AnySimpleType) {
+                                            found = true;
+                                        }
+                                    }
 			                    }
 			                    if(!found) {
                                     reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
@@ -3348,7 +3357,13 @@ public final class XMLValidator
                                         "Type : "+uri+","+localpart
                                         +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
 			                    }
-			                } else {
+			                } else
+                            if ((ancestorValidator == null &&
+                                 ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex) == null) ||
+                                (ancestorValidator instanceof AnySimpleType)) {
+                                // if ancestorValidator is anyType or anySimpleType,
+                                // then the derivation is ok.
+                            } else {
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                     XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Type : "+uri+","+localpart
@@ -3386,6 +3401,8 @@ public final class XMLValidator
                          // now we look at whether there is a type
                          // relation and whether the type (and element) allow themselves to be substituted for.
 
+                         XMLElementDecl tempElementDecl = new XMLElementDecl();
+                         fGrammar.getElementDecl(elementIndex, tempElementDecl);
                          TraverseSchema.ComplexTypeInfo tempType = typeInfo;
                          TraverseSchema.ComplexTypeInfo destType = ((SchemaGrammar)fGrammar).getElementComplexTypeInfo(elementIndex);
                          for(; tempType != null && destType != null; tempType = tempType.baseComplexTypeInfo) {
@@ -3397,15 +3414,20 @@ public final class XMLValidator
                                    XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Type : "+uri+","+localpart
                                     +" does not derive from the type " + destType.typeName);
-                         } else if (destType == null) {
+                         } else if (destType == null && tempElementDecl.datatypeValidator != null) {
                             // if the original type is a simple type, check derivation ok.
-                            XMLElementDecl tempElementDecl = new XMLElementDecl();
-                            fGrammar.getElementDecl(elementIndex, tempElementDecl);
                             DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
                             DatatypeValidator tempVal = fXsiTypeValidator;
                             for(; tempVal != null; tempVal = tempVal.getBaseValidator())
                                 // WARNING!!!  Comparison by reference.
                                 if(tempVal == ancestorValidator) break;
+                            if (tempVal == null) {
+                                // if ancestorValidator is anyType or anySimpleType,
+                                // then the derivation is ok.
+                                if (ancestorValidator instanceof AnySimpleType) {
+                                    tempVal = fXsiTypeValidator;
+                                }
+                            }
                             if(tempVal == null) {
                                 // now if ancestorValidator is a union, then we must
                                 // look through its members to see whether we derive from any of them.
@@ -3424,6 +3446,13 @@ public final class XMLValidator
 			                                    break;
 			                                }
 			                            }
+                                        if (!found) {
+                                            // if dTempSub is anySimpleType,
+                                            // then the derivation is ok.
+                                            if (dTempSub instanceof AnySimpleType) {
+                                                found = true;
+                                            }
+                                        }
 			                        }
 			                        if(!found) {
                                         reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
@@ -3441,13 +3470,12 @@ public final class XMLValidator
                          } else if (typeInfo != destType) { // now check whether the element or typeInfo's baseType blocks us.
                             int derivationMethod = typeInfo.derivedBy;
                             if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
-                                XMLElementDecl tempElementDecl = new XMLElementDecl();
-                                fGrammar.getElementDecl(elementIndex, tempElementDecl);
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                    XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Element " + fStringPool.toString(tempElementDecl.name.localpart) +
                                     " does not permit xsi:type substitution in the manner required by type "+uri+","+localpart);
-                            } else if ((typeInfo.baseComplexTypeInfo.blockSet & derivationMethod) != 0) {
+                            } else if (typeInfo.baseComplexTypeInfo != null &&
+                                       (typeInfo.baseComplexTypeInfo.blockSet & derivationMethod) != 0) {
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                    XMLMessages.SCHEMA_GENERIC_ERROR,
                                     "Type " + typeInfo.baseComplexTypeInfo.typeName + " does not permit other types, such as "

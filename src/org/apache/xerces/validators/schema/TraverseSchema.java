@@ -80,6 +80,7 @@ import  org.apache.xerces.validators.datatype.StringDatatypeValidator;
 import  org.apache.xerces.validators.datatype.ListDatatypeValidator;
 import  org.apache.xerces.validators.datatype.UnionDatatypeValidator;
 import  org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
+import  org.apache.xerces.validators.datatype.AnySimpleType;
 import  org.apache.xerces.utils.StringPool;
 import  org.w3c.dom.Element;
 
@@ -2196,6 +2197,14 @@ public class TraverseSchema implements
             localpart = baseTypeStr.substring(colonptr+1);
         }
         String uri = resolvePrefixToURI(prefix);
+        if (uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+            localpart.equals("anySimpleType") &&
+            baseRefContext == SchemaSymbols.RESTRICTION) {
+            reportSchemaError(SchemaMessageProvider.UnknownBaseDatatype,
+                              new Object [] { elm.getAttribute( SchemaSymbols.ATT_BASE ),
+                                              elm.getAttribute(SchemaSymbols.ATT_NAME)});
+            return null;
+        }
         baseValidator = getDatatypeValidator(uri, localpart);
         if (baseValidator == null) {
             Element baseTypeNode = getTopLevelComponentByName(SchemaSymbols.ELT_SIMPLETYPE, localpart);
@@ -3581,9 +3590,18 @@ public class TraverseSchema implements
             throw new ComplexTypeRecoverableError(
                   "The simpleType " + base + " that " + typeName + " uses has a value of \"final\" which does not permit extension");
 
+        String baseTypeURI = fStringPool.toString(baseQName.uri);
+        String baseLocalName = fStringPool.toString(baseQName.localpart);
+        if (baseTypeURI.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA) &&
+            baseLocalName.equals("anyType")) {
+             throw new ComplexTypeRecoverableError(
+             "The type '"+ base +"' specified as the " +
+             "base in the simpleContent element must be a complex type with simple content");
+        }
+
         processBaseTypeInfo(baseQName,typeInfo);
 
-        // check that the base isn't a complex type with complex content
+        // check that the base isn't a complex type with simple content
         if (typeInfo.baseComplexTypeInfo != null)  {
              if (typeInfo.baseComplexTypeInfo.contentType != XMLElementDecl.TYPE_SIMPLE) {
                  throw new ComplexTypeRecoverableError(
@@ -3609,7 +3627,7 @@ public class TraverseSchema implements
                  "derivation by RESTRICTION for a complexType");
             }
             else {
-               typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
+                typeInfo.baseDataTypeValidator = typeInfo.baseComplexTypeInfo.datatypeValidator;
             }
 
             //
@@ -4065,11 +4083,6 @@ public class TraverseSchema implements
             baseComplexTypeInfo = getTypeInfoFromNS(typeURI, localpart);
             if (baseComplexTypeInfo == null) {
                 baseDTValidator = getTypeValidatorFromNS(typeURI, localpart);
-                if (baseDTValidator == null) {
-                    throw new ComplexTypeRecoverableError(
-                       "Could not find base type " +localpart
-                       + " in schema " + typeURI);
-                }
             }
         }
 
@@ -4113,23 +4126,22 @@ public class TraverseSchema implements
                         if (baseTypeNode != null) {
                             baseTypeSymbol = traverseSimpleTypeDecl( baseTypeNode );
                             baseDTValidator = getDatatypeValidator(typeURI, localpart);
-                            if (baseDTValidator == null)  {
-                                        //TO DO: signal error here.
-                            }
-                        }
-                        else {
-                            throw new ComplexTypeRecoverableError(
-                                 "Base type could not be found : " + base);
                         }
                     }
                 }
             }
         } // end else (type must be from same schema)
 
+        //
+        //Schema Spec: Complex Type Definition Representation OK : 2
+        //
+        if (baseComplexTypeInfo == null && baseDTValidator == null)  {
+            throw new ComplexTypeRecoverableError(
+             "src-ct.2: Cannot find type definition for '" + base +"'");
+        }
+
         typeInfo.baseComplexTypeInfo = baseComplexTypeInfo;
         typeInfo.baseDataTypeValidator = baseDTValidator;
-
-
     } // end processBaseTypeInfo
 
     /**
@@ -5021,6 +5033,7 @@ public class TraverseSchema implements
     private void checkTypesOK(XMLElementDecl derived, XMLElementDecl base, int dndx, int bndx, SchemaGrammar aGrammar, String elementName) throws Exception {
 
       ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx);
+      ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx);
       if (derived.type == XMLElementDecl.TYPE_SIMPLE ) {
 
         if (base.type != XMLElementDecl.TYPE_SIMPLE)
@@ -5028,21 +5041,21 @@ public class TraverseSchema implements
 
         if (tempType == null) {
          if (!(checkSimpleTypeDerivationOK(derived.datatypeValidator,
-               base.datatypeValidator)))
+               base.datatypeValidator)) &&
+             !(bType == null && base.datatypeValidator == null))
               throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
          return;
         }
       }
 
-      ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx);
       for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
         if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
           throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
         }
-        if (tempType.typeName.equals(bType.typeName))
+        if (bType != null && tempType.typeName.equals(bType.typeName))
           break;
       }
-      if(tempType == null) {
+      if(tempType == null && !(bType == null && base.datatypeValidator == null)) {
         throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
       }
     }
@@ -6849,12 +6862,12 @@ throws Exception {
                         substitutionGroupEltTypeInfo = getElementDeclTypeInfoFromNS(substitutionGroupUri, substitutionGroupLocalpart);
                         if (substitutionGroupEltTypeInfo == null) {
                             substitutionGroupEltDV = getElementDeclTypeValidatorFromNS(substitutionGroupUri, substitutionGroupLocalpart);
-                            if (substitutionGroupEltDV == null) {
+                            /*if (substitutionGroupEltDV == null) {
                                 //TO DO: report error here;
                                 noErrorSoFar = false;
                                 reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
                                                  + "' in schema '" + substitutionGroupUri+"'");
-                            }
+                            }*/
                         }
                     }
                 } else {
@@ -6900,12 +6913,12 @@ throws Exception {
                     if (substitutionGroupEltTypeInfo == null) {
                         fSchemaGrammar.getElementDecl(substitutionGroupElementDeclIndex, fTempElementDecl);
                         substitutionGroupEltDV = fTempElementDecl.datatypeValidator;
-                        if (substitutionGroupEltDV == null) {
+                        /*if (substitutionGroupEltDV == null) {
                             //TO DO: report error here;
                             noErrorSoFar = false;
                             reportGenericSchemaError("Could not find type for element '" +substitutionGroupLocalpart
                                                      + "' in schema '" + substitutionGroupUri+"'");
-                        }
+                        }*/
                     }
                 }
             }
@@ -7587,38 +7600,13 @@ throws Exception {
             int derivationMethod = typeInfo.derivedBy;
             if(typeInfo.baseComplexTypeInfo == null) {
                 if (typeInfo.baseDataTypeValidator != null) { // take care of complexType based on simpleType case...
-                    DatatypeValidator dTemp = typeInfo.baseDataTypeValidator;
-                    for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
-                        // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-                        if(dTemp == substitutionGroupEltDV) break;
-                    }
-                    if (dTemp == null) {
-                        if(substitutionGroupEltDV instanceof UnionDatatypeValidator) {
-                            // dv must derive from one of its members...
-                            Vector subUnionMemberDV = ((UnionDatatypeValidator)substitutionGroupEltDV).getBaseValidators();
-                            int subUnionSize = subUnionMemberDV.size();
-                            boolean found = false;
-                            for (int i=0; i<subUnionSize && !found; i++) {
-                                DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
-                                DatatypeValidator dTempOrig = typeInfo.baseDataTypeValidator;
-                                for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
-                                    // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
-                                    if(dTempSub == dTempOrig) {
-                                        found = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if(!found) {
-                                // REVISIT:  localize
-                                reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
-                                noErrorSoFar = false;
-                            }
-                        } else {
-                            // REVISIT:  localize
-                            reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
-                            noErrorSoFar = false;
-                        }
+                    if (!checkSimpleTypeDerivationOK(typeInfo.baseDataTypeValidator,
+                                                     substitutionGroupEltDV) &&
+                        !(substitutionGroupEltTypeInfo == null &&
+                          substitutionGroupEltDV == null)) {
+                        // REVISIT:  localize
+                        reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
+                        noErrorSoFar = false;
                     } else { // now let's see if substitutionGroup element allows this:
                         if((derivationMethod & finalSet) != 0) {
                             noErrorSoFar = false;
@@ -7628,15 +7616,18 @@ throws Exception {
                                 + substitutionGroupElementDecl.getAttribute(SchemaSymbols.ATT_NAME));
                         }
                     }
-                } else {
+                } else if (!(substitutionGroupEltTypeInfo == null &&
+                             substitutionGroupEltDV == null)) {
                     // REVISIT:  localize
                     reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " which is part of a substitution must have a type which derives from the type of the element at the head of the substitution group");
                     noErrorSoFar = false;
                 }
             } else {
                 ComplexTypeInfo subTypeInfo = typeInfo;
-                for (; subTypeInfo != null && subTypeInfo != substitutionGroupEltTypeInfo; subTypeInfo = subTypeInfo.baseComplexTypeInfo);
-                if (subTypeInfo == null) { // then this type isn't in the chain...
+                for (; subTypeInfo != null && substitutionGroupEltTypeInfo != null && subTypeInfo != substitutionGroupEltTypeInfo; subTypeInfo = subTypeInfo.baseComplexTypeInfo);
+                if (subTypeInfo == null ||
+                    (substitutionGroupEltTypeInfo == null &&
+                      substitutionGroupEltDV != null)) { // then this type isn't in the chain...
                     // REVISIT:  localize
                     reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
                     noErrorSoFar = false;
@@ -7655,7 +7646,9 @@ throws Exception {
             if (dv == substitutionGroupEltDV)
                 return;
             // first, check for type relation.
-            if (!(checkSimpleTypeDerivationOK(dv,substitutionGroupEltDV))) {
+            if (!(checkSimpleTypeDerivationOK(dv,substitutionGroupEltDV)) &&
+                !(substitutionGroupEltTypeInfo == null &&
+                  substitutionGroupEltDV == null)) {
                // REVISIT:  localize
                reportGenericSchemaError("Element " + elementDecl.getAttribute(SchemaSymbols.ATT_NAME) + " has a type which does not derive from the type of the element at the head of the substitution group");
                noErrorSoFar = false;
@@ -7677,6 +7670,10 @@ throws Exception {
     // derived from another datatypevalidator, b
     //
     private boolean checkSimpleTypeDerivationOK(DatatypeValidator d, DatatypeValidator b) {
+       // if b is anySimpleType, then the derivation is OK.
+       if (b instanceof AnySimpleType)
+          return true;
+
        DatatypeValidator dTemp = d;
        for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
            // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
@@ -7692,6 +7689,10 @@ throws Exception {
                boolean found = false;
                for (int i=0; i<subUnionSize && !found; i++) {
                    DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+                   // if dTempSub is anySimpleType, then the derivation is OK.
+                   if (dTempSub instanceof AnySimpleType)
+                      return true;
+
                    DatatypeValidator dTempOrig = d;
                    for(; dTempOrig != null; dTempOrig = dTempOrig.getBaseValidator()) {
                        // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
