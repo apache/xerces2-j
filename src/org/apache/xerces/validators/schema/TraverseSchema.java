@@ -6200,6 +6200,8 @@ throws Exception {
                     if ((attDeclRegistry != null) &&
                             (attDeclRegistry.get((Object)childAttName) != null) ){
                         addAttributeDeclFromAnotherSchema(childAttName, uriStr, typeInfo);
+                        fNamespacesScope = saveNSMapping;
+                        fTargetNSURI = saveTargetNSUri;
                         return -1;
                     } else {
                         traverseAttributeDecl(child, typeInfo, false);
