@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,80 +58,65 @@
 
 package org.apache.xml.serialize;
 
-
-import java.io.Writer;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-
+import java.io.Writer;
 
 /**
- * Provides information about encodings. Depends on the Java runtime
- * to provides writers for the different encodings, but can be used
- * to override encoding names and provide the last printable character
- * for each encoding.
+ * This class represents an encoding.
  *
  * @version $Id$
- * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
  */
-class Encodings
-{
+public class EncodingInfo {
 
-
-    /**
-     * The last printable character for unknown encodings.
-     */
-    static final int DefaultLastPrintable = 0x7F;
+    String name;
+    String javaName;
+    int lastPrintable;
 
     /**
-     * @param encoding a MIME charset name, or null.
+     * Creates new <code>EncodingInfo</code> instance.
      */
-    static EncodingInfo getEncodingInfo(String encoding) {
-        if (encoding == null)
-            return new EncodingInfo(null, DefaultLastPrintable);
-        for (int i = 0;  i < _encodings.length;  i++) {
-            if (_encodings[i].name.equalsIgnoreCase(encoding))
-                return _encodings[i];
-        }
-        return new SieveEncodingInfo(encoding, DefaultLastPrintable);
+    public EncodingInfo(String mimeName, String javaName, int lastPrintable) {
+        this.name = mimeName;
+        this.javaName = javaName == null ? mimeName : javaName;
+        this.lastPrintable = lastPrintable;
     }
 
-    static final String JIS_DANGER_CHARS
-    = "\\\u007e\u007f\u00a2\u00a3\u00a5\u00ac"
-    +"\u2014\u2015\u2016\u2026\u203e\u203e\u2225\u222f\u301c"
-    +"\uff3c\uff5e\uffe0\uffe1\uffe2\uffe3";
+    /**
+     * Creates new <code>EncodingInfo</code> instance.
+     */
+    public EncodingInfo(String mimeName, int lastPrintable) {
+        this(mimeName, mimeName, lastPrintable);
+    }
 
     /**
-     * Constructs a list of all the supported encodings.
+     * Returns a MIME charset name of this encoding.
      */
-    private static final EncodingInfo[] _encodings = new EncodingInfo[] {
-        new EncodingInfo("ASCII", 0x7F),
-        new EncodingInfo("US-ASCII", 0x7F),
-        new EncodingInfo("ISO-8859-1", 0xFF),
-        new EncodingInfo("ISO-8859-2", 0xFF),
-        new EncodingInfo("ISO-8859-3", 0xFF),
-        new EncodingInfo("ISO-8859-4", 0xFF),
-        new EncodingInfo("ISO-8859-5", 0xFF),
-        new EncodingInfo("ISO-8859-6", 0xFF),
-        new EncodingInfo("ISO-8859-7", 0xFF),
-        new EncodingInfo("ISO-8859-8", 0xFF),
-        new EncodingInfo("ISO-8859-9", 0xFF),
-        /**
-         * Does JDK's converter supprt surrogates?
-         * A Java encoding name "UTF-8" is suppoted by JDK 1.2 or later.
-         */
-        new EncodingInfo("UTF-8", "UTF8", 0x10FFFF),
-        /**
-         * JDK 1.1 supports "Shift_JIS" as an alias of "SJIS".
-         * But JDK 1.2 treats "Shift_JIS" as an alias of "MS932".
-         * The JDK 1.2's behavior is invalid against IANA registrations.
-         */
-        new SieveEncodingInfo("Shift_JIS", "SJIS", 0x7F, JIS_DANGER_CHARS),
-        /**
-         * "MS932" is supported by JDK 1.2 or later.
-         */
-        new SieveEncodingInfo("Windows-31J", "MS932", 0x7F, JIS_DANGER_CHARS),
-        new SieveEncodingInfo("EUC-JP", null, 0x7F, JIS_DANGER_CHARS),
-        new SieveEncodingInfo("ISO-2022-JP", null, 0x7F, JIS_DANGER_CHARS),
-    };
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Returns a writer for this encoding based on
+     * an output stream.
+     *
+     * @return A suitable writer
+     * @exception UnsupportedEncodingException There is no convertor
+     *  to support this encoding
+     */
+    public Writer getWriter(OutputStream output)
+        throws UnsupportedEncodingException {
+        if (this.javaName == null)
+            return new OutputStreamWriter(output);
+        return new OutputStreamWriter(output, this.javaName);
+    }
+    /**
+     * Checks whether the specified character is printable or not.
+     *
+     * @param ch a code point (0-0x10ffff)
+     */
+    public boolean isPrintable(int ch) {
+        return ch <= this.lastPrintable;
+    }
 }

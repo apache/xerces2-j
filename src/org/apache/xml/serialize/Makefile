@@ -14,7 +14,10 @@ TARGETS=\
 	ElementState.class\
 	HTMLdtd.class\
 	SerializerFactory.class\
-	SerializerFactoryImpl.class
+	SerializerFactoryImpl.class \
+	EncodingInfo.class \
+	SieveEncodingInfo.class \
+	Encodings.class
 
 DIRS =
 

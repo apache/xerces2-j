@@ -469,6 +469,18 @@ import java.util.*;
  *      </TD>
  *  </TR>
  *  <TR>
+ *      <TD WIDTH="33%">Japanese Windows: An extension of Shift JIS</TD>
+ *      <TD WIDTH="15%">
+ *          <P ALIGN="CENTER">Windows-31J
+ *      </TD>
+ *      <TD WIDTH="12%">
+ *          <P ALIGN="CENTER">MIME
+ *      </TD>
+ *      <TD WIDTH="31%">
+ *          <P ALIGN="CENTER">MS932 (since JDK 1.2)
+ *      </TD>
+ *  </TR>
+ *  <TR>
  *      <TD WIDTH="33%">Chinese: Big5</TD>
  *      <TD WIDTH="15%">
  *          <P ALIGN="CENTER">Big5
@@ -506,7 +518,7 @@ import java.util.*;
  *  </TR>
  * </TABLE>
  * 
- * @version
+ * @version $Id$
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  */
 public class MIME2Java {
@@ -516,9 +528,9 @@ public class MIME2Java {
     
     static {
         s_enchash = new Hashtable();
-        //    <preferred MIME name>, <Java encoding name>
+        //    <preferred MIME name (uppercase)>, <Java encoding name>
         s_enchash.put("UTF-8", "UTF8");
-        s_enchash.put("US-ASCII",        "8859_1");    // ?
+        s_enchash.put("US-ASCII",        "ASCII");
         s_enchash.put("ISO-8859-1",      "8859_1");
         s_enchash.put("ISO-8859-2",      "8859_2");
         s_enchash.put("ISO-8859-3",      "8859_3");
@@ -530,6 +542,16 @@ public class MIME2Java {
         s_enchash.put("ISO-8859-9",      "8859_9");
         s_enchash.put("ISO-2022-JP",     "JIS");
         s_enchash.put("SHIFT_JIS",       "SJIS");
+        /**
+         * MS932 is suitable for Windows-31J,
+         * but JDK 1.1.x does not support MS932.
+         */
+        String version = System.getProperty("java.version");
+        if (version.equals("1.1") || version.startsWith("1.1.")) {
+            s_enchash.put("WINDOWS-31J",      "SJIS");
+        } else {
+            s_enchash.put("WINDOWS-31J",      "MS932");
+        }
         s_enchash.put("EUC-JP",          "EUCJIS");
         s_enchash.put("GB2312",          "GB2312");
         s_enchash.put("BIG5",            "Big5");
@@ -560,9 +582,9 @@ public class MIME2Java {
                                                 // ISO-2022-CN? ISO-2022-CN-EXT?
                                                 
         s_revhash = new Hashtable();
-        //    <Java encoding name>, <preferred MIME name>
+        //    <Java encoding name (uppercase)>, <preferred MIME name>
         s_revhash.put("UTF8", "UTF-8");
-        //s_revhash.put("8859_1", "US-ASCII");    // ?
+        s_revhash.put("ASCII", "US-ASCII");
         s_revhash.put("8859_1", "ISO-8859-1");
         s_revhash.put("8859_2", "ISO-8859-2");
         s_revhash.put("8859_3", "ISO-8859-3");
@@ -574,6 +596,7 @@ public class MIME2Java {
         s_revhash.put("8859_9", "ISO-8859-9");
         s_revhash.put("JIS", "ISO-2022-JP");
         s_revhash.put("SJIS", "Shift_JIS");
+        s_revhash.put("MS932", "WINDOWS-31J");
         s_revhash.put("EUCJIS", "EUC-JP");
         s_revhash.put("GB2312", "GB2312");
         s_revhash.put("BIG5", "Big5");
@@ -608,7 +631,7 @@ public class MIME2Java {
      * Convert a MIME charset name, also known as an XML encoding name, to a Java encoding name.
      * @param   mimeCharsetName Case insensitive MIME charset name: <code>UTF-8, US-ASCII, ISO-8859-1,
      *                          ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5, ISO-8859-6,
-     *                          ISO-8859-7, ISO-8859-8, ISO-8859-9, ISO-2022-JP, Shift_JIS, 
+     *                          ISO-8859-7, ISO-8859-8, ISO-8859-9, ISO-2022-JP, Shift_JIS, Windows-31J
      *                          EUC-JP, GB2312, Big5, EUC-KR, ISO-2022-KR, KOI8-R,
      *                          EBCDIC-CP-US, EBCDIC-CP-CA, EBCDIC-CP-NL, EBCDIC-CP-DK,
      *                          EBCDIC-CP-NO, EBCDIC-CP-FI, EBCDIC-CP-SE, EBCDIC-CP-IT,
@@ -626,11 +649,11 @@ public class MIME2Java {
     /**
      * Convert a Java encoding name to MIME charset name.
      * Available values of <i>encoding</i> are "UTF8", "8859_1", "8859_2", "8859_3", "8859_4",
-     * "8859_5", "8859_6", "8859_7", "8859_8", "8859_9", "JIS", "SJIS", "EUCJIS",
+     * "8859_5", "8859_6", "8859_7", "8859_8", "8859_9", "JIS", "SJIS", "MS932", "EUCJIS",
      * "GB2312", "BIG5", "KSC5601", "ISO2022KR",  "KOI8_R", "CP037", "CP277", "CP278",
      * "CP280", "CP284", "CP285", "CP297", "CP420", "CP424", "CP500", "CP870", "CP871" and "CP918".
      * @param   encoding    Case insensitive Java encoding name: <code>UTF8, 8859_1, 8859_2, 8859_3,
-     *                      8859_4, 8859_5, 8859_6, 8859_7, 8859_8, 8859_9, JIS, SJIS, EUCJIS,
+     *                      8859_4, 8859_5, 8859_6, 8859_7, 8859_8, 8859_9, JIS, SJIS, MS932, EUCJIS,
      *                      GB2312, BIG5, KSC5601, ISO2022KR, KOI8_R, CP037, CP277, CP278,
      *                      CP280, CP284, CP285, CP297, CP420, CP424, CP500, CP870, CP871 
      *                      and CP918</code>.

@@ -184,6 +184,10 @@ public class OutputFormat
      */
     private String _encoding = Defaults.Encoding;
 
+    /**
+     * The EncodingInfo instance for _encoding.
+     */
+    private EncodingInfo _encodingInfo = null;
 
     /**
      * The specified media type or null.
@@ -216,7 +220,6 @@ public class OutputFormat
 
 
     /**
-<<<<<<< OutputFormat.java
      * Ture if comments should be ommited;
      */
     private boolean _omitComments = false;
@@ -477,8 +480,28 @@ public class OutputFormat
     public void setEncoding( String encoding )
     {
         _encoding = encoding;
+        _encodingInfo = null;
     }
 
+    /**
+     * Sets the encoding for this output method with an <code>EncodingInfo</code>
+     * instance.
+     */
+    public void setEncoding(EncodingInfo encInfo) {
+        _encoding = encInfo.getName();
+        _encodingInfo = encInfo;
+    }
+
+    /**
+     * Returns an <code>EncodingInfo<code> instance for the encoding.
+     *
+     * @see setEncoding
+     */
+    public EncodingInfo getEncodingInfo() {
+        if (_encodingInfo == null)
+            _encodingInfo = Encodings.getEncodingInfo(_encoding);
+        return _encodingInfo;
+    }
 
     /**
      * Returns the specified media type, or null.

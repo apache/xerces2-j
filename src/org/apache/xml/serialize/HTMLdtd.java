@@ -353,8 +353,11 @@ public final class HTMLdtd
      * @param value Character value of entity
      * @return Entity's name or null
      */
-    public static String fromChar( char value )
+    public static String fromChar(int value )
     {
+        if (value > 0xffff)
+            return null;
+
         String    name;
         
         initialize();

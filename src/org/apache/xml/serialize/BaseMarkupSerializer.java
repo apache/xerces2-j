@@ -145,14 +145,7 @@ public abstract class BaseMarkupSerializer
 {
 
 
-    /**
-     * Identifies the last printable character in the Unicode range
-     * that is supported by the encoding used with this serializer.
-     * For 8-bit encodings this will be either 0x7E or 0xFF.
-     * For 16-bit encodings this will be 0xFFFF. Characters that are
-     * not printable will be escaped using character references.
-     */
-    private int              _lastPrintable = 0x7E;
+    private EncodingInfo _encodingInfo;
 
 
     /**
@@ -294,8 +287,6 @@ public abstract class BaseMarkupSerializer
 
     public void setOutputByteStream( OutputStream output )
     {
-        String encoding;
-
         if ( output == null )
             throw new NullPointerException( "SER001 Argument 'output' is null." );
         _output = output;
@@ -343,17 +334,12 @@ public abstract class BaseMarkupSerializer
         // If the output stream has been set, use it to construct
         // the writer. It is possible that the serializer has been
         // reused with the same output stream and different encoding.
+
+        _encodingInfo = _format.getEncodingInfo();
+
         if ( _output != null ) {
-            if ( _format.getEncoding() == null )
-                _writer = new OutputStreamWriter( _output );
-            else
-                _writer = Encodings.getWriter( _output, _format.getEncoding() );
+            _writer = _encodingInfo.getWriter(_output);
         }
-        // Determine the last printable character.
-        if ( _format.getEncoding() == null )
-            _lastPrintable = Encodings.getLastPrintable();
-        else
-            _lastPrintable = Encodings.getLastPrintable( _format.getEncoding() );
 
         if ( _format.getIndenting() ) {
             _indenting = true;
@@ -1125,7 +1111,7 @@ public abstract class BaseMarkupSerializer
      * @param ch Character value
      * @return Character entity name, or null
      */
-    protected abstract String getEntityRef( char ch );
+    protected abstract String getEntityRef(int ch);
 
 
     /**
@@ -1275,7 +1261,7 @@ public abstract class BaseMarkupSerializer
     }
 
 
-    protected void printEscaped( char ch )
+    protected void printEscaped(int ch)
     {
         String charRef;
 
@@ -1288,16 +1274,21 @@ public abstract class BaseMarkupSerializer
             _printer.printText( '&' );
             _printer.printText( charRef );
             _printer.printText( ';' );
-        } else if ( ( ch >= ' ' && ch <= _lastPrintable && ch != 0xF7 ) ||
+        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0xF7 ) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
             // If the character is not printable, print as character reference.
             // Non printables are below ASCII space but not tab or line
             // terminator, ASCII delete, or above a certain Unicode threshold.
-            _printer.printText( ch );
+            if (ch < 0x10000) {
+                _printer.printText((char)ch );
+            } else {
+                _printer.printText((char)(((ch-0x10000)>>10)+0xd800));
+                _printer.printText((char)(((ch-0x10000)&0x3ff)+0xdc00));
+            }
         } else {
-            _printer.printText( "&#" );
-            _printer.printText( Integer.toString( ch ) );
-            _printer.printText( ';' );
+            _printer.printText("&#x");
+            _printer.printText(Integer.toHexString(ch));
+            _printer.printText(';');
         }
     }
 
@@ -1312,8 +1303,17 @@ public abstract class BaseMarkupSerializer
      */
     protected void printEscaped( String source )
     {
-        for ( int i = 0 ; i < source.length() ; ++i )
-            printEscaped( source.charAt( i ) );
+        for ( int i = 0 ; i < source.length() ; ++i ) {
+            int ch = source.charAt(i);
+            if ((ch & 0xfc00) == 0xd800 && i+1 < source.length()) {
+                int lowch = source.charAt(i+1);
+                if ((lowch & 0xfc00) == 0xdc00) {
+                    ch = 0x10000 + ((ch-0xd800)<<10) + lowch-0xdc00;
+                    i++;
+                }
+            }
+            printEscaped(ch);
+        }
     }
 
 
