@@ -106,12 +106,11 @@ public class TimeDatatypeValidator extends DateTimeValidator {
         getTime(fStart, fEnd, date);
 
         //validate and normalize
-        if ( !validateDateTime(date) ) {
-            //REVISIT: should we throw an exeption?
-            //         we should not try normalizing in this case ..
-            throw new SchemaDateTimeException ();
-        }
-        else if ( date[utc]!=0 ) {
+        
+        //REVISIT: do we need SchemaDateTimeException?
+        validateDateTime(date);
+        
+        if ( date[utc]!=0 ) {
             normalize(date);
         }
                 return date;

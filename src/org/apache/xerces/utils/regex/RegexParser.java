@@ -665,6 +665,9 @@ class RegexParser {
                 if (ch!='}' && ch !=',' && (ch < '0' || ch > '9'))  {
                     throw new RuntimeException("Invalid quantifier '"+(char)ch+"' in " + regex);
                 }
+                //REVISIT: check for invalid quantifiers!         
+                //
+
                 else if (ch == ',') {
                     if (ch == '}') {
                           max = -1;           // {min,}

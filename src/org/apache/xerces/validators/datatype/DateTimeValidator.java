@@ -246,7 +246,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         }
         catch ( RuntimeException e ) {
             throw new InvalidDatatypeValueException("Value '"+content+
-                                                    "' is not legal value for current datatype" );
+                                                    "' is not legal value for current datatype. " +e.getMessage() );
         }
         validateDate (fDateValue, content);
         return null;
@@ -523,7 +523,7 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
         getYearMonth(start, end, date);
 
         if (fBuffer.charAt(fStart++) !='-') {
-            throw new RuntimeException("CCYY-MM must be followed by '-' sign.");
+            throw new RuntimeException("CCYY-MM must be followed by '-' sign");
         }
         int stop = fStart + 2;
         date[D]=parseInt(fStart, stop);
@@ -548,17 +548,17 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
             start++;
         }
         int i = indexOf(start, end, '-');
-        if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced.");
+        if ( i==-1 ) throw new RuntimeException("Year separator is missing or misplaced");
         int length = i-start;
         if (length<4) {
-            throw new RuntimeException("Year must have 'CCYY' format.");
+            throw new RuntimeException("Year must have 'CCYY' format");
         }
         else if (length > 4 && fBuffer.charAt(start)=='0'){
             throw new RuntimeException("Leading zeros are required if the year value would otherwise have fewer than four digits; otherwise they are forbidden");
         }
         date[CY]= parseIntYear(i);
         if (fBuffer.charAt(i)!='-') {
-            throw new RuntimeException("CCYY must be followed by '-' sign.");
+            throw new RuntimeException("CCYY must be followed by '-' sign");
         }
         start = ++i;
         i = start +2;
@@ -660,55 +660,50 @@ public abstract class DateTimeValidator extends AbstractNumericFacetValidator {
      * @param data
      * @return 
      */
-    protected boolean validateDateTime (int[]  data) {
+    protected void validateDateTime (int[]  data) {
 
         //REVISIT: should we throw an exception for not valid dates
         //          or reporting an error message should be sufficient?  
         if ( data[CY]==0 ) {
-            System.err.println("[Error]: The year \"0000\" is an illegal year value.");
-            return false;
+            throw new RuntimeException("The year \"0000\" is an illegal year value");
+
         }
 
         if ( data[M]<1 || data[M]>12 ) {
-            System.err.println("[Error]: The month must have values 1 to 12.");
-            return false;
+            throw new RuntimeException("The month must have values 1 to 12");
+
         }
 
         //validate days
         if ( data[D]>maxDayInMonthFor(data[CY], data[M]) ) {
-            System.err.println("[Error]: The day must have values 1 to 31.");
+            throw new RuntimeException("The day must have values 1 to 31");
         }
 
         //validate hours
         if ( data[h]>23 || data[h]<0 ) {
-            System.err.println("[Error] Hour must have values 0-23.");
-            return false;
+            throw new RuntimeException("Hour must have values 0-23");
         }
 
         //validate
         if ( data[m]>59 || data[m]<0 ) {
-            System.err.println("[Error] Minute must have values 0-59.");
-            return false;
+            throw new RuntimeException("Minute must have values 0-59");
         }
 
         //validate
         if ( data[s]>60 || data[s]<0 ) {
-            System.err.println("[Error] Second must have values 0-60.");
-            return false;
+            throw new RuntimeException("Second must have values 0-60");
+
         }
 
         //validate
         if ( timeZone[hh]>14 || timeZone[hh]<-14 ) {
-            System.err.println("[Error] Time zone should have range -14..+14.");
-            return false;
+            throw new RuntimeException("Time zone should have range -14..+14");
         }
 
         //validate
         if ( timeZone[mm]>59 || timeZone[mm]<-59 ) {
-            System.err.println("[Error] Minute must have values 0-59.");
-            return false;
+            throw new RuntimeException("Minute must have values 0-59");
         }
-        return true;
     }
 
 

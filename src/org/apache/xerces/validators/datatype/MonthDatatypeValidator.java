@@ -118,11 +118,11 @@ public class MonthDatatypeValidator extends DateTimeValidator {
             }
         }
         //validate and normalize
-        if ( !validateDateTime(date) ) {
-            //REVISIT: error message?
-            throw new SchemaDateTimeException ();
-        }
-        else if ( date[utc]!=0 && date[utc]!='Z' ) {
+
+        //REVISIT: do we need SchemaDateTimeException?
+        validateDateTime(date);
+        
+        if ( date[utc]!=0 && date[utc]!='Z' ) {
             normalize(date);
         }
         return date;
