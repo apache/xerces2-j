@@ -35,7 +35,7 @@ public class DOMImplementationRegistry {
     public final static String PROPERTY =
         "org.w3c.dom.DOMImplementationSourceList";
 
-    private Hashtable sources = new Hashtable();
+    private Hashtable sources;
 
     // deny construction by other classes
     private DOMImplementationRegistry() {
