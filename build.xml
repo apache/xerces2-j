@@ -27,8 +27,7 @@ Build Instructions:
 
 Most useful targets:
 
- - jar -> creates the "xerces.jar" file in "./build"
- - jars -> creates the "xerces.jar" and xercesSamples.jar files in "./build"
+ - package -> creates the "xerces.jar" package in "./build"
  - docs -> creates the HTML documentation in "./build/docs"
  - javadocs - crates the javadocs in "./build/javadocs"
  - dist -> creates the complete distribution
@@ -86,8 +85,7 @@ Copyright:
 
     <property name="doc.generator" value="org.apache.stylebook.StyleBook"/>
     <property name="doc.generator.package" value="${tools.dir}/stylebook-1.0-b2.jar"/>
-    <property name="doc.style" value="${tools.dir}/style-apachexml"/>
-    <property name="doc.style.jar" value="${tools.dir}/style-apachexml.jar"/>
+    <property name="doc.style" value="${docs.dir}/style"/>
 
     <property name="build.dir" value="./build"/>
     <property name="build.src" value="${build.dir}/src"/>
@@ -96,8 +94,7 @@ Copyright:
     <property name="build.samples" value="${build.dir}/samples"/>
     <property name="build.tests" value="${build.dir}/tests"/>
     <property name="build.data" value="${build.dir}/data"/>
-    <property name="build.javadocs" value="${build.dir}/docs/html/apiDocs"/>
-    <property name="compilation.classpath" value="${build.dest}"/>
+    <property name="build.javadocs" value="${build.dir}/docs/javadocs"/>
 
     <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
     <property name="distbin.dir" value="${build.dir}/${name}-${appendit}"/>
@@ -195,12 +192,10 @@ Copyright:
 
     <javac srcdir="${build.src}"
            excludes="**/RevalidatingDOMParser.java"
-           classpath="${compilation.classpath}"
            destdir="${build.dest}"
            debug="${debug}"
            deprecation="${deprecation}"
-           optimize="${optimize}" 
-           includeAntRuntime="false"/> 
+           optimize="${optimize}" />
   </target>
 
   <!-- =================================================================== -->
@@ -225,8 +220,7 @@ Copyright:
            excludes="**/DOMAddLines.java "
            destdir="${build.dest}"
            classpath="${build.dir}/${name}.jar"
-           debug="${debug}"
-           includeAntRuntime="false"/> 
+           debug="${debug}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -258,8 +252,6 @@ Copyright:
   <!-- =================================================================== -->
   <target name="prepare-docs" depends="init">
     <mkdir dir="${build.docs}"/>
-    <unjar src="${doc.style.jar}"
-        dest="${doc.style}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -271,7 +263,6 @@ Copyright:
           classpath="${java.class.path}:${doc.generator.package}"
           classname="${doc.generator}"
           args="targetDirectory=${build.docs} ${docs.book} ${doc.style}"/>
-    <delete dir="${doc.style}"/>
   </target>
 
   <!-- =================================================================== -->
@@ -422,8 +413,7 @@ Copyright:
     <mkdir dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
-    <mkdir dir="${distbin.dir}/docs/html"/>
-    <mkdir dir="${distbin.dir}/docs/html/apiDocs"/>
+    <mkdir dir="${distbin.dir}/docs/javadocs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
     <copy todir="${distbin.dir}/data" >
@@ -545,8 +535,6 @@ Copyright:
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
   <target name="clean" depends="init">
-    <delete file="${name}.jar"/>
-    <delete file="${name}Samples.jar"/>
     <delete dir="${build.dir}"/>
   </target>
 
