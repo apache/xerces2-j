@@ -662,7 +662,8 @@ public class XMLDocumentScannerImpl
             // premature end of file
             catch (EOFException e) {
                 reportFatalError("PrematureEOF", null);
-                throw e;
+                return false;
+                //throw e;
             }
 
 
@@ -817,7 +818,8 @@ public class XMLDocumentScannerImpl
             // premature end of file
             catch (EOFException e) {
                 reportFatalError("PrematureEOF", null);
-                throw e;
+                return false;
+                //throw e;
             }
 
             return true;
@@ -925,7 +927,8 @@ public class XMLDocumentScannerImpl
             // premature end of file
             catch (EOFException e) {
                 reportFatalError("PrematureEOF", null);
-                throw e;
+                return false;
+                //throw e;
             }
 
             // cleanup
@@ -1095,14 +1098,17 @@ public class XMLDocumentScannerImpl
                                 setScannerState(SCANNER_STATE_COMMENT);
                                 again = true;
                             }
-                            /***
-                            // REVISIT: Should we detect this?
+                            else if (fEntityScanner.skipChar('/')) {
+                                reportFatalError("MarkupNotRecognizedInMisc",
+                                                 null);
+                                again = true;
+                            }
                             else if (XMLChar.isNameStart(fEntityScanner.peekChar())) {
                                 reportFatalError("MarkupNotRecognizedInMisc",
                                                  null);
-                                // REVISIT: continue after fatal error
+                                scanStartElement();
+                                setScannerState(SCANNER_STATE_CONTENT);
                             }
-                            /***/
                             else {
                                 reportFatalError("MarkupNotRecognizedInMisc",
                                                  null);
@@ -1152,7 +1158,8 @@ public class XMLDocumentScannerImpl
                 //       end of file was reached prematurely.
                 if (fMarkupDepth != 0) {
                     reportFatalError("PrematureEOF", null);
-                    throw e;
+                    return false;
+                    //throw e;
                 }
 
                 setScannerState(SCANNER_STATE_TERMINATED);
