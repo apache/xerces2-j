@@ -63,40 +63,26 @@ import java.util.Enumeration;
 
 import org.w3c.dom.*;
 
-//import org.apache.xerces.domx.events.*;
-import org.apache.xerces.dom.events.MutationEventImpl;
-import org.w3c.dom.events.*;
-
 /**
  * NamedNodeMaps represent collections of Nodes that can be accessed
- * by name. They're currently used in two modes. Attributes are
- * placed in a NamedNodeMap rather than being children of the node
- * they describe. On the other hand Entity and Notation appear both
- * in the NamedNodeMap _and_ as kids of the DocumentType, requiring
- * some additional logic so these are maintained as "live views" of
- * each other.
+ * by name. Entity and Notation nodes are stored in NamedNodeMaps
+ * attached to the DocumentType. Attributes are placed in a NamedNodeMap
+ * attached to the elem they're related too. However, because attributes
+ * require more work, such as firing mutation events, they are stored in
+ * a subclass of NamedNodeMapImpl.
  * <P>
  * Only one Node may be stored per name; attempting to
  * store another will replace the previous value.
  * <P>
  * NOTE: The "primary" storage key is taken from the NodeName attribute of the
- * node. The "nodes" Vector is kept sorted by this key to speed lookup,
- * ad make it easier to reconcile with the defaults. The "secondary" 
- * storage key is the namespaceURI and localName, when accessed by 
- * DOM level 2 nodes. all nodes, even DOM Level 2 nodes are stored in
- * a single Vector sorted by the primary "nodename" key.
+ * node. The "secondary" storage key is the namespaceURI and localName, when
+ * accessed by DOM level 2 nodes. All nodes, even DOM Level 2 nodes are stored
+ * in a single Vector sorted by the primary "nodename" key.
  * <P>
  * NOTE: item()'s integer index does _not_ imply that the named nodes
  * must be stored in an array; that's only an access method. Note too
  * that these indices are "live"; if someone changes the map's
  * contents, the indices associated with nodes may change.
- * <P>
- * As of REC-DOM-Level-1-19981001, Entities and Notations are no longer
- * shadowed as children of DocumentType.
- * <P>
- * This implementation includes support for DOM Level 2 Mutation Events.
- * If the static boolean NodeImpl.MUTATIONEVENTS is not set true, that support
- * is disabled and can be optimized out to reduce code size.
  * <P>
  *
  * @version
@@ -111,7 +97,6 @@ public class NamedNodeMapImpl
 
     /** Serialization version. */
     static final long serialVersionUID = -7039242451046758020L;
-    static final boolean DEBUG = false;
 
     //
     // Data
@@ -121,24 +106,20 @@ public class NamedNodeMapImpl
 
     protected final static short READONLY     = 0x1<<0;
     protected final static short CHANGED      = 0x1<<1;
+    protected final static short HASDEFAULTS  = 0x1<<2;
 
     /** Nodes. */
     protected Vector nodes;
 
     protected NodeImpl ownerNode; // the node this map belongs to
 
-    /** Default nodes. */
-    protected NamedNodeMapImpl defaults;
-
     //
     // Constructors
     //
 
     /** Constructs a named node map. */
-    protected NamedNodeMapImpl(NodeImpl ownerNode, NamedNodeMapImpl defaults) {
+    protected NamedNodeMapImpl(NodeImpl ownerNode) {
         this.ownerNode = ownerNode;
-        this.defaults = defaults;
-        changed(true);          // to get reconcileDefaults called
     }
 
     //
@@ -150,25 +131,8 @@ public class NamedNodeMapImpl
      * Caveat: This is a count rather than an index, so the
      * highest-numbered node at any time can be accessed via
      * item(getLength()-1).
-     * <P>
-     * COMPLICATION: In the case of attributes,
-     * the count has to include any defaults that may be inherited, yet
-     * not double-count when there is both a default and a specified
-     * value. Convolving the two lists is expensive, and for GC reasons
-     * we don't want to register with the DTD (it wouldn't know when to
-     * release us).
-     * <P>
-     * One solution is to go into the change-counter domain, as we did for
-     * DeepNodeList. Another is to accept the convolution, and count
-     * on the fact that our implementation is a sorted list to keep the cost
-     * managable... which works pretty well for getLength(), but makes
-     * item() expensive.
-     * <P>
-     * The ideal fix would be to rearchitect to eliminate integer indexing,
-     * but of course that wouldn't meet the spec!
      */
     public int getLength() {
-    	reconcileDefaults();
     	return (nodes != null) ? nodes.size() : 0;
     }
 
@@ -187,14 +151,12 @@ public class NamedNodeMapImpl
      * if index is greater than or equal to getLength().
      */
     public Node item(int index) {
-    	reconcileDefaults();
     	return (nodes != null && index < nodes.size()) ?
                     (Node)(nodes.elementAt(index)) : null;
     }
 
     /**
-     * Retrieve a node by name. If not explicitly defined, checks the
-     * defaults before giving up.
+     * Retrieve a node by name.
      *
      * @param name Name of a node to look up.
      * @returns the Node (of unspecified sub-class) stored with that name,
@@ -249,45 +211,22 @@ public class NamedNodeMapImpl
             throw new DOMExceptionImpl(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                        "DOM001 Modification not allowed");
         }
-    	if(arg.getOwnerDocument() != ownerNode.ownerDocument()) {
+    	if (arg.getOwnerDocument() != ownerNode.ownerDocument()) {
             throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR,
                                        "DOM005 Wrong document");
         }
 
-        NodeImpl argn = (NodeImpl)arg;
-
-    	if (argn.owned()) {
-            throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
-                                       "DOM009 Attribute already in use");
-        }
-        argn.ownerNode = ownerNode;
-        argn.owned(true);
    	int i = findNamePoint(arg.getNodeName(),0);
     	NodeImpl previous = null;
     	if (i >= 0) {
             previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
-            previous.ownerNode = ownerNode.ownerDocument();
-            previous.owned(false);
     	} else {
             i = -1 - i; // Insert point (may be end of list)
             if (null == nodes) {
                 nodes = new Vector(5, 10);
             }
             nodes.insertElementAt(arg, i);
-        }
-        changed(true);
-
-    	// Only NamedNodeMaps containing attributes (those which are
-    	// bound to an element) need report MutationEvents
-        if (NodeImpl.MUTATIONEVENTS &&
-           ownerNode != null && ownerNode instanceof ElementImpl)
-        {
-            // MUTATION POST-EVENTS:
-            ownerNode.dispatchAggregateEvents(
-                (AttrImpl)arg,
-                previous==null ? null : previous.getNodeValue()
-                );
         }
     	return previous;
 
@@ -317,23 +256,15 @@ public class NamedNodeMapImpl
                                        "DOM005 Wrong document");
         }
 
-        NodeImpl argn = (NodeImpl)arg;
-    	if (argn.owned()) {
-            throw new DOMExceptionImpl(DOMException.INUSE_ATTRIBUTE_ERR,
-                                       "DOM009 Attribute already in use");
-        }
-
-    	int i = findNamePoint(argn.getNamespaceURI(), argn.getLocalName());
+    	int i = findNamePoint(arg.getNamespaceURI(), arg.getLocalName());
     	NodeImpl previous = null;
     	if (i >= 0) {
             previous = (NodeImpl) nodes.elementAt(i);
             nodes.setElementAt(arg,i);
-            previous.ownerNode = ownerNode.ownerDocument();
-            previous.owned(false);
     	} else {
     	    // If we can't find by namespaceURI, localName, then we find by
     	    // nodeName so we know where to insert.
-    	    i = findNamePoint(argn.getNodeName(),0);
+    	    i = findNamePoint(arg.getNodeName(),0);
             if (i >=0) {
                 previous = (NodeImpl) nodes.elementAt(i);
                 nodes.insertElementAt(arg,i);
@@ -345,33 +276,13 @@ public class NamedNodeMapImpl
                 nodes.insertElementAt(arg, i);
             }
         }
-    	changed(true);
-
-    	// Only NamedNodeMaps containing attributes (those which are
-    	// bound to an element) need report MutationEvents
-        if (NodeImpl.MUTATIONEVENTS &&
-           ownerNode != null && ownerNode instanceof ElementImpl)
-        {
-            // MUTATION POST-EVENTS:
-            ownerNode.dispatchAggregateEvents(
-                (AttrImpl)arg,
-                previous==null ? null : previous.getNodeValue()
-                );
-        }
     	return previous;
 
     } // setNamedItem(Node):Node
    
     /**
      * Removes a node specified by name.
-     * @param name
-     *      The name of a node to remove. When this NamedNodeMap
-     *      contains the attributes attached to an element, as returned
-     *      by the attributes attribute of the Node interface, if the
-     *      removed attribute is known to have a default value, an
-     *      attribute immediately appears containing the default value
-     *      as well as the corresponding namespace URI, local name,
-     *      and prefix when applicable.
+     * @param name The name of a node to remove.
      * @return The node removed from the map if a node with such a name exists.
      */
     /***/
@@ -390,24 +301,8 @@ public class NamedNodeMapImpl
         }
 
         NodeImpl n = (NodeImpl)nodes.elementAt(i);
-        // If there's a default, add it instead
-        Node d;
-        if (defaults != null && (d = defaults.getNamedItem(name)) != null
-            && findNamePoint(name, i+1) < 0) {
-            
-            NodeImpl clone = (NodeImpl)d.cloneNode(true);
-            clone.ownerNode = ownerNode;
-            clone.owned(true);
-            nodes.setElementAt(clone, i);
-        }
-        else {
-            nodes.removeElementAt(i);
-        }
+        nodes.removeElementAt(i);
 
-        changed(true);
-        // remove owning element
-        n.ownerNode = ownerNode.ownerDocument();
-        n.owned(false);
         return n;
 
     } // removeNamedItem(String):Node
@@ -419,15 +314,9 @@ public class NamedNodeMapImpl
      *                      The namespace URI of the node to remove.
      *                      When it is null or an empty string, this
      *                      method behaves like removeNamedItem.
-     * @param               The local name of the node to remove. When
-     *                      this NamedNodeMap contains the attributes
-     *                      attached to an element, as returned by the
-     *                      attributes attribute of the Node interface, if the
-     *                      removed attribute is known to have a default
-     *                      value, an attribute immediately appears
-     *                      containing the default value.
-     * @return Node         The node removed from the map if a node with such a local name and
-     *                       namespace URI exists.
+     * @param               The local name of the node to remove.
+     * @return Node         The node removed from the map if a node with such
+     *                      a local name and namespace URI exists.
      * @throws              NOT_FOUND_ERR: Raised if there is no node named
      *                      name in the map.
 
@@ -446,72 +335,9 @@ public class NamedNodeMapImpl
                                        "DOM008 Not found");
         }
 
-        LCount lc=null;
-        String oldvalue="";
-        AttrImpl enclosingAttribute=null;
-        if (NodeImpl.MUTATIONEVENTS &&
-           ownerNode != null && ownerNode instanceof ElementImpl)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-               enclosingAttribute=(AttrImpl)(nodes.elementAt(i));
-               oldvalue=enclosingAttribute.getNodeValue();
-            }
-        } // End mutation preprocessing
-
         NodeImpl n = (NodeImpl)nodes.elementAt(i);
-        // If there's a default, add it instead
-        Node d;
-        String nodeName = n.getNodeName();
-        if (defaults != null && (d = defaults.getNamedItem(nodeName)) != null)
-        {
-            int j = findNamePoint(nodeName,0);
-            if (j>=0 && findNamePoint(nodeName, j+1) < 0) {
-                NodeImpl clone = (NodeImpl)d.cloneNode(true);
-                clone.ownerNode = ownerNode;
-                clone.owned(true);
-                nodes.setElementAt(clone, i);
-            } else {
-                nodes.removeElementAt(i);
-            }
-        }
-        else {
-            nodes.removeElementAt(i);
-        }
+        nodes.removeElementAt(i);
 
-        changed(true);
-
-        // Need to remove references to an Attr's owner before the
-        // MutationEvents fire.
-        n.ownerNode = ownerNode.ownerDocument();
-        n.owned(false);
-
-        // We can't use the standard dispatchAggregate, since it assumes
-        // that the Attr is still attached to an owner. This code is
-        // similar but dispatches to the previous owner, "element".
-        if(NodeImpl.MUTATIONEVENTS &&
-           ownerNode != null && ownerNode instanceof ElementImpl)
-        {
-    	    // If we have to send DOMAttrModified (determined earlier),
-	        // do so.
-	        if(lc.captures+lc.bubbles+lc.defaults>0)
-	        {
-                MutationEvent me= new MutationEventImpl();
-                //?????ownerDocument.createEvent("MutationEvents");
-                me.initMutationEvent(MutationEventImpl.DOM_ATTR_MODIFIED,
-                                     true, false,
-                                     null, n.getNodeValue(),
-                             ((ElementImpl)ownerNode).getAttribute(name),name);
-                ownerNode.dispatchEvent(me);
-            }
-
-            // We can hand off to process DOMSubtreeModified, though.
-            // Note that only the Element needs to be informed; the
-            // Attr's subtree has not been changed by this operation.
-            ownerNode.dispatchAggregateEvents(null,null);
-        }
         return n;
 
     } // removeNamedItem(String):Node
@@ -525,23 +351,20 @@ public class NamedNodeMapImpl
      * all the nodes contained in the map.
      */
      
-     // REVIST: Currently, this does _not_ clone the docType reference.
-     // Should the new docType object (if any) be a parameter, rather
-     // than being set manually later on?
-     // We _do_ clone the defaults reference, if any.
     public NamedNodeMapImpl cloneMap(NodeImpl ownerNode) {
-    	NamedNodeMapImpl newmap = new NamedNodeMapImpl(ownerNode, defaults);
+    	NamedNodeMapImpl newmap = new NamedNodeMapImpl(ownerNode);
+        cloneContent(newmap);
+    	return newmap;
+    }
+
+    protected void cloneContent(NamedNodeMapImpl newmap) {
     	if (nodes != null) {
             newmap.nodes = new Vector(nodes.size());
             for (int i = 0; i < nodes.size(); ++i) {
-                NodeImpl clone = (NodeImpl)((Node)nodes.elementAt(i)).cloneNode(true);
+                Node clone = ((Node)nodes.elementAt(i)).cloneNode(true);
                 newmap.setNamedItem(clone);
             }
         }
-    	newmap.defaults = defaults;
-        newmap.changed(changed());
-    	return newmap;
-
     } // cloneMap():NamedNodeMapImpl
 
     //
@@ -585,124 +408,6 @@ public class NamedNodeMapImpl
     //
 
     /**
-     * Subroutine: If this NamedNodeMap is backed by a "defaults" map (eg,
-     * if it's being used for Attributes of an XML file validated against
-     * a DTD), we need to deal with the risk that those defaults might
-     * have changed. Entries may have been added, changed, or removed, and
-     * if so we need to update our version of that information
-     * <P>
-     * Luckily, this currently applies _only_ to Attributes, which have a
-     * "specified" flag that allows us to distinguish which we set manually
-     * versus which were defaults... assuming that the defaults list is being
-     * maintained properly, of course.
-     * <P>
-     * Also luckily, The NameNodeMaps are maintained as 
-     * sorted lists. This should keep the cost of convolving the two lists
-     * managable... not wonderful, but at least more like 2N than N**2..
-     * <P>
-     * Finally, to avoid doing the convolution except when there are actually
-     * changes to be absorbed, I've made the Map aware of whether or not
-     * its defaults Map has changed. This is not 110% reliable, but it should
-     * work under normal circumstances, especially since the DTD is usually
-     * relatively static information.
-     * <P>
-     * Note: This is NON-DOM implementation, though used to support behavior
-     * that the DOM requires.
-     */
-    protected void reconcileDefaults() {
-        
-        if (DEBUG) System.out.println("reconcileDefaults:");
-    	if (defaults != null && changed()) {
-
-    		int n = 0;
-            int d = 0;
-            int nsize = (nodes != null) ? nodes.size() : 0;
-            int dsize = defaults.nodes.size();
-
-    		AttrImpl nnode = (nsize == 0) ? null : (AttrImpl) nodes.elementAt(0);
-    		AttrImpl dnode = (dsize == 0) ? null : (AttrImpl) defaults.nodes.elementAt(0);
-
-    		while (n < nsize && d < dsize) {
-    			nnode = (AttrImpl) nodes.elementAt(n);
-    			dnode = (AttrImpl) defaults.nodes.elementAt(d);
-    			if (DEBUG) {
-    			System.out.println("\n\nnnode="+nnode.getNodeName());
-    			System.out.println("dnode="+dnode.getNodeName());
-    			}
-    			
-    			
-    			int test = nnode.getNodeName().compareTo(dnode.getNodeName());
-
-                //REVIST: EACH CONDITION - HOW IT RESPONDS TO DUPLICATE KEYS!
-    			// Same name and a default -- make sure same value
-    			if (test == 0) {
-    			    if (!nnode.getSpecified()) {
-    			        if (DEBUG) System.out.println("reconcile (test==0, specified = false): clone default");
-                        NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                        clone.ownerNode = ownerNode;
-                        clone.owned(true);
-    				    nodes.setElementAt(clone, n);
-    				    // Advance over both, since names in sync
-    				    ++n;
-    				    ++d;
-    			    }
-    			    else { //REVIST: if same name, but specified, simply increment over it.
-    			        if (DEBUG)
-                                    System.out.println("reconcile (test==0, specified=true): just increment");
-    				    ++n;
-    				    ++d;
-    			    }
-    			}
-
-    			// Different name, new default in table; add it
-    			else if (test > 0) {
-    			    if (DEBUG) System.out.println("reconcile (test>0): insert new default");
-                    NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                    clone.ownerNode = ownerNode;
-                    clone.owned(true);
-    				nodes.insertElementAt(clone, n);
-    				// Now in sync, so advance over both
-    				++n;
-    				++d;
-    			}
-
-    			// Different name, old default here; remove it.
-    			else if (!nnode.getSpecified()) {
-    			    if (DEBUG) System.out.println("reconcile(!specified): remove old default:"
-    			    +nnode.getNodeName());
-                    // NOTE: We don't need to null out the parent
-                    //       because this is a node that we're
-                    //       throwing away (not returning). -Ac
-                    // REVISIT: [Q] Should we null it out anyway? -Ac
-    				nodes.removeElementAt(n);
-    				// n didn't advance but represents a different element
-    			}
-
-    			// Different name, specified; accept it
-                else {
-    			    if (DEBUG) System.out.println("reconcile: Different name else accept it.");
-    				++n;
-                }
-        	}
-
-    		// If we ran out of local before default, pick up defaults
-            if (d < dsize) {
-                if (nodes == null) nodes = new Vector();
-                while (d < dsize) {
-                    dnode = (AttrImpl)defaults.nodes.elementAt(d++);
-                    NodeImpl clone = (NodeImpl)dnode.cloneNode(true);
-                    clone.ownerNode = ownerNode;
-                    clone.owned(true);
-    			    if (DEBUG) System.out.println("reconcile: adding"+clone);
-                    nodes.addElement(clone);
-                }
-            }
-            changed(false);
-    	}
-    } // reconcileDefaults()
-
-
-    /**
      * NON-DOM
      * set the ownerDocument of this node, and the attributes it contains
      */
@@ -730,6 +435,14 @@ public class NamedNodeMapImpl
         flags = (short) (value ? flags | CHANGED : flags & ~CHANGED);
     }
 
+    final boolean hasDefaults() {
+        return (flags & HASDEFAULTS) != 0;
+    }
+
+    final void hasDefaults(boolean value) {
+        flags = (short) (value ? flags | HASDEFAULTS : flags & ~HASDEFAULTS);
+    }
+
     //
     // Private methods
     //
@@ -737,8 +450,6 @@ public class NamedNodeMapImpl
     /**
      * Subroutine: Locate the named item, or the point at which said item
      * should be added. 
-     *
-     * SIDE EFFECT: Resynchronizes w/ Defaults. 
      *
      * @param name Name of a node to look up.
      *
@@ -748,9 +459,7 @@ public class NamedNodeMapImpl
      * it from -1. (Encoding because I don't want to recompare the strings
      * but don't want to burn bytes on a datatype to hold a flagged value.)
      */
-    private int findNamePoint(String name, int start) {
-
-    	reconcileDefaults();
+    protected int findNamePoint(String name, int start) {
 
     	// Binary search
     	int i = 0;
@@ -784,9 +493,8 @@ public class NamedNodeMapImpl
     
     /** This findNamePoint is for DOM Level 2 Namespaces.
      */
-    private int findNamePoint(String namespaceURI, String name) {
+    protected int findNamePoint(String namespaceURI, String name) {
         
-        reconcileDefaults();
         if (nodes == null) return -1;
         if (namespaceURI == null) return -1;
         if (name == null) return -1;

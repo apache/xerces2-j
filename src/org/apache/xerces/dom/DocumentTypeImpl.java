@@ -127,11 +127,11 @@ public class DocumentTypeImpl
 
         this.name = name;
         // DOM
-        entities  = new NamedNodeMapImpl(this, null);
-        notations = new NamedNodeMapImpl(this, null);
+        entities  = new NamedNodeMapImpl(this);
+        notations = new NamedNodeMapImpl(this);
 
         // NON-DOM
-        elements = new NamedNodeMapImpl(this,null);
+        elements = new NamedNodeMapImpl(this);
 
     } // <init>(DocumentImpl,String)
   

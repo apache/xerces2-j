@@ -2,6 +2,7 @@
 
 TARGETS=\
 	AttrImpl.class\
+	AttributeMap.class\
 	AttrNSImpl.class\
 	CDATASectionImpl.class\
 	CharacterDataImpl.class\

@@ -138,7 +138,7 @@ public class DeferredElementDefinitionImpl
         // create attributes node map
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl)this.ownerDocument;
-        attributes = new NamedNodeMapImpl(ownerDocument, null);
+        attributes = new NamedNodeMapImpl(ownerDocument);
 
         // Default attributes dangle as children of the element
         // definition "node" in the internal fast table.

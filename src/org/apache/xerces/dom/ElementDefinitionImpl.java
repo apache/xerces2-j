@@ -96,7 +96,7 @@ public class ElementDefinitionImpl
     public ElementDefinitionImpl(DocumentImpl ownerDocument, String name) {
     	super(ownerDocument);
         this.name = name;
-        attributes = new NamedNodeMapImpl(ownerDocument, null);
+        attributes = new NamedNodeMapImpl(ownerDocument);
     }
 
     //

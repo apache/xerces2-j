@@ -159,9 +159,9 @@ public class DeferredDocumentTypeImpl
         DeferredDocumentImpl ownerDocument =
             (DeferredDocumentImpl)this.ownerDocument;
 
-        entities  = new NamedNodeMapImpl(this, null);
-        notations = new NamedNodeMapImpl(this, null);
-        elements  = new NamedNodeMapImpl(this, null);
+        entities  = new NamedNodeMapImpl(this);
+        notations = new NamedNodeMapImpl(this);
+        elements  = new NamedNodeMapImpl(this);
 
         // fill node maps
         DeferredNode last = null;

@@ -101,7 +101,7 @@ public class ElementImpl
     protected String name;
 
     /** Attributes. */
-    protected NamedNodeMapImpl attributes;
+    protected AttributeMap attributes;
 
     //
     // Constructors
@@ -152,7 +152,7 @@ public class ElementImpl
             synchronizeData();
         }
         if (attributes == null) {
-            attributes = new NamedNodeMapImpl(this, null);
+            attributes = new AttributeMap(this, null);
         }
         return attributes;
 
@@ -174,7 +174,7 @@ public class ElementImpl
     	ElementImpl newnode = (ElementImpl) super.cloneNode(deep);
     	// Replicate NamedNodeMap rather than sharing it.
         if (attributes != null) {
-            newnode.attributes = attributes.cloneMap(newnode);
+            newnode.attributes = (AttributeMap) attributes.cloneMap(newnode);
         }
     	return newnode;
 
@@ -340,14 +340,12 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
+
         if (attributes == null) {
             return;
         }
-    	AttrImpl att = (AttrImpl) attributes.getNamedItem(name);
-    	// Remove it (and let the NamedNodeMap recreate the default, if any)
-    	if (att != null) {
-            attributes.removeNamedItem(name);
-    	}
+
+        attributes.safeRemoveNamedItem(name);
 
     } // removeAttribute(String)
 
@@ -386,18 +384,7 @@ public class ElementImpl
             throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
                                        "DOM008 Not found");
         }
-    	AttrImpl found = (AttrImpl) attributes.getNamedItem(oldAttr.getName());
-
-    	// If it is in fact the right object, remove it (and let the
-    	// NamedNodeMap recreate the default, if any)
-
-    	if (found == oldAttr) {
-            attributes.removeNamedItem(oldAttr.getName());
-            return found;
-    	}
-
-        throw new DOMExceptionImpl(DOMException.NOT_FOUND_ERR, 
-                                   "DOM008 Not found");
+        return (Attr) attributes.removeNamedItem(oldAttr.getName());
 
     } // removeAttributeNode(Attr):Attr
 
@@ -433,12 +420,12 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	AttrImpl newAttr = (AttrImpl) getAttributeNode(name);
+    	Attr newAttr = getAttributeNode(name);
         if (newAttr == null) {
-            newAttr = (AttrImpl) getOwnerDocument().createAttribute(name);
+            newAttr = getOwnerDocument().createAttribute(name);
 
             if (attributes == null) {
-                attributes = new NamedNodeMapImpl(this, null);
+                attributes = new AttributeMap(this, null);
             }
             attributes.setNamedItem(newAttr);
         }
@@ -473,23 +460,17 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	if (ownerDocument.errorChecking && !(newAttr instanceof AttrImpl)) {
+    	if (ownerDocument.errorChecking
+            && newAttr.getOwnerDocument() != ownerDocument) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
     		                           "DOM005 Wrong document");
         }
 
-    	AttrImpl na = (AttrImpl) newAttr;
-    	AttrImpl oldAttr;
         if (attributes == null) {
-            attributes = new NamedNodeMapImpl(this, null);
-            oldAttr = null;
-        } else {
-            oldAttr = (AttrImpl) attributes.getNamedItem(newAttr.getName());
+            attributes = new AttributeMap(this, null);
         }
     	// This will throw INUSE if necessary
-    	attributes.setNamedItem(na);
-
-    	return oldAttr;
+    	return (Attr) attributes.setNamedItem(newAttr);
 
     } // setAttributeNode(Attr):Attr
     
@@ -516,9 +497,11 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
+
         if (attributes == null) {
             return "";
         }
+
         Attr attr = (Attr)(attributes.getNamedItemNS(namespaceURI, localName));
         return (attr == null) ? null : attr.getValue();
 
@@ -575,14 +558,14 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
-    	AttrImpl newAttr = (AttrImpl)
-            getAttributeNodeNS(namespaceURI, localName);
+
+    	Attr newAttr = getAttributeNodeNS(namespaceURI, localName);
         if (newAttr == null) {
-            newAttr = (AttrImpl)
+            newAttr =
                 getOwnerDocument().createAttributeNS(namespaceURI, localName);
 
             if (attributes == null) {
-                attributes = new NamedNodeMapImpl(this, null);
+                attributes = new AttributeMap(this, null);
             }
             attributes.setNamedItemNS(newAttr);
     	}
@@ -616,15 +599,12 @@ public class ElementImpl
         if (syncData()) {
             synchronizeData();
         }
+
         if (attributes == null) {
             return;
         }
-    	AttrImpl att =
-            (AttrImpl) attributes.getNamedItemNS(namespaceURI, localName);
-    	// Remove it (and let the NamedNodeMap recreate the default, if any)
-    	if (att != null) {
-            attributes.removeNamedItemNS(namespaceURI, localName);
-    	}
+
+        attributes.safeRemoveNamedItemNS(namespaceURI, localName);
 
     } // removeAttributeNS(String,String)
     
@@ -647,7 +627,7 @@ public class ElementImpl
         if (attributes == null) {
             return null;
         }
-        return (Attr)attributes.getNamedItemNS( namespaceURI, localName);
+        return (Attr)attributes.getNamedItemNS(namespaceURI, localName);
 
     } // getAttributeNodeNS(String,String):Attr
  
@@ -691,25 +671,17 @@ public class ElementImpl
             synchronizeData();
         }
 
-    	if (ownerDocument.errorChecking && !(newAttr instanceof AttrImpl)) {
+    	if (ownerDocument.errorChecking
+            && newAttr.getOwnerDocument() != ownerDocument) {
     		throw new DOMExceptionImpl(DOMException.WRONG_DOCUMENT_ERR, 
     		"DOM005 Wrong document");
         }
 
-    	AttrImpl na = (AttrImpl) newAttr;
-    	AttrImpl oldAttr;
         if (attributes == null) {
-            attributes = new NamedNodeMapImpl(this, null);
-            oldAttr = null;
-        } else {
-            oldAttr =
-                (AttrImpl) attributes.getNamedItemNS(na.getNamespaceURI(),
-                                                     na.getLocalName());
+            attributes = new AttributeMap(this, null);
         }
     	// This will throw INUSE if necessary
-    	attributes.setNamedItem(na);
-
-    	return oldAttr;
+    	return (Attr) attributes.setNamedItemNS(newAttr);
 
     } // setAttributeNodeNS(Attr):Attr
     
@@ -780,24 +752,27 @@ public class ElementImpl
 
     /** Setup the default attributes. */
     protected void setupDefaultAttributes() {
-
-    	// If there is an ElementDefintion, set its Attributes up as
-    	// shadows behind our own.
-    	NamedNodeMapImpl defaultAttrs = null;
-    	DocumentTypeImpl doctype = (DocumentTypeImpl)ownerDocument.getDoctype();
-    	if (doctype != null) {
-    		ElementDefinitionImpl eldef =
-                (ElementDefinitionImpl)doctype.getElements()
-                                              .getNamedItem(getNodeName());
-    		if (eldef != null) {
-    			defaultAttrs = (NamedNodeMapImpl)eldef.getAttributes();
-            }
+        NamedNodeMapImpl defaults = getDefaultAttributes();
+        if (defaults != null) {
+            attributes = new AttributeMap(this, defaults);
         }
+    }
 
-        // create attributes
-        if (defaultAttrs != null) {
-            attributes = new NamedNodeMapImpl(this, defaultAttrs);
+    /** Get the default attributes. */
+    protected NamedNodeMapImpl getDefaultAttributes() {
+
+    	DocumentTypeImpl doctype =
+            (DocumentTypeImpl) ownerDocument.getDoctype();
+    	if (doctype == null) {
+            return null;
         }
+        ElementDefinitionImpl eldef =
+            (ElementDefinitionImpl)doctype.getElements()
+                                               .getNamedItem(getNodeName());
+        if (eldef == null) {
+            return null;
+        }
+        return (NamedNodeMapImpl) eldef.getAttributes();
 
     } // setupAttributes(DocumentImpl)
 
