@@ -18,6 +18,8 @@ package org.apache.xerces.impl.xpath;
 
 /**
  * XPath exception.
+ * 
+ * @xerces.internal
  *
  * @author Andy Clark, IBM
  *

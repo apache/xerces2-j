@@ -23,6 +23,8 @@ import java.io.Reader;
 /** 
  * Reader for UCS-2 and UCS-4 encodings.
  * (i.e., encodings from ISO-10646-UCS-(2|4)).
+ * 
+ * @xerces.internal
  *
  * @author Neil Graham, IBM
  *

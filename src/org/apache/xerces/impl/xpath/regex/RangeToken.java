@@ -18,6 +18,8 @@ package org.apache.xerces.impl.xpath.regex;
 
 /**
  * This class represents a character class such as [a-z] or a period.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

@@ -26,6 +26,8 @@ import org.apache.xerces.xni.QName;
 
 /**
  * Bare minimum XPath parser.
+ * 
+ * @xerces.internal
  *
  * @author Andy Clark, IBM
  * @version $Id$
@@ -329,6 +331,8 @@ public class XPath {
 
     /**
      * A location path representation for an XPath expression.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -394,6 +398,8 @@ public class XPath {
 
     /**
      * A location path step comprised of an axis and node test.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -456,6 +462,8 @@ public class XPath {
 
     /**
      * Axis.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -523,6 +531,8 @@ public class XPath {
 
     /**
      * Node test.
+     * 
+     * @xerces.internal
      *
      * @author Andy Clark, IBM
      */
@@ -635,6 +645,8 @@ public class XPath {
 
     /**
      * List of tokens.
+     * 
+     * @xerces.internal
      * 
      * @author Glenn Marcy, IBM
      * @author Andy Clark, IBM
@@ -1167,6 +1179,8 @@ public class XPath {
     } // class Tokens
 
     /**
+     * @xerces.internal
+     * 
      * @author Glenn Marcy, IBM
      * @author Andy Clark, IBM
      *

@@ -20,6 +20,8 @@ import java.text.CharacterIterator;
 
 /**
  * Boyer-Moore searcher.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

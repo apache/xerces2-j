@@ -19,6 +19,8 @@ package org.apache.xerces.impl.xpath.regex;
 import java.util.Vector;
 
 /**
+ * @xerces.internal
+ * 
  * @version $Id$
  */
 class Op {

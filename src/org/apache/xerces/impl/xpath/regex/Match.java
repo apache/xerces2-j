@@ -19,8 +19,9 @@ package org.apache.xerces.impl.xpath.regex;
 import java.text.CharacterIterator;
 
 /**
- * 
  * An instance of this class has ranges captured in matching.
+ * 
+ * @xerces.internal
  *
  * @see RegularExpression#matches(char[], int, int, Match)
  * @see RegularExpression#matches(char[], Match)

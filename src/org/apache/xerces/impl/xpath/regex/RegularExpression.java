@@ -474,6 +474,8 @@ import java.text.CharacterIterator;
  * </ul>
  *
  * <hr width="50%">
+ * 
+ * @xerces.internal
  *
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  * @version $Id$

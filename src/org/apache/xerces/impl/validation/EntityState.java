@@ -22,6 +22,8 @@ package org.apache.xerces.impl.validation;
  * by components that store information about entity declarations, as well as by
  * entity validator that will need to validate attributes of type entity.
  * 
+ * @xerces.internal
+ * 
  * @author Elena Litani, IBM
  * @version $Id$
  */

@@ -17,6 +17,7 @@
 package org.apache.xerces.impl.xpath.regex;
 
 /**
+ * @xerces.internal
  *
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  * @version $Id$

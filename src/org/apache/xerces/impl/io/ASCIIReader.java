@@ -26,6 +26,8 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 /**
  * A simple ASCII byte reader. This is an optimized reader for reading
  * byte streams that only contain 7-bit ASCII characters.
+ * 
+ * @xerces.internal
  *
  * @author Andy Clark, IBM
  *

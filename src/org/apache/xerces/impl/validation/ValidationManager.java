@@ -25,6 +25,8 @@ import java.util.Vector;
  * other validators present in the pipeline, but should understand
  * that there are others and that some coordination is required.
  * 
+ * @xerces.internal
+ * 
  * @author Elena Litani, IBM
  * @version $Id$
  */

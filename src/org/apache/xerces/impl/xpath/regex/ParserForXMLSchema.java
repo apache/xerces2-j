@@ -20,7 +20,9 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 /**
- * A regular expression parser for the XML Shema.
+ * A regular expression parser for the XML Schema.
+ * 
+ * @xerces.internal
  *
  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
  * @version $Id$

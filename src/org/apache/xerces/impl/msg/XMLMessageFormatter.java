@@ -26,6 +26,8 @@ import org.apache.xerces.util.MessageFormatter;
 /**
  * XMLMessageFormatter provides error messages for the XML 1.0 Recommendation and for 
  * the Namespaces Recommendation
+ * 
+ * @xerces.internal
  *
  * @author Eric Ye, IBM
  * @version $Id$

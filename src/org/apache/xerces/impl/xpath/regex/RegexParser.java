@@ -23,6 +23,8 @@ import java.util.Vector;
 
 /**
  * A Regular Expression Parser.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */

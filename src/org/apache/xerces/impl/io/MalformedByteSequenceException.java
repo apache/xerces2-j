@@ -24,6 +24,8 @@ import org.apache.xerces.util.MessageFormatter;
  * <p>Signals that a malformed byte sequence was detected
  * by a <code>java.io.Reader</code> that decodes bytes 
  * of a given encoding into characters.</p>
+ * 
+ * @xerces.internal
  *
  * @author Michael Glavassevich, IBM
  *

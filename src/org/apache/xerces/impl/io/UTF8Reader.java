@@ -27,6 +27,8 @@ import org.apache.xerces.impl.msg.XMLMessageFormatter;
 /**
  * <p>A UTF-8 reader.</p>
  * 
+ * @xerces.internal
+ * 
  * @author Andy Clark, IBM
  *
  * @version $Id$

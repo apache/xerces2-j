@@ -26,6 +26,8 @@ import java.util.Enumeration;
 /**
  * Implementation of ValidationContext inteface. Used to establish an
  * environment for simple type validation.
+ * 
+ * @xerces.internal
  *
  * @author Elena Litani, IBM
  * @version $Id$

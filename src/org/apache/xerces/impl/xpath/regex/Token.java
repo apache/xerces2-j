@@ -21,6 +21,8 @@ import java.util.Hashtable;
 
 /**
  * This class represents a node in parse tree.
+ * 
+ * @xerces.internal
  *
  * @version $Id$
  */
