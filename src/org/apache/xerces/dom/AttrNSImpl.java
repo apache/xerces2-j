@@ -58,9 +58,7 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-import org.apache.xerces.dom.events.MutationEventImpl;
-
+import org.w3c.dom.DOMException;
 
 /**
  * AttrNSImpl inherits from AttrImpl and adds namespace support. 

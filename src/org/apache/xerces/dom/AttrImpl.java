@@ -57,10 +57,18 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.events.MutationEvent;
+
 import org.apache.xerces.dom.events.MutationEventImpl;
 
 /**
@@ -815,7 +823,7 @@ public class AttrImpl
                 // New child is told it was inserted, and where
                 LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
                 if (lc.captures+lc.bubbles+lc.defaults>0) {
-                    MutationEvent me= new MutationEventImpl();
+                    MutationEventImpl me= new MutationEventImpl();
                     me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,
                                          true,false,this,null,
                                          null,null,(short)0);
@@ -845,7 +853,7 @@ public class AttrImpl
                             }
                         }
                         if (eventAncestor.getNodeType()==Node.DOCUMENT_NODE) {
-                            MutationEvent me= new MutationEventImpl();
+                            MutationEventImpl me= new MutationEventImpl();
                             me.initMutationEvent(MutationEventImpl
                                               .DOM_NODE_INSERTED_INTO_DOCUMENT,
                                                  false,false,null,null,
@@ -937,7 +945,7 @@ public class AttrImpl
                 lc=LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED);
                 if(lc.captures+lc.bubbles+lc.defaults>0)
                 {
-                    MutationEvent me= new MutationEventImpl();
+                    MutationEventImpl me= new MutationEventImpl();
                     me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
                                          true,false,this,null,
                                          null,null,(short)0);
@@ -964,7 +972,7 @@ public class AttrImpl
                         }
                         if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                         {
-                            MutationEvent me= new MutationEventImpl();
+                            MutationEventImpl me= new MutationEventImpl();
                             me.initMutationEvent(MutationEventImpl
                                                .DOM_NODE_REMOVED_FROM_DOCUMENT,
                                                  false,false,

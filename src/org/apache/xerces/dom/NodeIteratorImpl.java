@@ -57,9 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-import org.w3c.dom.traversal.*;
-import org.apache.xerces.dom.DocumentImpl;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.NodeIterator;
+
 
 /** DefaultNodeIterator implements a NodeIterator, which iterates a 
  *  DOM tree in the expected depth first way. 

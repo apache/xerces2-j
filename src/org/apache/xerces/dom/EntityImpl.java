@@ -57,7 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Entity;
+import org.w3c.dom.Node;
 
 /**
  * Entity nodes hold the reference data for an XML Entity -- either

@@ -58,7 +58,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+
 
 /**
  * ElementNSImpl inherits from ElementImpl and adds namespace support. 

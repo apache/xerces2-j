@@ -59,8 +59,6 @@ package org.apache.xerces.dom;
 
 import org.apache.xerces.utils.StringPool;
 
-import org.w3c.dom.*;
-
 /**
  * Entity nodes hold the reference data for an XML Entity -- either
  * parsed or unparsed. The nodeName (inherited from Node) will contain

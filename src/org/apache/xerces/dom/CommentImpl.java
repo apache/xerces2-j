@@ -57,7 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Node;
 
 /**
  * Represents an XML (or HTML) comment.

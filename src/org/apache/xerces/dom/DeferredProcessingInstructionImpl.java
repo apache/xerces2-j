@@ -57,8 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-
 /**
  * Processing Instructions (PIs) permit documents to carry
  * processor-specific information alongside their actual content. PIs

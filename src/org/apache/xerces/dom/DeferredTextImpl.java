@@ -57,8 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-
 /**
  * Text nodes hold the non-markup, non-Entity content of
  * an Element or Attribute.

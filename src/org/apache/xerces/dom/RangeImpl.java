@@ -55,14 +55,16 @@
 
 package org.apache.xerces.dom;
 
+import java.util.Vector;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.CharacterData;
-import org.apache.xerces.dom.DocumentImpl;
-import org.w3c.dom.ranges.*;
-import java.util.Vector;
+import org.w3c.dom.ranges.Range;
+import org.w3c.dom.ranges.RangeException;
+
 
 /** The RangeImpl class implements the org.w3c.dom.range.Range interface.
  *  <p> Please see the API documentation for the interface classes  

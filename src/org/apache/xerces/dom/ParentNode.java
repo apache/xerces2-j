@@ -58,12 +58,16 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
-import org.apache.xerces.dom.*;
-import org.apache.xerces.dom.events.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import org.apache.xerces.dom.events.MutationEventImpl;
 
 /**
  * ParentNode inherits from ChildImpl and adds the capability of having child
@@ -503,7 +507,7 @@ public abstract class ParentNode
                 // New child is told it was inserted, and where
                 LCount lc = LCount.lookup(MutationEventImpl.DOM_NODE_INSERTED);
                 if (lc.captures+lc.bubbles+lc.defaults>0) {
-                    MutationEvent me= new MutationEventImpl();
+                    MutationEventImpl me= new MutationEventImpl();
                     me.initMutationEvent(MutationEventImpl.DOM_NODE_INSERTED,
                                          true,false,this,null,
                                           null,null,(short)0);
@@ -533,7 +537,7 @@ public abstract class ParentNode
                             }
                         }
                         if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE) {
-                            MutationEvent me= new MutationEventImpl();
+                            MutationEventImpl me= new MutationEventImpl();
                             me.initMutationEvent(MutationEventImpl
                                               .DOM_NODE_INSERTED_INTO_DOCUMENT,
                                                  false,false,null,null,
@@ -620,7 +624,7 @@ public abstract class ParentNode
                 lc=LCount.lookup(MutationEventImpl.DOM_NODE_REMOVED);
                 if(lc.captures+lc.bubbles+lc.defaults>0)
                 {
-                    MutationEvent me= new MutationEventImpl();
+                    MutationEventImpl me= new MutationEventImpl();
                     me.initMutationEvent(MutationEventImpl.DOM_NODE_REMOVED,
                                          true,false,this,null,
                                          null,null,(short)0);
@@ -647,7 +651,7 @@ public abstract class ParentNode
                         }
                         if(eventAncestor.getNodeType()==Node.DOCUMENT_NODE)
                         {
-                            MutationEvent me= new MutationEventImpl();
+                            MutationEventImpl me= new MutationEventImpl();
                             me.initMutationEvent(MutationEventImpl
                                                .DOM_NODE_REMOVED_FROM_DOCUMENT,
                                                  false,false,

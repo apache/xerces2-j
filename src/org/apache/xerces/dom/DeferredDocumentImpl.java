@@ -57,12 +57,11 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Vector;
-
 import org.apache.xerces.framework.XMLAttrList;
 import org.apache.xerces.utils.StringPool;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * The Document interface represents the entire HTML or XML document.

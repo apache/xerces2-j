@@ -57,14 +57,14 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
 import java.util.Vector;
-import java.util.Enumeration;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.events.MutationEvent;
 
 import org.apache.xerces.dom.events.MutationEventImpl;
-import org.w3c.dom.events.*;
+
 
 /**
  * AttributeMap inherits from NamedNodeMapImpl and extends it to deal with the

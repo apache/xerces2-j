@@ -57,7 +57,8 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Node;
 
 /**
  * XML provides the CDATA markup to allow a region of text in which

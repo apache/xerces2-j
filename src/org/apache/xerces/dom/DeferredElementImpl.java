@@ -66,9 +66,9 @@ package org.apache.xerces.dom;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.apache.xerces.utils.StringPool;
+import org.w3c.dom.NamedNodeMap;
 
-import org.w3c.dom.*;
+import org.apache.xerces.utils.StringPool;
 
 /**
  * Elements represent most of the "markup" and structure of the

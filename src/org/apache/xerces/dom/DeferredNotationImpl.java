@@ -59,8 +59,6 @@ package org.apache.xerces.dom;
 
 import org.apache.xerces.utils.StringPool;
 
-import org.w3c.dom.*;
-
 /**
  * Notations are how the Document Type Description (DTD) records hints
  * about the format of an XML "unparsed entity" -- in other words,

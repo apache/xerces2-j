@@ -57,7 +57,9 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * This class represents a Document Type <em>declaraction</em> in

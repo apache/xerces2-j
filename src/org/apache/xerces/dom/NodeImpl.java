@@ -57,14 +57,24 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Vector;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventException;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.events.MutationEvent;
 
 import org.apache.xerces.dom.events.EventImpl;
 import org.apache.xerces.dom.events.MutationEventImpl;
-import org.w3c.dom.events.*;
 
 /**
  * Node provides the basic structure of a DOM tree. It is never used

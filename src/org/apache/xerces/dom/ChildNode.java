@@ -57,11 +57,7 @@
 
 package org.apache.xerces.dom;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import org.w3c.dom.Node;
 
 /**
  * ChildNode inherits from NodeImpl and adds the capability of being a child by

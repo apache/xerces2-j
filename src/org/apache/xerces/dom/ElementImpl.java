@@ -57,11 +57,13 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
-import java.util.Enumeration;
-import java.util.Vector;
-
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Elements represent most of the "markup" and structure of the

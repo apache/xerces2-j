@@ -57,8 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-
 /**
  * Represents an XML (or HTML) comment.
  *

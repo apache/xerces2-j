@@ -57,11 +57,13 @@
 
 package org.apache.xerces.dom;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.Vector;
 import java.util.Enumeration;
 
-import org.w3c.dom.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * NamedNodeMaps represent collections of Nodes that can be accessed

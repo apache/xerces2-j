@@ -56,7 +56,8 @@
  */
 package org.apache.xerces.dom.events;
 
-import org.w3c.dom.events.*;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.Node;
 
 /** EventImpl is an implementation of the basic "generic" DOM Level 2 Event

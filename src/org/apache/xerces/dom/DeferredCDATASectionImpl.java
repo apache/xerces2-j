@@ -57,8 +57,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-
 /**
  * XML provides the CDATA markup to allow a region of text in which
  * most of the XML delimiter recognition does not take place. This is

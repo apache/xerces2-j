@@ -63,8 +63,6 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
-
 import org.apache.xerces.utils.StringPool;
 
 /**

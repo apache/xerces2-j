@@ -57,7 +57,10 @@
 
 package org.apache.xerces.dom;
 
-import org.w3c.dom.*;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * Text nodes hold the non-markup, non-Entity content of
