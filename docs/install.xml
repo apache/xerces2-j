@@ -48,6 +48,18 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
     <td>License for the XML Commons Resolver</td>
    </tr>
    <tr>
+    <td>LICENSE-SAX.html</td>
+    <td>SAX License</td>
+   </tr>
+   <tr>
+    <td>LICENSE.DOM-documentation.html</td>
+    <td>W3C Document License</td>
+   </tr>
+   <tr>
+    <td>LICENSE.DOM-software.html</td>
+    <td>W3C Software License</td>
+   </tr>
+   <tr>
     <td>Readme.html</td>
     <td>Web page redirect to docs/html/index.html</td>
    </tr>
@@ -121,6 +133,18 @@ jar xf &ParserName;-tools.&parserversion;.zip</source>
    <tr>
     <td>LICENSE.resolver.txt</td>
     <td>License for the XML Commons Resolver</td>
+   </tr>
+   <tr>
+    <td>LICENSE-SAX.html</td>
+    <td>SAX License</td>
+   </tr>
+   <tr>
+    <td>LICENSE.DOM-documentation.html</td>
+    <td>W3C Document License</td>
+   </tr>
+   <tr>
+    <td>LICENSE.DOM-software.html</td>
+    <td>W3C Software License</td>
    </tr>
    <tr>
     <td>build.bat</td>
