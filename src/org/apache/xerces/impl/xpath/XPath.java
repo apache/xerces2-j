@@ -57,6 +57,8 @@
 
 package org.apache.xerces.impl.xpath;
 
+import java.util.Vector;
+
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
@@ -149,6 +151,32 @@ public class XPath {
     //
 
     /**
+     * Used by the {@link #parseExpression(NamespaceContext)} method
+     * to verify the assumption.
+     * 
+     * If <tt>b</tt> is false, this method throws XPathException
+     * to report the error.
+     */
+    private static void check( boolean b ) throws XPathException {
+        if(!b)      throw new XPathException("c-general-xpath");
+    }
+    
+    /**
+     * Used by the {@link #parseExpression(NamespaceContext)} method
+     * to build a {@link LocationPath} object from the accumulated
+     * {@link Step}s.
+     */
+    private LocationPath buildLocationPath( Vector stepsVector ) throws XPathException {
+        int size = stepsVector.size();
+        check(size!=0);
+        Step[] steps = new Step[size];
+        stepsVector.copyInto(steps);
+        stepsVector.removeAllElements();
+        
+        return new LocationPath(steps);
+    }
+    
+    /**
      * This method is implemented by using the XPathExprScanner and
      * examining the list of tokens that it returns.
      */
@@ -164,16 +192,9 @@ public class XPath {
                 throws XPathException {
                 if (
                     token == XPath.Tokens.EXPRTOKEN_ATSIGN ||
-                    token == XPath.Tokens.EXPRTOKEN_AXISNAME_ATTRIBUTE ||
-                    token == XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD ||
-                    //token == XPath.Tokens.EXPRTOKEN_AXISNAME_SELF ||
-                    token == XPath.Tokens.EXPRTOKEN_DOUBLE_COLON ||
-                    //token == XPath.Tokens.EXPRTOKEN_NAMETEST_ANY ||
                     token == XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME ||
-                    //token == XPath.Tokens.EXPRTOKEN_NODETYPE_NODE ||
                     token == XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH ||
                     token == XPath.Tokens.EXPRTOKEN_PERIOD ||
-                    //added to conform to PR Spec
                     token == XPath.Tokens.EXPRTOKEN_NAMETEST_ANY ||
                     token == XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE ||
                     token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH ||
@@ -191,240 +212,96 @@ public class XPath {
         
         boolean success = scanner.scanExpr(fSymbolTable,
                                            xtokens, fExpression, 0, length);
+        if(!success)
+            throw new XPathException("c-general-xpath");
+        
         //fTokens.dumpTokens();
-        java.util.Vector stepsVector = new java.util.Vector();
-        java.util.Vector locationPathsVector= new java.util.Vector();
-        int tokenCount = xtokens.getTokenCount();
-        boolean firstTokenOfLocationPath=true;
+        Vector stepsVector = new Vector();
+        Vector locationPathsVector= new Vector();
+        
+        // true when the next token should be 'Step' (as defined in
+        // the production rule [3] of XML Schema P1 section 3.11.6
+        // if false, we are expecting either '|' or '/'.
+        //
+        // this is to make sure we can detect a token list like
+        // 'abc' '/' '/' 'def' 'ghi'
+        boolean expectingStep = true;
 
-        for (int i = 0; i < tokenCount; i++) {
-            int token = xtokens.getToken(i);
-            boolean isNamespace=false;
+        while(xtokens.hasMore()) {
+            final int token = xtokens.nextToken();
 
             switch (token) {
                 case  XPath.Tokens.EXPRTOKEN_OPERATOR_UNION :{
-                    if (i == 0) {
-                        throw new XPathException("c-general-xpath");
-                    }
-
-                    int size = stepsVector.size();
-                    if (size == 0) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    Step[] steps = new Step[size];
-                    stepsVector.copyInto(steps);
-                    // add location path
-                    locationPathsVector.addElement(new LocationPath(steps));
-                    //reset stepsVector
-                    stepsVector.removeAllElements();
-                    firstTokenOfLocationPath=true;
+                    check(!expectingStep);
+                    locationPathsVector.addElement(buildLocationPath(stepsVector));
+                    expectingStep=true;
                     break;
                 }
 
-                case XPath.Tokens.EXPRTOKEN_AXISNAME_ATTRIBUTE: {
-                    // consume "::" token and drop through
-                    i++;
-                }
                 case XPath.Tokens.EXPRTOKEN_ATSIGN: {
-                    // consume QName token
-                    if (i == tokenCount - 1) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    token = xtokens.getToken(++i);
-
-                    if (token != XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME
-                        && token!= XPath.Tokens.EXPRTOKEN_NAMETEST_ANY
-                        && token!=  XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    boolean isNamespaceAtt=false;
-                    switch (token)
-                    {
-                        case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:{
-                            Axis axis = new Axis(Axis.ATTRIBUTE);
-                            NodeTest nodeTest = new NodeTest(NodeTest.WILDCARD);
-                            Step step = new Step(axis, nodeTest);
-                            stepsVector.addElement(step);
-                            break;
-                        }
-                        case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:{
-                            isNamespaceAtt=true;
-                        }
-                        case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME:{
-
-                            token = xtokens.getToken(++i);
-                            String prefix = xtokens.getTokenString(token);
-                            String uri = null;
-                            if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
-                                uri = context.getURI(prefix);
-                            }
-                            if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
-                                throw new XPathException("c-general-xpath-ns");
-                            }
-
-                            if (isNamespaceAtt)
-                            {
-                                // build step
-                                Axis axis = new Axis(Axis.ATTRIBUTE);
-                                NodeTest nodeTest = new NodeTest(prefix, uri);
-                                Step step = new Step(axis, nodeTest);
-                                stepsVector.addElement(step);
-                                break;
-                            }
-
-                            token = xtokens.getToken(++i);
-                            String localpart = xtokens.getTokenString(token);
-                            String rawname = prefix != XMLSymbols.EMPTY_STRING
-                                   ? fSymbolTable.addSymbol(prefix+':'+localpart)
-                                   : localpart;
-
-                            // build step
-                            Axis axis = new Axis(Axis.ATTRIBUTE);
-                            NodeTest nodeTest = new NodeTest(new QName(prefix, localpart, rawname, uri));
-                            Step step = new Step(axis, nodeTest);
-                            stepsVector.addElement(step);
-                            break;
-                        }
-                    }
-                    firstTokenOfLocationPath=false;
-                    break;
-                }
-                /***
-                case XPath.Tokens.EXPRTOKEN_AXISNAME_SELF: {
-                    break;
-                }
-                /***/
-                case XPath.Tokens.EXPRTOKEN_DOUBLE_COLON: {
-                    // should never have a bare double colon
-                    throw new XPathException("c-general-xpath");
-                }
-                case XPath.Tokens.EXPRTOKEN_AXISNAME_CHILD: {
-
-                    // consume "::" token and drop through
-                    i++;
-                    if (i == tokenCount - 1) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    firstTokenOfLocationPath=false;
-                    break;
-                }
-                case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:{
-                    Axis axis = new Axis(Axis.CHILD);
-                    NodeTest nodeTest = new NodeTest(NodeTest.WILDCARD);
-                    Step step = new Step(axis, nodeTest);
+                    check(expectingStep);
+                    Step step = new Step(
+                            new Axis(Axis.ATTRIBUTE),
+                            parseNodeTest(xtokens.nextToken(),xtokens,context));
                     stepsVector.addElement(step);
-                    firstTokenOfLocationPath=false;
+                    expectingStep=false;
                     break;
                 }
-
-                case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:{
-                    isNamespace=true;
-                }
+                case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:
+                case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:
                 case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME: {
-                    // consume QName token
-                    token = xtokens.getToken(++i);
-                    String prefix = xtokens.getTokenString(token);
-                    String uri = null;
-                    if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
-                        uri = context.getURI(prefix);
-                    }
-                    if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
-                        throw new XPathException("c-general-xpath-ns");
-                    }
-
-                    if (isNamespace)
-                    {
-                        // build step
-                        Axis axis = new Axis(Axis.CHILD);
-                        NodeTest nodeTest = new NodeTest(prefix, uri);
-                        Step step = new Step(axis, nodeTest);
-                        stepsVector.addElement(step);
-                        break;
-                    }
-
-                    token = xtokens.getToken(++i);
-                    String localpart = xtokens.getTokenString(token);
-                    String rawname = prefix != XMLSymbols.EMPTY_STRING
-                                   ? fSymbolTable.addSymbol(prefix+':'+localpart)
-                                   : localpart;
-
-                    // build step
-                    Axis axis = new Axis(Axis.CHILD);
-                    NodeTest nodeTest = new NodeTest(new QName(prefix, localpart, rawname, uri));
-                    Step step = new Step(axis, nodeTest);
+                    check(expectingStep);
+                    Step step = new Step(
+                            new Axis(Axis.CHILD),
+                            parseNodeTest(token,xtokens,context));
                     stepsVector.addElement(step);
-                    firstTokenOfLocationPath=false;
+                    expectingStep=false;
                     break;
                 }
-                /***
-                case XPath.Tokens.EXPRTOKEN_NODETYPE_NODE: {
-                    break;
-                }
-                /***/
-
 
                 case XPath.Tokens.EXPRTOKEN_PERIOD: {
+                    check(expectingStep);
                     // build step
                     Axis axis = new Axis(Axis.SELF);
                     NodeTest nodeTest = new NodeTest(NodeTest.NODE);
                     Step step = new Step(axis, nodeTest);
                     stepsVector.addElement(step);
 
-                    if (firstTokenOfLocationPath && i+1<tokenCount){
-                        token=xtokens.getToken(i+1);
-                        if (token == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
-                            i++;
-                            if (i == tokenCount - 1) {
-                                throw new XPathException("c-general-xpath");
-                            }
-                            if (i+1<tokenCount)	{
-                                token=xtokens.getToken(i+1);
-                                if (token==XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH)
-                                    throw new XPathException("c-general-xpath");
-                            }
-                            // build step
-                            axis = new Axis(Axis.DESCENDANT);
-                            nodeTest = new NodeTest(NodeTest.NODE);
-                            step = new Step(axis, nodeTest);
-                            stepsVector.addElement(step);
-                        }
+                    if (stepsVector.size()==1/*this '.' is the first step in this path.*/
+                     && xtokens.hasMore()
+                     && xtokens.peekToken() == XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH){
+                        
+                        // consume '//'
+                        xtokens.nextToken();    
+                        
+                        // build step
+                        axis = new Axis(Axis.DESCENDANT);
+                        nodeTest = new NodeTest(NodeTest.NODE);
+                        step = new Step(axis, nodeTest);
+                        stepsVector.addElement(step);
                     }
-                    firstTokenOfLocationPath=false;
+                    expectingStep=false;
                     break;
                 }
 
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_DOUBLE_SLASH:{
+                    // this cannot appear in arbitrary position.
+                    // it is only allowed right after '.' when
+                    // '.' is the first token of a location path.
                     throw new XPathException("c-general-xpath");
                 }
                 case XPath.Tokens.EXPRTOKEN_OPERATOR_SLASH: {
-                    if (i == 0) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    // keep on truckin'
-                    if (firstTokenOfLocationPath) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    if (i == tokenCount - 1) {
-                        throw new XPathException("c-general-xpath");
-                    }
-                    firstTokenOfLocationPath=false;
+                    check(!expectingStep);
+                    expectingStep=true;
                     break;
                 }
                 default:
-                    firstTokenOfLocationPath=false;
+                    // we should have covered all the tokens that we can possibly see. 
+                    throw new InternalError();
             }
         }
 
-        int size = stepsVector.size();
-        if (size == 0) {
-            if (locationPathsVector.size()==0)
-                throw new XPathException("c-general-xpath");
-            else
-                throw new XPathException("c-general-xpath");
-        }
-        Step[] steps = new Step[size];
-        stepsVector.copyInto(steps);
-        locationPathsVector.addElement(new LocationPath(steps));
+        locationPathsVector.addElement(buildLocationPath(stepsVector));
 
         // save location path
         fLocationPaths=new LocationPath[locationPathsVector.size()];
@@ -437,6 +314,45 @@ public class XPath {
 
     } // parseExpression(SymbolTable,NamespaceContext)
 
+    /**
+     * Used by {@link #parseExpression} to parse a node test
+     * from the token list.
+     */
+    private NodeTest parseNodeTest( int typeToken, Tokens xtokens, NamespaceContext context )
+        throws XPathException {
+        switch(typeToken) {
+        case XPath.Tokens.EXPRTOKEN_NAMETEST_ANY:
+            return new NodeTest(NodeTest.WILDCARD);
+            
+        case XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE:
+        case XPath.Tokens.EXPRTOKEN_NAMETEST_QNAME:
+            // consume QName token
+            String prefix = xtokens.nextTokenAsString();
+            String uri = null;
+            if (context != null && prefix != XMLSymbols.EMPTY_STRING) {
+                uri = context.getURI(prefix);
+            }
+            if (prefix != XMLSymbols.EMPTY_STRING && context != null && uri == null) {
+                throw new XPathException("c-general-xpath-ns");
+            }
+    
+            if (typeToken==XPath.Tokens.EXPRTOKEN_NAMETEST_NAMESPACE)
+                return new NodeTest(prefix,uri);
+    
+            String localpart = xtokens.nextTokenAsString();
+            String rawname = prefix != XMLSymbols.EMPTY_STRING
+            ? fSymbolTable.addSymbol(prefix+':'+localpart)
+            : localpart;
+    
+            return new NodeTest(new QName(prefix, localpart, rawname, uri));
+        
+        default:
+            // assertion error
+            throw new InternalError();
+        }
+    }
+    
+    
     //
     // Classes
     //
@@ -750,6 +666,8 @@ public class XPath {
     //       CVS directory when it's not needed. -Ac
 
     /**
+     * List of tokens.
+     * 
      * @author Glenn Marcy, IBM
      * @author Andy Clark, IBM
      *
@@ -933,6 +851,11 @@ public class XPath {
         // REVISIT: Code something better here. -Ac
         private java.util.Hashtable fTokenNames = new java.util.Hashtable();
 
+        /**
+         * Current position in the token list. 
+         */
+        private int fCurrentTokenIndex;
+        
         //
         // Constructors
         //
@@ -1004,12 +927,12 @@ public class XPath {
         // Public methods
         //
 
-        public String getTokenName(int token) {
-            if (token < 0 || token >= fgTokenNames.length)
-                return null;
-            return fgTokenNames[token];
-        }
-
+//        public String getTokenName(int token) {
+//            if (token < 0 || token >= fgTokenNames.length)
+//                return null;
+//            return fgTokenNames[token];
+//        }
+//
         public String getTokenString(int token) {
             return (String)fTokenNames.get(new Integer(token));
         }
@@ -1034,12 +957,63 @@ public class XPath {
             }
             fTokenCount++;
         }
-        public int getTokenCount() {
-            return fTokenCount;
+//        public int getTokenCount() {
+//            return fTokenCount;
+//        }
+//        public int getToken(int tokenIndex) {
+//            return fTokens[tokenIndex];
+//        }
+        
+        /**
+         * Resets the current position to the head of the token list.
+         */
+        public void rewind() {
+            fCurrentTokenIndex=0;
         }
-        public int getToken(int tokenIndex) {
-            return fTokens[tokenIndex];
+        /**
+         * Returns true if the {@link #getNextToken()} method
+         * returns a valid token.
+         */
+        public boolean hasMore() {
+            return fCurrentTokenIndex<fTokenCount; 
         }
+        /**
+         * Obtains the token at the current position, then advance
+         * the current position by one.
+         * 
+         * If there's no such next token, this method throws
+         * <tt>new XPathException("c-general-xpath");</tt>.
+         */
+        public int nextToken() throws XPathException {
+            if( fCurrentTokenIndex==fTokenCount )
+                throw new XPathException("c-xpath-general");
+            return fTokens[fCurrentTokenIndex++];
+        }
+        /**
+         * Obtains the token at the current position, without advancing
+         * the current position.
+         * 
+         * If there's no such next token, this method throws
+         * <tt>new XPathException("c-general-xpath");</tt>.
+         */
+        public int peekToken() throws XPathException {
+            if( fCurrentTokenIndex==fTokenCount )
+                throw new XPathException("c-xpath-general");
+            return fTokens[fCurrentTokenIndex];
+        }
+        /**
+         * Obtains the token at the current position as a String.
+         * 
+         * If there's no current token or if the current token
+         * is not a string token, this method throws 
+         * <tt>new XPathException("c-general-xpath");</tt>.
+         */
+        public String nextTokenAsString() throws XPathException {
+            String s = getTokenString(nextToken());
+            if(s==null)     throw new XPathException("c-xpath-general");
+            return s;
+        }
+        
         public void dumpTokens() {
             //if (DUMP_TOKENS) {
                 for (int i = 0; i < fTokenCount; i++) {
