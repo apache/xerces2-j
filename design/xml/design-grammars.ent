@@ -9,26 +9,18 @@
   </extends>
   
   <implements>
-   <reference idref='dtd-source'/>
+   <reference idref='dtd-filter'/>
   </implements>
   
   <implements>
-   <reference idref='dtd-handler'/>
+   <reference idref='dtd-content-model-filter'/>
   </implements>
   
-  <implements>
-   <reference idref='dtd-content-model-source'/>
-  </implements>
-  
-  <implements>
-   <reference idref='dtd-content-model-handler'/>
-  </implements>
-  
-  <field name='setDTDHandler'>
+  <field name='fDTDHandler'>
    <reference idref='dtd-handler'/>
   </field>
   
-  <field name='setDTDContentModelHandler'>
+  <field name='fDTDContentModelHandler'>
    <reference idref='dtd-content-model-handler'/>
   </field>
   

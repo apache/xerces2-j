@@ -13,6 +13,7 @@
 <!ENTITY design-models     SYSTEM 'design-models.ent'>
 <!ENTITY design-datatypes  SYSTEM 'design-datatypes.ent'>
 <!ENTITY design-grammars   SYSTEM 'design-grammars.ent'>
+<!ENTITY design-identity   SYSTEM 'design-identity.ent'>
 ]>
 <design name='Xerces-J 2.0' date='$Date$'>
  
@@ -28,6 +29,7 @@
  &design-models;
  &design-datatypes;
  &design-grammars;
+ &design-identity;
  &design-parsers;
  &design-util;
  
