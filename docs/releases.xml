@@ -2,15 +2,16 @@
 <!DOCTYPE s1 SYSTEM "./dtd/document.dtd">
 
 <s1 title="Releases">
-  <s2 title='November 21, 2000'>
+  <s2 title='November 22, 2000'>
         <ul>
            <li>DOM 2 Recommendation release support update[lehors]</li>
            <li>Fixed FAQ section submitted by Tony Montgomery Smith[jeffreyr,Tony Montgomery]</li>
            <li>Added normalization patch by Ken Tamura[jeffreyr, Ken Tamura]</li>           
            <li>Fixed hang in UTF8Reader  when we find a multb. UTF8 char. outside [#x10000-#x10FFFF] range [jeffreyr]</li>
            <li>Fixed problem in Server env. with Singleton implemtation of validators[ericye,jeffreyr]</li>
-           <li>Fixed patch submitted by Elena Kitani and others with RangeImpl[ericye,Lisa Kitani,Lynn Monson]</li>
+           <li>Fixed patch submitted by Elena Kitani and others with RangeImpl[ericye,Elena Kitani,Lynn Monson]</li>
            <li>Fixed misc. Schema Structures miscelaneous bugs since last release [ericye]</li>
+           <li>Miscelaneous bug fixes and patches submitted by Lisa Martin [lisa martin]</li>
            <li>Fixed DOM misc. bugs and other patches since last release [lehors]</li>
         </ul>
   </s2>
