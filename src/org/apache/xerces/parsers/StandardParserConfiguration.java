@@ -170,16 +170,6 @@ public class StandardParserConfiguration
     public void initialize() {
         super.initialize();
 
-        // set default features
-        final String NAMESPACES = Constants.SAX_FEATURE_PREFIX + Constants.NAMESPACES_FEATURE;
-        fFeatures.put(NAMESPACES, Boolean.TRUE);
-        final String VALIDATION = Constants.SAX_FEATURE_PREFIX + Constants.VALIDATION_FEATURE;
-        fFeatures.put(VALIDATION, Boolean.FALSE);
-        final String EXTERNAL_GENERAL_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE;
-        fFeatures.put(EXTERNAL_GENERAL_ENTITIES, Boolean.TRUE);
-        final String EXTERNAL_PARAMETER_ENTITIES = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
-        fFeatures.put(EXTERNAL_PARAMETER_ENTITIES, Boolean.TRUE);
-
         // create and register missing components
         final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.GRAMMAR_POOL_PROPERTY;
         fGrammarPool = (GrammarPool) fProperties.get(GRAMMAR_POOL);
