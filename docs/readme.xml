@@ -88,21 +88,14 @@
  <s2 title='Changes from Previous Release'>
     
   <p>
-   The &ParserNameLong; &ParserVersion; introduced some changes to the Xerces Native
-   Interface. The following list enumerates the important changes:
+   The &ParserNameLong; &ParserVersion; is a bug fix of the previous release. This
+   release is more stable and can be used in production environment:
   </p>
   
   <ul>
-   <li>Added an interface, <code>XMLResourceIdentifier</code>, for describing the physical location of XML resources to the core XNI interfaces.
-   This interface is used in grammar caching and entity resolution.
-   </li>
-   <li>
-    Updated <code>XMLEntityResolver</code>, <code>XMLLocator</code>, <code>XMLDocumentHandler</code>, <code>XMLDocumentFragmentHandler</code>, and <code>XMLDTDHandler</code> to use <code>XMLResourceIdentifier</code> interface.
-   </li>
-
-   <li>
-    Added <code>Augmentations</code> to <code>XMLDTDHandler</code>, <code>XMLDocumentFragmentHandler</code>, and the <code>XMLDTDContentModelHandler</code> interfaces
-    </li>
+   <li>Added the support of reporting line/column numbers of schema errors.</li>
+   <li>Enabled processing of base 64-encoded material on OS/390.</li>
+   <li>Updated DTD datatypes to use the new datatype interfaces.</li>
   </ul>
   <p>
   

@@ -2,12 +2,19 @@
 <!-- $Id$ -->
 <!DOCTYPE releases SYSTEM 'dtd/releases.dtd'>
 <releases>
- <release version='Not released'>
+ <release version='Xerces 2.0.1'>
   <desc>
       This release fixes a number of bugs.
   </desc>
   <changes>
-   
+
+   <fix>
+    <note>
+     Fixed and closed bugs filed in Bugzilla.
+    </note>
+    <submitter name='Sandy Gao, Pavani Mukthipudi, Elena Litani, Rahul Srivastava, Neil Graham, Neeraj Bajaj, Lisa Martin, Gopal Sharma, Andy Clark, Arun Yadav'/>
+   </fix>
+
    <add>
     <note>
      Added the support of reporting line/column numbers of schema errors.
@@ -74,6 +81,40 @@
         type of the grammar.  </note>
       <submitter name="Neil Graham"/>
    </update>
+
+    <fix>
+     <note>Fixed a bug related to Signature of call back attributeDecl in XNI samples.</note>
+     <submitter name='Rahul Srivastava'/>
+   </fix>
+
+    <fix>
+     <note>Fixed a bug related to feature prefix in AbstractDOMParser.</note>
+     <submitter name='Rahul Srivastava'/>
+   </fix>
+
+   <add>
+    <note>
+     Added the support for defer loading of schema gramars, grammar is parsed
+     only when there is reference to any schema component from that namespace.
+    </note>
+    <submitter name='Neeraj Bajaj'/>
+   </add>
+
+   <update>
+    <note>
+     JAXP 1.2 schemaSource property, if the String given is relative URI, 
+     now it is resolved against the instance document being parsed.
+    </note>
+    <submitter name='Neeraj Bajaj'/>
+   </update>
+
+  <fix>
+    <note>
+     Fixed a bug related to SchemaNormalizedValue to expose it only when
+     validation attempted is full.
+    </note>
+    <submitter name='Pavani Mukthipudi'/>
+  </fix>
 
   </changes>
 </release>
