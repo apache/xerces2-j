@@ -12,6 +12,7 @@ include $(TOP)/src/Makefile.incl
 # include the absolute path of the base source directory.
 
 TARGETS=\
+	AttributesImpl.class\
 	AttributeListImpl.class
 
 all: dirs compile
