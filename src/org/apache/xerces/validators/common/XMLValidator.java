@@ -957,6 +957,7 @@ NamespacesScope.NamespacesHandler {
                 int childrenLength = fElementChildrenLength - childrenOffset;
                 if (DEBUG_ELEMENT_CHILDREN) {
                     System.out.println("endElement("+fStringPool.toString(fCurrentElement.rawname)+')');
+                    System.out.println("fCurrentContentSpecType : " + fCurrentContentSpecType );
                     System.out.print("offset: ");
                     System.out.print(childrenOffset);
                     System.out.print(", length: ");
@@ -2370,7 +2371,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     /** Validates element and attributes. */
     private void validateElementAndAttributes(QName element, 
                                               XMLAttrList attrList) 
-    throws Exception {
+        throws Exception {
 
         if ((fElementDepth >= 0 && fValidationFlagStack[fElementDepth] != 0 )|| 
             (fGrammar == null && !fValidating && !fNamespacesEnabled) ) {
@@ -2546,8 +2547,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 }
             }
 
-            //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
-            //       this element actually is of a type in another Schema.
+            contentSpecType =  getContentSpecType(elementIndex);
+
             if (fGrammarIsSchemaGrammar && elementIndex != -1) {
 
                 // handle "xsi:type" right here
@@ -2618,8 +2619,22 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 //Change the current scope to be the one defined by this element.
                 fCurrentScope = ((SchemaGrammar) fGrammar).getElementDefinedScope(elementIndex);
 
+                //       here need to check if we need to switch Grammar by asking SchemaGrammar whether 
+                //       this element actually is of a type in another Schema.
                 String anotherSchemaURI = ((SchemaGrammar)fGrammar).getElementFromAnotherSchemaURI(elementIndex);
                 if (anotherSchemaURI != null) {
+                    //before switch Grammar, set the elementIndex to be the template elementIndex of its type
+                    if (contentSpecType != -1 
+                        && contentSpecType != XMLElementDecl.TYPE_SIMPLE
+                        && contentSpecType != XMLElementDecl.TYPE_EMPTY ) {
+                        TraverseSchema.ComplexTypeInfo typeInfo = ((SchemaGrammar) fGrammar).getElementComplexTypeInfo(elementIndex);
+                        if (typeInfo != null) {
+                            elementIndex = typeInfo.templateElementIndex;
+                        }
+
+                    }
+
+                    // now switch the grammar
                     fGrammarNameSpaceIndex = fCurrentSchemaURI = fStringPool.addSymbol(anotherSchemaURI);
                     boolean success = switchGrammar(fCurrentSchemaURI);
                     if (!success && !fNeedValidationOff) {
@@ -2630,9 +2645,9 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                                   + " , can not found");
                     }
                 }
+
             }
 
-            contentSpecType =  getContentSpecType(elementIndex);
             if (contentSpecType == -1 && fValidating && !fNeedValidationOff ) {
                 reportRecoverableXMLError(XMLMessages.MSG_ELEMENT_NOT_DECLARED,
                                           XMLMessages.VC_ELEMENT_VALID,
@@ -3213,7 +3228,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                                            SchemaMessageProvider.SCHEMA_DOMAIN,
                                            SchemaMessageProvider.DatatypeError,
                                            SchemaMessageProvider.MSG_NONE,
-                                           new Object [] { "Can not have element children within a simple type content"},
+                                           new Object [] { "In element '"+fStringPool.toString(elementType)+"' : "+
+                                               "Can not have element children within a simple type content"},
                                            XMLErrorReporter.ERRORTYPE_RECOVERABLE_ERROR);
             } else {
                 try {
