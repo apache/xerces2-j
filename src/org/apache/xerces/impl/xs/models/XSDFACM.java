@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,8 @@ import org.apache.xerces.impl.xs.XSModelGroupImpl;
 import org.apache.xerces.impl.xs.XSWildcardDecl;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+
+import java.util.Vector;
 
 /**
  * DFAContentModel is the implementation of XSCMValidator that does
@@ -311,6 +313,7 @@ public class XSDFACM
         // if we still can't find a match, set the state to first_error
         // and return null
         if (elemIndex == fElemMapSize) {
+            state[1] = state[0];
             state[0] = XSCMValidator.FIRST_ERROR;
             return findMatchingDecl(curElem, subGroupHandler);
         }
@@ -341,8 +344,8 @@ public class XSDFACM
 
     // This method returns the start states of the content model.
     public int[] startContentModel() {
-        int[] val = new int[1];
-        val[0]=0;
+        int[] val = new int[2];
+        val[0] = 0;
         return val;
     } // startContentModel():int[]
 
@@ -974,4 +977,26 @@ public class XSDFACM
         return false;
     }
 
+    /**
+     * Check which elements are valid to appear at this point. This method also
+     * works if the state is in error, in which case it returns what should
+     * have been seen.
+     * 
+     * @param state  the current state
+     * @return       a Vector whose entries are instances of
+     *               either XSWildcardDecl or XSElementDecl.
+     */
+    public Vector whatCanGoHere(int[] state) {
+        int curState = state[0];
+        if (curState < 0)
+            curState = state[1];
+
+        Vector ret = new Vector();
+        for (int elemIndex = 0; elemIndex < fElemMapSize; elemIndex++) {
+            if (fTransTable[curState][elemIndex] != -1)
+                ret.addElement(fElemMap[elemIndex]);
+        }
+        return ret;
+    }
+        
 } // class DFAContentModel

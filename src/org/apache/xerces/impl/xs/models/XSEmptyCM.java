@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 2001, 2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 2001-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,8 @@ import org.apache.xerces.xni.QName;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 
+import java.util.Vector;
+
 /**
  * XSEmptyCM is a derivative of the abstract content model base class that
  * handles a content model with no chilren (elements).
@@ -79,6 +81,8 @@ public class XSEmptyCM  implements XSCMValidator {
 
     // start the content model: did not see any children
     private static final short STATE_START = 0;
+    
+    private static final Vector EMPTY = new Vector(0);
 
     //
     // Data
@@ -150,4 +154,17 @@ public class XSEmptyCM  implements XSCMValidator {
         return false;
     }
 
+    /**
+     * Check which elements are valid to appear at this point. This method also
+     * works if the state is in error, in which case it returns what should
+     * have been seen.
+     * 
+     * @param state  the current state
+     * @return       a Vector whose entries are instances of
+     *               either XSWildcardDecl or XSElementDecl.
+     */
+    public Vector whatCanGoHere(int[] state) {
+        return EMPTY;
+    }
+    
 } // class XSEmptyCM

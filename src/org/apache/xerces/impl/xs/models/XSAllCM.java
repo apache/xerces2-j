@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999-2002 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2003 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,8 @@ import org.apache.xerces.impl.xs.XSElementDecl;
 import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
 import org.apache.xerces.impl.xs.XMLSchemaException;
 import org.apache.xerces.impl.xs.XSConstraints;
+
+import java.util.Vector;
 
 /**
  * XSAllCM implements XSCMValidator and handles <all>
@@ -227,6 +229,26 @@ public class XSAllCM implements XSCMValidator {
         }
 
         return false;
+    }
+
+    /**
+     * Check which elements are valid to appear at this point. This method also
+     * works if the state is in error, in which case it returns what should
+     * have been seen.
+     * 
+     * @param state  the current state
+     * @return       a Vector whose entries are instances of
+     *               either XSWildcardDecl or XSElementDecl.
+     */
+    public Vector whatCanGoHere(int[] state) {
+        Vector ret = new Vector();
+        for (int i = 0; i < fNumElements; i++) {
+            // we only try to look for a matching decl if we have not seen
+            // this element yet.
+            if (state[i+1] == STATE_START)
+                ret.addElement(fAllElements[i]);
+        }
+        return ret;
     }
 
 } // class XSAllCM
