@@ -161,12 +161,44 @@ public class XML11DTDScannerImpl
      */
     protected void normalizeWhitespace(XMLString value) {
         int end = value.offset + value.length;
-        for (int i = value.offset; i < end; i++) {
+        for (int i = value.offset; i < end; ++i) {
             int c = value.ch[i];
             if (XMLChar.isSpace(c)) {
                 value.ch[i] = ' ';
             }
         }
+    }
+    
+    /**
+     * Normalize whitespace in an XMLString converting all whitespace
+     * characters to space characters.
+     */
+    protected void normalizeWhitespace(XMLString value, int fromIndex) {
+        int end = value.offset + value.length;
+        for (int i = value.offset + fromIndex; i < end; ++i) {
+            int c = value.ch[i];
+            if (XMLChar.isSpace(c)) {
+                value.ch[i] = ' ';
+            }
+        }
+    }
+    
+    /**
+     * Checks whether this string would be unchanged by normalization.
+     * 
+     * @return -1 if the value would be unchanged by normalization,
+     * otherwise the index of the first whitespace character which
+     * would be transformed.
+     */
+    protected int isUnchangedByNormalization(XMLString value) {
+        int end = value.offset + value.length;
+        for (int i = value.offset; i < end; ++i) {
+            int c = value.ch[i];
+            if (XMLChar.isSpace(c)) {
+                return i - value.offset;
+            }
+        }
+        return -1;
     }
 
     // returns true if the given character is not

@@ -172,9 +172,20 @@ public class XML11DocumentScannerImpl
             System.out.println("** scanLiteral -> \""
                                + value.toString() + "\"");
         }
+        
+        int fromIndex = 0;
+        if (c == quote && (fromIndex = isUnchangedByNormalization(value)) == -1) {
+            /** Both the non-normalized and normalized attribute values are equal. **/
+            nonNormalizedValue.setValues(value);
+            int cquote = fEntityScanner.scanChar();
+            if (cquote != quote) {
+                reportFatalError("CloseQuoteExpected", new Object[]{eleName,atName});
+            }
+            return true;
+        }
         fStringBuffer2.clear();
         fStringBuffer2.append(value);
-        normalizeWhitespace(value);
+        normalizeWhitespace(value, fromIndex);
         if (DEBUG_ATTR_NORMALIZATION) {
             System.out.println("** normalizeWhitespace -> \""
                                + value.toString() + "\"");
@@ -441,12 +452,44 @@ public class XML11DocumentScannerImpl
      */
     protected void normalizeWhitespace(XMLString value) {
         int end = value.offset + value.length;
-	    for (int i = value.offset; i < end; i++) {
+	    for (int i = value.offset; i < end; ++i) {
            int c = value.ch[i];
            if (XMLChar.isSpace(c)) {
                value.ch[i] = ' ';
            }
        }
+    }
+    
+    /**
+     * Normalize whitespace in an XMLString converting all whitespace
+     * characters to space characters.
+     */
+    protected void normalizeWhitespace(XMLString value, int fromIndex) {
+        int end = value.offset + value.length;
+        for (int i = value.offset + fromIndex; i < end; ++i) {
+            int c = value.ch[i];
+            if (XMLChar.isSpace(c)) {
+                value.ch[i] = ' ';
+            }
+        }
+    }
+    
+    /**
+     * Checks whether this string would be unchanged by normalization.
+     * 
+     * @return -1 if the value would be unchanged by normalization,
+     * otherwise the index of the first whitespace character which
+     * would be transformed.
+     */
+    protected int isUnchangedByNormalization(XMLString value) {
+        int end = value.offset + value.length;
+        for (int i = value.offset; i < end; ++i) {
+            int c = value.ch[i];
+            if (XMLChar.isSpace(c)) {
+                return i - value.offset;
+            }
+        }
+        return -1;
     }
 
     // returns true if the given character is not
