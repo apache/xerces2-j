@@ -1442,29 +1442,6 @@ public class CoreDocumentImpl
 
     //  NodeListCache pool
 
-    class NodeListCache {
-        /** Cached node list length. */
-        protected int fLength = -1;
-
-        /** Last requested node index. */
-        protected int fChildIndex = -1;
-
-        /** Last requested node. */
-        protected ChildNode fChild;
-
-        /** Owner of this cache */
-        protected ParentNode fOwner;
-
-        /** Pointer to the next object on the list,
-            only meaningful when actully stored in the free list. */
-        NodeListCache next;
-
-        NodeListCache(ParentNode owner) {
-            fOwner = owner;
-        }
-
-    }
-
     /**
      * Returns a NodeListCache for the given node.
      */

@@ -118,7 +118,7 @@ public abstract class ParentNode
     // transients
 
     /** NodeList cache */
-    protected transient CoreDocumentImpl.NodeListCache fNodeListCache = null;
+    protected transient NodeListCache fNodeListCache = null;
 
     //
     // Constructors
