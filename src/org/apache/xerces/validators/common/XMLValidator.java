@@ -3214,7 +3214,16 @@ public final class XMLValidator
                                     "Type : "+uri+","+localpart
                                     +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
                             }
-                        } else { // check if element has block set
+                        } else { 
+                            // if we have an attribute but xsi:type's type is simple, we have a problem...
+                            if (tempVal != null && fXsiTypeValidator != null &&
+                                    (fGrammar.getFirstAttributeDeclIndex(elementIndex) != -1)) {
+                                reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                    XMLMessages.SCHEMA_GENERIC_ERROR,
+                                    "Type : "+uri+","+localpart
+                                    +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                            }
+                            // check if element has block set
                             if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & SchemaSymbols.RESTRICTION) != 0) {
                                 reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
                                     XMLMessages.SCHEMA_GENERIC_ERROR,
@@ -3249,8 +3258,46 @@ public final class XMLValidator
                                     "Type : "+uri+","+localpart
                                     +" does not derive from the type " + destType.typeName);
                          } else if (destType == null) {
-                         // TO BE DONE:
-                         // if the original type is a simple type, check derivation ok.
+                            // if the original type is a simple type, check derivation ok.
+                            XMLElementDecl tempElementDecl = new XMLElementDecl();
+                            fGrammar.getElementDecl(elementIndex, tempElementDecl);
+                            DatatypeValidator ancestorValidator = tempElementDecl.datatypeValidator;
+                            DatatypeValidator tempVal = fXsiTypeValidator;
+                            for(; tempVal != null; tempVal = tempVal.getBaseValidator())
+                                // WARNING!!!  Comparison by reference.
+                                if(tempVal == ancestorValidator) break;
+                            if(tempVal == null) {
+                                // now if ancestorValidator is a union, then we must
+                                // look through its members to see whether we derive from any of them.
+			                    if(ancestorValidator instanceof UnionDatatypeValidator) {
+			                        // fXsiTypeValidator must derive from one of its members...
+			                        Vector subUnionMemberDV = ((UnionDatatypeValidator)ancestorValidator).getBaseValidators();
+			                        int subUnionSize = subUnionMemberDV.size();
+			                        boolean found = false;
+			                        for (int i=0; i<subUnionSize && !found; i++) {
+			                            DatatypeValidator dTempSub = (DatatypeValidator)subUnionMemberDV.elementAt(i);
+			                            DatatypeValidator dTemp = fXsiTypeValidator;
+			                            for(; dTemp != null; dTemp = dTemp.getBaseValidator()) {
+			                                // WARNING!!!  This uses comparison by reference andTemp is thus inherently suspect!
+			                                if(dTempSub == dTemp) {
+			                                    found = true;
+			                                    break;
+			                                }
+			                            }
+			                        }
+			                        if(!found) {
+                                        reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                            XMLMessages.SCHEMA_GENERIC_ERROR,
+                                            "Type : "+uri+","+localpart
+                                            +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+			                        }
+			                    } else {
+                                    reportRecoverableXMLError(XMLMessages.MSG_GENERIC_SCHEMA_ERROR,
+                                        XMLMessages.SCHEMA_GENERIC_ERROR,
+                                        "Type : "+uri+","+localpart
+                                        +" does not derive from the type of element " + fStringPool.toString(tempElementDecl.name.localpart));
+                                }
+                            }
                          } else if (typeInfo != destType) { // now check whether the element or typeInfo's baseType blocks us.
                             int derivationMethod = typeInfo.derivedBy;
                             if((((SchemaGrammar)fGrammar).getElementDeclBlockSet(elementIndex) & derivationMethod) != 0) {
