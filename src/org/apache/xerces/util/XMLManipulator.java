@@ -733,4 +733,7 @@ public class XMLManipulator {
         return elem.getAttributeNS(nsUri, localName);
     } // getAttrValueNS(Element, String):Attr
 
+    public static String getNamespaceURI(Attr attribute){
+        return attribute.getNamespaceURI();
+    }
 } // class XUtil

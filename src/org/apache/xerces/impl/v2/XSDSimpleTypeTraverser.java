@@ -111,6 +111,7 @@ class XSDSimpleTypeTraverser extends XSDAbstractTraverser{
     int traverse(Element elmNode,
                  XSDocumentInfo schemaDoc,
                  SchemaGrammar grammar) {
+        return -1;
 
     }
 

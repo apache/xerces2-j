@@ -916,7 +916,8 @@ public class XSAttributeChecker {
         String elName = XMLManipulator.getLocalName(element), name;
         if (isGlobal) {
             name = PRE_GLOBAL + elName;
-        } else {
+        }
+        else {
             if (XMLManipulator.getAttr(element, SchemaSymbols.ATT_REF) == null)
                 name = PRE_LOC_NAME + elName;
             else
@@ -951,6 +952,7 @@ public class XSAttributeChecker {
             }
 
             // for attributes with namespace prefix
+            //
             String attrURI = XMLManipulator.getNamespaceURI(sattr);
             if (attrURI != null && attrURI.length() != 0) {
                 // attributes with schema namespace are not allowed
@@ -959,7 +961,8 @@ public class XSAttributeChecker {
                     !oneEle.allowNonSchemaAttr) {
                     reportSchemaError ("Con3X3AttributeAppearance",
                                        new Object[] {elName, attrName});
-                } else {
+                }
+                else {
                     // for attributes from other namespace
                     // store them in a list, and TRY to validate them after
                     // schema traversal (because it's "lax")
@@ -973,7 +976,8 @@ public class XSAttributeChecker {
                         values.addElement(elName);
                         values.addElement(attrVal);
                         fNonSchemaAttrs.put(attrRName, values);
-                    } else {
+                    }
+                    else {
                         values.addElement(elName);
                         values.addElement(attrVal);
                     }
@@ -1001,16 +1005,19 @@ public class XSAttributeChecker {
                         DatatypeValidator dv = fExtraDVs[oneAttr.dvIndex];
                         if (dv instanceof IDDatatypeValidator) {
                             dv.validate( attrVal, fIdDefs );
-                        } else {
+                        }
+                        else {
                             dv.validate( attrVal, null);
                         }
                     }
                     attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
-                } else {
+                }
+                else {
                     attrVal = validate(attrName, attrVal, oneAttr.dvIndex);
                     attrValues.put(attrName, new Object[] {attrVal, Boolean.FALSE});
                 }
-            } catch(InvalidDatatypeValueException ide) {
+            }
+            catch (InvalidDatatypeValueException ide) {
                 reportSchemaError ("Con3X3AttributeInvalidValue",
                                    new Object[] {elName, attrName, ide.getLocalizedMessage()});
             }
@@ -1054,22 +1061,28 @@ public class XSAttributeChecker {
                 choice = SchemaSymbols.SUBSTITUTION|SchemaSymbols.EXTENSION|
                          SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
                          SchemaSymbols.UNION;
-            } else {
+            }
+            else {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
-                    if (token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION) ) {
+                    if (token.equals (SchemaSymbols.ATTVAL_SUBSTITUTION)) {
                         choice |= SchemaSymbols.SUBSTITUTION;
-                    } else if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
                         choice |= SchemaSymbols.EXTENSION;
-                    } else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
                         choice |= SchemaSymbols.RESTRICTION;
-                    } else if ( token.equals (SchemaSymbols.ATTVAL_LIST) ) {
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_LIST)) {
                         choice |= SchemaSymbols.LIST;
-                    } else if ( token.equals (SchemaSymbols.ATTVAL_UNION) ) {
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_UNION)) {
                         choice |= SchemaSymbols.RESTRICTION;
-                    } else {
+                    }
+                    else {
                         throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | List of (substitution | extension | restriction | list | union))");
                     }
                 }
@@ -1083,16 +1096,19 @@ public class XSAttributeChecker {
             choice = 0;
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
                 choice = SchemaSymbols.EXTENSION|SchemaSymbols.RESTRICTION;
-            } else {
+            }
+            else {
                 StringTokenizer t = new StringTokenizer (value, " ");
                 while (t.hasMoreTokens()) {
                     String token = t.nextToken ();
 
                     if (token.equals (SchemaSymbols.ATTVAL_EXTENSION)) {
                         choice |= SchemaSymbols.EXTENSION;
-                    } else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
+                    }
+                    else if (token.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
                         choice |= SchemaSymbols.RESTRICTION;
-                    } else {
+                    }
+                    else {
                         throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | List of (extension | restriction))");
                     }
                 }
@@ -1105,13 +1121,17 @@ public class XSAttributeChecker {
             if (value.equals (SchemaSymbols.ATTVAL_POUNDALL)) {
                 choice = SchemaSymbols.RESTRICTION|SchemaSymbols.LIST|
                          SchemaSymbols.UNION;
-            } else if (value.equals (SchemaSymbols.ATTVAL_LIST)) {
+            }
+            else if (value.equals (SchemaSymbols.ATTVAL_LIST)) {
                 choice = SchemaSymbols.LIST;
-            } else if (value.equals (SchemaSymbols.ATTVAL_UNION)) {
+            }
+            else if (value.equals (SchemaSymbols.ATTVAL_UNION)) {
                 choice = SchemaSymbols.UNION;
-            } else if (value.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
+            }
+            else if (value.equals (SchemaSymbols.ATTVAL_RESTRICTION)) {
                 choice = SchemaSymbols.RESTRICTION;
-            } else {
+            }
+            else {
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (#all | (list | union | restriction))");
             }
 //???            value = Integer.toString(choice);
@@ -1128,7 +1148,8 @@ public class XSAttributeChecker {
             if (!value.equals(SchemaSymbols.ATTVAL_UNBOUNDED)) {
                 try {
                     fExtraDVs[DT_NONNEGINT].validate(value, null);
-                } catch (InvalidDatatypeValueException ide) {
+                }
+                catch (InvalidDatatypeValueException ide) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match (nonNegativeInteger | unbounded)");
                 }
             }
@@ -1146,7 +1167,8 @@ public class XSAttributeChecker {
                     String token = t.nextToken ();
                     fExtraDVs[DT_QNAME].validate(token, null);
                 }
-            } catch (InvalidDatatypeValueException ide) {
+            }
+            catch (InvalidDatatypeValueException ide) {
                 throw new InvalidDatatypeValueException("the value '"+value+"' must match (List of QName)");
             }
             break;
@@ -1168,7 +1190,8 @@ public class XSAttributeChecker {
                             fExtraDVs[DT_ANYURI].validate(token, null);
                         }
                     }
-                } catch (InvalidDatatypeValueException ide) {
+                }
+                catch (InvalidDatatypeValueException ide) {
                     throw new InvalidDatatypeValueException("the value '"+value+"' must match ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )");
                 }
             }
@@ -1283,7 +1306,8 @@ public class XSAttributeChecker {
                 else
                     sb.append((char)0x20);
             }
-        } else {
+        }
+        else {
             char ch;
             int i;
             boolean isLeading = true;
@@ -1294,7 +1318,8 @@ public class XSAttributeChecker {
                 if (ch != 0x9 && ch != 0xa && ch != 0xd && ch != 0x20) {
                     sb.append(ch);
                     isLeading = false;
-                } else {
+                }
+                else {
                     // for whitespaces, we skip all following ws
                     for (; i < len-1; i++) {
                         ch = content.charAt(i+1);

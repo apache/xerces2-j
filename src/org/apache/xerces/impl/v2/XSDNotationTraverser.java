@@ -87,6 +87,7 @@ class  XSDNotationTraverser extends XSDAbstractTraverser{
     String traverse(Element elmNode,
                     XSDocumentInfo schemaDoc,
                     SchemaGrammar grammar) {
+        return null;
     }
 
 

@@ -73,6 +73,8 @@ import org.w3c.dom.Element;
 
 import java.util.Hashtable;
 import java.util.Vector;
+import java.io.IOException;
+
 
 /**
  * The purpose of this class is to co-ordinate the construction of a
@@ -100,6 +102,10 @@ class XSDHandler {
     public final static int NOTATION_TYPE = 64;
     public final static int SIMPLETYPE_TYPE = 128;
 
+    //REVISIT: should we have this constant in symbolTable?
+    //
+    public final static String EMPTY_STRING="";
+
     // These tables correspond to the symbol spaces defined in the
     // spec.
     // They are keyed with a QName (that is, String("URI,localpart) and
@@ -114,7 +120,7 @@ class XSDHandler {
     private Hashtable fUnparsedIdentityConstraintRegistry = new Hashtable();
     private Hashtable fUnparsedNotationRegistry = new Hashtable();
     private Hashtable fUnparsedTypeRegistry = new Hashtable();
-
+    private Hashtable fRedefine2XSDMap = new Hashtable();
     // this is keyed with a documentNode (or the schemaRoot nodes
     // contained in the XSDocumentInfo objects) and its value is the
     // XSDocumentInfo object corresponding to that document.
@@ -170,9 +176,9 @@ class XSDHandler {
     // multiple schema documents; this will allow one to be
     // constructed.
     XSDHandler (XSGrammarResolver gResolver,
-            XMLErrorReporter errorReporter,
-            XMLEntityResolver entityResolver,
-            SymbolTable symbolTable) {
+                XMLErrorReporter errorReporter,
+                XMLEntityResolver entityResolver,
+                SymbolTable symbolTable) {
         fEntityResolver = entityResolver;
         fErrorReporter = errorReporter;
         fGrammarResolver = gResolver;
@@ -191,7 +197,7 @@ class XSDHandler {
     // already have been set; the last thing this method does is reset
     // this object (i.e., clean the registries, etc.).
     SchemaGrammar parseSchema(String schemaNamespace,
-            String schemaHint) {
+                              String schemaHint) {
 
         // first phase:  construct trees.
         Document schemaRoot = getSchema(schemaNamespace, schemaHint);
@@ -229,30 +235,32 @@ class XSDHandler {
     // depends on.
     protected XSDocumentInfo constructTrees(Document schemaRoot) {
         XSDocumentInfo currSchemaInfo = new
-            XSDocumentInfo(schemaRoot);
+                                        XSDocumentInfo(schemaRoot);
         Vector dependencies = new Vector();
         Element rootNode = XMLManipulator.getRoot(schemaRoot);
-        String schemaNamespace;
-        String schemaHint;
+        String schemaNamespace=EMPTY_STRING;        
+        String schemaHint=null;
         Document newSchemaRoot = null;
         for (Element child =
-                XMLManipulator.getFirstChildElement(rootNode);
-                child != null;
-                child = XMLManipulator.getNextSiblingElement(child)) {
+             XMLManipulator.getFirstChildElement(rootNode);
+            child != null;
+            child = XMLManipulator.getNextSiblingElement(child)) {
             String localName = XMLManipulator.getLocalName(child);
-            if(localName.equals(SchemaSymbols.ELT_ANNOTATION))
+            if (localName.equals(SchemaSymbols.ELT_ANNOTATION))
                 continue;
-            else if(localName.equals(SchemaSymbols.ELT_IMPORT)) {
+            else if (localName.equals(SchemaSymbols.ELT_IMPORT)) {
                 // have to handle some validation here too!
                 // call XSAttributeChecker to fill in attrs
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
-            } else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
-                    (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
+            }
+            else if ((localName.equals(SchemaSymbols.ELT_INCLUDE)) ||
+                     (localName.equals(SchemaSymbols.ELT_REDEFINE))) {
                 // validation for redefine/include will be the same here; just
                 // make sure TNS is right (don't care about redef contents
                 // yet).
                 newSchemaRoot = getSchema(schemaNamespace, schemaHint);
-            } else {
+            }
+            else {
                 // no more possibility of schema references in well-formed
                 // schema...
                 break;
@@ -267,6 +275,7 @@ class XSDHandler {
             newSchemaRoot = null;
         }
         fDependencyMap.put(currSchemaInfo, dependencies);
+        return currSchemaInfo;
     } // end constructTrees
 
     // This method builds registries for all globally-referenceable
@@ -308,8 +317,9 @@ class XSDHandler {
     // since this will depend on the type of the traverser in
     // question, this needs to be an Object.
     protected Object callTraverser(XSDocumentInfo currSchema,
-            int declType,
-            QName declToTraverse) {
+                                   int declType,
+                                   QName declToTraverse) {
+        return null;
     } // end callTraverser
 
     // Since ID constraints can occur in local elements, unless we
@@ -325,19 +335,28 @@ class XSDHandler {
     } // end resolveKeyRefs
 
     private Document getSchema(String schemaNamespace,
-            String schemaHint) {
+                               String schemaHint) {
         // contents of this method will depend on the system we adopt for entity resolution--i.e., XMLEntityHandler, EntityHandler, etc.
-        XMLInputSource schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
-        if(schemaSource != null) {
-            DOMParser schemaParser = new DOMParser(fSymbolTable);
-            // set ErrorHandler and EntityResolver (doesn't seem that
-            // XMLErrorHandler or XMLEntityResolver will work with
-            // standard DOMParser...
+        XMLInputSource schemaSource=null;
+        try {
+            schemaSource = fEntityResolver.resolveEntity(schemaNamespace, schemaHint, null);
+            if (schemaSource != null) {
+                DOMParser schemaParser = new DOMParser(fSymbolTable);
+                // set ErrorHandler and EntityResolver (doesn't seem that
+                // XMLErrorHandler or XMLEntityResolver will work with
+                // standard DOMParser...
 
-            // set appropriate features
-            schemaParser.parse(schemaSource);
-            return schemaParser.getDocument();
+                // set appropriate features
+                schemaParser.parse(schemaSource);
+                return schemaParser.getDocument();
+            }
+
         }
+        catch (IOException ex) {
+            // REVISIT: report an error!
+        }
+
+        return null;
     } // getSchema(String, String):  Document
 
     // initialize all the traversers.
@@ -346,23 +365,23 @@ class XSDHandler {
     // construct schemaGrammars.
     private void createTraversers() {
         fAttributeChecker = new
-            XSAttributeChecker(fDatatypeRegistry, fErrorReporter);
+                            XSAttributeChecker(fDatatypeRegistry, fErrorReporter);
         fAttributeGroupTraverser = new
-            XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
+                                   XSDAttributeGroupTraverser(this, fErrorReporter, fAttributeChecker);
         fAttributeTraverser = new XSDAttributeTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                        fErrorReporter, fAttributeChecker);
         fComplexTypeTraverser = new XSDComplexTypeTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                            fErrorReporter, fAttributeChecker);
         fElementTraverser = new XSDElementTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                    fErrorReporter, fAttributeChecker);
         fGroupTraverser = new XSDGroupTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                fErrorReporter, fAttributeChecker);
         fNotationTraverser = new XSDNotationTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                      fErrorReporter, fAttributeChecker);
         fSimpleTypeTraverser = new XSDSimpleTypeTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                          fErrorReporter, fAttributeChecker);
         fWildCardTraverser = new XSDWildcardTraverser(this,
-            fErrorReporter, fAttributeChecker);
+                                                      fErrorReporter, fAttributeChecker);
     } // createTraversers()
 
     // this method clears all the global structs of this object
