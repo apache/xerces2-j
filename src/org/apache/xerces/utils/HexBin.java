@@ -65,7 +65,7 @@ import java.lang.*;
  *
  * This class encodes/decodes hexadecimal data
  * @author Jeffrey Rodriguez
- * @version
+ * @version $Id$
  */
 
 public final class  HexBin {

@@ -69,7 +69,7 @@ import java.lang.*;
  * This class is used by XML Schema binary format validation
  *
  * @author Jeffrey Rodriguez
- * @version
+ * @version     $Id$
  */
 
 public final class  Base64 {
