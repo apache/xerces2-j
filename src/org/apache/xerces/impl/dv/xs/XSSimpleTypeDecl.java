@@ -1223,11 +1223,15 @@ public class XSSimpleTypeDecl implements XSSimpleType {
                 }
             }
 
+            // check 4.3.12.c2 error: fractionDigits > fBase.fractionDigits
             // check fixed value for fractionDigits
             if (((fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
                 if ((( fBase.fFacetsDefined & FACET_FRACTIONDIGITS) != 0)) {
                     if ((fBase.fFixedFacet & FACET_FRACTIONDIGITS) != 0 && fFractionDigits != fBase.fFractionDigits) {
-                        reportError("FixedFacetValue", new Object[]{"fractionDigits", Integer.toString(fFractionDigits), Integer.toString( fBase.fFractionDigits), fTypeName});
+                        reportError("FixedFacetValue", new Object[]{"fractionDigits", Integer.toString(fFractionDigits), Integer.toString(fBase.fFractionDigits), fTypeName});
+                    }
+                    if (fFractionDigits > fBase.fFractionDigits) {
+                        reportError( "fractionDigits-valid-restriction", new Object[]{Integer.toString(fFractionDigits), Integer.toString(fBase.fFractionDigits), fTypeName});
                     }
                 }
             }
