@@ -194,6 +194,8 @@ implements StatefullDatatypeValidator{
     * @param tableOfIDs
     */
    public void initialize( Object tableOfIDs ){
+      //System.out.println("IDREF datatype initialized" );
+          
       if ( this.fTableIDRefs != null) {
          this.fTableIDRefs.clear();
       } else {

@@ -92,11 +92,16 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
 
 
    private static DatatypeValidatorFactoryImpl    fRegistryOfDatatypes = 
-   new DatatypeValidatorFactoryImpl();
+                 new DatatypeValidatorFactoryImpl();//comment this in when switching to no Singleton
 
-   private DatatypeValidatorFactoryImpl() {
+   private DatatypeValidatorFactoryImpl() {//this need method to change to public or deleted when change to no singleton
       initializeRegistry();
    }
+   /* comment this out when change to no singleton.
+   public  DatatypeValidatorFactoryImpl() {
+      initializeRegistry();
+   }
+   */
 
    /**
     * Initializes registry with primitive and derived
@@ -389,10 +394,13 @@ public class DatatypeValidatorFactoryImpl implements DatatypeValidatorFactory {
    static public DatatypeValidatorFactoryImpl getDatatypeRegistry()  {
 
       return fRegistryOfDatatypes;
-   }
+   }//this method needs to be deleted or commented in once we change to no Singleton
 
    static public void main( String argv[] ){
-      DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();
+      DatatypeValidatorFactoryImpl  tstRegistry = DatatypeValidatorFactoryImpl.getDatatypeRegistry();//this needs to ne commented out or deleted once we go to no singleton
+      /* This needs to be commented out
+      DatatypeValidatorFactoryImpl  tstRegistry = new DatatypeValidatorFactoryImpl();
+      */
 
       System.out.println("tstRegistry = " + tstRegistry );
 

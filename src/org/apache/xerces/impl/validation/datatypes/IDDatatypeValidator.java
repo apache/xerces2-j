@@ -194,7 +194,9 @@ implements StatefullDatatypeValidator {
      * 
      * @param state  This is a dummy parameter.
      */
-    public void initialize( Object state) {
+    public void initialize( Object tableOfIDs) {
+        //System.out.println("IDDatatypeValidator Initialized" );
+        fTableOfId = (Hashtable) tableOfIDs;
         if (this.fTableOfId != null) {
             this.fTableOfId.clear();
         } else {
