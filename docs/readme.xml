@@ -26,7 +26,7 @@
     <p>
       Xerces2 also provides an <link idref='dom3'>experimental implementation</link> of the 
 <jump href="http://www.w3.org/DOM/DOMTR#dom3">Document 
-      Object Model Level 3 Core and Load/Save</jump> Candidate Recommendations and provides a 
+      Object Model Level 3 Core and Load/Save</jump> Proposed Recommendations and provides a 
       <link idref='faq-xinclude'>partial implementation</link> of the <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/">XML Inclusions 
       (XInclude)</jump> W3C Working Draft in Last Call. It also provides <link idref='faq-xcatalogs'>support</link>
       for <jump href="http://www.oasis-open.org/committees/entity/spec.html">OASIS XML Catalogs</jump>.
@@ -34,20 +34,16 @@
 
 
     <p>Xerces2 is now able to parse documents written according to the
-        <jump href="http://www.w3.org/TR/2003/PR-xml11-20031105/">
-        XML 1.1 Proposed Recommendation</jump>, except that 
+        <jump href="http://www.w3.org/TR/2004/REC-xml11-20040204/">
+        XML 1.1 Recommendation</jump>, except that 
         it does not yet provide an option to enable normalization checking as described
         in section 2.13 of this specification.
         It also handles namespaces according to the 
-        <jump href="http://www.w3.org/TR/2003/PR-xml-names11-20031105/">
-        XML Namespaces 1.1 Proposed</jump> Recommendation,
+        <jump href="http://www.w3.org/TR/2004/REC-xml-names11-20040204/">
+        XML Namespaces 1.1 Recommendation</jump>,
         and will correctly serialize XML 1.1 documents if the DOM level
         3 load/save API's are in use.
     </p>
-    
-    <note>This release will be the last one that supports JDK 1.1. Future releases
-       of Xerces2 will require at least JDK 1.2.
-    </note>
 
   </s2>
   <s2 title='Features of This Release'>
@@ -59,12 +55,22 @@
       <li>
 	<jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
 	(XML) 1.0 
-	<jump href='http://www.w3.org/TR/2003/PER-xml-20031030/'>Third 
-	  Edition</jump> 
+	<jump href='http://www.w3.org/TR/2004/REC-xml-20040204/'>Third 
+	  Edition</jump> Recommendation
       </li>
       <li>
 	<jump href='http://www.w3.org/TR/REC-xml-names/'>Namespaces
 	  in XML</jump> Recommendation
+      </li>
+      <li>
+	<jump href='http://www.w3.org/XML/'>eXtensible Markup Language</jump>
+	(XML) 1.1 
+	<jump href='http://www.w3.org/TR/2004/REC-xml11-20040204/'>First 
+	  Edition</jump> Recommendation
+      </li>
+      <li>
+        <jump href='http://www.w3.org/TR/2004/REC-xml-names11-20040204/'>
+          Namespaces in XML 1.1</jump> Recommendation
       </li>
       <li>
 	<jump href='http://www.w3.org/DOM/'>Document Object Model</jump>
@@ -80,7 +86,7 @@
 	(SAX) 2.0.1
 	<jump href='http://prdownloads.sourceforge.net/sax/sax2r2.jar'>Core</jump>,
 	and
-	<jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extension</jump>
+	<jump href='http://prdownloads.sourceforge.net/sax/sax2-ext-1.0.zip'>Extensions</jump>
       </li>
       <li>
 	<jump href='http://java.sun.com/xml/xml_jaxp.html'>Java APIs for 
