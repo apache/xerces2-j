@@ -572,7 +572,7 @@ public class DocumentImpl
         if (needsSyncChildren()) {
             synchronizeChildren();
         }
-	    return docType;
+        return docType;
     }
 
 
@@ -581,11 +581,7 @@ public class DocumentImpl
     * The encoding of this document (part of XML Declaration)     
     */
     public String getEncoding() {
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-	    return encoding;
-
+	return encoding;
     }
 
     /**
@@ -593,22 +589,15 @@ public class DocumentImpl
       * The version of this document (part of XML Declaration)     
       */
     public String getVersion() {
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-	    return version;
-
+	return version;
     }
+
      /**
       * DOM Level 3 WD - Experimental.    
       * standalone that specifies whether this document is standalone (part of XML Declaration)     
       */
     public boolean getStandalone() {
-        if (needsSyncChildren()) {
-            synchronizeChildren();
-        }
-	    return standalone;
-
+        return standalone;
     }
 
 
