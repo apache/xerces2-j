@@ -89,8 +89,11 @@ public class DOM3 implements DOMErrorHandler {
 
             // get DOM Implementation using DOM Registry
             System.setProperty(DOMImplementationRegistry.PROPERTY,"org.apache.xerces.dom.DOMImplementationSourceImpl");
+            DOMImplementationRegistry registry =
+                DOMImplementationRegistry.newInstance();
+
             DOMImplementationLS impl = 
-                (DOMImplementationLS)DOMImplementationRegistry.getDOMImplementation("LS-Load");
+                (DOMImplementationLS)registry.getDOMImplementation("LS-Load");
 
             // create DOMBuilder
             DOMBuilder builder = impl.createDOMBuilder(DOMImplementationLS.MODE_SYNCHRONOUS, null);
