@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,6 +73,7 @@ import org.apache.xerces.utils.regex.RegularExpression;
  * @author Ted Leung
  * @author Kito D. Mann, Virtua Communications Corp.
  * @author Jeffrey Rodriguez
+ * @version $Id$
  */
 public class StringDatatypeValidator extends AbstractDatatypeValidator{
     private Locale     fLocale          = null;

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,9 @@ package org.apache.xerces.validators.datatype;
 
 /**
  * InvalidDatatypeValueException is thrown when data value doesn't match it's datatype
- *
+ * 
+ * @author Jeffrey Rodriguez
+ * @version $Id$
  */
 public class InvalidDatatypeValueException extends XMLException {
 

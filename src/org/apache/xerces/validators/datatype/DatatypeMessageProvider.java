@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,10 +63,10 @@ import java.util.ResourceBundle;
 import org.apache.xerces.utils.XMLMessageProvider;
 
 /**
- * @version $i$
+ * 
+ * @author Jeffrey Rodriguez
+ * @version $Id$
  */
-
-
 public class DatatypeMessageProvider implements XMLMessageProvider {
     /**
      * The domain of messages concerning the XML Schema: Datatypes specification.

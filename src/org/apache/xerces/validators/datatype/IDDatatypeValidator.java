@@ -65,7 +65,7 @@ import java.util.Locale;
  * These validators can be supplied by the application writer and may be useful as
  * standalone code as well as plugins to the validator architecture.
  * @author Jeffrey Rodriguez
- * @version $Id:
+ * @version $Id$
  */
 public class IDDatatypeValidator extends AbstractDatatypeValidator {
     private DatatypeValidator fBaseValidator = null;

@@ -122,13 +122,4 @@ class AbstractDatatypeValidator implements DatatypeValidator {
     public int compare(String value1, String valu2) {
         return 0;
     }
-    /**
-     * sets the datatype facet if any is set as a
-     * Hashtable
-     *
-     * @return
-     */
-    
-    public void setFacets(Hashtable facets, boolean list) {
-    }
 }

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ import java.util.Locale;
  * W3C to remove facets from the data type spec.
  * 
  * @author Jeffrey Rodriguez-
- * @version $i$
+ * @version $Id$
  */
 public interface DatatypeValidator {
     public static final int FACET_LENGTH       = 1;
