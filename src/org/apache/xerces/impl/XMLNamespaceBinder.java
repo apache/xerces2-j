@@ -177,7 +177,7 @@ public class XMLNamespaceBinder
     // namespaces
 
     /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = null;
+    protected NamespaceSupport fNamespaceSupport = new NamespaceSupport();
 
     // settings
 
@@ -279,9 +279,7 @@ public class XMLNamespaceBinder
         // Xerces properties
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
 
-        // initialize vars
         fNamespaceSupport.reset();
 
         // use shared context
@@ -487,14 +485,26 @@ public class XMLNamespaceBinder
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
      * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
+        // REVISIT: in the namespace binder we should be able to modify the namespace
+        //          context object, thus for now we are dropping the namespaceContext
+        //          Not sure this is a correct behaviour....
         if (fDocumentHandler != null && !fOnlyPassPrefixMappingEvents) {
-            fDocumentHandler.startDocument(locator, encoding, augs);
+            fDocumentHandler.startDocument(locator, encoding, fNamespaceSupport, augs);
         }
     } // startDocument(XMLLocator,String)
 

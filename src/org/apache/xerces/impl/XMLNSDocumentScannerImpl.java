@@ -64,7 +64,6 @@ import org.apache.xerces.impl.dtd.XMLDTDValidatorFilter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
@@ -119,8 +118,6 @@ extends XMLDocumentScannerImpl {
       *   scanner if DTD grammar is missing.*/
     protected boolean fPerformValidation;
 
-    /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = null;
     protected String[] fUri= new String[4];
     protected String[] fLocalpart = new String[4];
     protected int fLength = 0;
@@ -183,7 +180,7 @@ extends XMLDocumentScannerImpl {
         // Note: namespace processing is on by default 
         fEntityScanner.scanQName(fElementQName);
         if (fBindNamespaces) {
-            fNamespaceSupport.pushContext();
+            fNamespaceContext.pushContext();
             rawname = fElementQName.rawname;
             if (fScannerState == SCANNER_STATE_ROOT_ELEMENT) {
                 if (fPerformValidation) {
@@ -250,7 +247,7 @@ extends XMLDocumentScannerImpl {
             String prefix = fElementQName.prefix != null
                             ? fElementQName.prefix : XMLSymbols.EMPTY_STRING;
 
-            fElementQName.uri = fNamespaceSupport.getURI(prefix);
+            fElementQName.uri = fNamespaceContext.getURI(prefix);
             if (fElementQName.prefix == null && fElementQName.uri != null) {
                 fElementQName.prefix = XMLSymbols.EMPTY_STRING;
             }
@@ -269,7 +266,7 @@ extends XMLDocumentScannerImpl {
 
                 String aprefix = fAttributeQName.prefix != null
                                  ? fAttributeQName.prefix : XMLSymbols.EMPTY_STRING;
-                String uri = fNamespaceSupport.getURI(aprefix);
+                String uri = fNamespaceContext.getURI(aprefix);
                 // REVISIT: try removing the first "if" and see if it is faster.
                 //           
                 if (fAttributeQName.uri != null && fAttributeQName.uri == uri) {
@@ -299,13 +296,13 @@ extends XMLDocumentScannerImpl {
                 // handleEndElement(fElementQName, null);
 
                 if (fBindNamespaces) {
-                    int count = fNamespaceSupport.getDeclaredPrefixCount();
+                    int count = fNamespaceContext.getDeclaredPrefixCount();
 
                     for (int i = count - 1; i >= 0; i--) {
-                        String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
+                        String prefix = fNamespaceContext.getDeclaredPrefixAt(i);
                         fDocumentHandler.endPrefixMapping(prefix, null);
                     }
-                    fNamespaceSupport.popContext();
+                    fNamespaceContext.popContext();
                 }
 
                 //decrease the markup depth..
@@ -480,9 +477,9 @@ extends XMLDocumentScannerImpl {
                 }
 
                 // declare prefix in context
-                fNamespaceSupport.declarePrefix(prefix, uri.length() != 0 ? uri : null);
+                fNamespaceContext.declarePrefix(prefix, uri.length() != 0 ? uri : null);
                 // bind namespace attribute to a namespace
-                attributes.setURI(oldLen, fNamespaceSupport.getURI(XMLSymbols.PREFIX_XMLNS));
+                attributes.setURI(oldLen, fNamespaceContext.getURI(XMLSymbols.PREFIX_XMLNS));
 
                 // call handler
                 if (fDocumentHandler != null) {
@@ -492,7 +489,7 @@ extends XMLDocumentScannerImpl {
             else {
                 // attempt to bind attribute
                 if (fAttributeQName.prefix != null) {
-                    attributes.setURI(oldLen, fNamespaceSupport.getURI(fAttributeQName.prefix));
+                    attributes.setURI(oldLen, fNamespaceContext.getURI(fAttributeQName.prefix));
                 }
             }
         }
@@ -557,12 +554,12 @@ extends XMLDocumentScannerImpl {
 
             fDocumentHandler.endElement(fElementQName, null);
             if (fBindNamespaces) {
-                int count = fNamespaceSupport.getDeclaredPrefixCount();
+                int count = fNamespaceContext.getDeclaredPrefixCount();
                 for (int i = count - 1; i >= 0; i--) {
-                    String prefix = fNamespaceSupport.getDeclaredPrefixAt(i);
+                    String prefix = fNamespaceContext.getDeclaredPrefixAt(i);
                     fDocumentHandler.endPrefixMapping(prefix, null);
                 }
-                fNamespaceSupport.popContext();
+                fNamespaceContext.popContext();
             }
 
         }
@@ -578,9 +575,6 @@ extends XMLDocumentScannerImpl {
         super.reset(componentManager);
         fPerformValidation = false;
         fBindNamespaces = false;
-
-        // internal xerces property: namespace context
-        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
     }
 
     /** Creates a content dispatcher. */

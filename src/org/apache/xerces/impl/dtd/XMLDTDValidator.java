@@ -70,11 +70,13 @@ import org.apache.xerces.impl.dv.DatatypeValidator;
 import org.apache.xerces.impl.dv.DTDDVFactory;
 import org.apache.xerces.impl.dv.InvalidDatatypeValueException;
 
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
 
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
@@ -269,6 +271,9 @@ public class XMLDTDValidator
 
     /* location of the document as passed in from startDocument call */
     protected XMLResourceIdentifier fDocLocation;
+
+    /** Namespace support. */
+    protected NamespaceSupport fNamespaceSupport = null;
 
     /** Datatype validator factory. */
     protected DTDDVFactory fDatatypeValidatorFactory;
@@ -648,11 +653,20 @@ public class XMLDTDValidator
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
      * @param augs   Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs) 
     throws XNIException {
 
         // call handlers
@@ -664,8 +678,16 @@ public class XMLDTDValidator
             }
         }
         fDocLocation = locator;
+        // REVISIT: in DTD validator we need to be able to update namespace context
+        //          thus we need to upcast.
+        if (fNamespaceSupport != null) {
+            fNamespaceSupport.reset();
+        }
+        else {
+            fNamespaceSupport = new NamespaceSupport();
+        }
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding, augs);
+            fDocumentHandler.startDocument(locator, encoding, fNamespaceSupport, augs);
         }
 
     } // startDocument(XMLLocator,String)

@@ -61,7 +61,6 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLSymbols;
 
 import org.apache.xerces.xni.NamespaceContext;
@@ -105,24 +104,13 @@ import org.apache.xerces.xni.parser.XMLConfigurationException;
 public class XMLNSDTDValidator
               extends XMLDTDValidator{
 
-    
-    /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = null;
-    
+        
 
     /** Internal property: namespace context */
     protected static final String NAMESPACE_CONTEXT_PROPERTY =
         Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
     /** Attribute QName. */
     private QName fAttributeQName = new QName();
-
-    public void reset(XMLComponentManager componentManager){
-        super.reset(componentManager);
-        
-        // internal xerces property: namespace context 
-        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
-    }
-
 
 
     /** Bind namespaces */

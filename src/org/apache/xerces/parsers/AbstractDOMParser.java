@@ -127,7 +127,7 @@ import java.util.Stack;
  *
  * @version $Id$
  */
-public class AbstractDOMParser extends AbstractXMLDocumentParser{
+public class AbstractDOMParser extends AbstractXMLDocumentParser {
 
     //
     // Constants
@@ -158,7 +158,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
     /** Feature id: defer node expansion. */
     protected static final String DEFER_NODE_EXPANSION =
         Constants.XERCES_FEATURE_PREFIX + Constants.DEFER_NODE_EXPANSION_FEATURE;
-    
+
+
     /** Recognized features. */
     private static final String[] RECOGNIZED_FEATURES = {
         NAMESPACES,
@@ -166,7 +167,7 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
         INCLUDE_COMMENTS_FEATURE,
         CREATE_CDATA_NODES_FEATURE,
         INCLUDE_IGNORABLE_WHITESPACE,
-        DEFER_NODE_EXPANSION,
+        DEFER_NODE_EXPANSION
     };
 
     // property ids
@@ -499,13 +500,13 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
              }
             setCharacterData(true);
             EntityReference er = fDocument.createEntityReference(name);            
-            
             if (fDocumentImpl != null) {            
                 // REVISIT: baseURI/actualEncoding
                 //         remove dependency on our implementation when DOM L3 is REC
                 //
 
                 EntityReferenceImpl erImpl =(EntityReferenceImpl)er; 
+
                 // set base uri
                 erImpl.setBaseURI(identifier.getExpandedSystemId());
 
@@ -732,11 +733,20 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser{
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
      * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs)
         throws XNIException {
 
         fInDocument = true;

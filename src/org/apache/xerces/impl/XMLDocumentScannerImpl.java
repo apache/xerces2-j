@@ -67,6 +67,7 @@ import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 
+import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
@@ -155,10 +156,6 @@ public class XMLDocumentScannerImpl
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
 
-    /** Internal property: namespace context */
-    protected static final String NAMESPACE_CONTEXT_PROPERTY =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
-
     // recognized features and properties
 
     /** Recognized features. */
@@ -174,15 +171,13 @@ public class XMLDocumentScannerImpl
     /** Recognized properties. */
     private static final String[] RECOGNIZED_PROPERTIES = {
         DTD_SCANNER,
-        VALIDATION_MANAGER,
-        NAMESPACE_CONTEXT_PROPERTY
+        VALIDATION_MANAGER
     };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS = {
         null,
-        null,
-        null,
+        null
     };
 
     //
@@ -211,6 +206,9 @@ public class XMLDocumentScannerImpl
 
     /** Doctype declaration system identifier. */
     protected String fDoctypeSystemId;
+
+    /** Namespace support. */
+    protected NamespaceSupport fNamespaceContext = new NamespaceSupport();
 
     // features
 
@@ -299,6 +297,7 @@ public class XMLDocumentScannerImpl
         fDoctypePublicId = null;
         fDoctypeSystemId = null;
         fSeenDoctypeDecl = false;
+        fNamespaceContext.reset();
 
         // xerces features
         try {
@@ -319,7 +318,7 @@ public class XMLDocumentScannerImpl
 
         // initialize vars
         fScanningDTD = false;
-
+        
         // setup dispatcher
         setScannerState(SCANNER_STATE_XML_DECL);
         setDispatcher(fXMLDeclDispatcher);
@@ -430,6 +429,7 @@ public class XMLDocumentScannerImpl
      * @since Xerces 2.2.0
      */
     public Boolean getFeatureDefault(String featureId) {
+
         for (int i = 0; i < RECOGNIZED_FEATURES.length; i++) {
             if (RECOGNIZED_FEATURES[i].equals(featureId)) {
                 return FEATURE_DEFAULTS[i];
@@ -488,7 +488,7 @@ public class XMLDocumentScannerImpl
 
         // call handler
         if (fDocumentHandler != null && name.equals("[xml]")) {
-            fDocumentHandler.startDocument(fEntityScanner, encoding, null);
+            fDocumentHandler.startDocument(fEntityScanner, encoding, fNamespaceContext, null);
         }
 
     } // startEntity(String,identifier,String)
@@ -776,7 +776,6 @@ public class XMLDocumentScannerImpl
                                 setDispatcher(fDTDDispatcher);
                                 return true;
                             }
-
                             if (fDoctypeSystemId != null && ((fValidation || fLoadExternalDTD) 
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                 setScannerState(SCANNER_STATE_DTD_EXTERNAL);

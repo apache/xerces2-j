@@ -101,7 +101,7 @@ public interface NamespaceContext {
     public String getURI(String prefix);
 
     /**
-     * Return a count of all prefixes currently declared, including
+     * Return a count of locally declared prefixes, including
      * the default prefix if bound.
      */
     public int getDeclaredPrefixCount();

@@ -57,10 +57,10 @@
 
 package org.apache.xerces.impl.validation;
 
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.impl.dv.ValidationContext;
 
+import org.apache.xerces.xni.NamespaceContext;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
@@ -81,7 +81,7 @@ public class ValidationState implements ValidationContext {
     private boolean fNormalize                  = true;
 
     private EntityState fEntityState            = null;
-    private NamespaceSupport fNamespaceSupport  = null;
+    private NamespaceContext fNamespaceContext  = null;
     private SymbolTable fSymbolTable            = null;
 
     //REVISIT: Should replace with a lighter structure.
@@ -108,8 +108,8 @@ public class ValidationState implements ValidationContext {
         fEntityState = state;
     }
 
-    public void setNamespaceSupport(NamespaceSupport namespace) {
-        fNamespaceSupport = namespace;
+    public void setNamespaceSupport(NamespaceContext namespace) {
+        fNamespaceContext = namespace;
     }
 
     public void setSymbolTable(SymbolTable sTable) {
@@ -139,7 +139,7 @@ public class ValidationState implements ValidationContext {
         fIdTable.clear();
         fIdRefTable.clear();
         fEntityState = null;
-        fNamespaceSupport = null;
+        fNamespaceContext = null;
         fSymbolTable = null;
     }
 
@@ -211,8 +211,8 @@ public class ValidationState implements ValidationContext {
     }
     // qname, notation
     public String getURI(String prefix) {
-        if (fNamespaceSupport !=null) {
-            return fNamespaceSupport.getURI(prefix);
+        if (fNamespaceContext !=null) {
+            return fNamespaceContext.getURI(prefix);
         }
         return null;
     }

@@ -178,10 +178,6 @@ public abstract class BasicParserConfiguration
     protected static final String ENTITY_RESOLVER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
 
-    /** Property identifier: namespace context */
-    protected static final String NAMESPACE_CONTEXT_PROPERTY =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
-
     //
     // Data
     //
@@ -191,9 +187,6 @@ public abstract class BasicParserConfiguration
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
 
-
-    /** Read/write namespace context */
-    protected NamespaceSupport fNamespaceContext;
 
     // data
 
@@ -278,7 +271,6 @@ public abstract class BasicParserConfiguration
             SYMBOL_TABLE,
             ERROR_HANDLER,  
             ENTITY_RESOLVER,
-            NAMESPACE_CONTEXT_PROPERTY
         };
         addRecognizedProperties(recognizedProperties);
 
@@ -288,8 +280,6 @@ public abstract class BasicParserConfiguration
         fSymbolTable = symbolTable;
         setProperty(SYMBOL_TABLE, fSymbolTable);
 
-        fNamespaceContext = new NamespaceSupport();
-        setProperty(NAMESPACE_CONTEXT_PROPERTY, fNamespaceContext);
     } // <init>(SymbolTable)
 
     /** 
@@ -495,7 +485,6 @@ public abstract class BasicParserConfiguration
             XMLComponent c = (XMLComponent) fComponents.elementAt(i);
             c.setFeature(featureId, state);
         }
-
         // save state if noone "objects"
         super.setFeature(featureId, state);
 
@@ -547,9 +536,6 @@ public abstract class BasicParserConfiguration
      * reset all components before parsing and namespace context
      */
     protected void reset() throws XNIException {
-
-        // reset namespace context before the next parse
-        fNamespaceContext.reset();
 
         // reset every component
         int count = fComponents.size();

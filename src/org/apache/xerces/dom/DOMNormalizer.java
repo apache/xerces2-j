@@ -172,7 +172,7 @@ public class DOMNormalizer implements XMLGrammarPool {
     protected boolean fNamespaceValidation = false;
 
     /** stores namespaces in scope */
-    protected final NamespaceSupport fNamespaceBinder = new NamespaceSupport();
+    protected final NamespaceSupport fNamespaceContext = new NamespaceSupport();
 
     /** stores all namespace bindings on the current element */
     protected final NamespaceSupport fLocalNSBinder = new NamespaceSupport();
@@ -207,8 +207,8 @@ public class DOMNormalizer implements XMLGrammarPool {
         }
 
         fNamespaceValidation = componentManager.getFeature(DOMValidationConfiguration.SCHEMA);
-        fNamespaceBinder.reset();
-        fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
+        fNamespaceContext.reset();
+        fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
         fNamespaceCounter = 1;
 
         if (fValidationHandler != null) {
@@ -237,7 +237,7 @@ public class DOMNormalizer implements XMLGrammarPool {
 
         if (fValidationHandler != null) {
             fValidationHandler.setBaseURI(fDocument.fDocumentURI);
-            fValidationHandler.startDocument(null, fDocument.encoding, null);
+            fValidationHandler.startDocument(null, fDocument.encoding, fNamespaceContext, null);
         }
 
         Node kid, next;
@@ -295,7 +295,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     System.out.println("==>normalizeNode:{element} "+node.getNodeName());
                 }
                 // push namespace context
-                fNamespaceBinder.pushContext();
+                fNamespaceContext.pushContext();
 
                 ElementImpl elem = (ElementImpl)node;
                 if (elem.needsSyncChildren()) {
@@ -364,15 +364,10 @@ public class DOMNormalizer implements XMLGrammarPool {
                     fDocument.fErrorHandlerWrapper.fCurrentNode = node;
 
                     fValidationHandler.endElement(fQName, null);
-                    int count = fNamespaceBinder.getDeclaredPrefixCount();
-                    for (int i = count - 1; i >= 0; i--) {
-                        String prefix = fNamespaceBinder.getDeclaredPrefixAt(i);
-                        fValidationHandler.endPrefixMapping(prefix, null);
-                    }
                 }
 
                 // pop namespace context
-                fNamespaceBinder.popContext();
+                fNamespaceContext.popContext();
 
                 break;
             }
@@ -592,12 +587,9 @@ public class DOMNormalizer implements XMLGrammarPool {
 
                             value = fSymbolTable.addSymbol(value);
                             if (value.length() != 0) {
-                                fNamespaceBinder.declarePrefix(localpart, value);
+                                fNamespaceContext.declarePrefix(localpart, value);
                                 fLocalNSBinder.declarePrefix(localpart, value);
 
-                                if (fValidationHandler != null) {
-                                    fValidationHandler.startPrefixMapping(localpart, value, null);
-                                }
                             } else {
                                 // REVISIT: issue error on invalid declarations
                                 //          xmlns:foo = ""
@@ -609,7 +601,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                             // empty prefix is always bound ("" or some string)
                             value = fSymbolTable.addSymbol(value);
                             fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
-                            fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, value);
+                            fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, value);
 
                             if (fValidationHandler != null) {
                                 fValidationHandler.startPrefixMapping(XMLSymbols.EMPTY_STRING, value, null);
@@ -646,7 +638,7 @@ public class DOMNormalizer implements XMLGrammarPool {
             uri = fSymbolTable.addSymbol(uri);
             prefix = (prefix == null || 
                       prefix.length() == 0) ? XMLSymbols.EMPTY_STRING :fSymbolTable.addSymbol(prefix);
-            if (fNamespaceBinder.getURI(prefix) == uri) {
+            if (fNamespaceContext.getURI(prefix) == uri) {
                 // The xmlns:prefix=namespace or xmlns="default" was declared at parent.
                 // The binder always stores mapping of empty prefix to "".
             } else {
@@ -655,11 +647,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                 // conflict: the prefix is bound to another URI
                 addNamespaceDecl(prefix, uri, element);
                 fLocalNSBinder.declarePrefix(prefix, uri);
-                fNamespaceBinder.declarePrefix(prefix, uri);
-                // send startPrefixMapping call 
-                if (fValidationHandler != null) {
-                    fValidationHandler.startPrefixMapping(prefix, uri, null);
-                }
+                fNamespaceContext.declarePrefix(prefix, uri);
             }
         } else { // Element has no namespace
             String tagName = element.getNodeName();
@@ -681,16 +669,13 @@ public class DOMNormalizer implements XMLGrammarPool {
                     throw new RuntimeException("DOM Level 1 node: "+tagName);
                 }
             } else { // uri=null and no colon (DOM L2 node)
-                uri = fNamespaceBinder.getURI(XMLSymbols.EMPTY_STRING);
+                uri = fNamespaceContext.getURI(XMLSymbols.EMPTY_STRING);
                 if (uri !=null && uri.length() > 0) {
                     // undeclare default namespace declaration (before that element
                     // bound to non-zero length uir), but adding xmlns="" decl                    
                     addNamespaceDecl (XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING, element);
                     fLocalNSBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-                    fNamespaceBinder.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
-                    if (fValidationHandler != null) {
-                        fValidationHandler.startPrefixMapping(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING, null);
-                    }
+                    fNamespaceContext.declarePrefix(XMLSymbols.EMPTY_STRING, XMLSymbols.EMPTY_STRING);
                 }
             }
         }
@@ -748,7 +733,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                     uri = fSymbolTable.addSymbol(uri);
 
                     // find if for this prefix a URI was already declared
-                    String declaredURI =  fNamespaceBinder.getURI(prefix);
+                    String declaredURI =  fNamespaceContext.getURI(prefix);
 
                     if (prefix == XMLSymbols.EMPTY_STRING || declaredURI != uri) {
                         // attribute has no prefix (default namespace decl does not apply to attributes) 
@@ -761,7 +746,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                         name  = attr.getNodeName();
                         // Find if any prefix for attributes namespace URI is available
                         // in the scope
-                        String declaredPrefix = fNamespaceBinder.getPrefix(uri);
+                        String declaredPrefix = fNamespaceContext.getPrefix(uri);
                         if (declaredPrefix !=null && declaredPrefix !=XMLSymbols.EMPTY_STRING) {
 
                             // use the prefix that was found (declared previously for this URI
@@ -785,11 +770,7 @@ public class DOMNormalizer implements XMLGrammarPool {
                             addNamespaceDecl(prefix, uri, element);
                             value = fSymbolTable.addSymbol(value);
                             fLocalNSBinder.declarePrefix(prefix, value);
-                            fNamespaceBinder.declarePrefix(prefix, uri);
-
-                            if (fValidationHandler != null) {
-                                fValidationHandler.startPrefixMapping(prefix, uri, null);
-                            }
+                            fNamespaceContext.declarePrefix(prefix, uri);
                         }
 
                         // change prefix for this attribute

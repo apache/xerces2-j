@@ -89,11 +89,22 @@ public interface XMLDocumentHandler {
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
+     *                 
      * @param augs     Additional information that may include infoset augmentations
      * @exception XNIException
      *                   Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext,
+                              Augmentations augs) 
         throws XNIException;
 
     /**

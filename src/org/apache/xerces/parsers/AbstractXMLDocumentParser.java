@@ -60,6 +60,7 @@ package org.apache.xerces.parsers;
 import java.io.IOException;
 
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -135,12 +136,21 @@ public abstract class AbstractXMLDocumentParser
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader). 
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
      * @param augs   Additional information that may include infoset augmentations    
      *     
      * @throws XNIException Thrown by handler to signal an error.
      */
 
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs) 
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs) 
         throws XNIException {
     } // startDocument(XMLLocator,String)
 

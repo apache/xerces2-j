@@ -78,7 +78,6 @@ import org.apache.xerces.impl.XMLEntityManager;
 
 
 import org.apache.xerces.util.AugmentationsImpl;
-import org.apache.xerces.util.NamespaceSupport;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.XMLChar;
@@ -87,6 +86,7 @@ import org.apache.xerces.util.XMLResourceIdentifierImpl;
 import org.apache.xerces.util.XMLAttributesImpl;
 
 import org.apache.xerces.xni.Augmentations;
+import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XMLAttributes;
@@ -235,7 +235,7 @@ public class XMLSchemaValidator
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         null,
-        Boolean.FALSE,
+        Boolean.TRUE,
         Boolean.FALSE,
         Boolean.FALSE,
     };
@@ -570,17 +570,30 @@ public class XMLSchemaValidator
      *                 where the entity encoding is not auto-detected (e.g.
      *                 internal entities or a document entity that is
      *                 parsed from a java.io.Reader).
+     * @param namespaceContext
+     *                 The namespace context in effect at the
+     *                 start of this document.
+     *                 This object represents the current context.
+     *                 Implementors of this class are responsible
+     *                 for copying the namespace bindings from the
+     *                 the current context (and its parent contexts)
+     *                 if that information is important.
      * @param augs     Additional information that may include infoset augmentations
      *
      * @throws XNIException Thrown by handler to signal an error.
      */
-    public void startDocument(XMLLocator locator, String encoding, Augmentations augs)
+    public void startDocument(XMLLocator locator, String encoding, 
+                              NamespaceContext namespaceContext, Augmentations augs)
     throws XNIException {
+
+        fValidationState.setNamespaceSupport(namespaceContext);
+        fState4XsiType.setNamespaceSupport(namespaceContext);
+        fState4ApplyDefault.setNamespaceSupport(namespaceContext);
 
         handleStartDocument(locator, encoding);
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.startDocument(locator, encoding, augs);
+            fDocumentHandler.startDocument(locator, encoding, namespaceContext, augs);
         }
 
     } // startDocument(XMLLocator,String)
@@ -1080,9 +1093,6 @@ public class XMLSchemaValidator
     // Schema grammar loader
     final XMLSchemaLoader fSchemaLoader;
 
-    /** Namespace support. */
-    protected NamespaceSupport fNamespaceSupport = null;
-    
     /** the DV usd to convert xsi:type to a QName */
     // REVISIT: in new simple type design, make things in DVs static,
     //          so that we can QNameDV.getCompiledForm()
@@ -1243,11 +1253,6 @@ public class XMLSchemaValidator
             fSymbolTable = symbolTable;
         }
 
-        // internal xerces property: namespace-context 
-        fNamespaceSupport = (NamespaceSupport)componentManager.getProperty(NAMESPACE_CONTEXT_PROPERTY);
-        fValidationState.setNamespaceSupport(fNamespaceSupport);
-        fState4XsiType.setNamespaceSupport(fNamespaceSupport);
-        fState4ApplyDefault.setNamespaceSupport(fNamespaceSupport);
 
         try {
             fDynamicValidation = componentManager.getFeature(DYNAMIC_VALIDATION);
