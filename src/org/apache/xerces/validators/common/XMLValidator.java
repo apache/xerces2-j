@@ -1727,8 +1727,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                 if (fGrammar == null && DEBUG_SCHEMA_VALIDATION) {
                     System.out.println("Oops! no grammar is found for validation");
                 }
-
-                fGrammarNameSpaceIndex = fEmptyURI;
+                
+                if (fGrammar != null) {
+                    fGrammarNameSpaceIndex = fEmptyURI;
+                }
             }
 
             if ( fGrammar instanceof DTDGrammar && 
@@ -1762,6 +1764,7 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     private void switchGrammar(int newGrammarNameSpaceIndex) {
         Grammar tempGrammar = fGrammarResolver.getGrammar(fStringPool.toString(newGrammarNameSpaceIndex));
         if (tempGrammar == null) {
+            System.out.println(fStringPool.toString(newGrammarNameSpaceIndex) + " grammar not found");
             //TO DO report error here
         }
         else {
@@ -1853,6 +1856,11 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                             }
                             else if (localpart == fStringPool.addSymbol(SchemaSymbols.XSI_NONAMESPACESCHEMALOCACTION))  {
                                 locationUriPairs.put(fStringPool.toString(attrList.getAttValue(index)), "");
+                                if (fNamespacesScope != null) {
+                                    //bind prefix "" to URI "" in this case
+                                    fNamespacesScope.setNamespaceForPrefix( fStringPool.addSymbol(""), 
+                                                                            fStringPool.addSymbol(""));
+                                }
                             }
                             // REVISIT: should we break here? 
                             break;
@@ -1970,6 +1978,8 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
     }// parseSchemaLocaltion(String, Hashtable)
     private void resolveSchemaGrammar( String loc, String uri) throws Exception{
 
+        SchemaGrammar grammar = (SchemaGrammar) fGrammarResolver.getGrammar(uri);
+
         DOMParser parser = new DOMParser() {
             public void ignorableWhitespace(char ch[], int start, int length) {}
             public void ignorableWhitespace(int dataIdx) {}
@@ -1986,8 +1996,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
             e.printStackTrace();
         }
 
+        // expand it before passing it to the parser
+        loc = fEntityHandler.expandSystemId(loc);
         try {
-            parser.parse( fEntityHandler.expandSystemId(loc) );
+            parser.parse( loc );
         }catch( IOException e ) {
             e.printStackTrace();
         }catch( SAXException e ) {
@@ -2012,10 +2024,10 @@ System.out.println("+++++ currentElement : " + fStringPool.toString(elementType)
                     reportRecoverableXMLError(167,144, "Schema in " + loc + " has a different target namespace " + 
                                        "from the one specified in the instance document :" + uri); 
                 }
-                if (fGrammar == null) {
-                    fGrammar = new SchemaGrammar();
+                if (grammar == null) {
+                    grammar = new SchemaGrammar();
                 }
-                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)fGrammar, fGrammarResolver, fErrorReporter);
+                tst = new TraverseSchema( root, fStringPool, (SchemaGrammar)grammar, fGrammarResolver, fErrorReporter, loc);
             }
         }
         catch (Exception e) {
