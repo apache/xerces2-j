@@ -4,11 +4,13 @@ echo ------------------------
 
 if "%JAVA_HOME%" == "" goto error
 
+rem Keep this classpath to the minimum required to run ant
+rem Application dependent classpaths are specified in build.xml 
 set LOCALCLASSPATH=%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\classes.zip;.\tools\ant.jar;.\tools\xerces.jar
 
-echo Building with classpath %LOCALCLASSPATH%
+echo Building with ant classpath %LOCALCLASSPATH%
 echo Starting Ant...
-%JAVA_HOME%\bin\java.exe -Dant.home="./tools" -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
+"%JAVA_HOME%\bin\java.exe" -Dant.home="./tools" -classpath "%LOCALCLASSPATH%" org.apache.tools.ant.Main %1 %2 %3 %4 %5
 goto end
 
 :error
