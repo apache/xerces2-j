@@ -60,6 +60,14 @@
             follow these steps and you&apos;ll be done in no time:
         </p>
         <ol> 
+        <li>Ensure that the API code has been properly refreshed.
+        That is, make sure that <code>tools/xml-apis.jar</code>
+        and <code>tools/xml-apis--src.zip</code> reflect the
+        state of the branch of xml-commons that contains the API
+        set to which the parser must conform.  At the time of
+        writing (March 20, 2003) this was the branch
+        <code>tck-jaxp-1_2_0</code>.
+        </li>
         <li>Change the following files:<br/>
             <code>build.xml</code>
                 (that is, change the <code>parser.Version</code>,
@@ -76,6 +84,9 @@
         <li>Tag the release in CVS
             (tags for releases usually have the form Xerces-J_x_y_z
             where x.y.z is the Xerces-J release number)
+            You should also tag the current branch of xml-commons
+            containing the API's that the parser needs to conform
+            to; see step 1 above.
         </li>
         <li>Do a test build and regression test run;
             i.e., <code>build test</code> at a bare minimum.
