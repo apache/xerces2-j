@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE faqs SYSTEM 'dtd/faqs.dtd'>
+<faqs title='Using XInclude'>
+
+  <faq title="Usage">
+    <q>How do I enable XInclude processing?</q>
+    <a>
+     <p>
+      The simplest way to enable XInclude processing is to use a 
+      <code>org.apache.xerces.parsers.XIncludeParserConfiguration</code> as your
+      parser configuration.  This configuration includes a DTD validator, a namespace
+      binder, and a Schema validator, in addition to a handler for XInclude.  See
+      <link idref="faq-xni" anchor="override-default-config">this FAQ</link> for
+      instructions about how to change your parser configuration.
+     </p>
+     <p>
+      If <code>XIncludeParserConfiguration</code> doesn't meet your needs, then you'll
+      have to write your own parser configuration. Make sure that this configuration
+      includes a <code>org.apache.xerces.xinclude.XIncludeHandler</code>, and that the
+      property &quot;http://apache.org/xml/properties/internal/namespace-context&quot; is an instance of
+      <code>org.apache.xerces.xinclude.XIncludeNamespaceSupport</code>.  It is strongly
+      recommended that the <code>XIncludeHandler</code> be placed in the pipeline
+      before the Schema validator, if there is one.  PSVI information cannot be
+      guaranteed to be valid after XInclude processing.
+     </p>
+    </a>
+  </faq>
+
+  <faq title="xml:base attributes and XML Schema validation">
+    <q>Why are <code>xml:base</code> attributes added, which make Schema validation fail?</q>
+    <a>
+     <p>
+      According to the specification for XInclude, processors must add an <code>xml:base</code>
+      attribute to elements included from locations with a different base URI.  Without
+      these attributes, the resulting infoset information would be incorrect.  Unfortunatly,
+      these attributes make XInclude processing not transparent to Schema validation.
+     </p>
+     <p>
+      The solution to this is to modify your schema to allow <code>xml:base</code>
+      attributes to appear on elements that might be included from different base URIs.
+      If this solution is really unappealing to you, voice your concerns on the
+      xerces-j-user mailing list.
+     </p>
+    </a>
+  </faq>
+
+  <faq title="Document Fragments">
+    <q>Why doesn't including document fragments work?</q>
+    <a>
+     <p>
+      Currently, our implementation of XInclude is not fully complete, and we do
+      not support <jump href="http://www.w3.org/TR/xinclude/">XPointer</jump>
+      references.  We hope that in the future we will have a
+      fully compliant XInclude processor that can handle this feature.
+     </p>
+    </a>
+  </faq>
+
+  <faq title="XML Base Support">
+    <q>Why doesn't Xerces recognize xml:base attributes?</q>
+    <a> 
+     <p>
+      The XInclude specification requires processors to use the base URI
+      (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
+      recommendation) to resolve relative IURIs to compute the
+      <jump href="http://www.w3.org/TR/xinclude#include-location">include location</jump>.
+      Currently, our implementation of XInclude is not fully complete, and we do
+      not support the XML Base recommendation.  We hope that in the future we
+      will have a fully compliant XInclude processor that can handle this feature.
+     </p>
+    </a>
+  </faq>
+</faqs>
