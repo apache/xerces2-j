@@ -178,7 +178,7 @@ public final class Constants {
     public static final String LOAD_EXTERNAL_DTD_FEATURE = "nonvalidating/load-external-dtd";
 
     /** Defer node expansion feature ("dom/defer-node-expansion"). */
-    //public static final String DEFER_NODE_EXPANSION_FEATURE = "dom/defer-node-expansion";
+    public static final String DEFER_NODE_EXPANSION_FEATURE = "dom/defer-node-expansion";
 
     /** Create entity reference nodes feature ("dom/create-entity-ref-nodes"). */
     public static final String CREATE_ENTITY_REF_NODES_FEATURE = "dom/create-entity-ref-nodes";
