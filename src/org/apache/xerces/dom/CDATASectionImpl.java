@@ -101,7 +101,7 @@ public class CDATASectionImpl
     //
 
     /** Factory constructor for creating a CDATA section. */
-    public CDATASectionImpl(DocumentImpl ownerDoc, String data) {
+    public CDATASectionImpl(CoreDocumentImpl ownerDoc, String data) {
         super(ownerDoc, data);
     }  
     

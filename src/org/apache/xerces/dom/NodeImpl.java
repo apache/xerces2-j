@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,16 +68,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventException;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.events.MutationEvent;
-
-import org.apache.xerces.dom.events.EventImpl;
-import org.apache.xerces.dom.events.MutationEventImpl;
 
 /**
- * Node provides the basic structure of a DOM tree. It is never used
+ * NodeImpl provides the basic structure of a DOM tree. It is never used
  * directly, but instead is subclassed to add type and data
  * information, and additional methods, appropriate to each node of
  * the tree. Only its subclasses should be instantiated -- and those,
@@ -109,6 +104,10 @@ import org.apache.xerces.dom.events.MutationEventImpl;
  * though, so there is never more than one level of indirection.
  * And when a node doesn't have an owner, ownerNode refers to its
  * ownerDocument.
+ * <p>
+ * This class doesn't directly support mutation events, however, it still
+ * implements the EventTarget interface and forward all related calls to the
+ * document so that the document class do so.
  *
  * @author Arnaud  Le Hors, IBM
  * @author Joe Kesselman, IBM
@@ -149,9 +148,8 @@ public abstract class NodeImpl
     protected final static short FIRSTCHILD   = 0x1<<4;
     protected final static short SPECIFIED    = 0x1<<5;
     protected final static short IGNORABLEWS  = 0x1<<6;
-    protected final static short SETVALUE     = 0x1<<7;
-    protected final static short HASSTRING    = 0x1<<8;
-    protected final static short UNNORMALIZED = 0x1<<9;
+    protected final static short HASSTRING    = 0x1<<7;
+    protected final static short UNNORMALIZED = 0x1<<8;
 
     //
     // Constructors
@@ -163,10 +161,10 @@ public abstract class NodeImpl
      * <p>
      * Every Node knows what Document it belongs to.
      */
-    protected NodeImpl(DocumentImpl ownerDocument) {
+    protected NodeImpl(CoreDocumentImpl ownerDocument) {
         // as long as we do not have any owner, ownerNode is our ownerDocument
         ownerNode = ownerDocument;
-    } // <init>(DocumentImpl)
+    } // <init>(CoreDocumentImpl)
 
     /** Constructor for serialization. */
     public NodeImpl() {}
@@ -293,15 +291,15 @@ public abstract class NodeImpl
 
     /**
      * same as above but returns internal type and this one is not overridden
-     * by DocumentImpl to return null 
+     * by CoreDocumentImpl to return null 
      */
-    DocumentImpl ownerDocument() {
+    CoreDocumentImpl ownerDocument() {
         // if we have an owner simply forward the request
         // otherwise ownerNode is our ownerDocument
         if (isOwned()) {
             return ownerNode.ownerDocument();
         } else {
-            return (DocumentImpl) ownerNode;
+            return (CoreDocumentImpl) ownerNode;
         }
     }
 
@@ -309,7 +307,7 @@ public abstract class NodeImpl
      * NON-DOM
      * set the ownerDocument of this node
      */
-    void setOwnerDocument(DocumentImpl doc) {
+    void setOwnerDocument(CoreDocumentImpl doc) {
         if (needsSyncData()) {
             synchronizeData();
         }
@@ -566,17 +564,17 @@ public abstract class NodeImpl
 
     /**
      * Introduced in DOM Level 2. <p>
-     * Tests whether the DOM implementation implements a specific feature and that
-     * feature is supported by this node.
-     * @param feature       The package name of the feature to test. This is the
-     *                      same name as what can be passed to the method
-     *                      hasFeature on DOMImplementation.
-     * @param version       This is the version number of the package name to
-     *                      test. In Level 2, version 1, this is the string "2.0". If
-     *                      the version is not specified, supporting any version of
-     *                      the feature will cause the method to return true.
-     * @return boolean      Returns true if this node defines a subtree within which the
-     *                      specified feature is supported, false otherwise.
+     * Tests whether the DOM implementation implements a specific feature and
+     * that feature is supported by this node.
+     * @param feature The package name of the feature to test. This is the same
+     * name as what can be passed to the method hasFeature on
+     * DOMImplementation.
+     * @param version This is the version number of the package name to
+     * test. In Level 2, version 1, this is the string "2.0". If the version is
+     * not specified, supporting any version of the feature will cause the
+     * method to return true.
+     * @return boolean Returns true if this node defines a subtree within which
+     * the specified feature is supported, false otherwise.
      * @since WD-DOM-Level-2-19990923
      */
     public boolean isSupported(String feature, String version)
@@ -588,13 +586,13 @@ public abstract class NodeImpl
     /**
      * Introduced in DOM Level 2. <p>
      *
-     * The namespace URI of this node, or null if it is unspecified. When this node
-     * is of any type other than ELEMENT_NODE and ATTRIBUTE_NODE, this is always
-     * null and setting it has no effect. <p>
+     * The namespace URI of this node, or null if it is unspecified. When this
+     * node is of any type other than ELEMENT_NODE and ATTRIBUTE_NODE, this is
+     * always null and setting it has no effect. <p>
      *
-     * This is not a computed value that is the result of a namespace lookup based on
-     * an examination of the namespace declarations in scope. It is merely the
-     * namespace URI given at creation time.<p>
+     * This is not a computed value that is the result of a namespace lookup
+     * based on an examination of the namespace declarations in scope. It is
+     * merely the namespace URI given at creation time.<p>
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null.
@@ -610,9 +608,9 @@ public abstract class NodeImpl
     /**
      * Introduced in DOM Level 2. <p>
      *
-     * The namespace prefix of this node, or null if it is unspecified. When this
-     * node is of any type other than ELEMENT_NODE and ATTRIBUTE_NODE this is
-     * always null and setting it has no effect.<p>
+     * The namespace prefix of this node, or null if it is unspecified. When
+     * this node is of any type other than ELEMENT_NODE and ATTRIBUTE_NODE this
+     * is always null and setting it has no effect.<p>
      *
      * For nodes created with a DOM Level 1 method, such as createElement
      * from the Document interface, this is null. <p>
@@ -629,16 +627,16 @@ public abstract class NodeImpl
     /**
      *  Introduced in DOM Level 2. <p>
      *
-     *  The namespace prefix of this node, or null if it is unspecified. When this
-     *  node is of any type other than ELEMENT_NODE and ATTRIBUTE_NODE this is
-     *  always null and setting it has no effect.<p>
+     *  The namespace prefix of this node, or null if it is unspecified. When
+     *  this node is of any type other than ELEMENT_NODE and ATTRIBUTE_NODE
+     *  this is always null and setting it has no effect.<p>
      *
-     *  For nodes created with a DOM Level 1 method, such as createElement
-     *  from the Document interface, this is null.<p>
+     *  For nodes created with a DOM Level 1 method, such as createElement from
+     *  the Document interface, this is null.<p>
      *
-     *  Note that setting this attribute changes the nodeName attribute, which holds the
-     *  qualified name, as well as the tagName and name attributes of the Element
-     *  and Attr interfaces, when applicable.<p>
+     *  Note that setting this attribute changes the nodeName attribute, which
+     *  holds the qualified name, as well as the tagName and name attributes of
+     *  the Element and Attr interfaces, when applicable.<p>
      *
      * @throws INVALID_CHARACTER_ERR Raised if the specified
      *  prefix contains an invalid character.
@@ -671,536 +669,26 @@ public abstract class NodeImpl
         return null;
     }
     
-    
     //
-    // EventTarget support (public and internal)
+    // EventTarget support
     //
-	// Constants
-	//
-	/** Compile-time flag. If false, disables our code for
-	    the DOM Level 2 Events module, perhaps allowing it
-	    to be optimized out to save bytecodes.
-	*/
-	protected final static boolean MUTATIONEVENTS=true;
-	
-	/** The MUTATION_ values are parameters to the NON-DOM 
-	    internalInsertBefore() and internalRemoveChild() operations,
-	    allowing us to control which MutationEvents are generated.
-	 */
-	protected final static int MUTATION_NONE=0x00;
-	protected final static int MUTATION_LOCAL=0x01;
-	protected final static int MUTATION_AGGREGATE=0x02;
-	protected final static int MUTATION_ALL=0xffff;
-	
-	/* NON-DOM INTERNAL: Class LEntry is just a struct used to represent
-	 * event listeners registered with this node. Copies of this object
-	 * are hung from the nodeListeners Vector.
-	 * <p>
-	 * I considered using two vectors -- one for capture,
-	 * one for bubble -- but decided that since the list of listeners 
-	 * is probably short in most cases, it might not be worth spending
-	 * the space. ***** REVISIT WHEN WE HAVE MORE EXPERIENCE.
-	 */
-	class LEntry
-	{
-	    String type;
-	    EventListener listener;
-	    boolean useCapture;
-	    
-	    /** NON-DOM INTERNAL: Constructor for Listener list Entry 
-	     * @param type Event name (NOT event group!) to listen for.
-	     * @param listener Who gets called when event is dispatched
-	     * @param useCaptue True iff listener is registered on
-	     *  capturing phase rather than at-target or bubbling
-	     */
-	    LEntry(String type,EventListener listener,boolean useCapture)
-	    {
-	        this.type=type;this.listener=listener;this.useCapture=useCapture;
-	    }
-	}; // LEntry
-	
-	/** Introduced in DOM Level 2. <p>
-     * Register an event listener with this Node. A listener may be independently
-     * registered as both Capturing and Bubbling, but may only be
-     * registered once per role; redundant registrations are ignored.
-     * @param type Event name (NOT event group!) to listen for.
-	 * @param listener Who gets called when event is dispatched
-	 * @param useCapture True iff listener is registered on
-	 *  capturing phase rather than at-target or bubbling
-	 */
-	public void addEventListener(String type,EventListener listener,boolean useCapture)
-	{
-        // We can't dispatch to blank type-name, and of course we need
-        // a listener to dispatch to
-	    if(type==null || type.equals("") || listener==null)
-	        return;
 
-	    // Each listener may be registered only once per type per phase.
-	    // Simplest way to code that is to zap the previous entry, if any.
-	    removeEventListener(type,listener,useCapture);
-	    
-            Vector nodeListeners = ownerDocument().getEventListeners(this);
-	    if(nodeListeners==null) {
-                nodeListeners=new Vector();
-                ownerDocument().setEventListeners(this, nodeListeners);
-            }
-	    nodeListeners.addElement(new LEntry(type,listener,useCapture));
-	    
-	    // Record active listener
-	    LCount lc=LCount.lookup(type);
-	    if(useCapture)
-	        ++lc.captures;
-	    else
-	        ++lc.bubbles;
+    public void addEventListener(String type, EventListener listener,
+                                 boolean useCapture) {
+        // simply forward to Document
+        ownerDocument().addEventListener(this, type, listener, useCapture);
+    }
 
-	} // addEventListener(String,EventListener,boolean) :void
-	
-	/** Introduced in DOM Level 2. <p>
-     * Deregister an event listener previously registered with this Node. 
-     * A listener must be independently removed from the 
-     * Capturing and Bubbling roles. Redundant removals (of
-     * listeners not currently registered for this role) are ignored.
-     * @param type Event name (NOT event group!) to listen for.
-	 * @param listener Who gets called when event is dispatched
-	 * @param useCapture True iff listener is registered on
-	 *  capturing phase rather than at-target or bubbling
-	 */
-	public void removeEventListener(String type,EventListener listener,boolean useCapture)
-	{
-	    // If this couldn't be a valid listener registration, ignore request
-            Vector nodeListeners = ownerDocument().getEventListeners(this);
-  	    if(nodeListeners==null || type==null || type.equals("") || listener==null)
-	        return;
+    public void removeEventListener(String type, EventListener listener,
+                                    boolean useCapture) {
+        // simply forward to Document
+        ownerDocument().removeEventListener(this, type, listener, useCapture);
+    }
 
-        // Note that addListener has previously ensured that 
-	    // each listener may be registered only once per type per phase.
-        for(int i=nodeListeners.size()-1;i>=0;--i) // count-down is OK for deletions!
-        {
-            LEntry le=(LEntry)(nodeListeners.elementAt(i));
-            if(le.useCapture==useCapture && le.listener==listener && 
-                le.type.equals(type))
-            {
-                nodeListeners.removeElementAt(i);
-                // Storage management: Discard empty listener lists
-                if(nodeListeners.size()==0)
-                    ownerDocument().setEventListeners(this, null);
-
-                // Remove active listener
-                LCount lc=LCount.lookup(type);
-                if(useCapture)
-                    --lc.captures;
-                else
-                    --lc.bubbles;
-
-                break;  // Found it; no need to loop farther.
-            }
-        }
-	} // removeEventListener(String,EventListener,boolean) :void
-	
-	/** COMMENTED OUT **
-            Now that event listeners are stored on the document with the node
-            as the key, nodes can't be finalized if they have any event
-            listener. This finalize method becomes useless... This is a place
-            where we could definitely use weak references!! If we did, then
-            this finalize method could be put back in (which is why I don't
-            remove if completely). - ALH
-         ** NON-DOM INTERNAL:
-	    A finalizer has added to NodeImpl in order to correct the event-usage
-	    counts of any remaining listeners before discarding the Node.
-	    This isn't absolutely required, and finalizers are of dubious
-	    reliability and have odd effects on some implementations of GC.
-	    But given the expense of event generation and distribution it 
-	    seems a worthwhile safety net.
-	    ***** RECONSIDER at some future point.
-
-	protected void finalize() throws Throwable
-	{
-	    super.finalize();
-	    if(nodeListeners!=null)
-            for(int i=nodeListeners.size()-1;i>=0;--i) // count-down is OK for deletions!
-            {
-                LEntry le=(LEntry)(nodeListeners.elementAt(i));
-                LCount lc=LCount.lookup(le.type);
-           	    if(le.useCapture)
-	                --lc.captures;
-                else
-	                --lc.bubbles;
-	        }
-	}	
-	   */
-
-    /**
-     * Introduced in DOM Level 2. <p>
-     * Distribution engine for DOM Level 2 Events. 
-     * <p>
-     * Event propagation runs as follows:
-     * <ol>
-     * <li>Event is dispatched to a particular target node, which invokes
-     *   this code. Note that the event's stopPropagation flag is
-     *   cleared when dispatch begins; thereafter, if it has 
-     *   been set before processing of a node commences, we instead
-     *   immediately advance to the DEFAULT phase.
-     * <li>The node's ancestors are established as destinations for events.
-     *   For capture and bubble purposes, node ancestry is determined at 
-     *   the time dispatch starts. If an event handler alters the document 
-     *   tree, that does not change which nodes will be informed of the event. 
-     * <li>CAPTURING_PHASE: Ancestors are scanned, root to target, for 
-     *   Capturing listeners. If found, they are invoked (see below). 
-     * <li>AT_TARGET: 
-     *   Event is dispatched to NON-CAPTURING listeners on the
-     *   target node. Note that capturing listeners on this node are _not_
-     *   invoked.
-     * <li>BUBBLING_PHASE: Ancestors are scanned, target to root, for
-     *   non-capturing listeners. 
-     * <li>Default processing: Some DOMs have default behaviors bound to specific
-     *   nodes. If this DOM does, and if the event's preventDefault flag has
-     *   not been set, we now return to the target node and process its
-     *   default handler for this event, if any.
-     * </ol>
-     * <p>
-     * Note that (de)registration of handlers during
-     * processing of an event does not take effect during
-     * this phase of this event; they will not be called until
-     * the next time this node is visited by dispatchEvent.
-     * <p>
-     * If an event handler itself causes events to be dispatched, they are
-     * processed synchronously, before processing resumes
-     * on the event which triggered them. Please be aware that this may 
-     * result in events arriving at listeners "out of order" relative
-     * to the actual sequence of requests.
-     * <p>
-     * Note that our implementation resets the event's stop/prevent flags
-     * when dispatch begins.
-     * I believe the DOM's intent is that event objects be redispatchable,
-     * though it isn't stated in those terms.
-     * @param event the event object to be dispatched to 
-     * registered EventListeners
-     * @return true if the event's <code>preventDefault()</code>
-     * method was invoked by an EventListener; otherwise false.
-    */
-	public boolean dispatchEvent(Event event)
-    {
-        if(event==null) return false;
-        
-        // Can't use anyone else's implementation, since there's no public
-        // API for setting the event's processing-state fields.
-        EventImpl evt=(EventImpl)event;
-
-        // VALIDATE -- must have been initialized at least once, must have
-        // a non-null non-blank name.
-        if(!evt.initialized || evt.type==null || evt.type.equals(""))
-            throw new EventException(EventException.UNSPECIFIED_EVENT_TYPE_ERR,
-                                     "DOM010 Unspecified event type");
-        
-        // If nobody is listening for this event, discard immediately
-        LCount lc=LCount.lookup(evt.getType());
-        if(lc.captures+lc.bubbles+lc.defaults==0)
-            return evt.preventDefault;
-
-        // INITIALIZE THE EVENT'S DISPATCH STATUS
-        // (Note that Event objects are reusable in our implementation;
-        // that doesn't seem to be explicitly guaranteed in the DOM, but
-        // I believe it is the intent.)
-        evt.target=this;
-        evt.stopPropagation=false;
-        evt.preventDefault=false;
-        
-        // Capture pre-event parentage chain, not including target;
-        // use pre-event-dispatch ancestors even if event handlers mutate
-        // document and change the target's context.
-        // Note that this is parents ONLY; events do not
-        // cross the Attr/Element "blood/brain barrier". 
-        // DOMAttrModified. which looks like an exception,
-        // is issued to the Element rather than the Attr
-        // and causes a _second_ DOMSubtreeModified in the Element's
-        // tree.
-        Vector pv=new Vector(10,10);
-        Node p=this,n=p.getParentNode();
-        while(n!=null)
-        {
-            pv.addElement(n);
-            p=n;
-            n=n.getParentNode();
-        }
-        
-        //CAPTURING_PHASE:
-        if(lc.captures>0)
-        {
-            evt.eventPhase=Event.CAPTURING_PHASE;
-            //Ancestors are scanned, root to target, for 
-            //Capturing listeners.
-            for(int j=pv.size()-1;j>=0;--j)
-            {
-                if(evt.stopPropagation)
-                    break;  // Someone set the flag. Phase ends.
-                    
-                // Handle all capturing listeners on this node
-                NodeImpl nn=(NodeImpl)pv.elementAt(j);
-                evt.currentTarget=nn;
-                Vector nodeListeners = ownerDocument().getEventListeners(nn);
-                if(nodeListeners!=null)
-                {
-                    Vector nl=(Vector)(nodeListeners.clone());
-                    for(int i=nl.size()-1;i>=0;--i) // count-down more efficient
-                    {
-	                    LEntry le=(LEntry)(nl.elementAt(i));
-                        if(le.useCapture && le.type.equals(evt.type))
-                            try
-                            {
-    	                        le.listener.handleEvent(evt);
-	                        }
-	                        catch(Exception e)
-	                        {
-	                            // All exceptions are ignored.
-	                        }
-	                }
-	            }
-            }
-        }
-        
-        //Both AT_TARGET and BUBBLE use non-capturing listeners.
-        if(lc.bubbles>0)
-        {
-            //AT_TARGET PHASE: Event is dispatched to NON-CAPTURING listeners
-            //on the target node. Note that capturing listeners on the target node 
-            //are _not_ invoked, even during the capture phase.
-            evt.eventPhase=Event.AT_TARGET;
-            evt.currentTarget=this;
-            Vector nodeListeners = ownerDocument().getEventListeners(this);
-            if(!evt.stopPropagation && nodeListeners!=null)
-            {
-                Vector nl=(Vector)nodeListeners.clone();
-                for(int i=nl.size()-1;i>=0;--i) // count-down is more efficient
-                {
-                    LEntry le=(LEntry)nl.elementAt(i);
-       	            if(le!=null && !le.useCapture && le.type.equals(evt.type))
-   	                    try
-   	                    {
-                            le.listener.handleEvent(evt);
-                        }
-                        catch(Exception e)
-                        {
-                            // All exceptions are ignored.
-                        }
-	            }
-            }
-            //BUBBLING_PHASE: Ancestors are scanned, target to root, for
-            //non-capturing listeners. If the event's preventBubbling flag has
-            //been set before processing of a node commences, we instead
-            //immediately advance to the default phase.
-            //Note that not all events bubble.
-            if(evt.bubbles) 
-            {
-                evt.eventPhase=Event.BUBBLING_PHASE;
-                for(int j=0;j<pv.size();++j)
-                {
-                    if(evt.stopPropagation)
-                        break;  // Someone set the flag. Phase ends.
-                    
-                    // Handle all bubbling listeners on this node
-                    NodeImpl nn=(NodeImpl)pv.elementAt(j);
-                    evt.currentTarget=nn;
-                    nodeListeners = ownerDocument().getEventListeners(nn);
-                    if(nodeListeners!=null)
-                    {
-                        Vector nl=(Vector)(nodeListeners.clone());
-                        for(int i=nl.size()-1;i>=0;--i) // count-down more efficient
-    	                {
-	                        LEntry le=(LEntry)(nl.elementAt(i));
-    	                    if(!le.useCapture && le.type.equals(evt.type))
-            	                try
-            	                {
-	                                le.listener.handleEvent(evt);
-	                            }
-	                            catch(Exception e)
-	                            {
-	                                // All exceptions are ignored.
-	                            }
-	                    }
-	                }
-                }
-            }
-        }
-        
-        //DEFAULT PHASE: Some DOMs have default behaviors bound to specific
-        //nodes. If this DOM does, and if the event's preventDefault flag has
-        //not been set, we now return to the target node and process its
-        //default handler for this event, if any.
-        // No specific phase value defined, since this is DOM-internal
-        if(lc.defaults>0 && (!evt.cancelable || !evt.preventDefault))
-        {
-            // evt.eventPhase=Event.DEFAULT_PHASE;
-            // evt.currentTarget=this;
-            // DO_DEFAULT_OPERATION
-        }
-
-        return evt.preventDefault;        
-    } // dispatchEvent(Event) :boolean
-
-
-    /** NON-DOM INTERNAL: DOMNodeInsertedIntoDocument and ...RemovedFrom...
-     * are dispatched to an entire subtree. This is the distribution code
-     * therefor. They DO NOT bubble, thanks be, but may be captured.
-     * <p>
-     * ***** At the moment I'm being sloppy and using the normal
-     * capture dispatcher on every node. This could be optimized hugely
-     * by writing a capture engine that tracks our position in the tree to
-     * update the capture chain without repeated chases up to root.
-     * @param n node which was directly inserted or removed
-     * @param e event to be sent to that node and its subtree
-     */
-    void dispatchEventToSubtree(Node n,Event e)
-    {
-      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
-      {
-          Vector nodeListeners = ownerDocument().getEventListeners(this);
-	    if(nodeListeners==null || n==null)
-            return;
-
-	    // ***** Recursive implementation. This is excessively expensive,
-	    // and should be replaced in conjunction with optimization
-	    // mentioned above.
-	    ((NodeImpl)n).dispatchEvent(e);
-	    if(n.getNodeType()==Node.ELEMENT_NODE)
-	    {
-	        NamedNodeMap a=n.getAttributes();
-	        for(int i=a.getLength()-1;i>=0;--i)
-	            dispatchEventToSubtree(a.item(i),e);
-	    }
-	    dispatchEventToSubtree(n.getFirstChild(),e);
-	    dispatchEventToSubtree(n.getNextSibling(),e);
-	  }
-	} // dispatchEventToSubtree(Node,Event) :void
-
-    /** NON-DOM INTERNAL: Return object for getEnclosingAttr. Carries
-     * (two values, the Attr node affected (if any) and its previous 
-     * string value. Simple struct, no methods.
-     */
-	class EnclosingAttr
-	{
-	    AttrImpl node;
-	    String oldvalue;
-	} //EnclosingAttr
-	
-	/** NON-DOM INTERNAL: Pre-mutation context check, in
-	 * preparation for later generating DOMAttrModified events.
-	 * Determines whether this node is within an Attr
-	 * @return either a description of that Attr, or Null
-	 * if none such. 
-	 */
-	EnclosingAttr getEnclosingAttr()
-	{
-      if(MUTATIONEVENTS && ownerDocument().mutationEvents)
-      {
-        NodeImpl eventAncestor=this;
-        while(true)
-        {
-            if(eventAncestor==null)
-                return null;
-            int type=eventAncestor.getNodeType();
-            if(type==Node.ATTRIBUTE_NODE)
-            {
-                EnclosingAttr retval=new EnclosingAttr();
-                retval.node=(AttrImpl)eventAncestor;
-                retval.oldvalue=retval.node.getNodeValue();
-                return retval;
-            }    
-            else if(type==Node.ENTITY_REFERENCE_NODE)
-                eventAncestor=eventAncestor.parentNode();
-            else 
-                return null;
-                // Any other parent means we're not in an Attr
-        }
-      }
-      return null; // Safety net, should never be reached
-	} // getEnclosingAttr() :EnclosingAttr 
-
-	
-	/** NON-DOM INTERNAL: Convenience wrapper for calling
-	 * dispatchAggregateEvents when the context was established
-	 * by <code>getEnclosingAttr</code>.
-	 * @param ea description of Attr affected by current operation
-	 */
-	void dispatchAggregateEvents(EnclosingAttr ea)
-	{
-	    if(ea!=null)
-	        dispatchAggregateEvents(ea.node, ea.oldvalue,
-                                        MutationEvent.MODIFICATION);
-            else
-	        dispatchAggregateEvents(null,null,(short)0);
-	        
-	} // dispatchAggregateEvents(EnclosingAttr) :void
-
-	/** NON-DOM INTERNAL: Generate the "aggregated" post-mutation events
-	 * DOMAttrModified and DOMSubtreeModified.
-	 * Both of these should be issued only once for each user-requested
-	 * mutation operation, even if that involves multiple changes to
-	 * the DOM.
-	 * For example, if a DOM operation makes multiple changes to a single
-	 * Attr before returning, it would be nice to generate only one 
-	 * DOMAttrModified, and multiple changes over larger scope but within
-	 * a recognizable single subtree might want to generate only one 
-	 * DOMSubtreeModified, sent to their lowest common ancestor. 
-	 * <p>
-	 * To manage this, use the "internal" versions of insert and remove
-	 * with MUTATION_LOCAL, then make an explicit call to this routine
-	 * at the higher level. Some examples now exist in our code.
-	 *
-	 * @param enclosingAttr The Attr node (if any) whose value has
-	 * been changed as a result of the DOM operation. Null if none such.
-	 * @param oldValue The String value previously held by the
-	 * enclosingAttr. Ignored if none such.
-         * @param change Type of modification to the attr. See
-         * MutationEvent.attrChange
-	 */
-    void dispatchAggregateEvents(AttrImpl enclosingAttr,
-                                 String oldvalue, short change)
-    {
-        if(MUTATIONEVENTS && ownerDocument().mutationEvents) {
-            // We have to send DOMAttrModified.
-	    NodeImpl owner = null;
-	    if (enclosingAttr != null) {
-                LCount lc = LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-                    owner=((NodeImpl)(enclosingAttr.getOwnerElement()));
-                if(lc.captures+lc.bubbles+lc.defaults>0) {
-                    if(owner!=null) {
-                        MutationEventImpl me= new MutationEventImpl();
-                        me.initMutationEvent(
-                                           MutationEventImpl.DOM_ATTR_MODIFIED,
-                                             true, false, enclosingAttr,
-                                             oldvalue,
-                                             enclosingAttr.getNodeValue(),
-                                             enclosingAttr.getNodeName(),
-                                             change);
-                        owner.dispatchEvent(me);
-                    }
-                }
-            }
-    
-            // DOMSubtreeModified gets sent to the lowest common root of a
-            // set of changes. 
-            // "This event is dispatched after all other events caused by the
-            // mutation have been fired."
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_SUBTREE_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0) {
-                MutationEvent me= new MutationEventImpl();
-                me.initMutationEvent(MutationEventImpl.DOM_SUBTREE_MODIFIED,
-                                     true,false,null,null,null,null,(short)0);
-
-                // If we're within an Attr, DStM gets sent to the Attr
-                // and to its owningElement. Otherwise we dispatch it
-                // locally.
-                if(enclosingAttr!=null) {
-                    enclosingAttr.dispatchEvent(me);
-                    if(owner!=null)
-                        owner.dispatchEvent(me);
-                }
-                else
-                    dispatchEvent(me);
-            }
-        }
-    } //dispatchAggregateEvents(AttrImpl,String) :void
-
+    public boolean dispatchEvent(Event event) {
+        // simply forward to Document
+        return ownerDocument().dispatchEvent(this, event);
+    }
 
     //
     // Public methods
@@ -1363,14 +851,6 @@ public abstract class NodeImpl
 
     final void isIgnorableWhitespace(boolean value) {
         flags = (short) (value ? flags | IGNORABLEWS : flags & ~IGNORABLEWS);
-    }
-
-    final boolean setValueCalled() {
-        return (flags & SETVALUE) != 0;
-    }
-
-    final void setValueCalled(boolean value) {
-        flags = (short) (value ? flags | SETVALUE : flags & ~SETVALUE);
     }
 
     final boolean hasStringValue() {

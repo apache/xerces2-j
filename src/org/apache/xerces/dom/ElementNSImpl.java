@@ -93,7 +93,7 @@ public class ElementNSImpl
     /**
      * DOM2: Constructor for Namespace implementation.
      */
-    protected ElementNSImpl(DocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
 			    String namespaceURI,
 			    String qualifiedName) 
         throws DOMException
@@ -132,7 +132,7 @@ public class ElementNSImpl
     }
 
     // for DeferredElementImpl
-    protected ElementNSImpl(DocumentImpl ownerDocument, 
+    protected ElementNSImpl(CoreDocumentImpl ownerDocument, 
 			    String value) {
 	super(ownerDocument, value);
     }
@@ -210,7 +210,7 @@ public class ElementNSImpl
                                      DOMException.NO_MODIFICATION_ALLOWED_ERR, 
                                      "DOM001 Modification not allowed");
             }
-            if (!DocumentImpl.isXMLName(prefix)) {
+            if (!CoreDocumentImpl.isXMLName(prefix)) {
                 throw new DOMException(DOMException.INVALID_CHARACTER_ERR, 
     	                               "DOM002 Illegal character");
             }

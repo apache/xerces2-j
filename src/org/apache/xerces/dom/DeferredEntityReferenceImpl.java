@@ -188,8 +188,8 @@ public class DeferredEntityReferenceImpl
         if (doctype != null) {
 
             // we don't want to generate any event for this so turn them off
-            boolean orig = ownerDocument.mutationEvents;
-            ownerDocument.mutationEvents = false;
+            boolean orig = ownerDocument.getMutationEvents();
+            ownerDocument.setMutationEvents(false);
 
             NamedNodeMap entities = doctype.getEntities();
             if (entities != null) {
@@ -214,13 +214,15 @@ public class DeferredEntityReferenceImpl
                 }
             }
             // set mutation events flag back to its original value
-            ownerDocument.mutationEvents = orig;
+            ownerDocument.setMutationEvents(orig);
         }
 
         // if not found, create entity at this reference
         if (!found) {
             isReadOnly(false);
-            synchronizeChildren(fNodeIndex);
+            DeferredDocumentImpl ownerDocument =
+                (DeferredDocumentImpl) ownerDocument();
+            ownerDocument.synchronizeChildren(this, fNodeIndex);
             setReadOnly(true, true);
         }
 

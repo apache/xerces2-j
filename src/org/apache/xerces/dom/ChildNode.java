@@ -95,9 +95,9 @@ public abstract class ChildNode
      * <p>
      * Every Node knows what Document it belongs to.
      */
-    protected ChildNode(DocumentImpl ownerDocument) {
+    protected ChildNode(CoreDocumentImpl ownerDocument) {
         super(ownerDocument);
-    } // <init>(DocumentImpl,String,short,boolean,String)
+    } // <init>(CoreDocumentImpl)
 
     /** Constructor for serialization. */
     public ChildNode() {}

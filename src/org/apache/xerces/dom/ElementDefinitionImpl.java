@@ -94,7 +94,7 @@ public class ElementDefinitionImpl
     //
 
     /** Factory constructor. */
-    public ElementDefinitionImpl(DocumentImpl ownerDocument, String name) {
+    public ElementDefinitionImpl(CoreDocumentImpl ownerDocument, String name) {
     	super(ownerDocument);
         this.name = name;
         attributes = new NamedNodeMapImpl(ownerDocument);

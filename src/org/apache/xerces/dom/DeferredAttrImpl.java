@@ -174,7 +174,9 @@ public final class DeferredAttrImpl
      * editing the tree -- this makes it a lot easier.
      */
     protected void synchronizeChildren() {
-        synchronizeChildren(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) ownerDocument();
+        ownerDocument.synchronizeChildren(this, fNodeIndex);
     } // synchronizeChildren()
 
 } // class DeferredAttrImpl

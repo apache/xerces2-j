@@ -83,7 +83,7 @@ public class CommentImpl
     //
 
     /** Factory constructor. */
-    public CommentImpl(DocumentImpl ownerDoc, String data) {
+    public CommentImpl(CoreDocumentImpl ownerDoc, String data) {
     	super(ownerDoc, data);
     }
     

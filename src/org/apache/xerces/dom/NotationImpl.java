@@ -111,7 +111,7 @@ public class NotationImpl
     //
 
     /** Factory constructor. */
-    public NotationImpl(DocumentImpl ownerDoc, String name) {
+    public NotationImpl(CoreDocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
     }

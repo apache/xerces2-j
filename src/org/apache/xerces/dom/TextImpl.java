@@ -94,7 +94,7 @@ public class TextImpl
     //
 
     /** Factory constructor. */
-    public TextImpl(DocumentImpl ownerDoc, String data) {
+    public TextImpl(CoreDocumentImpl ownerDoc, String data) {
         super(ownerDoc, data);
     }  
     

@@ -92,7 +92,7 @@ public class ProcessingInstructionImpl
     //
 
     /** Factory constructor. */
-    public ProcessingInstructionImpl(DocumentImpl ownerDoc,
+    public ProcessingInstructionImpl(CoreDocumentImpl ownerDoc,
                                      String target, String data) {
         super(ownerDoc, data);
         this.target = target;

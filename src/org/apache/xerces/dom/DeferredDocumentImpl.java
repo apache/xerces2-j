@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1448,6 +1448,110 @@ public class DeferredDocumentImpl
         mutationEvents = orig;
 
     } // synchronizeChildren()
+
+    /**
+     * Synchronizes the node's children with the internal structure.
+     * Fluffing the children at once solves a lot of work to keep
+     * the two structures in sync. The problem gets worse when
+     * editing the tree -- this makes it a lot easier.
+     * This is not directly used in this class but this method is
+     * here so that it can be shared by all deferred subclasses of AttrImpl.
+     */
+    protected final void synchronizeChildren(AttrImpl a, int nodeIndex) {
+
+        // we don't want to generate any event for this so turn them off
+        boolean orig = getMutationEvents();
+        setMutationEvents(false);
+
+        // no need to sync in the future
+        a.needsSyncChildren(false);
+
+        // create children and link them as siblings or simply store the value
+        // as a String if all we have is one piece of text
+        int last = getLastChild(nodeIndex);
+        int prev = getPrevSibling(last);
+        if (prev == -1) {
+            a.value = getNodeValueString(last);
+            a.hasStringValue(true);
+        }
+        else {
+            ChildNode firstNode = null;
+            ChildNode lastNode = null;
+            for (int index = last; index != -1;
+                 index = getPrevSibling(index)) {
+
+                ChildNode node = (ChildNode) getNodeObject(index);
+                if (lastNode == null) {
+                    lastNode = node;
+                }
+                else {
+                    firstNode.previousSibling = node;
+                }
+                node.ownerNode = this;
+                node.isOwned(true);
+                node.nextSibling = firstNode;
+                firstNode = node;
+            }
+            if (lastNode != null) {
+                a.value = firstNode; // firstChild = firstNode
+                firstNode.isFirstChild(true);
+                a.lastChild(lastNode);
+            }
+            a.hasStringValue(false);
+        }
+
+        // set mutation events flag back to its original value
+        setMutationEvents(orig);
+
+    } // synchronizeChildren(AttrImpl,int):void
+
+
+    /**
+     * Synchronizes the node's children with the internal structure.
+     * Fluffing the children at once solves a lot of work to keep
+     * the two structures in sync. The problem gets worse when
+     * editing the tree -- this makes it a lot easier.
+     * This is not directly used in this class but this method is
+     * here so that it can be shared by all deferred subclasses of ParentNode.
+     */
+    protected final void synchronizeChildren(ParentNode p, int nodeIndex) {
+
+        // we don't want to generate any event for this so turn them off
+        boolean orig = getMutationEvents();
+        setMutationEvents(false);
+
+        // no need to sync in the future
+        p.needsSyncChildren(false);
+
+        // create children and link them as siblings
+        ChildNode firstNode = null;
+        ChildNode lastNode = null;
+        for (int index = getLastChild(nodeIndex);
+             index != -1;
+             index = getPrevSibling(index)) {
+
+            ChildNode node = (ChildNode) getNodeObject(index);
+            if (lastNode == null) {
+                lastNode = node;
+            }
+            else {
+                firstNode.previousSibling = node;
+            }
+            node.ownerNode = this;
+            node.isOwned(true);
+            node.nextSibling = firstNode;
+            firstNode = node;
+        }
+        if (lastNode != null) {
+            p.firstChild = firstNode;
+            firstNode.isFirstChild(true);
+            p.lastChild(lastNode);
+        }
+
+        // set mutation events flag back to its original value
+        setMutationEvents(orig);
+
+    } // synchronizeChildren(ParentNode,int):void
 
     // utility methods
 

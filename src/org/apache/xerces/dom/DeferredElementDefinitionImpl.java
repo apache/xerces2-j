@@ -133,8 +133,8 @@ public class DeferredElementDefinitionImpl
     protected void synchronizeChildren() {
 
         // we don't want to generate any event for this so turn them off
-        boolean orig = ownerDocument.mutationEvents;
-        ownerDocument.mutationEvents = false;
+        boolean orig = ownerDocument.getMutationEvents();
+        ownerDocument.setMutationEvents(false);
 
         // attributes are now synced
         needsSyncChildren(false);
@@ -154,7 +154,7 @@ public class DeferredElementDefinitionImpl
         }
 
         // set mutation events flag back to its original value
-        ownerDocument.mutationEvents = orig;
+        ownerDocument.setMutationEvents(orig);
 
     } // synchronizeChildren()
 

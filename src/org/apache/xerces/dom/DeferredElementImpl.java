@@ -173,7 +173,9 @@ public class DeferredElementImpl
     } // synchronizeData()
 
     protected final void synchronizeChildren() {
-        synchronizeChildren(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) ownerDocument();
+        ownerDocument.synchronizeChildren(this, fNodeIndex);
     } // synchronizeChildren()
 
 } // class DeferredElementImpl

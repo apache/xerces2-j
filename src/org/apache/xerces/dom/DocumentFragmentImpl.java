@@ -116,7 +116,7 @@ public class DocumentFragmentImpl
     //
 
     /** Factory constructor. */
-    public DocumentFragmentImpl(DocumentImpl ownerDoc) {
+    public DocumentFragmentImpl(CoreDocumentImpl ownerDoc) {
         super(ownerDoc);
     }  
   

@@ -147,7 +147,7 @@ public class EntityReferenceImpl
     //
 
     /** Factory constructor. */
-    public EntityReferenceImpl(DocumentImpl ownerDoc, String name) {
+    public EntityReferenceImpl(CoreDocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
         isReadOnly(true);

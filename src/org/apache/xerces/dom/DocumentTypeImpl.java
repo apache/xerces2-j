@@ -127,7 +127,7 @@ public class DocumentTypeImpl
     //
 
     /** Factory method for creating a document type node. */
-    public DocumentTypeImpl(DocumentImpl ownerDocument, String name) {
+    public DocumentTypeImpl(CoreDocumentImpl ownerDocument, String name) {
         super(ownerDocument);
 
         this.name = name;
@@ -138,16 +138,17 @@ public class DocumentTypeImpl
         // NON-DOM
         elements = new NamedNodeMapImpl(this);
 
-    } // <init>(DocumentImpl,String)
+    } // <init>(CoreDocumentImpl,String)
   
     /** Factory method for creating a document type node. */
-    public DocumentTypeImpl(DocumentImpl ownerDocument, String qualifiedName, 
+    public DocumentTypeImpl(CoreDocumentImpl ownerDocument,
+                            String qualifiedName,
                             String publicID, String systemID) {
         this(ownerDocument, qualifiedName);
         this.publicID = publicID;
         this.systemID = systemID;
 
-    } // <init>(DocumentImpl,String)
+    } // <init>(CoreDocumentImpl,String)
     
     //
     // DOM2: methods.
@@ -242,7 +243,7 @@ public class DocumentTypeImpl
      * NON-DOM
      * set the ownerDocument of this node and its children
      */
-    void setOwnerDocument(DocumentImpl doc) {
+    void setOwnerDocument(CoreDocumentImpl doc) {
         super.setOwnerDocument(doc);
         entities.setOwnerDocument(doc);
         notations.setOwnerDocument(doc);

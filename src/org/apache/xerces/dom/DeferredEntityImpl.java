@@ -176,7 +176,9 @@ public class DeferredEntityImpl
         needsSyncChildren(false);
 
         isReadOnly(false);
-        synchronizeChildren(fNodeIndex);
+        DeferredDocumentImpl ownerDocument =
+            (DeferredDocumentImpl) ownerDocument();
+        ownerDocument.synchronizeChildren(this, fNodeIndex);
         setReadOnly(true, true);
 
     } // synchronizeChildren()

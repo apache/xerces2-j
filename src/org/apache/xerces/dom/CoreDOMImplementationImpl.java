@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,11 +71,15 @@ import org.w3c.dom.Element;
  * The DOM API requires that it be a real object rather than static
  * methods. However, there's nothing that says it can't be a singleton,
  * so that's how I've implemented it.
+ * <P>
+ * This particular class, along with CoreDocumentImpl, only supports the DOM
+ * Core. Optional modules are supported by the more complete DOMImplementation
+ * class along with DocumentImpl.
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
  */
-public class DOMImplementationImpl  
+public class CoreDOMImplementationImpl  
     implements DOMImplementation {
 
     //
@@ -85,7 +89,8 @@ public class DOMImplementationImpl
     // static
 
     /** Dom implementation singleton. */
-    static DOMImplementationImpl singleton = new DOMImplementationImpl();
+    static CoreDOMImplementationImpl singleton =
+        new CoreDOMImplementationImpl();
 
     //
     // DOMImplementation methods
@@ -119,15 +124,6 @@ public class DOMImplementationImpl
             && (anyVersion
 		|| version.equals("1.0")
 		|| version.equals("2.0")))
-         || (feature.equalsIgnoreCase("Events") 
-	     && (anyVersion
-		 || version.equals("2.0")))
-         || (feature.equalsIgnoreCase("MutationEvents") 
-	     && (anyVersion
-		 || version.equals("2.0")))
-         || (feature.equalsIgnoreCase("Traversal") 
-	     && (anyVersion
-		 || version.equals("2.0")))
             ;
 
     } // hasFeature(String,String):boolean
@@ -195,7 +191,7 @@ public class DOMImplementationImpl
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, 
                                    "DOM005 Wrong document");
         }
-        DocumentImpl doc = new DocumentImpl(doctype);
+        CoreDocumentImpl doc = new CoreDocumentImpl(doctype);
         Element e = doc.createElementNS( namespaceURI, qualifiedName);
         doc.appendChild(e);
         return doc;

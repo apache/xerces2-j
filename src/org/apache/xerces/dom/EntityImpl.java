@@ -133,7 +133,7 @@ public class EntityImpl
     //
 
     /** Factory constructor. */
-    public EntityImpl(DocumentImpl ownerDoc, String name) {
+    public EntityImpl(CoreDocumentImpl ownerDoc, String name) {
     	super(ownerDoc);
         this.name = name;
         isReadOnly(true);

@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999-2001 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,23 +61,18 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.events.MutationEvent;
-
-import org.apache.xerces.dom.events.MutationEventImpl;
-
 
 /**
  * CharacterData is an abstract Node that can carry character data as its
  * Value.  It provides shared behavior for Text, CData, and
  * possibly other node types. All offsets are 0-based.
  * <p>
- * This implementation includes support for DOM Level 2 Mutation Events.
- * If the static boolean NodeImpl.MUTATIONEVENTS is not set true, that support
- * is disabled and can be optimized out to reduce code size.
- *
- * Since this ProcessingInstructionImpl inherits from this class to reuse the
+ * Since ProcessingInstructionImpl inherits from this class to reuse the
  * setNodeValue method, this class isn't declared as implementing the interface
  * CharacterData. This is done by relevant subclasses (TexImpl, CommentImpl).
+ * <p>
+ * This class doesn't directly support mutation events, however, it notifies
+ * the document when mutations are performed so that the document class do so.
  *
  * @version
  * @since  PR-DOM-Level-1-19980818.
@@ -109,7 +104,7 @@ public abstract class CharacterDataImpl
     //
 
     /** Factory constructor. */
-    protected CharacterDataImpl(DocumentImpl ownerDocument, String data) {
+    protected CharacterDataImpl(CoreDocumentImpl ownerDocument, String data) {
         super(ownerDocument);
         this.data = data;
     }
@@ -140,20 +135,7 @@ public abstract class CharacterDataImpl
      *  from the high-level functions in CharacterData, and another
      *  type if the client simply calls setNodeValue(value).
      */
-    void setNodeValueInternal(String value) {
-        /** flag to indicate whether setNodeValue was called by the
-         *  client or from the DOM.
-         */
-        setValueCalled(true);
-        setNodeValue(value);
-        setValueCalled(false);
-    }
-    
-    /**
-     * Sets the content, possibly firing related events,
-     * and updating ranges (via notification to the document)
-     */
-    public void setNodeValue(String value) {
+    protected void setNodeValueInternal(String value) {
     	if (isReadOnly())
     		throw new DOMException(
     			DOMException.NO_MODIFICATION_ALLOWED_ERR, 
@@ -163,49 +145,32 @@ public abstract class CharacterDataImpl
         if (needsSyncData()) {
             synchronizeData();
         }
-            
-        // Cache old value for DOMCharacterDataModified.
-        String oldvalue = this.data;
-        EnclosingAttr enclosingAttr=null;
-        if(MUTATIONEVENTS)
-        {
-            // MUTATION PREPROCESSING AND PRE-EVENTS:
-            // If we're within the scope of an Attr and DOMAttrModified 
-            // was requested, we need to preserve its previous value for
-            // that event.
-            LCount lc=LCount.lookup(MutationEventImpl.DOM_ATTR_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-                enclosingAttr=getEnclosingAttr();
-            }
-        } // End mutation preprocessing
-            
-    	this.data = value;
-    	if (!setValueCalled()) {
-            // notify document
-            ownerDocument().replacedText(this);
-        }
-    	
-        if(MUTATIONEVENTS)
-        {
-            // MUTATION POST-EVENTS:
-            LCount lc =
-                LCount.lookup(MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED);
-            if(lc.captures+lc.bubbles+lc.defaults>0)
-            {
-                MutationEvent me= new MutationEventImpl();
-                me.initMutationEvent(
-                                 MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
-                                 true,false,null,oldvalue,value,null,(short)0);
-                dispatchEvent(me);
-            }
-            
-            // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
-            // if required. (Common to most kinds of mutation)
-            dispatchAggregateEvents(enclosingAttr);
-        } // End mutation postprocessing
 
-    } // setNodeValue(String)
+        // keep old value for document notification
+        String oldvalue = this.data;
+
+        CoreDocumentImpl ownerDocument = ownerDocument();
+
+        // notify document
+        ownerDocument.modifyingCharacterData(this);
+
+    	this.data = value;
+
+        // notify document
+        ownerDocument.modifiedCharacterData(this, oldvalue, value);
+    }
+
+    /**
+     * Sets the content, possibly firing related events,
+     * and updating ranges (via notification to the document)
+     */
+    public void setNodeValue(String value) {
+
+        setNodeValueInternal(value);
+
+        // notify document
+        ownerDocument().replacedText(this);
+    }
 
     //
     // CharacterData methods
@@ -257,7 +222,6 @@ public abstract class CharacterDataImpl
             synchronizeData();
         }
         
-        // Handles mutation event generation, if any
         setNodeValue(this.data + data);
 
     } // appendData(String)
@@ -293,11 +257,13 @@ public abstract class CharacterDataImpl
         }
         int tailLength = Math.max(data.length() - count - offset, 0);
         try {
-            // Handles mutation event generation, if any
-            setNodeValueInternal(data.substring(0, offset) +
-                                 (tailLength > 0 
-		? data.substring(offset + count, offset + count + tailLength) 
-                                  : "") );
+            String value = data.substring(0, offset) +
+                (tailLength > 0
+                 ? data.substring(offset + count, offset + count + tailLength) 
+                 : "");
+
+            setNodeValueInternal(value);
+
             // notify document
             ownerDocument().deletedText(this, offset, count);
         }
@@ -330,10 +296,11 @@ public abstract class CharacterDataImpl
             synchronizeData();
         }
         try {
-            // Handles mutation event generation, if any
-            setNodeValueInternal(
-                new StringBuffer(this.data).insert(offset, data).toString()
-                );
+            String value =
+                new StringBuffer(this.data).insert(offset, data).toString();
+
+            setNodeValueInternal(value);
+
             // notify document
             ownerDocument().insertedText(this, offset, data.length());
         }
@@ -371,14 +338,14 @@ public abstract class CharacterDataImpl
     public void replaceData(int offset, int count, String data) 
         throws DOMException {
 
-		// The read-only check is done by deleteData()
-		// ***** This could be more efficient w/r/t Mutation Events,
-		// specifically by aggregating DOMAttrModified and
-		// DOMSubtreeModified. But mutation events are 
-		// underspecified; I don't feel compelled
-		// to deal with it right now.
-		deleteData(offset, count);
-		insertData(offset, data);
+        // The read-only check is done by deleteData()
+        // ***** This could be more efficient w/r/t Mutation Events,
+        // specifically by aggregating DOMAttrModified and
+        // DOMSubtreeModified. But mutation events are 
+        // underspecified; I don't feel compelled
+        // to deal with it right now.
+        deleteData(offset, count);
+        insertData(offset, data);
 
     } // replaceData(int,int,String)
 

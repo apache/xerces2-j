@@ -415,7 +415,7 @@ public class NamedNodeMapImpl
      * NON-DOM
      * set the ownerDocument of this node, and the attributes it contains
      */
-    void setOwnerDocument(DocumentImpl doc) {
+    void setOwnerDocument(CoreDocumentImpl doc) {
         if (nodes != null) {
             for (int i = 0; i < nodes.size(); i++) {
                 ((NodeImpl)item(i)).setOwnerDocument(doc);

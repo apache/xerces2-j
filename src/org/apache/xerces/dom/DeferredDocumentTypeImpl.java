@@ -153,8 +153,8 @@ public class DeferredDocumentTypeImpl
     protected void synchronizeChildren() {
         
         // we don't want to generate any event for this so turn them off
-        boolean orig = ownerDocument().mutationEvents;
-        ownerDocument().mutationEvents = false;
+        boolean orig = ownerDocument().getMutationEvents();
+        ownerDocument().setMutationEvents(false);
 
         // no need to synchronize again
         needsSyncChildren(false);
@@ -212,7 +212,7 @@ public class DeferredDocumentTypeImpl
         }
 
         // set mutation events flag back to its original value
-        ownerDocument().mutationEvents = orig;
+        ownerDocument().setMutationEvents(orig);
 
         // set entities and notations read_only per DOM spec
         setReadOnly(true, false);
