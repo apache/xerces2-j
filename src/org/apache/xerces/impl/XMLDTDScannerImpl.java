@@ -697,7 +697,6 @@ public class XMLDTDScannerImpl
             reportFatalError("MSG_SPACE_REQUIRED_BEFORE_ELEMENT_TYPE_IN_ELEMENTDECL",
                              null);
         }
-        fReportEntity = true;
 
         // element name
         String name = fEntityScanner.scanName();
@@ -717,6 +716,7 @@ public class XMLDTDScannerImpl
             fDTDContentModelHandler.startContentModel(name);
         }
         String contentModel = null;
+        fReportEntity = true;
         if (fEntityScanner.skipString("EMPTY")) {
             contentModel = "EMPTY";
             // call handler
