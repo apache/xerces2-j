@@ -133,6 +133,7 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/apache/wml/dom
 	${CP}  ../src/org/apache/wml/dom/*.class                  ../class/org/apache/wml/dom
 
+
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
 	cd ../class;$(JAR) c0vf ../bin/${JARFILE} *.info org; cd ../src        
@@ -243,8 +244,6 @@ package_src:
 #-src/org/apache/xerces/utils/regex
 	${MKDIR} ../source/src//org/apache/xerces/utils/regex
 	${CP}  ../src/org/apache/xerces/utils/regex/*.java                    ../source/src/org/apache/xerces/utils/regex
-
-
 
 
 #-src/org/apache/xerces/validaters/common
@@ -366,6 +365,9 @@ package_src:
 #-src/org/apache/xerces/utils
 	${CP}  ../src/org/apache/xerces/utils/Makefile                    ../source/src/org/apache/xerces/utils
 
+#-src/org/apache/xerces/utils/regex
+	${CP}  ../src/org/apache/xerces/utils/regex/Makefile                    ../source/src/org/apache/xerces/utils/regex
+
 #-src/org/apache/xerces/validaters/common
 	${CP}  ../src/org/apache/xerces/validators/common/Makefile      ../source/src/org/apache/xerces/validators/common
 
@@ -403,6 +405,12 @@ package_src:
 
 #-src/org/xml/sax/ext
 	${CP}  ../src/org/xml/sax/ext/Makefile			../source/src/org/xml/sax/ext
+
+#-src/org/apache/wml
+	${CP}  ../src/org/apache/wml/Makefile                  ../source/src/org/apache/wml
+	${CP}  ../src/org/apache/wml/dom/Makefile                  ../source/src/org/apache/wml/dom
+
+
 
 ###
 #copy the Makefiles and the batch files at higher levels
