@@ -11,43 +11,43 @@
    your application code.
   </p>
   <ul>
-   <li><jump href='../api/index.html'>Standard API</jump></li>
+   <li><jump href='javadocs/api/index.html'>Standard API</jump></li>
    <ul>
     <li>Java API for XML Processing (JAXP)</li>
     <ul>
      <li>
-      <jump href='../api/javax/xml/parsers/package-summary.html'>XML
+      <jump href='javadocs/api/javax/xml/parsers/package-summary.html'>XML
       Parser Factories</jump>
      </li>
     </ul>
     <li>Document Object Model (DOM)</li>
     <ul>
      <li>
-      <jump href='../api/org/w3c/dom/package-summary.html'>Core</jump>
+      <jump href='javadocs/api/org/w3c/dom/package-summary.html'>Core</jump>
      </li>
      <li>
-      <jump href='../api/org/w3c/dom/events/package-summary.html'>Events</jump>
+      <jump href='javadocs/api/org/w3c/dom/events/package-summary.html'>Events</jump>
      </li>
      <li>
-      <jump href='../api/org/w3c/dom/html/package-summary.html'>HTML</jump>
+      <jump href='javadocs/api/org/w3c/dom/html/package-summary.html'>HTML</jump>
      </li>
      <li>
-      <jump href='../api/org/w3c/dom/ranges/package-summary.html'>Ranges</jump>
+      <jump href='javadocs/api/org/w3c/dom/ranges/package-summary.html'>Ranges</jump>
      </li>
      <li>
-      <jump href='../api/org/w3c/dom/traversal/package-summary.html'>Traversal</jump>
+      <jump href='javadocs/api/org/w3c/dom/traversal/package-summary.html'>Traversal</jump>
      </li>
     </ul>
     <li>Simple API for XML (SAX)</li>
     <ul>
      <li>
-      <jump href='../api/org/xml/sax/package-summary.html'>Core</jump>
+      <jump href='javadocs/api/org/xml/sax/package-summary.html'>Core</jump>
      </li>
      <li>
-      <jump href='../api/org/xml/sax/helpers/package-summary.html'>Helper Classes</jump>
+      <jump href='javadocs/api/org/xml/sax/helpers/package-summary.html'>Helper Classes</jump>
      </li>
      <li>
-      <jump href='../api/org/xml/sax/ext/package-summary.html'>Extensions</jump>
+      <jump href='javadocs/api/org/xml/sax/ext/package-summary.html'>Extensions</jump>
      </li>
     </ul>
    </ul>
@@ -64,14 +64,14 @@
   </p>
   <ul>
    <li>
-    <jump href='../xni/index.html'>Xerces Native Interface</jump>
+    <jump href='javadocs/xni/index.html'>Xerces Native Interface</jump>
    </li>
    <ul>
     <li>
-     <jump href='../xni/org/apache/xerces/xni/package-summary.html'>Core</jump>
+     <jump href='javadocs/xni/org/apache/xerces/xni/package-summary.html'>Core</jump>
     </li>
     <li>
-     <jump href='../xni/org/apache/xerces/xni/parser/package-summary.html'>Parser
+     <jump href='javadocs/xni/org/apache/xerces/xni/parser/package-summary.html'>Parser
      Configuration</jump>
     </li>
    </ul>
@@ -85,7 +85,7 @@
   </p>
   <ul>
    <li>
-    <jump href='../xerces2/index.html'>Xerces2 Implementation</jump>
+    <jump href='javadocs/xerces2/index.html'>Xerces2 Implementation</jump>
    </li>
   </ul>
  </s2>
@@ -95,7 +95,7 @@
    You can jump to the API for these classes via the following links:
   </p>
   <ul>
-   <li><jump href='../other/index.html'>Other Classes</jump></li>
+   <li><jump href='javadocs/other/index.html'>Other Classes</jump></li>
   </ul>
  </s2>
 </s1>

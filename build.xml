@@ -90,11 +90,11 @@ Copyright:
     <property name="build.dir" value="./build"/>
     <property name="build.src" value="${build.dir}/src"/>
     <property name="build.dest" value="${build.dir}/classes"/>
-    <property name="build.docs" value="${build.dir}/docs/html"/>
+    <property name="build.docs" value="${build.dir}/docs"/>
     <property name="build.samples" value="${build.dir}/samples"/>
     <property name="build.tests" value="${build.dir}/tests"/>
     <property name="build.data" value="${build.dir}/data"/>
-    <property name="build.javadocs" value="${build.dir}/docs/apiDocs"/>
+    <property name="build.javadocs" value="${build.dir}/docs/javadocs"/>
 
     <property name="distsrc.dir" value="${build.dir}/${name}-${appendit}"/>
     <property name="distbin.dir" value="${build.dir}/${name}-${appendit}"/>
@@ -280,38 +280,38 @@ Copyright:
              doctitle="${Name}"
              bottom="${copyright}" />
     -->
-    <mkdir dir='${build.dir}/docs/api'/>
+    <mkdir dir='${build.dir}/docs/javadocs/api'/>
     <javadoc packagenames='javax.xml.parsers,org.w3c.*,org.xml.*'
-      sourcepath='${build.src}' destdir='${build.dir}/docs/api'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/api'
       author='true' version='true'
       windowtitle='XML Standard API' doctitle='XML Standard API'
       bottom='${copyright}'
       locale='en_US'/>
-    <mkdir dir='${build.dir}/docs/xni'/>
+    <mkdir dir='${build.dir}/docs/javadocs/xni'/>
     <javadoc packagenames='org.apache.xerces.xni.*'
-      sourcepath='${build.src}' destdir='${build.dir}/docs/xni'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xni'
       author='true' version='true'
       windowtitle='Xerces Native Interface' 
       doctitle='Xerces Native Interface'
       bottom='${copyright}'
       locale='en_US'/>
-    <mkdir dir='${build.dir}/docs/xerces2'/>
+    <mkdir dir='${build.dir}/docs/javadocs/xerces2'/>
     <javadoc packagenames='org.apache.xerces.dom.*,
                            org.apache.xerces.impl.*,
                            org.apache.xerces.jaxp,
                            org.apache.xerces.parsers,
                            org.apache.xerces.util'
-      sourcepath='${build.src}' destdir='${build.dir}/docs/xerces2'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/xerces2'
       author='true' version='true'
       windowtitle='Xerces2 Implementation' 
       doctitle='Xerces2 Implementation'
       bottom='${copyright}'
       locale='en_US'/>
-    <mkdir dir='${build.dir}/docs/other'/>
+    <mkdir dir='${build.dir}/docs/javadocs/other'/>
     <javadoc packagenames='org.apache.html.*,
                            org.apache.wml.*,
                            org.apache.xml.serialize.*'
-      sourcepath='${build.src}' destdir='${build.dir}/docs/other'
+      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/other'
       author='true' version='true'
       windowtitle='Other Classes' doctitle='Other Classes'
       bottom='${copyright}'
@@ -350,7 +350,7 @@ Copyright:
     <copy todir="${distsrc.dir}/docs" >
         <fileset
             dir="${docs.dir}" 
-            excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/apiDocs*"
+            excludes="**/CVS*, **/*.#*, pdf/**, html/**, **/javadocs*"
         />
     </copy>
 
@@ -392,7 +392,7 @@ Copyright:
     <mkdir dir="${distbin.dir}"/>
     <mkdir dir="${distbin.dir}/data"/>
     <mkdir dir="${distbin.dir}/docs"/>
-    <mkdir dir="${distbin.dir}/docs/html"/>
+    <mkdir dir="${distbin.dir}/docs/javadocs"/>
     <mkdir dir="${distsrc.dir}/samples"/>
 
     <copy todir="${distbin.dir}/data" >
@@ -402,21 +402,21 @@ Copyright:
         />
     </copy>
 
-    <copy todir="${distbin.dir}/docs/html" >
+    <copy todir="${distbin.dir}/docs" >
         <fileset dir="${build.docs}" />
     </copy>
 
-    <copy todir="${distbin.dir}/docs/api" >
-        <fileset dir="${build.dir}/docs/api" />
+    <copy todir="${distbin.dir}/docs/javadocs/api" >
+        <fileset dir="${build.dir}/docs/javadocs/api" />
     </copy>
-    <copy todir="${distbin.dir}/docs/xni" >
-        <fileset dir="${build.dir}/docs/xni" />
+    <copy todir="${distbin.dir}/docs/javadocs/xni" >
+        <fileset dir="${build.dir}/docs/javadocs/xni" />
     </copy>
-    <copy todir="${distbin.dir}/docs/xerces2" >
-        <fileset dir="${build.dir}/docs/xerces2" />
+    <copy todir="${distbin.dir}/docs/javadocs/xerces2" >
+        <fileset dir="${build.dir}/docs/javadocs/xerces2" />
     </copy>
-    <copy todir="${distbin.dir}/docs/other" >
-        <fileset dir="${build.dir}/docs/other" />
+    <copy todir="${distbin.dir}/docs/javadocs/other" >
+        <fileset dir="${build.dir}/docs/javadocs/other" />
     </copy>
 
     <copy file="${build.dir}/${name}.jar" tofile="${distbin.dir}/${name}.jar"/>
