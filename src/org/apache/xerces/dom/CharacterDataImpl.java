@@ -161,7 +161,7 @@ public abstract class CharacterDataImpl
         }
             
         // Cache old value for DOMCharacterDataModified.
-        String oldvalue = value;
+        String oldvalue = this.data;
         EnclosingAttr enclosingAttr=null;
         if(MUTATIONEVENTS)
         {
