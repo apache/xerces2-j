@@ -216,7 +216,7 @@ Copyright:
   <target name="sampjar" depends="samples">
     <jar jarfile="${build.dir}/${name}Samples.jar"
          basedir="${build.dest}"
-         includes="dom/**,sax/**,ui/**"/>
+         includes="dom/**,sax/**,ui/**,util/**"/>
   </target>
 
   <!-- =================================================================== -->
@@ -329,6 +329,11 @@ Copyright:
     <java fork="yes"
           classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
           classname="sax.SAXCount"
+          args="${data.dir}/personal.xml"/>
+	<echo message="Running SAX2Count ..." />
+    <java fork="yes"
+          classpath="${build.dir}/${name}Samples.jar:${build.dir}/${name}.jar;"
+          classname="sax.SAX2Count"
           args="${data.dir}/personal.xml"/>
 	<echo message="Running SAXWriter ..." />
     <java fork="yes"
