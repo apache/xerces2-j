@@ -120,12 +120,15 @@ public class DecimalValidator implements InternalDatatypeValidator {
                     getErrorString(DatatypeMessageProvider.ScaleExceeded,
                                    DatatypeMessageProvider.MSG_NONE,
                                    new Object[] { content }));
-        if (fIsPrecision)
-            if (d.unscaledValue().toString(10).length() > fPrecision) 
+        if (fIsPrecision) {
+            int precision = d.movePointRight(d.scale()).toString().length() - 
+                ((d.signum() < 0) ? 1 : 0); // account for minus sign
+            if (precision > fPrecision) 
                 throw new InvalidDatatypeValueException(
                     getErrorString(DatatypeMessageProvider.PrecisionExceeded,
                                    DatatypeMessageProvider.MSG_NONE,
                                    new Object[] {content} ));
+        }
         boundsCheck(d);
         if (fHasEnums)
             enumCheck(d);
