@@ -409,6 +409,7 @@ public abstract class AbstractSAXParser
                             attributes.setName(i, fQName);
                         }
                     }
+                  
                 }
                 
                 String uri = element.uri != null ? element.uri : fEmptySymbol;
@@ -841,10 +842,17 @@ public abstract class AbstractSAXParser
         try {
             // SAX2 extension
             if (fDeclHandler != null) {
-                if (type.equals("NOTATION")) {
+                if (type.equals("NOTATION") || 
+                    type.equals("ENUMERATION")) {
+
                     StringBuffer str = new StringBuffer();
-                    str.append(type);
-                    str.append(" (");
+                    if (type.equals("NOTATION")) {
+                      str.append(type);
+                      str.append(" (");
+                    }
+                    else {
+                      str.append("(");
+                    }
                     for (int i = 0; i < enumeration.length; i++) {
                         str.append(enumeration[i]);
                         if (i < enumeration.length - 1) {
