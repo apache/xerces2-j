@@ -29,6 +29,10 @@ import java.io.Serializable;
  * @version $Id$
  */
 class NodeListCache implements Serializable {
+
+    /** Serialization version. */
+    private static final long serialVersionUID = 3258135743263224377L;
+
     /** Cached node list length. */
     int fLength = -1;
 
