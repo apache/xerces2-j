@@ -58,22 +58,22 @@ public interface XSDateTime {
 	public double getSeconds();
 	
 	/**
-	 * @return boolean
+	 * @return whether a timezone is specified
 	 */
 	public boolean hasTimeZone();
 	
 	/**
-	 * @return int
+	 * @return time hours
 	 */
 	public int getTimeZoneHours();
 	
 	/**
-	 * @return int
+	 * @return timezone minutes
 	 */
 	public int getTimeZoneMinutes();
     
     /**
-     * @return string
+     * @return original lexical value
      */
     public String getLexicalValue();
 }

@@ -883,19 +883,19 @@ public abstract class AbstractDateTimeDV extends TypeValidator {
 			return utc != 0;
 		}
 		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneHr()
+		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneHours()
 		 */
 		public int getTimeZoneHours() {
 			return timezoneHr;
 		}
 		/* (non-Javadoc)
-		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneMin()
+		 * @see org.apache.xerces.xs.datatypes.XSDateTime#getTimeZoneMinutes()
 		 */
 		public int getTimeZoneMinutes() {
 			return timezoneMin;
 		}
-        /**
-         * @return Returns the originalValue.
+        /* (non-Javadoc)
+         * @see org.apache.xerces.xs.datatypes.XSDateTime#getLexicalValue()
          */
         public String getLexicalValue() {
             return originalValue;
