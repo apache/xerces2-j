@@ -392,7 +392,7 @@ public class TraverseSchema implements
         
         //REVISIT, really sticky when noTargetNamesapce, for now, we assume everyting is in the same name space);
         if (fTargetNSURI == StringPool.EMPTY_STRING) {
-            fElementDefaultQualified = true;
+            //fElementDefaultQualified = true;
             //fAttributeDefaultQualified = true;
         }
 
@@ -419,7 +419,7 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                //traverseAttributeGroupDecl(child);
+                traverseAttributeGroupDecl(child, null, null);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null, false );
             } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
@@ -715,11 +715,11 @@ public class TraverseSchema implements
             } else if (name.equals(SchemaSymbols.ELT_ELEMENT )) { 
                 traverseElementDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
-                //traverseAttributeGroupDecl(child);
+                traverseAttributeGroupDecl(child, null, null);
             } else if (name.equals( SchemaSymbols.ELT_ATTRIBUTE ) ) {
                 traverseAttributeDecl( child, null , false);
-            } else if (name.equals(SchemaSymbols.ELT_GROUP) && child.getAttribute(SchemaSymbols.ATT_REF).equals("")) {
-                //traverseGroupDecl(child);
+            } else if (name.equals(SchemaSymbols.ELT_GROUP)) {
+                traverseGroupDecl(child);
             } else if (name.equals(SchemaSymbols.ELT_NOTATION)) {
                 ; //TO DO
             }
@@ -1851,7 +1851,7 @@ public class TraverseSchema implements
                if (!isAttrOrAttrGroup(content)) {
                    throw new ComplexTypeRecoverableError(
                              "Only annotations and attributes are allowed in the " +
-                             "content of an EXTENSION element for a complexType"); 
+                             "content of an EXTENSION element for a complexType with simpleContent"); 
                }
                else {
                    attrNode = content;
@@ -2547,6 +2547,9 @@ public class TraverseSchema implements
              || (ctsp.type & 0x0f) == ctsp.CONTENTSPECNODE_ANY_OTHER ) {
             return fSchemaGrammar.addContentSpecNode(ctsp.type, ctsp.value, ctsp.otherValue, false);
         }
+		else if (ctsp.type == -1) 
+			// case where type being extended has no content
+			return -2;
         else {
             if ( ctsp.value == -1 ) {
                 left = -1;
