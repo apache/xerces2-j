@@ -125,10 +125,12 @@ public abstract class AbstractDOMParser
         Constants.SAX_FEATURE_PREFIX+Constants.NAMESPACES_FEATURE;
 
     /** Feature id: include comments. */
-    protected static final String INCLUDE_COMMENTS_FEATURE = Constants.INCLUDE_COMMENTS_FEATURE;
+    protected static final String INCLUDE_COMMENTS_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.INCLUDE_COMMENTS_FEATURE;
 
     /** Feature id: create cdata nodes. */
-    protected static final String CREATE_CDATA_NODES_FEATURE = Constants.CREATE_CDATA_NODES_FEATURE;
+    protected static final String CREATE_CDATA_NODES_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.CREATE_CDATA_NODES_FEATURE;
 
     /** Feature id: include ignorable whitespace. */
     protected static final String INCLUDE_IGNORABLE_WHITESPACE =

@@ -117,7 +117,6 @@ public class DocumentBuilderImpl extends DocumentBuilder
                              dbf.isNamespaceAware());
 
         // Set various parameters obtained from DocumentBuilderFactory
-        try {
         domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
                              Constants.INCLUDE_IGNORABLE_WHITESPACE,
                              !dbf.isIgnoringElementContentWhitespace());
@@ -130,9 +129,6 @@ public class DocumentBuilderImpl extends DocumentBuilder
         domParser.setFeature(Constants.XERCES_FEATURE_PREFIX +
                              Constants.CREATE_CDATA_NODES_FEATURE,
                              !dbf.isCoalescing());
-        } catch (Exception x) {
-            // XXX ignore Exceptions for now until we figure out bug
-        }
 
         setDocumentBuilderFactoryAttributes(dbfAttrs);
     }
