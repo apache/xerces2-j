@@ -317,7 +317,7 @@
     <source>
         XMLParserConfiguration config = new
         StandardParserConfiguration();
-        config.setProperty(GrammarPoolString, myFullGrammarPool);
+        config.setProperty("http://apache.org/xml/properties/internal/grammar-pool", myFullGrammarPool);
         (SAX|DOM)Parser parser = new (SAX|DOM)Parser(config);
     </source>
     <p>
