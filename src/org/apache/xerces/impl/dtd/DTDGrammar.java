@@ -2574,7 +2574,7 @@ public class DTDGrammar
      * @author Eric Ye, IBM
      */
     private static class ChildrenList {
-        
+       
         //
         // Data
         //
@@ -2591,6 +2591,12 @@ public class DTDGrammar
 
         /** Left and right children types. */
         public int[] type = new int[2];
+        
+        //
+        // Constructors
+        //
+        
+        public ChildrenList () {}
 
     } // class ChildrenList
 
