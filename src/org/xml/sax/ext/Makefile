@@ -1,5 +1,5 @@
 include ../../../../../src/Makefile.incl
-# Makefile for directory ./org/xml/sax/helpers
+# Makefile for directory ./org/xml/sax/misc
 #
 # This makefile depends on the following environment variables
 # already being defined:
@@ -11,15 +11,8 @@ include ../../../../../src/Makefile.incl
 # include the absolute path of the base source directory.
 
 TARGETS=\
-	AttributesImpl.class\
-	AttributeListImpl.class\
-	DefaultHandler.class\
-	LocatorImpl.class\
-	NamespaceSupport.class\
-	ParserAdapter.class\
-	ParserFactory.class\
-	XMLFilterImpl.class\
-	XMLReaderAdapter.class
+	DeclHandler.class\
+	LexicalHandler.class
 
 all: dirs compile
 

@@ -32,7 +32,7 @@ clean:
 apidocs: ../docs/apiDocs/index.html
 ../docs/apiDocs/index.html: classfiles_updated
 
-	${JDK12BIN}/javadoc -windowtitle "Xerces ${PRODUCVERSION_DOT} API" \
+	${JDK12BIN}/javadoc -windowtitle "Xerces ${PRODUCTVERSION_DOT} API" \
 		-splitindex -header "Xerces ${PRODUCTVERSION_DOT}" \
 		-version  \
 		-d ../docs/apiDocs ${PACKAGES}
@@ -137,9 +137,9 @@ source: ../bin/${JARFILE}
 	${MKDIR} ../class/org/xml/sax/helpers
 	${CP}  ../src/org/xml/sax/helpers/*.class			../class/org/xml/sax/helpers
 
-#-src/org/xml/sax/misc
-	${MKDIR} ../class/org/xml/sax/misc
-	${CP}  ../src/org/xml/sax/misc/*.class			../class/org/xml/sax/misc
+#-src/org/xml/sax/ext
+	${MKDIR} ../class/org/xml/sax/ext
+	${CP}  ../src/org/xml/sax/ext/*.class			../class/org/xml/sax/ext
 
 #make the first jar file
 	echo ${PRODUCTVERSION}> ../class/Xerces_Ver_${PRODUCTVERSION}.info
@@ -284,9 +284,9 @@ package_src:
 	${MKDIR} ../source/src/org/xml/sax/helpers
 	${CP}  ../src/org/xml/sax/helpers/*.java			../source/src/org/xml/sax/helpers
 
-#-src/org/xml/sax/misc
-	${MKDIR} ../source/src/org/xml/sax/misc
-	${CP}  ../src/org/xml/sax/misc/*.java			../source/src/org/xml/sax/misc
+#-src/org/xml/sax/ext
+	${MKDIR} ../source/src/org/xml/sax/ext
+	${CP}  ../src/org/xml/sax/ext/*.java			../source/src/org/xml/sax/ext
 
 ###################################
 #copy the .java and .dtd files unser samples
@@ -384,8 +384,8 @@ package_src:
 #-src/org/xml/sax/helpers
 	${CP}  ../src/org/xml/sax/helpers/Makefile			../source/src/org/xml/sax/helpers
 
-#-src/org/xml/sax/misc
-	${CP}  ../src/org/xml/sax/misc/Makefile			../source/src/org/xml/sax/misc
+#-src/org/xml/sax/ext
+	${CP}  ../src/org/xml/sax/ext/Makefile			../source/src/org/xml/sax/ext
 
 ###
 #copy the Makefiles and the batch files at higher levels

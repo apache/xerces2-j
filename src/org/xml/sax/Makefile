@@ -11,8 +11,10 @@ include ../../../../src/Makefile.incl
 # include the absolute path of the base source directory.
 
 TARGETS=\
+	Attributes.class\
 	AttributeList.class\
 	Configurable.class\
+	ContentHandler.class\
 	DocumentHandler.class\
 	DTDHandler.class\
 	EntityResolver.class\
@@ -24,13 +26,15 @@ TARGETS=\
 	SAXException.class\
 	SAXNotRecognizedException.class\
 	SAXNotSupportedException.class\
-	SAXParseException.class
+	SAXParseException.class\
+	XMLFilter.class\
+	XMLReader.class
 
 all: dirs compile
 
 dirs:
 	${MAKE} -C helpers
-	${MAKE} -C misc
+	${MAKE} -C ext
 
 compile: ${TARGETS}
 
@@ -46,5 +50,5 @@ compile: ${TARGETS}
 clean:
 	${RM} *.class
 	${MAKE} -C helpers clean
-	${MAKE} -C misc clean
+	${MAKE} -C ext clean
 
