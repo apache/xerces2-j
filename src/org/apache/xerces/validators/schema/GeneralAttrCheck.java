@@ -996,8 +996,7 @@ public class GeneralAttrCheck {
                 // no checking on xpath needs to be done here.
                 // xpath values are validated in xpath parser
                 if (oneAttr.dvIndex >= 0) {
-                    if (oneAttr.dvIndex != DT_ANYURI &&
-                        oneAttr.dvIndex != DT_STRING &&
+                    if (oneAttr.dvIndex != DT_STRING &&
                         oneAttr.dvIndex != DT_XPATH &&
                         oneAttr.dvIndex != DT_XPATH1)
                         fExtraDVs[oneAttr.dvIndex].validate(attrVal, null);

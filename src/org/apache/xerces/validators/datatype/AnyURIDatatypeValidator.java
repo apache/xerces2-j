@@ -74,7 +74,7 @@ import org.apache.xerces.utils.URI;
  */
 public class AnyURIDatatypeValidator extends AbstractStringValidator {
     
-
+    private URI fTempURI = null;
     public AnyURIDatatypeValidator () throws InvalidDatatypeFacetException{
         super ( null, null, false ); // Native, No Facets defined, Restriction
     }
@@ -94,12 +94,18 @@ public class AnyURIDatatypeValidator extends AbstractStringValidator {
         
         // check 3.2.17.c0 must: URI (rfc 2396/2723)
         try {
-            URI uriContent = null;
-            if( content.length() != 0 ) //Validate non null URI
-                uriContent = new URI( content );
-            //else it is valid anyway
+            if (fTempURI == null) {
+                fTempURI = new URI("http://www.template.com");
+            }
+            if( content.length() != 0 ) {
+                // Support for relative URLs
+                // According to Java 1.1: URLs may also be specified with a 
+                // String and the URL object that it is related to.
+                //
+                new URI(fTempURI, content );
+            }
         } catch (  URI.MalformedURIException ex ) {
-            throw new InvalidDatatypeValueException("Value '"+content+"' is a Malformed URI ");
+                throw new InvalidDatatypeValueException("Value '"+content+"' is a Malformed URI ");
         }
     }
 
