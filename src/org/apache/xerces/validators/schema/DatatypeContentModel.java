@@ -57,13 +57,13 @@
 
 package org.apache.xerces.validators.schema;
 
-import org.apache.xerces.framework.XMLContentSpecNode;
+import org.apache.xerces.framework.XMLContentSpec;
 import org.apache.xerces.utils.StringPool;
+import org.apache.xerces.validators.common.XMLValidator;
+import org.apache.xerces.validators.common.XMLContentModel;
+import org.apache.xerces.validators.common.InsertableElementsInfo;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 import org.apache.xerces.validators.datatype.InvalidDatatypeValueException;
-import org.apache.xerces.validators.dtd.XMLContentModel;
-import org.apache.xerces.validators.dtd.ElementDeclPool;
-import org.apache.xerces.validators.dtd.InsertableElementsInfo;
 
 /**
  * DatatypeContentModel provides a content model that knows
@@ -71,8 +71,8 @@ import org.apache.xerces.validators.dtd.InsertableElementsInfo;
  */
 public class DatatypeContentModel implements XMLContentModel
 {
-    XSchemaValidator.DatatypeValidatorRegistry fDatatypeRegistry = null;
-    ElementDeclPool fElementDeclPool = null;
+    SchemaImporter.DatatypeValidatorRegistry fDatatypeRegistry = null;
+    XMLValidator fValidator = null;
     StringPool fStringPool = null;
     int fChild = -1;
 
@@ -82,13 +82,13 @@ public class DatatypeContentModel implements XMLContentModel
 
     /**
      */
-    public DatatypeContentModel(  XSchemaValidator.DatatypeValidatorRegistry reg,
-                                  ElementDeclPool elementDeclPool,
+    public DatatypeContentModel(  SchemaImporter.DatatypeValidatorRegistry reg,
+                                  XMLValidator validator,
                                   StringPool stringPool,
                                   int childIndex)
     {
         fDatatypeRegistry = reg;
-        fElementDeclPool = elementDeclPool;
+        fValidator = validator;
         fStringPool = stringPool;
         fChild = childIndex;
     }
@@ -129,7 +129,7 @@ public class DatatypeContentModel implements XMLContentModel
             System.out.println("Checking content of datatype");
             String strTmp = fStringPool.toString(elementTypeIndex);
             int contentSpecIndex = fElementDeclPool.getContentSpec(elementIndex);
-            XMLContentSpecNode csn = new XMLContentSpecNode();
+            XMLContentSpec.Node csn = new XMLContentSpec.Node();
             fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
             String contentSpecString = fStringPool.toString(csn.value);
             System.out.println
@@ -154,9 +154,9 @@ public class DatatypeContentModel implements XMLContentModel
         }
 */
         try { // REVISIT - integrate w/ error handling
-            int contentSpecIndex = fElementDeclPool.getContentSpec(fChild);
-            XMLContentSpecNode csn = new XMLContentSpecNode();
-            fElementDeclPool.getContentSpecNode(contentSpecIndex, csn);
+            XMLContentSpec cs = fValidator.getContentSpec(fChild);
+            XMLContentSpec.Node csn = new XMLContentSpec.Node();
+            cs.getNode(cs.getHandle(), csn);
             String type = fStringPool.toString(csn.value);
             DatatypeValidator v = fDatatypeRegistry.getValidatorFor(type);
             if (v != null) 
@@ -178,7 +178,7 @@ public class DatatypeContentModel implements XMLContentModel
         //
         switch(fOp)
         {
-            case XMLContentSpecNode.CONTENTSPECNODE_LEAF :
+            case XMLContentSpec.CONTENTSPECNODE_LEAF :
                 // If there is not a child, then report an error at index 0
                 if (childCount == 0)
                     return 0;
@@ -192,7 +192,7 @@ public class DatatypeContentModel implements XMLContentModel
                     return 1;
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_ONE :
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE :
                 //
                 //  If there is one child, make sure its the right type. If not,
                 //  then its an error at index 0.
@@ -208,7 +208,7 @@ public class DatatypeContentModel implements XMLContentModel
                     return 1;
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE :
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE :
                 //
                 //  If the child count is zero, that's fine. If its more than
                 //  zero, then make sure that all children are of the element
@@ -225,7 +225,7 @@ public class DatatypeContentModel implements XMLContentModel
                 }
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_ONE_OR_MORE :
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE :
                 //
                 //  If the child count is zero, that's an error so report
                 //  an error at index 0.
@@ -245,7 +245,7 @@ public class DatatypeContentModel implements XMLContentModel
                 }
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_CHOICE :
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE :
                 //
                 //  There must be one and only one child, so if the element count
                 //  is zero, return an error at index 0.
@@ -262,7 +262,7 @@ public class DatatypeContentModel implements XMLContentModel
                     return 1;
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_SEQ :
+            case XMLContentSpec.CONTENTSPECNODE_SEQ :
                 //
                 //  There must be two children and they must be the two values
                 //  we stored, in the stored order.
@@ -347,15 +347,15 @@ public class DatatypeContentModel implements XMLContentModel
         info.canHoldPCData = false;
 
         // See how many children we can possibly report
-        if ((fOp == XMLContentSpecNode.CONTENTSPECNODE_LEAF)
-        ||  (fOp == XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_ONE)
-        ||  (fOp == XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE)
-        ||  (fOp == XMLContentSpecNode.CONTENTSPECNODE_ONE_OR_MORE))
+        if ((fOp == XMLContentSpec.CONTENTSPECNODE_LEAF)
+        ||  (fOp == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE)
+        ||  (fOp == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
+        ||  (fOp == XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE))
         {
             info.resultsCount = 1;
         }
-         else if ((fOp == XMLContentSpecNode.CONTENTSPECNODE_CHOICE)
-              ||  (fOp == XMLContentSpecNode.CONTENTSPECNODE_SEQ))
+         else if ((fOp == XMLContentSpec.CONTENTSPECNODE_CHOICE)
+              ||  (fOp == XMLContentSpec.CONTENTSPECNODE_SEQ))
         {
             info.resultsCount = 2;
         }
@@ -405,8 +405,8 @@ public class DatatypeContentModel implements XMLContentModel
         //
         switch(fOp)
         {
-            case XMLContentSpecNode.CONTENTSPECNODE_LEAF :
-            case XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_ONE :
+            case XMLContentSpec.CONTENTSPECNODE_LEAF :
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_ONE :
                 //
                 //  If there are no current children, then insert at has to be
                 //  zero, so we can have the one leaf element inserted here.
@@ -426,7 +426,7 @@ public class DatatypeContentModel implements XMLContentModel
                         info.results[0] = true;
                 }
 
-                if (fOp == XMLContentSpecNode.CONTENTSPECNODE_LEAF)
+                if (fOp == XMLContentSpec.CONTENTSPECNODE_LEAF)
                 {
                     // If the insert point is 1, then EOC is valid there
                     if (info.insertAt == 0)
@@ -439,8 +439,8 @@ public class DatatypeContentModel implements XMLContentModel
                 }
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE :
-            case XMLContentSpecNode.CONTENTSPECNODE_ONE_OR_MORE :
+            case XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE :
+            case XMLContentSpec.CONTENTSPECNODE_ONE_OR_MORE :
                 //
                 //  The one child is always possible to insert, regardless of
                 //  where. The fully valid flag never comes into play since it
@@ -453,14 +453,14 @@ public class DatatypeContentModel implements XMLContentModel
                 //  Its zero/one or more, so EOC is valid in either case but only
                 //  after the 0th index for one or more.
                 //
-                if ((fOp == XMLContentSpecNode.CONTENTSPECNODE_ZERO_OR_MORE)
+                if ((fOp == XMLContentSpec.CONTENTSPECNODE_ZERO_OR_MORE)
                 ||  (info.insertAt > 0))
                 {
                     info.isValidEOC = true;
                 }
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_CHOICE :
+            case XMLContentSpec.CONTENTSPECNODE_CHOICE :
                 //
                 //  If the insert point is zero, then either of the two children
                 //  can be inserted, unless fully valid is set and there are
@@ -480,7 +480,7 @@ public class DatatypeContentModel implements XMLContentModel
                     info.isValidEOC = true;
                 break;
 
-            case XMLContentSpecNode.CONTENTSPECNODE_SEQ :
+            case XMLContentSpec.CONTENTSPECNODE_SEQ :
                 //
                 //  If the insert at is 0, then the first one valid. Else its
                 //  the second one.

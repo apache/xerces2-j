@@ -123,7 +123,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
             throw new RuntimeException(msg);
         }
         return msg;
-	}
+    }
     //
     //
     //
@@ -132,59 +132,65 @@ public class SchemaMessageProvider implements XMLMessageProvider {
     //
     // Major codes
     //
-	public static final int 
+    public static final int 
         MSG_BAD_MAJORCODE = 0,              //  majorCode parameter to createMessage was out of bounds
         MSG_FORMAT_FAILURE = 1,             //  exception thrown during messageFormat call
-		NoValidatorFor = 2,
-		IncorrectDatatype = 3,
-		AttMissingType = 4,
-		NotADatatype = 5,
-		TextOnlyContentWithType = 6,
-		FeatureUnsupported = 7,
-		NestedOnlyInElemOnly = 8,
-		EltRefOnlyInMixedElemOnly = 9,
-		OnlyInEltContent = 10,
-		OrderIsAll = 11,
-		DatatypeWithType = 12,
-		DatatypeQualUnsupported = 13,
-		GroupContentRestricted = 14,
-		UnknownBaseDatatype = 15,
-		OneOfTypeRefArchRef = 16,
-		NoContentForRef = 17,
-		IncorrectDefaultType = 18,
-		IllegalAttContent = 19,
-		ValueNotInteger = 20,
-		DatatypeError = 21,
+        NoValidatorFor = 2,
+        IncorrectDatatype = 3,
+        AttMissingType = 4,
+        NotADatatype = 5,
+        TextOnlyContentWithType = 6,
+        FeatureUnsupported = 7,
+        NestedOnlyInElemOnly = 8,
+        EltRefOnlyInMixedElemOnly = 9,
+        OnlyInEltContent = 10,
+        OrderIsAll = 11,
+        DatatypeWithType = 12,
+        DatatypeQualUnsupported = 13,
+        GroupContentRestricted = 14,
+        UnknownBaseDatatype = 15,
+        OneOfTypeRefArchRef = 16,
+        NoContentForRef = 17,
+        IncorrectDefaultType = 18,
+        IllegalAttContent = 19,
+        ValueNotInteger = 20,
+        DatatypeError = 21,
+		TypeAlreadySet = 22,
+		GenericError = 23,
+		UnclassifiedError = 24,
         // ...
-        MSG_MAX_CODE = 22;
-	//
-	// Minor Codes
-	//
-	public static final int
-	    MSG_NONE = 0;
+        MSG_MAX_CODE = 31;
+    //
+    // Minor Codes
+    //
+    public static final int
+        MSG_NONE = 0;
 
-	public static final String[] fgMessageKeys = {
+    public static final String[] fgMessageKeys = {
         "BadMajorCode",                 //   0, "The majorCode parameter to createMessage was out of bounds."
         "FormatFailed",                 //   1, "An internal error occurred while formatting the following message:"
-		"NoValidatorFor",               //   2, "No validator for datatype {0}"
-		"IncorrectDatatype",            //   3, "Incorrect datatype: {0}" 
-		"AttMissingType",               //   4, "The {0} attribute must appear with a type attribute."
-		"NotADatatype",                 //   5, "{0} is not a datatype."
-		"TextOnlyContentWithType",      //   6, "The content attribute must be 'textOnly' if you specify a type attribute." 
-		"FeatureUnsupported",           //   7, "{0} is unsupported"
-		"NestedOnlyInElemOnly",         //   8, "Nested Element decls only allowed in elemOnly content"
-		"EltRefOnlyInMixedElemOnly",    //   9, "Element references only allowed in mixed or elemOnly content"
-		"OnlyInEltContent",             //  10, "{0} only allowed in elemOnly content."
-		"OrderIsAll",                   //  11, "{0} not allowed if the order is all."
-		"DatatypeWithType",             //  12, "Datatype qualifiers can only be used if you specify a type attribute."},
-		"DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
-		"GroupContentRestricted",       //  14, "Error: {0} content must be one of element, group, modelGroupRef.  Saw {1}"
-		"UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." },
-		"OneOfTypeRefArchRef",          //  16, "Can only have one of type, ref, and archRef attributes."},
-		"NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"
-		"IncorrectDefaultType",         //  18, "Incorrect type for {0}'s default value: {1}"
-		"IllegalAttContent",            //  19, "Illegal content {0} in attribute group"
-		"ValueNotInteger",              //  20, "Value of {0} is not an integer"
-		"DatatypeError",                //  21, "Datatype error {0}." 
-	};
+        "NoValidatorFor",               //   2, "No validator for datatype {0}"
+        "IncorrectDatatype",            //   3, "Incorrect datatype: {0}" 
+        "AttMissingType",               //   4, "The {0} attribute must appear with a type attribute."
+        "NotADatatype",                 //   5, "{0} is not a datatype."
+        "TextOnlyContentWithType",      //   6, "The content attribute must be 'textOnly' if you specify a type attribute." 
+        "FeatureUnsupported",           //   7, "{0} is unsupported"
+        "NestedOnlyInElemOnly",         //   8, "Nested Element decls only allowed in elemOnly content"
+        "EltRefOnlyInMixedElemOnly",    //   9, "Element references only allowed in mixed or elemOnly content"
+        "OnlyInEltContent",             //  10, "{0} only allowed in elemOnly content."
+        "OrderIsAll",                   //  11, "{0} not allowed if the order is all."
+        "DatatypeWithType",             //  12, "Datatype qualifiers can only be used if you specify a type attribute."},
+        "DatatypeQualUnsupported",      //  13, "The datatype qualifier {0} is not supported."
+        "GroupContentRestricted",       //  14, "Error: {0} content must be one of element, group, modelGroupRef.  Saw {1}"
+        "UnknownBaseDatatype",          //  15, "Unknown base type {0} for type {1}." },
+        "OneOfTypeRefArchRef",          //  16, "Can only have one of type, ref, and archRef attributes."},
+        "NoContentForRef",              //  17, "Cannot have child content for an element declaration that has a ref attribute"
+        "IncorrectDefaultType",         //  18, "Incorrect type for {0}'s default value: {1}"
+        "IllegalAttContent",            //  19, "Illegal content {0} in attribute group"
+        "ValueNotInteger",              //  20, "Value of {0} is not an integer"
+        "DatatypeError",                //  21, "Datatype error {0}." 
+		"TypeAlreadySet",				//	22,	"The type of the element has already been declared."
+		"GenericError",					//	23, "Schema error: {0}."
+		"UnclassifiedError",			//	24,	"Unclassified error."
+    };
 }
