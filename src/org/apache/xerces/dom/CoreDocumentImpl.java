@@ -2017,7 +2017,7 @@ public class CoreDocumentImpl
                                   String localpart)
         throws DOMException
     {
-        return new AttrNSImpl(this, namespaceURI, qualifiedName, localName);
+        return new AttrNSImpl(this, namespaceURI, qualifiedName, localpart);
     }
 
     /**
