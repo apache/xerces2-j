@@ -67,6 +67,7 @@ import org.apache.xerces.impl.validation.XMLElementDecl;
 import org.apache.xerces.impl.validation.XMLSimpleType ;
 import org.apache.xerces.impl.validation.grammars.DTDGrammar;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLComponent;
 import org.apache.xerces.xni.XMLComponentManager;
@@ -178,11 +179,14 @@ public class XMLValidator
     /** validation states */
     private boolean fStandaloneIsYes = false;
     private boolean fSeenRootElement = false;
+    private boolean fBufferDatatype = false;
+    private boolean fInElementContent = false;
 
     /** temporary variables so that we create less objects */
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
     private XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
     private QName fTempQName = new QName();
+    private StringBuffer fDatatypeBuffer = new StringBuffer();
 
     // symbols
 
@@ -206,6 +210,7 @@ public class XMLValidator
 
     /** DEBUG flags */
     private boolean DEBUG_ATTRIBUTES;
+    private boolean DEBUG_ELEMENT_CHILDREN;
 
     //
     // Constructors
@@ -460,7 +465,7 @@ public class XMLValidator
         if (fCurrentGrammar == null && !fValidation ) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
-            //fInElementContent = false;
+            fInElementContent = false;
         }
         else {
 
@@ -489,6 +494,13 @@ public class XMLValidator
             }
 
         }
+
+        if (fValidation && fCurrentContentSpecType == XMLElementDecl.TYPE_SIMPLE) {
+            fBufferDatatype = true;
+            fDatatypeBuffer.setLength(0);
+        }
+
+        fInElementContent = (fCurrentContentSpecType == XMLElementDecl.TYPE_CHILDREN);
 
         // increment the element depth, add this element's 
         // QName to its enclosing element 's children list
@@ -557,12 +569,49 @@ public class XMLValidator
      * @throws SAXException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws SAXException {
+        boolean callNextCharacters = true;
 
+        if (fValidation) {
+            if (fInElementContent ) {
+                boolean allWhiteSpace = true;
+                if ( fCurrentGrammarIsDTD && 
+                     fStandaloneIsYes &&
+                     ((DTDGrammar)fCurrentGrammar).getElementDeclIsExternal(fCurrentElementIndex)) {
+                    for (int i=text.offset; i< text.offset+text.length; i++) {
+                        if (!XMLChar.isSpace(text.ch[i])) {
+                            allWhiteSpace = false;
+                            break;
+                        }
+                    }
+                    if (allWhiteSpace) {
+                        fErrorReporter.reportError( XMLMessageFormatter.XML_DOMAIN,
+                                                    "MSG_WHITE_SPACE_IN_ELEMENT_CONTENT_WHEN_STANDALONE",
+                                                    null, XMLErrorReporter.SEVERITY_ERROR);
+                    }
+                }
+                if (!allWhiteSpace) {
+                    charDataInContent();
+                }
+                else {
+                    // call handlers method: ignorable white space when children content.
+                    if (fDocumentHandler != null) {
+                        fDocumentHandler.ignorableWhitespace(text);
+                        callNextCharacters = false;
+                    }
+                }
+            }
+            if ( fCurrentContentSpecType == XMLElementDecl.TYPE_EMPTY) {
+            charDataInContent();
+            }
+            if (fBufferDatatype) {
+                fDatatypeBuffer.append(text.ch, text.offset, text.length);
+            }
+        }
         // call handlers
-        if (fDocumentHandler != null) {
+        if (callNextCharacters && fDocumentHandler != null) {
             fDocumentHandler.characters(text);
         }
-    
+
     } // characters(XMLString)
 
     /**
@@ -643,7 +692,7 @@ public class XMLValidator
             fCurrentElement.clear();
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
-            //fInElementContent = false;
+            fInElementContent = false;
 
             // TO DO : fix this
             //
@@ -690,6 +739,10 @@ public class XMLValidator
 
         fCurrentElementIndex = fElementIndexStack[fElementDepth];
         fCurrentContentSpecType = fContentSpecTypeStack[fElementDepth];
+
+        if (fValidation) {
+            fBufferDatatype = false;
+        }
     
     } // endElement(QName)
 
@@ -1795,6 +1848,29 @@ public class XMLValidator
         }
         return contentSpecType;
     }
+   
+   /** Character data in content. */
+   private void charDataInContent() {
+
+      if (DEBUG_ELEMENT_CHILDREN) {
+         System.out.println("charDataInContent()");
+      }
+      if (fElementChildren.length <= fElementChildrenLength) {
+         QName[] newarray = new QName[fElementChildren.length * 2];
+         System.arraycopy(fElementChildren, 0, newarray, 0, fElementChildren.length);
+         fElementChildren = newarray;
+      }
+      QName qname = fElementChildren[fElementChildrenLength];
+      if (qname == null) {
+         for (int i = fElementChildrenLength; i < fElementChildren.length; i++) {
+            fElementChildren[i] = new QName();
+         }
+         qname = fElementChildren[fElementChildrenLength];
+      }
+      qname.clear();
+      fElementChildrenLength++;
+
+   } // charDataInCount()
 
     /** convert attribute type from ints to strings */
     private String attributeTypeName(XMLAttributeDecl attrDecl) {
