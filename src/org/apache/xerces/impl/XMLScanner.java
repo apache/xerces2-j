@@ -313,8 +313,8 @@ public abstract class XMLScanner
                         }
                         if (!sawSpace) {
                             reportFatalError(scanningTextDecl
-                                      ? "SpaceRequiredBeforeEncodinginTextDecl"
-                                      : "SpaceRequiredBeforeEncodinginXMLDecl",
+                                      ? "SpaceRequiredBeforeEncodingInTextDecl"
+                                      : "SpaceRequiredBeforeEncodingInXMLDecl",
                                              null);
                         }
                         encoding = fString.toString();
@@ -334,8 +334,8 @@ public abstract class XMLScanner
                     if (name == fEncodingSymbol) {
                         if (!sawSpace) {
                             reportFatalError(scanningTextDecl
-                                      ? "SpaceRequiredBeforeEncodinginTextDecl"
-                                      : "SpaceRequiredBeforeEncodinginXMLDecl",
+                                      ? "SpaceRequiredBeforeEncodingInTextDecl"
+                                      : "SpaceRequiredBeforeEncodingInXMLDecl",
                                              null);
                         }
                         encoding = fString.toString();
