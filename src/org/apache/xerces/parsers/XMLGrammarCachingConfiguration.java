@@ -64,15 +64,9 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.XSDeclarationPool;
-import org.apache.xerces.impl.xs.XSDDescription;
-import org.apache.xerces.impl.xs.XSConstraints;
-import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
-import org.apache.xerces.impl.xs.XSGrammarBucket;
+import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.impl.xs.XSMessageFormatter;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
@@ -143,13 +137,7 @@ public class XMLGrammarCachingConfiguration
     String URI_SCHEMAFORSCHEMA = null;
 
     // variables needed for caching schema grammars.  
-    // REVISIT:  surely this can be simplified so that interfaces like this don't need to 
-    // import *sooo* many classes...
-    protected XSDHandler fSchemaHandler;
-    protected XSGrammarBucket fXSGrammarBucket;
-    protected SubstitutionGroupHandler fSubGroupHandler;
-    protected CMBuilder fCMBuilder;
-    protected XSDDescription fXSDDescription = new XSDDescription();
+    protected XMLSchemaLoader fSchemaLoader;
 
     //
     // Constructors
@@ -218,6 +206,8 @@ public class XMLGrammarCachingConfiguration
         // set state for default features
         // add default recognized properties
         // create and register missing components
+        fSchemaLoader = new XMLSchemaLoader(fSymbolTable);
+        fSchemaLoader.setProperty(XMLGRAMMAR_POOL, fGrammarPool);
     } // <init>(SymbolTable,XMLGrammarPool, XMLComponentManager)
 
     //
@@ -290,17 +280,8 @@ public class XMLGrammarCachingConfiguration
         // REVISIT:  for now, don't know what to do with DTD's...
         if(!type.equals(XMLGrammarDescription.XML_SCHEMA))
             return null;
-        if (fSchemaHandler == null) {
-            fXSGrammarBucket = new XSGrammarBucket();
-            fSubGroupHandler = new SubstitutionGroupHandler(fXSGrammarBucket);
-            fSchemaHandler = new XSDHandler(fXSGrammarBucket);
-        }
-        fXSGrammarBucket.reset();
         // by default, make all XMLGrammarPoolImpl's schema grammars available to fSchemaHandler
-        Grammar[] grammars = (Grammar[])(fGrammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA));
-        for(int i=0; i<grammars.length; i++ )
-            fXSGrammarBucket.putGrammar((SchemaGrammar)grammars[i]);
-        return parseXMLSchema(is, fXSGrammarBucket, fSchemaHandler, fSubGroupHandler);
+        return parseXMLSchema(is);
     } // parseGrammar(String, XMLInputSource):  Grammar
 
     //
@@ -354,48 +335,26 @@ public class XMLGrammarCachingConfiguration
      * extract the info it needs.
      * Therefore, bucket must not be null!
      */
-    SchemaGrammar parseXMLSchema(XMLInputSource is, XSGrammarBucket bucket,
-            XSDHandler schemaHandler, SubstitutionGroupHandler subGroupHandler) {
+    SchemaGrammar parseXMLSchema(XMLInputSource is) 
+                throws IOException {
 
-        // don't need to parametrize this since, as of 03/27/02, this
-        // has no dependencies on any of the other (changeable) classes
-        if(fCMBuilder == null) {
-            fCMBuilder = new CMBuilder(new XSDeclarationPool());
-        }
+        fSchemaLoader.setEntityResolver(getEntityResolver());
+        fSchemaLoader.setProperty(ERROR_REPORTER, fErrorReporter);
 
-        // we already have an error reporter, entityManager, entity resolver, etc.
-        // but if we're doing schemas, we'd better make sure
-        // we have the right MessageFormatter!
-        if (fErrorReporter.getMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN) == null) {
-            XSMessageFormatter xmft = new XSMessageFormatter();
-            fErrorReporter.putMessageFormatter(XSMessageFormatter.SCHEMA_DOMAIN, xmft);
-        }
-
-        String externalSchemas =
-            (String)(getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_LOCATION));
-        String noNamespaceExternalSchemas =
-            (String)(getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.SCHEMA_NONS_LOCATION));
-
-        subGroupHandler.reset();
-        schemaHandler.reset(fErrorReporter, fEntityManager, fSymbolTable, externalSchemas, noNamespaceExternalSchemas, fGrammarPool);
+        String propPrefix = Constants.XERCES_PROPERTY_PREFIX;
+        String propName = propPrefix + Constants.SCHEMA_LOCATION;
+        fSchemaLoader.setProperty(propName, getProperty(propName));
+        propName = propPrefix + Constants.SCHEMA_NONS_LOCATION;
+        fSchemaLoader.setProperty(propName, getProperty(propName));
+        propName = Constants.JAXP_PROPERTY_PREFIX+Constants.SCHEMA_SOURCE;
+        fSchemaLoader.setProperty(propName, getProperty(propName));
+        fSchemaLoader.setFeature(SCHEMA_FULL_CHECKING, getFeature(SCHEMA_FULL_CHECKING));
 
         // Should check whether the grammar with this namespace is already in
         // the grammar resolver. But since we don't know the target namespace
         // of the document here, we leave such check to XSDHandler
-        fXSDDescription.reset();
-        fXSDDescription.setContextType(XSDDescription.CONTEXT_PREPARSE);
-        String sid = is.getSystemId();
-        if (sid != null) {
-            fXSDDescription.setLiteralSystemId(sid);
-            fXSDDescription.setExpandedSystemId(sid);
-            fXSDDescription.setLocationHints(new String[]{sid});
-        }
-        SchemaGrammar grammar = schemaHandler.parseSchema(is, fXSDDescription);
-
-        if (getFeature(SCHEMA_FULL_CHECKING)) {
-            XSConstraints.fullSchemaChecking(bucket, subGroupHandler, fCMBuilder, fErrorReporter);
-        }
-       
+        fSchemaLoader.reset();
+        SchemaGrammar grammar = (SchemaGrammar)fSchemaLoader.loadGrammar(is);
         // by default, hand it off to the grammar pool
         if (grammar != null) {
             fGrammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA,
@@ -404,7 +363,7 @@ public class XMLGrammarCachingConfiguration
         
         return grammar;
 
-    } // parseXMLSchema(XMLInputSource, XSGrammarBucket, XSDHandler, SubstitutionGroupHandler):  SchemaGrammar
+    } // parseXMLSchema(XMLInputSource) :  SchemaGrammar
 
 
 } // class XMLGrammarCachingConfiguration

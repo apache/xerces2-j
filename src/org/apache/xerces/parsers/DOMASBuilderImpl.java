@@ -75,14 +75,8 @@ import org.apache.xerces.dom.ASModelImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.XMLErrorReporter;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.impl.xs.traversers.XSDHandler;
-import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.impl.xs.XSGrammarBucket;
-import org.apache.xerces.impl.xs.SubstitutionGroupHandler;
-import org.apache.xerces.impl.xs.models.CMBuilder;
 import org.apache.xerces.impl.xs.SchemaGrammar;
-import org.apache.xerces.impl.xs.XSConstraints;
-import org.apache.xerces.impl.xs.XSDeclarationPool;
 
 import java.util.Vector;
 import org.apache.xerces.util.SymbolTable;
@@ -126,8 +120,6 @@ public class DOMASBuilderImpl
     //
 
     protected XSGrammarBucket fGrammarBucket;
-    protected SubstitutionGroupHandler fSubGroupHandler;
-    protected XSDHandler fSchemaHandler;
 
     protected ASModelImpl fAbstractSchema;
 
@@ -286,10 +278,8 @@ public class DOMASBuilderImpl
 
     ASModel parseASInputSource(XMLInputSource is) throws Exception {
                                       
-        if (fSchemaHandler == null) {
+        if (fGrammarBucket == null) {
             fGrammarBucket = new XSGrammarBucket();
-            fSubGroupHandler = new SubstitutionGroupHandler(fGrammarBucket);
-            fSchemaHandler = new XSDHandler(fGrammarBucket);
         }
 
         initGrammarBucket();
@@ -299,10 +289,11 @@ public class DOMASBuilderImpl
         XMLGrammarCachingConfiguration gramConfig = (XMLGrammarCachingConfiguration)fConfiguration;
         // ensure grammarPool doesn't absorb grammars while it's parsing
         gramConfig.lockGrammarPool();
-        SchemaGrammar grammar = gramConfig.parseXMLSchema(is, fGrammarBucket, fSchemaHandler, fSubGroupHandler);
+        SchemaGrammar grammar = gramConfig.parseXMLSchema(is);
         gramConfig.unlockGrammarPool();
 
         ASModelImpl newAsModel = new ASModelImpl();
+        fGrammarBucket.putGrammar (grammar, true);
         addGrammars(newAsModel, fGrammarBucket);
         return newAsModel;
     }
