@@ -124,34 +124,9 @@ public class SubstitutionGroupHandler {
         if ((blockingConstraint & XSConstants.DERIVATION_SUBSTITUTION) != 0)
             return false;
 
-        // prepare the combination of {derivation method} and
-        // {disallowed substitution}
-        short devMethod = 0, blockConstraint = blockingConstraint;
-
-        // initialize the derivation method to be that of the type of D
-        XSTypeDefinition type = element.fType;
-        if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
-            devMethod = ((XSComplexTypeDecl)type).fDerivedBy;
-        else
-            devMethod = XSConstants.DERIVATION_RESTRICTION;
-
-        // initialize disallowed substitution to the passed in blocking constraint
-        type = exemplar.fType;
-        if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
-            blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
-
         // 2 There is a chain of {substitution group affiliation}s from D to C, that is, either D's {substitution group affiliation} is C, or D's {substitution group affiliation}'s {substitution group affiliation} is C, or . . .
         XSElementDecl subGroup = element.fSubGroup;
         while (subGroup != null && subGroup != exemplar) {
-            // add the derivation method and disallowed substitution info
-            // of the current type to the corresponding variables
-            type = subGroup.fType;
-            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) {
-                devMethod |= ((XSComplexTypeDecl)type).fDerivedBy;
-                blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
-            } else {
-                devMethod |= XSConstants.DERIVATION_RESTRICTION;
-            }
             subGroup = subGroup.fSubGroup;
         }
 
@@ -159,6 +134,26 @@ public class SubstitutionGroupHandler {
             return false;
 
         // 3 The set of all {derivation method}s involved in the derivation of D's {type definition} from C's {type definition} does not intersect with the union of the blocking constraint, C's {prohibited substitutions} (if C is complex, otherwise the empty set) and the {prohibited substitutions} (respectively the empty set) of any intermediate {type definition}s in the derivation of D's {type definition} from C's {type definition}.
+        // prepare the combination of {derivation method} and
+        // {disallowed substitution}
+        short devMethod = 0, blockConstraint = blockingConstraint;
+
+        // element.fType should be derived from exemplar.fType
+        // add derivation methods of derived types to devMethod;
+        // add block of base types to blockConstraint.
+        XSTypeDefinition type = element.fType;
+        while (type != exemplar.fType && type != SchemaGrammar.fAnyType) {
+            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
+                devMethod = ((XSComplexTypeDecl)type).fDerivedBy;
+            else
+                devMethod = XSConstants.DERIVATION_RESTRICTION;
+            type = type.getBaseType();
+            if (type.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE)
+                blockConstraint |= ((XSComplexTypeDecl)type).fBlock;
+        }
+        if (type != exemplar.fType)
+            return false;
+        
         if ((devMethod & blockConstraint) != 0)
             return false;
 
