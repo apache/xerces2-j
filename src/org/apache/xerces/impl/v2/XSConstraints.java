@@ -231,7 +231,7 @@ public class XSConstraints {
                 else
                     return false;
             }
-            return checkSimpleDerivation((DatatypeValidator)derived,
+            return checkSimpleDerivation((DatatypeValidator)directBase,
                                          (DatatypeValidator)base, block);
         }
 
