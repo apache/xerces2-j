@@ -1641,6 +1641,8 @@ public class XMLDTDScanner
                         if (!fEntityScanner.skipChar('%'))
                             break;
                     }
+                } else {
+                    fStringBuffer2.append((char)fEntityScanner.scanChar());
                 }
             } while (fEntityScanner.scanLiteral(quote, fString) != quote);
             fStringBuffer2.append(fString);
