@@ -211,8 +211,78 @@ public class XMLSchemaValidator
     /** Symbol table. */
     protected SymbolTable fSymbolTable;
 
+    /**
+     * A wrapper of the standard error reporter. We'll store all schema errors
+     * in this wrapper object, so that we can get all errors (error codes) of
+     * a specific element. This is useful for PSVI.
+     */
+    class XSIErrorReporter {
+
+        // the error reporter property
+        XMLErrorReporter fErrorReporter;
+
+        // store error codes; starting position of the errors for each element;
+        // number of element (depth); and whether to record error
+        Vector  fErrors = new Vector(INITIAL_STACK_SIZE, INC_STACK_SIZE);
+        int[]   fContext = new int[INITIAL_STACK_SIZE];
+        int     fContextCount;
+
+        // set the external error reporter, clear errors
+        public void reset(XMLErrorReporter errorReporter) {
+            fErrorReporter = errorReporter;
+            fErrors.clear();
+            fContextCount = 0;
+        }
+
+        // should be called on startElement: store the starting position
+        // for the current element
+        public void pushContext() {
+            // resize array if necessary
+            if (fContextCount == fContext.length) {
+                int newSize = fContextCount + INC_STACK_SIZE;
+                int[] newArray = new int[newSize];
+                System.arraycopy(fContext, 0, newArray, 0, fContextCount);
+                fContext = newArray;
+            }
+
+            fContext[fContextCount++] = fErrors.size();
+        }
+
+        // should be called on endElement: get all errors of the current element
+        public String[] popContext() {
+            // get starting position of the current element
+            int contextPos = fContext[--fContextCount];
+            // number of errors of the current element
+            int size = fErrors.size() - contextPos;
+            // if no errors, return null
+            if (size == 0)
+                return null;
+            // copy errors from the list to an string array
+            String[] errors = new String[size];
+            for (int i = 0; i < size; i++) {
+                errors[i] = (String)fErrors.elementAt(contextPos + i);
+            }
+            // remove errors of the current element
+            fErrors.setSize(contextPos);
+            return errors;
+        }
+
+        public void reportError(String domain, String key, Object[] arguments,
+                                short severity) throws XNIException {
+            fErrorReporter.reportError(domain, key, arguments, severity);
+            fErrors.addElement(key);
+        } // reportError(String,String,Object[],short)
+
+        public void reportError(XMLLocator location,
+                                String domain, String key, Object[] arguments,
+                                short severity) throws XNIException {
+            fErrorReporter.reportError(location, domain, key, arguments, severity);
+            fErrors.addElement(key);
+        } // reportError(XMLLocator,String,String,Object[],short)
+    }
+
     /** Error reporter. */
-    protected XMLErrorReporter fErrorReporter;
+    protected XSIErrorReporter fXSIErrorReporter = new XSIErrorReporter();
 
     /** Entity resolver */
     protected XMLEntityResolver fEntityResolver;
@@ -852,8 +922,7 @@ public class XMLSchemaValidator
     public void reset(XMLComponentManager componentManager) throws XMLConfigurationException {
 
         // get error reporter
-        fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
-
+        fXSIErrorReporter.reset((XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER));
 
         // get symbol table. if it's a new one, add symbols to it.
         SymbolTable symbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
@@ -926,7 +995,7 @@ public class XMLSchemaValidator
         fSubGroupHandler.reset();
 
         // reset schema handler and all traversal objects
-        fSchemaHandler.reset(fErrorReporter, fEntityResolver, fSymbolTable);
+        fSchemaHandler.reset(fXSIErrorReporter.fErrorReporter, fEntityResolver, fSymbolTable);
 
         // initialize state
         fCurrentElemDecl = null;
@@ -1120,6 +1189,8 @@ public class XMLSchemaValidator
             System.out.println("handleStartElement: " +element);
         }
 
+        // push error reporter context: record the current position
+        fXSIErrorReporter.pushContext();
 
         // we receive prefix binding events before this one,
         // so at this point, the prefix bindings for this element is done,
@@ -1375,6 +1446,11 @@ public class XMLSchemaValidator
             // discarded.
             fNamespaceSupport.popContext();
 
+            // pop error reporter context: get all errors for the current
+            // element, and remove them from the error list
+            // REVISIT: PSVI should get error codes here
+            String[] errors = fXSIErrorReporter.popContext();
+
             return null;
         }
 
@@ -1428,7 +1504,7 @@ public class XMLSchemaValidator
                 }
                 // check extra schema constraints
                 if (fFullChecking) {
-                    XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fErrorReporter);
+                    XSConstraints.fullSchemaChecking(fGrammarResolver, fSubGroupHandler, fCMBuilder, fXSIErrorReporter.fErrorReporter);
                 }
             }
         }
@@ -1446,6 +1522,11 @@ public class XMLSchemaValidator
         // need to pop context so that the bindings for this element is
         // discarded.
         fNamespaceSupport.popContext();
+
+        // pop error reporter context: get all errors for the current
+        // element, and remove them from the error list
+        // REVISIT: PSVI should get error codes here
+        String[] errors = fXSIErrorReporter.popContext();
 
         return defaultValue;
     } // handleEndElement(QName,boolean)*/
@@ -1469,9 +1550,9 @@ public class XMLSchemaValidator
                 namespace = t.nextToken ();
                 if (!t.hasMoreTokens()) {
                     // REVISIT: new error code
-                    fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                               "general", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
-                                               XMLErrorReporter.SEVERITY_WARNING);
+                    fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                                  "general", new Object[]{"No matching location hint for namespace '" + namespace + "' in attribute schemaLocation"},
+                                                  XMLErrorReporter.SEVERITY_WARNING);
                     break;
                 }
                 location = t.nextToken();
@@ -1950,9 +2031,9 @@ public class XMLSchemaValidator
 
     void reportSchemaError(String key, Object[] arguments) {
         if (fDoValidation)
-            fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
-                                       key, arguments,
-                                       XMLErrorReporter.SEVERITY_ERROR);
+            fXSIErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                                          key, arguments,
+                                          XMLErrorReporter.SEVERITY_ERROR);
     }
 
     /**********************************/
