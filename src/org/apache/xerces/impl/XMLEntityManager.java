@@ -1594,8 +1594,6 @@ public class XMLEntityManager
          * @throws SAXException Thrown by entity handler to signal an error
          *                      when the end of an entity is reached.
          */
-        private char[] fOneChar = new char[1];
-        private boolean fNewline;
         public int scanContent(XMLString content) 
             throws IOException, SAXException {
     
@@ -1605,6 +1603,7 @@ public class XMLEntityManager
             else if (fCurrentEntity.position == fCurrentEntity.count - 1) {
                 fCurrentEntity.ch[0] = fCurrentEntity.ch[fCurrentEntity.count - 1];
                 load(1, true);
+                fCurrentEntity.position = 0;
             }
             if (DEBUG_PRINT) {
                 System.out.print("(scanContent: ");
@@ -1612,43 +1611,62 @@ public class XMLEntityManager
                 System.out.println();
             }
 
-            /***
-            // handle newline
-            if (fNewline) {
-                fNewline = false;
-                int c = fCurrentEntity.ch[fCurrentEntity.position++];
-                if (c == '\r') {
-                    skipChar('\n');
-                    fOneChar[0] = '\n';
-                    content.setValues(fOneChar, 0, 1);
+            // normalize newlines
+            int offset = fCurrentEntity.position;
+            int c = fCurrentEntity.ch[offset];
+            if (c == '\r' || c == '\n') {
+                if (DEBUG_PRINT) {
+                    System.out.print("[newline, "+offset+", "+fCurrentEntity.position+": ");
+                    print();
+                    System.out.println();
+                }
+                while (fCurrentEntity.position < fCurrentEntity.count - 1) {
+                    c = fCurrentEntity.ch[fCurrentEntity.position++];
+                    if (c == '\r') {
+                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\n') {
+                            fCurrentEntity.position++;
+                            offset++;
+                        }
+                    }
+                    else if (c == '\n') {
+                        if (fCurrentEntity.ch[fCurrentEntity.position] == '\r') {
+                            fCurrentEntity.position++;
+                            offset++;
+                        }
+                    }
+                    else {
+                        fCurrentEntity.position--;
+                        break;
+                    }
+                }
+                for (int i = offset; i < fCurrentEntity.position; i++) {
+                    fCurrentEntity.ch[i] = '\n';
+                }
+                int length = fCurrentEntity.position - offset;
+                if (fCurrentEntity.position == fCurrentEntity.count - 1) {
+                    content.setValues(fCurrentEntity.ch, offset, length);
+                    if (DEBUG_PRINT) {
+                        System.out.print("]newline, "+offset+", "+fCurrentEntity.position+": ");
+                        print();
+                        System.out.println();
+                    }
                     return -1;
                 }
-                else if (c == '\n') {
-                    skipChar('\r');
-                    fOneChar[0] = '\n';
-                    content.setValues(fOneChar, 0, 1);
-                    return -1;
+                if (DEBUG_PRINT) {
+                    System.out.print("]newline, "+offset+", "+fCurrentEntity.position+": ");
+                    print();
+                    System.out.println();
                 }
             }
-            /***/
 
             // REVISIT: Use AndyH trick for grabbing longest runs of
             //          content characters. -Ac
-            int offset = fCurrentEntity.position;
-            int c = -1;
             while (fCurrentEntity.position < fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
-                /***
                 if (!XMLChar.isContent(c)) {
                     fCurrentEntity.position--;
                     break;
                 }
-                /***/
-                if (c == '<' || c == '&') {
-                    fCurrentEntity.position--;
-                    break;
-                }
-                /***/
             }
             int length = fCurrentEntity.position - offset;
             content.setValues(fCurrentEntity.ch, offset, length);
@@ -1656,16 +1674,9 @@ public class XMLEntityManager
             // return next character
             if (fCurrentEntity.position != fCurrentEntity.count) {
                 c = fCurrentEntity.ch[fCurrentEntity.position];
-                /***
                 if (c == '\r' || c == '\n') {
-                    fNewline = true;
                     c = '\n';
                 }
-                /***/
-                if (c == '\r') {
-                    c = -1;
-                }
-                /***/
             }
             if (DEBUG_PRINT) {
                 System.out.print(")scanContent: ");
