@@ -70,7 +70,9 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.apache.xerces.impl.xs.psvi.StringList;
 import org.apache.xerces.impl.xs.XSAnnotationImpl;
+import org.apache.xerces.impl.xs.psvi.XSAnnotation;
 import org.apache.xerces.impl.xs.psvi.XSConstants;
+import org.apache.xerces.impl.xs.psvi.XSFacet;
 import org.apache.xerces.impl.xs.psvi.XSNamespaceItem;
 import org.apache.xerces.impl.xs.psvi.XSObjectList;
 import org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition;
@@ -259,6 +261,9 @@ public class XSSimpleTypeDecl implements XSSimpleType {
     private Object fMaxExclusive;
     private Object fMinExclusive;
     private Object fMinInclusive;
+    
+    // facets as objects
+    private XSObjectListImpl fFacets;
 
     // optional annotations
     private XSObjectList fAnnotations = null;
@@ -2293,6 +2298,7 @@ public class XSSimpleTypeDecl implements XSSimpleType {
 
         fPatternType = SPECIAL_PATTERN_NONE;
         fAnnotations = null;
+        fFacets = null;
 
         // REVISIT: reset for fundamental facets
     }
@@ -2309,6 +2315,167 @@ public class XSSimpleTypeDecl implements XSSimpleType {
      */
     public String toString() {
         return this.fTargetNamespace+"," +this.fTypeName;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.xerces.impl.xs.psvi.XSSimpleTypeDefinition#getFacets()
+     */
+    public XSObjectList getFacets() {
+        if (fFacets != null){
+            return fFacets;
+        }
+        int pattern = 0;
+        int enum = 0;
+        if (fPatternStr != null){
+          pattern = fPatternStr.size();  
+        }
+        if (fEnumeration != null){
+            enum = fEnumeration.size();
+        }
+        int count = 12 + pattern + enum;
+                
+        XSFacetImpl[] facets = new XSFacetImpl[count];
+
+        count = 0;
+        if ((fFacetsDefined & FACET_WHITESPACE) != 0){ 
+            facets[count] = new XSFacetImpl(FACET_WHITESPACE,
+            WS_FACET_STRING[fWhiteSpace] ,(fFixedFacet & FACET_WHITESPACE) != 0, null);
+            count++;             
+        }
+        if (fLength != -1){
+            facets[count] = new XSFacetImpl(FACET_LENGTH,
+            Integer.toString(fLength) ,(fFixedFacet & FACET_LENGTH) != 0, null);
+            count++; 
+        }
+        if (fMinLength != -1){
+            facets[count] = new XSFacetImpl(FACET_MINLENGTH,
+            Integer.toString(fMinLength) ,(fFixedFacet & FACET_MINLENGTH) != 0, null);
+            count++; 
+        }
+        if (fMaxLength != -1){
+            facets[count] = new XSFacetImpl(FACET_MAXLENGTH,
+            Integer.toString(fMaxLength) ,(fFixedFacet & FACET_MAXLENGTH) != 0, null);
+            count++;
+        }
+        if (fTotalDigits != -1){
+            facets[count] = new XSFacetImpl(FACET_TOTALDIGITS,
+            Integer.toString(fTotalDigits) ,(fFixedFacet & FACET_TOTALDIGITS) != 0, null);
+            count++;
+        }
+        if (fFractionDigits != -1){
+            facets[count] = new XSFacetImpl(FACET_FRACTIONDIGITS,
+            Integer.toString(fFractionDigits) ,(fFixedFacet & FACET_FRACTIONDIGITS) != 0, null);
+            count++;
+        }
+        if (fPatternStr != null){
+            for (int i = 0; i < pattern; i++){
+                facets[count] = new XSFacetImpl(FACET_PATTERN, 
+                fPatternStr.elementAt(i).toString(), false, null);
+                count++;
+            }
+        }
+        if (fEnumeration !=null){
+            for (int i = 0; i < enum; i++){
+                facets[count] = new XSFacetImpl(FACET_ENUMERATION, 
+                fEnumeration.elementAt(i).toString(), false, null);
+                count++;
+            }
+        }
+        if (fMaxInclusive != null){
+            facets[count] = new XSFacetImpl(FACET_MAXINCLUSIVE,
+            fMaxInclusive.toString() ,(fFixedFacet & FACET_MAXINCLUSIVE) != 0, null);
+            count++;
+        }
+        if (fMaxExclusive != null){
+            facets[count] = new XSFacetImpl(FACET_MAXEXCLUSIVE,
+            fMaxExclusive.toString() ,(fFixedFacet & FACET_MAXEXCLUSIVE) != 0, null);
+            count++;
+        }
+        if (fMinExclusive != null){
+            facets[count] = new XSFacetImpl(FACET_MINEXCLUSIVE,
+            fMinExclusive.toString() ,(fFixedFacet & FACET_MINEXCLUSIVE) != 0, null);
+            count++;
+        }
+        if (fMinInclusive !=  null){
+            facets[count] = new XSFacetImpl(FACET_MININCLUSIVE,
+            fMinInclusive.toString() ,(fFixedFacet & FACET_MININCLUSIVE) != 0, null);
+            count++;
+        }
+        fFacets = new XSObjectListImpl(facets, count);
+        return fFacets;
+    }
+    
+    
+    private static final class XSFacetImpl implements XSFacet {
+        final short kind;
+        final String value;
+        final boolean fixed;
+        final XSAnnotation annotation;
+
+        public XSFacetImpl(short kind, String value, boolean fixed, XSAnnotation annotation) {
+            this.kind = kind;
+            this.value = value;
+            this.fixed = fixed;
+            this.annotation = annotation;
+        }
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getAnnotation()
+         */
+        public XSAnnotation getAnnotation() {
+            // TODO: implement annotation support
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getFacetKind()
+         */
+        public short getFacetKind() {
+            return kind;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSFacet#getLexicalFacetValue()
+         */
+        public String getLexicalFacetValue() {
+            return value;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSFacet#isFixed()
+         */
+        public boolean isFixed() {
+            return fixed;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getName()
+         */
+        public String getName() {
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespace()
+         */
+        public String getNamespace() {
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getNamespaceItem()
+         */
+        public XSNamespaceItem getNamespaceItem() {
+            // REVISIT: implement
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.apache.xerces.impl.xs.psvi.XSObject#getType()
+         */
+        public short getType() {
+            return XSConstants.FACET;
+        }
+
     }
 
 } // class XSSimpleTypeDecl

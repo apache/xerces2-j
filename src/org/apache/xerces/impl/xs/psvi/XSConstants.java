@@ -111,6 +111,10 @@ public interface XSConstants {
      * The object describes an annotation.
      */
     public static final short ANNOTATION                = 12;
+    /**
+     * The object describes a facet.
+     */
+    public static final short FACET                = 13;
 
     // Derivation constants
     /**

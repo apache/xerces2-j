@@ -247,5 +247,9 @@ public interface XSSimpleTypeDefinition extends XSTypeDefinition {
      * Optional. A set of [annotation]s. 
      */
     public XSObjectList getAnnotations();
+    /** 
+     * @return list of constraining facets.
+     */
+    public XSObjectList getFacets();
 
 }
