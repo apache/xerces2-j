@@ -107,6 +107,9 @@ public class XMLValidator
     /** fGrammarPool */
     protected GrammarPool fGrammarPool;
 
+    /** fNamespaceBinder */
+    protected XMLNamespaceBinder fNamespaceBinder;
+
     // features
 
     /** fNamespaces */
@@ -208,6 +211,8 @@ public class XMLValidator
         // clear grammars
         fCurrentGrammar = null;
         fDTDGrammar = null;
+        fCurrentGrammarIsDTD = true;
+        fCurrentGrammarIsSchema = false;
 
         // initialize state
         fInDTD = false;
@@ -215,8 +220,13 @@ public class XMLValidator
 
         fValidation = configurationManager.getFeature(Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE);
 
-        // plug in the components
+        // get needed components
         fErrorReporter = (XMLErrorReporter) configurationManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
+
+        // plug in XMLNamespaceBinder
+        fNamespaceBinder = new XMLNamespaceBinder();
+        fNamespaceBinder.setOnlyPassPrefixMappingEvents(true);
+        fNamespaceBinder.setDocumentHandler(fDocumentHandler);
 
         for (int i = 0; i < fElementQNamePartsStack.length; i++) {
             fElementQNamePartsStack[i] = new QName();
@@ -410,6 +420,11 @@ public class XMLValidator
             rootElementSpecified(element);
         }
 
+        //if fCurrentGrammar is Schema, do namespace binding here.
+        if (fNamespaces && fCurrentGrammarIsSchema) {
+            fNamespaceBinder.startElement(element, attributes);
+        }
+
         if (fCurrentGrammar == null && !fValidation ) {
             fCurrentElementIndex = -1;
             fCurrentContentSpecType = -1;
@@ -482,7 +497,11 @@ public class XMLValidator
         fElementIndexStack[fElementDepth] = fCurrentElementIndex;
         fContentSpecTypeStack[fElementDepth] = fCurrentContentSpecType;
 
-
+        //if fCurrentGrammar is DTD, do namespace binding here.
+        if (fNamespaces && fCurrentGrammarIsDTD) {
+            fNamespaceBinder.startElement(element, attributes);
+        }
+        
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startElement(element, attributes);
@@ -570,7 +589,9 @@ public class XMLValidator
 
         // call handlers
         if (fDocumentHandler != null) {
-            fDocumentHandler.endElement(element);
+            // call fNamesapceBinder to fire up endPrefixMapping events
+            fNamespaceBinder.endElement(fCurrentElement);
+            fDocumentHandler.endElement(fCurrentElement);
         }
     
         

@@ -211,10 +211,6 @@ public abstract class XMLDocumentParser
     protected void reset() throws SAXException {
         super.reset();
 
-        // reset every component
-        fScanner.reset(this);
-        fDTDScanner.reset(this);
-        fValidator.reset(this);
 
         // setup document pipeline
         /***/
@@ -239,6 +235,11 @@ public abstract class XMLDocumentParser
         /***
         fDTDScanner.setDTDContentModelHandler(this);
         /***/
+
+        // reset every component
+        fScanner.reset(this);
+        fDTDScanner.reset(this);
+        fValidator.reset(this);
 
     } // reset()
 
