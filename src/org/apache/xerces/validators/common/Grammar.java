@@ -179,30 +179,39 @@ public class Grammar {
         int index = contentSpecIndex & CHUNK_MASK;
 
        
-        contentSpec.Node.type  = fContentSpecType[chunk][index];
-        contentSpec.Node.value = fContentSpecValue[chunk][index];
+        XMLContentSpec.Node  contentSpecNode   = new XMLContentSpec.Node();         
 
-        if (contentSpec.Node.type == XMLContentSpec.CONTENTSPECNODE_CHOICE || 
-                contentSpec.Node.type == XMLContentSpec.CONTENTSPECNODE_SEQ) {
-           if (++contentSpecIndex == CHUNK_SIZE) {
-               chunk++;
-               contentSpecIndex = 0;
+        int  hContentSpecNode = contentSpec.getHandle();
+
+        if ( hContentSpecNode != -1) {
+           contentSpec.getNode( hContentSpecNode, contentSpecNode );
+
+           contentSpecNode.type       = fContentSpecType[chunk][index];
+           contentSpecNode.value      = fContentSpecValue[chunk][index];
+           contentSpecNode.otherValue = fContentSpecOtherValue[chunk][index];
+
+           if( contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_CHOICE ||
+                   contentSpecNode.type == XMLContentSpec.CONTENTSPECNODE_SEQ ){
+               if (++contentSpecIndex == CHUNK_SIZE ) {
+                   chunk++;
+                   contentSpecIndex = 0;
+               }
+               contentSpecNode.otherValue = fContentSpecOtherValue[chunk][contentSpecIndex];
+           } else {
+               contentSpecNode.otherValue = -1;
            }
-           contentSpec.Node.otherValue = contentSpecOtherValue[chunk][contentSpecIndex];
-       } 
-       else {
-           contentSpec.Node.otherValue = -1;
-       }
+           return true;
+        } 
        return false;
     }
 
 
     public boolean getElementContentModel(int elementDeclIndex,
                                                            XMLContentModel contentModel ) {
-      if (elementDeclIndex < 0 || elementDeclIndex >= fElementCount)
+      if (elementDeclIndex < 0 || elementDeclIndex >= fElementDeclCount)
           return false;
-      int chunk = elementIndex >> CHUNK_SHIFT;
-      int index = elementIndex & CHUNK_MASK;
+      int chunk = elementDeclIndex >> CHUNK_SHIFT;
+      int index = elementDeclIndex & CHUNK_MASK;
       contentModel =  fElementDeclContentModelValidator[chunk][index];
       return true;
   }
@@ -227,15 +236,16 @@ public class Grammar {
         int index = fElementDeclCount & CHUNK_MASK;
         if( ensureElementDeclCapacity(chunk) == true ){ // create an ElementDecl
 
-            fElementDeclNameIndex[chunk][index]         = 
-            fElementDeclType[chunk][index]             =     
-            fElementDeclDatatypeValidator[chunk][index] =
-            fContentSpecType[chunk][index] = contentSpecType;
-            fContentSpec[chunk][index] = contentSpec;
-            fContentModel[chunk][index] = null;
+            fElementDeclNameIndex[chunk][index]               = -1; 
+            fElementDeclType[chunk][index]                    = -1;    
+            fElementDeclDatatypeValidator[chunk][index]       = null;
+
+            fContentSpecType[chunk][index]                    = -1;
+            fContentSpecValue[chunk][index]                   = -1;
+            fContentSpecOtherValue[chunk][index]              = -1;
+
             fElementDeclFirstAttributeDeclIndex[chunk][index] = -1;
-            fElementDeclLastAttributeDeclIndex[chunk][index] = -1;
-            fStringPool.setDeclaration(elementType, fElementDeclCount);
+            fElementDeclLastAttributeDeclIndex[chunk][index]  = -1;
 
 
         }
@@ -273,17 +283,26 @@ public class Grammar {
 
     protected void setContentSpec(int contentSpecIndex, XMLContentSpec contentSpec) {
 
-        int chunk = contentSpecIndex >> CHUNK_SHIFT;
-        int index = contentSpecIndex & CHUNK_MASK;
+        int   chunk = contentSpecIndex >> CHUNK_SHIFT;
+        int   index = contentSpecIndex & CHUNK_MASK;
+        
+        fContentSpecType[chunk][index]         = contentSpec.getType();
+        XMLContentSpec.Node  contentSpecNode   = new XMLContentSpec.Node(); 
 
-        fContentSpecType[chunk][index]  = contentSpec.Node.type;
-        fContentSpecValue[chunk][index] = contentSpec.Node.value;
-        fContentSpecValue[chunk][index] = contentSpec.Node.otherValue;
+        int  hContentSpecNode = contentSpec.getHandle();
+
+        if ( hContentSpecNode != -1) {
+            contentSpec.getNode( hContentSpecNode, contentSpecNode );
+            fContentSpecValue[chunk][index]      = contentSpecNode.value;
+            fContentSpecOtherValue[chunk][index] = contentSpecNode.otherValue;
+        }
+
     }
 
     protected int createAttributeDecl() {
         return fAttributeDeclCount++;
     }
+
 
     protected void setContentSpec(int attributeDeclIndex, XMLAttributeDecl attributeDecl) {
     }
