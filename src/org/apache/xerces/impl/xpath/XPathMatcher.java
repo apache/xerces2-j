@@ -586,7 +586,7 @@ public class XPathMatcher
                     }
                     /***
                     // REVISIT: [Q] Is self:: axis needed? -Ac
-                    else if (axis.type == XPath.Axis.SELF) {
+                    else if (XPath.Axis.type == XPath.Axis.SELF) {
                         // let pass
                     }
                     /***/
