@@ -36,7 +36,7 @@ package org.apache.xerces.impl.dv.util;
  */
 public final class  Base64 {
 
-    static private final int  BASELENGTH         = 255;
+    static private final int  BASELENGTH         = 128;
     static private final int  LOOKUPLENGTH       = 64;
     static private final int  TWENTYFOURBITGROUP = 24;
     static private final int  EIGHTBIT           = 8;
@@ -51,7 +51,7 @@ public final class  Base64 {
 
     static {
 
-        for (int i = 0; i<BASELENGTH; i++) {
+        for (int i = 0; i < BASELENGTH; ++i) {
             base64Alphabet[i] = -1;
         }
         for (int i = 'Z'; i >= 'A'; i--) {

@@ -27,14 +27,14 @@ package org.apache.xerces.impl.dv.util;
  * @version $Id$
  */
 public final class  HexBin {
-    static private final int  BASELENGTH   = 255;
+    static private final int  BASELENGTH   = 128;
     static private final int  LOOKUPLENGTH = 16;
     static final private byte [] hexNumberTable    = new byte[BASELENGTH];
     static final private char [] lookUpHexAlphabet = new char[LOOKUPLENGTH];
 
 
     static {
-        for (int i = 0; i<BASELENGTH; i++ ) {
+        for (int i = 0; i < BASELENGTH; i++ ) {
             hexNumberTable[i] = -1;
         }
         for ( int i = '9'; i >= '0'; i--) {
