@@ -224,10 +224,12 @@ public class TraverseSchema implements
     private XMLAttributeDecl fTempAttributeDecl = new XMLAttributeDecl();
     private XMLAttributeDecl fTemp2AttributeDecl = new XMLAttributeDecl();
     private XMLElementDecl fTempElementDecl = new XMLElementDecl();
+    private XMLElementDecl fTempElementDecl2 = new XMLElementDecl();
     private XMLContentSpec tempContentSpec1 = new XMLContentSpec();
     private XMLContentSpec tempContentSpec2 = new XMLContentSpec();
 
     private EntityResolver  fEntityResolver = null;
+    private SubstitutionGroupComparator fSComp = null;
     
     private Hashtable fIdentityConstraints = new Hashtable();
     // Yet one more data structure; this one associates
@@ -313,12 +315,137 @@ public class TraverseSchema implements
        if (fFullConstraintChecking) {
            return true;
        }
+       if (minEffectiveTotalRange(contentSpecIndex)==0) 
+         return true;
+       else
+         return false;
+    }
 
-       // implement
-       return true;
+    public int minEffectiveTotalRange(int contentSpecIndex) {
 
+       fSchemaGrammar.getContentSpec(contentSpecIndex, tempContentSpec1);
+       int type = tempContentSpec1.type;
+       if (type == XMLContentSpec.CONTENTSPECNODE_SEQ ||
+           type == XMLContentSpec.CONTENTSPECNODE_ALL) {
+          return minEffectiveTotalRangeSeq(contentSpecIndex);
+       }
+       else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
+          return minEffectiveTotalRangeChoice(contentSpecIndex); 
+       }
+       else {
+          return(fSchemaGrammar.getContentSpecMinOccurs(contentSpecIndex));
+       }
+       
     }
     
+    private int minEffectiveTotalRangeSeq(int csIndex) {
+
+       fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
+       int type = tempContentSpec1.type;
+       int left = tempContentSpec1.value;
+       int right = tempContentSpec1.otherValue;
+       int min = fSchemaGrammar.getContentSpecMinOccurs(csIndex);
+
+       int result;
+       if (right == -2)
+          result = min * minEffectiveTotalRange(left);
+       else
+          result = min * (minEffectiveTotalRange(left) + minEffectiveTotalRange(right));
+       return result;
+
+    }
+    private int minEffectiveTotalRangeChoice(int csIndex) {
+
+       fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
+       int type = tempContentSpec1.type;
+       int left = tempContentSpec1.value;
+       int right = tempContentSpec1.otherValue;
+       int min = fSchemaGrammar.getContentSpecMinOccurs(csIndex);
+
+       int result;
+       if (right == -2)
+          result = min * minEffectiveTotalRange(left);
+       else {
+          int minLeft = minEffectiveTotalRange(left);
+          int minRight = minEffectiveTotalRange(right);
+          result = min * ((minLeft < minRight)?minLeft:minRight);
+       }
+       return result;
+    }
+
+    public int maxEffectiveTotalRange(int contentSpecIndex) {
+
+       fSchemaGrammar.getContentSpec(contentSpecIndex, tempContentSpec1);
+       int type = tempContentSpec1.type;
+       if (type == XMLContentSpec.CONTENTSPECNODE_SEQ ||
+           type == XMLContentSpec.CONTENTSPECNODE_ALL) {
+          return maxEffectiveTotalRangeSeq(contentSpecIndex);
+       }
+       else if (type == XMLContentSpec.CONTENTSPECNODE_CHOICE) {
+          return maxEffectiveTotalRangeChoice(contentSpecIndex); 
+       }
+       else {
+          return(fSchemaGrammar.getContentSpecMaxOccurs(contentSpecIndex));
+       }
+       
+    }
+    
+    private int maxEffectiveTotalRangeSeq(int csIndex) {
+
+       fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
+       int type = tempContentSpec1.type;
+       int left = tempContentSpec1.value;
+       int right = tempContentSpec1.otherValue;
+       int max = fSchemaGrammar.getContentSpecMaxOccurs(csIndex);
+
+       if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+         return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+
+       int maxLeft = maxEffectiveTotalRange(left);
+       if (right == -2) {
+         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+           return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+         else 
+           return max * maxLeft;
+       }
+       else {
+         int maxRight = maxEffectiveTotalRange(right);
+         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED ||
+            maxRight == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+           return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+         else
+           return max * (maxLeft + maxRight); 
+       }
+    }
+          
+    private int maxEffectiveTotalRangeChoice(int csIndex) {
+
+       fSchemaGrammar.getContentSpec(csIndex, tempContentSpec1);
+       int type = tempContentSpec1.type;
+       int left = tempContentSpec1.value;
+       int right = tempContentSpec1.otherValue;
+       int max = fSchemaGrammar.getContentSpecMaxOccurs(csIndex);
+
+       if (max == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+         return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+
+       int maxLeft = maxEffectiveTotalRange(left);
+       if (right == -2) {
+         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+           return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+         else 
+           return max * maxLeft;
+       }
+       else {
+         int maxRight = maxEffectiveTotalRange(right);
+         if (maxLeft == SchemaSymbols.OCCURRENCE_UNBOUNDED ||
+            maxRight == SchemaSymbols.OCCURRENCE_UNBOUNDED) 
+           return SchemaSymbols.OCCURRENCE_UNBOUNDED;
+         else
+           return max * ((maxLeft > maxRight)?maxLeft:maxRight);
+       }
+    }
+
 
     private String resolvePrefixToURI (String prefix) throws Exception  {
         String uriStr = fStringPool.toString(fNamespacesScope.getNamespaceForPrefix(fStringPool.addSymbol(prefix)));
@@ -3005,7 +3132,6 @@ public class TraverseSchema implements
 
         // -----------------------------------------------------------------------
         // Skip over any annotations in the restriction or extension elements
-        // todo - check whether the content can be empty...
         // -----------------------------------------------------------------------
         Element content = checkContent(simpleContent,
                               XUtil.getFirstChildElement(simpleContent),true); 
@@ -3333,7 +3459,6 @@ public class TraverseSchema implements
 
 
         // Skip over any annotations in the restriction or extension elements
-        // TODO - check whether the content can be empty...
         Element content = checkContent(complexContent,
                               XUtil.getFirstChildElement(complexContent),true); 
 
@@ -3897,8 +4022,14 @@ public class TraverseSchema implements
                 
                 int temp = fSchemaGrammar.getAttributeDeclIndex(typeInfo.templateElementIndex, fTempAttributeDecl.name);
                 if ( temp > -1) {
-                        attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
-                        continue;
+                  if (typeInfo.derivedBy==SchemaSymbols.EXTENSION) {
+                    reportGenericSchemaError("Attribute that appeared in the base should nnot appear in a derivation by extension");
+
+                  }
+                  else {
+                    attDefIndex = fSchemaGrammar.getNextAttributeDeclIndex(attDefIndex);
+                    continue;
+                  }
                 }
 
                
@@ -4349,6 +4480,7 @@ public class TraverseSchema implements
 
       fSchemaGrammar.getContentSpec(csIndex1, tempContentSpec1);
       fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
+ 
     
       int localpart1 = tempContentSpec1.value;
       int uri1 = tempContentSpec1.otherValue;
@@ -4362,7 +4494,12 @@ public class TraverseSchema implements
 
       //start the checking...
       if (!(localpart1==localpart2 && uri1==uri2)) {
-        throw new ParticleRecoverableError("rcase-nameAndTypeOK.1:  Element name/uri in restriction does not match that of corresponding base element");
+
+        // we have non-matching names.   Check substitution groups.
+        if (fSComp == null) 
+           fSComp = new SubstitutionGroupComparator(fGrammarResolver,fStringPool,fErrorReporter);
+        if (!checkSubstitutionGroups(localpart1,uri1,localpart2,uri2)) 
+          throw new ParticleRecoverableError("rcase-nameAndTypeOK.1:  Element name/uri in restriction does not match that of corresponding base element");
       }
  
       if (!checkOccurrenceRange(min1,max1,min2,max2)) {
@@ -4395,33 +4532,67 @@ public class TraverseSchema implements
       String element2Value = aGrammar.getElementDefaultValue(eltndx2);
       
       if (! (element2IsNillable || !element1IsNillable)) {
-        throw new ParticleRecoverableError("rcase-nameAndTypeOK.2:  Element " +fStringPool.toString(localpart1) + "is nillable in the restriction but not the base");
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.2:  Element " +fStringPool.toString(localpart1) + " is nillable in the restriction but not the base");
       }
 
       if (! (element2Value == null || !element2IsFixed ||  
              (element1IsFixed && element1Value.equals(element2Value)))) {
-        throw new ParticleRecoverableError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + "is either not fixed, or is not fixed with the same value as in the base");
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.4:  Element " +fStringPool.toString(localpart1) + " is either not fixed, or is not fixed with the same value as in the base");
       }
+
+      // check disallowed substitutions 
+      int blockSet1 = ((SchemaGrammar) aGrammar).getElementDeclBlockSet(eltndx1);
+      int blockSet2 = ((SchemaGrammar) aGrammar).getElementDeclBlockSet(eltndx2);
+      if (((blockSet1 & blockSet2)!=blockSet2) || 
+            (blockSet1==0 && blockSet2!=0))
+        throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Element " +fStringPool.toString(localpart1) + "'s disallowed subsitutions are not a superset of those of the base element's");
+
+
+      // Need element decls for the remainder of the checks
+      aGrammar.getElementDecl(eltndx1, fTempElementDecl); 
+      aGrammar.getElementDecl(eltndx2, fTempElementDecl2); 
          
       // check identity constraints 
-      checkIDConstraintRestriction(eltndx1, eltndx2, aGrammar, localpart1, localpart2);
-
-      // check disallowed substitutions - TO BE DONE
+      checkIDConstraintRestriction(fTempElementDecl, fTempElementDecl2, aGrammar, localpart1, localpart2);
 
       // check that the derived element's type is derived from the base's. - TO BE DONE
+      checkTypesOK(fTempElementDecl,fTempElementDecl2,eltndx1,eltndx2,aGrammar,fStringPool.toString(localpart1));
   
     }
 
-    private void checkIDConstraintRestriction(int derivedElemIndex, int baseElemIndex, 
+    private void checkTypesOK(XMLElementDecl derived, XMLElementDecl base, int dndx, int bndx, SchemaGrammar aGrammar, String elementName) throws Exception {
+      
+
+      if (derived.type == XMLElementDecl.TYPE_SIMPLE ) {
+ 
+        if (base.type != XMLElementDecl.TYPE_SIMPLE) 
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derive from that of the base");
+        if (!(checkSimpleTypeDerivationOK(derived.datatypeValidator,
+             base.datatypeValidator))) 
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+      }
+      else {
+        ComplexTypeInfo tempType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(dndx); 
+        ComplexTypeInfo bType=((SchemaGrammar)aGrammar).getElementComplexTypeInfo(bndx); 
+        for(; tempType != null; tempType = tempType.baseComplexTypeInfo) {
+          if (tempType.derivedBy != SchemaSymbols.RESTRICTION) {
+            throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+          }
+          if (tempType.typeName.equals(bType.typeName))
+            break; 
+        }
+        if(tempType == null) {
+          throw new ParticleRecoverableError("rcase-nameAndTypeOK.6:  Derived element " + elementName + " has a type that does not derives from that of the base");
+        }
+      }
+    }
+
+    private void checkIDConstraintRestriction(XMLElementDecl derivedElemDecl, XMLElementDecl baseElemDecl, 
                 SchemaGrammar grammar, int derivedElemName, int baseElemName) throws Exception {
         // this method throws no errors if the ID constraints on
         // the derived element are a logical subset of those on the
         // base element--that is, those that are present are
         // identical to ones in the base element.  
-        XMLElementDecl derivedElemDecl = new XMLElementDecl();
-        grammar.getElementDecl(derivedElemIndex, derivedElemDecl);
-        XMLElementDecl baseElemDecl = new XMLElementDecl();
-        grammar.getElementDecl(baseElemIndex, baseElemDecl);
         Vector derivedUnique = derivedElemDecl.unique;
         Vector baseUnique = baseElemDecl.unique;
         if(derivedUnique.size() > baseUnique.size()) {
@@ -4504,6 +4675,20 @@ public class TraverseSchema implements
         }
     } // checkIDConstraintRestriction
 
+    private boolean checkSubstitutionGroups(int local1, int uri1, int local2, int uri2) 
+throws Exception {
+
+       // check if either name is in the other's substitution group
+       QName name1 = new QName(-1,local1,local1,uri1);
+       QName name2 = new QName(-1,local2,local2,uri2);
+
+       if (fSComp.isEquivalentTo(name1,name2) ||
+           fSComp.isEquivalentTo(name2,name1)) 
+         return true;
+       else
+         return false;
+
+    }
     private boolean checkOccurrenceRange(int min1, int max1, int min2, int max2) {
 
       if (min1>=min2 && 
@@ -4529,6 +4714,7 @@ public class TraverseSchema implements
                 elementDeclIndex = gr.getElementDeclIndex(nameIndex,baseInfo.scopeDefined);
                 if (elementDeclIndex > -1) 
                    break;
+                baseInfo = baseInfo.baseComplexTypeInfo;
             }
          }
 
@@ -4622,7 +4808,7 @@ public class TraverseSchema implements
       return false;
     }
 
-    private void checkRecurseAsIfGroup(int csIndex1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) {
+    private void checkRecurseAsIfGroup(int csIndex1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
 
       fSchemaGrammar.getContentSpec(csIndex2, tempContentSpec2);
      
@@ -4644,21 +4830,172 @@ public class TraverseSchema implements
        
     }
 
-    private void checkNSRecurseCheckCardinality(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2) { 
+    private void checkNSRecurseCheckCardinality(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2) throws Exception {
 
+      // Implement total range check 
+      int min1 = minEffectiveTotalRange(csIndex1);
+      int max1 = maxEffectiveTotalRange(csIndex1);
+
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        throw new ParticleRecoverableError("rcase-NSSubset.2:  Wildcard's occurrence range not a restriction of base wildcard's range");
+      }
+
+      if (!wildcardEltSubset(csIndex1, csIndex2)) 
+         throw new ParticleRecoverableError("rcase-NSSubset.1:  Wildcard is not a subset of corresponding wildcard in base");
+      // Check that each member of the group is a valid restriction of the wildcard
+      int count = tempVector1.size();
+      for (int i = 0; i < count; i++) {
+         Integer particle1 = (Integer)tempVector1.elementAt(i);
+         checkParticleDerivationOK(particle1.intValue(),derivedScope,csIndex2,-1,null);
+      }
       
     }
 
-    private void checkRecurse(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
+    private void checkRecurse(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
+ 
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        throw new ParticleRecoverableError("rcase-Recurse.1:  Occurrence range of group is not a valid restriction of occurence range of base group");
+      }
+
+      int count1= tempVector1.size();
+      int count2= tempVector2.size();
+ 
+      int current = 0; 
+      for (int i = 0; i<count1; i++) {
+        // check if we've run out of items in the base
+        if (current >= count2) 
+           throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
+
+        Integer particle1 = (Integer)tempVector1.elementAt(i);
+        for (int j = current; j<count2; j++) {
+           Integer particle2 = (Integer)tempVector2.elementAt(j);
+           current +=1;
+           try {
+             checkParticleDerivationOK(particle1.intValue(),derivedScope, 
+                particle2.intValue(), baseScope, bInfo);
+             break;
+           }
+           catch (ParticleRecoverableError e) {
+             if (!particleEmptiable(particle2.intValue()))
+                throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
+           }
+        }
+      }
+      
     }
 
-    private void checkRecurseLax(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
+    private void checkRecurseUnordered(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        throw new ParticleRecoverableError("rcase-RecurseUnordered.1:  Occurrence range of group is not a valid restriction of occurence range of base group");
+      }
+
+      int count1= tempVector1.size();
+      int count2 = tempVector2.size();
+
+      boolean foundIt[] = new boolean[count2];
+
+      label: for (int i = 0; i<count1; i++) {
+
+        Integer particle1 = (Integer)tempVector1.elementAt(i);
+        for (int j = 0; j<count2; j++) {
+           Integer particle2 = (Integer)tempVector2.elementAt(j);
+           try {
+             checkParticleDerivationOK(particle1.intValue(),derivedScope, 
+                particle2.intValue(), baseScope, bInfo);
+             if (foundIt[j]) 
+	        throw new ParticleRecoverableError("rcase-RecurseUnordered.2:  There is not a complete functional mapping between the particles");
+             else
+                foundIt[j]=true;
+             
+             continue label;
+           }
+           catch (ParticleRecoverableError e) {
+           }
+        }
+        // didn't find a match.  Detect an error
+	throw new ParticleRecoverableError("rcase-RecurseUnordered.2:  There is not a complete functional mapping between the particles");
+      }
+
     }
 
-    private void checkRecurseUnordered(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) { 
+    private void checkRecurseLax(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
+
+      int min1 = fSchemaGrammar.getContentSpecMinOccurs(csIndex1);
+      int max1 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex1);
+      int min2 = fSchemaGrammar.getContentSpecMinOccurs(csIndex2);
+      int max2 = fSchemaGrammar.getContentSpecMaxOccurs(csIndex2);
+
+      // check Occurrence ranges
+      if (!checkOccurrenceRange(min1,max1,min2,max2)) {
+        throw new ParticleRecoverableError("rcase-RecurseLax.1:  Occurrence range of group is not a valid restriction of occurence range of base group");
+      }
+
+      int count1= tempVector1.size();
+      int count2 = tempVector2.size();
+
+      int current = 0;
+      label: for (int i = 0; i<count1; i++) {
+
+        Integer particle1 = (Integer)tempVector1.elementAt(i);
+        for (int j = current; j<count2; j++) {
+           Integer particle2 = (Integer)tempVector2.elementAt(j);
+           current +=1;
+           try {
+             checkParticleDerivationOK(particle1.intValue(),derivedScope, 
+                particle2.intValue(), baseScope, bInfo);
+             continue label;
+           }
+           catch (ParticleRecoverableError e) {
+           }
+        }
+        // didn't find a match.  Detect an error
+	throw new ParticleRecoverableError("rcase-Recurse.2:  There is not a complete functional mapping between the particles");
+
+      }
+
     }
 
-    private void checkMapAndSum(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) {
+    private void checkMapAndSum(int csIndex1, Vector tempVector1, int derivedScope, int csIndex2, Vector tempVector2, int baseScope, ComplexTypeInfo bInfo) throws Exception {
+
+      // See if the sequence group particle is a valid restriction of one of the particles 
+      // of the choice
+      // This isn't what the spec says, but I can't make heads or tails of the 
+      // algorithm in structures
+
+      int count2 = tempVector2.size();
+      boolean foundit = false; 
+      for (int i=0; i<count2; i++) {
+         Integer particle = (Integer)tempVector2.elementAt(i);
+         fSchemaGrammar.getContentSpec(particle.intValue(),tempContentSpec1);
+         if (tempContentSpec1.type == XMLContentSpec.CONTENTSPECNODE_SEQ)
+         try {
+           checkParticleDerivationOK(csIndex1,derivedScope,particle.intValue(),
+               baseScope, bInfo);
+           foundit = true;
+           break;
+         }
+         catch (ParticleRecoverableError e) {
+         }
+      }
+
+      if (!foundit) 
+	throw new ParticleRecoverableError("rcase-MapAndSum:  There is not a complete functional mapping between the particles");
     }
 
     private int importContentSpec(SchemaGrammar aGrammar, int contentSpecHead ) throws Exception {
