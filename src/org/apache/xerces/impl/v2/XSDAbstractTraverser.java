@@ -383,7 +383,8 @@ abstract class XSDAbstractTraverser {
             else if (childName.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
                 //REVISIT: do we need to save some state at this point??
                 tempAttrGrp = fSchemaHandler.fAttributeGroupTraverser.traverseLocal(
-                                                                                   child, schemaDoc, grammar);
+                       child, schemaDoc, grammar);
+                if(tempAttrGrp == null ) break;
                 XSAttributeUse[] attrUseS = tempAttrGrp.getAttributeUses();
                 XSAttributeUse existingAttrUse = null;
                 for (int i=0; i<attrUseS.length; i++) {

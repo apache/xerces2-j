@@ -666,10 +666,20 @@ class XSDHandler {
         XSDocumentInfo schemaWithDecl = null;
         SchemaGrammar sGrammar = null;
         Element decl = null;
+        Object retObj = null;
 
         if (declToTraverse.uri != null &&
             declToTraverse.uri.equals(SchemaSymbols.URI_SCHEMAFORSCHEMA)) {
             sGrammar = SchemaGrammar.SG_SchemaNS;
+            if(currSchema.fTargetNamespace != SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+                if(declType == TYPEDECL_TYPE) {
+                    retObj = sGrammar.getGlobalTypeDecl(declToTraverse.localpart);
+                }
+                if (retObj == null) {
+                    fElementTraverser.reportGenericSchemaError("Could not locate a component corresponding to " + declToTraverse.localpart);
+                    return null;
+                }
+            }
         } else {
             String declKey = declToTraverse.uri == null? ","+declToTraverse.localpart:
                     declToTraverse.uri+","+declToTraverse.localpart;
@@ -715,7 +725,6 @@ class XSDHandler {
             sGrammar = fGrammarResolver.getGrammar(schemaWithDecl.fTargetNamespace);
         }
 
-        Object retObj = null;
         switch (declType) {
         case ATTRIBUTE_TYPE :
             retObj = sGrammar.getGlobalAttributeDecl(declToTraverse.localpart);
