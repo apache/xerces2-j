@@ -94,13 +94,24 @@ class XSDocumentInfo {
     // the root of the schema Document tree itself
     protected Document fSchemaDoc;
 
-    XSDocumentInfo (Document schemaDoc) {
+    XSDocumentInfo (Document schemaDoc, XSAttributeChecker attrChecker) {
         fSchemaDoc = schemaDoc;
         if(schemaDoc != null) {
-            Element root = DOMUtil.getRoot(schemaDoc);
-
-            // assign attributes appropriately according to
-            // generalAttrCheck as applied to root.
+            Element root = DOMUtil.getRoot(schemaDoc); 
+            Object[] schemaAttrs = attrChecker.checkAttributes(root, true);
+            fAreLocalAttributesQualified =
+                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_AFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+            fAreLocalElementsQualified =
+                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_EFORMDEFAULT]).intValue() == SchemaSymbols.FORM_QUALIFIED;
+            fBlockDefault =
+                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_BLOCKDEFAULT]).intValue();
+            fFinalDefault =
+                ((Integer)schemaAttrs[XSAttributeChecker.ATTIDX_FINALDEFAULT]).intValue();
+            fTargetNamespace =
+                (String)schemaAttrs[XSAttributeChecker.ATTIDX_TARGETNAMESPACE];
+            if (fTargetNamespace == null)
+                fTargetNamespace = XSDHandler.EMPTY_STRING; 
+            attrChecker.returnAttrArray(schemaAttrs);
         }
     }
 } // XSDocumentInfo

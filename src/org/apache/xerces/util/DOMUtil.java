@@ -291,7 +291,12 @@ public class DOMUtil {
     // set this Node as being hidden
     public static void setHidden(Node node) {
         ((NodeImpl)node).setReadOnly(true, false);
-    } // setTraversed(node):void
+    } // setHidden(node):void
+
+    // set this Node as being visible
+    public static void setVisible(Node node) {
+        ((NodeImpl)node).setReadOnly(false, false);
+    } // setVisible(node):void
 
     // is this node hidden?
     public static boolean isHidden(Node node) {
