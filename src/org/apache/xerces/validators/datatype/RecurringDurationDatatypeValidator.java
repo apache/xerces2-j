@@ -77,28 +77,25 @@ import org.apache.xerces.validators.schema.SchemaSymbols;
 
 public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidator {
 
-    private static final boolean           fDbug             = false;
-    private Locale            fLocale           = null;
-    private DatatypeValidator fBaseValidator    = null; // A Native datatype is null
-    private String            fPattern          = null;
-    private long              fMaxInclusive     = 0L;
-    private long              fMaxExclusive     = 0L;
-    private long              fMinInclusive     = 0L;
-    private long              fMinExclusive     = 0L;
-    private long              fDuration         = 0L;
-    private long              fPeriod           = 0L;
-
-    private long[]            fEnumrecurringduration = null; // Time duration is represented internally as longs
-
-
-    private boolean           isMaxExclusiveDefined = false;
-    private boolean           isMaxInclusiveDefined = false;
-    private boolean           isMinExclusiveDefined = false;
-    private boolean           isMinInclusiveDefined = false;
-
-    private int               fFacetsDefined        = 0;
-
-    private boolean           fDerivedByList        = false;
+    private static final boolean   fDbug        = false;
+    private Locale    fLocale           = null;
+    DatatypeValidator fBaseValidator    = null; // A Native datatype is null
+    String            fPattern          = null;
+    long              fMaxInclusive     = Long.MAX_VALUE;
+    long              fMaxExclusive     = Long.MAX_VALUE-1;
+    long              fMinInclusive     = 1L;
+    long              fMinExclusive     = 0L;
+    long              fDuration         = 0L;
+    long              fPeriod           = 0L;
+    long[]            fEnumrecurringduration = null; // Time duration is represented internally as longs
+    boolean           isMaxExclusiveDefined = false;
+    boolean           isMaxInclusiveDefined = false;
+    boolean           isMinExclusiveDefined = false;
+    boolean           isMinInclusiveDefined = false;
+    boolean           isBaseTypeTimePeriod  = false;
+    int               fFacetsDefined        = 0;
+    boolean           fDerivedByList        = false;
+    Hashtable         fFacets        = null;
 
 
 
@@ -111,9 +108,12 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
     }
 
     public  RecurringDurationDatatypeValidator ( DatatypeValidator base, Hashtable facets, 
-                                  boolean derivedByList ) throws InvalidDatatypeFacetException {
+                                                 boolean derivedByList ) throws InvalidDatatypeFacetException {
         if ( base != null )
+        {
             setBasetype( base ); // Set base type 
+            fFacets = facets;
+        }
 
         // Set Facets if any defined
 
@@ -137,7 +137,7 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                             value         = ((String)facets.get(key));
 
 
-                            fMaxInclusive = normalizeDuration( value.toCharArray(), 0) ;
+                            fMaxInclusive = normalizeRecurringDuration( value.toCharArray(), 0) ;
                         } catch ( InvalidDatatypeValueException nfe ){
                             throw new InvalidDatatypeFacetException( getErrorString(
                                                                                    DatatypeMessageProvider.IllegalFacetValue,
@@ -149,7 +149,7 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                         String value = null;
                         try {
                             value         = ((String)facets.get(key));
-                            fMaxExclusive = normalizeDuration( value.toCharArray(), 0 );
+                            fMaxExclusive = normalizeRecurringDuration( value.toCharArray(), 0 );
                         } catch ( InvalidDatatypeValueException nfe ){
                             throw new InvalidDatatypeFacetException( getErrorString(
                                                                                    DatatypeMessageProvider.IllegalFacetValue,
@@ -161,7 +161,7 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                         String value = null;
                         try {
                             value         = ((String)facets.get(key));
-                            fMinInclusive = normalizeDuration( value.toCharArray(), 0 );
+                            fMinInclusive = normalizeRecurringDuration( value.toCharArray(), 0 );
                         } catch ( InvalidDatatypeValueException nfe ){
                             throw new InvalidDatatypeFacetException( getErrorString(
                                                                                    DatatypeMessageProvider.IllegalFacetValue,
@@ -173,7 +173,7 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                         String value = null;
                         try {
                             value         = ((String)facets.get(key));
-                            fMinExclusive = normalizeDuration( value.toCharArray(), 0 ); 
+                            fMinExclusive = normalizeRecurringDuration( value.toCharArray(), 0 ); 
                         } catch ( InvalidDatatypeValueException nfe ) {
                             throw new InvalidDatatypeFacetException( getErrorString(
                                                                                    DatatypeMessageProvider.IllegalFacetValue,
@@ -184,33 +184,33 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                         fFacetsDefined += DatatypeValidator.FACET_PERIOD;
                         String value = null;
                         try {
-                           value         = ((String)facets.get(key));
-                           fPeriod   = normalizeDuration( value.toCharArray(), 0 ); 
-                           if( this.fDbug == true ){
-                               System.out.println( "value = " + value );
-                               System.out.println("fPeriod = " + fPeriod );
-                           }
-                       } catch ( InvalidDatatypeValueException nfe ) {
-                           throw new InvalidDatatypeFacetException( getErrorString(
-                                     DatatypeMessageProvider.IllegalFacetValue,
-                                     DatatypeMessageProvider.MSG_NONE,
-                                     new Object [] { value, key}));
-                       }
+                            value         = ((String)facets.get(key));
+                            fPeriod   = normalizeRecurringDuration( value.toCharArray(), 0 ); 
+                            if ( fDbug == true ){
+                                System.out.println( "value = " + value );
+                                System.out.println("fPeriod = " + fPeriod );
+                            }
+                        } catch ( InvalidDatatypeValueException nfe ) {
+                            throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                   DatatypeMessageProvider.IllegalFacetValue,
+                                                                                   DatatypeMessageProvider.MSG_NONE,
+                                                                                   new Object [] { value, key}));
+                        }
                     } else if (key.equals(SchemaSymbols.ELT_DURATION )) {
                         fFacetsDefined += DatatypeValidator.FACET_DURATION;
                         String value = null;
                         try {
-                           value         = ((String)facets.get(key));
-                           fDuration     = normalizeDuration( value.toCharArray(), 0 ); 
-                           if( this.fDbug == true ){
-                               System.out.println("fDuration = " + fDuration );
-                           }
-                       } catch ( InvalidDatatypeValueException nfe ) {
-                           throw new InvalidDatatypeFacetException( getErrorString(
-                                     DatatypeMessageProvider.IllegalFacetValue,
-                                     DatatypeMessageProvider.MSG_NONE,
-                                     new Object [] { value, key}));
-                       }
+                            value         = ((String)facets.get(key));
+                            fDuration     = normalizeRecurringDuration( value.toCharArray(), 0 ); 
+                            if ( fDbug == true ){
+                                System.out.println("fDuration = " + fDuration );
+                            }
+                        } catch ( InvalidDatatypeValueException nfe ) {
+                            throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                   DatatypeMessageProvider.IllegalFacetValue,
+                                                                                   DatatypeMessageProvider.MSG_NONE,
+                                                                                   new Object [] { value, key}));
+                        }
 
 
                     } else {
@@ -249,24 +249,53 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                             for (; i < v.size(); i++){
                                 value = (String)v.elementAt(i);
                                 fEnumrecurringduration[i] = 
-                                             normalizeDuration( value.toCharArray(), 0 );
+                                normalizeRecurringDuration( value.toCharArray(), 0 );
                                 boundsCheck( fEnumrecurringduration[i] ); // Check against max,min Inclusive, Exclusives
                             }
-                           if( this.fDbug == true ){
-                               System.out.println( "The enumeration vectory is " + value );
-                               for( int enumCounter = 0;
-                                  enumCounter < this.fEnumrecurringduration.length; enumCounter++ ) {
-                                   System.out.println( "fEnumrecurringduration[" + enumCounter + "]" );
-                               }
-                           }
+                            if ( fDbug == true ){
+                                System.out.println( "The enumeration vectory is " + value );
+                                for ( int enumCounter = 0;
+                                    enumCounter < this.fEnumrecurringduration.length; enumCounter++ ) {
+                                    System.out.println( "fEnumrecurringduration[" + enumCounter + "]" );
+                                }
+                            }
                         } catch (InvalidDatatypeValueException idve) {
                             throw new InvalidDatatypeFacetException(
-                                getErrorString(DatatypeMessageProvider.InvalidEnumValue,
-                                    DatatypeMessageProvider.MSG_NONE,
-                                        new Object [] { v.elementAt(i)}));
+                                                                   getErrorString(DatatypeMessageProvider.InvalidEnumValue,
+                                                                                  DatatypeMessageProvider.MSG_NONE,
+                                                                                  new Object [] { v.elementAt(i)}));
                         }
                     }
                 }
+            
+             if( fBaseValidator != null ) { // Check if basetype of Period id null
+                        String value        = null;
+                        long   baseTypePeriod;
+                        try {
+                            Hashtable  baseValidatorFacet = fBaseValidator.getFacets();
+                            if( baseValidatorFacet != null ) {
+                                 value         = ((String)baseValidatorFacet.get(SchemaSymbols.ELT_PERIOD ));
+                                 if( value != null ) {
+                                      fPeriod       = normalizeRecurringDuration( value.toCharArray(), 0 ); 
+                                      if( fPeriod == 0 ){
+                                          isBaseTypeTimePeriod = true;
+                                      }
+                                      if ( fDbug == true ){
+                                          System.out.println( "value = " + value );
+                                          System.out.println("fPeriod = " + fPeriod );
+                                      }
+                                 }
+                            }
+                        } catch ( InvalidDatatypeValueException nfe ) {
+                            throw new InvalidDatatypeFacetException( getErrorString(
+                                                                                   DatatypeMessageProvider.IllegalFacetValue,
+                                                                                   DatatypeMessageProvider.MSG_NONE,
+                                                                                   new Object [] { value, SchemaSymbols.ELT_PERIOD}));
+                        }
+             }
+
+
+
             } else { //Derived by List TODO 
                 fDerivedByList = true;
 
@@ -290,6 +319,21 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
         long normalizedValue;
 
         if ( fDerivedByList == false  ) { //derived by constraint
+
+
+            if( fDbug == true ) {
+                 System.out.println( "Write fFacetsDefined = " + fFacetsDefined );
+                 if ( ( fFacetsDefined & DatatypeValidator.FACET_DURATION ) != 0 ){
+                     System.out.println( "Duration = " + this.fDuration );
+                 }
+                 if ( ( fFacetsDefined & DatatypeValidator.FACET_PERIOD ) != 0 ){
+                     System.out.println( "Period = " + this.fPeriod );
+                 }
+                 System.out.println("datatype = " + this.fBaseValidator );
+            }
+
+
+
             if ( fPattern != null ) {
                 RegularExpression regex = new RegularExpression(fPattern, "X" );
                 if ( regex.matches( content) == false )
@@ -297,16 +341,21 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
                                                             "does not match regular expression facet" + fPattern );
             }
 
-            Calendar cal = normalizeInstant(content.toCharArray(), 0, content.length() ); 
+
+
+            //normalizeRecurringDuration(content.toCharArray(), 0 );
+
+            //Calendar cal = normalizeInstant(content.toCharArray(), 0, content.length() ); 
+
             //System.out.println( "cal = " + cal.toString() );
             //try {
             //boundsCheck( normalizedValue );
-           // } catch( InvalidDatatypeFacetException ex ){
-             //   throw new InvalidDatatypeValueException( "Boundary error:" );
+            // } catch( InvalidDatatypeFacetException ex ){
+            //   throw new InvalidDatatypeValueException( "Boundary error:" );
             //}
 
             //if ( fEnumrecurringduration != null )
-              //  enumCheck( normalizedValue );
+            //  enumCheck( normalizedValue );
 
         } else { //derived by list 
         }
@@ -337,259 +386,23 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
     }
 
     public Hashtable getFacets(){
-        return null;
+        return fFacets;
     }
 
     // Here start private methods
+    // Work in Progress ------- 
 
-    private static long normalizeDuration(char[] value, int start ) 
-    throws InvalidDatatypeValueException
-    {
-        int i=0, j=0, k=0, l=0, m=0;
-        int sepindex  = 0;
-        int index     = start;
-        int lindex    = 0;
-        int endindex  = (start+ value.length)-1;
-        int pendindex = endindex;
+    private static long normalizeRecurringDuration(char[] value, int start ) 
+        throws InvalidDatatypeValueException {
+        long   normalizedDuration = 0L;
 
-        final char[] dseps = {'Y','M','D'};
-        final char[] tseps = {'H','M','S'};
-        final char[] msc = {'0','0','0'};
-
-        final int[] buckets = new int[Calendar.FIELD_COUNT];
-        for (i=0;i<buckets.length;i++)
-            buckets[i]=0;
-
-        boolean intime           = false;
-        boolean fixed            = false;
-        boolean p1negative       = false;
-        boolean p2negative       = false;
-        boolean p1specified      = false;
-        boolean p2specified      = false;
-        GregorianCalendar cstart = null;
-        GregorianCalendar cend   = null;
-
-        //Start phase 1: capture start and/or end instant.
-
-        if( fDbug == true ) {
-             System.out.println( "normalizedDuration" );
-             for( int p = 0; p < value.length; p++ ){
-                 System.out.print( value[p] );
-             }
-             System.out.println("");
-        }
+        //System.out.println("value to normalize = " + value );
+        //This method will convert the Lexical representation of re
+        //CCYY-MM-DDThh:mm:ss.sss 
+        //
 
 
-        try
-        {
-            if (value[index]=='-')
-            {
-                p1negative=true;
-            }
-            //Look for the forward slash.
-            int ix = indexOf(value, start, '/');
-
-            if (ix > -1 && ix < endindex)
-            {
-                //System.out.println( "Inside ix section " );
-                if (value[ix+1]=='-')
-                {
-                    p2negative=true;
-                }
-                //If the first term starts with a 'P', pin it for later parsing 
-                if (value[(p1negative?index+1:index)]=='P')
-                {
-                    if (p1negative)
-                        index++;
-                    p1specified = true;
-                    pendindex   = ix-1;
-                }
-                //Otherwise parse it for a timeInstant
-                else
-                {
-                    cstart = (GregorianCalendar) normalizeInstant(value, index, ix-index);
-                }
-                //If the second term starts with a 'P', pin it for later parsing 
-                if (value[(p2negative?(ix+2):(ix+1))]=='P')
-                {
-                    p2specified=true;
-                    index=(p2negative?(ix+2):(ix+1));
-                }
-                //Otherwise parse it for a timeInstant
-                else
-                {
-                    ix++;
-                    cend = (GregorianCalendar)  normalizeInstant(value,ix,(endindex-ix)+1);
-                }
-            }
-            //Only one term specified.
-            else
-            {
-                //System.out.println(" inside only one term section" );
-                index=(p1negative?(start+1):(start));
-            }
-            //If both terms are instants, return the millisecond difference
-
-            if( fDbug == true ) {
-                 System.out.println( "cstart = " +  cstart );
-                 System.out.println( "cend   = " +  cend   );
-            }
-
-            if (cstart != null && cend != null)
-            {
-                return((cend.getTime().getTime() - cstart.getTime().getTime()));
-            }
-            //If both terms are 'P', error.
-            if (p1specified && p2specified)
-                throw new ParseException("Period cannot be expressed as 2 durations.", 0);
-
-            if (p1specified && value[index] != 'P')
-            {
-                throw new ParseException("Invalid start character for recurringduration:"+value[index], index);
-            }
-            if (p2specified && value[index] != 'P')
-            {
-                throw new ParseException("Invalid start character for recurringduration:"+value[index], index);
-            }
-        } catch (Exception e)
-        {
-            throw new InvalidDatatypeValueException(e.toString());
-        }
-        //Second phase....parse 'P' term
-        try
-        {
-
-            lindex=index+1;
-            for (i=index+1;i<=pendindex;i++)
-            {
-                if( fDbug == true ){
-                    System.out.println( "Second Phaser value = " + value );
-                }
-                //Accumulate digits.
-                if (Character.isDigit(value[i]) || value[i]=='.')
-                {
-                    if (value[i]=='.')fixed=true;
-                    continue;
-                }
-                if (value[i]=='T')
-                {
-                    intime=true;
-                    sepindex=0;
-                    lindex=i+1;
-                    continue;
-                }
-                //If you get a separator, it must be appropriate for the section.
-
-                if( fDbug ){
-                System.out.println("tseps = >" + tseps +"<" );
-                }
-                sepindex = indexOf((intime?tseps:dseps), sepindex, value[i]);
-
-                if (sepindex == -1 && intime == true )
-                    throw new ParseException("Illegal or misplaced separator.", i);
-                sepindex++;
-
-                //Fractional digits are allowed only for seconds.
-                if (fixed && value[i]!='S')
-                    throw new ParseException("Fractional digits allowed only for 'seconds'.", i);
-
-                j=0;
-                switch (value[i])
-                {
-                case('Y'):
-                    {   if(fDbug )
-                           System.out.println("Inside the Y" );
-                        if (intime)throw new ParseException("Year must be specified before 'T' separator.", i);
-                        buckets[Calendar.YEAR]= parseInt(value, lindex, i-lindex);
-                        break;
-                    }
-                case('D'):
-                    {
-                        if( fDbug )
-                           System.out.println("Inside the D" );
-                        if (intime)throw new ParseException("Days must be specified before 'T' separator.", i);
-                        buckets[Calendar.DAY_OF_MONTH]= parseInt(value, lindex, i-lindex);
-                        break;
-                    }
-                case('H'):
-                    {
-                        if( fDbug ) 
-                           System.out.println( "Inside the H" );
-                        if (!intime)throw new ParseException("Hours must be specified after 'T' separator.", i);
-                        buckets[Calendar.HOUR_OF_DAY]= parseInt(value, lindex, i-lindex);
-                        break;
-                    }
-                case('M'):
-                    {
-                        if( fDbug )
-                           System.out.println( "Inside the M" );
-                        buckets[(intime?Calendar.MINUTE:Calendar.MONTH)]= parseInt(value, lindex, i-lindex);
-                        break;
-                    }
-                case('S'):
-                    {
-                        if( fDbug )
-                           System.out.println( "Inside S" );
-                        if (!intime)throw new ParseException("Seconds must be specified after 'T' separator.", i);
-                        if (!fixed)buckets[Calendar.SECOND]= parseInt(value, lindex, i-lindex);
-                        else
-                        {
-                            int ps = indexOf(value, lindex, '.');
-                            buckets[Calendar.SECOND]= parseInt(value, lindex, ps-lindex);
-                            ps++;k=0;
-                            while ((ps <= pendindex) && (k<3) && Character.isDigit(value[ps]))
-                                msc[k++]=value[ps++];
-                            buckets[Calendar.MILLISECOND]= parseInt(msc, 0, 3);
-                            fixed=false;
-                        }
-                        break;
-                    }
-                default:
-                    {
-                        throw new ParseException("Illegal 'picture' character: "+value[i], i);
-                    }
-                }
-                lindex=i+1;
-            }
-        } catch (Exception e)
-        {
-            throw new InvalidDatatypeValueException(e.toString());
-        }
-        //Third phase, make the calculations.
-        try
-        {
-            //Roll the start calendar forward and return difference.
-            if (cstart !=null)
-            {
-                long st = cstart.getTime().getTime();
-                for (k=0;k<buckets.length;k++)
-                    if (buckets[k]!=0)cstart.add(k, (p2negative?-buckets[k]:buckets[k]));
-                long ms = cstart.getTime().getTime();
-                return((ms-st));
-            }
-            //Roll the end calendar backward and return difference.
-            if (cend !=null)
-            {
-                long st = cend.getTime().getTime();
-                for (k=0;k<buckets.length;k++)
-                    if (buckets[k]>0) cend.add(k, (p1negative?buckets[k]:-buckets[k]));
-                long ms = cend.getTime().getTime();
-                return((ms-st));
-            }
-            //Otherwise roll the relative specification forward and reverse the sing as appropriate.     
-            long r=(((long)(( (buckets[Calendar.YEAR]*31104000L)+
-                              (buckets[Calendar.MONTH]*2592000L)+
-                              (buckets[Calendar.DAY_OF_MONTH]*86400L)+
-                              (buckets[Calendar.HOUR_OF_DAY]*3600L)+
-                              (buckets[Calendar.MINUTE]*60L)+
-                              (buckets[Calendar.SECOND]))*1000L)+
-                     (buckets[Calendar.MILLISECOND])));
-
-            return((p1negative?-r:r));
-        } catch (Exception e)
-        {
-            throw new InvalidDatatypeValueException(e.toString());
-        }
+        return normalizedDuration;
     }
 
     public static Calendar normalizeInstant(char[] value, int start,
@@ -672,15 +485,19 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
             return(cal);
         } catch (Exception e)
         {
-            e.printStackTrace();
-            throw new InvalidDatatypeValueException("Unable to parse timeInstant "+e.toString());
+            if ( fDbug ){
+                e.printStackTrace();
+                return null;
+            } else  {
+                throw new InvalidDatatypeValueException("Unable to parse timeInstant "+e.toString());
+            }
         }
     }
 
 
-  /**
-     * Returns a copy of this object.
-     */
+    /**
+       * Returns a copy of this object.
+       */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException("clone() is not supported in "+this.getClass().getName());
     }
@@ -709,9 +526,9 @@ public class RecurringDurationDatatypeValidator extends AbstractDatatypeValidato
 
         if ( inUpperBound == false  || inLowerBound == false ) { // within bounds ?
             throw new InvalidDatatypeFacetException(
-                                getErrorString(DatatypeMessageProvider.OutOfBounds,
-                                    DatatypeMessageProvider.MSG_NONE,
-                                        new Object [] { new Long(f) }));
+                                                   getErrorString(DatatypeMessageProvider.OutOfBounds,
+                                                                  DatatypeMessageProvider.MSG_NONE,
+                                                                  new Object [] { new Long(f)}));
         }
     }
 
