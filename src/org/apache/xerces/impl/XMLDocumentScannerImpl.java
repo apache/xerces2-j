@@ -334,7 +334,7 @@ public class XMLDocumentScannerImpl
         String[] featureIds = super.getRecognizedFeatures();
         int length = featureIds != null ? featureIds.length : 0;
         String[] combinedFeatureIds = new String[length + RECOGNIZED_FEATURES.length];
-        if (featureIds == null) {
+        if (featureIds != null) {
             System.arraycopy(featureIds, 0, combinedFeatureIds, 0, featureIds.length);
         }
         System.arraycopy(RECOGNIZED_FEATURES, 0, combinedFeatureIds, length, RECOGNIZED_FEATURES.length);
@@ -381,7 +381,7 @@ public class XMLDocumentScannerImpl
         String[] propertyIds = super.getRecognizedProperties();
         int length = propertyIds != null ? propertyIds.length : 0;
         String[] combinedPropertyIds = new String[length + RECOGNIZED_PROPERTIES.length];
-        if (propertyIds == null) {
+        if (propertyIds != null) {
             System.arraycopy(propertyIds, 0, combinedPropertyIds, 0, propertyIds.length);
         }
         System.arraycopy(RECOGNIZED_PROPERTIES, 0, combinedPropertyIds, length, RECOGNIZED_PROPERTIES.length);
