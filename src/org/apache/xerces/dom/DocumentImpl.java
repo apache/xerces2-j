@@ -1021,7 +1021,7 @@ public class DocumentImpl
                                  MutationEventImpl.DOM_CHARACTER_DATA_MODIFIED,
                                      true, false, null,
                                      oldvalue, value, null, (short) 0);
-                dispatchEvent(me);
+                dispatchEvent(node, me);
             }
             
             // Subroutine: Transmit DOMAttrModified and DOMSubtreeModified,
