@@ -20,12 +20,30 @@
   <release version='&ParserName; TBD'>
    <desc>TBD</desc>
    <changes>
+    <add>
+     <note>
+      Implemented SAX 2.0.2 and SAX2 Extensions 1.1.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </add>
+    <fix>
+     <note>
+      Fixed a SAX conformance bug concerning skipped entities.
+     </note>
+     <submitter name='Michael Glavassevich'/>
+    </fix>
     <fix>
      <note>
       Fixed various DOM Level 3 bugs.
      </note>
      <submitter name='Jonathan Au, Neil Delima, Michael Glavassevich, Naela Nissar, K. Venugopal'/>
     </fix>
+    <update>
+     <note>
+      Added support for EntityResolver2 and LSResourceResolver to XMLCatalogResolver.
+     </note>
+     <submitter name='Michael Glavassevich, John Kim'/>
+    </update>
     <fix>
      <note>
       Fixed a thread-safety bug concerning identity constraints which caused
