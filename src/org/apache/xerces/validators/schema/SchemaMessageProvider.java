@@ -172,14 +172,15 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         KeyNotFound = 35,
         UnknownField = 36,
         KeyRefReferNotFound = 37,
-        // ...
         FixedDiffersFromActual = 38,
         // simpleType
         InvalidBaseType = 39,
         FieldMultipleMatch = 40,
         KeyRefOutOfScope = 41,
+        AbsentKeyValue = 42, 
+        // ...
         
-        MSG_MAX_CODE = 41;
+        MSG_MAX_CODE = 43;
     //
     // Minor Codes
     //
@@ -230,6 +231,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "InvalidBaseType",
         "FieldMultipleMatch",
         "KeyRefOutOfScope",
+        "AbsentKeyValue", 
         // END
     };
 }

@@ -1171,7 +1171,7 @@ public final class XMLValidator
               if (DEBUG_IDENTITY_CONSTRAINTS) {
                   System.out.println("<IC>: "+matcher.toString()+"#startElement("+fStringPool.toString(element.rawname)+")");
               }
-              matcher.startElement(element, fAttrList, fAttrListHandle, fCurrentScope);
+              matcher.startElement(element, fAttrList, fAttrListHandle, fElementDepth);
           }
       }
       
@@ -1375,7 +1375,7 @@ public final class XMLValidator
              if (DEBUG_IDENTITY_CONSTRAINTS) {
                  System.out.println("<IC>: "+matcher+"#endElement("+fStringPool.toString(fCurrentElement.rawname)+")");
              }
-             matcher.endElement(fCurrentElement, fCurrentScope);
+             matcher.endElement(fCurrentElement, fElementDepth);
          }
          if (DEBUG_IDENTITY_CONSTRAINTS) {
              System.out.println("<IC>: popping context - element: "+fStringPool.toString(fCurrentElement.rawname));
@@ -4543,7 +4543,13 @@ public final class XMLValidator
             //          when we expect a field value but never see it. A
             //          better solution has to be found. -Ac
             // REVISIT: Is this a problem? -Ac
+            // Yes - NG
             if (fValuesCount == 0) {
+                if(fIdentityConstraint.getType() == IdentityConstraint.KEY) {
+                    int code = SchemaMessageProvider.AbsentKeyValue;
+                    String eName = fIdentityConstraint.getElementName();
+                    reportSchemaError(code, new Object[]{eName});
+                }
                 return;
             }
 

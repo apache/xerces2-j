@@ -596,6 +596,8 @@ public class XPathMatcher {
         fBufferContent = false;
         fMatchedBuffer.setLength(0);
         fMatchedString = null;
+        for(int i = 0; i<fLocationPaths.length; i++)
+            fMatched[i] = false;
     } // clear()
 
     /** Normalizes text. */
