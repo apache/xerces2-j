@@ -77,18 +77,9 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     /** These are DocumentBuilderFactory attributes not DOM attributes */
     private Hashtable attributes;
 
-    public DocumentBuilderFactoryImpl() {
-        // Set the default schema language to DTD
-        try {
-            setAttribute(DocumentBuilderImpl.JAXP_SCHEMA_LANGUAGE, "DTD");
-        } catch (IllegalArgumentException x) {
-            // Assume this is b/c parser does not support this feature and
-            // so we just ignore it
-        }
-    }
-
     /**
-     * 
+     * Creates a new instance of a {@link javax.xml.parsers.DocumentBuilder}
+     * using the currently configured parameters.
      */
     public DocumentBuilder newDocumentBuilder()
         throws ParserConfigurationException 
@@ -104,15 +95,29 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     /**
      * Allows the user to set specific attributes on the underlying 
      * implementation.
+     * @param name    name of attribute
+     * @param value   null means to remove attribute
      */
     public void setAttribute(String name, Object value)
         throws IllegalArgumentException
     {
-        // XXX This is ugly.  We have to collect the attributes and then
+        // This handles removal of attributes
+        if (value == null) {
+            if (attributes != null) {
+                attributes.remove(name);
+            }
+            // Unrecognized attributes do not cause an exception
+            return;
+        }
+        
+        // This is ugly.  We have to collect the attributes and then
         // later create a DocumentBuilderImpl to verify the attributes.
+
+        // Create Hashtable if none existed before
         if (attributes == null) {
             attributes = new Hashtable();
         }
+
         attributes.put(name, value);
 
         // Test the attribute name by possibly throwing an exception
