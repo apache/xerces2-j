@@ -136,9 +136,10 @@ public class TraverseSchema implements
     private static final int TOP_LEVEL_SCOPE = -1;
 
     /** Identity constraint keywords. */
-    private static final String[] IDENTITY_CONSTRAINTS = {
-        SchemaSymbols.ELT_UNIQUE, 
-        SchemaSymbols.ELT_KEY, SchemaSymbols.ELT_KEYREF
+    private static final String[][] IDENTITY_CONSTRAINTS = {
+        { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_UNIQUE },
+        { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEY }, 
+        { SchemaSymbols.URI_SCHEMAFORSCHEMA, SchemaSymbols.ELT_KEYREF },
     };
     private static final String redefIdentifier = "#redefined";
 
@@ -4606,7 +4607,7 @@ public class TraverseSchema implements
         // key/keyref/unique processing
         //
 
-        Element ic = XUtil.getFirstChildElement(elementDecl, IDENTITY_CONSTRAINTS);
+        Element ic = XUtil.getFirstChildElementNS(elementDecl, IDENTITY_CONSTRAINTS);
         if (ic != null) {
             Integer elementIndexObj = new Integer(elementIndex);
             Vector identityConstraints = (Vector)fIdentityConstraints.get(elementIndexObj);
@@ -4619,7 +4620,7 @@ public class TraverseSchema implements
                     System.out.println("<ICD>: adding ic for later traversal: "+ic);
                 }
                 identityConstraints.addElement(ic);
-                ic = XUtil.getNextSiblingElement(ic, IDENTITY_CONSTRAINTS);
+                ic = XUtil.getNextSiblingElementNS(ic, IDENTITY_CONSTRAINTS);
             }
         }
         
@@ -4630,7 +4631,6 @@ public class TraverseSchema implements
     private void traverseIdentityConstraintsFor(int elementIndex,
                                                 Vector identityConstraints)
         throws Exception {
-
 
         // iterate over identity constraints for this element
         int size = identityConstraints != null ? identityConstraints.size() : 0;
@@ -4740,7 +4740,9 @@ public class TraverseSchema implements
                                             Element icelem) throws Exception {
         
         // get selector
-        Element selem = XUtil.getFirstChildElement(icelem, SchemaSymbols.ELT_SELECTOR);
+        Element selem = XUtil.getFirstChildElementNS(icelem, 
+                                                     SchemaSymbols.URI_SCHEMAFORSCHEMA,
+                                                     SchemaSymbols.ELT_SELECTOR);
         String stext = CR_IMPL
                      ? selem.getAttribute(SchemaSymbols.ATT_XPATH) 
                      : XUtil.getChildText(selem);
@@ -4750,13 +4752,8 @@ public class TraverseSchema implements
             // REVISIT: Must get ruling from XML Schema working group
             //          regarding whether steps in the XPath must be
             //          fully qualified if the grammar has a target
-            //          namespace.
-            //
-            //          For now, I'm going to follow the identity
-            //          constraint example in the XML Schema CR that
-            //          doesn't fully qualify the steps (with the
-            //          implied assumption that the URI for unqualified
-            //          steps is equal to the target namespace). -Ac
+            //          namespace. -Ac
+            //          RESOLUTION: Yes.
             sxpath = new Selector.XPath(stext, fStringPool, 
                                         fNamespacesScope);
             Selector selector = new Selector(sxpath, ic);
@@ -4773,7 +4770,9 @@ public class TraverseSchema implements
 
         // get fields
         Element parent = (Element)icelem.getParentNode();
-        Element felem = XUtil.getNextSiblingElement(selem, SchemaSymbols.ELT_FIELD);
+        Element felem = XUtil.getNextSiblingElementNS(selem, 
+                                                      SchemaSymbols.URI_SCHEMAFORSCHEMA,
+                                                      SchemaSymbols.ELT_FIELD);
         while (felem != null) {
             String ftext = CR_IMPL
                          ? felem.getAttribute(SchemaSymbols.ATT_XPATH) 
@@ -4783,13 +4782,8 @@ public class TraverseSchema implements
                 // REVISIT: Must get ruling from XML Schema working group
                 //          regarding whether steps in the XPath must be
                 //          fully qualified if the grammar has a target
-                //          namespace.
-                //
-                //          For now, I'm going to follow the identity
-                //          constraint example in the XML Schema CR that
-                //          doesn't fully qualify the steps (with the
-                //          implied assumption that the URI for unqualified
-                //          steps is equal to the target namespace). -Ac
+                //          namespace. -Ac
+                //          RESOLUTION: Yes.
                 Field.XPath fxpath = new Field.XPath(ftext, fStringPool, 
                                                      fNamespacesScope);
                 // REVISIT: Get datatype validator. -Ac
@@ -4896,7 +4890,7 @@ public class TraverseSchema implements
                 case XPath.Axis.CHILD: {
                     int index = fSchemaGrammar.getElementDeclIndex(nodeTest.name, edeclIndex);
                     if (index == -1) {
-                        index = fSchemaGrammar.getElementDeclIndex(nodeTest.name, -1);
+                        index = fSchemaGrammar.getElementDeclIndex(nodeTest.name, Grammar.TOP_LEVEL_SCOPE);
                     }
                     if (index == -1) {
                         // REVISIT: Add message. -Ac

@@ -282,6 +282,72 @@ public class XUtil {
 
     } // getNextSiblingdElement(Node,String):Element
 
+    /** Finds and returns the first child node with the given qualified name. */
+    public static Element getFirstChildElementNS(Node parent, 
+                                                 String uri, String localpart) {
+
+        // search for node
+        Node child = parent.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                String childURI = child.getNamespaceURI();
+                if (childURI != null && childURI.equals(uri) &&
+                    child.getLocalName().equals(localpart)) {
+                    return (Element)child;
+                }
+            }
+            child = child.getNextSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getFirstChildElementNS(Node,String,String):Element
+
+    /** Finds and returns the last child node with the given qualified name. */
+    public static Element getLastChildElementNS(Node parent, 
+                                                String uri, String localpart) {
+
+        // search for node
+        Node child = parent.getLastChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                String childURI = child.getNamespaceURI();
+                if (childURI != null && childURI.equals(uri) &&
+                    child.getLocalName().equals(localpart)) {
+                    return (Element)child;
+                }
+            }
+            child = child.getPreviousSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getLastChildElementNS(Node,String,String):Element
+
+    /** Finds and returns the next sibling node with the given qualified name. */
+    public static Element getNextSiblingElementNS(Node node, 
+                                                  String uri, String localpart) {
+
+        // search for node
+        Node sibling = node.getNextSibling();
+        while (sibling != null) {
+            if (sibling.getNodeType() == Node.ELEMENT_NODE) {
+                String siblingURI = sibling.getNamespaceURI();
+                if (siblingURI != null && siblingURI.equals(uri) &&
+                    sibling.getLocalName().equals(localpart)) {
+                    return (Element)sibling;
+                }
+            }
+            sibling = sibling.getNextSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getNextSiblingdElementNS(Node,String,String):Element
+
     /** Finds and returns the first child node with the given name. */
     public static Element getFirstChildElement(Node parent, String elemNames[]) {
 
@@ -344,6 +410,78 @@ public class XUtil {
         return null;
 
     } // getNextSiblingdElement(Node,String[]):Element
+
+    /** Finds and returns the first child node with the given qualified name. */
+    public static Element getFirstChildElementNS(Node parent, 
+                                                 String[][] elemNames) {
+
+        // search for node
+        Node child = parent.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                for (int i = 0; i < elemNames.length; i++) {
+                    String uri = child.getNamespaceURI();
+                    if (uri != null && uri.equals(elemNames[i][0]) &&
+                        child.getLocalName().equals(elemNames[i][1])) {
+                        return (Element)child;
+                    }
+                }
+            }
+            child = child.getNextSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getFirstChildElementNS(Node,String[][]):Element
+
+    /** Finds and returns the last child node with the given qualified name. */
+    public static Element getLastChildElementNS(Node parent, 
+                                                String[][] elemNames) {
+
+        // search for node
+        Node child = parent.getLastChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                for (int i = 0; i < elemNames.length; i++) {
+                    String uri = child.getNamespaceURI();
+                    if (uri != null && uri.equals(elemNames[i][0]) &&
+                        child.getLocalName().equals(elemNames[i][1])) {
+                        return (Element)child;
+                    }
+                }
+            }
+            child = child.getPreviousSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getLastChildElementNS(Node,String[][]):Element
+
+    /** Finds and returns the next sibling node with the given qualified name. */
+    public static Element getNextSiblingElementNS(Node node, 
+                                                  String[][] elemNames) {
+
+        // search for node
+        Node sibling = node.getNextSibling();
+        while (sibling != null) {
+            if (sibling.getNodeType() == Node.ELEMENT_NODE) {
+                for (int i = 0; i < elemNames.length; i++) {
+                    String uri = sibling.getNamespaceURI();
+                    if (uri != null && uri.equals(elemNames[i][0]) &&
+                        sibling.getLocalName().equals(elemNames[i][1])) {
+                        return (Element)sibling;
+                    }
+                }
+            }
+            sibling = sibling.getNextSibling();
+        }
+
+        // not found
+        return null;
+
+    } // getNextSiblingdElementNS(Node,String[][]):Element
 
     /**
      * Finds and returns the first child node with the given name and
