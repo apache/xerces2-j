@@ -660,56 +660,80 @@ public class RangeImpl  implements Range {
     public void insertNode(Node newNode)
         throws DOMException, RangeException
     {
-    	if( fDetach) {
+    	if ( newNode == null ) return; //throw exception?
+        
+        if( fDetach) {
     		throw new DOMException(
     			DOMException.INVALID_STATE_ERR, 
 			"DOM011 Invalid state");
     	}
+        if ( ((NodeImpl)fStartContainer.getParentNode()).getReadOnly() ) {
+            throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,"DOM007 Read Only node");
+
+        }
+        if ( fDocument != newNode.getOwnerDocument() ) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,"DOM004 Wrong document");
+        }
+        if ( isAncestorOf( newNode, fStartContainer) ) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "DOM003 Hierarchy request");
+        }
+
+
         int type = newNode.getNodeType();
         if (type == Node.ATTRIBUTE_NODE
             || type == Node.ENTITY_NODE
             || type == Node.NOTATION_NODE
-            || type == Node.DOCUMENT_NODE
-            || type == Node.DOCUMENT_FRAGMENT_NODE)
+            || type == Node.DOCUMENT_NODE)
         {
     		throw new RangeExceptionImpl(
     			RangeException.INVALID_NODE_TYPE_ERR, 
 			"DOM012 Invalid node type");
         }
-        if (newNode == null) return; //throw exception?
         Node cloneCurrent;
         Node current;
-        boolean MULTIPLE_MODE = false;
+        int currentChildren = 0;
+
+        //boolean MULTIPLE_MODE = false;
         if (fStartContainer.getNodeType() == Node.TEXT_NODE) {
-            if (newNode.getNodeType()!= Node.TEXT_NODE) { // result is 3 text nodes...
-                cloneCurrent = fStartContainer.cloneNode(false);
-                ((TextImpl)cloneCurrent).setNodeValueInternal(
+        
+            Node parent = fStartContainer.getParentNode();
+            currentChildren = parent.getChildNodes().getLength(); //holds number of kids before insertion
+            // split text node: results is 3 nodes..
+            cloneCurrent = fStartContainer.cloneNode(false);
+            ((TextImpl)cloneCurrent).setNodeValueInternal(
                     (cloneCurrent.getNodeValue()).substring(fStartOffset));
-                ((TextImpl)fStartContainer).setNodeValueInternal(
+            ((TextImpl)fStartContainer).setNodeValueInternal(
                     (fStartContainer.getNodeValue()).substring(0,fStartOffset));
-                Node next = fStartContainer.getNextSibling();
-                if (next != null) {
-                    Node parent = fStartContainer.getParentNode();
+            Node next = fStartContainer.getNextSibling();
+            if (next != null) {
                     if (parent !=  null) {
                         parent.insertBefore(newNode, next);
                         parent.insertBefore(cloneCurrent, next);
                     }
-                } else {
-                    Node parent = fStartContainer.getParentNode();
+            } else {
                     if (parent != null) {
                         parent.appendChild(newNode);
                         parent.appendChild(cloneCurrent);
                     }
-                }
-                // signal other Ranges to update their start/end containers/offsets
-                signalSplitData(fStartContainer, cloneCurrent, fStartOffset);
-                
-            } else { // result is 1 text node.
-                String value = fStartContainer.getNodeValue();
-                String newValue = newNode.getNodeValue();
-                insertData( (CharacterData)fStartContainer, fStartOffset, newValue);
             }
+             //update ranges after the insertion
+             if ( fEndContainer == fStartContainer) {
+                  fEndContainer = cloneCurrent; //endContainer is the new Node created
+                  fEndOffset -= fStartOffset;   
+             }
+             else if ( fEndContainer == parent ) {    //endContainer was not a text Node.
+                  //endOffset + = number_of_children_added
+                   fEndOffset += (parent.getChildNodes().getLength() - currentChildren);  
+             }
+
+             // signal other Ranges to update their start/end containers/offsets
+             signalSplitData(fStartContainer, cloneCurrent, fStartOffset);
+                
+             
         } else { // ! TEXT_NODE
+            if ( fEndContainer == fStartContainer )      //need to remember number of kids
+                currentChildren= fEndContainer.getChildNodes().getLength();
+
             current = fStartContainer.getFirstChild();
             int i = 0;
             for(i = 0; i < fStartOffset && current != null; i++) {
@@ -720,8 +744,13 @@ public class RangeImpl  implements Range {
             } else {
                 fStartContainer.appendChild(newNode);
             }
-        }                
-        
+            //update fEndOffset. ex:<body><p/></body>. Range(start;end): body,0; body,1
+            // insert <h1>: <body></h1><p/></body>. Range(start;end): body,0; body,2
+            if ( fEndContainer == fStartContainer ) {     //update fEndOffset
+                fEndOffset += (fEndContainer.getChildNodes().getLength() - currentChildren);
+            }
+
+        } 
     }
     
     public void surroundContents(Node newParent)
