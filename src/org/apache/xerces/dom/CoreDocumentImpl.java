@@ -339,7 +339,7 @@ public class CoreDocumentImpl
             // Copy children into new document.
             for (ChildNode kid = firstChild; kid != null;
                  kid = kid.nextSibling) {
-                newdoc.appendChild(newdoc.importNode(kid, true,
+                newdoc.appendChild(newdoc.importNode(kid, true, true,
                                                      reversedIdentifiers));
             }
         }
@@ -853,7 +853,7 @@ public class CoreDocumentImpl
      */
     public Node importNode(Node source, boolean deep)
 	throws DOMException {
-        return importNode(source, deep, null);
+        return importNode(source, deep, false, null);
     } // importNode(Node,boolean):Node
 
     /**
@@ -868,7 +868,7 @@ public class CoreDocumentImpl
      * the identifier is registered with the new, imported element. If
      * reversedIdentifiers is null, the parameter is not applied.
      */
-    private Node importNode(Node source, boolean deep,
+    private Node importNode(Node source, boolean deep, boolean cloningDoc,
                             Hashtable reversedIdentifiers)
 	throws DOMException {
         Node newnode=null;
@@ -907,7 +907,7 @@ public class CoreDocumentImpl
 
                         // Copy the attribute only if it is not a default.
                         if (attr.getSpecified()) {
-                            Attr newAttr = (Attr)importNode(attr, true,
+                            Attr newAttr = (Attr)importNode(attr, true, false,
                                                           reversedIdentifiers);
 
                             // Attach attribute according to namespace
@@ -1020,7 +1020,45 @@ public class CoreDocumentImpl
 		break;
             }
     	    
-        case DOCUMENT_FRAGMENT_NODE: {
+            case DOCUMENT_TYPE_NODE: {
+                // unless this is used as part of cloning a Document
+                // forbid it for the sake of being compliant to the DOM spec
+                if (!cloningDoc) {
+                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                                  "Node type being imported is not supported");
+                }
+                DocumentType srcdoctype = (DocumentType)source;
+                DocumentTypeImpl newdoctype = (DocumentTypeImpl)
+                    createDocumentType(srcdoctype.getNodeName(),
+                                       srcdoctype.getPublicId(),
+                                       srcdoctype.getSystemId());
+                // Values are on NamedNodeMaps
+                NamedNodeMap smap = srcdoctype.getEntities();
+                NamedNodeMap tmap = newdoctype.getEntities();
+                if(smap != null) {
+                    for(int i = 0; i < smap.getLength(); i++) {
+                        tmap.setNamedItem(importNode(smap.item(i), true, false,
+                                                     reversedIdentifiers));
+                    }
+                }
+                smap = srcdoctype.getNotations();
+                tmap = newdoctype.getNotations();
+                if (smap != null) {
+                    for(int i = 0; i < smap.getLength(); i++) {
+                        tmap.setNamedItem(importNode(smap.item(i), true, false,
+                                                     reversedIdentifiers));
+                    }
+                }
+                // NOTE: At this time, the DOM definition of DocumentType
+                // doesn't cover Elements and their Attributes. domimpl's
+                // extentions in that area will not be preserved, even if
+                // copying from domimpl to domimpl. We could special-case
+                // that here. Arguably we should. Consider. ?????
+                newnode = newdoctype;
+                break;
+            }
+
+            case DOCUMENT_FRAGMENT_NODE: {
 		newnode = createDocumentFragment();
 		// No name, kids carry value
 		break;
@@ -1037,7 +1075,6 @@ public class CoreDocumentImpl
 		// No name, no value
 		break;
             }
-            case DOCUMENT_TYPE_NODE: // can't import doctype nodes
             case DOCUMENT_NODE : // Can't import document nodes
             default: {           // Unknown node type
                 throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
@@ -1050,7 +1087,7 @@ public class CoreDocumentImpl
 	    for (Node srckid = source.getFirstChild();
                  srckid != null;
                  srckid = srckid.getNextSibling()) {
-		newnode.appendChild(importNode(srckid, true,
+		newnode.appendChild(importNode(srckid, true, false,
                                                reversedIdentifiers));
 	    }
         }
@@ -1060,7 +1097,7 @@ public class CoreDocumentImpl
         }
     	return newnode;
 
-    } // importNode(Node,boolean,Hashtable):Node
+    } // importNode(Node,boolean,boolean,Hashtable):Node
 
     /**
      * DOM Level 3 WD - Experimental
