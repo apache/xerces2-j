@@ -45,13 +45,13 @@
   </faq>
 
   <faq title="XML Base Support">
-    <q>Does the Xerces XInclude processor recognize xml:base attributes?</q>
+    <q>Does the XInclude processor recognize xml:base attributes?</q>
     <a> 
      <p>
       Yes. The XInclude specification requires processors to use the base URI
       (as specified in the <jump href="http://www.w3.org/TR/xmlbase/">XML Base</jump>
       recommendation) to resolve relative IURIs to compute the
-      <jump href="http://www.w3.org/TR/xinclude#include-location">include location</jump>.
+      <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/#include-location">include location</jump>.
       Support for XML Base was added to the XInclude implementation in Xerces 2.6.0.
      </p>
     </a>
@@ -62,9 +62,34 @@
     <a>
      <p>
       Currently, our implementation of XInclude is not fully complete, and we do
-      not support <jump href="http://www.w3.org/TR/xinclude/">XPointer</jump>
+      not support <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/#XPCore">XPointer</jump>
       references.  We hope that in the future we will have a
       fully compliant XInclude processor that can handle this feature.
+     </p>
+    </a>
+  </faq>
+  
+  <faq title="Content Negotation">
+    <q>Are the values of the content negotation attributes used in an HTTP request?</q>
+    <a>
+     <p>
+      Currently, the values of <code>accept</code>, <code>accept-charset</code> and
+      <code>accept-language</code> from an 
+      <jump href="http://www.w3.org/TR/2003/WD-xinclude-20031110/#include_element">include</jump>
+      element are only placed in an HTTP request for included items when parse="text". We hope
+      that in the future we will be able to support content negotation for included items
+      when parse="xml".
+     </p>
+    </a>
+  </faq>
+  
+  <faq title="The Namespace: 'http://www.w3.org/2001/XInclude'">
+    <q>Will the XInclude processor process include elements from the 'http://www.w3.org/2001/XInclude' namespace?</q>
+    <a>
+     <p>
+      No. The namespace for XInclude was changed during development to <code>http://www.w3.org/2003/XInclude</code>.
+      It is recommended that XInclude processors provide a diagnostic for <code>include</code> elements
+      in the old namespace. Xerces' XInclude processor will report a warning.
      </p>
     </a>
   </faq>
