@@ -808,7 +808,7 @@ public class CoreDocumentImpl
       * the version number of this document. This is null when unspecified
       */
     public void setXmlVersion(String value) {
-        if(version.equals("1.0") || version.equals("1.1")){
+        if(value.equals("1.0") || value.equals("1.1")){
             version = value;
         }
         else{
