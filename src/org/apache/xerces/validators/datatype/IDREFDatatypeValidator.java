@@ -153,7 +153,19 @@ public class IDREFDatatypeValidator extends AbstractDatatypeValidator {
             }
         } else {
 
+            if (state!= null){
+                message = (StateMessageDatatype) state;    
+                if (message.getDatatypeState() == IDREFDatatypeValidator.IDREF_CLEAR ){
+                    if ( this.fTableOfId != null ){
+                        fTableOfId.clear(); //This is pass to us through the state object
+                    }
+                    if ( this.fTableIDRefs != null ){
+                        fTableIDRefs.clear(); 
+                    }
+                    return null;
 
+                }
+            }
         }
         return null;
     }
