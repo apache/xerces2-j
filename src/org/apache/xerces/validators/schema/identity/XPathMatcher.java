@@ -61,6 +61,7 @@ import org.apache.xerces.framework.XMLAttrList;
 import org.apache.xerces.validators.common.XMLAttributeDecl;
 import org.apache.xerces.validators.common.XMLElementDecl;
 import org.apache.xerces.validators.schema.SchemaGrammar;
+import org.apache.xerces.validators.schema.SchemaSymbols;
 import org.apache.xerces.validators.datatype.DatatypeValidator;
 
 import org.apache.xerces.utils.IntStack;
@@ -237,7 +238,7 @@ public class XPathMatcher {
      * XPath expression. Subclasses can override this method to
      * provide default handling upon a match.
      */
-    protected void matched(String content, DatatypeValidator val) throws Exception {
+    protected void matched(String content, DatatypeValidator val, boolean isNil) throws Exception {
         if (DEBUG_METHODS3) {
             System.out.println(toString()+"#matched(\""+normalize(content)+"\")");
         }
@@ -434,7 +435,7 @@ public class XPathMatcher {
                                     XMLAttributeDecl tempAttDecl = new XMLAttributeDecl();
                                     fGrammar.getAttributeDecl(attIndex, tempAttDecl);
                                     DatatypeValidator aValidator = tempAttDecl.datatypeValidator;
-                                    matched(fMatchedString, aValidator);
+                                    matched(fMatchedString, aValidator, false);
                                 }
                             }
                             break;
@@ -519,11 +520,11 @@ public class XPathMatcher {
                 if (fBufferContent) {
                     fBufferContent = false;
                     fMatchedString = fMatchedBuffer.toString();
-                    int eIndex = fGrammar.getElementDeclIndex(element, scope);
+                    int eIndex = fGrammar.getElementDeclIndex(element, scope); 
                     XMLElementDecl temp = new XMLElementDecl();
                     fGrammar.getElementDecl(eIndex, temp);
                     DatatypeValidator val = temp.datatypeValidator;
-                    matched(fMatchedString, val);
+                    matched(fMatchedString, val, (fGrammar.getElementDeclMiscFlags(eIndex) & SchemaSymbols.NILLABLE) != 0);
                 }
                 clear();
             }

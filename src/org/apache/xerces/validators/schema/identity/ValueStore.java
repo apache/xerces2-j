@@ -93,4 +93,10 @@ public interface ValueStore {
      */
     public void addValue(Field field, IDValue value) throws Exception;
 
+    /* report an error if a nillable element is being keyed on.
+     * the implementor must check that a <key> really is present, not a <unique> or <keyref>.
+     * @param:  id:  the IdentityConstraint that has matched.
+     */
+    public void reportNilError(IdentityConstraint id) throws Exception;
+
 } // interface ValueStore

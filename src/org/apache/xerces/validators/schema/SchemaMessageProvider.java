@@ -178,9 +178,10 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         FieldMultipleMatch = 40,
         KeyRefOutOfScope = 41,
         AbsentKeyValue = 42, 
+        KeyMatchesNillable = 43,
         // ...
         
-        MSG_MAX_CODE = 43;
+        MSG_MAX_CODE = 44;
     //
     // Minor Codes
     //
@@ -232,6 +233,7 @@ public class SchemaMessageProvider implements XMLMessageProvider {
         "FieldMultipleMatch",
         "KeyRefOutOfScope",
         "AbsentKeyValue", 
+        "KeyMatchesNillable", 
         // END
     };
 }

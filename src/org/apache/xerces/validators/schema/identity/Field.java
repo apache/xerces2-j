@@ -206,8 +206,11 @@ public class Field {
          * This method is called when the XPath handler matches the
          * XPath expression.
          */
-        protected void matched(String content, DatatypeValidator val) throws Exception {
-            super.matched(content, val);
+        protected void matched(String content, DatatypeValidator val, boolean isNil) throws Exception {
+            super.matched(content, val, isNil);
+            if(isNil) {
+                fStore.reportNilError(fIdentityConstraint);
+            }
             fStore.addValue(Field.this, new IDValue(content, val));
             // once we've stored the value for this field, we set the mayMatch
             // member to false so that, in the same scope, we don't match any more

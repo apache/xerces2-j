@@ -4616,7 +4616,18 @@ public final class XMLValidator
         //
         // ValueStore methods
         //
-       
+
+        /* reports an error if an element is matched
+         * has nillable true and is matched by a key.
+         */
+
+        public void reportNilError(IdentityConstraint id) throws Exception {
+            if(id.getType() == IdentityConstraint.KEY) {
+                int code = SchemaMessageProvider.KeyMatchesNillable;
+                reportSchemaError(code, new Object[]{id.getElementName()});
+            }
+        } // reportNilError
+
         /**
          * Adds the specified value to the value store.
          *

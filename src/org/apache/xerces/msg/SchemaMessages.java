@@ -113,6 +113,7 @@ public class SchemaMessages extends ListResourceBundle {
         {"FieldMultipleMatch", "Identity constraint error:  field \"{0}\" matches more than one value within the scope of its selector; fields must match unique values"},
         {"KeyRefOutOfScope", "Identity Constraint error:  identity constraint \"{0}\" has a keyref which refers to a key or unique that is out of scope."},
         {"AbsentKeyValue", "Identity Constraint error (cvc-identity-constraint.4.2.1):  element \"{0}\" has a key with no value."},
+        {"KeyMatchesNillable", "Identity Constraint error (cvc-identity-constraint.4.2.3):  element \"{0}\" has a key which matches an element which has nillable set to true."},
         
     };
     
