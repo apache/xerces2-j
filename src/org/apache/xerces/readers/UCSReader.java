@@ -736,7 +736,7 @@ final class UCSReader extends XMLEntityReader implements StringPool.StringProduc
                     XMLCharacterProperties.initCharFlags();
                     fCalledCharPropInit = true;
                 }
-                if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_InitialNameCharFlag) == 0) {
+                if ((XMLCharacterProperties.fgCharFlags[ch] & XMLCharacterProperties.E_NameCharFlag) == 0) {
                     break;
                 }
             }
