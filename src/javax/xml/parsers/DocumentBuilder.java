@@ -168,7 +168,9 @@ public abstract class DocumentBuilder {
     public Document parse(File file)
     throws SAXException, IOException, IllegalArgumentException {
         if (file==null) throw new IllegalArgumentException();
-        return(this.parse(new InputSource(file.getName())));
+        // Thanks to Kevin Kress <Kevin.Kress@oracle.com> for pointing
+        // out this bug.
+        return(this.parse(new InputSource(file.getAbsolutePath())));
     }
 
     /**
