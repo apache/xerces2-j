@@ -2534,7 +2534,8 @@ public class AbstractDOMParser extends AbstractXMLDocumentParser {
             }
 
             if (fDOMFilter !=null) {
-                if ((fDOMFilter.getWhatToShow() & NodeFilter.SHOW_TEXT)!= 0) {
+			if ( (child.getNodeType() == Node.TEXT_NODE ) &&
+					((fDOMFilter.getWhatToShow() & NodeFilter.SHOW_TEXT)!= 0) ) {
                     short code = fDOMFilter.acceptNode(child);
                     switch (code) {
                         case LSParserFilter.FILTER_INTERRUPT:{

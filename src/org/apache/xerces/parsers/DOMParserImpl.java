@@ -722,8 +722,17 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
      *
      */
     public Document parseURI(String uri)  {
-        XMLInputSource source = new XMLInputSource(null, uri, null);
 
+        //If DOMParser insstance is already busy parsing another document when this
+        // method is called, then raise INVALID_STATE_ERR according to DOM L3 LS spec
+        if ( fBusy ) {
+            String msg = DOMMessageFormatter.formatMessage(
+                DOMMessageFormatter.DOM_DOMAIN,
+               "INVALID_STATE_ERR",null);
+            throw new DOMException( DOMException.INVALID_STATE_ERR,msg);
+        }
+        
+		XMLInputSource source = new XMLInputSource(null, uri, null);
         fBusy = true;
         try {
             parse(source);
@@ -754,8 +763,15 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
         // need to wrap the LSInput with an XMLInputSource
         XMLInputSource xmlInputSource = dom2xmlInputSource(is);
         fBusy = true;
-
-        try {
+		
+        if ( fBusy ) {
+           String msg = DOMMessageFormatter.formatMessage(
+           DOMMessageFormatter.DOM_DOMAIN,
+               "INVALID_STATE_ERR",null);
+               throw new DOMException( DOMException.INVALID_STATE_ERR,msg);
+           }
+        
+		try {
             parse(xmlInputSource);
             fBusy = false;
         } catch (Exception e) {
@@ -851,6 +867,19 @@ extends AbstractDOMParser implements LSParser, DOMConfiguration {
 	 */
 	public boolean getBusy() {
 		return fBusy;
-	}
+	} 
+	
+	/**
+	* @see org.w3c.dom.ls.DOMParser#abort()
+    */
+    public void abort() {
+	    // If parse operation is in progress then reset it
+        if ( fBusy ) {
+            //Revisit :: Just reset in not sufficient.
+            reset();
+            fBusy = false;
+        }
+        return; // If not busy then this is noop 
+     }
 
 } // class DOMParserImpl
