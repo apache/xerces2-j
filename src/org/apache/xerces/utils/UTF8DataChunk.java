@@ -136,141 +136,144 @@ public class UTF8DataChunk implements StringPool.StringProducer {
     //
     //
     public String toString(int offset, int length) {
-        int outOffset = 0;
-        UTF8DataChunk dataChunk = this;
-        int endOffset = offset + length;
-        int index = offset & CHUNK_MASK;
-        byte[] data = fData;
-        boolean skiplf = false;
-        while (offset < endOffset) {
-            int b0 = data[index++] & 0xff;
-            offset++;
-            if (index == CHUNK_SIZE && offset < endOffset) {
-                dataChunk = dataChunk.fNextChunk;
-                data = dataChunk.fData;
-                index = 0;
-            }
-            if (b0 < 0x80) {
-                if (skiplf) {
-                    skiplf = false;
-                    if (b0 == 0x0A)
-                        continue;
+
+        synchronized (fgTempBufferLock) {
+            int outOffset = 0;
+            UTF8DataChunk dataChunk = this;
+            int endOffset = offset + length;
+            int index = offset & CHUNK_MASK;
+            byte[] data = fData;
+            boolean skiplf = false;
+            while (offset < endOffset) {
+                int b0 = data[index++] & 0xff;
+                offset++;
+                if (index == CHUNK_SIZE && offset < endOffset) {
+                    dataChunk = dataChunk.fNextChunk;
+                    data = dataChunk.fData;
+                    index = 0;
                 }
-                if (b0 == 0x0D) {
-                    b0 = 0x0A;
-                    skiplf = true;
+                if (b0 < 0x80) {
+                    if (skiplf) {
+                        skiplf = false;
+                        if (b0 == 0x0A)
+                            continue;
+                    }
+                    if (b0 == 0x0D) {
+                        b0 = 0x0A;
+                        skiplf = true;
+                    }
+                    try {
+                        fgTempBuffer[outOffset] = (char)b0;
+                        outOffset++;
+                    } catch (NullPointerException ex) {
+                        fgTempBuffer = new char[CHUNK_SIZE];
+                        fgTempBuffer[outOffset++] = (char)b0;
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        char[] newBuffer = new char[outOffset * 2];
+                        System.arraycopy(fgTempBuffer, 0, newBuffer, 0, outOffset);
+                        fgTempBuffer = newBuffer;
+                        fgTempBuffer[outOffset++] = (char)b0;
+                    }
+                    continue;
                 }
-                try {
-                    fTempBuffer[outOffset] = (char)b0;
-                    outOffset++;
-                } catch (NullPointerException ex) {
-                    fTempBuffer = new char[CHUNK_SIZE];
-                    fTempBuffer[outOffset++] = (char)b0;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    char[] newBuffer = new char[outOffset * 2];
-                    System.arraycopy(fTempBuffer, 0, newBuffer, 0, outOffset);
-                    fTempBuffer = newBuffer;
-                    fTempBuffer[outOffset++] = (char)b0;
+                int b1 = data[index++] & 0xff;
+                offset++;
+                if (index == CHUNK_SIZE && offset < endOffset) {
+                    dataChunk = dataChunk.fNextChunk;
+                    data = dataChunk.fData;
+                    index = 0;
                 }
-                continue;
-            }
-            int b1 = data[index++] & 0xff;
-            offset++;
-            if (index == CHUNK_SIZE && offset < endOffset) {
-                dataChunk = dataChunk.fNextChunk;
-                data = dataChunk.fData;
-                index = 0;
-            }
-            if ((0xe0 & b0) == 0xc0) { // 110yyyyy 10xxxxxx
-                int ch = ((0x1f & b0)<<6) + (0x3f & b1); // yyy yyxx xxxx (0x80 to 0x7ff)
-                try {
-                    fTempBuffer[outOffset] = (char)ch;
-                    outOffset++;
-                } catch (NullPointerException ex) {
-                    fTempBuffer = new char[CHUNK_SIZE];
-                    fTempBuffer[outOffset++] = (char)ch;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    char[] newBuffer = new char[outOffset * 2];
-                    System.arraycopy(fTempBuffer, 0, newBuffer, 0, outOffset);
-                    fTempBuffer = newBuffer;
-                    fTempBuffer[outOffset++] = (char)ch;
+                if ((0xe0 & b0) == 0xc0) { // 110yyyyy 10xxxxxx
+                    int ch = ((0x1f & b0)<<6) + (0x3f & b1); // yyy yyxx xxxx (0x80 to 0x7ff)
+                    try {
+                        fgTempBuffer[outOffset] = (char)ch;
+                        outOffset++;
+                    } catch (NullPointerException ex) {
+                        fgTempBuffer = new char[CHUNK_SIZE];
+                        fgTempBuffer[outOffset++] = (char)ch;
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        char[] newBuffer = new char[outOffset * 2];
+                        System.arraycopy(fgTempBuffer, 0, newBuffer, 0, outOffset);
+                        fgTempBuffer = newBuffer;
+                        fgTempBuffer[outOffset++] = (char)ch;
+                    }
+                    continue;
                 }
-                continue;
-            }
-            int b2 = data[index++] & 0xff;
-            offset++;
-            if (index == CHUNK_SIZE && offset < endOffset) {
-                dataChunk = dataChunk.fNextChunk;
-                data = dataChunk.fData;
-                index = 0;
-            }
-            if ((0xf0 & b0) == 0xe0) { // 1110zzzz 10yyyyyy 10xxxxxx
-                int ch = ((0x0f & b0)<<12) + ((0x3f & b1)<<6) + (0x3f & b2); // zzzz yyyy yyxx xxxx (0x800 to 0xffff)
-                try {
-                    fTempBuffer[outOffset] = (char)ch;
-                    outOffset++;
-                } catch (NullPointerException ex) {
-                    fTempBuffer = new char[CHUNK_SIZE];
-                    fTempBuffer[outOffset++] = (char)ch;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    char[] newBuffer = new char[outOffset * 2];
-                    System.arraycopy(fTempBuffer, 0, newBuffer, 0, outOffset);
-                    fTempBuffer = newBuffer;
-                    fTempBuffer[outOffset++] = (char)ch;
+                int b2 = data[index++] & 0xff;
+                offset++;
+                if (index == CHUNK_SIZE && offset < endOffset) {
+                    dataChunk = dataChunk.fNextChunk;
+                    data = dataChunk.fData;
+                    index = 0;
                 }
-                continue;
-            }
-            int b3 = data[index++] & 0xff;  // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
-            offset++;
-            if (index == CHUNK_SIZE && offset < endOffset) {
-                dataChunk = dataChunk.fNextChunk;
-                data = dataChunk.fData;
-                index = 0;
-            }
-            int ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12) + ((0x3f & b2)<<6) + (0x3f & b3);
-            if (ch < 0x10000) {
-                try {
-                    fTempBuffer[outOffset] = (char)ch;
-                    outOffset++;
-                } catch (NullPointerException ex) {
-                    fTempBuffer = new char[CHUNK_SIZE];
-                    fTempBuffer[outOffset++] = (char)ch;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    char[] newBuffer = new char[outOffset * 2];
-                    System.arraycopy(fTempBuffer, 0, newBuffer, 0, outOffset);
-                    fTempBuffer = newBuffer;
-                    fTempBuffer[outOffset++] = (char)ch;
+                if ((0xf0 & b0) == 0xe0) { // 1110zzzz 10yyyyyy 10xxxxxx
+                    int ch = ((0x0f & b0)<<12) + ((0x3f & b1)<<6) + (0x3f & b2); // zzzz yyyy yyxx xxxx (0x800 to 0xffff)
+                    try {
+                        fgTempBuffer[outOffset] = (char)ch;
+                        outOffset++;
+                    } catch (NullPointerException ex) {
+                        fgTempBuffer = new char[CHUNK_SIZE];
+                        fgTempBuffer[outOffset++] = (char)ch;
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        char[] newBuffer = new char[outOffset * 2];
+                        System.arraycopy(fgTempBuffer, 0, newBuffer, 0, outOffset);
+                        fgTempBuffer = newBuffer;
+                        fgTempBuffer[outOffset++] = (char)ch;
+                    }
+                    continue;
                 }
-            } else {
-                char ch1 = (char)(((ch-0x00010000)>>10)+0xd800);
-                char ch2 = (char)(((ch-0x00010000)&0x3ff)+0xdc00);
-                try {
-                    fTempBuffer[outOffset] = (char)ch1;
-                    outOffset++;
-                } catch (NullPointerException ex) {
-                    fTempBuffer = new char[CHUNK_SIZE];
-                    fTempBuffer[outOffset++] = (char)ch1;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    char[] newBuffer = new char[outOffset * 2];
-                    System.arraycopy(fTempBuffer, 0, newBuffer, 0, outOffset);
-                    fTempBuffer = newBuffer;
-                    fTempBuffer[outOffset++] = (char)ch1;
+                int b3 = data[index++] & 0xff;  // 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx
+                offset++;
+                if (index == CHUNK_SIZE && offset < endOffset) {
+                    dataChunk = dataChunk.fNextChunk;
+                    data = dataChunk.fData;
+                    index = 0;
                 }
-                try {
-                    fTempBuffer[outOffset] = (char)ch2;
-                    outOffset++;
-                } catch (NullPointerException ex) {
-                    fTempBuffer = new char[CHUNK_SIZE];
-                    fTempBuffer[outOffset++] = (char)ch2;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    char[] newBuffer = new char[outOffset * 2];
-                    System.arraycopy(fTempBuffer, 0, newBuffer, 0, outOffset);
-                    fTempBuffer = newBuffer;
-                    fTempBuffer[outOffset++] = (char)ch2;
+                int ch = ((0x0f & b0)<<18) + ((0x3f & b1)<<12) + ((0x3f & b2)<<6) + (0x3f & b3);
+                if (ch < 0x10000) {
+                    try {
+                        fgTempBuffer[outOffset] = (char)ch;
+                        outOffset++;
+                    } catch (NullPointerException ex) {
+                        fgTempBuffer = new char[CHUNK_SIZE];
+                        fgTempBuffer[outOffset++] = (char)ch;
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        char[] newBuffer = new char[outOffset * 2];
+                        System.arraycopy(fgTempBuffer, 0, newBuffer, 0, outOffset);
+                        fgTempBuffer = newBuffer;
+                        fgTempBuffer[outOffset++] = (char)ch;
+                    }
+                } else {
+                    char ch1 = (char)(((ch-0x00010000)>>10)+0xd800);
+                    char ch2 = (char)(((ch-0x00010000)&0x3ff)+0xdc00);
+                    try {
+                        fgTempBuffer[outOffset] = (char)ch1;
+                        outOffset++;
+                    } catch (NullPointerException ex) {
+                        fgTempBuffer = new char[CHUNK_SIZE];
+                        fgTempBuffer[outOffset++] = (char)ch1;
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        char[] newBuffer = new char[outOffset * 2];
+                        System.arraycopy(fgTempBuffer, 0, newBuffer, 0, outOffset);
+                        fgTempBuffer = newBuffer;
+                        fgTempBuffer[outOffset++] = (char)ch1;
+                    }
+                    try {
+                        fgTempBuffer[outOffset] = (char)ch2;
+                        outOffset++;
+                    } catch (NullPointerException ex) {
+                        fgTempBuffer = new char[CHUNK_SIZE];
+                        fgTempBuffer[outOffset++] = (char)ch2;
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        char[] newBuffer = new char[outOffset * 2];
+                        System.arraycopy(fgTempBuffer, 0, newBuffer, 0, outOffset);
+                        fgTempBuffer = newBuffer;
+                        fgTempBuffer[outOffset++] = (char)ch2;
+                    }
                 }
             }
+            return new String(fgTempBuffer, 0, outOffset);
         }
-        return new String(fTempBuffer, 0, outOffset);
     }
     //
     //
@@ -600,5 +603,6 @@ public class UTF8DataChunk implements StringPool.StringProducer {
     private UTF8DataChunk fNextChunk;
     private UTF8DataChunk fPreviousChunk;
     private static UTF8DataChunk fgFreeChunks = null;
-    private char[] fTempBuffer = null;
+    private static char[] fgTempBuffer = null;
+    private static Object fgTempBufferLock = new Object();
 }
