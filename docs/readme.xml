@@ -25,6 +25,24 @@
 		direct your feedback to the &javaparsername; mailing list.</p>
 
 	</s2>
+      <s2 title='Extracting the &javaparsername; &javaparserversion; Source'>
+           <p>
+            The Xerces 1.x codebase has been moved to a branch of the CVS 
+            module. In order to extract the Xerces 1.x code, you must specify 
+            the "xerces_j_1" branch using the "-r" option. For example, to
+            extract the Java sources for Xerces 1.x in a directory called
+            "xerces1", enter the following commands: (each "cvs" command
+            is entered on a single line; the password for the cvs login is
+            "anoncvs")
+           </p>
+            <source>
+cvs -d :pserver:anoncvs@cvs.apache.org:/home/cvspublic
+login
+
+cvs -d :pserver:anoncvs@cvs.apache.org:/home/cvspublic
+checkout -d xerces1 -r xerces_j_1 xml-xerces
+            </source>
+        </s2>
 	<s2 title="License Information">
 		<p>The &javaparsername; &javaparserversion; release is available in both source code
 		and precompiled binary (JAR files) form. Both &javaparsername; 
