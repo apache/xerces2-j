@@ -2,7 +2,7 @@
  * The Apache Software License, Version 1.1
  *
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * Copyright (c) 1999, 2000 The Apache Software Foundation.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,7 @@ import org.xml.sax.SAXNotSupportedException;
 /**
  * Wraps the Xerces DOM parser and extends NonValidatingDOMParser
  *
- * @version
+ * @version  $id$
  */
 public class DOMParser 
     implements DOMParserWrapper, ErrorHandler {
