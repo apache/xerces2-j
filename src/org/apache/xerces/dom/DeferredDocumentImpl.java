@@ -295,7 +295,6 @@ public class DeferredDocumentImpl
         // initialize encoding and version for DOM Level 3 - el
         setChunkValue(fNodeValue, null, echunk, eindex);
         setChunkValue(fNodeURI, null, echunk, eindex);
-
         // return node index
         return nodeIndex;
 
@@ -488,6 +487,7 @@ public class DeferredDocumentImpl
     public int cloneNode(int nodeIndex, boolean deep) {
 
         // clone immediate node
+        
         int nchunk = nodeIndex >> CHUNK_SHIFT;
         int nindex = nodeIndex & CHUNK_MASK;
         int nodeType = fNodeType[nchunk][nindex];
@@ -505,13 +505,18 @@ public class DeferredDocumentImpl
 
         // clone and attach children
         if (deep) {
+            int prevIndex = -1;
             int childIndex = getLastChild(nodeIndex, false);
             while (childIndex != -1) {
-                int cloneChildNode = cloneNode(childIndex, deep);
-                appendChild(nodeIndex, childIndex);
+                int clonedChildIndex = cloneNode(childIndex, deep);
+                insertBefore(cloneIndex, clonedChildIndex, prevIndex);
+                prevIndex = clonedChildIndex;
+                childIndex = getRealPrevSibling(childIndex, false);
             }
-        }
+            
 
+        }
+        
         // return cloned node index
         return cloneIndex;
 

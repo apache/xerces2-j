@@ -288,6 +288,7 @@ public class XMLDTDValidator
     /** True if seen DOCTYPE declaration. */
     private boolean fSeenDoctypeDecl = false;
 
+    private boolean fInCDATASection = false;
     // element stack
 
     /** Element index stack. */
@@ -520,7 +521,7 @@ public class XMLDTDValidator
         // clear grammars
         fDTDGrammar = null;
         fSeenDoctypeDecl = false;
-
+        fInCDATASection = false;
         // initialize state
         fInDTD = false;
         fInDTDIgnore = false;
@@ -828,9 +829,9 @@ public class XMLDTDValidator
                     break;
                 }
             }
-    
             // call the ignoreableWhiteSpace callback
-            if (fInElementContent && allWhiteSpace) {
+            // never call ignorableWhitespace if we are in cdata section
+            if (fInElementContent && allWhiteSpace && !fInCDATASection) {
                 if (fDocumentHandler != null) {
                     fDocumentHandler.ignorableWhitespace(text);
                     callNextCharacters = false;
@@ -927,7 +928,7 @@ public class XMLDTDValidator
         if (fPerformValidation && fInElementContent) {
             charDataInContent();
         }
-        
+        fInCDATASection = true;
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.startCDATA();
@@ -942,6 +943,7 @@ public class XMLDTDValidator
      */
     public void endCDATA() throws XNIException {
 
+        fInCDATASection = false;
         // call handlers
         if (fDocumentHandler != null) {
             fDocumentHandler.endCDATA();

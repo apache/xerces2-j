@@ -528,7 +528,6 @@ public abstract class AbstractDOMParser
      */
     public void startElement(QName element, XMLAttributes attributes)
         throws XNIException {
-
         if (!fDeferNodeExpansion) {
             Element el;
             if (fNamespaceAware) {
@@ -575,7 +574,6 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void characters(XMLString text) throws XNIException {
-
         if (!fDeferNodeExpansion) {
             if (fInCDATASection) {
                 if (fCurrentCDATASection == null) {
@@ -644,17 +642,6 @@ public abstract class AbstractDOMParser
         }
 
         if (!fDeferNodeExpansion) {
-            /*
-              REVISIT: This doesn't make sense - CDATASections are never
-              ignorable whitespace - ALH!!!
-
-              if (fInCDATASection) {
-              CDATASection cdataSection = (CDATASection)fCurrentNode;
-              cdataSection.appendData(text.toString());
-              return;
-              }
-            */
-
             Node child = fCurrentNode.getLastChild();
             if (child != null && child.getNodeType() == Node.TEXT_NODE) {
                 Text textNode = (Text)child;
@@ -687,7 +674,6 @@ public abstract class AbstractDOMParser
      * @throws XNIException Thrown by handler to signal an error.
      */
     public void endElement(QName element) throws XNIException {
-
         if (!fDeferNodeExpansion) {
             fCurrentNode = fCurrentNode.getParentNode();
         }
@@ -718,7 +704,6 @@ public abstract class AbstractDOMParser
     public void startCDATA() throws XNIException {
 
         fInCDATASection = true;
-
     } // startCDATA()
 
     /**
@@ -730,14 +715,18 @@ public abstract class AbstractDOMParser
 
         fInCDATASection = false;
         if (!fDeferNodeExpansion) {
-            fCurrentNode = fCurrentNode.getParentNode();
-            fCurrentCDATASection = null;
+            if (fCurrentCDATASection !=null) {
+                fCurrentNode = fCurrentNode.getParentNode();
+                fCurrentCDATASection = null;
+            }
         }
         else {
-            fCurrentNodeIndex =
+            if (fCurrentCDATASectionIndex !=-1) {            
+                fCurrentNodeIndex =
                 fDeferredDocumentImpl.getParentNode(fCurrentNodeIndex, false);
-            fCurrentCDATASectionIndex = -1;
-        }
+                fCurrentCDATASectionIndex = -1;
+            }
+        } 
 
     } // endCDATA()
 
